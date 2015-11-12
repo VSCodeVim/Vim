@@ -17,7 +17,29 @@
 		"commands": [{
 			"command": "extension.sayHello",
 			"title": "Hello World"
-		}]
+		}],
+		"keybindings": [
+			{
+				"key": "Ctrl+H",
+				"command": "cursorLeft",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "Ctrl+J",
+				"command": "cursorDown",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "Ctrl+K",
+				"command": "cursorUp",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "Ctrl+L",
+				"command": "cursorRight",
+				"when": "editorTextFocus"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "node ./node_modules/vscode/bin/compile",
