@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import {showCmdLine} from './src/cmd_line/show_cmd_line'; 
+import {showCmdLine} from './src/cmd_line/main'; 
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
