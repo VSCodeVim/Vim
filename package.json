@@ -10,14 +10,14 @@
 		"Others"
 	],
 	"activationEvents": [
-		"onCommand:extension.sayHello"
+		"*"
 	],
 	"main": "./out/extension",
 	"contributes": {
-		"commands": [{
-			"command": "extension.sayHello",
-			"title": "Hello World"
-		}],
+		"commands": [
+			{ "command": "extension.sayHello", "title": "Hello World" },
+			{ "command": "extension.showCmdLine", "title": "Vim: Show Command Line" }
+		],
 		"keybindings": [
 			{
 				"key": "Ctrl+H",
