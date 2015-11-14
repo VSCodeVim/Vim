@@ -96,15 +96,11 @@ function scanLineRef(state : lexerState.State, tokens : token.Token[]): ScanFunc
 }
 
 function scanCommand(state : lexerState.State, tokens : token.Token[]): ScanFunction  {
-	// scan letter as name
-	// scan rest as commandargstoken
 	state.skipWhiteSpace();
 	while (true) {
 		if (state.isAtEof) {
 			var emitted = state.emit();
-			if (emitted) {
-				tokens.push(new token.TokenCommandName(emitted));
-			}
+			if (emitted) tokens.push(new token.TokenCommandName(emitted));
 			break;
 		}
 		var c = state.next();
@@ -118,10 +114,8 @@ function scanCommand(state : lexerState.State, tokens : token.Token[]): ScanFunc
 			state.skipWhiteSpace();
 			while (!state.isAtEof) state.next();
 			var args = state.emit();
-			if (args) {
-				tokens.push(new token.TokenCommandArgs(args));
-				break;
-			}
+			if (args) tokens.push(new token.TokenCommandArgs(args));
+			break;
 		}		
 	}
 	return null;
