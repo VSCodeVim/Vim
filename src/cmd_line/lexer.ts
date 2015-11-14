@@ -36,11 +36,9 @@ function scanRange(state : State, tokens : token.Token[]): ScanFunction  {
 				tokens.push(new token.TokenDot());
 				continue;
 			case '/':
-				scanForwardSearch(state, tokens);
-				continue;
+				return scanForwardSearch;
 			case '?':
-				scanReverseSearch(state, tokens);
-				continue;
+				return scanReverseSearch
 			case '0':
 			case '1':
 			case '2':
@@ -85,12 +83,12 @@ function scanLineRef(state : State, tokens : token.Token[]): ScanFunction  {
 			case '7':			
 			case '8':			
 			case '9':
-			continue;			
+				continue;			
 			default:
-			state.backup();
-			var emitted = state.emit();
-			if (emitted) tokens.push(new token.TokenLineNumber(emitted));
-			return scanRange;
+				state.backup();
+				var emitted = state.emit();
+				if (emitted) tokens.push(new token.TokenLineNumber(emitted));
+				return scanRange;
 		}
 	}
 	return null;
@@ -139,8 +137,8 @@ function scanForwardSearch(state : State, tokens : token.Token[]): ScanFunction 
 		searchTerm += c != '\\' ? c : '\\\\';
 	}
 	tokens.push(new token.TokenSlashSearch(searchTerm));
-	if (!state.isAtEof) state.skip('/');
 	state.ignore();
+	if (!state.isAtEof) state.skip('/');
 	return scanRange;
 }
 
@@ -161,7 +159,7 @@ function scanReverseSearch(state : State, tokens : token.Token[]): ScanFunction 
 		searchTerm += c != '\\' ? c : '\\\\';
 	}
 	tokens.push(new token.TokenQuestionMarkSearch(searchTerm));
-	if (!state.isAtEof) state.skip('?');
 	state.ignore();
+	if (!state.isAtEof) state.skip('?');
 	return scanRange;
 }
