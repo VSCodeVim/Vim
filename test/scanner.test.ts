@@ -64,20 +64,20 @@ suite("Cmd line tests - lexing", () => {
 		assert.equal(tokens[0].content, new token.TokenSlashSearch("horses").content);
 	});
 	
-	// test("can lex forward search escaping", () => {
-	// 	var tokens = lexer.scan("/hor\\/ses/");
-	// 	assert.equal(tokens[0].content, new token.TokenSlashSearch("hor/ses").content);
-	// });	
+	test("can lex forward search escaping", () => {
+		var tokens = lexer.scan("/hor\\/ses/");
+		assert.equal(tokens[0].content, new token.TokenSlashSearch("hor/ses").content);
+	});	
 
-	// test("can lex reverse search", () => {
-	// 	var tokens = lexer.scan("?worms?");
-	// 	assert.equal(tokens[0].content, new token.TokenQuestionMarkSearch("worms").content);
-	// });
+	test("can lex reverse search", () => {
+		var tokens = lexer.scan("?worms?");
+		assert.equal(tokens[0].content, new token.TokenQuestionMarkSearch("worms").content);
+	});
 
-	// test("can lex reverse search escaping", () => {
-	// 	var tokens = lexer.scan("?wor\\?ms?");
-	// 	assert.equal(tokens[0].content, new token.TokenQuestionMarkSearch("wor?ms").content);
-	// });
+	test("can lex reverse search escaping", () => {
+		var tokens = lexer.scan("?wor\\?ms?");
+		assert.equal(tokens[0].content, new token.TokenQuestionMarkSearch("wor?ms").content);
+	});
 
 	test("can lex command name", () => {
 		var tokens = lexer.scan("w");
