@@ -34,7 +34,7 @@ export class State {
 	// Returns the span of text between the current start and the current position.
 	emit() : string {
 		let s = this.input.substring(this.start, this.pos);
-		this.start = this.pos;
+		this.ignore();
 		return s;
 	}
 	
@@ -49,6 +49,7 @@ export class State {
 			s = this.next();
 		}
 		this.backup();
+		this.ignore();
 	}
 	
 	skipRun(...chars : string[]) : void {
@@ -57,6 +58,7 @@ export class State {
 			if (chars.indexOf(c) == -1) break;
 		}
 		this.backup();
+		this.ignore();
 	}
 	
 	skipWhiteSpace(): void {
