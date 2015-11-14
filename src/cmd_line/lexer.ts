@@ -1,14 +1,12 @@
-import * as scanner from './parser';
+import * as lexerState from './lexer_state';
 import * as token from './token';
 
-var foo = "%,10+10:write";
-
 interface ScanFunction {
-	(state: scanner.State, tokens: token.Token[]) : ScanFunction;
+	(state: lexerState.State, tokens: token.Token[]) : ScanFunction;
 }
 
 export function scan(input : string) : token.Token[] {
-	var state = new scanner.State(input);
+	var state = new lexerState.State(input);
 	var tokens : token.Token[] = [];
 	for (var f in scanRange(state, tokens)) {
 		if (f === null) break;
@@ -17,7 +15,7 @@ export function scan(input : string) : token.Token[] {
 	return tokens;
 }
 
-function scanRange(state : scanner.State, tokens : token.Token[]): ScanFunction  {
+function scanRange(state : lexerState.State, tokens : token.Token[]): ScanFunction  {
 	while (true) {
 		if (state.isAtEof) {
 			break;
@@ -67,7 +65,7 @@ function scanRange(state : scanner.State, tokens : token.Token[]): ScanFunction 
 	return null;
 }
 
-function scanLineRef(state : scanner.State, tokens : token.Token[]): ScanFunction  {
+function scanLineRef(state : lexerState.State, tokens : token.Token[]): ScanFunction  {
 	while (true) {
 		if (state.isAtEof) {
 			var emitted = state.emit();
@@ -97,7 +95,7 @@ function scanLineRef(state : scanner.State, tokens : token.Token[]): ScanFunctio
 	return null;
 }
 
-function scanCommand(state : scanner.State, tokens : token.Token[]): ScanFunction  {
+function scanCommand(state : lexerState.State, tokens : token.Token[]): ScanFunction  {
 	// scan letter as name
 	// scan rest as commandargstoken
 	state.skipWhiteSpace();
@@ -129,7 +127,7 @@ function scanCommand(state : scanner.State, tokens : token.Token[]): ScanFunctio
 	return null;
 }
 
-function scanForwardSearch(state : scanner.State, tokens : token.Token[]): ScanFunction  {
+function scanForwardSearch(state : lexerState.State, tokens : token.Token[]): ScanFunction  {
 	state.skip('/');
 	var escaping : boolean;
 	var searchTerm = '';
@@ -146,12 +144,12 @@ function scanForwardSearch(state : scanner.State, tokens : token.Token[]): ScanF
 		searchTerm += c != '\\' ? c : '\\\\';
 	}
 	tokens.push(new token.TokenSlashSearch(searchTerm));
-	state.skip('/');
+	if (!state.isAtEof) state.skip('/');
 	state.ignore();
 	return scanRange;
 }
 
-function scanReverseSearch(state : scanner.State, tokens : token.Token[]): ScanFunction  {
+function scanReverseSearch(state : lexerState.State, tokens : token.Token[]): ScanFunction  {
 	state.skip('?');
 	var escaping : boolean;
 	var searchTerm = '';
@@ -168,7 +166,7 @@ function scanReverseSearch(state : scanner.State, tokens : token.Token[]): ScanF
 		searchTerm += c != '\\' ? c : '\\\\';
 	}
 	tokens.push(new token.TokenQuestionMarkSearch(searchTerm));
-	state.skip('?');
+	if (!state.isAtEof) state.skip('?');
 	state.ignore();
 	return scanRange;
 }

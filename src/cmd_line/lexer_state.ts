@@ -1,5 +1,5 @@
 
-// Parser state.
+// Lexer state.
 export class State {
 	static EOF : string = '__EOF__';
 	start : number = 0;
@@ -45,7 +45,7 @@ export class State {
 	skip(c : string) : void {
 		var s = this.next();
 		while (!this.isAtEof) {
-			if (c != s) break;
+			if (s !== c) break;
 			s = this.next();
 		}
 		this.backup();

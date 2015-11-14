@@ -10,37 +10,37 @@ import * as assert from 'assert';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 import * as myExtension from '../extension';
-import * as cmdLineParser from '../src/cmd_line/parser'
+import * as lexerState from '../src/cmd_line/lexer_state'
 
-suite("Cmd line tests - parser state", () => {
+suite("Cmd line tests - lexer state", () => {
 
-	test("can init parser state", () => {
-		var state = new cmdLineParser.State("dog");
+	test("can init lexer state", () => {
+		var state = new lexerState.State("dog");
 		assert.equal(state.input, "dog");
 	});
 	
 	test("can detect EOF with empty input", () => {
-		var state = new cmdLineParser.State("");
+		var state = new lexerState.State("");
 		assert.ok(state.isAtEof);
 	});
 
 	test("next() returns EOF at EOF", () => {
-		var state = new cmdLineParser.State("");
-		assert.equal(state.next(), cmdLineParser.State.EOF);
-		assert.equal(state.next(), cmdLineParser.State.EOF);
-		assert.equal(state.next(), cmdLineParser.State.EOF);
+		var state = new lexerState.State("");
+		assert.equal(state.next(), lexerState.State.EOF);
+		assert.equal(state.next(), lexerState.State.EOF);
+		assert.equal(state.next(), lexerState.State.EOF);
 	});		
 
 	test("next() can scan", () => {
-		var state = new cmdLineParser.State("dog");
+		var state = new lexerState.State("dog");
 		assert.equal(state.next(), "d");
 		assert.equal(state.next(), "o");
 		assert.equal(state.next(), "g")
-		assert.equal(state.next(), cmdLineParser.State.EOF);
+		assert.equal(state.next(), lexerState.State.EOF);
 	});
 	
 	test("can emit", () => {
-		var state = new cmdLineParser.State("dog cat");
+		var state = new lexerState.State("dog cat");
 		state.next();
 		state.next();
 		state.next();
@@ -53,7 +53,7 @@ suite("Cmd line tests - parser state", () => {
 	});
 
 	test("can ignore", () => {
-		var state = new cmdLineParser.State("dog cat");
+		var state = new lexerState.State("dog cat");
 		state.next();
 		state.next();
 		state.next();
