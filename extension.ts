@@ -1,9 +1,10 @@
-// The module 'vscode' contains the VS Code extensibility API
+	// The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 
 import * as vscode from 'vscode';
 
 import {showCmdLine} from './src/cmd_line/main'; 
+import * as cc from './src/cmd_line/lexer'; 
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

@@ -37,4 +37,35 @@ export class State {
 		this.start = this.pos;
 		return s;
 	}
+	
+	backup(): void {
+		this.pos--;
+	}
+	
+	skip(c : string) : void {
+		var s = this.next();
+		while (!this.isAtEof) {
+			if (c != s) break;
+			s = this.next();
+		}
+		this.backup();
+	}
+	
+	skipRun(...chars : string[]) : void {
+		while(!this.isAtEof) {
+			var c = this.next();
+			if (chars.indexOf(c) == -1) break;
+		}
+		this.backup();
+	}
+	
+	skipWhiteSpace(): void {
+		while (true) {
+			var c = this.next();
+			if (c == ' ' || c == '\t') continue;
+			break;
+		}
+		this.backup();
+		this.ignore();
+	}
 }
