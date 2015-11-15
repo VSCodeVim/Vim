@@ -6,47 +6,11 @@ import * as vscode from 'vscode';
 import * as token from './token';
 import * as node from './node';
 import * as lexer from './lexer';
+import {parseWriteCommandArgs, commandParsers} from './subparsers';
+import * as util from '../util';
 
 interface ParseFunction {
 	(state : ParserState, command : node.CommandLine) : ParseFunction;
-}
-
-
-const commandParsers = {
-	'w': parseWriteCommandArgs,
-	'write': parseWriteCommandArgs
-}
-
-// Keeps track of parsing state.
-class ParserState {
-	tokens : token.Token[] = [];
-	pos : number = 0;
-	
-	constructor(input : string) {
-		this.lex(input);
-	}
-	
-	lex(input : string) {
-		this.tokens = lexer.scan(input);
-	}
-	
-	next() : token.Token {
-		if (this.pos >= this.tokens.length) {
-			this.pos = this.tokens.length;
-			return new token.TokenEof();
-		}
-		let tok = this.tokens[this.pos];
-		this.pos++;
-		return tok;
-	}
-	
-	backup() : void {
-		this.pos--;
-	}
-	
-	get isAtEof() {
-		return this.pos >= this.tokens.length; // XXX the last token is TokenEof; is this correct?
-	}
 }
 
 export function parse(input : string) : node.CommandLine {
@@ -110,6 +74,34 @@ function parseCommand(state : ParserState, commandLine : node.CommandLine) : Par
 	}
 }
 
-function parseWriteCommandArgs(args : string = null) {
-	return new node.WriteCommand(args ? args : null);
+// Keeps track of parsing state.
+class ParserState {
+	tokens : token.Token[] = [];
+	pos : number = 0;
+	
+	constructor(input : string) {
+		this.lex(input);
+	}
+	
+	lex(input : string) {
+		this.tokens = lexer.scan(input);
+	}
+	
+	next() : token.Token {
+		if (this.pos >= this.tokens.length) {
+			this.pos = this.tokens.length;
+			return new token.TokenEof();
+		}
+		let tok = this.tokens[this.pos];
+		this.pos++;
+		return tok;
+	}
+	
+	backup() : void {
+		this.pos--;
+	}
+	
+	get isAtEof() {
+		return this.pos >= this.tokens.length; // XXX the last token is TokenEof; is this correct?
+	}
 }

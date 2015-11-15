@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as parser from './parser';
+import * as util from '../util';
 
 // Shows the vim command line.
 export function showCmdLine(initialText = "") {
@@ -14,7 +15,12 @@ export function showCmdLine(initialText = "") {
 }
 
 function runCmdLine(s : string) : void {
-	var cmd = parser.parse(s);
+	try {
+		var cmd = parser.parse(s);
+	}
+	catch (e) {
+		util.showInfo(e);
+	}
 	
 	if (cmd.isEmpty) {
 		vscode.window.showInformationMessage("empty cmdline");
