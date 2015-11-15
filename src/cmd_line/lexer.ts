@@ -25,15 +25,19 @@ function scanRange(state : State, tokens : token.Token[]): ScanFunction  {
 		switch (c) {
 			case ',':
 				tokens.push(new token.TokenComma());
+				state.ignore();
 				continue;
 			case '%':
 				tokens.push(new token.TokenPercent());
+				state.ignore();
 				continue;
 			case '$':
 				tokens.push(new token.TokenDollar());
+				state.ignore();
 				continue;
 			case '.':
 				tokens.push(new token.TokenDot());
+				state.ignore();
 				continue;
 			case '/':
 				return scanForwardSearch;
@@ -52,9 +56,11 @@ function scanRange(state : State, tokens : token.Token[]): ScanFunction  {
 				return scanLineRef;
 			case '+':
 				tokens.push(new token.TokenPlus());
+				state.ignore();
 				continue;
 			case '-':
 				tokens.push(new token.TokenMinus());
+				state.ignore();
 				continue;
 			default:
 				state.backup();

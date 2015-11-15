@@ -94,5 +94,12 @@ suite("Cmd line tests - lexing", () => {
 		var tokens = lexer.scan("write12 something here");
 		assert.equal(tokens[0].content, new token.TokenCommandName("write").content);
 		assert.equal(tokens[1].content, new token.TokenCommandArgs("12 something here").content);
-	});	
+	});
+
+	test("can lex left and right line refs", () => {
+		var tokens = lexer.scan("20,30");
+		assert.equal(tokens[0].content, new token.TokenLineNumber("20").content);
+		assert.equal(tokens[1].content, new token.TokenLineNumber(",").content);
+		assert.equal(tokens[2].content, new token.TokenLineNumber("30").content);
+	});		
 });
