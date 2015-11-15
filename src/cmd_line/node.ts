@@ -3,49 +3,22 @@ import * as token from './token';
 import * as node from './node';
 import * as lexer from './lexer';
 
-export class CommandLineCommand {
-	name : string;
-	args : token.TokenCommandArgs;
-	constructor(name : string, args : token.TokenCommandArgs) {
-		this.name = name;
-		this.args = args;
-	}
-	
-	get isEmpty() : boolean {
-		return !this.name && !this.args;
-	}
-	
-	toString() : string {
-		return this.name + " " + this.args;
-	}
-	
-	runOn(document : vscode.TextEditor) : void {
-		if (this.name === 'w') {
-			if (!document.document.isDirty) return;
-			if (this.args || !document.document.fileName) throw new Error("not implemented");
-			document.document.save();
-			return;
-		}
-		throw new Error("not implemented");
-	}
-}
-
 export class LineRange {
 	left : token.Token[];
 	separator : token.Token;
 	right : token.Token[];
-	
+
 	constructor() {
 		this.left = [];
 		this.right = [];
 	}
-	
+
 	addToken(tok : token.Token) : void  {
 		if (tok.type === token.TokenType.Comma) {
 			this.separator = tok;
 			return;
 		}
-		
+
 		if (!this.separator) {
 			if (this.left.length > 0 && tok.type != token.TokenType.Offset) {
 				// XXX: is this always this error?
@@ -57,19 +30,19 @@ export class LineRange {
 			if (this.right.length > 0 && tok.type != token.TokenType.Offset) {
 				// XXX: is this always this error?
 				throw Error("not a Vim command");
-			}			
+			}
 			this.right.push(tok);
 		}
 	}
-	
+
 	get isEmpty() : boolean {
 		return this.left.length === 0 && this.right.length === 0 && !this.separator;
 	}
-	
+
 	toString() : string {
 		return this.left.toString() + this.separator.content + this.right.toString();
 	}
-	
+
 	runOn(document : vscode.TextEditor) : void {
 		if (this.isEmpty) {
 			return;
@@ -78,7 +51,7 @@ export class LineRange {
 		var pos = this.lineRefToPosition(document, lineRef);
 		document.selection = new vscode.Selection(pos, pos);
 	}
-	
+
 	lineRefToPosition(doc : vscode.TextEditor, toks : token.Token[]) : vscode.Position {
 		var first = toks[0];
 		switch (first.type) {
@@ -100,28 +73,52 @@ export class LineRange {
 
 export class CommandLine {
 	range : LineRange;
-	command : CommandLineCommand;
-	
+	command : CommandBase;
+
 	constructor() {
 		this.range = new LineRange();
-		this.command = new CommandLineCommand(null, null);
 	}
-	
+
 	get isEmpty() : boolean {
-		return this.range.isEmpty && this.command.isEmpty;
+		return this.range.isEmpty && !this.command;
 	}
-	
+
 	toString() : string {
 		return ":" + this.range.toString() + " " + this.command.toString();
 	}
-	
+
 	runOn(document : vscode.TextEditor) : void {
-		if (this.command.isEmpty) {
+		if (!this.command) {
 			this.range.runOn(document);
 			return;
 		}
-		
+
 		// TODO: calc range
 		this.command.runOn(document);
+	}
+}
+
+interface CommandBase {
+	name : string;
+	shortName : string;
+	runOn(textEditor : vscode.TextEditor) : void
+}
+
+export class WriteCommand implements CommandBase {
+	name : string;
+	shortName : string;
+	args : Object;
+	
+	constructor(args : Object = null) {
+		// TODO: implement other arguments.
+		this.name = 'write';
+		this.shortName = 'w';	
+		this.args = args;
+	}
+	
+	runOn(textEditor : vscode.TextEditor) : void {
+		if (!textEditor.document.isDirty) return; // XXX Vim saves nevertheless?
+		if (this.args || !textEditor.document.fileName) throw new Error("not implemented");
+		textEditor.document.save();
 	}
 }

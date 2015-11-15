@@ -11,6 +11,12 @@ interface ParseFunction {
 	(state : ParserState, command : node.CommandLine) : ParseFunction;
 }
 
+
+const argsParsers = {
+	'w': parseWriteCommandArgs,
+	'write': parseWriteCommandArgs
+}
+
 // Keeps track of parsing state.
 class ParserState {
 	tokens : token.Token[] = [];
@@ -32,6 +38,14 @@ class ParserState {
 		let tok = this.tokens[this.pos];
 		this.pos++;
 		return tok;
+	}
+	
+	backup() : void {
+		this.pos--;
+	}
+	
+	get isAtEof() {
+		return this.pos >= this.tokens.length; // XXX the last token is TokenEof; is this correct?
 	}
 }
 
@@ -57,11 +71,42 @@ function parseLineRange(state : ParserState, commandLine : node.CommandLine) : P
 				commandLine.range.addToken(tok);
 				continue;
 			case token.TokenType.CommandName:
-				commandLine.command = new node.CommandLineCommand(tok.content, null);
-				continue; 
+				state.backup();
+				return parseCommand;
+				// commandLine.command = new node.CommandLineCommand(tok.content, null);
+				// continue; 
 			default:
 				console.warn("skipping token " + "Token(" + tok.type + ",{" + tok.content + "})");
 				return null;				
 		}		
 	}
+}
+
+function parseCommand(state : ParserState, commandLine : node.CommandLine) : ParseFunction {
+	while (!state.isAtEof) {
+		var t = state.next();
+		switch (t.type) {
+			case token.TokenType.CommandName:
+				var argsParser = argsParsers[t.content];
+				if (!argsParser) {
+					throw new Error("not implemented or not a valid command");
+				}
+				commandLine.command = argsParser();
+				return null;
+			default:
+				throw new Error("not implemented");
+		}
+	}
+	if (!state.isAtEof) {
+		state.backup();
+		return parseCommand;
+	}
+	else {
+		return null;
+	}
+}
+
+function parseWriteCommandArgs(args : string = null) {
+	if (args) throw new Error("not implemented");
+	return new node.WriteCommand();
 }
