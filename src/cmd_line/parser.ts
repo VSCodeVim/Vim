@@ -2,6 +2,7 @@
 // parse command name
 // command parses its own arguments
 
+import * as vscode from 'vscode';
 import * as token from './token';
 import * as lexer from './lexer';
 
@@ -15,6 +16,10 @@ export class CommandLineCommand {
 	
 	get isEmpty() : boolean {
 		return !this.name && !this.args;
+	}
+	
+	toString() : string {
+		return this.name + " " + this.args;
 	}
 }
 
@@ -54,6 +59,24 @@ export class LineRange {
 	get isEmpty() : boolean {
 		return this.left.length === 0 && this.right.length === 0 && !this.separator;
 	}
+	
+	toString() : string {
+		return this.left.toString() + this.separator.content + this.right.toString();
+	}
+	
+	runOn(document : vscode.TextEditor) {
+		if (this.isEmpty) return;
+		var calced = this.calculateLine(document, this.left);
+		document.selection = new vscode.Selection(calced, calced);
+	}
+	
+	calculateLine(doc : vscode.TextEditor, toks : token.Token[]) : vscode.Position {
+		var first = toks[0];
+		if (first.type === token.TokenType.Dollar) {
+			return new vscode.Position(doc.document.lineCount, 0);
+		}
+		throw new Error("not implemented");
+	}
 }
 
 export class CommandLine {
@@ -68,6 +91,18 @@ export class CommandLine {
 	get isEmpty() : boolean {
 		return this.range.isEmpty && this.command.isEmpty;
 	}
+	
+	toString() : string {
+		return ":" + this.range.toString() + " " + this.command.toString();
+	}
+
+	runOn(document : vscode.TextEditor) {
+		if (this.command.isEmpty) {
+			this.range.runOn(document);
+			return;
+		}
+		throw new Error("not implemented");
+	}	
 }
 
 class ParserState {
