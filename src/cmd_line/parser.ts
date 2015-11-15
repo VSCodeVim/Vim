@@ -64,18 +64,31 @@ export class LineRange {
 		return this.left.toString() + this.separator.content + this.right.toString();
 	}
 	
-	runOn(document : vscode.TextEditor) {
-		if (this.isEmpty) return;
-		var calced = this.calculateLine(document, this.left);
-		document.selection = new vscode.Selection(calced, calced);
+	runOn(document : vscode.TextEditor) : void {
+		if (this.isEmpty) {
+			return;
+		}
+		var lineRef = !this.right ? this.left : this.right;
+		var pos = this.lineRefToPosition(document, lineRef);
+		document.selection = new vscode.Selection(pos, pos);
 	}
 	
-	calculateLine(doc : vscode.TextEditor, toks : token.Token[]) : vscode.Position {
+	lineRefToPosition(doc : vscode.TextEditor, toks : token.Token[]) : vscode.Position {
 		var first = toks[0];
-		if (first.type === token.TokenType.Dollar) {
-			return new vscode.Position(doc.document.lineCount, 0);
+		switch (first.type) {
+			case token.TokenType.Dollar:
+			case token.TokenType.Percent:
+				return new vscode.Position(doc.document.lineCount, 0);
+			case token.TokenType.Dot:
+				return new vscode.Position(doc.selection.active.line, 0);
+			case token.TokenType.LineNumber:
+				var line = Number.parseInt(first.content);
+				line = Math.max(0, line - 1);
+				line = Math.min(doc.document.lineCount, line);
+				return new vscode.Position(line, 0);
+			default:
+				throw new Error("not implemented");
 		}
-		throw new Error("not implemented");
 	}
 }
 
@@ -96,8 +109,10 @@ export class CommandLine {
 		return ":" + this.range.toString() + " " + this.command.toString();
 	}
 
+	// Runs the command line on a text editor.
 	runOn(document : vscode.TextEditor) {
 		if (this.command.isEmpty) {
+			// no command, so let's go to the requested line
 			this.range.runOn(document);
 			return;
 		}
@@ -152,7 +167,7 @@ function parseLineRange(state : ParserState, command : CommandLine) : ParseFunct
 			case token.TokenType.Dollar:
 			case token.TokenType.Percent:
 			case token.TokenType.Comma:
-				console.log(tok);
+			case token.TokenType.LineNumber:
 				command.range.addToken(tok);
 				continue;
 			default:
