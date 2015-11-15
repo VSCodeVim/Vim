@@ -12,7 +12,7 @@ interface ParseFunction {
 }
 
 
-const argsParsers = {
+const commandParsers = {
 	'w': parseWriteCommandArgs,
 	'write': parseWriteCommandArgs
 }
@@ -84,14 +84,18 @@ function parseLineRange(state : ParserState, commandLine : node.CommandLine) : P
 
 function parseCommand(state : ParserState, commandLine : node.CommandLine) : ParseFunction {
 	while (!state.isAtEof) {
-		var t = state.next();
-		switch (t.type) {
+		var tok = state.next();
+		switch (tok.type) {
 			case token.TokenType.CommandName:
-				var argsParser = argsParsers[t.content];
-				if (!argsParser) {
+				var commandParser = commandParsers[tok.content];
+				if (!commandParser) {
 					throw new Error("not implemented or not a valid command");
 				}
-				commandLine.command = argsParser();
+				// TODO: Pass the args, but keep in mind there could be multiple
+				// commands, not just one.
+				var argsTok = state.next();
+				var args = argsTok.type === token.TokenType.CommandArgs ? argsTok.content : null;
+				commandLine.command = commandParser(args);
 				return null;
 			default:
 				throw new Error("not implemented");
@@ -107,6 +111,5 @@ function parseCommand(state : ParserState, commandLine : node.CommandLine) : Par
 }
 
 function parseWriteCommandArgs(args : string = null) {
-	if (args) throw new Error("not implemented");
-	return new node.WriteCommand();
+	return new node.WriteCommand(args ? args : null);
 }

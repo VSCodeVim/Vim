@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as token from './token';
 import * as node from './node';
 import * as lexer from './lexer';
+export * from './command_node';
 
 export class LineRange {
 	left : token.Token[];
@@ -98,27 +99,8 @@ export class CommandLine {
 	}
 }
 
-interface CommandBase {
+export interface CommandBase {
 	name : string;
 	shortName : string;
 	runOn(textEditor : vscode.TextEditor) : void
-}
-
-export class WriteCommand implements CommandBase {
-	name : string;
-	shortName : string;
-	args : Object;
-	
-	constructor(args : Object = null) {
-		// TODO: implement other arguments.
-		this.name = 'write';
-		this.shortName = 'w';	
-		this.args = args;
-	}
-	
-	runOn(textEditor : vscode.TextEditor) : void {
-		if (!textEditor.document.isDirty) return; // XXX Vim saves nevertheless?
-		if (this.args || !textEditor.document.fileName) throw new Error("not implemented");
-		textEditor.document.save();
-	}
 }
