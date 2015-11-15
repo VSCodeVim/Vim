@@ -5,7 +5,7 @@
 import * as token from './token';
 import * as lexer from './lexer';
 
-class CommandLineCommand {
+export class CommandLineCommand {
 	name : string;
 	args : token.TokenCommandArgs;
 	constructor(name : string, args : token.TokenCommandArgs) {
@@ -18,7 +18,7 @@ class CommandLineCommand {
 	}
 }
 
-class LineRange {
+export class LineRange {
 	left : token.Token[];
 	separator : token.Token;
 	right : token.Token[];
@@ -29,8 +29,26 @@ class LineRange {
 	}
 	
 	addToken(tok : token.Token) : void  {
-		if (!this.separator) this.left.push(tok);
-		else 				 this.right.push(tok);
+		if (tok.type == token.TokenType.Comma) {
+			console.log("adding sep " + tok.type);
+			this.separator = tok;
+			return;
+		}
+		
+		if (!this.separator) {
+			if (this.left.length > 0 && tok.type != token.TokenType.Offset) {
+				// XXX: is this always this error?
+				throw Error("not a Vim command");
+			}
+			this.left.push(tok);
+		}
+		else {
+			if (this.right.length > 0 && tok.type != token.TokenType.Offset) {
+				// XXX: is this always this error?
+				throw Error("not a Vim command");
+			}			
+			this.right.push(tok);
+		}
 	}
 	
 	get isEmpty() : boolean {
@@ -98,7 +116,10 @@ function parseLineRange(state : ParserState, command : CommandLine) : ParseFunct
 			case token.TokenType.Dot:
 			case token.TokenType.Dollar:
 			case token.TokenType.Percent:
+			case token.TokenType.Comma:
+				console.log(tok);
 				command.range.addToken(tok);
+				continue;
 			default:
 				return null;				
 		}		

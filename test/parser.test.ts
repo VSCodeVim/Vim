@@ -11,6 +11,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as myExtension from '../extension';
 import * as parser from '../src/cmd_line/parser';
+import * as token from '../src/cmd_line/token';
 
 suite("Cmd line tests - parser", () => {
 
@@ -20,8 +21,30 @@ suite("Cmd line tests - parser", () => {
 	});
 
 	// TODO: Range tests follow -- should prolly create a suite for this
-	test("can parse dot", () => {
+	test("can parse left - dot", () => {
 		var cmd : parser.CommandLine = parser.parse(".");
-		assert.ok(cmd);
+		assert.equal(cmd.range.left[0].type, token.TokenType.Dot);
+	});
+
+	test("can parse left - dollar", () => {
+		var cmd : parser.CommandLine = parser.parse("$");
+		assert.equal(cmd.range.left[0].type, token.TokenType.Dollar);
+	});	
+
+	test("can parse left - percent", () => {
+		var cmd : parser.CommandLine = parser.parse("%");
+		assert.equal(cmd.range.left[0].type, token.TokenType.Percent);
+	});		
+
+	test("can parse separator - comma", () => {
+		var cmd : parser.CommandLine = parser.parse(",");
+		assert.equal(cmd.range.separator.type, token.TokenType.Comma);
+	});
+
+	test("can parse right - dollar", () => {
+		var cmd : parser.CommandLine = parser.parse(",$");
+		assert.equal(cmd.range.left.length, 0);
+		assert.equal(cmd.range.right.length, 1);
+		assert.equal(cmd.range.right[0].type, token.TokenType.Dollar, "unexpected token");
 	});	
 });
