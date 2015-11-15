@@ -18,6 +18,16 @@ export class CommandLineCommand {
 	toString() : string {
 		return this.name + " " + this.args;
 	}
+	
+	runOn(document : vscode.TextEditor) : void {
+		if (this.name === 'w') {
+			if (!document.document.isDirty) return;
+			if (this.args || !document.document.fileName) throw new Error("not implemented");
+			document.document.save();
+			return;
+		}
+		throw new Error("not implemented");
+	}
 }
 
 export class LineRange {
@@ -110,6 +120,8 @@ export class CommandLine {
 			this.range.runOn(document);
 			return;
 		}
-		throw new Error("not implemented");
+		
+		// TODO: calc range
+		this.command.runOn(document);
 	}
 }

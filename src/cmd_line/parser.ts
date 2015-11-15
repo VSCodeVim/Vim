@@ -43,7 +43,7 @@ export function parse(input : string) : node.CommandLine {
 	return cmd;
 }
 
-function parseLineRange(state : ParserState, command : node.CommandLine) : ParseFunction {	
+function parseLineRange(state : ParserState, commandLine : node.CommandLine) : ParseFunction {	
 	while (true) {
 		let tok = state.next();
 		switch (tok.type) {
@@ -54,9 +54,13 @@ function parseLineRange(state : ParserState, command : node.CommandLine) : Parse
 			case token.TokenType.Percent:
 			case token.TokenType.Comma:
 			case token.TokenType.LineNumber:
-				command.range.addToken(tok);
+				commandLine.range.addToken(tok);
 				continue;
+			case token.TokenType.CommandName:
+				commandLine.command = new node.CommandLineCommand(tok.content, null);
+				continue; 
 			default:
+				console.warn("skipping token " + "Token(" + tok.type + ",{" + tok.content + "})");
 				return null;				
 		}		
 	}
