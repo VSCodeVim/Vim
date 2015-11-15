@@ -31,8 +31,7 @@ export class LineRange {
 	}
 	
 	addToken(tok : token.Token) : void  {
-		if (tok.type == token.TokenType.Comma) {
-			console.log("adding sep " + tok.type);
+		if (tok.type === token.TokenType.Comma) {
 			this.separator = tok;
 			return;
 		}
@@ -65,7 +64,7 @@ export class LineRange {
 		if (this.isEmpty) {
 			return;
 		}
-		var lineRef = !this.right ? this.left : this.right;
+		var lineRef = this.right.length === 0 ? this.left : this.right;
 		var pos = this.lineRefToPosition(document, lineRef);
 		document.selection = new vscode.Selection(pos, pos);
 	}
@@ -105,3 +104,12 @@ export class CommandLine {
 	toString() : string {
 		return ":" + this.range.toString() + " " + this.command.toString();
 	}
+	
+	runOn(document : vscode.TextEditor) : void {
+		if (this.command.isEmpty) {
+			this.range.runOn(document);
+			return;
+		}
+		throw new Error("not implemented");
+	}
+}

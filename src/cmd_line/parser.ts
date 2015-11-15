@@ -7,6 +7,11 @@ import * as token from './token';
 import * as node from './node';
 import * as lexer from './lexer';
 
+interface ParseFunction {
+	(state : ParserState, command : node.CommandLine) : ParseFunction;
+}
+
+// Keeps track of parsing state.
 class ParserState {
 	tokens : token.Token[] = [];
 	pos : number = 0;
@@ -30,18 +35,12 @@ class ParserState {
 	}
 }
 
-interface ParseFunction {
-	(state : ParserState, command : node.CommandLine) : ParseFunction;
-}
-
 export function parse(input : string) : node.CommandLine {
-	var command = new node.CommandLine();
+	var cmd = new node.CommandLine();
 	var f : ParseFunction = parseLineRange;
 	let state : ParserState = new ParserState(input);
-	while (f) {
-		f = f(state, command);
-	}
-	return command;
+	while (f) f = f(state, cmd);
+	return cmd;
 }
 
 function parseLineRange(state : ParserState, command : node.CommandLine) : ParseFunction {	
