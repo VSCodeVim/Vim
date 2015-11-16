@@ -22,6 +22,12 @@
 			{ "command": "extension.showCmdLine", "title": "Vim: Show Command Line" }
 		],
 		"keybindings": [
+			{ "key": "Escape", "command": "extension.vimMode_esc", "when": "editorTextFocus" },
+			{ "key": "H", "command": "extension.vimMode_h", "when": "editorTextFocus" },
+            { "key": "J", "command": "extension.vimMode_j", "when": "editorTextFocus" },
+            { "key": "K", "command": "extension.vimMode_k", "when": "editorTextFocus" },
+            { "key": "L", "command": "extension.vimMode_l", "when": "editorTextFocus" },
+            
 			{ "key": "Ctrl+H", "command": "cursorLeft",	"when": "editorTextFocus" },
 			{ "key": "Ctrl+J", "command": "cursorDown", "when": "editorTextFocus" },
 			{ "key": "Ctrl+K", "command": "cursorUp", "when": "editorTextFocus" },
