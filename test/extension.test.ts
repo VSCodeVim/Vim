@@ -1,7 +1,4 @@
-// 
-// Note: This example test is leveraging the Mocha test framework.
-// Please refer to their documentation on https://mochajs.org/ for help.
-//
+// For documentation on the test framework see https://mochajs.org/.
 
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
@@ -14,7 +11,7 @@ import * as myExtension from '../extension';
 
 suite("Extension tests", () => {
 
-	test("dummy", () => {
-		assert.equal(0, 0);		
-	});	
+    test("dummy", () => {
+        assert.equal(0, 0);
+    });
 });
