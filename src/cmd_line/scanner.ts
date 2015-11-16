@@ -51,7 +51,9 @@ export class Scanner {
             }
             s = this.next();
         }
-        this.backup();
+        if (!this.isAtEof) {
+            this.backup();
+        }
         this.ignore();
     }
 
@@ -63,7 +65,9 @@ export class Scanner {
                 break;
             }
         }
-        this.backup();
+        if (!this.isAtEof) {
+            this.backup();
+        }
         this.ignore();
     }
 
@@ -76,7 +80,9 @@ export class Scanner {
             }
             break;
         }
-        this.backup();
+        if (!this.isAtEof) {
+            this.backup();
+        }
         this.ignore();
     }
 }

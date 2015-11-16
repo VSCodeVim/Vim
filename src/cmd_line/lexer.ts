@@ -105,8 +105,7 @@ module LexerFunctions {
     }
 
     function lexCommand(state : Scanner, tokens : Token[]): LexFunction  {
-        // The first character of command"s name has already been lexed. 
-        state.skipWhiteSpace();
+        // The first character of the command's name has already been lexed.
         while (true) {
             if (state.isAtEof) {
                 tokens.push(emitToken(TokenType.CommandName, state));
