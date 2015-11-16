@@ -2,7 +2,11 @@
 	"name": "vim",
 	"description": "Vim emulation for VS Code",
 	"version": "0.0.1",
-	"publisher": "hjkl",
+	"publisher": "VSCodeVim",
+    "contributors": [
+        "guillermooo",
+        "jpoon"
+    ],
 	"engines": {
 		"vscode": "0.10.x"
 	},
@@ -15,7 +19,6 @@
 	"main": "./out/extension",
 	"contributes": {
 		"commands": [
-			{ "command": "extension.sayHello", "title": "Hello World" },
 			{ "command": "extension.showCmdLine", "title": "Vim: Show Command Line" }
 		],
 		"keybindings": [
