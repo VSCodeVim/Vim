@@ -10,35 +10,20 @@
 		"Others"
 	],
 	"activationEvents": [
-		"onCommand:extension.sayHello"
+		"*"
 	],
 	"main": "./out/extension",
 	"contributes": {
-		"commands": [{
-			"command": "extension.sayHello",
-			"title": "Hello World"
-		}],
+		"commands": [
+			{ "command": "extension.sayHello", "title": "Hello World" },
+			{ "command": "extension.showCmdLine", "title": "Vim: Show Command Line" }
+		],
 		"keybindings": [
-			{
-				"key": "Ctrl+H",
-				"command": "cursorLeft",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "Ctrl+J",
-				"command": "cursorDown",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "Ctrl+K",
-				"command": "cursorUp",
-				"when": "editorTextFocus"
-			},
-			{
-				"key": "Ctrl+L",
-				"command": "cursorRight",
-				"when": "editorTextFocus"
-			}
+			{ "key": "Ctrl+H", "command": "cursorLeft",	"when": "editorTextFocus" },
+			{ "key": "Ctrl+J", "command": "cursorDown", "when": "editorTextFocus" },
+			{ "key": "Ctrl+K", "command": "cursorUp", "when": "editorTextFocus" },
+			{ "key": "Ctrl+L", "command": "cursorRight", "when": "editorTextFocus" },
+			{ "key": "Ctrl+Shift+.", "command": "extension.showCmdLine", "when": "editorTextFocus" }
 		]
 	},
 	"scripts": {
