@@ -1,171 +1,175 @@
-import {State} from './lexer_state';
-import * as token from './token';
+import {Scanner} from './scanner';
+import {Token, TokenType} from './token';
 
-interface ScanFunction {
-	(state: State, tokens: token.Token[]) : ScanFunction;
+// Describes a function that can lex part of a Vim command line.
+interface LexFunction {
+	(state: Scanner, tokens: Token[]) : LexFunction;
 }
 
-export function scan(input : string) : token.Token[] {
-	var state = new State(input);
-	var tokens : token.Token[] = [];
-	var f : ScanFunction = scanRange; // first scanning function
+export function lex(input : string) : Token[] {
+	// we use a character scanner as state for the lexer 
+	var state = new Scanner(input);
+	var tokens : Token[] = [];
+	var f : LexFunction = LexFunctions.lexRange; // first lexing function
 	while (f) {
-		// Each scanning function returns the next scanning function or null.
+		// Each lexing function returns the next lexing function or null.
 		f = f(state, tokens);
 	}
 	return tokens;
 }
 
-function scanRange(state : State, tokens : token.Token[]): ScanFunction  {
-	while (true) {
-		if (state.isAtEof) {
-			break;
+function emitToken(type : TokenType, state : Scanner) : Token {
+	var content = state.emit();
+	return (content.length > 0) ? new Token(type, content) : null;
+}
+
+module LexFunctions { 
+	// starts lexing a Vim command line and forwards later parts to other scanning functions.
+	export function lexRange(state : Scanner, tokens : Token[]): LexFunction  {
+		while (true) {
+			if (state.isAtEof) {
+				break;
+			}
+			var c = state.next();
+			switch (c) {
+				case ',':
+					tokens.push(emitToken(TokenType.Comma, state));
+					continue;
+				case '%':
+					tokens.push(emitToken(TokenType.Percent, state));
+					continue;
+				case '$':
+					tokens.push(emitToken(TokenType.Dollar, state));
+					continue;
+				case '.':
+					tokens.push(emitToken(TokenType.Dot, state));
+					continue;
+				case '/':
+					return lexForwardSearch;
+				case '?':
+					return lexReverseSearch
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+					return lexLineRef;
+				case '+':
+					tokens.push(emitToken(TokenType.Plus, state));
+					continue;
+				case '-':
+					tokens.push(emitToken(TokenType.Minus, state));
+					continue;
+				default:
+					state.backup();
+					return lexCommand;
+			}
 		}
-		var c = state.next();
-		switch (c) {
-			case ',':
-				tokens.push(new token.TokenComma());
-				state.ignore();
+		return null;
+	}
+	
+	function lexLineRef(state : Scanner, tokens : Token[]): LexFunction  {
+		while (true) {
+			if (state.isAtEof) {
+				var emitted = emitToken(TokenType.LineNumber, state);			
+				if (emitted) tokens.push(emitted);
+				return null;
+			}
+			var c = state.next();
+			switch (c) {
+				case '0':
+				case '1':
+				case '2':			
+				case '3':			
+				case '4':			
+				case '5':			
+				case '6':			
+				case '7':			
+				case '8':			
+				case '9':
+					continue;			
+				default:
+					state.backup();
+					// we're guaranteed to have a valid token here; don't check for null.
+					tokens.push(emitToken(TokenType.LineNumber, state));
+					return lexRange;
+			}
+		}
+		return null;
+	}
+	
+	function lexCommand(state : Scanner, tokens : Token[]): LexFunction  {
+		state.skipWhiteSpace();
+		while (true) {
+			if (state.isAtEof) {
+				var emitted = emitToken(TokenType.CommandName, state);
+				if (emitted) tokens.push(emitted);
+				break;
+			}
+			var c = state.next();
+			var lc = c.toLowerCase();
+			if (lc >= 'a' && lc <= 'z') {
 				continue;
-			case '%':
-				tokens.push(new token.TokenPercent());
-				state.ignore();
-				continue;
-			case '$':
-				tokens.push(new token.TokenDollar());
-				state.ignore();
-				continue;
-			case '.':
-				tokens.push(new token.TokenDot());
-				state.ignore();
-				continue;
-			case '/':
-				return scanForwardSearch;
-			case '?':
-				return scanReverseSearch
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				return scanLineRef;
-			case '+':
-				tokens.push(new token.TokenPlus());
-				state.ignore();
-				continue;
-			case '-':
-				tokens.push(new token.TokenMinus());
-				state.ignore();
-				continue;
-			default:
+			}
+			else {
 				state.backup();
-				return scanCommand;
+				tokens.push(emitToken(TokenType.CommandName, state));
+				state.skipWhiteSpace();
+				while (!state.isAtEof) state.next();
+				var args = emitToken(TokenType.CommandArgs, state);
+				if (args) tokens.push(args);
+				break;
+			}		
 		}
+		return null;
 	}
-	return null;
-}
-
-function scanLineRef(state : State, tokens : token.Token[]): ScanFunction  {
-	while (true) {
-		if (state.isAtEof) {
-			var emitted = state.emit();
-			if (emitted) tokens.push(new token.TokenLineNumber(emitted));
-			return null;
+	
+	function lexForwardSearch(state : Scanner, tokens : Token[]): LexFunction  {
+		state.skip('/');
+		var escaping : boolean;
+		var searchTerm = '';
+		while(!state.isAtEof) {
+			var c = state.next();
+			if (c == '/' && !escaping) break;
+			if (c == '\\') {
+				escaping = true;
+				continue;
+			}
+			else {
+				escaping = false;
+			}
+			searchTerm += c != '\\' ? c : '\\\\';
 		}
-		var c = state.next();
-		switch (c) {
-			case '0':
-			case '1':
-			case '2':			
-			case '3':			
-			case '4':			
-			case '5':			
-			case '6':			
-			case '7':			
-			case '8':			
-			case '9':
-				continue;			
-			default:
-				state.backup();
-				var emitted = state.emit();
-				if (emitted) tokens.push(new token.TokenLineNumber(emitted));
-				return scanRange;
-		}
+		tokens.push(new Token(TokenType.ForwardSearch, searchTerm));
+		state.ignore();
+		if (!state.isAtEof) state.skip('/');
+		return lexRange;
 	}
-	return null;
-}
-
-function scanCommand(state : State, tokens : token.Token[]): ScanFunction  {
-	state.skipWhiteSpace();
-	while (true) {
-		if (state.isAtEof) {
-			var emitted = state.emit();
-			if (emitted) tokens.push(new token.TokenCommandName(emitted));
-			break;
+	
+	function lexReverseSearch(state : Scanner, tokens : Token[]): LexFunction  {
+		state.skip('?');
+		var escaping : boolean;
+		var searchTerm = '';
+		while(!state.isAtEof) {
+			var c = state.next();
+			if (c == '?' && !escaping) break;
+			if (c == '\\') {
+				escaping = true;
+				continue;
+			}
+			else {
+				escaping = false;
+			}
+			searchTerm += c != '\\' ? c : '\\\\';
 		}
-		var c = state.next();
-		var lc = c.toLowerCase();
-		if (lc >= 'a' && lc <= 'z') {
-			continue;
-		}
-		else {
-			state.backup();
-			tokens.push(new token.TokenCommandName(state.emit()));
-			state.skipWhiteSpace();
-			while (!state.isAtEof) state.next();
-			var args = state.emit();
-			if (args) tokens.push(new token.TokenCommandArgs(args));
-			break;
-		}		
+		tokens.push(new Token(TokenType.ReverseSearch, searchTerm));
+		state.ignore();
+		if (!state.isAtEof) state.skip('?');
+		return lexRange;
 	}
-	return null;
-}
-
-function scanForwardSearch(state : State, tokens : token.Token[]): ScanFunction  {
-	state.skip('/');
-	var escaping : boolean;
-	var searchTerm = '';
-	while(!state.isAtEof) {
-		var c = state.next();
-		if (c == '/' && !escaping) break;
-		if (c == '\\') {
-			escaping = true;
-			continue;
-		}
-		else {
-			escaping = false;
-		}
-		searchTerm += c != '\\' ? c : '\\\\';
-	}
-	tokens.push(new token.TokenSlashSearch(searchTerm));
-	state.ignore();
-	if (!state.isAtEof) state.skip('/');
-	return scanRange;
-}
-
-function scanReverseSearch(state : State, tokens : token.Token[]): ScanFunction  {
-	state.skip('?');
-	var escaping : boolean;
-	var searchTerm = '';
-	while(!state.isAtEof) {
-		var c = state.next();
-		if (c == '?' && !escaping) break;
-		if (c == '\\') {
-			escaping = true;
-			continue;
-		}
-		else {
-			escaping = false;
-		}
-		searchTerm += c != '\\' ? c : '\\\\';
-	}
-	tokens.push(new token.TokenQuestionMarkSearch(searchTerm));
-	state.ignore();
-	if (!state.isAtEof) state.skip('?');
-	return scanRange;
 }

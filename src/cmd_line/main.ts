@@ -20,6 +20,7 @@ function runCmdLine(s : string) : void {
 	}
 	catch (e) {
 		util.showInfo(e);
+		return;
 	}
 	
 	if (cmd.isEmpty) {
@@ -27,6 +28,5 @@ function runCmdLine(s : string) : void {
 	}
 	else {
 		cmd.runOn(vscode.window.activeTextEditor);
-		// vscode.window.showInformationMessage(s);
 	}
 }

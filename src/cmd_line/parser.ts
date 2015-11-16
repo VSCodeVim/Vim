@@ -84,13 +84,13 @@ class ParserState {
 	}
 	
 	lex(input : string) {
-		this.tokens = lexer.scan(input);
+		this.tokens = lexer.lex(input);
 	}
 	
 	next() : token.Token {
 		if (this.pos >= this.tokens.length) {
 			this.pos = this.tokens.length;
-			return new token.TokenEof();
+			return new token.Token(token.TokenType.Eof, '__EOF__');
 		}
 		let tok = this.tokens[this.pos];
 		this.pos++;

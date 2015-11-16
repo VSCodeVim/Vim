@@ -17,7 +17,10 @@ export class WriteCommand implements node.CommandBase {
 	}
 	
 	runOn(textEditor : vscode.TextEditor) : void {
-		if (this.args || !textEditor.document.fileName) util.showInfo("Not implemented.");
+		if (this.args || !textEditor.document.fileName) {
+			util.showInfo("Not implemented.");
+			return;
+		}
 		textEditor.document.save();
 	}
 }
