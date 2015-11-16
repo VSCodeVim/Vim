@@ -1,5 +1,3 @@
-// For documentation on the test framework, see https://mochajs.org/.
-
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
 
