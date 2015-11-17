@@ -5,14 +5,15 @@ import * as vscode from 'vscode';
 
 import {showCmdLine} from './src/cmd_line/main'; 
 import * as cc from './src/cmd_line/lexer'; 
-import {ModeHandler} from "./src/mode/mode_handler";
+import ModeHandler from "./src/mode/mode_handler";
 import {ModeName} from "./src/mode/mode";
+
+var modeHandler;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-    var modeHandler = new ModeHandler();
+    modeHandler = new ModeHandler();
     
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
@@ -22,11 +23,15 @@ export function activate(context: vscode.ExtensionContext) {
 		showCmdLine();
 	});	
     
-    vscode.commands.registerCommand('extension.vimMode_esc', () => modeHandler.HandleKeyEvent("esc"));
-    vscode.commands.registerCommand('extension.vimMode_h', () => modeHandler.HandleKeyEvent("h"));
-    vscode.commands.registerCommand('extension.vimMode_j', () => modeHandler.HandleKeyEvent("j"));
-	vscode.commands.registerCommand('extension.vimMode_k', () => modeHandler.HandleKeyEvent("k"));
-    vscode.commands.registerCommand('extension.vimMode_l', () => modeHandler.HandleKeyEvent("l"));
+    vscode.commands.registerCommand('extension.vimMode_esc', () => handleKeyEvent("esc"));
+    vscode.commands.registerCommand('extension.vimMode_h', () => handleKeyEvent("h"));
+    vscode.commands.registerCommand('extension.vimMode_j', () => handleKeyEvent("j"));
+	vscode.commands.registerCommand('extension.vimMode_k', () => handleKeyEvent("k"));
+    vscode.commands.registerCommand('extension.vimMode_l', () => handleKeyEvent("l"));
     
 	context.subscriptions.push(cmdLineDisposable);
+}
+
+function handleKeyEvent(key:string) {
+    modeHandler.HandleKeyEvent(key);
 }

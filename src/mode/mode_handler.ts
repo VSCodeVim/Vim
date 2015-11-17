@@ -1,19 +1,24 @@
 //import * as vscode from 'vscode';
-import {commands, window, workspace, ExtensionContext, TextEditorOptions, TextEditor, TextDocument, Disposable} from 'vscode';
+import {window, commands, StatusBarAlignment, StatusBarItem, workspace, extensions} from 'vscode';
 import {Mode, ModeName} from './mode';
-import {CommandMode} from './mode_command';
+import CommandMode from './mode_command';
+import InsertMode from './mode_insert';
+import {showCmdLine} from './../cmd_line/main'; 
 
-export class ModeHandler {    
+export default class ModeHandler {    
 	private _modes: Mode[];
+    private _statusBarItem: StatusBarItem;
 
 	constructor() {
         this._modes = [
-            new CommandMode(true),
+            new CommandMode(),
+            new InsertMode(),
         ];
-        
+
+        this.SetCurrentModeByName(ModeName.Normal);
 	}
     
-    get CurrentMode(): Mode {
+    public get CurrentMode(): Mode {
         var currentMode = this._modes.find((mode, index) => {
             return mode.IsActive;
         });
@@ -21,16 +26,49 @@ export class ModeHandler {
         return currentMode;
     }
     
-    SetCurrentModeByName(modeName:ModeName) {
+    public SetCurrentModeByName(modeName : ModeName) {
         this._modes.forEach(mode => {
             mode.IsActive = (mode.Name == modeName);
         });
+        
+        this.setupStatusBarItem(ModeName[modeName]);
     }
     
-    HandleKeyEvent(key:string) : void {
-        if (key == "esc") {
-            
-        }
-        this.CurrentMode.HandleKeyEvent(key);        
+    public HandleKeyEvent(key : string) : void {
+        var isHandled = false;
+        var currentModeName = this.CurrentMode.Name;
+        
+        switch(currentModeName) {
+            case ModeName.Normal:
+                if (key == "i" || key == "a" || key == "I" || key == "A" || key == "o" || key == "O") {
+                    this.SetCurrentModeByName(ModeName.Insert);
+                    isHandled = true;
+                } else if (key == ":") {
+                    showCmdLine();
+                    isHandled = true;
+                }
+            break;
+            case ModeName.Insert:
+                if (key == "esc") {
+                    this.SetCurrentModeByName(ModeName.Normal);
+                    isHandled = true;
+                }
+            break;
+            case ModeName.Visual:
+            break;
+        }     
+        
+        if (!isHandled) {
+            this.CurrentMode.HandleKeyEvent(key);
+        }        
     }
+    
+	private setupStatusBarItem(text : string) : void {
+		if (!this._statusBarItem) {
+			this._statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
+		}
+		
+		this._statusBarItem.text = 'vim: ' + text;        
+		this._statusBarItem.show();
+	}    
 }

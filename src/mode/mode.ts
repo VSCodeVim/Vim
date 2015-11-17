@@ -7,10 +7,12 @@ export enum ModeName {
 export abstract class Mode {
     private _isActive : boolean;
     private _name : ModeName;
+    protected _keyHistory: string[];
     
-    constructor(name: ModeName, isActive: boolean) {
+    constructor(name: ModeName) {
         this._name = name;        
-        this._isActive = isActive || false;
+        this._isActive = false;
+        this._keyHistory = [];        
     }
     
     get Name(): ModeName {
@@ -22,7 +24,10 @@ export abstract class Mode {
     }
     
     set IsActive(val:boolean) {
-        this._isActive = val;
+        if (val != this._isActive) {
+            this._isActive = val;
+            this._keyHistory = [];
+        }
     }
     
     abstract HandleKeyEvent(key:string) : void;

@@ -1,13 +1,9 @@
 import * as baseMode from './mode';
 import * as vscode from 'vscode';
 
-export class CommandMode extends baseMode.Mode {
-    _keyHistory: string[];
-
-    constructor(isActive?: boolean) {
-        super(baseMode.ModeName.Normal, isActive);
-        
-        this._keyHistory = [];
+export default class CommandMode extends baseMode.Mode {
+    constructor() {
+        super(baseMode.ModeName.Normal);
     }
     
     HandleKeyEvent(key:string) : void {
