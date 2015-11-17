@@ -1,0 +1,14 @@
+environment:
+  node_js_version: "0.12"
+
+install:
+  - ps: install-product node $env:node_js_version
+  - npm install
+  - npm install -g gulp
+
+build: off
+
+test_script:
+  - node --version
+  - npm --version
+  - gulp

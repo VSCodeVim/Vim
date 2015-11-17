@@ -9,6 +9,9 @@ export default class CommandMode extends baseMode.Mode {
     HandleKeyEvent(key:string) : void {
         this._keyHistory.push(key);
         
+        var commands = vscode.commands.getCommands();
+        commands.then(c => console.log(c));
+
         switch(key) {
             case 'h':
                 vscode.commands.executeCommand("cursorLeft");

@@ -2,7 +2,6 @@
 // Import the module and reference it with the alias vscode in your code below
 
 import * as vscode from 'vscode';
-
 import {showCmdLine} from './src/cmd_line/main'; 
 import * as cc from './src/cmd_line/lexer'; 
 import ModeHandler from "./src/mode/mode_handler";
@@ -24,6 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});	
     
     vscode.commands.registerCommand('extension.vimMode_esc', () => handleKeyEvent("esc"));
+    vscode.commands.registerCommand('extension.vimMode_semicolon', () => handleKeyEvent(":"));    
     vscode.commands.registerCommand('extension.vimMode_h', () => handleKeyEvent("h"));
     vscode.commands.registerCommand('extension.vimMode_j', () => handleKeyEvent("j"));
 	vscode.commands.registerCommand('extension.vimMode_k', () => handleKeyEvent("k"));

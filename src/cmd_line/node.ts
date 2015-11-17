@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
 import * as token from "./token";
-import * as node from "./node";
-import * as lexer from "./lexer";
 export * from "./command_node";
 
 export class LineRange {
@@ -21,14 +19,13 @@ export class LineRange {
         }
 
         if (!this.separator) {
-            if (this.left.length > 0 && tok.type != token.TokenType.Offset) {
+            if (this.left.length > 0 && tok.type !== token.TokenType.Offset) {
                 // XXX: is this always this error?
                 throw Error("not a Vim command");
             }
             this.left.push(tok);
-        }
-        else {
-            if (this.right.length > 0 && tok.type != token.TokenType.Offset) {
+        } else {
+            if (this.right.length > 0 && tok.type !== token.TokenType.Offset) {
                 // XXX: is this always this error?
                 throw Error("not a Vim command");
             }

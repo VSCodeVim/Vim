@@ -59,9 +59,9 @@ export class Scanner {
 
     // skips text while any of chars matches and ignores the text span
     skipRun(...chars : string[]) : void {
-        while(!this.isAtEof) {
+        while (!this.isAtEof) {
             var c = this.next();
-            if (chars.indexOf(c) == -1) {
+            if (chars.indexOf(c) === -1) {
                 break;
             }
         }
@@ -75,7 +75,7 @@ export class Scanner {
     skipWhiteSpace(): void {
         while (true) {
             var c = this.next();
-            if (c == " " || c == "\t") {
+            if (c === " " || c === "\t") {
                 continue;
             }
             break;

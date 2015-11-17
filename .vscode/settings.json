@@ -6,5 +6,4 @@
 	"search.exclude": {
 		"out": true
 	},
-	"editor.insertSpaces": true
 }

@@ -76,10 +76,7 @@ module LexerFunctions {
         // The first digit has already been lexed.
         while (true) {
             if (state.isAtEof) {
-                var emitted = emitToken(TokenType.LineNumber, state);
-                if (emitted) {
-                    tokens.push(emitted);
-                };
+                tokens.push(emitToken(TokenType.LineNumber, state));
                 return null;
             }
             var c = state.next();
@@ -115,8 +112,7 @@ module LexerFunctions {
             var lc = c.toLowerCase();
             if (lc >= "a" && lc <= "z") {
                 continue;
-            }
-            else {
+            } else {
                 state.backup();
                 tokens.push(emitToken(TokenType.CommandName, state));
                 state.skipWhiteSpace();
@@ -139,19 +135,18 @@ module LexerFunctions {
         state.skip("/"); // XXX: really?
         var escaping : boolean;
         var searchTerm = "";
-        while(!state.isAtEof) {
+        while (!state.isAtEof) {
             var c = state.next();
-            if (c == "/" && !escaping) {
+            if (c === "/" && !escaping) {
                 break;
             }
-            if (c == "\\") {
+            if (c === "\\") {
                 escaping = true;
                 continue;
-            }
-            else {
+            } else {
                 escaping = false;
             }
-            searchTerm += c != "\\" ? c : "\\\\";
+            searchTerm += c !== "\\" ? c : "\\\\";
         }
         tokens.push(new Token(TokenType.ForwardSearch, searchTerm));
         state.ignore();
@@ -166,19 +161,18 @@ module LexerFunctions {
         state.skip("?"); // XXX: really?
         var escaping : boolean;
         var searchTerm = "";
-        while(!state.isAtEof) {
+        while (!state.isAtEof) {
             var c = state.next();
-            if (c == "?" && !escaping) {
+            if (c === "?" && !escaping) {
                 break;
             }
-            if (c == "\\") {
+            if (c === "\\") {
                 escaping = true;
                 continue;
-            }
-            else {
+            } else {
                 escaping = false;
             }
-            searchTerm += c != "\\" ? c : "\\\\";
+            searchTerm += c !== "\\" ? c : "\\\\";
         }
         tokens.push(new Token(TokenType.ReverseSearch, searchTerm));
         state.ignore();

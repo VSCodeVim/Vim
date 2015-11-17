@@ -23,10 +23,11 @@
 		],
 		"keybindings": [
 			{ "key": "Escape", "command": "extension.vimMode_esc", "when": "editorTextFocus" },
+			{ "key": "Shift+;", "command": "extension.vimMode_semicolon", "when": "editorTextFocus" },            
 			{ "key": "H", "command": "extension.vimMode_h", "when": "editorTextFocus" },
-            { "key": "J", "command": "extension.vimMode_j", "when": "editorTextFocus" },
-            { "key": "K", "command": "extension.vimMode_k", "when": "editorTextFocus" },
-            { "key": "L", "command": "extension.vimMode_l", "when": "editorTextFocus" },
+			{ "key": "J", "command": "extension.vimMode_j", "when": "editorTextFocus" },
+			{ "key": "K", "command": "extension.vimMode_k", "when": "editorTextFocus" },
+			{ "key": "L", "command": "extension.vimMode_l", "when": "editorTextFocus" },
             
 			{ "key": "Ctrl+H", "command": "cursorLeft",	"when": "editorTextFocus" },
 			{ "key": "Ctrl+J", "command": "cursorDown", "when": "editorTextFocus" },
@@ -39,7 +40,10 @@
 		"vscode:prepublish": "node ./node_modules/vscode/bin/compile",
 		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
 	},
-	"devDependencies": {
-		"vscode": "0.10.x"
-	}
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-tslint": "^3.6.0",
+    "gulp-typescript": "^2.9.2",
+    "vscode": "0.10.x"
+  }
 }

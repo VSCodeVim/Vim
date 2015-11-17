@@ -1,9 +1,9 @@
 //import * as vscode from 'vscode';
 import {window, commands, StatusBarAlignment, StatusBarItem, workspace, extensions} from 'vscode';
 import {Mode, ModeName} from './mode';
+import {showCmdLine} from './../cmd_line/main'; 
 import CommandMode from './mode_command';
 import InsertMode from './mode_insert';
-import {showCmdLine} from './../cmd_line/main'; 
 
 export default class ModeHandler {    
 	private _modes: Mode[];
