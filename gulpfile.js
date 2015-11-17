@@ -6,9 +6,11 @@ var paths = {
 };
 
 gulp.task('tslint', function() {
-    gulp.src(paths.scripts_ts)
+    return gulp.src(paths.scripts_ts)
         .pipe(tslint())
-        .pipe(tslint.report('verbose'));
+        .pipe(tslint.report('prose', {
+          summarizeFailureOutput: true
+        }));
 });
 
 gulp.task('default', ['tslint']);
