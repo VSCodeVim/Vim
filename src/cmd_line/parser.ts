@@ -1,9 +1,7 @@
-import * as vscode from "vscode";
 import * as token from "./token";
 import * as node from "./node";
 import * as lexer from "./lexer";
-import {parseWriteCommandArgs, commandParsers} from "./subparsers";
-import * as util from "../util";
+import {commandParsers} from "./subparsers";
 
 interface ParseFunction {
     (state : ParserState, command : node.CommandLine) : ParseFunction;
@@ -66,8 +64,7 @@ function parseCommand(state : ParserState, commandLine : node.CommandLine) : Par
     if (!state.isAtEof) {
         state.backup();
         return parseCommand;
-    }
-    else {
+    } else {
         return null;
     }
 }
