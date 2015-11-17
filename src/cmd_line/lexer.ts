@@ -76,10 +76,7 @@ module LexerFunctions {
         // The first digit has already been lexed.
         while (true) {
             if (state.isAtEof) {
-                var emitted = emitToken(TokenType.LineNumber, state);
-                if (emitted) {
-                    tokens.push(emitted);
-                };
+                tokens.push(emitToken(TokenType.LineNumber, state));
                 return null;
             }
             var c = state.next();
