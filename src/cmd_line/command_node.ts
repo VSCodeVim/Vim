@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
-import * as token from "./token";
 import * as node from "./node";
-import * as lexer from "./lexer";
 import * as util from "../util";
 
 export class WriteCommand implements node.CommandBase {
