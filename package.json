@@ -1,61 +1,45 @@
 {
-  "name": "vim",
-  "description": "Vim emulation for VS Code",
-  "version": "0.0.1",
-  "publisher": "hjkl",
-  "engines": {
-    "vscode": "0.10.x"
-  },
-  "categories": [
-    "Others"
-  ],
-  "activationEvents": [
-    "*"
-  ],
-  "main": "./out/extension",
-  "contributes": {
-    "commands": [
-      {
-        "command": "extension.sayHello",
-        "title": "Hello World"
-      },
-      {
-        "command": "extension.showCmdLine",
-        "title": "Vim: Show Command Line"
-      }
+	"name": "vim",
+	"description": "Vim emulation for VS Code",
+	"version": "0.0.1",
+	"publisher": "VSCodeVim",
+    "contributors": [
+        "guillermooo",
+        "jpoon"
     ],
-    "keybindings": [
-      {
-        "key": "Ctrl+H",
-        "command": "cursorLeft",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+J",
-        "command": "cursorDown",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+K",
-        "command": "cursorUp",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+L",
-        "command": "cursorRight",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+Shift+.",
-        "command": "extension.showCmdLine",
-        "when": "editorTextFocus"
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
-  },
+	"engines": {
+		"vscode": "0.10.x"
+	},
+	"categories": [
+		"Others"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/extension",
+	"contributes": {
+		"commands": [
+			{ "command": "extension.showCmdLine", "title": "Vim: Show Command Line" }
+		],
+		"keybindings": [
+			{ "key": "Escape", "command": "extension.vimMode_esc", "when": "editorTextFocus" },
+			{ "key": "Shift+;", "command": "extension.vimMode_semicolon", "when": "editorTextFocus" },            
+			{ "key": "H", "command": "extension.vimMode_h", "when": "editorTextFocus" },
+			{ "key": "J", "command": "extension.vimMode_j", "when": "editorTextFocus" },
+			{ "key": "K", "command": "extension.vimMode_k", "when": "editorTextFocus" },
+			{ "key": "L", "command": "extension.vimMode_l", "when": "editorTextFocus" },
+            
+			{ "key": "Ctrl+H", "command": "cursorLeft",	"when": "editorTextFocus" },
+			{ "key": "Ctrl+J", "command": "cursorDown", "when": "editorTextFocus" },
+			{ "key": "Ctrl+K", "command": "cursorUp", "when": "editorTextFocus" },
+			{ "key": "Ctrl+L", "command": "cursorRight", "when": "editorTextFocus" },
+			{ "key": "Ctrl+Shift+.", "command": "extension.showCmdLine", "when": "editorTextFocus" }
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
+	},
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-tslint": "^3.6.0",
