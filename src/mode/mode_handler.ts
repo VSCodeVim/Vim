@@ -5,11 +5,11 @@ import CommandMode from './mode_command';
 import InsertMode from './mode_insert';
 
 export default class ModeHandler {
-    private _modes : Mode[];
-    private _statusBarItem : StatusBarItem;
+    private modes : Mode[];
+    private statusBarItem : StatusBarItem;
 
     constructor() {
-        this._modes = [
+        this.modes = [
             new CommandMode(),
             new InsertMode(),
         ];
@@ -18,7 +18,7 @@ export default class ModeHandler {
     }
 
     public get CurrentMode() : Mode {
-        var currentMode = this._modes.find((mode, index) => {
+        var currentMode = this.modes.find((mode, index) => {
             return mode.IsActive;
         });
 
@@ -26,7 +26,7 @@ export default class ModeHandler {
     }
 
     public SetCurrentModeByName(modeName : ModeName) {
-        this._modes.forEach(mode => {
+        this.modes.forEach(mode => {
             mode.IsActive = (mode.Name === modeName);
         });
 
@@ -63,11 +63,11 @@ export default class ModeHandler {
     }
 
     private setupStatusBarItem(text : string) : void {
-        if (!this._statusBarItem) {
-            this._statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
+        if (!this.statusBarItem) {
+            this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
         }
 
-        this._statusBarItem.text = 'vim: ' + text;
-        this._statusBarItem.show();
+        this.statusBarItem.text = 'vim: ' + text;
+        this.statusBarItem.show();
     }
 }
