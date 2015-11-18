@@ -1,7 +1,5 @@
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
-
-import * as vscode from 'vscode';
 import * as lexer from '../src/cmd_line/lexer'
 import {Token, TokenType} from '../src/cmd_line/token'
 
