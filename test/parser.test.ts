@@ -1,7 +1,4 @@
-// The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
-
-import * as vscode from 'vscode';
 import * as myExtension from '../extension';
 import * as parser from '../src/cmd_line/parser';
 import * as node from '../src/cmd_line/node';
