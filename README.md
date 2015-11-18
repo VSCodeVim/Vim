@@ -1,6 +1,7 @@
 # VSCodeVim
 
-[![Build Status](https://travis-ci.org/VSCode-Extension/VSCodeVim.svg?branch=master)](https://travis-ci.org/VSCode-Extension/VSCodeVim)
+
+[![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
 
 Vim for Visual Studio Code. *Coming Soon!* :gift:
 

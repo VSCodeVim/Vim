@@ -6,6 +6,6 @@ export default class InsertMode extends baseMode.Mode {
     }
 
     HandleKeyEvent(key : string) : void {
-        this._keyHistory.push(key);
+        this.keyHistory.push(key);
     }
 }
