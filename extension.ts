@@ -23,7 +23,9 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand('extension.vimMode_esc', () => handleKeyEvent("esc"));
-    vscode.commands.registerCommand('extension.vimMode_semicolon', () => handleKeyEvent(":"));
+    vscode.commands.registerCommand('extension.vimMode_colon', () => handleKeyEvent(":"));
+    vscode.commands.registerCommand('extension.vimMode_i', () => handleKeyEvent("i"));
+    vscode.commands.registerCommand('extension.vimMode_I', () => handleKeyEvent("I"));
     vscode.commands.registerCommand('extension.vimMode_h', () => handleKeyEvent("h"));
     vscode.commands.registerCommand('extension.vimMode_j', () => handleKeyEvent("j"));
     vscode.commands.registerCommand('extension.vimMode_k', () => handleKeyEvent("k"));

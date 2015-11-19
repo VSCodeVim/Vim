@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as myExtension from '../extension';
 import * as parser from '../src/cmd_line/parser';
 import * as node from '../src/cmd_line/node';
 import * as token from '../src/cmd_line/token';

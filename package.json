@@ -25,61 +25,20 @@
       }
     ],
     "keybindings": [
-      {
-        "key": "Escape",
-        "command": "extension.vimMode_esc",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Shift+;",
-        "command": "extension.vimMode_semicolon",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "H",
-        "command": "extension.vimMode_h",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "J",
-        "command": "extension.vimMode_j",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "K",
-        "command": "extension.vimMode_k",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "L",
-        "command": "extension.vimMode_l",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+H",
-        "command": "cursorLeft",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+J",
-        "command": "cursorDown",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+K",
-        "command": "cursorUp",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+L",
-        "command": "cursorRight",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "Ctrl+Shift+.",
-        "command": "extension.showCmdLine",
-        "when": "editorTextFocus"
-      }
+        { "key": "Escape", "command": "extension.vimMode_esc", "when": "editorTextFocus" },
+        { "key": ":", "command": "extension.vimMode_colon", "when": "editorTextFocus" },
+        { "key": "i", "command": "extension.vimMode_i", "when": "editorTextFocus" },
+        { "key": "Shift+i", "command": "extension.vimMode_I", "when": "editorTextFocus" },        
+        { "key": "h", "command": "extension.vimMode_h", "when": "editorTextFocus" },
+        { "key": "j", "command": "extension.vimMode_j", "when": "editorTextFocus" },
+        { "key": "k", "command": "extension.vimMode_k", "when": "editorTextFocus" },
+        { "key": "l", "command": "extension.vimMode_l", "when": "editorTextFocus" },
+
+        { "key": "Ctrl+H", "command": "cursorLeft",    "when": "editorTextFocus" },
+        { "key": "Ctrl+J", "command": "cursorDown", "when": "editorTextFocus" },
+        { "key": "Ctrl+K", "command": "cursorUp", "when": "editorTextFocus" },
+        { "key": "Ctrl+L", "command": "cursorRight", "when": "editorTextFocus" },
+        { "key": "Ctrl+Shift+.", "command": "extension.showCmdLine", "when": "editorTextFocus" }
     ]
   },
   "scripts": {
@@ -89,9 +48,15 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-mocha": "^2.2.0",
-    "gulp-shell": "^0.5.1",
+    "gulp-shell": "^0.5.1",    
+    "gulp-tsd": "0.0.4",
     "gulp-tslint": "^3.6.0",
+    "gulp-typescript": "^2.9.2",
+    "tsd": "^0.6.5",
     "typescript": "^1.6.2",
     "vscode": "0.10.x"
+  },
+  "dependencies": {
+    "lodash": "^3.10.1"
   }
 }

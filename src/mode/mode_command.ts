@@ -1,10 +1,19 @@
-import * as baseMode from './mode';
+import {ModeName, Mode} from './mode';
+import {showCmdLine} from './../cmd_line/main';
 import * as vscode from 'vscode';
 
-export default class CommandMode extends baseMode.Mode {
+export default class CommandMode extends Mode {
     constructor() {
-        super(baseMode.ModeName.Normal);
+        super(ModeName.Command);
     }
+
+    ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
+        return (key === 'esc');
+    }
+
+    HandleActivation(key : string) : void {
+        // do nothing
+    }    
 
     HandleKeyEvent(key : string) : void {
         this.keyHistory.push(key);
@@ -13,6 +22,9 @@ export default class CommandMode extends baseMode.Mode {
         commands.then(c => console.log(c));
 
         switch (key) {
+            case ':':
+                showCmdLine();
+                break;
             case 'h':
                 vscode.commands.executeCommand("cursorLeft");
                 break;
