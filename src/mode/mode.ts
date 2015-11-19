@@ -5,28 +5,28 @@ export enum ModeName {
 }
 
 export abstract class Mode {
-    private _isActive : boolean;
-    private _name : ModeName;
-    protected _keyHistory: string[];
+    private isActive : boolean;
+    private name : ModeName;
+    protected keyHistory : string[];
 
     constructor(name: ModeName) {
-        this._name = name;
-        this._isActive = false;
-        this._keyHistory = [];
+        this.name = name;
+        this.isActive = false;
+        this.keyHistory = [];
     }
 
     get Name(): ModeName {
-        return this._name;
+        return this.name;
     }
 
     get IsActive() : boolean {
-        return this._isActive;
+        return this.isActive;
     }
 
     set IsActive(val : boolean) {
-        if (val !== this._isActive) {
-            this._isActive = val;
-            this._keyHistory = [];
+        if (val !== this.isActive) {
+            this.isActive = val;
+            this.keyHistory = [];
         }
     }
 
