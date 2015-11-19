@@ -1,11 +1,11 @@
-import * as vscode from 'vscode';
-import {Mode, ModeName} from './mode';
+import * as _ from 'lodash';
 
+import * as vscode from 'vscode';
+
+import {Mode, ModeName} from './mode';
 import CommandMode from './mode_command';
 import InsertMode from './mode_insert';
 import VisualMode from './mode_visual';
-
-import * as _ from 'lodash';
 
 export default class ModeHandler {
     private modes : Mode[];
@@ -21,7 +21,7 @@ export default class ModeHandler {
         this.SetCurrentModeByName(ModeName.Command);
     }
 
-    public get CurrentMode() : Mode {
+    get CurrentMode() : Mode {
         var currentMode = this.modes.find((mode, index) => {
             return mode.IsActive;
         });
@@ -29,15 +29,18 @@ export default class ModeHandler {
         return currentMode;
     }
 
-    public SetCurrentModeByName(modeName : ModeName) {
+    SetCurrentModeByName(modeName : ModeName) {
         this.modes.forEach(mode => {
             mode.IsActive = (mode.Name === modeName);
         });
 
-        this.setupStatusBarItem(ModeName[modeName].toUpperCase());
+        // Vim never shows -- NORMAL -- in the status bar.
+        if (this.CurrentMode.Name !== ModeName.Command) {
+            this.setupStatusBarItem(ModeName[modeName].toUpperCase());
+        }
     }
 
-    public HandleKeyEvent(key : string) : void {
+    HandleKeyEvent(key : string) : void {
         var currentModeName = this.CurrentMode.Name;
     
         var nextMode : Mode;

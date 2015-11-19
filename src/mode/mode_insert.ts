@@ -12,7 +12,7 @@ export default class InsertMode extends Mode {
             "i" : (position) => { return position; },
             
             // insert at the beginning of the line            
-            "I" : (position) => { return position.with(position.line, 0); },
+            "I" : (position) => { return new vscode.Position(position.line, 0); },
             
             // append after the cursor            
             "a" : (position) => { return position; },
@@ -50,7 +50,16 @@ export default class InsertMode extends Mode {
         const position = editor.selection.active;
             
         editor.edit(t => {
-            t.insert(position, key);
+            t.insert(position, this.Translate(key));
         });
+    }
+    
+    private Translate(raw : string) : string {
+        switch (raw) {
+            case 'space':
+                return ' ';
+            default:
+                return raw;
+        }
     }
 }
