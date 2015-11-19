@@ -1,12 +1,17 @@
 {
-  "name": "vim",
+  "name": "vscodevim",
   "description": "Vim emulation for VS Code",
   "version": "0.0.1",
-  "publisher": "VSCodeVim",
+  "publisher": "vscodevim",
   "contributors": [
     "guillermooo",
     "jpoon"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VSCodeVim/Vim.git"
+  },
+  "license" : "https://github.com/VSCodeVim/Vim/blob/master/LICENSE",
   "engines": {
     "vscode": "0.10.x"
   },

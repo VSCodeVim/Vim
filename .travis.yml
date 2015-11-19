@@ -1,7 +1,10 @@
 language: node_js
 node_js:
  - "0.12"
-install: npm install
+install: 
+  - npm install
 before_script:
   - npm install -g gulp
-script: gulp
+  - gulp init
+script: 
+  - gulp
