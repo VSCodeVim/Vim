@@ -1,5 +1,6 @@
 environment:
   node_js_version: "4.1.1"
+  TSD_GITHUB_TOKEN: "4c7f278997af83ba584aaa9c5722d5ecbbcb1dd9"
 
 install:
   - ps: install-product node $env:node_js_version

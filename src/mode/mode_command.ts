@@ -17,10 +17,6 @@ export default class CommandMode extends Mode {
 
     HandleKeyEvent(key : string) : void {
         this.keyHistory.push(key);
-        
-        // XXX - remove this?
-        var commands = vscode.commands.getCommands();
-        commands.then(c => console.log(c));
 
         switch (key) {
             case ':':

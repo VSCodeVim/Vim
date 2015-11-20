@@ -18,10 +18,10 @@ export default class ModeHandler {
             new VisualMode(),
         ];
 
-        this.SetCurrentModeByName(ModeName.Command);
+        this.setCurrentModeByName(ModeName.Command);
     }
 
-    get CurrentMode() : Mode {
+    get currentMode() : Mode {
         var currentMode = this.modes.find((mode, index) => {
             return mode.IsActive;
         });
@@ -29,19 +29,17 @@ export default class ModeHandler {
         return currentMode;
     }
 
-    SetCurrentModeByName(modeName : ModeName) {
+    setCurrentModeByName(modeName : ModeName) {
         this.modes.forEach(mode => {
             mode.IsActive = (mode.Name === modeName);
         });
 
-        // Vim never shows -- NORMAL -- in the status bar.
-        if (this.CurrentMode.Name !== ModeName.Command) {
-            this.setupStatusBarItem(ModeName[modeName].toUpperCase());
-        }
+        var statusBarText = (this.currentMode.Name === ModeName.Command) ? '' : ModeName[modeName];
+        this.setupStatusBarItem(statusBarText.toUpperCase());
     }
 
-    HandleKeyEvent(key : string) : void {
-        var currentModeName = this.CurrentMode.Name;
+    handleKeyEvent(key : string) : void {
+        var currentModeName = this.currentMode.Name;
     
         var nextMode : Mode;
         var inactiveModes = _.filter(this.modes, (m) => !m.IsActive);
@@ -53,14 +51,14 @@ export default class ModeHandler {
         });
         
         if (nextMode) {
-            this.CurrentMode.HandleDeactivation();
+            this.currentMode.HandleDeactivation();
             
             nextMode.HandleActivation(key);
-            this.SetCurrentModeByName(nextMode.Name);
+            this.setCurrentModeByName(nextMode.Name);
             return;
         }
 
-        this.CurrentMode.HandleKeyEvent(key);
+        this.currentMode.HandleKeyEvent(key);
     }
 
     private setupStatusBarItem(text : string) : void {
@@ -68,7 +66,7 @@ export default class ModeHandler {
             this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
 
-        this.statusBarItem.text = '-- ' + text + ' --';
+        this.statusBarItem.text = (text) ? '-- ' + text + ' --' : '';
         this.statusBarItem.show();
     }
 }

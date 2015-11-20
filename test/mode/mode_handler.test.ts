@@ -7,20 +7,20 @@ suite("Mode Handler", () => {
     test("ctor", () => {
         var modeHandler = new ModeHandler();
         
-        assert.equal(modeHandler.CurrentMode.Name, ModeName.Command);
-        assert.equal(modeHandler.CurrentMode.IsActive, true);
+        assert.equal(modeHandler.currentMode.Name, ModeName.Command);
+        assert.equal(modeHandler.currentMode.IsActive, true);
     });
     
     test("can set current mode", () => {
         var modeHandler = new ModeHandler();
 
-        modeHandler.SetCurrentModeByName(ModeName.Command);
-        assert.equal(modeHandler.CurrentMode.Name, ModeName.Command);
+        modeHandler.setCurrentModeByName(ModeName.Command);
+        assert.equal(modeHandler.currentMode.Name, ModeName.Command);
 
-        modeHandler.SetCurrentModeByName(ModeName.Insert);
-        assert.equal(modeHandler.CurrentMode.Name, ModeName.Insert);
+        modeHandler.setCurrentModeByName(ModeName.Insert);
+        assert.equal(modeHandler.currentMode.Name, ModeName.Insert);
 
-        modeHandler.SetCurrentModeByName(ModeName.Visual);
-        assert.equal(modeHandler.CurrentMode.Name, ModeName.Visual);                    
+        modeHandler.setCurrentModeByName(ModeName.Visual);
+        assert.equal(modeHandler.currentMode.Name, ModeName.Visual);                    
     });
 });
