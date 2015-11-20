@@ -2,7 +2,6 @@
 import * as assert from 'assert';
 
 import {commandParsers} from '../src/cmd_line/subparser';
-import {WriteCommandArguments} from '../src/cmd_line/command_node';
 
 suite("subparsers - :write args", () => {
 	

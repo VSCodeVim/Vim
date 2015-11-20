@@ -1,5 +1,5 @@
 export enum ModeName {
-    Normal,
+    Command,
     Insert,
     Visual,
 }
@@ -24,11 +24,16 @@ export abstract class Mode {
     }
 
     set IsActive(val : boolean) {
-        if (val !== this.isActive) {
-            this.isActive = val;
-            this.keyHistory = [];
-        }
+        this.isActive = val;
     }
+    
+    public HandleDeactivation() : void {
+        this.keyHistory = [];
+    }
+
+    abstract ShouldBeActivated(key : string, currentMode : ModeName) : boolean;
+
+    abstract HandleActivation(key : string) : void;
 
     abstract HandleKeyEvent(key : string) : void;
 }

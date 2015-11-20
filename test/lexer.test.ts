@@ -1,7 +1,7 @@
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
-import * as lexer from '../src/cmd_line/lexer'
-import {Token, TokenType} from '../src/cmd_line/token'
+import * as lexer from '../src/cmd_line/lexer';
+import {Token, TokenType} from '../src/cmd_line/token';
 
 suite("Cmd line tests - lexing", () => {
 

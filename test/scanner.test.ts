@@ -1,6 +1,5 @@
 import * as assert from 'assert';
-import * as myExtension from '../extension';
-import * as lexerState from '../src/cmd_line/scanner'
+import * as lexerState from '../src/cmd_line/scanner';
 
 suite("Cmd line tests - lexer state", () => {
 
@@ -25,7 +24,7 @@ suite("Cmd line tests - lexer state", () => {
 		var state = new lexerState.Scanner("dog");
 		assert.equal(state.next(), "d");
 		assert.equal(state.next(), "o");
-		assert.equal(state.next(), "g")
+		assert.equal(state.next(), "g");
 		assert.equal(state.next(), lexerState.Scanner.EOF);
 	});
 	
