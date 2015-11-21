@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as Motion from '../motion/motion';
 
 export default class CommandMode extends Mode {
-    motionMappings = [];
+    motionHandlerMap = [];
     
     constructor() {
         super(ModeName.Command);
@@ -28,16 +28,17 @@ export default class CommandMode extends Mode {
                 showCmdLine();
                 break;
             default:
-                var map = this.motionMappings[key];
-                if (map != null) map.execute();
+                var handler = this.motionHandlerMap[key];
+                if (handler != null) handler.execute();
         }
     }
     
     registerMotionMappings() {
-        this.motionMappings['h'] = new Motion.MotionMoveLeft(); 
-        this.motionMappings['j'] = new Motion.MotionMoveDown(); 
-        this.motionMappings['k'] = new Motion.MotionMoveUp(); 
-        this.motionMappings['l'] = new Motion.MotionMoveRight();
-        this.motionMappings['w'] = new Motion.MotionMoveWordForward();
+        this.motionHandlerMap['h'] = new Motion.MotionMoveLeft(); 
+        this.motionHandlerMap['j'] = new Motion.MotionMoveDown(); 
+        this.motionHandlerMap['k'] = new Motion.MotionMoveUp(); 
+        this.motionHandlerMap['l'] = new Motion.MotionMoveRight();
+        this.motionHandlerMap['w'] = new Motion.MotionMoveWordForward();
+        this.motionHandlerMap['b'] = new Motion.MotionMoveWordBackward();
     }
 }
