@@ -55,16 +55,18 @@ export default class InsertMode extends Mode {
         const position = editor.selection.active;
             
         editor.edit(t => {
-            t.insert(position, this.Translate(key));
+            t.insert(position, this.ResolveKeyValue(key));
         });
     }
     
-    private Translate(raw : string) : string {
-        switch (raw) {
+    // Some keys have names that are different to their value.
+    // TODO: we probably need to put this somewhere else.
+    private ResolveKeyValue(key : string) : string {
+        switch (key) {
             case 'space':
                 return ' ';
             default:
-                return raw;
+                return key;
         }
     }
 }

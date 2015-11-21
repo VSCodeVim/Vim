@@ -51,12 +51,36 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.vim_w', () => handleKeyEvent("w"));
     vscode.commands.registerCommand('extension.vim_x', () => handleKeyEvent("x"));
     vscode.commands.registerCommand('extension.vim_y', () => handleKeyEvent("y"));
-    vscode.commands.registerCommand('extension.vim_z', () => handleKeyEvent("z"));    
+    vscode.commands.registerCommand('extension.vim_z', () => handleKeyEvent("z"));
 
     vscode.commands.registerCommand('extension.vim_A', () => handleKeyEvent("A"));
     vscode.commands.registerCommand('extension.vim_I', () => handleKeyEvent("I"));
     vscode.commands.registerCommand('extension.vim_O', () => handleKeyEvent("O"));
-    
+
+    vscode.commands.registerCommand('extension.vim_B', () => handleKeyEvent("B"));
+    vscode.commands.registerCommand('extension.vim_C', () => handleKeyEvent("C"));
+    vscode.commands.registerCommand('extension.vim_D', () => handleKeyEvent("D"));
+    vscode.commands.registerCommand('extension.vim_E', () => handleKeyEvent("E"));
+    vscode.commands.registerCommand('extension.vim_F', () => handleKeyEvent("F"));
+    vscode.commands.registerCommand('extension.vim_G', () => handleKeyEvent("G"));
+    vscode.commands.registerCommand('extension.vim_H', () => handleKeyEvent("H"));
+    vscode.commands.registerCommand('extension.vim_J', () => handleKeyEvent("J"));
+    vscode.commands.registerCommand('extension.vim_K', () => handleKeyEvent("K"));
+    vscode.commands.registerCommand('extension.vim_L', () => handleKeyEvent("L"));
+    vscode.commands.registerCommand('extension.vim_M', () => handleKeyEvent("M"));
+    vscode.commands.registerCommand('extension.vim_N', () => handleKeyEvent("N"));
+    vscode.commands.registerCommand('extension.vim_P', () => handleKeyEvent("P"));
+    vscode.commands.registerCommand('extension.vim_Q', () => handleKeyEvent("Q"));
+    vscode.commands.registerCommand('extension.vim_R', () => handleKeyEvent("R"));
+    vscode.commands.registerCommand('extension.vim_S', () => handleKeyEvent("S"));
+    vscode.commands.registerCommand('extension.vim_T', () => handleKeyEvent("T"));
+    vscode.commands.registerCommand('extension.vim_U', () => handleKeyEvent("U"));
+    vscode.commands.registerCommand('extension.vim_V', () => handleKeyEvent("V"));
+    vscode.commands.registerCommand('extension.vim_W', () => handleKeyEvent("W"));
+    vscode.commands.registerCommand('extension.vim_X', () => handleKeyEvent("X"));
+    vscode.commands.registerCommand('extension.vim_Y', () => handleKeyEvent("Y"));
+    vscode.commands.registerCommand('extension.vim_Z', () => handleKeyEvent("Z"));
+
     vscode.commands.registerCommand('extension.vim_0', () => handleKeyEvent("0"));
     vscode.commands.registerCommand('extension.vim_1', () => handleKeyEvent("1"));
     vscode.commands.registerCommand('extension.vim_2', () => handleKeyEvent("2"));

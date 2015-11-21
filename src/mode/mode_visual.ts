@@ -6,7 +6,8 @@ export default class VisualMode extends Mode {
     }
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
-        return (key === "v" || key === "V");
+        // TODO: improve this logic for "V".
+        return (key === "v" || key === "V") && (currentMode === ModeName.Command);
     }
     
     HandleActivation(key : string) : void {
