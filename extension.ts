@@ -2,7 +2,6 @@
 // Import the module and reference it with the alias vscode in your code below
 
 import * as vscode from 'vscode';
-import {showCmdLine} from './src/cmd_line/main';
 import * as cc from './src/cmd_line/lexer';
 import ModeHandler from "./src/mode/mode_handler";
 import {ModeName} from "./src/mode/mode";
