@@ -8,20 +8,25 @@ import InsertMode from './mode_insert';
 import VisualMode from './mode_visual';
 import {Mappings} from '../mapping/main';
 import * as util from '../util';
+import {CommandLineMode} from '../cmd_line/main';
 
 export default class ModeHandler {
     private modes : Mode[];
     private statusBarItem : vscode.StatusBarItem;
-    private mappings : Mappings;
+    mappings : Mappings;
 
     constructor() {
+        this.mappings = new Mappings();
+                
         this.modes = [
             new CommandMode(),
             new InsertMode(),
             new VisualMode(),
+            new CommandLineMode(this.mappings),
+            // new OperatorPendingMode();
+            // new SelectionMode(); // for manipulating multiple carets
         ];
 
-        this.mappings = new Mappings();
         this.setCurrentModeByName(ModeName.Command);
     }
 

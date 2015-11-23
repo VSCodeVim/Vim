@@ -7,7 +7,7 @@ import * as cc from './src/cmd_line/lexer';
 import ModeHandler from "./src/mode/mode_handler";
 import {ModeName} from "./src/mode/mode";
 
-var modeHandler;
+var modeHandler : ModeHandler;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -17,10 +17,6 @@ export function activate(context: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "vim" is now active!');
-
-    var cmdLineDisposable = vscode.commands.registerCommand('extension.showCmdLine', () => {
-        showCmdLine();
-    });
 
     vscode.commands.registerCommand('extension.vim_esc', () => handleKeyEvent("esc"));
     vscode.commands.registerCommand('extension.vim_colon', () => handleKeyEvent(":"));
@@ -92,7 +88,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.vim_8', () => handleKeyEvent("8"));
     vscode.commands.registerCommand('extension.vim_9', () => handleKeyEvent("9"));
 
-    context.subscriptions.push(cmdLineDisposable);
 }
 
 function handleKeyEvent(key:string) {

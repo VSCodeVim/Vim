@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as token from "./token";
+import {Mappings} from "../mapping/main";
 export * from "./command_node";
 
 export class LineRange {
@@ -85,19 +86,19 @@ export class CommandLine {
 		return ":" + this.range.toString() + " " + this.command.toString();
 	}
 
-	runOn(document : vscode.TextEditor) : void {
+	runOn(document : vscode.TextEditor, mapping : Mappings = null) : void {
 		if (!this.command) {
 			this.range.runOn(document);
 			return;
 		}
 
 		// TODO: calc range
-		this.command.runOn(document);
+		this.command.runOn(document, mapping);
 	}
 }
 
 export interface CommandBase {
 	name : string;
 	shortName : string;
-	runOn(textEditor : vscode.TextEditor) : void;
+	runOn(textEditor : vscode.TextEditor, mapping : Mappings) : void;
 }

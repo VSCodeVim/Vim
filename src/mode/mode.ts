@@ -1,8 +1,9 @@
 export enum ModeName {
+    All,
     Command,
+    CommandLine,
     Insert,
     Visual,
-    All,
 }
 
 export abstract class Mode {
