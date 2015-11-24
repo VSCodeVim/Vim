@@ -2,6 +2,7 @@ import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import * as vscode from 'vscode';
 import * as Motion from '../motion/motion';
+import * as Operations from '../operations/operation';
 
 export default class CommandMode extends Mode {
     motionHandlerMap = [];
@@ -29,7 +30,9 @@ export default class CommandMode extends Mode {
                 break;
             default:
                 var handler = this.motionHandlerMap[key];
-                if (handler != null) handler.execute();
+                {
+                    if (handler != null) handler.execute();
+                }
         }
     }
     
