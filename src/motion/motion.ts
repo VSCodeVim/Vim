@@ -1,7 +1,7 @@
 import {TextEditor, window, Position, Selection, Range} from 'vscode';
 import Caret from './caret';
 
-export default class Motion {
+export class Motion {
 	constructor() {
 	}
 
@@ -16,6 +16,10 @@ export default class Motion {
 	execute() {
 		
 	}
+	
+	select(): Selection {
+		return null;
+	}
 }
 
 export class MotionMoveLeft extends Motion {
@@ -25,6 +29,12 @@ export class MotionMoveLeft extends Motion {
 	
 	execute() {
 		this.caret.moveLeft();
+	}
+	
+	select(): Selection {
+		var position = this.caret.currentPosition;
+		
+		return new Selection(position, position.translate(0, -1));
 	}
 }
 
@@ -36,26 +46,44 @@ export class MotionMoveRight extends Motion {
 	execute() {
 		this.caret.moveRight();
 	}
+	
+	select(): Selection {
+		var position = this.caret.currentPosition;
+	
+		return new Selection(position, position.translate(0, 1));
+	}
 }
 
 export class MotionMoveUp extends Motion {
 	constructor() {
 		super();
 	}
-	
+
 	execute() {
 		this.caret.moveUp();
-	}	
+	}
+
+	select(): Selection {
+		var position = this.caret.currentPosition;
+		
+		return new Selection(position, position.translate(-1, 0));
+	}
 }
 
 export class MotionMoveDown extends Motion {
 	constructor() {
 		super();
 	}
-	
+
 	execute() {
 		this.caret.moveDown();
-	}	
+	}
+	
+	select(): Selection {
+		var position = this.caret.currentPosition;
+		
+		return new Selection(position, position.translate(1, 0));
+	}
 }
 
 class MotionWord extends Motion {
@@ -105,6 +133,13 @@ export class MotionMoveWordForward extends MotionWord {
 		var newPosition = document.validatePosition(new Position(line.lineNumber, nextWordIndex));
 		
 		return newPosition;
+	}
+	
+	select(): Selection {
+		var position = this.caret.currentPosition;
+		var nextWordPosition = this.getNextWordPosition();
+		
+		return new Selection(position, nextWordPosition);
 	}
 }
 
