@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 export default class CommandMode extends Mode {
     constructor() {
-        super(ModeName.Command);
+        super(ModeName.Normal);
     }
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
