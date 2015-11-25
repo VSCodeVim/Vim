@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import {Mode, ModeName} from './mode';
-import CommandMode from './mode_command';
+import NormalMode from './mode_normal';
 import InsertMode from './mode_insert';
 import VisualMode from './mode_visual';
 
@@ -13,12 +13,12 @@ export default class ModeHandler {
 
     constructor() {
         this.modes = [
-            new CommandMode(),
+            new NormalMode(),
             new InsertMode(),
             new VisualMode(),
         ];
 
-        this.setCurrentModeByName(ModeName.Command);
+        this.setCurrentModeByName(ModeName.Normal);
     }
 
     get currentMode() : Mode {
@@ -34,7 +34,7 @@ export default class ModeHandler {
             mode.IsActive = (mode.Name === modeName);
         });
 
-        var statusBarText = (this.currentMode.Name === ModeName.Command) ? '' : ModeName[modeName];
+        var statusBarText = (this.currentMode.Name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText.toUpperCase());
     }
 

@@ -1,5 +1,5 @@
 export enum ModeName {
-    Command,
+    Normal,
     Insert,
     Visual,
 }
