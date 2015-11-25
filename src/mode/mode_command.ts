@@ -15,13 +15,8 @@ export default class CommandMode extends Mode {
             "j" : (position) => { vscode.commands.executeCommand("cursorDown"); },        
             "k" : (position) => { vscode.commands.executeCommand("cursorUp"); },      
             "l" : (position) => { vscode.commands.executeCommand("cursorRight"); },
-            ">" : (position) => { 
-                console.log('>>');
-              //  vscode.commands.executeCommand("editor.action.indentLines"); 
-            },
-            "<" : (position) => {                 console.log('<<');
-            //vscode.commands.executeCommand("editor.action.outdentLines"); 
-            }, 
+            ">>" : (position) => { vscode.commands.executeCommand("editor.action.indentLines"); },
+            "<<" : (position) => { vscode.commands.executeCommand("editor.action.outdentLines"); }, 
         };
     }
 
