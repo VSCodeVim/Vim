@@ -1,5 +1,7 @@
 export enum ModeName {
+    All,
     Command,
+    CommandLine,
     Insert,
     Visual,
 }
