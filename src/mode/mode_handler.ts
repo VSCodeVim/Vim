@@ -6,6 +6,7 @@ import {Mode, ModeName} from './mode';
 import CommandMode from './mode_command';
 import InsertMode from './mode_insert';
 import VisualMode from './mode_visual';
+import PendingOperationMode from './mode_pendingop';
 
 export default class ModeHandler {
     private modes : Mode[];
@@ -16,6 +17,7 @@ export default class ModeHandler {
             new CommandMode(),
             new InsertMode(),
             new VisualMode(),
+            new PendingOperationMode()
         ];
 
         this.setCurrentModeByName(ModeName.Command);

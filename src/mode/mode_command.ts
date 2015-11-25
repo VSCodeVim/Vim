@@ -1,10 +1,15 @@
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import * as vscode from 'vscode';
+import * as Motion from '../motion/motion';
+import * as Operations from '../operations/operation';
 
 export default class CommandMode extends Mode {
+    motionHandlerMap = [];
+    
     constructor() {
         super(ModeName.Command);
+        this.registerMotionMappings();
     }
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
@@ -18,22 +23,25 @@ export default class CommandMode extends Mode {
     HandleKeyEvent(key : string) : void {
         this.keyHistory.push(key);
 
+                
         switch (key) {
             case ':':
                 showCmdLine();
                 break;
-            case 'h':
-                vscode.commands.executeCommand("cursorLeft");
-                break;
-            case 'j':
-                vscode.commands.executeCommand("cursorDown");
-                break;
-            case 'k':
-                vscode.commands.executeCommand("cursorUp");
-                break;
-            case 'l':
-                vscode.commands.executeCommand("cursorRight");
-                break;
+            default:
+                var handler = this.motionHandlerMap[key];
+                {
+                    if (handler != null) handler.execute();
+                }
         }
+    }
+    
+    registerMotionMappings() {
+        this.motionHandlerMap['h'] = new Motion.MotionMoveLeft(); 
+        this.motionHandlerMap['j'] = new Motion.MotionMoveDown(); 
+        this.motionHandlerMap['k'] = new Motion.MotionMoveUp(); 
+        this.motionHandlerMap['l'] = new Motion.MotionMoveRight();
+        this.motionHandlerMap['w'] = new Motion.MotionMoveWordForward();
+        this.motionHandlerMap['b'] = new Motion.MotionMoveWordBackward();
     }
 }
