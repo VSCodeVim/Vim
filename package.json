@@ -105,8 +105,12 @@
         { "key": "Ctrl+J", "command": "cursorDown", "when": "editorTextFocus" },
         { "key": "Ctrl+K", "command": "cursorUp", "when": "editorTextFocus" },
         { "key": "Ctrl+L", "command": "cursorRight", "when": "editorTextFocus" },
+        { "key": "Ctrl+[", "command": "extension.vim_ctrl_[", "when": "editorTextFocus" },
         
-        { "key": "Ctrl+Shift+.", "command": "extension.showCmdLine", "when": "editorTextFocus" }
+        { "key": "Ctrl+Shift+.", "command": "extension.showCmdLine", "when": "editorTextFocus" },
+        
+        { "key": "Shift+,", "command": "extension.vim_<", "when": "editorTextFocus" },
+        { "key": "Shift+.", "command": "extension.vim_>", "when": "editorTextFocus" }
     ]
   },
   "scripts": {

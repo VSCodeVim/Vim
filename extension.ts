@@ -91,7 +91,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.vim_7', () => handleKeyEvent("7"));
     vscode.commands.registerCommand('extension.vim_8', () => handleKeyEvent("8"));
     vscode.commands.registerCommand('extension.vim_9', () => handleKeyEvent("9"));
-
+    
+    vscode.commands.registerCommand('extension.vim_ctrl_[', () => handleKeyEvent("ctrl+["));
+    
+    vscode.commands.registerCommand('extension.vim_<', () => handleKeyEvent("<"));
+    vscode.commands.registerCommand('extension.vim_>', () => handleKeyEvent(">"));
+    
     context.subscriptions.push(cmdLineDisposable);
 }
 
