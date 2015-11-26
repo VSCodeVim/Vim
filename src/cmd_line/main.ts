@@ -15,16 +15,24 @@ export function showCmdLine(initialText = "") {
 }
 
 function runCmdLine(s : string) : void {
+	if (!(s || s.trim())) {
+		return;
+	}
+	
 	try {
 		var cmd = parser.parse(s);
 	} catch (e) {
-		util.showInfo(e);
+		util.showError(e);
+		return;
+	}
+	
+	if (cmd.isEmpty) {
 		return;
 	}
 
-	if (cmd.isEmpty) {
-		vscode.window.showInformationMessage("empty cmdline");
-	} else {
+	try {
 		cmd.runOn(vscode.window.activeTextEditor);
+	} catch (e) {
+		util.showError(e);
 	}
 }
