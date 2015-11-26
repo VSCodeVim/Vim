@@ -1,10 +1,8 @@
 import {TextEditor, window, Position, Selection, Range} from 'vscode';
-import Caret from './caret';
+import Caret from '../caret';
 
-export class Motion {
-	constructor() {
-	}
-
+export abstract class Motion {
+	
 	get editor(): TextEditor {
 		return window.activeTextEditor;
 	}
@@ -13,19 +11,14 @@ export class Motion {
 		return new Caret(this.editor);
 	}
 	
-	execute() {
-		
-	}
+	abstract execute();
 	
-	select(): Selection {
+	public select(): Selection {
 		return null;
 	}
 }
 
-export class MotionMoveLeft extends Motion {
-	constructor() {
-		super();
-	}
+export class MoveLeft extends Motion {
 	
 	execute() {
 		this.caret.moveLeft();
@@ -38,10 +31,7 @@ export class MotionMoveLeft extends Motion {
 	}
 }
 
-export class MotionMoveRight extends Motion {
-	constructor() {
-		super();
-	}
+export class MoveRight extends Motion {
 	
 	execute() {
 		this.caret.moveRight();
@@ -54,11 +44,8 @@ export class MotionMoveRight extends Motion {
 	}
 }
 
-export class MotionMoveUp extends Motion {
-	constructor() {
-		super();
-	}
-
+export class MoveUp extends Motion {
+	
 	execute() {
 		this.caret.moveUp();
 	}
@@ -70,11 +57,8 @@ export class MotionMoveUp extends Motion {
 	}
 }
 
-export class MotionMoveDown extends Motion {
-	constructor() {
-		super();
-	}
-
+export class MoveDown extends Motion {
+	
 	execute() {
 		this.caret.moveDown();
 	}
@@ -86,13 +70,9 @@ export class MotionMoveDown extends Motion {
 	}
 }
 
-class MotionWord extends Motion {
+abstract class MoveWord extends Motion {
 	private wordRegexp = /\w+/g;
 
-	constructor() {
-		super();
-	}
-	
 	getWords(text: string): number[] {
 		var words = text.match(this.wordRegexp);
 		var items = [];
@@ -108,11 +88,7 @@ class MotionWord extends Motion {
 	}
 }
 
-export class MotionMoveWordForward extends MotionWord {
-
-	constructor() {
-		super();
-	}
+export class MoveWordRight extends MoveWord {
 	
 	execute() {
 		var pos = this.getNextWordPosition();
@@ -121,8 +97,7 @@ export class MotionMoveWordForward extends MotionWord {
 	
 	getNextWordPosition(): Position {
 		var position = this.caret.currentPosition;
-		var document = this.editor.document;
-		
+		var document = this.editor.document;		
 		var line = document.lineAt(position);
 		var wordIndexes = this.getWords(line.text);
 		
@@ -143,10 +118,7 @@ export class MotionMoveWordForward extends MotionWord {
 	}
 }
 
-export class MotionMoveWordBackward extends MotionWord {
-	constructor() {
-		super();
-	}
+export class MoveWordLeft extends MoveWord {
 	
 	execute() {
 		var position = this.caret.currentPosition;

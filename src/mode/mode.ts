@@ -1,8 +1,7 @@
 export enum ModeName {
     Normal,
     Insert,
-    Visual,
-    PendingOperation
+    Visual
 }
 
 export abstract class Mode {

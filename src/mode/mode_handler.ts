@@ -6,7 +6,6 @@ import {Mode, ModeName} from './mode';
 import NormalMode from './mode_normal';
 import InsertMode from './mode_insert';
 import VisualMode from './mode_visual';
-import PendingOperationMode from './mode_pendingop';
 
 export default class ModeHandler {
     private modes : Mode[];
@@ -16,8 +15,7 @@ export default class ModeHandler {
         this.modes = [
             new NormalMode(),
             new InsertMode(),
-            new VisualMode(),
-            new PendingOperationMode()
+            new VisualMode()
         ];
 
         this.setCurrentModeByName(ModeName.Normal);
