@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import {showCmdLine} from './src/cmd_line/main';
 import * as cc from './src/cmd_line/lexer';
-import ModeHandler from "./src/mode/mode_handler";
+import ModeHandler from "./src/mode/modeHandler";
 import {ModeName} from "./src/mode/mode";
 
 var modeHandler;
