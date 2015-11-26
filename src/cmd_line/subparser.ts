@@ -1,11 +1,14 @@
 import * as node from "./node";
 import * as command_node from './command_node';
 import {Scanner} from './scanner';
+import {parseQuitCommandArgs} from './subparser_quit';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
 	w: parseWriteCommandArgs,
-	write: parseWriteCommandArgs
+	write: parseWriteCommandArgs,
+	quit: parseQuitCommandArgs,
+	q: parseQuitCommandArgs
 };
 
 function parseWriteCommandArgs(args : string) : node.WriteCommand {
