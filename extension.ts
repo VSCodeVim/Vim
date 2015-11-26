@@ -54,9 +54,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.vim_z', () => handleKeyEvent("z"));
 
     vscode.commands.registerCommand('extension.vim_A', () => handleKeyEvent("A"));
-    vscode.commands.registerCommand('extension.vim_I', () => handleKeyEvent("I"));
-    vscode.commands.registerCommand('extension.vim_O', () => handleKeyEvent("O"));
-
     vscode.commands.registerCommand('extension.vim_B', () => handleKeyEvent("B"));
     vscode.commands.registerCommand('extension.vim_C', () => handleKeyEvent("C"));
     vscode.commands.registerCommand('extension.vim_D', () => handleKeyEvent("D"));
@@ -64,11 +61,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.vim_F', () => handleKeyEvent("F"));
     vscode.commands.registerCommand('extension.vim_G', () => handleKeyEvent("G"));
     vscode.commands.registerCommand('extension.vim_H', () => handleKeyEvent("H"));
+    vscode.commands.registerCommand('extension.vim_I', () => handleKeyEvent("I"));
     vscode.commands.registerCommand('extension.vim_J', () => handleKeyEvent("J"));
     vscode.commands.registerCommand('extension.vim_K', () => handleKeyEvent("K"));
     vscode.commands.registerCommand('extension.vim_L', () => handleKeyEvent("L"));
     vscode.commands.registerCommand('extension.vim_M', () => handleKeyEvent("M"));
     vscode.commands.registerCommand('extension.vim_N', () => handleKeyEvent("N"));
+    vscode.commands.registerCommand('extension.vim_O', () => handleKeyEvent("O"));
     vscode.commands.registerCommand('extension.vim_P', () => handleKeyEvent("P"));
     vscode.commands.registerCommand('extension.vim_Q', () => handleKeyEvent("Q"));
     vscode.commands.registerCommand('extension.vim_R', () => handleKeyEvent("R"));
@@ -91,7 +90,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.vim_7', () => handleKeyEvent("7"));
     vscode.commands.registerCommand('extension.vim_8', () => handleKeyEvent("8"));
     vscode.commands.registerCommand('extension.vim_9', () => handleKeyEvent("9"));
-
+    
+    vscode.commands.registerCommand('extension.vim_ctrl_[', () => handleKeyEvent("ctrl+["));
+    
+    vscode.commands.registerCommand('extension.vim_<', () => handleKeyEvent("<"));
+    vscode.commands.registerCommand('extension.vim_>', () => handleKeyEvent(">"));
+    
     context.subscriptions.push(cmdLineDisposable);
 }
 
