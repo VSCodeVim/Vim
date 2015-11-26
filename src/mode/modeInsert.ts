@@ -1,5 +1,6 @@
-import {ModeName, Mode} from './mode';
 import * as vscode from 'vscode';
+import {ModeName, Mode} from './mode';
+import TextEditor from './../textEditor';
 
 export default class InsertMode extends Mode {
     private activationKeyHandler : { [ key : string] : (position : vscode.Position) => vscode.Position; } = {};
@@ -39,24 +40,13 @@ export default class InsertMode extends Mode {
     }
     
     HandleActivation(key : string) : void {
-        const editor = vscode.window.activeTextEditor;
-        const currentPosition = editor.selection.active;
-        
-        var newPosition = this.activationKeyHandler[key](currentPosition);
-        var newSelection = new vscode.Selection(newPosition, newPosition);
-
-        editor.selection = newSelection;
+        var newPosition = this.activationKeyHandler[key](TextEditor.GetCurrentPosition());
+        TextEditor.SetCurrentPosition(newPosition);
     }
     
     HandleKeyEvent(key : string) : void {
         this.keyHistory.push(key);
-        
-        const editor = vscode.window.activeTextEditor;
-        const position = editor.selection.active;
-            
-        editor.edit(t => {
-            t.insert(position, this.ResolveKeyValue(key));
-        });
+        TextEditor.Insert(this.ResolveKeyValue(key));
     }
     
     // Some keys have names that are different to their value.

@@ -10,14 +10,16 @@ export default class CommandMode extends Mode {
         super(ModeName.Normal);
         
         this.keyHandler = {
-            ":" : () => { showCmdLine(); },   
+            ":" : () => { showCmdLine(); },
+            "u" : () => { vscode.commands.executeCommand("undo"); },
             "h" : () => { vscode.commands.executeCommand("cursorLeft"); },        
             "j" : () => { vscode.commands.executeCommand("cursorDown"); },        
-            "k" : () => { vscode.commands.executeCommand("cursorUp"); },      
+            "k" : () => { vscode.commands.executeCommand("cursorUp"); },
             "l" : () => { vscode.commands.executeCommand("cursorRight"); },
             ">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
             "<<" : () => { vscode.commands.executeCommand("editor.action.outdentLines"); },
-            "dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); }
+            "dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
+            "dw" : () => { vscode.commands.executeCommand("deleteWordRight"); }
         };
     }
 
@@ -30,10 +32,11 @@ export default class CommandMode extends Mode {
     }
 
     HandleKeyEvent(key : string) : void {
+        this.keyHistory.push(key);
+        
         let keyHandled = false;
-        for (let window = 0; window <= this.keyHistory.length; window++) {
-            var keysPressed = key + _.takeRight(this.keyHistory, window).join('');
-            
+        for (let window =  1; window <= this.keyHistory.length; window++) {
+            var keysPressed = _.takeRight(this.keyHistory, window).join('');
             if (this.keyHandler[keysPressed] !== undefined) {
                 keyHandled = true;
                 this.keyHandler[keysPressed]();
@@ -43,8 +46,6 @@ export default class CommandMode extends Mode {
         
         if (keyHandled) {
             this.keyHistory = [];
-        } else {
-            this.keyHistory.push(key);
         }
     }
 }
