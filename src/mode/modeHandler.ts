@@ -1,11 +1,10 @@
 import * as _ from 'lodash';
-
 import * as vscode from 'vscode';
 
 import {Mode, ModeName} from './mode';
-import NormalMode from './mode_normal';
-import InsertMode from './mode_insert';
-import VisualMode from './mode_visual';
+import NormalMode from './modeNormal';
+import InsertMode from './modeInsert';
+import VisualMode from './modeVisual';
 
 export default class ModeHandler {
     private modes : Mode[];

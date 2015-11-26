@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import ModeNormal from '../../src/mode/mode_normal';
+import ModeNormal from '../../src/mode/modeNormal';
 import {ModeName} from '../../src/mode/mode';
 
 suite("Mode Normal", () => {
