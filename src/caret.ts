@@ -12,8 +12,12 @@ export default class Caret {
 	}
 
 	moveTo(line: number, character: number) {
-		if (character < 0) character = 0;
-		if (line < 0) line = 0;
+		if (character < 0) {
+			character = 0;
+		}
+		if (line < 0) {
+			line = 0;
+		}
 		
 		var position = new Position(line, character);
 		position = this.editor.document.validatePosition(position);

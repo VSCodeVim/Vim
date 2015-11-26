@@ -1,4 +1,4 @@
-import {TextEditor, window, Position, Selection, Range} from 'vscode';
+import {TextEditor, window, Position, Selection} from 'vscode';
 import Caret from '../caret';
 
 export abstract class Motion {
@@ -103,7 +103,9 @@ export class MoveWordRight extends MoveWord {
 		
 		var nextWordIndex = wordIndexes.find(value => position.character < value);
 		
-		if (nextWordIndex == undefined) return line.range.end;
+		if (nextWordIndex === undefined) {
+			return line.range.end;
+		}
 		
 		var newPosition = document.validatePosition(new Position(line.lineNumber, nextWordIndex));
 		
@@ -128,7 +130,7 @@ export class MoveWordLeft extends MoveWord {
 		
 		var prevWordIndex = wordIndexes.reverse().find(value => position.character > value);
 		
-		if (prevWordIndex == undefined) {
+		if (prevWordIndex === undefined) {
 			this.caret.moveTo(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
 		} else {
 			this.caret.moveTo(line.lineNumber, prevWordIndex);
