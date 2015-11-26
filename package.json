@@ -1,15 +1,28 @@
 {
   "name": "vscodevim",
-  "description": "Vim emulation for VS Code",
+  "displayName": "Vim",
+  "description": "Vim emulation for Visual Studio Code",
   "version": "0.0.1",
   "publisher": "vscodevim",
   "contributors": [
     "guillermooo",
     "jpoon"
   ],
+  "keywords": [
+    "Vim",
+    "Vi"
+  ],
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#a5c9a2",
+    "theme": "light"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/VSCodeVim/Vim.git"
+  },
+  "bugs": {
+    "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "license" : "https://github.com/VSCodeVim/Vim/blob/master/LICENSE",
   "engines": {
