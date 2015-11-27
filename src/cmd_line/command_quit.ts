@@ -11,19 +11,20 @@ export interface QuitCommandArguments {
 //  Implements :quit
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
 //
-export class QuitCommand implements node.CommandBase {
+export class QuitCommand extends node.CommandBase {
 	name : string;
 	shortName : string;
 	args : QuitCommandArguments;
 
 	constructor(args : QuitCommandArguments = {}) {
+		super();
 		this.name = 'quit';
 		this.shortName = 'q';
 		this.args = args;
 	}
 
 	private doQuit(textEditor : vscode.TextEditor) {
-		if ((textEditor.document.isDirty || textEditor.document.isUntitled)
+		if ((this.activeTextEditor.document.isDirty || this.activeTextEditor.document.isUntitled)
 			&& !this.args.bang) {
 				throw new Error("unsaved changes");
 		}
@@ -31,7 +32,7 @@ export class QuitCommand implements node.CommandBase {
 		vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 	};
 
-	runOn(textEditor : vscode.TextEditor) : void {
-		this.doQuit(textEditor);
+	runOn() : void {
+		this.doQuit(this.activeTextEditor);
 	}
 }

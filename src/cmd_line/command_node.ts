@@ -19,19 +19,20 @@ export interface WriteCommandArguments {
 //  Implements :write
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:write
 //
-export class WriteCommand implements node.CommandBase {
+export class WriteCommand extends node.CommandBase {
 	name : string;
 	shortName : string;
 	args : WriteCommandArguments;
 
 	constructor(args : WriteCommandArguments = {}) {
+		super();
 		this.name = 'write';
 		this.shortName = 'w';
 		this.args = args;
 	}
 
 	private doSave(textEditor : vscode.TextEditor) {
-		textEditor.document.save().then(
+		this.activeTextEditor.document.save().then(
 			(ok) => {
 				if (ok) {
 					util.showInfo("File saved.");
@@ -41,9 +42,9 @@ export class WriteCommand implements node.CommandBase {
 			},
 			(e) => util.showError(e)
 		);
-	};
+	}
 
-	runOn(textEditor : vscode.TextEditor) : void {
+	execute() : void {
 		if (this.args.opt) {
 			util.showError("Not implemented.");
 			return;
@@ -58,21 +59,21 @@ export class WriteCommand implements node.CommandBase {
 			return;
 		}
 
-		fs.access(textEditor.document.fileName, fs.W_OK, (accessErr) => {
+		fs.access(this.activeTextEditor.document.fileName, fs.W_OK, (accessErr) => {
 			if (accessErr) {
 				if (this.args.bang) {
-					fs.chmod(textEditor.document.fileName, 666, (e) => {
+					fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
 						if (e) {
 							util.showError(e.message);
 						} else {
-							this.doSave(textEditor);
+							this.doSave(this.activeTextEditor);
 						}
 					});
 				} else {
 					util.showError(accessErr.message);
 				}
 			} else {
-				this.doSave(textEditor);
+				this.doSave(this.activeTextEditor);
 			}
 		});
 	}

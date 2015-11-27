@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import * as token from "./token";
-export * from "./command_node";
 
 export class LineRange {
 	left : token.Token[];
@@ -92,12 +91,17 @@ export class CommandLine {
 		}
 
 		// TODO: calc range
-		this.command.runOn(document);
+		this.command.execute();
 	}
 }
 
-export interface CommandBase {
+export abstract class CommandBase {
 	name : string;
 	shortName : string;
-	runOn(textEditor : vscode.TextEditor) : void;
+	
+	get activeTextEditor() {
+		return vscode.window.activeTextEditor;
+	}
+	
+	abstract execute() : void;
 }

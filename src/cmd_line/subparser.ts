@@ -11,9 +11,9 @@ export const commandParsers = {
 	q: parseQuitCommandArgs
 };
 
-function parseWriteCommandArgs(args : string) : node.WriteCommand {
+function parseWriteCommandArgs(args : string) : command_node.WriteCommand {
 	if (!args) {
-		return new node.WriteCommand();
+		return new command_node.WriteCommand();
 	}
 	var scannedArgs : command_node.WriteCommandArguments = {};
 	var scanner = new Scanner(args);
