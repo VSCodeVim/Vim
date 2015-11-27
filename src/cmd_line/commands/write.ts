@@ -1,10 +1,9 @@
 // XXX: use graceful-fs ??
 import fs = require('fs');
 
-import vscode = require('vscode');
-
 import node = require('../node');
 import util = require('../../util');
+import error = require('../../error');
 
 export interface WriteCommandArguments extends node.CommandArgs {
 	opt? : string;
@@ -35,40 +34,44 @@ export class WriteCommand extends node.CommandBase {
 	}
 
 	execute() : void {
-		if (this._arguments.opt) {
+		if (this.arguments.opt) {
 			util.showError("Not implemented.");
 			return;
-		} else if (this._arguments.file) {
+		} else if (this.arguments.file) {
 			util.showError("Not implemented.");
 			return;
-		} else if (this._arguments.append) {
+		} else if (this.arguments.append) {
 			util.showError("Not implemented.");
 			return;
-		} else if (this._arguments.cmd) {
+		} else if (this.arguments.cmd) {
 			util.showError("Not implemented.");
 			return;
 		}
+		
+		if (this.activeTextEditor.document.isUntitled) {
+			throw error.VimError.fromCode(error.ErrorCode.E32);
+		}		
 
 		fs.access(this.activeTextEditor.document.fileName, fs.W_OK, (accessErr) => {
 			if (accessErr) {
-				if (this._arguments.bang) {
+				if (this.arguments.bang) {
 					fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
 						if (e) {
 							util.showError(e.message);
 						} else {
-							this.save(this.activeTextEditor);
+							this.save();
 						}
 					});
 				} else {
 					util.showError(accessErr.message);
 				}
 			} else {
-				this.save(this.activeTextEditor);
+				this.save();
 			}
 		});
 	}
 
-	private save(textEditor : vscode.TextEditor) {
+	private save() {		
 		this.activeTextEditor.document.save().then(
 			(ok) => {
 				if (ok) {

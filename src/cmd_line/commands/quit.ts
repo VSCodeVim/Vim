@@ -1,6 +1,7 @@
 import vscode = require('vscode');
 
 import node = require('../node');
+import error = require('../../error');
 
 export interface QuitCommandArguments extends node.CommandArgs {
 	bang?: boolean;
@@ -33,7 +34,7 @@ export class QuitCommand extends node.CommandBase {
 		// See https://github.com/Microsoft/vscode/issues/723
 		if ((this.activeTextEditor.document.isDirty || this.activeTextEditor.document.isUntitled)
 			&& !this.arguments.bang) {
-				throw new Error("unsaved changes");
+				throw error.VimError.fromCode(error.ErrorCode.E37);
 		}
 		
 		vscode.commands.executeCommand('workbench.action.closeActiveEditor');
