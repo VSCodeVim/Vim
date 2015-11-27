@@ -4,6 +4,11 @@ import * as util from "../util";
 
 // Shows the vim command line.
 export function showCmdLine(initialText = "") {
+	if (!vscode.window.activeTextEditor) {
+		util.showInfo("No active document.");
+		return;
+	}
+	
 	const options : vscode.InputBoxOptions = {
 		prompt: "Vim command line",
 		value: initialText
@@ -15,7 +20,7 @@ export function showCmdLine(initialText = "") {
 }
 
 function runCmdLine(s : string) : void {
-	if (!(s || s.trim())) {
+	if (!(s && s.trim())) {
 		return;
 	}
 	
@@ -33,6 +38,13 @@ function runCmdLine(s : string) : void {
 	try {
 		cmd.execute(vscode.window.activeTextEditor);
 	} catch (e) {
-		util.showError(e);
+		try {
+			e.display();
+			return;
+		} catch (ee) {
+			// ignore
+		}
+		
+		util.showError(e);	
 	}
 }
