@@ -31,7 +31,7 @@ function runCmdLine(s : string) : void {
 	}
 
 	try {
-		cmd.runOn(vscode.window.activeTextEditor);
+		cmd.execute(vscode.window.activeTextEditor);
 	} catch (e) {
 		util.showError(e);
 	}

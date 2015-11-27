@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import * as token from "./token";
-export * from "./command_node";
 
 export class LineRange {
 	left : token.Token[];
@@ -41,7 +40,7 @@ export class LineRange {
 		return this.left.toString() + this.separator.content + this.right.toString();
 	}
 
-	runOn(document : vscode.TextEditor) : void {
+	execute(document : vscode.TextEditor) : void {
 		if (this.isEmpty) {
 			return;
 		}
@@ -85,19 +84,42 @@ export class CommandLine {
 		return ":" + this.range.toString() + " " + this.command.toString();
 	}
 
-	runOn(document : vscode.TextEditor) : void {
+	execute(document : vscode.TextEditor) : void {
 		if (!this.command) {
-			this.range.runOn(document);
+			this.range.execute(document);
 			return;
 		}
 
 		// TODO: calc range
-		this.command.runOn(document);
+		this.command.execute();
 	}
 }
 
-export interface CommandBase {
-	name : string;
-	shortName : string;
-	runOn(textEditor : vscode.TextEditor) : void;
+export interface CommandArgs {
+	bang? : boolean;
+	range? : LineRange;
+}
+
+export abstract class CommandBase {
+	
+	protected get activeTextEditor() {
+		return vscode.window.activeTextEditor;
+	}
+	
+	get name() : string {
+		return this._name;
+	}
+	protected _name : string;
+	
+	get shortName() : string {
+		return this._shortName;
+	}
+	protected _shortName : string;
+
+	get arguments() : CommandArgs {
+		return this._arguments;
+	}
+	protected _arguments : CommandArgs;	
+	
+	abstract execute() : void;
 }
