@@ -2,9 +2,7 @@ import vscode = require('vscode');
 
 import node = require('./node');
 
-export interface QuitCommandArguments {
-	bang? : boolean;
-	range? : node.LineRange;
+export interface QuitCommandArguments extends node.CommandArgs {
 }
 
 //
@@ -32,7 +30,7 @@ export class QuitCommand extends node.CommandBase {
 		vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 	};
 
-	runOn() : void {
+	execute() : void {
 		this.doQuit(this.activeTextEditor);
 	}
 }

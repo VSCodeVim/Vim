@@ -95,6 +95,11 @@ export class CommandLine {
 	}
 }
 
+export interface CommandArgs {
+	bang?: boolean,
+	range?: LineRange
+}
+
 export abstract class CommandBase {
 	name : string;
 	shortName : string;

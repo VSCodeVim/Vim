@@ -5,7 +5,7 @@ import vscode = require('vscode');
 import node = require('./node');
 import util = require('../util');
 
-export interface WriteCommandArguments {
+export interface WriteCommandArguments extends node.CommandArgs {
 	opt? : string;
 	optValue? : string;
 	bang? : boolean;
