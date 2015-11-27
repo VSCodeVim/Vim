@@ -1,5 +1,5 @@
-import * as node from "./command_quit";
-import {Scanner} from './scanner';
+import * as node from "../commands/quit";
+import {Scanner} from '../scanner';
 
 export function parseQuitCommandArgs(args : string) : node.QuitCommand {
 	if (!args) {
