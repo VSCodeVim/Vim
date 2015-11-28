@@ -20,10 +20,11 @@ export default class CommandMode extends Mode {
             "<<" : () => { vscode.commands.executeCommand("editor.action.outdentLines"); },
             "dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
             "dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
-            "esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); }
+            "esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); },
+            "$": () => { vscode.commands.executeCommand("cursorEndOfLine")}
         };
     }
-
+ 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
         return (key === 'esc' || key === 'ctrl+[');
     }
