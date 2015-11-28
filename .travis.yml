@@ -4,7 +4,7 @@ notifications:
 language: node_js
 
 node_js:
- - "0.12"
+ - "4.1.1"
 
 install: 
  - npm install

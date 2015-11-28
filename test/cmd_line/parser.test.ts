@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import * as parser from '../src/cmd_line/parser';
-import * as node from '../src/cmd_line/node';
-import * as token from '../src/cmd_line/token';
+import * as parser from '../../src/cmd_line/parser';
+import * as node from '../../src/cmd_line/node';
+import * as token from '../../src/cmd_line/token';
 
-suite("Cmd line tests - parser", () => {
+suite("command-line parser", () => {
 
 	test("can parse empty string", () => {
 		var cmd = parser.parse("");

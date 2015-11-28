@@ -78,7 +78,7 @@ class ParserState {
 		this.lex(input);
 	}
 
-	lex(input : string) {
+	private lex(input : string) {
 		this.tokens = lexer.lex(input);
 	}
 

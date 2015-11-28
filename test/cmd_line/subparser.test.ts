@@ -1,11 +1,11 @@
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
 
-import {commandParsers} from '../src/cmd_line/subparser';
+import {commandParsers} from '../../src/cmd_line/subparser';
 
-suite("subparsers - :write args", () => {
+suite(":write args parser", () => {
 	
-	test("parsers for :write are set up correctly", () => {
+	test("has all aliases", () => {
 	   assert.equal(commandParsers.write.name, commandParsers.w.name); 
 	});
 

@@ -10,8 +10,8 @@ var paths = {
     tests_js: [
         // test with dependencies on 'vscode' do not run
         "out/test/extension.test.js",
-        "out/test/lexer.test.js",
-        "out/test/scanner.test.js"
+        "out/test/cmd_line/lexer.test.js",
+        "out/test/cmd_line/scanner.test.js",
     ]
 };
 
