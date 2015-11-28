@@ -115,7 +115,6 @@ module LexerFunctions {
 			} else {
 				state.backup();
 				tokens.push(emitToken(TokenType.CommandName, state));
-				state.skipWhiteSpace();
 				while (!state.isAtEof) {
 					state.next();
 				}

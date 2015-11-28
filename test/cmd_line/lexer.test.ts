@@ -1,9 +1,9 @@
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
-import * as lexer from '../src/cmd_line/lexer';
-import {Token, TokenType} from '../src/cmd_line/token';
+import * as lexer from '../../src/cmd_line/lexer';
+import {Token, TokenType} from '../../src/cmd_line/token';
 
-suite("Cmd line tests - lexing", () => {
+suite("command-line lexer", () => {
 
 	test("can lex empty string", () => {
 		var tokens = lexer.lex("");
@@ -78,8 +78,14 @@ suite("Cmd line tests - lexing", () => {
 	test("can lex command args", () => {
 		var tokens = lexer.lex("w something");
 		assert.equal(tokens[0].content, new Token(TokenType.CommandName, "w").content);
-		assert.equal(tokens[1].content, new Token(TokenType.CommandArgs, "something").content);
+		assert.equal(tokens[1].content, new Token(TokenType.CommandArgs, " something").content);
 	});
+
+	test("can lex command args with leading whitespace", () => {
+		var tokens = lexer.lex("q something");
+		assert.equal(tokens[0].content, new Token(TokenType.CommandName, "q").content);
+		assert.equal(tokens[1].content, new Token(TokenType.CommandArgs, " something").content);
+	});	
 
 	test("can lex long command name and args", () => {
 		var tokens = lexer.lex("write12 something here");

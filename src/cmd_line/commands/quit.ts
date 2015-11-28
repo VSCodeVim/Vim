@@ -27,10 +27,10 @@ export class QuitCommand extends node.CommandBase {
 	}
 	
 	execute() : void {
-		this.quit(this.activeTextEditor);
+		this.quit();
 	}	
 
-	private quit(textEditor : vscode.TextEditor) {
+	private quit() {
 		// See https://github.com/Microsoft/vscode/issues/723
 		if ((this.activeTextEditor.document.isDirty || this.activeTextEditor.document.isUntitled)
 			&& !this.arguments.bang) {

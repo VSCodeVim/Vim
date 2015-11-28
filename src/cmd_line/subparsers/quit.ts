@@ -1,5 +1,6 @@
 import * as node from "../commands/quit";
 import {Scanner} from '../scanner';
+import {VimError, ErrorCode} from '../../error';
 
 export function parseQuitCommandArgs(args : string) : node.QuitCommand {
 	if (!args) {
@@ -10,12 +11,13 @@ export function parseQuitCommandArgs(args : string) : node.QuitCommand {
 	const c = scanner.next();
 	if (c === '!') {
 		scannedArgs.bang = true;
+		scanner.ignore();
 	} else if (c !== ' ') {
-		throw new Error('bad command');
+		throw VimError.fromCode(ErrorCode.E488);
 	}
 	scanner.skipWhiteSpace();
 	if (!scanner.isAtEof) {
-		throw new Error('bad command');
+		throw VimError.fromCode(ErrorCode.E488);
 	}
 	return new node.QuitCommand(scannedArgs);
 }

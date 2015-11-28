@@ -6,12 +6,14 @@ interface VimErrors {
 
 export enum ErrorCode {
 	E37 = 37,
-	E32 = 32
+	E32 = 32,
+	E488 = 488
 }
 
 const errors : VimErrors = {
 	32: "No file name",
-	37: "No write since last change (add ! to override)"
+	37: "No write since last change (add ! to override)",
+	488: "Trailing characters"
 };
 
 
