@@ -110,16 +110,16 @@ function registerCustomCommands() {
     // TODO: Not sure where to put this..
     // Will move cursor to EOL
     vscode.commands.registerCommand("cursorEndOfLine", () => {
-        let cursorCharIndex = vscode.window.activeTextEditor.selection.active.character;
-        let lineNumber = vscode.window.activeTextEditor.selection.active.line;
+        const cursorCharIndex = vscode.window.activeTextEditor.selection.active.character;
+        const lineNumber = vscode.window.activeTextEditor.selection.active.line;
         
-        let lineLength = vscode.window.activeTextEditor.document.lineAt(vscode.window.activeTextEditor.selection.active.line).text.length;
-        let charDelta = lineLength - cursorCharIndex;
+        const lineLength = vscode.window.activeTextEditor.document.lineAt(lineNumber).text.length;
+        const charDelta = lineLength - cursorCharIndex;
         
-        let position = new vscode.Position(lineNumber, cursorCharIndex);
-        let updatedPosition = position.translate(0, charDelta);
+        const position = new vscode.Position(lineNumber, cursorCharIndex);
+        const updatedPosition = position.translate(0, charDelta);
         
-        let selection = new vscode.Selection(updatedPosition, updatedPosition);
+        const selection = new vscode.Selection(updatedPosition, updatedPosition);
         
         vscode.window.activeTextEditor.selection = selection;
         vscode.window.activeTextEditor.revealRange(selection, vscode.TextEditorRevealType.Default);
