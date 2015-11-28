@@ -7,7 +7,7 @@ import * as cc from './src/cmd_line/lexer';
 import ModeHandler from "./src/mode/modeHandler";
 import {ModeName} from "./src/mode/mode";
 
-var modeHandler;
+let modeHandler: ModeHandler;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -96,9 +96,32 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.vim_<', () => handleKeyEvent("<"));
     vscode.commands.registerCommand('extension.vim_>', () => handleKeyEvent(">"));
     
+    vscode.commands.registerCommand('extension.vim_$', () => handleKeyEvent("$"));
+    
+    registerCustomCommands();
     context.subscriptions.push(cmdLineDisposable);
 }
 
 function handleKeyEvent(key:string) {
     modeHandler.handleKeyEvent(key);
+}
+
+function registerCustomCommands() {
+    // TODO: Not sure where to put this..
+    // Will move cursor to EOL
+    vscode.commands.registerCommand("cursorEndOfLine", () => {
+        const cursorCharIndex = vscode.window.activeTextEditor.selection.active.character;
+        const lineNumber = vscode.window.activeTextEditor.selection.active.line;
+        
+        const lineLength = vscode.window.activeTextEditor.document.lineAt(lineNumber).text.length;
+        const charDelta = lineLength - cursorCharIndex;
+        
+        const position = new vscode.Position(lineNumber, cursorCharIndex);
+        const updatedPosition = position.translate(0, charDelta);
+        
+        const selection = new vscode.Selection(updatedPosition, updatedPosition);
+        
+        vscode.window.activeTextEditor.selection = selection;
+        vscode.window.activeTextEditor.revealRange(selection, vscode.TextEditorRevealType.Default);
+    });
 }
