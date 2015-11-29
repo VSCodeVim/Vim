@@ -26,7 +26,7 @@ Vim emulation for Visual Studio Code.
 	* Navigation: `h`, `j`, `k`, `l`
 	* Indentation: `>>`, `<<`
 	* Deletion: `dd`, `dw`
-	* Editing: `u`
+	* Editing: `u`, `ctrl+r`
 
 ### Planned
 

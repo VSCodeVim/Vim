@@ -114,6 +114,7 @@
         { "key": "9", "command": "extension.vim_9", "when": "editorTextFocus" },
 
         { "key": "Ctrl+[", "command": "extension.vim_ctrl_[", "when": "editorTextFocus" },
+        { "key": "Ctrl+r", "command": "extension.vim_ctrl_r", "when": "editorTextFocus" },
         
         { "key": "Shift+,", "command": "extension.vim_<", "when": "editorTextFocus" },
         { "key": "Shift+.", "command": "extension.vim_>", "when": "editorTextFocus" }
