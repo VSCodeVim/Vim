@@ -1,24 +1,24 @@
 import * as vscode from "vscode";
 
 export default class TextEditor {      
-    static Insert(text: string, position: vscode.Position = null) {
+    static Insert(text: string, position: vscode.Position = null) : Thenable<boolean> {
         if (position === null) {
             position = vscode.window.activeTextEditor.selection.active;
         }
         
-        vscode.window.activeTextEditor.edit((editBuilder) => {
+        return vscode.window.activeTextEditor.edit((editBuilder) => {
             editBuilder.insert(position, text);
         });
     }
 
-    static Delete(range: vscode.Range) {
-        vscode.window.activeTextEditor.edit((editBuilder) => {
+    static Delete(range: vscode.Range) : Thenable<boolean> {
+        return vscode.window.activeTextEditor.edit((editBuilder) => {
             editBuilder.delete(range);
         });
     }
 
-    static Replace(range: vscode.Range, text: string) {
-        vscode.window.activeTextEditor.edit((editBuilder) => {
+    static Replace(range: vscode.Range, text: string) : Thenable<boolean> {
+        return vscode.window.activeTextEditor.edit((editBuilder) => {
             editBuilder.replace(range, text);
         });
     }
@@ -40,13 +40,12 @@ export default class TextEditor {
     }
     
     static SetCurrentPosition(position: vscode.Position) {
-        let newSelection = new vscode.Selection(position, position);
+        const newSelection = new vscode.Selection(position, position);
         vscode.window.activeTextEditor.selection = newSelection;
     }
     
     static GetEndOfLine(position: vscode.Position) : vscode.Position {
         const lineLength = vscode.window.activeTextEditor.document.lineAt(position.line).text.length;
-        
         return new vscode.Position(position.line, lineLength);
     }
 }
