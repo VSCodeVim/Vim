@@ -19,7 +19,7 @@ export default class InsertMode extends Mode {
             "a" : (position) => { return new vscode.Position(position.line, position.character + 1); },
             
             // append at the end of the line            
-            "A" : (position) => { return position; },
+            "A" : (position) => { return TextEditor.GetEndOfLine(position); },
             
             // open blank line below current line            
             "o" : (position) => { 

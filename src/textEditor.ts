@@ -40,7 +40,13 @@ export default class TextEditor {
     }
     
     static SetCurrentPosition(position: vscode.Position) {
-        var newSelection = new vscode.Selection(position, position);
+        let newSelection = new vscode.Selection(position, position);
         vscode.window.activeTextEditor.selection = newSelection;
+    }
+    
+    static GetEndOfLine(position: vscode.Position) : vscode.Position {
+        const lineLength = vscode.window.activeTextEditor.document.lineAt(position.line).text.length;
+        
+        return new vscode.Position(position.line, lineLength);
     }
 }
