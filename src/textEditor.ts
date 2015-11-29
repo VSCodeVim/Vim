@@ -52,8 +52,8 @@ export default class TextEditor {
     }
 
     static IsLastLine(): boolean {
-        return (vscode.window.activeTextEditor.document.lineCount ==
-            (this.GetCurrentPosition().line+1));
+        return (vscode.window.activeTextEditor.document.lineCount ===
+            (this.GetCurrentPosition().line + 1));
     }
     
     static CursorLeft() {
@@ -61,7 +61,7 @@ export default class TextEditor {
         var pos : vscode.Position = editor.selection.active;
 		if (pos.character > 0) {
 			vscode.commands.executeCommand("cursorLeft");
-			this.mostRightCol = pos.character-2;                    
+			this.mostRightCol = pos.character - 2;                    
 		} else {
 			this.mostRightCol = -1;
 		}
@@ -70,7 +70,7 @@ export default class TextEditor {
 	static CursorRight() {
         let editor : vscode.TextEditor = vscode.window.activeTextEditor;
         var pos : vscode.Position = editor.selection.active;
-		if ((pos.character+1) < editor.document.lineAt(pos.line).text.length) {
+		if ((pos.character + 1) < editor.document.lineAt(pos.line).text.length) {
 			vscode.commands.executeCommand("cursorRight");
 			this.mostRightCol = pos.character;
 		}
@@ -79,33 +79,37 @@ export default class TextEditor {
 	private static NewCol(line : number) : number {
         let editor : vscode.TextEditor = vscode.window.activeTextEditor;
 		var length = editor.document.lineAt(line).text.length;
-		var newCol = this.mostRightCol+1;
-		if (newCol >= length)
+		var newCol = this.mostRightCol + 1;
+		if (newCol >= length) {
 			newCol = length - 1;
-		if (newCol < 0)
+		}
+		if (newCol < 0) {
 			newCol = 0;
+		}
 		return newCol;	
 	}
 
 	static CursorDown() {
-        if (TextEditor.IsLastLine())
+		if (TextEditor.IsLastLine()) {
             return;
+		}
         
         let editor : vscode.TextEditor = vscode.window.activeTextEditor;
         var pos : vscode.Position = editor.selection.active;
 
-		var newPos = pos.with(pos.line+1, this.NewCol(pos.line+1));
+		var newPos = pos.with(pos.line + 1, this.NewCol(pos.line + 1));
 		this.SetCurrentPosition(newPos);
 	}
 
 	static CursorUp() {
-        if (TextEditor.GetCurrentPosition().line == 0)
+		if (TextEditor.GetCurrentPosition().line === 0) {
             return;
+		}
 
         let editor : vscode.TextEditor = vscode.window.activeTextEditor;
         var pos : vscode.Position = editor.selection.active;
 
-		var newPos = pos.with(pos.line-1, this.NewCol(pos.line-1));
+		var newPos = pos.with(pos.line - 1, this.NewCol(pos.line - 1));
 		this.SetCurrentPosition(newPos);
 	}
 }
