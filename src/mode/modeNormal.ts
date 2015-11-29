@@ -26,7 +26,10 @@ export default class CommandMode extends Mode {
     }
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
-        return (key === 'esc' || key === 'ctrl+[');
+        if (key === 'esc' || key === 'ctrl+[') {
+            vscode.commands.executeCommand("cursorLeft");
+            return true;
+        }
     }
 
     HandleActivation(key : string) : void {
