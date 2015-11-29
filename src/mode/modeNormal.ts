@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
+import TextEditor from './../textEditor';
 
 export default class CommandMode extends Mode {
     private keyHandler : { [key : string] : () => void; } = {};
@@ -13,10 +14,10 @@ export default class CommandMode extends Mode {
             ":" : () => { showCmdLine(); },
             "u" : () => { vscode.commands.executeCommand("undo"); },
             "ctrl+r" : () => { vscode.commands.executeCommand("redo"); },
-            "h" : () => { vscode.commands.executeCommand("cursorLeft"); },
-            "j" : () => { vscode.commands.executeCommand("cursorDown"); },
-            "k" : () => { vscode.commands.executeCommand("cursorUp"); },
-            "l" : () => { vscode.commands.executeCommand("cursorRight"); },
+            "h" : () => { TextEditor.CursorLeft(); },
+            "j" : () => { TextEditor.CursorDown(); },
+            "k" : () => { TextEditor.CursorUp(); },
+            "l" : () => { TextEditor.CursorRight(); },
             "w" : () => { vscode.commands.executeCommand("cursorWordRight"); },
             "b" : () => { vscode.commands.executeCommand("cursorWordLeft"); },
             ">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
@@ -30,7 +31,7 @@ export default class CommandMode extends Mode {
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
         if (key === 'esc' || key === 'ctrl+[') {
-            vscode.commands.executeCommand("cursorLeft");
+            TextEditor.CursorLeft();
             return true;
         }
     }
