@@ -9,7 +9,6 @@ var paths = {
     tests_ts: "test/**/*.ts",
     tests_js: [
         // test with dependencies on 'vscode' do not run
-        "out/test/extension.test.js",
         "out/test/cmd_line/lexer.test.js",
         "out/test/cmd_line/scanner.test.js",
     ]

@@ -12,6 +12,7 @@ export default class CommandMode extends Mode {
         this.keyHandler = {
             ":" : () => { showCmdLine(); },
             "u" : () => { vscode.commands.executeCommand("undo"); },
+            "ctrl+r" : () => { vscode.commands.executeCommand("redo"); },
             "h" : () => { vscode.commands.executeCommand("cursorLeft"); },
             "j" : () => { vscode.commands.executeCommand("cursorDown"); },
             "k" : () => { vscode.commands.executeCommand("cursorUp"); },
