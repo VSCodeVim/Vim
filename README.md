@@ -4,12 +4,12 @@
 
 Vim emulation for Visual Studio Code. 
 
-![Screenshot](screen.png)
+![Screenshot](images/screen.png)
 
 ## Installation and Usage (*Coming Soon!* :gift:)
 
-~~1. Install [Visual Studio Code](https://code.visualstudio.com/)~~
-~~2. In the command palette (`Ctrl-Shift-P` or `Cmd-Shift-P`) select `Install Extension` and search for **vim**. Alternatively, run `ext install vscodevim`~~
+1. Install [Visual Studio Code](https://code.visualstudio.com/)
+2. In the command palette (`Ctrl-Shift-P` or `Cmd-Shift-P`) select `Install Extension` and search for **vim**. Alternatively, run `ext install vscodevim`
 
 ## Project Status
 
