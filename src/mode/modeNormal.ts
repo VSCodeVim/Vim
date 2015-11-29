@@ -17,10 +17,13 @@ export default class CommandMode extends Mode {
             "j" : () => { vscode.commands.executeCommand("cursorDown"); },
             "k" : () => { vscode.commands.executeCommand("cursorUp"); },
             "l" : () => { vscode.commands.executeCommand("cursorRight"); },
+            "w" : () => { vscode.commands.executeCommand("cursorWordRight"); },
+            "b" : () => { vscode.commands.executeCommand("cursorWordLeft"); },
             ">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
             "<<" : () => { vscode.commands.executeCommand("editor.action.outdentLines"); },
             "dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
             "dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
+            "db" : () => { vscode.commands.executeCommand("deleteWordLeft"); },
             "esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); }
         };
     }
@@ -40,15 +43,22 @@ export default class CommandMode extends Mode {
         this.keyHistory.push(key);
 
         let keyHandled = false;
-        for (let window =  1; window <= this.keyHistory.length; window++) {
-            var keysPressed = _.takeRight(this.keyHistory, window).join('');
-            if (this.keyHandler[keysPressed] !== undefined) {
-                keyHandled = true;
-                this.keyHandler[keysPressed]();
-                break;
+        
+        let keysPressed = this.keyHistory.join('');        
+        if (this.keyHandler[keysPressed] !== undefined) {
+            keyHandled = true;
+            this.keyHandler[keysPressed]();
+        } else {
+            for (let window = 1; window <= this.keyHistory.length; window++) {
+                keysPressed = _.takeRight(this.keyHistory, window).join('');
+                if (this.keyHandler[keysPressed] !== undefined) {
+                    keyHandled = true;
+                    this.keyHandler[keysPressed]();
+                    break;
+                }
             }
         }
-
+        
         if (keyHandled) {
             this.keyHistory = [];
         }
