@@ -92,6 +92,9 @@ export function activate(context: vscode.ExtensionContext) {
     
     registerCommand(context, 'extension.vim_<', () => handleKeyEvent("<"));
     registerCommand(context, 'extension.vim_>', () => handleKeyEvent(">"));
+    
+    registerCommand(context, 'extension.vim_$', () => handleKeyEvent("$"));
+    registerCommand(context, 'extension.vim_^', () => handleKeyEvent("^"));
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {

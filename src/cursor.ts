@@ -77,6 +77,39 @@ export default class Cursor {
 		return new vscode.Position(line, column);
 	}
 	
+	static nonBlankLineBegin() : vscode.Position {
+		let pos = this.currentPosition();
+		const linetext = TextEditor.ReadLine(pos.line);
+		if (linetext.length !==0) {
+			var fc = linetext.length - linetext.replace(/^\s+/,"").length;				
+			return new vscode.Position(pos.line, fc);
+		}
+		return new vscode.Position(pos.line, 0);	
+	}
+	
+	static searchLineForward(s : string) : vscode.Position {
+		let pos = this.currentPosition();
+		const linetext = TextEditor.ReadLine(pos.line);
+		let column = pos.character;
+		let searchpos = linetext.indexOf(s, column);		
+		if (searchpos !== -1) {
+			return new vscode.Position(pos.line, searchpos);
+		} 
+		return new vscode.Position(pos.line, 0);
+	}
+	
+	static searchLineBackward(s : string) : vscode.Position {
+		let pos = this.currentPosition();
+		let linetext = TextEditor.ReadLine(pos.line);		
+		let column = pos.character;
+		linetext = linetext.substr(0,column);
+		let searchpos = linetext.lastIndexOf(s, column);		
+		if (searchpos !== -1) {
+			return new vscode.Position(pos.line, searchpos);
+		} 
+		return new vscode.Position(pos.line, 0);		
+	}
+			
 	static lineBegin() : vscode.Position {
 		let pos = this.currentPosition();		
 		return new vscode.Position(pos.line, 0);
