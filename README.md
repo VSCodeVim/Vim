@@ -25,7 +25,7 @@ Vim emulation for Visual Studio Code.
 	* Command Palette: `:`
 	* Navigation: `h`, `j`, `k`, `l`
 	* Indentation: `>>`, `<<`
-	* Deletion: `dd`, `dw`
+	* Deletion: `dd`, `dw`, `db`
 	* Editing: `u`, `ctrl+r`
 	* File Operations: `:q`, `:w`
 
@@ -40,7 +40,20 @@ In no particular order:
 
 ## Contributions
 
-Contributions are extremely welcomed! Take a look at [Extension API](https://code.visualstudio.com/docs/extensionAPI/overview) on how to get started and our current [ssues](https://github.com/VSCodeVim/Vim/issues) to see what we are working on next.
+Contributions are extremely welcomed! 
+Take a look at [Extension API](https://code.visualstudio.com/docs/extensionAPI/overview) on how to get started and our current [issues](https://github.com/VSCodeVim/Vim/issues) to see what we are working on next.
+
+### Getting started
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/).
+2. Fork the repo.
+3. Run `npm install` to install all the dependencies.
+4. Create a topic branch.
+5. Run tests: 
+	* Ensure tslint passes by running: `gulp`
+	* Ensure tests pass by running extension tests within Visual Studio Code
+5. Squash your commits.
+6. Submit your PR
 
 ## License
 
