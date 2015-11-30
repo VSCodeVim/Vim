@@ -7,7 +7,7 @@ import * as cc from './src/cmd_line/lexer';
 import ModeHandler from "./src/mode/modeHandler";
 import {ModeName} from "./src/mode/mode";
 
-var modeHandler;
+var modeHandler : ModeHandler;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

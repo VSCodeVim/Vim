@@ -1,36 +1,37 @@
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import TextEditor from './../textEditor';
+import Cursor from './../cursor';
 
 export default class InsertMode extends Mode {
-    private activationKeyHandler : { [ key : string] : (position : vscode.Position) => vscode.Position; } = {};
+    private activationKeyHandler : { [ key : string] : () => vscode.Position; } = {};
     
     constructor() {
         super(ModeName.Insert);
         
         this.activationKeyHandler = {
             // insert at cursor
-            "i" : (position) => { return position; },
+            "i" : () => { return Cursor.currentPosition(); },
             
             // insert at the beginning of the line            
-            "I" : (position) => { return new vscode.Position(position.line, 0); },
+            "I" : () => { return Cursor.lineEnd(); },
             
             // append after the cursor            
-            "a" : (position) => { return new vscode.Position(position.line, position.character + 1); },
+            "a" : () => { return Cursor.right(); },
             
             // append at the end of the line            
-            "A" : (position) => { return TextEditor.GetEndOfLine(position); },
+            "A" : () => { return Cursor.lineEnd(); },
             
             // open blank line below current line            
-            "o" : (position) => { 
+            "o" : () => { 
                 vscode.commands.executeCommand("editor.action.insertLineAfter");      
-                return new vscode.Position(position.line + 1, 0);
+                return Cursor.down();
             },
             
             // open blank line above current line           
-            "O" : (position) => { 
+            "O" : () => { 
                 vscode.commands.executeCommand("editor.action.insertLineBefore");
-                return new vscode.Position(position.line, 0);
+                return Cursor.up();
             }             
         };
     }
@@ -40,8 +41,8 @@ export default class InsertMode extends Mode {
     }
     
     HandleActivation(key : string) : void {
-        var newPosition = this.activationKeyHandler[key](TextEditor.GetCurrentPosition());
-        TextEditor.SetCurrentPosition(newPosition);
+        var newPosition = this.activationKeyHandler[key]();
+        Cursor.move(newPosition);
     }
     
     HandleKeyEvent(key : string) : void {
