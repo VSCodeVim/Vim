@@ -14,19 +14,16 @@ var paths = {
     ]
 };
 
-
-gulp.task('init', ['tsd']);
-
-gulp.task('compile', shell.task([
-  'node ./node_modules/vscode/bin/compile -p ./',
-]));
-
 gulp.task('tsd', function (callback) {
     return gulp.src('./gulp_tsd.json').pipe(tsd({
         command: 'reinstall',
         config: './tsd.json'
     }, callback));
 });
+
+gulp.task('compile', shell.task([
+  'node ./node_modules/vscode/bin/compile -p ./',
+]));
 
 gulp.task('tslint', function() {
     return gulp.src([paths.scripts_ts, paths.tests_ts])
@@ -46,4 +43,5 @@ gulp.task('test', ['compile'], function () {
         }));
 });
 
+gulp.task('init', ['tsd']);
 gulp.task('default', ['tslint', 'test']);
