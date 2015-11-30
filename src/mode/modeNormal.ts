@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import Cursor from './../cursor';
+import TextEditor from './../textEditor';
 
 export default class CommandMode extends Mode {
 	private keyHandler : { [key : string] : () => void; } = {};
@@ -25,7 +26,8 @@ export default class CommandMode extends Mode {
 			"dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
 			"dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
 			"db" : () => { vscode.commands.executeCommand("deleteWordLeft"); },
-			"esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); }
+			"esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); },
+            "x" : () => { this.CommandDelete(1); }
 		};
 	}
 
@@ -58,4 +60,13 @@ export default class CommandMode extends Mode {
 			this.keyHistory = [];
 		}
 	}
+
+    private CommandDelete(n: number) : void {
+        var pos : vscode.Position = Cursor.currentPosition();
+        var end : vscode.Position = pos.translate(0, n);
+        var range : vscode.Range = new vscode.Range(pos, end);
+        TextEditor.Delete(range).then(function() {
+			Cursor.checkLineEnd();
+		});
+    }
 }
