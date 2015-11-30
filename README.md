@@ -45,15 +45,19 @@ Take a look at [Extension API](https://code.visualstudio.com/docs/extensionAPI/o
 
 ### Getting started
 
+* Prerequisites: *
 1. Install [Visual Studio Code](https://code.visualstudio.com/).
-2. Fork the repo.
-3. Run `npm install` to install all the dependencies.
-4. Create a topic branch.
-5. Run tests: 
-	* Ensure tslint passes by running: `gulp`
+2. Install [Node.js](https://nodejs.org/) with version > 4.0.0
+3. Fork the repo.
+4. Run `npm install` to install all the dependencies.
+5. Run `gulp init` 
+	* This step will install type definitions (using [tsd](http://definitelytyped.org/tsd/)).
+6. Create a topic branch.
+7. Run tests: 
+	* Ensure tslint and tests pass by running: `gulp`
 	* Ensure tests pass by running extension tests within Visual Studio Code
-5. Squash your commits.
-6. Submit your PR
+8. Squash your commits.
+9. Submit your PR
 
 ## License
 
