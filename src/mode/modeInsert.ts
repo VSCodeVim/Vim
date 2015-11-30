@@ -14,7 +14,7 @@ export default class InsertMode extends Mode {
             "i" : () => { return Cursor.currentPosition(); },
             
             // insert at the beginning of the line            
-            "I" : () => { return Cursor.lineEnd(); },
+            "I" : () => { return Cursor.lineBegin(); },
             
             // append after the cursor            
             "a" : () => { return Cursor.right(); },
