@@ -4,34 +4,32 @@ import TextEditor from './../textEditor';
 import Cursor from './../cursor';
 
 export default class InsertMode extends Mode {
-    private activationKeyHandler : { [ key : string] : () => vscode.Position; } = {};
+    private activationKeyHandler : { [ key : string] : () => void; } = {};
     
     constructor() {
         super(ModeName.Insert);
         
         this.activationKeyHandler = {
             // insert at cursor
-            "i" : () => { return Cursor.currentPosition(); },
+            "i" : () => { Cursor.move(Cursor.currentPosition()); },
             
             // insert at the beginning of the line            
-            "I" : () => { return Cursor.lineBegin(); },
+            "I" : () => { Cursor.move(Cursor.lineBegin()); },
             
             // append after the cursor            
-            "a" : () => { return Cursor.right(); },
+            "a" : () => { Cursor.move(Cursor.right()); },
             
             // append at the end of the line            
-            "A" : () => { return Cursor.lineEnd(); },
+            "A" : () => { Cursor.move(Cursor.lineEnd()); },
             
             // open blank line below current line            
             "o" : () => { 
-                vscode.commands.executeCommand("editor.action.insertLineAfter");      
-                return Cursor.down();
+                vscode.commands.executeCommand("editor.action.insertLineAfter");
             },
             
             // open blank line above current line           
             "O" : () => { 
                 vscode.commands.executeCommand("editor.action.insertLineBefore");
-                return Cursor.up();
             }             
         };
     }
@@ -41,8 +39,7 @@ export default class InsertMode extends Mode {
     }
     
     HandleActivation(key : string) : void {
-        var newPosition = this.activationKeyHandler[key]();
-        Cursor.move(newPosition);
+        this.activationKeyHandler[key]();
     }
     
     HandleKeyEvent(key : string) : void {
