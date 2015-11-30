@@ -25,7 +25,8 @@ export default class CommandMode extends Mode {
             "dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
             "dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
             "db" : () => { vscode.commands.executeCommand("deleteWordLeft"); },
-            "esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); }
+            "esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); },
+            "x" : () => { this.CommandDelete(); }
         };
     }
 
@@ -63,5 +64,12 @@ export default class CommandMode extends Mode {
         if (keyHandled) {
             this.keyHistory = [];
         }
+    }
+    
+    private CommandDelete() : void {
+        var pos : vscode.Position = TextEditor.GetCurrentPosition();
+        var end : vscode.Position = pos.translate(0, 1);
+        var range : vscode.Range = new vscode.Range(pos, end);
+        TextEditor.Delete(range);
     }
 }

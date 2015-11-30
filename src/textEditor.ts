@@ -14,8 +14,17 @@ export default class TextEditor {
     }
 
     static Delete(range: vscode.Range) : Thenable<boolean> {
-        return vscode.window.activeTextEditor.edit((editBuilder) => {
+        let editor : vscode.TextEditor = vscode.window.activeTextEditor;
+        return editor.edit((editBuilder) => {
             editBuilder.delete(range);
+
+			// line end check  
+			var pos : vscode.Position = editor.selection.active;
+			if (((pos.character + 1) >= editor.document.lineAt(pos.line).text.length)
+			&& (pos.character > 0)) {
+				var newPos = pos.with(pos.line, pos.character - 1);
+				this.SetCurrentPosition(newPos);
+			}            
         });
     }
 
