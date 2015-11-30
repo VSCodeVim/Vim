@@ -46,6 +46,7 @@
         { "key": "Shift+;", "command": "extension.vim_colon", "when": "editorTextFocus" },
         { "key": ":", "command": "extension.vim_colon", "when": "editorTextFocus" },
         { "key": "space", "command": "extension.vim_space", "when": "editorTextFocus" },
+        { "key": "\\", "command": "extension.vim_backslash", "when": "editorTextFocus" },
 
         { "key": "a", "command": "extension.vim_a", "when": "editorTextFocus" },
         { "key": "b", "command": "extension.vim_b", "when": "editorTextFocus" },
@@ -120,8 +121,18 @@
         
         { "key": "Shift+,", "command": "extension.vim_<", "when": "editorTextFocus" },
         { "key": "Shift+.", "command": "extension.vim_>", "when": "editorTextFocus" }
-        
-    ]
+    ],
+    "configuration": {
+      "title": "Vim Configuration",
+      "type": "object",
+      "properties": {
+        "vim.keyboardLayout": {
+          "default": "en-US (QWERTY)",
+          "type": "string",
+          "description": "Keyboard layout to use to translated key presses."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
