@@ -22,7 +22,7 @@ export default class TextEditor {
 			var pos : vscode.Position = editor.selection.active;
 			if (((pos.character + 1) >= editor.document.lineAt(pos.line).text.length)
 			&& (pos.character > 0)) {
-				var newPos = pos.with(pos.line, pos.character-1);
+				var newPos = pos.with(pos.line, pos.character - 1);
 				this.SetCurrentPosition(newPos);
 			}            
         });
