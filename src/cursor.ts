@@ -29,7 +29,7 @@ export default class Cursor {
 		let pos = this.currentPosition();
 		let column = pos.character;
 		
-		if (column < TextEditor.ReadLine(pos.line).length) {
+		if (column < TextEditor.ReadLine(pos.line).length - 1) {
 			column++;
 		}
 		
@@ -90,7 +90,7 @@ export default class Cursor {
 	}	
 
 	private static isLastLine(line: number): boolean {
-		return (vscode.window.activeTextEditor.document.lineCount + 1) === line;
+		return (vscode.window.activeTextEditor.document.lineCount - 1) === line;
 	}
 }
 
