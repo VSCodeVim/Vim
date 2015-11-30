@@ -92,5 +92,15 @@ export default class Cursor {
 	private static isLastLine(line: number): boolean {
 		return (vscode.window.activeTextEditor.document.lineCount - 1) === line;
 	}
+	
+	static checkLineEnd() : void {
+		let pos = this.currentPosition();
+		const lineLength = TextEditor.ReadLine(pos.line).length;
+		if (pos.character === 0 || lineLength === 0) {
+			return;
+		} else if (pos.character >= lineLength) {
+			this.move(pos.translate(0, -1));
+		}
+	}
 }
 
