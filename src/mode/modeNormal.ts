@@ -21,6 +21,8 @@ export default class CommandMode extends Mode {
 			"l" : () => { Cursor.move(Cursor.right()); },
 			"$" : () => { Cursor.move(Cursor.lineEnd()); },
 			"^" : () => { Cursor.move(Cursor.lineBegin()); },
+			"gg" : () => { Cursor.move(Cursor.firstLineNonBlankChar()); },
+			"G" : () => { Cursor.move(Cursor.lastLineNonBlankChar()); },
 			"w" : () => { Cursor.move(Cursor.wordRight()); },
 			"b" : () => { Cursor.move(Cursor.wordLeft()); },
 			">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },

@@ -242,4 +242,29 @@ suite("cursor", () => {
 		assert.equal(pos.line, 1);
 		assert.equal(pos.character, 1);
 	});
+
+	test("get first line begin cursor on first non-blank character", () => {
+		let cursor = Cursor.firstLineNonBlankChar();
+
+		assert.equal(cursor.line, 0);
+		assert.equal(cursor.character, 0);
+
+		TextEditor.insert("  ", new vscode.Position(0, 0)).then(() => {
+			assert.equal(cursor.line, 0);
+			assert.equal(cursor.character, 2);
+		});
+	});
+
+	test("get last line begin cursor on first non-blank character", () => {
+		let cursor = Cursor.lastLineNonBlankChar();
+
+		assert.equal(cursor.line, 2);
+		assert.equal(cursor.character, 0);
+
+		let line = Cursor.documentEnd().line;
+		TextEditor.insert("  ", new vscode.Position(line, 0)).then(() => {
+			assert.equal(cursor.line, 2);
+			assert.equal(cursor.character, 2);
+		});
+	});
 });

@@ -23,7 +23,7 @@ Vim emulation for Visual Studio Code.
 
 * Commands:
 	* Command Palette: `:`
-	* Navigation: `h`, `j`, `k`, `l`
+	* Navigation: `h`, `j`, `k`, `l`, `w`, `b`, `gg`, `G`
 	* Indentation: `>>`, `<<`
 	* Deletion: `dd`, `dw`, `db`
 	* Editing: `u`, `ctrl+r`
