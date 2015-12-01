@@ -87,6 +87,9 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_8', () => handleKeyEvent("8"));
     registerCommand(context, 'extension.vim_9', () => handleKeyEvent("9"));   
 
+    registerCommand(context, 'extension.vim_$', () => handleKeyEvent("$"));
+    registerCommand(context, 'extension.vim_^', () => handleKeyEvent("^"));
+
     registerCommand(context, 'extension.vim_ctrl_r', () => handleKeyEvent("ctrl+r"));
     registerCommand(context, 'extension.vim_ctrl_[', () => handleKeyEvent("ctrl+["));
     
