@@ -35,5 +35,9 @@ export default class TextEditor {
 
 		return vscode.window.activeTextEditor.document.lineAt(lineNo).text;
 	}
+	
+	static getLineAt(position: vscode.Position): vscode.TextLine {
+		return vscode.window.activeTextEditor.document.lineAt(position);
+	}
 }
 
