@@ -98,7 +98,6 @@ export function activate(context: vscode.ExtensionContext) {
     
     vscode.commands.registerCommand('extension.vim_$', () => handleKeyEvent("$"));
     
-    registerCustomCommands();
     context.subscriptions.push(cmdLineDisposable);
 }
 
