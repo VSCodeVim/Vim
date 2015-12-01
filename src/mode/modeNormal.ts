@@ -4,6 +4,7 @@ import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import Cursor from './../cursor';
 import TextEditor from './../textEditor';
+import Repeat from './../repeat';
 
 export default class CommandMode extends Mode {
 	private keyHandler : { [key : string] : () => void; } = {};
@@ -15,10 +16,10 @@ export default class CommandMode extends Mode {
 			":" : () => { showCmdLine(); },
 			"u" : () => { vscode.commands.executeCommand("undo"); },
 			"ctrl+r" : () => { vscode.commands.executeCommand("redo"); },
-			"h" : () => { Cursor.move(Cursor.left()); },
-			"j" : () => { Cursor.move(Cursor.down()); },
-			"k" : () => { Cursor.move(Cursor.up()); },
-			"l" : () => { Cursor.move(Cursor.right()); },
+			"h" : () => { Cursor.move(Cursor.left(Repeat.get())); },
+			"j" : () => { Cursor.move(Cursor.down(Repeat.get())); },
+			"k" : () => { Cursor.move(Cursor.up(Repeat.get())); },
+			"l" : () => { Cursor.move(Cursor.right(Repeat.get())); },
 			"w" : () => { vscode.commands.executeCommand("cursorWordRight"); },
 			"b" : () => { vscode.commands.executeCommand("cursorWordLeft"); },
 			">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
@@ -26,8 +27,21 @@ export default class CommandMode extends Mode {
 			"dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
 			"dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
 			"db" : () => { vscode.commands.executeCommand("deleteWordLeft"); },
-			"esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); },
-            "x" : () => { this.CommandDelete(1); }
+			"esc": () => {
+				vscode.commands.executeCommand("workbench.action.closeMessages");
+				Repeat.reset();
+			},
+            "x" : () => { this.CommandDelete(Repeat.get()); },
+			"0" : () => { if (!Repeat.add(0)) { Cursor.move(Cursor.lineBegin()); } },
+			"1" : () => { Repeat.add(1); },
+			"2" : () => { Repeat.add(2); },
+			"3" : () => { Repeat.add(3); },
+			"4" : () => { Repeat.add(4); },
+			"5" : () => { Repeat.add(5); },
+			"6" : () => { Repeat.add(6); },
+			"7" : () => { Repeat.add(7); },
+			"8" : () => { Repeat.add(8); },
+			"9" : () => { Repeat.add(9); }
 		};
 	}
 
