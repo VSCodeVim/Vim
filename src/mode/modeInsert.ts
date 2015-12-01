@@ -44,7 +44,7 @@ export default class InsertMode extends Mode {
     
     HandleKeyEvent(key : string) : void {
         this.keyHistory.push(key);
-        TextEditor.Insert(this.ResolveKeyValue(key));
+        TextEditor.insert(this.ResolveKeyValue(key));
 
         vscode.commands.executeCommand("editor.action.triggerSuggest");
     }
