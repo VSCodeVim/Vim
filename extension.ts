@@ -105,23 +105,3 @@ export function activate(context: vscode.ExtensionContext) {
 function handleKeyEvent(key:string) {
     modeHandler.handleKeyEvent(key);
 }
-
-function registerCustomCommands() {
-    // TODO: Not sure where to put this..
-    // Will move cursor to EOL
-    vscode.commands.registerCommand("cursorEndOfLine", () => {
-        const cursorCharIndex = vscode.window.activeTextEditor.selection.active.character;
-        const lineNumber = vscode.window.activeTextEditor.selection.active.line;
-        
-        const lineLength = vscode.window.activeTextEditor.document.lineAt(lineNumber).text.length;
-        const charDelta = lineLength - cursorCharIndex;
-        
-        const position = new vscode.Position(lineNumber, cursorCharIndex);
-        const updatedPosition = position.translate(0, charDelta);
-        
-        const selection = new vscode.Selection(updatedPosition, updatedPosition);
-        
-        vscode.window.activeTextEditor.selection = selection;
-        vscode.window.activeTextEditor.revealRange(selection, vscode.TextEditorRevealType.Default);
-    });
-}

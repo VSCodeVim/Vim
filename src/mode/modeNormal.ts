@@ -21,7 +21,7 @@ export default class CommandMode extends Mode {
             "dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
             "dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
             "esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); },
-            "$": () => { vscode.commands.executeCommand("cursorEndOfLine")}
+            "$": () => { vscode.commands.executeCommand("cursorEnd")}
         };
     }
  
