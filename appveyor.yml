@@ -1,8 +1,7 @@
 environment:
   node_js_version: "4.1.1"
-  TSD_GITHUB_TOKEN: "4c7f278997af83ba584aaa9c5722d5ecbbcb1dd9"
-
-clone_depth: 1
+  TSD_GITHUB_TOKEN: "8742b29e67faa29aa25564ff7317b50fd7c1327d"
+  clone_depth: 1
 
 install:
   - ps: start-filedownload https://az764295.vo.msecnd.net/public/0.10.1-release/VSCode-win32.zip
