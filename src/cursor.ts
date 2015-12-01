@@ -13,66 +13,79 @@ export default class Cursor {
 		return vscode.window.activeTextEditor.selection.active;
 	}	
 	
-	static left() : vscode.Position {
+	static left(n = 1) : vscode.Position {
 		let pos = this.currentPosition();
 		let column = pos.character;
-		
-		if (column > 0) {
-			column--;
+
+		column -= n;
+		if (column < 0) {
+			column = 0;
 		}
 		
 		this.prevColumn = column;		
 		return new vscode.Position(pos.line, column);		
 	}
 
-	static right() : vscode.Position {
+	static right(n = 1, addFlag = false) : vscode.Position {
 		let pos = this.currentPosition();
 		let column = pos.character;
 		
-		if (column < TextEditor.ReadLine(pos.line).length - 1) {
-			column++;
+		column += n;
+		let max = TextEditor.ReadLine(pos.line).length - 1;
+		if (addFlag) {
+			max += 1;
+		}		
+		if (column >= max) {
+			column = max;
 		}
 		
 		this.prevColumn = column;
 		return new vscode.Position(pos.line, column);
 	}
 	
-	static down() : vscode.Position {
+	static down(n = 1) : vscode.Position {
 		let pos = this.currentPosition();
 		let line = pos.line;
 		let column = this.prevColumn;
 
-		if (!Cursor.isLastLine(line)) {
-			let nextLineMaxColumn = TextEditor.ReadLine(++line).length - 1;
+		let max = vscode.window.activeTextEditor.document.lineCount - 1;
+		line += n;
+		if (line >= max) {
+			line = max;
+		}
+		
+		let nextLineMaxColumn = TextEditor.ReadLine(line).length - 1;
 			
-			if (nextLineMaxColumn < 0) {
-				nextLineMaxColumn = 0;
-			}
+		if (nextLineMaxColumn < 0) {
+			nextLineMaxColumn = 0;
+		}
 
-			if (nextLineMaxColumn < this.prevColumn) {
-				column = nextLineMaxColumn;
-			}
+		if (nextLineMaxColumn < this.prevColumn) {
+			column = nextLineMaxColumn;
 		}
 
 		return new vscode.Position(line, column);
 	}
 
-	static up() : vscode.Position {
+	static up(n = 1) : vscode.Position {
 		let pos = this.currentPosition();
 		let line = pos.line;
 		let column = this.prevColumn;
 
-		if (line !== 0) {			
-			let nextLineMaxColumn = TextEditor.ReadLine(--line).length - 1;
+		line -= n;
+		if (line < 0) {
+			line = 0;
+		}
+				
+		let nextLineMaxColumn = TextEditor.ReadLine(line).length - 1;
 
-			if (nextLineMaxColumn < 0) {
-				nextLineMaxColumn = 0;
-			}
+		if (nextLineMaxColumn < 0) {
+			nextLineMaxColumn = 0;
+		}
 			
-			if (nextLineMaxColumn < this.prevColumn) {
-				column = nextLineMaxColumn;
-			}			
-		}		
+		if (nextLineMaxColumn < this.prevColumn) {
+			column = nextLineMaxColumn;
+		}			
 
 		return new vscode.Position(line, column);
 	}
@@ -81,18 +94,21 @@ export default class Cursor {
 		let pos = this.currentPosition();		
 		return new vscode.Position(pos.line, 0);
 	}		
-	
-	static lineEnd() : vscode.Position {
+
+	static lineEnd(addFlag = false) : vscode.Position {
 		let pos = this.currentPosition();
-		const lineLength = TextEditor.ReadLine(pos.line).length;
+		let lineLength = TextEditor.ReadLine(pos.line).length - 1;
+		if (addFlag) {
+			lineLength += 1;
+		}
 		
 		return new vscode.Position(pos.line, lineLength);
 	}	
-
+/*
 	private static isLastLine(line: number): boolean {
 		return (vscode.window.activeTextEditor.document.lineCount - 1) === line;
 	}
-	
+*/	
 	static checkLineEnd() : void {
 		let pos = this.currentPosition();
 		const lineLength = TextEditor.ReadLine(pos.line).length;

@@ -17,10 +17,10 @@ export default class InsertMode extends Mode {
             "I" : () => { Cursor.move(Cursor.lineBegin()); },
             
             // append after the cursor            
-            "a" : () => { Cursor.move(Cursor.right()); },
+            "a" : () => { Cursor.move(Cursor.right(1, true)); },
             
             // append at the end of the line            
-            "A" : () => { Cursor.move(Cursor.lineEnd()); },
+            "A" : () => { Cursor.move(Cursor.lineEnd(true)); },
             
             // open blank line below current line            
             "o" : () => { 
