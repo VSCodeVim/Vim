@@ -2,7 +2,7 @@ import * as assert from 'assert';
 
 import ModeInsert from '../../src/mode/modeInsert';
 import {ModeName} from '../../src/mode/mode';
-import Cursor from '../../src/cursor';
+import Cursor from '../../src/cursor/cursor';
 import TextEditor from '../../src/textEditor';
 
 import * as testUtils from '../testUtils';

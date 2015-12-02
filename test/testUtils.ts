@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import TextEditor from '../src/textEditor';
-import Cursor from '../src/cursor';
+import Cursor from '../src/cursor/cursor';
 import * as assert from 'assert';
 
 export function clearTextEditor(): Thenable<void> {

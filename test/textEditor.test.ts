@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import TextEditor from './../src/textEditor';
-import Cursor from './../src/cursor';
+import Cursor from './../src/cursor/cursor';
 
 import * as testUtils from './testUtils';
 
