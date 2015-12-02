@@ -1,3 +1,5 @@
+import {KeyState} from "../keyState";
+
 export enum ModeName {
     Normal,
     Insert,
@@ -22,6 +24,8 @@ export abstract class Mode {
     get IsActive() : boolean {
         return this.isActive;
     }
+    
+    abstract handle(state : KeyState) : void;
 
     set IsActive(val : boolean) {
         this.isActive = val;
