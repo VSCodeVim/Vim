@@ -43,7 +43,7 @@ Take a look at [Extension API](https://code.visualstudio.com/docs/extensionAPI/o
    * [Node.js](https://nodejs.org/) v4.0.0 or higher
 2. Fork and clone the repo, then
 
-	```
+	```bash
 	$ npm install
 	$ npm install -g gulp
 	$ gulp init
