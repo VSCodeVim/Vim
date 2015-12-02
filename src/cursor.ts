@@ -124,6 +124,17 @@ export default class Cursor {
 		return new vscode.Position(pos.line, lineLength);
 	}
 
+	static firstLineNonBlankChar() : vscode.Position {
+		let character = Cursor.posOfFirstNonBlankChar(0);
+		return new vscode.Position(0, character);
+	}
+
+	static lastLineNonBlankChar() : vscode.Position {
+		const line = vscode.window.activeTextEditor.document.lineCount - 1;
+		let character = Cursor.posOfFirstNonBlankChar(line);
+		return new vscode.Position(line, character);
+	}
+
 	static documentBegin() : vscode.Position {
 		return new vscode.Position(0, 0);
 	}
@@ -223,5 +234,9 @@ export default class Cursor {
 		}
 
 		return null;
+	}
+
+	private static posOfFirstNonBlankChar(line: number): number {
+		return TextEditor.readLine(line).match(/^\s*/)[0].length;
 	}
 }
