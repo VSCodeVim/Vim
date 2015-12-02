@@ -9,7 +9,7 @@
     "color": "#a5c9a2",
     "theme": "light"
   },
-  "license":"MIT",
+  "license" : "MIT",
   "keywords": [
     "vim",
     "vi",
