@@ -134,7 +134,6 @@
     "gulp-tsd": "0.0.4",
     "gulp-tslint": "^3.6.0",
     "gulp-typescript": "^2.9.2",
-    "lodash": "^3.10.1",
     "tsd": "^0.6.5",
     "typescript": "^1.6.2",
     "vscode": "0.10.x"
