@@ -6,6 +6,7 @@ import {showCmdLine} from './src/cmd_line/main';
 import * as cc from './src/cmd_line/lexer';
 import ModeHandler from "./src/mode/modeHandler";
 import {ModeName} from "./src/mode/mode";
+import Cursor from "./src/cursor/cursor";
 
 var modeHandler : ModeHandler;
 
@@ -13,6 +14,7 @@ var modeHandler : ModeHandler;
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     modeHandler = new ModeHandler();
+    Cursor.blockCursor(modeHandler);
 
     console.log('Congratulations, your extension "vim" is now active!');
 
@@ -85,17 +87,17 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_6', () => handleKeyEvent("6"));
     registerCommand(context, 'extension.vim_7', () => handleKeyEvent("7"));
     registerCommand(context, 'extension.vim_8', () => handleKeyEvent("8"));
-    registerCommand(context, 'extension.vim_9', () => handleKeyEvent("9"));   
+    registerCommand(context, 'extension.vim_9', () => handleKeyEvent("9"));
 
     registerCommand(context, 'extension.vim_$', () => handleKeyEvent("$"));
     registerCommand(context, 'extension.vim_^', () => handleKeyEvent("^"));
 
     registerCommand(context, 'extension.vim_ctrl_r', () => handleKeyEvent("ctrl+r"));
     registerCommand(context, 'extension.vim_ctrl_[', () => handleKeyEvent("ctrl+["));
-    
+
     registerCommand(context, 'extension.vim_<', () => handleKeyEvent("<"));
     registerCommand(context, 'extension.vim_>', () => handleKeyEvent(">"));
-    
+
     registerCommand(context, 'extension.vim_backslash', () => handleKeyEvent("\\"));
 }
 
