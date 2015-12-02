@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import TextEditor from './../src/textEditor';
-import Cursor from './../src/cursor';
+import Cursor from './../src/cursor/cursor';
 
 suite("cursor", () => {
 	let text: Array<string> = [
@@ -55,7 +55,7 @@ suite("cursor", () => {
 		assert.equal(right.character, 6);
 	});
 
-	test("right on right-most column should stay at the same location", () => {
+	test("right on right-most column should NOT stay at the same location", () => {
 		Cursor.move(new vscode.Position(0, 7));
 
 		let current = Cursor.currentPosition();
@@ -64,7 +64,7 @@ suite("cursor", () => {
 
 		let right = Cursor.right();
 		assert.equal(right.line, 0);
-		assert.equal(right.character, 7);
+		assert.notEqual(right.character, 7);
 	});
 
 	test("down should move cursor one line down", () => {

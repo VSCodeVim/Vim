@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import TextEditor from './../textEditor';
-import Cursor from './../cursor';
+import Cursor from './../cursor/cursor';
 
 export default class InsertMode extends Mode {
 

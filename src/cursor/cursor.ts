@@ -1,9 +1,14 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
-import TextEditor from "./textEditor";
+import TextEditor from "./../textEditor";
 
 export default class Cursor {
 	private static prevColumn: number = 0;
+
+	// overrride this function between cursor mode and caret mode
+	protected static maxLineLength(line: number) : number {
+		return TextEditor.readLine(line).length;
+	}
 
 	static move(newPosition: vscode.Position) {
 		if (newPosition === null) {
@@ -119,7 +124,7 @@ export default class Cursor {
 
 	static lineEnd() : vscode.Position {
 		let pos = this.currentPosition();
-		const lineLength = TextEditor.readLine(pos.line).length;
+		let lineLength = this.maxLineLength(pos.line);
 
 		return new vscode.Position(pos.line, lineLength);
 	}
@@ -154,7 +159,7 @@ export default class Cursor {
 	}
 
 	private static isLineEnd(position : vscode.Position) : boolean {
-		let lineEnd = TextEditor.readLine(position.line).length - 1;
+		let lineEnd  = this.maxLineLength(position.line);
 		if (lineEnd < 0) {
 			lineEnd = 0;
 		}

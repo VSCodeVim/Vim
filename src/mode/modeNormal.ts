@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
-import Cursor from './../cursor';
+import Caret from './../cursor/caret';
 import TextEditor from './../textEditor';
 
 export default class CommandMode extends Mode {
@@ -15,16 +15,16 @@ export default class CommandMode extends Mode {
 			":" : () => { showCmdLine(); },
 			"u" : () => { vscode.commands.executeCommand("undo"); },
 			"ctrl+r" : () => { vscode.commands.executeCommand("redo"); },
-			"h" : () => { Cursor.move(Cursor.left()); },
-			"j" : () => { Cursor.move(Cursor.down()); },
-			"k" : () => { Cursor.move(Cursor.up()); },
-			"l" : () => { Cursor.move(Cursor.right()); },
-			"$" : () => { Cursor.move(Cursor.lineEnd()); },
-			"^" : () => { Cursor.move(Cursor.lineBegin()); },
-			"gg" : () => { Cursor.move(Cursor.firstLineNonBlankChar()); },
-			"G" : () => { Cursor.move(Cursor.lastLineNonBlankChar()); },
-			"w" : () => { Cursor.move(Cursor.wordRight()); },
-			"b" : () => { Cursor.move(Cursor.wordLeft()); },
+			"h" : () => { Caret.move(Caret.left()); },
+			"j" : () => { Caret.move(Caret.down()); },
+			"k" : () => { Caret.move(Caret.up()); },
+			"l" : () => { Caret.move(Caret.right()); },
+			"$" : () => { Caret.move(Caret.lineEnd()); },
+			"^" : () => { Caret.move(Caret.lineBegin()); },
+			"gg" : () => { Caret.move(Caret.firstLineNonBlankChar()); },
+			"G" : () => { Caret.move(Caret.lastLineNonBlankChar()); },
+			"w" : () => { Caret.move(Caret.wordRight()); },
+			"b" : () => { Caret.move(Caret.wordLeft()); },
 			">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
 			"<<" : () => { vscode.commands.executeCommand("editor.action.outdentLines"); },
 			"dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
@@ -37,7 +37,7 @@ export default class CommandMode extends Mode {
 
 	ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
 		if (key === 'esc' || key === 'ctrl+[') {
-			Cursor.move(Cursor.left());
+			Caret.move(Caret.left());
 			return true;
 		}
 	}
@@ -66,14 +66,14 @@ export default class CommandMode extends Mode {
 	}
 
     private CommandDelete(n: number) : void {
-        let pos = Cursor.currentPosition();
+        let pos = Caret.currentPosition();
         let end = pos.translate(0, n);
         let range : vscode.Range = new vscode.Range(pos, end);
         TextEditor.delete(range).then(function() {
-			let lineEnd = Cursor.lineEnd();
+			let lineEnd = Caret.lineEnd();
 
-			if (pos.character === lineEnd.character) {
-				Cursor.move(Cursor.left());
+			if (pos.character === lineEnd.character + 1) {
+				Caret.move(Caret.left());
 			}
 		});
     }
