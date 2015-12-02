@@ -30,7 +30,7 @@ export default class CommandMode extends Mode {
 			"dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
 			"db" : () => { vscode.commands.executeCommand("deleteWordLeft"); },
 			"gg" : () => { vscode.commands.executeCommand("cursorTop"); },
-			"G" : () => { vscode.commands.executeCommand("cursorBottom"); },			
+			"G" : () => { vscode.commands.executeCommand("cursorBottom"); },
 			"esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); }
 		};	
 				
