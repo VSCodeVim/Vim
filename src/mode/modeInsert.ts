@@ -4,7 +4,8 @@ import TextEditor from './../textEditor';
 import Cursor from './../cursor';
 
 export default class InsertMode extends Mode {
-    private activationKeyHandler : { [ key : string] : () => void; } = {};
+
+    private activationKeyHandler : { [ key : string] : () => Thenable<void> | void; };
 
     constructor() {
         super(ModeName.Insert);
@@ -24,12 +25,12 @@ export default class InsertMode extends Mode {
 
             // open blank line below current line
             "o" : () => {
-                vscode.commands.executeCommand("editor.action.insertLineAfter");
+                return vscode.commands.executeCommand("editor.action.insertLineAfter");
             },
 
             // open blank line above current line
             "O" : () => {
-                vscode.commands.executeCommand("editor.action.insertLineBefore");
+                return vscode.commands.executeCommand("editor.action.insertLineBefore");
             }
         };
     }
@@ -38,15 +39,17 @@ export default class InsertMode extends Mode {
         return key in this.activationKeyHandler;
     }
 
-    HandleActivation(key : string) : void {
-        this.activationKeyHandler[key]();
+    HandleActivation(key : string) : Thenable<void> | void {
+        return this.activationKeyHandler[key]();
     }
 
-    HandleKeyEvent(key : string) : void {
+    HandleKeyEvent(key : string) : Thenable<boolean> {
         this.keyHistory.push(key);
-        TextEditor.insert(this.ResolveKeyValue(key));
+        var thenable = TextEditor.insert(this.ResolveKeyValue(key));
 
         vscode.commands.executeCommand("editor.action.triggerSuggest");
+
+        return thenable;
     }
 
     // Some keys have names that are different to their value.
