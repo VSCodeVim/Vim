@@ -3,15 +3,17 @@ import * as vscode from 'vscode';
 import TextEditor from './../src/textEditor';
 import Cursor from './../src/cursor';
 
+import * as testUtils from './testUtils';
+
 suite("text editor", () => {
 	suiteSetup(done => {
-		let range = new vscode.Range(Cursor.documentBegin(), Cursor.documentEnd());
-		TextEditor.delete(range).then(done());
+        testUtils.clearTextEditor()
+			.then(done);
 	});
 
 	suiteTeardown(done => {
-		var range = new vscode.Range(Cursor.documentBegin(), Cursor.documentEnd());
-		TextEditor.delete(range).then(done());
+        testUtils.clearTextEditor()
+			.then(done);
 	});
 
 	test("insert 'Hello World'", done => {

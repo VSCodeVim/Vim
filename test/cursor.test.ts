@@ -75,7 +75,6 @@ suite("cursor", () => {
 		assert.equal(current.character, 0);
 
 		let down = Cursor.down();
-		console.log(down.character);
 		assert.equal(down.line, 2);
 		assert.equal(down.character, 0);
 	});

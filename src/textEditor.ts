@@ -24,6 +24,10 @@ export default class TextEditor {
 		});
 	}
 
+	static readFile(): string {
+		return vscode.window.activeTextEditor.document.getText();
+	}
+
 	static readLine(lineNo: number = null): string {
 		if (lineNo === null) {
 			lineNo = vscode.window.activeTextEditor.selection.active.line;
