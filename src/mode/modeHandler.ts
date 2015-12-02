@@ -5,12 +5,16 @@ import {Mode, ModeName} from './mode';
 import NormalMode from './modeNormal';
 import InsertMode from './modeInsert';
 import VisualMode from './modeVisual';
+import Configuration from '../configuration';
 
 export default class ModeHandler {
     private modes : Mode[];
     private statusBarItem : vscode.StatusBarItem;
+    configuration : Configuration;
 
     constructor() {
+        this.configuration = Configuration.fromUserFile();
+
         this.modes = [
             new NormalMode(),
             new InsertMode(),
@@ -38,8 +42,12 @@ export default class ModeHandler {
     }
 
     handleKeyEvent(key : string) : void {
-        var currentModeName = this.currentMode.Name;
+        // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
+        // We'll try to mitigate this problem until it's fixed upstream.
+        // https://github.com/Microsoft/vscode/issues/713
+        key = this.configuration.keyboardLayout.translate(key);
 
+        var currentModeName = this.currentMode.Name;
         var nextMode : Mode;
         var inactiveModes = _.filter(this.modes, (m) => !m.IsActive);
 
