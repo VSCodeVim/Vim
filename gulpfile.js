@@ -1,8 +1,9 @@
-var gulp = require('gulp');
-var tslint = require('gulp-tslint');
-var tsd = require('gulp-tsd');
-var shell = require('gulp-shell');
-var mocha = require('gulp-mocha');
+var gulp = require('gulp'),
+    tslint = require('gulp-tslint'),
+    tsd = require('gulp-tsd'),
+    shell = require('gulp-shell'),
+    mocha = require('gulp-mocha'),
+    trimlines = require('gulp-trimlines');
 
 var paths = {
     scripts_ts: "src/**/*.ts",
@@ -21,11 +22,19 @@ gulp.task('tsd', function (callback) {
     }, callback));
 });
 
-gulp.task('compile', shell.task([
+gulp.task('trim-whitespace', function() {
+  return gulp.src([paths.scripts_ts, paths.tests_ts], { base: "./" })
+    .pipe(trimlines({
+        leading: false
+    }))
+    .pipe(gulp.dest('./'));
+});
+
+gulp.task('compile', ['trim-whitespace'], shell.task([
   'node ./node_modules/vscode/bin/compile -p ./',
 ]));
 
-gulp.task('tslint', function() {
+gulp.task('tslint', ['trim-whitespace'], function() {
     return gulp.src([paths.scripts_ts, paths.tests_ts])
         .pipe(tslint())
         .pipe(tslint.report('prose', {
@@ -44,4 +53,4 @@ gulp.task('test', ['compile'], function () {
 });
 
 gulp.task('init', ['tsd']);
-gulp.task('default', ['tslint', 'test']);
+gulp.task('default', ['trim-whitespace', 'tslint', 'test']);

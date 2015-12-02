@@ -21,14 +21,14 @@ export class QuitCommand extends node.CommandBase {
 		this._shortName = 'q';
 		this._arguments = args;
 	}
-	
+
 	get arguments() : QuitCommandArguments {
 		return this._arguments;
 	}
-	
+
 	execute() : void {
 		this.quit();
-	}	
+	}
 
 	private quit() {
 		// See https://github.com/Microsoft/vscode/issues/723
@@ -36,7 +36,7 @@ export class QuitCommand extends node.CommandBase {
 			&& !this.arguments.bang) {
 				throw error.VimError.fromCode(error.ErrorCode.E37);
 		}
-		
+
 		vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 	};
 }

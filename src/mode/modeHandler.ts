@@ -39,19 +39,19 @@ export default class ModeHandler {
 
     handleKeyEvent(key : string) : void {
         var currentModeName = this.currentMode.Name;
-    
+
         var nextMode : Mode;
         var inactiveModes = _.filter(this.modes, (m) => !m.IsActive);
-        
+
         _.forEach(inactiveModes, (m, i) => {
             if (m.ShouldBeActivated(key, currentModeName)) {
                 nextMode = m;
-            }  
+            }
         });
-        
+
         if (nextMode) {
             this.currentMode.HandleDeactivation();
-            
+
             nextMode.HandleActivation(key);
             this.setCurrentModeByName(nextMode.Name);
             return;

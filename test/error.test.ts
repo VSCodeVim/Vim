@@ -30,6 +30,6 @@ suite("vimError", () => {
 
 		e = VimError.fromCode(ErrorCode.E488);
 		assert.equal(e.code, 488);
-		assert.equal(e.message, "Trailing characters");				
-	});	
+		assert.equal(e.message, "Trailing characters");
+	});
 });

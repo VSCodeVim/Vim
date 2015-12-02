@@ -28,7 +28,7 @@ export class WriteCommand extends node.CommandBase {
 		this._shortName = 'w';
 		this._arguments = args;
 	}
-	
+
 	get arguments() : WriteCommandArguments {
 		return this._arguments;
 	}
@@ -47,10 +47,10 @@ export class WriteCommand extends node.CommandBase {
 			util.showError("Not implemented.");
 			return;
 		}
-		
+
 		if (this.activeTextEditor.document.isUntitled) {
 			throw error.VimError.fromCode(error.ErrorCode.E32);
-		}		
+		}
 
 		fs.access(this.activeTextEditor.document.fileName, fs.W_OK, (accessErr) => {
 			if (accessErr) {
@@ -71,7 +71,7 @@ export class WriteCommand extends node.CommandBase {
 		});
 	}
 
-	private save() {		
+	private save() {
 		this.activeTextEditor.document.save().then(
 			(ok) => {
 				if (ok) {
@@ -82,5 +82,5 @@ export class WriteCommand extends node.CommandBase {
 			},
 			(e) => util.showError(e)
 		);
-	}	
+	}
 }

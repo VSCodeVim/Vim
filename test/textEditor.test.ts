@@ -13,17 +13,17 @@ suite("text editor", () => {
 		var range = new vscode.Range(Cursor.documentBegin(), Cursor.documentEnd());
 		TextEditor.delete(range).then(done());
 	});
-	
+
 	test("insert 'Hello World'", done => {
 		let expectedText = "Hello World";
-		
+
 		TextEditor.insert(expectedText).then(x => {
 			assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
 			let actualText = TextEditor.readLine(0);
 			assert.equal(actualText, expectedText);
 		}).then(done, done);
 	});
-	
+
 	test("replace 'World' with 'Foo Bar'", done => {
 		let newText = "Foo Bar";
 		let start = new vscode.Position(0, 6);
@@ -37,7 +37,7 @@ suite("text editor", () => {
 			assert.equal(actualText, "Hello Foo Bar");
 		}).then(done, done);
 	});
-	
+
 	test("delete `Hello`", done => {
 		assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
 
@@ -49,7 +49,7 @@ suite("text editor", () => {
 			assert.equal(actualText, " Foo Bar");
 		}).then(done, done);
 	});
-	
+
 	test("delete the whole line", done => {
 		assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
 
@@ -60,7 +60,7 @@ suite("text editor", () => {
 			assert.equal(actualText, "");
 		}).then(done, done);
 	});
-	
+
 	test("try to read lines that don't exist", () => {
 		assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
 		assert.throws(() => TextEditor.readLine(1), RangeError);

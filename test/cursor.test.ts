@@ -207,7 +207,7 @@ suite("cursor", () => {
 		assert.equal(wordLeft.line, 0);
 		assert.equal(wordLeft.character, 0);
 	});
-	
+
 	test("wordRight on last word should stay on line at last character", () => {
 		Cursor.move(new vscode.Position(0, 6));
 
@@ -219,7 +219,7 @@ suite("cursor", () => {
 		assert.equal(pos.line, 0);
 		assert.equal(pos.character, 8);
 	});
-	
+
 	test("wordRight on end of line should move to next word on next line", () => {
 		Cursor.move(new vscode.Position(0, 8));
 
@@ -231,7 +231,7 @@ suite("cursor", () => {
 		assert.equal(pos.line, 1);
 		assert.equal(pos.character, 0);
 	});
-	
+
 	test("wordLeft on first word should move to previous line of end of line", () => {
 		Cursor.move(new vscode.Position(2, 0));
 

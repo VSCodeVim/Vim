@@ -48,7 +48,7 @@ export default class CommandMode extends Mode {
 		this.keyHistory.push(key);
 
 		let keyHandled = false;
-		
+
 		for (let window = this.keyHistory.length; window > 0; window--) {
 			let keysPressed = _.takeRight(this.keyHistory, window).join('');
 			if (this.keyHandler[keysPressed] !== undefined) {
@@ -57,7 +57,7 @@ export default class CommandMode extends Mode {
 				break;
 			}
 		}
-		
+
 		if (keyHandled) {
 			this.keyHistory = [];
 		}
@@ -69,7 +69,7 @@ export default class CommandMode extends Mode {
         let range : vscode.Range = new vscode.Range(pos, end);
         TextEditor.delete(range).then(function() {
 			let lineEnd = Cursor.lineEnd();
-			
+
 			if (pos.character === lineEnd.character) {
 				Cursor.move(Cursor.left());
 			}

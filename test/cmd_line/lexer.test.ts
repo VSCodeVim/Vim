@@ -85,7 +85,7 @@ suite("command-line lexer", () => {
 		var tokens = lexer.lex("q something");
 		assert.equal(tokens[0].content, new Token(TokenType.CommandName, "q").content);
 		assert.equal(tokens[1].content, new Token(TokenType.CommandArgs, " something").content);
-	});	
+	});
 
 	test("can lex long command name and args", () => {
 		var tokens = lexer.lex("write12 something here");
