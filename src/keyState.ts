@@ -28,7 +28,7 @@ export class KeyState {
 		this.start = 0;
 		this.keys = [];
 	}
-	
+
 	handleInMode(handler : ConcreteModeHandler) {
 		// reacts to the handling done by the mode;
 	}
@@ -36,37 +36,40 @@ export class KeyState {
 	handle(topHandler : TopHandler) {
         while (!this.isAtEof) {
 			topHandler.currentMode.handle(this);
-			// this.handleInMode(visitor.currentMode); // eventually maybe use this instead
-            
-            if(this.mustChangeMode) {
+			// this.handleInMode(topHandler.currentMode); // eventually maybe use this instead
+
+            if (this.mustChangeMode) {
                 var key = this.next();
-                
+
                 var currentModeName = topHandler.currentMode.Name;
                 var nextMode : Mode;
                 var inactiveModes = _.filter(topHandler.modes, (m) => !m.IsActive);
-        
+
                 _.forEach(inactiveModes, (m, i) => {
                     if (m.ShouldBeActivated(key, currentModeName)) {
                         nextMode = m;
                     }
                 });
-        
+
                 if (nextMode) {
                     topHandler.currentMode.HandleDeactivation();
-        
+
                     nextMode.HandleActivation(key);
                     topHandler.setCurrentModeByName(nextMode.Name);
-                }                      
+                }
             }
         }
-        
+
         if (this.requestMoreUserInput) {
             this.reset();
             return;
         }
-        
-        if (this.isAtEof) this.clear();
-        this.reset();   
+
+        if (this.isAtEof) {
+			this.clear();
+		}
+		
+		this.reset();
 	}
 
 	clear() : void  {
@@ -75,7 +78,7 @@ export class KeyState {
 		this.requestMoreUserInput = false;
 		this.reset();
 	}
-	
+
 	backup() : void {
 		if (--this.index < this.start) {
 			this.ignore();
@@ -87,7 +90,7 @@ export class KeyState {
 			return "";
 		}
 		this.index++;
-		let val = this.keys.copyWithin(this.index - this.start, this.start, this.index).join("");
+		let val = _.slice(this.keys, this.start, this.index).join("");
 		return val;
 	}
 

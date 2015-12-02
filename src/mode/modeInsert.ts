@@ -43,7 +43,7 @@ export default class InsertMode extends Mode {
     HandleActivation(key : string) : Thenable<void> | void {
         return this.activationKeyHandler[key]();
     }
-    
+
     handle(key : KeyState) {
         var c = key.next();
         switch (c) {

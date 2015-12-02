@@ -8,11 +8,9 @@ import {KeyState} from '../keyState';
 
 export default class CommandMode extends Mode {
 	private keyHandler : { [key : string] : () => void; } = {};
-	private incomplete : Array<string>;
 
 	constructor() {
 		super(ModeName.Normal);
-		this.incomplete = ['d'];
 		this.keyHandler = {
 			":" : () => { showCmdLine(); },
 			"u" : () => { vscode.commands.executeCommand("undo"); },
@@ -36,19 +34,21 @@ export default class CommandMode extends Mode {
 			"x" : () => { this.CommandDelete(1); }
 		};
 	}
-	
+
 	// eventually, most of this would be handled by KeyState.handleInMode().
 	handle(state : KeyState) {
 		while (!state.isAtEof) {
 			var keys = state.next();
-			
+
 			if (this.keyHandler[keys]) {
 				this.keyHandler[keys]();
+				state.requestMoreUserInput = false;
+				state.mustChangeMode = false;
 				state.ignore();
 				return;
 			}
 		}
-		
+
 		if (state.isAtEof) {
 			if (this.ShouldRequestModeChange(keys)) {
 				state.mustChangeMode = true;
@@ -58,11 +58,11 @@ export default class CommandMode extends Mode {
 			}
 		}
 	}
-	
+
 	IsSequencePartial(keys : string) {
-		return _.any(this.incomplete, x => x === keys)
+		return _.any(Object.keys(this.keyHandler), x => x.startsWith(keys));
 	}
-	
+
 	ShouldRequestModeChange(key : string) {
 		return key === 'i' || key === 'a' || key === 'A' || key === 'I' || key === 'o' || key === 'O';
 	}
