@@ -4,9 +4,9 @@ import * as assert from 'assert';
 import {commandParsers} from '../../src/cmd_line/subparser';
 
 suite(":write args parser", () => {
-	
+
 	test("has all aliases", () => {
-	   assert.equal(commandParsers.write.name, commandParsers.w.name); 
+	   assert.equal(commandParsers.write.name, commandParsers.w.name);
 	});
 
 	test("can parse empty args", () => {
@@ -51,7 +51,7 @@ suite(":write args parser", () => {
 		assert.equal(args.arguments.optValue, undefined);
 		assert.equal(args.arguments.range, undefined);
 	});
-	
+
 	test("can parse ' !cmd'", () => {
 
 		var args = commandParsers.write(" !foo");

@@ -6,11 +6,11 @@ suite("Mode Handler", () => {
 
     test("ctor", () => {
         var modeHandler = new ModeHandler();
-        
+
         assert.equal(modeHandler.currentMode.Name, ModeName.Normal);
         assert.equal(modeHandler.currentMode.IsActive, true);
     });
-    
+
     test("can set current mode", () => {
         var modeHandler = new ModeHandler();
 
@@ -21,6 +21,6 @@ suite("Mode Handler", () => {
         assert.equal(modeHandler.currentMode.Name, ModeName.Insert);
 
         modeHandler.setCurrentModeByName(ModeName.Visual);
-        assert.equal(modeHandler.currentMode.Name, ModeName.Visual);                    
+        assert.equal(modeHandler.currentMode.Name, ModeName.Visual);
     });
 });

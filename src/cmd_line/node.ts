@@ -101,16 +101,16 @@ export interface CommandArgs {
 }
 
 export abstract class CommandBase {
-	
+
 	protected get activeTextEditor() {
 		return vscode.window.activeTextEditor;
 	}
-	
+
 	get name() : string {
 		return this._name;
 	}
 	protected _name : string;
-	
+
 	get shortName() : string {
 		return this._shortName;
 	}
@@ -119,7 +119,7 @@ export abstract class CommandBase {
 	get arguments() : CommandArgs {
 		return this._arguments;
 	}
-	protected _arguments : CommandArgs;	
-	
+	protected _arguments : CommandArgs;
+
 	abstract execute() : void;
 }

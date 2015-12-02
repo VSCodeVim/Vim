@@ -26,7 +26,7 @@ export abstract class Mode {
     set IsActive(val : boolean) {
         this.isActive = val;
     }
-    
+
     public HandleDeactivation() : void {
         this.keyHistory = [];
     }

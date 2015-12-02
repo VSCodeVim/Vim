@@ -8,7 +8,7 @@ export function showCmdLine(initialText = "") {
 		util.showInfo("No active document.");
 		return;
 	}
-	
+
 	const options : vscode.InputBoxOptions = {
 		prompt: "Vim command line",
 		value: initialText
@@ -23,14 +23,14 @@ function runCmdLine(s : string) : void {
 	if (!(s && s.trim())) {
 		return;
 	}
-	
+
 	try {
 		var cmd = parser.parse(s);
 	} catch (e) {
 		util.showError(e);
 		return;
 	}
-	
+
 	if (cmd.isEmpty) {
 		return;
 	}
@@ -44,7 +44,7 @@ function runCmdLine(s : string) : void {
 		} catch (ee) {
 			// ignore
 		}
-		
-		util.showError(e);	
+
+		util.showError(e);
 	}
 }

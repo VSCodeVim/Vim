@@ -133,6 +133,7 @@
     "gulp-shell": "^0.5.1",
     "gulp-tsd": "0.0.4",
     "gulp-tslint": "^3.6.0",
+    "gulp-trimlines": "^1.0.0",
     "gulp-typescript": "^2.9.2",
     "tsd": "^0.6.5",
     "typescript": "^1.6.2",

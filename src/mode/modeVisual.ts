@@ -9,11 +9,11 @@ export default class VisualMode extends Mode {
         // TODO: improve this logic for "V".
         return (key === "v" || key === "V") && (currentMode === ModeName.Normal);
     }
-    
+
     HandleActivation(key : string) : void {
         // do nothing
     }
-    
+
     HandleKeyEvent(key : string) : void {
         this.keyHistory.push(key);
     }
