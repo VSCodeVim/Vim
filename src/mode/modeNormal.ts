@@ -23,7 +23,7 @@ export default class CommandMode extends Mode {
 			"0" : () => { Cursor.move(Cursor.lineBegin()); },
 			"^" : () => { Cursor.move(Cursor.nonBlankLineBegin()); },						
 			"w" : () => { vscode.commands.executeCommand("cursorWordRight"); },
-			"b" : () => { vscode.commands.executeCommand("cursorWordLeft"); },			
+			"b" : () => { vscode.commands.executeCommand("cursorWordLeft"); },
 			">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
 			"<<" : () => { vscode.commands.executeCommand("editor.action.outdentLines"); },
 			"dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
@@ -54,7 +54,7 @@ export default class CommandMode extends Mode {
 	HandleKeyEvent(key : string) : void {
 		this.keyHistory.push(key);
 
-		let keyHandled = false;		
+		let keyHandled = false;
 		
 		for (let window = this.keyHistory.length; window > 0; window--) {
 			let keysPressed = _.takeRight(this.keyHistory, window).join('');
