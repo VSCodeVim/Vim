@@ -27,18 +27,18 @@ export default class Cursor {
 		let pos = this.currentPosition();
 		let column = pos.character;
 
-		if (column > 0) {
+		if (!this.isLineBeginning(pos)) {
 			column--;
 		}
-			
+
 		return new vscode.Position(pos.line, column);		
 	}
 
 	static right() : vscode.Position {
 		let pos = this.currentPosition();
 		let column = pos.character;
-		
-		if (column < TextEditor.readLine(pos.line).length - 1) {
+
+		if (!this.isLineEnd(pos)) {
 			column++;
 		}
 
@@ -50,7 +50,7 @@ export default class Cursor {
 		let line = pos.line;
 		let column = this.prevColumn;
 
-		if (!Cursor.isLastLine(line)) {
+		if (!Cursor.isLastLine(pos)) {
 			let nextLineMaxColumn = TextEditor.readLine(++line).length - 1;
 			
 			if (nextLineMaxColumn < 0) {
@@ -70,7 +70,7 @@ export default class Cursor {
 		let line = pos.line;
 		let column = this.prevColumn;
 
-		if (line !== 0) {			
+		if (!this.isFirstLine(pos)) {		
 			let nextLineMaxColumn = TextEditor.readLine(--line).length - 1;
 
 			if (nextLineMaxColumn < 0) {
@@ -88,7 +88,7 @@ export default class Cursor {
 	static wordRight() : vscode.Position {
 		let pos = this.currentPosition();
 		if (pos.character === this.lineEnd().character) {
-			if (this.isLastLine(pos.line)) {
+			if (this.isLastLine(pos)) {
 				return null;
 			}
 			let line = TextEditor.getLineAt(pos.translate(1));
@@ -137,9 +137,30 @@ export default class Cursor {
 		let column = TextEditor.readLine(line).length;		
 		return new vscode.Position(line, column);
 	}
+	
+	private static isLineBeginning(position : vscode.Position) : boolean {
+		return position.character === 0;
+	} 
+	
+	private static isLineEnd(position : vscode.Position) : boolean {
+		let lineEnd = TextEditor.readLine(position.line).length - 1;
+		if (lineEnd < 0) {
+			lineEnd = 0;
+		}
+		
+		if (position.character > lineEnd) {
+			throw new RangeError;
+		}
+		
+		return position.character === lineEnd;
+	}
 
-	private static isLastLine(line: number): boolean {
-		return (vscode.window.activeTextEditor.document.lineCount) === line + 1;
+	private static isFirstLine(position : vscode.Position) : boolean {
+		return position.line === 0;
+	}
+	
+	private static isLastLine(position : vscode.Position): boolean {
+		return position.line === (vscode.window.activeTextEditor.document.lineCount - 1);
 	}
 
 	private static _nonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
