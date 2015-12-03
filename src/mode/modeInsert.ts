@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import TextEditor from './../textEditor';
 import Cursor from './../cursor/cursor';
+import {KeyState} from './../keyState';
 
 export default class InsertMode extends Mode {
 
@@ -41,6 +42,18 @@ export default class InsertMode extends Mode {
 
     HandleActivation(key : string) : Thenable<void> | void {
         return this.activationKeyHandler[key]();
+    }
+
+    handle(key : KeyState) {
+        var c = key.next();
+        switch (c) {
+            case 'esc':
+                key.reset();
+                key.mustChangeMode = true;
+                break;
+            default:
+                this.HandleKeyEvent(c);
+        }
     }
 
     HandleKeyEvent(key : string) : Thenable<boolean> {

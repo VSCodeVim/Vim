@@ -18,7 +18,7 @@ suite("caret", () => {
 		let range = new vscode.Range(Caret.documentBegin(), Caret.documentEnd());
 		TextEditor.delete(range).then(() => done());
 	});
-	
+
 	test("right on right-most column should stay at the same location", () => {
 		Caret.move(new vscode.Position(0, 7));
 

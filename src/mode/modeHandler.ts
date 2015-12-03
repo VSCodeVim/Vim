@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import {Mode, ModeName} from './mode';
@@ -6,13 +5,16 @@ import NormalMode from './modeNormal';
 import InsertMode from './modeInsert';
 import VisualMode from './modeVisual';
 import Configuration from '../configuration';
+import {KeyState} from '../keyState';
 
 export default class ModeHandler {
-    private modes : Mode[];
+    modes : Mode[];
     private statusBarItem : vscode.StatusBarItem;
     configuration : Configuration;
+    keyState : KeyState;
 
     constructor() {
+        this.keyState = new KeyState();
         this.configuration = Configuration.fromUserFile();
 
         this.modes = [
@@ -41,31 +43,20 @@ export default class ModeHandler {
         this.setupStatusBarItem(statusBarText.toUpperCase());
     }
 
+    handleKeyEvents(keys : Array<string>) {
+        for (const key of keys) {
+            this.handleKeyEvent(key);
+        }
+    }
+
     handleKeyEvent(key : string) : void {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
         key = this.configuration.keyboardLayout.translate(key);
 
-        var currentModeName = this.currentMode.Name;
-        var nextMode : Mode;
-        var inactiveModes = _.filter(this.modes, (m) => !m.IsActive);
-
-        _.forEach(inactiveModes, (m, i) => {
-            if (m.ShouldBeActivated(key, currentModeName)) {
-                nextMode = m;
-            }
-        });
-
-        if (nextMode) {
-            this.currentMode.HandleDeactivation();
-
-            nextMode.HandleActivation(key);
-            this.setCurrentModeByName(nextMode.Name);
-            return;
-        }
-
-        this.currentMode.HandleKeyEvent(key);
+        this.keyState.addKey(key);
+        this.keyState.handle(this);
     }
 
     private setupStatusBarItem(text : string) : void {
