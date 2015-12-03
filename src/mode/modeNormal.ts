@@ -42,7 +42,7 @@ export default class CommandMode extends Mode {
 	}
 
 	HandleActivation(key : string) : void {
-		this.caret.reset();
+		this.caret.reset().left().move();
 	}
 
 	HandleKeyEvent(key : string) : void {
