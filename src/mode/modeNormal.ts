@@ -4,37 +4,37 @@ import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import Cursor from './../cursor';
 import TextEditor from './../textEditor';
+import * as Motions from './../motions/commonMotions';
+import * as Operators from './../operations/commonOperations';
 
 export default class CommandMode extends Mode {
-	private keyHandler : { [key : string] : () => void; } = {};
-
+	private operations: { [key: string]: () => any;} = {};
+	private opStack: any[] = [];
+	
 	constructor() {
 		super(ModeName.Normal);
-
-		this.keyHandler = {
-			":" : () => { showCmdLine(); },
-			"u" : () => { vscode.commands.executeCommand("undo"); },
-			"ctrl+r" : () => { vscode.commands.executeCommand("redo"); },
-			"h" : () => { Cursor.move(Cursor.left()); },
-			"j" : () => { Cursor.move(Cursor.down()); },
-			"k" : () => { Cursor.move(Cursor.up()); },
-			"l" : () => { Cursor.move(Cursor.right()); },
-			"$" : () => { Cursor.move(Cursor.lineEnd()); },
-			"^" : () => { Cursor.move(Cursor.lineBegin()); },
-			"gg" : () => { Cursor.move(Cursor.firstLineNonBlankChar()); },
-			"G" : () => { Cursor.move(Cursor.lastLineNonBlankChar()); },
-			"w" : () => { Cursor.move(Cursor.wordRight()); },
-			"b" : () => { Cursor.move(Cursor.wordLeft()); },
-			">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
-			"<<" : () => { vscode.commands.executeCommand("editor.action.outdentLines"); },
-			"dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
-			"dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
-			"db" : () => { vscode.commands.executeCommand("deleteWordLeft"); },
-			"esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); },
-			"x" : () => { this.CommandDelete(1); }
-		};
+		
+		this.operations = {
+			"d": () => this.lineWiseOperator(Operators.Delete),
+			"h": () => new Motions.Left(),
+			"l": () => new Motions.Right(),
+			"j": () => new Motions.Down(),
+			"k": () => new Motions.Up(),
+			"w": () => new Motions.WordRight(),
+			"b": () => new Motions.WordLeft(),
+			"x": () => [new Operators.Delete(), new Motions.Right()],
+			"X": () => [new Operators.Delete(), new Motions.Left()]
+		}
 	}
-
+	
+	private lineWiseOperator(constructor) {
+		if (this.topOperation instanceof constructor) {
+			return new Motions.MoveToRelativeLine();
+		} else {
+			return new constructor();
+		}
+	}
+	
 	ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
 		if (key === 'esc' || key === 'ctrl+[') {
 			Cursor.move(Cursor.left());
@@ -47,34 +47,48 @@ export default class CommandMode extends Mode {
 	}
 
 	HandleKeyEvent(key : string) : void {
-		this.keyHistory.push(key);
 
-		let keyHandled = false;
+		if (this.operations[key] != undefined) {
+			let ops = this.operations[key]();
+			ops = _.isArray(ops) ? ops : [ops];
 
-		for (let window = this.keyHistory.length; window > 0; window--) {
-			let keysPressed = _.takeRight(this.keyHistory, window).join('');
-			if (this.keyHandler[keysPressed] !== undefined) {
-				keyHandled = true;
-				this.keyHandler[keysPressed]();
-				break;
+			for (var operation of ops) {
+				if (this.topOperation != null && typeof this.topOperation.canComposeWith === "function" && !this.topOperation.canComposeWith(operation)) {
+					console.log("could not compose");
+					//reset to normal mode
+					this.keyHistory = [];
+					this.opStack = [];
+					return;
+				}
+				
+				this.opStack.push(operation);
 			}
+			
+			this.processStack();
 		}
 
-		if (keyHandled) {
-			this.keyHistory = [];
-		}
 	}
 
-    private CommandDelete(n: number) : void {
-        let pos = Cursor.currentPosition();
-        let end = pos.translate(0, n);
-        let range : vscode.Range = new vscode.Range(pos, end);
-        TextEditor.delete(range).then(function() {
-			let lineEnd = Cursor.lineEnd();
-
-			if (pos.character === lineEnd.character) {
-				Cursor.move(Cursor.left());
-			}
-		});
-    }
+	private get topOperation(): any {
+		return _.last(this.opStack);
+	}
+	
+	private processStack() {
+		if (this.opStack.length === 0) {
+			return;
+		}
+		
+		if (this.topOperation instanceof Operators.Operator && !this.topOperation.isComposed) {
+			//setup pending operator mode here
+			return;
+		}
+		
+		var operation = this.opStack.pop();
+		if (this.opStack.length) {
+			this.topOperation.compose(operation);
+			this.processStack();
+		} else {
+			operation.execute();
+		}
+	}
 }

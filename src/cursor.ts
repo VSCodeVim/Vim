@@ -176,7 +176,7 @@ export default class Cursor {
 
 	private static _nonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 
-	private static getNextWordPosition(): vscode.Position {
+	public static getNextWordPosition(): vscode.Position {
 		let segments = ["(^[\t ]*$)"];
 		segments.push(`([^\\s${_.escapeRegExp(this._nonWordCharacters) }]+)`);
 		segments.push(`[\\s${_.escapeRegExp(this._nonWordCharacters) }]+`);
@@ -205,7 +205,7 @@ export default class Cursor {
 		return null;
 	}
 
-	private static getPreviousWordPosition(): vscode.Position {
+	public static getPreviousWordPosition(): vscode.Position {
 		let segments = ["(^[\t ]*$)"];
 		segments.push(`([^\\s${_.escapeRegExp(this._nonWordCharacters) }]+)`);
 		segments.push(`[\\s${_.escapeRegExp(this._nonWordCharacters) }]+`);
