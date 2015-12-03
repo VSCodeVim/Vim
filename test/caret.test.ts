@@ -1,7 +1,6 @@
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import TextEditor from './../src/textEditor';
-import Caret from './../src/cursor/caret';
+import {Caret} from './../src/motion/motion';
 
 suite("caret", () => {
 	let text: Array<string> = [
@@ -15,19 +14,13 @@ suite("caret", () => {
 	});
 
 	teardown(done => {
-		let range = new vscode.Range(Caret.documentBegin(), Caret.documentEnd());
-		TextEditor.delete(range).then(() => done());
+		TextEditor.delete().then(() => done());
 	});
-	
+
 	test("right on right-most column should stay at the same location", () => {
-		Caret.move(new vscode.Position(0, 7));
+		let cursor = new Caret(0, 7).right();
 
-		let current = Caret.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 7);
-
-		let right = Caret.right();
-		assert.equal(right.line, 0);
-		assert.equal(right.character, 7);
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 7);
 	});
 });

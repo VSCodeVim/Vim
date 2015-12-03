@@ -11,7 +11,14 @@ export default class TextEditor {
 		});
 	}
 
-	static delete(range: vscode.Range) : Thenable<boolean> {
+	static delete(range: vscode.Range = null) : Thenable<boolean> {
+		if (range === null) {
+			let start = new vscode.Position(0, 0);
+			let lastLine = vscode.window.activeTextEditor.document.lineCount - 1;
+			let end = vscode.window.activeTextEditor.document.lineAt(lastLine).range.end;
+
+			range = new vscode.Range(start, end);
+		}
 		return vscode.window.activeTextEditor.edit((editBuilder) => {
 			editBuilder.delete(range);
 		});
@@ -40,8 +47,20 @@ export default class TextEditor {
 		return vscode.window.activeTextEditor.document.lineAt(lineNo).text;
 	}
 
+	static getLineCount() {
+		return vscode.window.activeTextEditor.document.lineCount;
+	}
+
 	static getLineAt(position: vscode.Position): vscode.TextLine {
 		return vscode.window.activeTextEditor.document.lineAt(position);
+	}
+
+	static isFirstLine(position : vscode.Position) : boolean {
+		return position.line === 0;
+	}
+
+	static isLastLine(position : vscode.Position): boolean {
+		return position.line === (vscode.window.activeTextEditor.document.lineCount - 1);
 	}
 }
 

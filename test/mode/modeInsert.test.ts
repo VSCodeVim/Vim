@@ -2,28 +2,21 @@ import * as assert from 'assert';
 
 import ModeInsert from '../../src/mode/modeInsert';
 import {ModeName} from '../../src/mode/mode';
-import Cursor from '../../src/cursor/cursor';
+import {Cursor} from '../../src/motion/motion';
 import TextEditor from '../../src/textEditor';
-
 import * as testUtils from '../testUtils';
-
-import * as vscode from 'vscode';
 
 let modeHandler: ModeInsert = null;
 
 suite("Mode Insert", () => {
 	setup((done) => {
         modeHandler = new ModeInsert();
-
-		testUtils.clearTextEditor()
-            .then(done);
+		TextEditor.delete().then(() => done());
 	});
 
 	teardown((done) => {
         modeHandler = null;
-
-        testUtils.clearTextEditor()
-            .then(done);
+		TextEditor.delete().then(() => done());
 	});
 
     test("can be activated", () => {
@@ -41,7 +34,7 @@ suite("Mode Insert", () => {
         modeHandler.HandleKeyEvent("!")
             .then(() => {
                 return testUtils.assertTextEditorText(expected);
-            }).then(done);
+            }).then(done, done);
     });
 
     test("Can handle 'o'", (done) => {
@@ -52,7 +45,7 @@ suite("Mode Insert", () => {
                 return modeHandler.HandleActivation("o");
             }).then(() => {
                 return testUtils.assertTextEditorText(expected);
-            }).then(done);
+            }).then(done, done);
     });
 
     test("Can handle 'O'", (done) => {
@@ -63,7 +56,7 @@ suite("Mode Insert", () => {
                 return modeHandler.HandleActivation("O");
             }).then(() => {
                 return testUtils.assertTextEditorText(expected);
-            }).then(done);
+            }).then(done, done);
     });
 
     test("Can handle 'i'", (done) => {
@@ -71,14 +64,14 @@ suite("Mode Insert", () => {
 
         TextEditor.insert("texttext")
             .then(() => {
-                Cursor.move(new vscode.Position(0, 4));
+                new Cursor(0, 4).move();
             }).then(() => {
                 return modeHandler.HandleActivation("i");
             }).then(() => {
                 return modeHandler.HandleKeyEvent("!");
             }).then(() => {
                return testUtils.assertTextEditorText(expected);
-            }).then(done);
+            }).then(done, done);
     });
 
     test("Can handle 'I'", (done) => {
@@ -86,14 +79,14 @@ suite("Mode Insert", () => {
 
         TextEditor.insert("text")
             .then(() => {
-                Cursor.move(new vscode.Position(0, 4));
+                new Cursor(0, 4).move();
             }).then(() => {
                 return modeHandler.HandleActivation("I");
             }).then(() => {
                 return modeHandler.HandleKeyEvent("!");
             }).then(() => {
                return testUtils.assertTextEditorText(expected);
-            }).then(done);
+            }).then(done, done);
     });
 
     test("Can handle 'a'", (done) => {
@@ -101,14 +94,14 @@ suite("Mode Insert", () => {
 
         TextEditor.insert("texttext")
             .then(() => {
-                Cursor.move(new vscode.Position(0, 4));
+                new Cursor(0, 4).move();
             }).then(() => {
                 return modeHandler.HandleActivation("a");
             }).then(() => {
                 return modeHandler.HandleKeyEvent("!");
             }).then(() => {
                return testUtils.assertTextEditorText(expected);
-            }).then(done);
+            }).then(done, done);
     });
 
     test("Can handle 'A'", (done) => {
@@ -116,13 +109,13 @@ suite("Mode Insert", () => {
 
         TextEditor.insert("text")
             .then(() => {
-                Cursor.move(new vscode.Position(0, 0));
+                new Cursor(0, 0).move();
             }).then(() => {
                 return modeHandler.HandleActivation("A");
             }).then(() => {
                 return modeHandler.HandleKeyEvent("!");
             }).then(() => {
                return testUtils.assertTextEditorText(expected);
-            }).then(done);
+            }).then(done, done);
     });
 });

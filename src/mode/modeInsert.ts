@@ -1,27 +1,30 @@
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import TextEditor from './../textEditor';
-import Cursor from './../cursor/cursor';
+import {Cursor} from './../motion/motion';
 
 export default class InsertMode extends Mode {
 
-    private activationKeyHandler : { [ key : string] : () => Thenable<void> | void; };
+    private activationKeyHandler : { [ key : string] : (cursor : Cursor) => Thenable<void> | void; };
+    private cursor : Cursor = new Cursor();
 
     constructor() {
         super(ModeName.Insert);
 
         this.activationKeyHandler = {
             // insert at cursor
-            "i" : () => { Cursor.move(Cursor.currentPosition()); },
+            "i" : (cursor) => {
+                // nothing
+            },
 
             // insert at the beginning of the line
-            "I" : () => { Cursor.move(Cursor.lineBegin()); },
+            "I" : (cursor) => { cursor.lineBegin().move(); },
 
             // append after the cursor
-            "a" : () => { Cursor.move(Cursor.right()); },
+            "a" : (cursor) => { cursor.right().move(); },
 
             // append at the end of the line
-            "A" : () => { Cursor.move(Cursor.lineEnd()); },
+            "A" : (cursor) => { cursor.lineEnd().move(); },
 
             // open blank line below current line
             "o" : () => {
@@ -40,7 +43,8 @@ export default class InsertMode extends Mode {
     }
 
     HandleActivation(key : string) : Thenable<void> | void {
-        return this.activationKeyHandler[key]();
+        this.cursor.reset();
+        return this.activationKeyHandler[key](this.cursor);
     }
 
     HandleKeyEvent(key : string) : Thenable<boolean> {

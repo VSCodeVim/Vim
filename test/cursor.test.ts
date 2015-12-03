@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import TextEditor from './../src/textEditor';
-import Cursor from './../src/cursor/cursor';
+import {Cursor} from './../src/motion/motion';
+
 
 suite("cursor", () => {
 	let text: Array<string> = [
@@ -15,256 +16,225 @@ suite("cursor", () => {
 	});
 
 	teardown(done => {
-		let range = new vscode.Range(Cursor.documentBegin(), Cursor.documentEnd());
-		TextEditor.delete(range).then(() => done());
+		TextEditor.delete().then(() => done());
 	});
 
 	test("left should move cursor one column left", () => {
-		Cursor.move(new vscode.Position(0, 5));
+		let cursor = new Cursor(0, 5);
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 5);
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 5);
+		let left = cursor.left();
+		assert.equal(left.position.line, 0);
+		assert.equal(left.position.character, 4);
 
-		let left = Cursor.left();
-		assert.equal(left.line, 0);
-		assert.equal(left.character, 4);
+		let moveLeft = left.move();
+		assert.equal(moveLeft.position.line, 0);
+		assert.equal(moveLeft.position.character, 4);
+
+		let curPos = Cursor.getActualPosition();
+		assert.equal(moveLeft.position.line, curPos.line);
+		assert.equal(moveLeft.position.character, curPos.character);
 	});
 
 	test("left on left-most column should stay at the same location", () => {
-		Cursor.move(new vscode.Position(0, 0));
+		let cursor = new Cursor(0, 0);
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 0);
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 0);
+		let left = cursor.left();
+		assert.equal(left.position.line, 0);
+		assert.equal(left.position.character, 0);
 
-		let left = Cursor.left();
-		assert.equal(left.line, 0);
-		assert.equal(left.character, 0);
+		let moveLeft = left.move();
+		assert.equal(moveLeft.position.line, 0);
+		assert.equal(moveLeft.position.character, 0);
+
+		let curPos = Cursor.getActualPosition();
+		assert.equal(moveLeft.position.line, curPos.line);
+		assert.equal(moveLeft.position.character, curPos.character);
 	});
 
 	test("right should move cursor one column right", () => {
-		Cursor.move(new vscode.Position(0, 5));
+		let cursor = new Cursor(0, 5);
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 5);
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 5);
+		let next = cursor.right();
+		assert.equal(next.position.line, 0);
+		assert.equal(next.position.character, 6);
 
-		let right = Cursor.right();
-		assert.equal(right.line, 0);
-		assert.equal(right.character, 6);
+		next = next.move();
+		assert.equal(next.position.line, 0);
+		assert.equal(next.position.character, 6);
+
+		let curPos = Cursor.getActualPosition();
+		assert.equal(next.position.line, curPos.line);
+		assert.equal(next.position.character, curPos.character);
 	});
 
-	test("right on right-most column should NOT stay at the same location", () => {
-		Cursor.move(new vscode.Position(0, 7));
+	test("right on right-most column should stay at the same location", () => {
+		let cursor = new Cursor(0, 8).right();
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 7);
-
-		let right = Cursor.right();
-		assert.equal(right.line, 0);
-		assert.notEqual(right.character, 7);
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 8);
 	});
 
 	test("down should move cursor one line down", () => {
-		Cursor.move(new vscode.Position(1, 0));
+		let cursor = new Cursor(1, 1);
+		assert.equal(cursor.position.line, 1);
+		assert.equal(cursor.position.character, 1);
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 1);
-		assert.equal(current.character, 0);
+		let next = cursor.down();
+		assert.equal(next.position.line, 2);
+		assert.equal(next.position.character, 1);
 
-		let down = Cursor.down();
-		assert.equal(down.line, 2);
-		assert.equal(down.character, 0);
+		next = next.move();
+		assert.equal(next.position.line, 2);
+		assert.equal(next.position.character, 1);
+
+		let curPos = Cursor.getActualPosition();
+		assert.equal(next.position.line, curPos.line);
+		assert.equal(next.position.character, curPos.character);
 	});
 
 	test("down on bottom-most line should stay at the same location", () => {
-		Cursor.move(new vscode.Position(2, 0));
+		let cursor = new Cursor(2, 0);
+		assert.equal(cursor.position.line, 2);
+		assert.equal(cursor.position.character, 0);
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 2);
-		assert.equal(current.character, 0);
+		let next = cursor.down();
+		assert.equal(next.position.line, 2);
+		assert.equal(next.position.character, 0);
 
-		let down = Cursor.down();
-		assert.equal(down.line, 2);
-		assert.equal(down.character, 0);
+		next = next.move();
+		assert.equal(next.position.line, 2);
+		assert.equal(next.position.character, 0);
+
+		let curPos = Cursor.getActualPosition();
+		assert.equal(next.position.line, curPos.line);
+		assert.equal(next.position.character, curPos.character);
 	});
 
 	test("up should move cursor one line up", () => {
-		Cursor.move(new vscode.Position(1, 0));
+		let cursor = new Cursor(1, 1);
+		assert.equal(cursor.position.line, 1);
+		assert.equal(cursor.position.character, 1);
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 1);
-		assert.equal(current.character, 0);
+		let next = cursor.up();
+		assert.equal(next.position.line, 0);
+		assert.equal(next.position.character, 1);
 
-		let up = Cursor.up();
-		assert.equal(up.line, 0);
-		assert.equal(up.character, 0);
+		next = next.move();
+		assert.equal(next.position.line, 0);
+		assert.equal(next.position.character, 1);
+
+		let curPos = Cursor.getActualPosition();
+		assert.equal(next.position.line, curPos.line);
+		assert.equal(next.position.character, curPos.character);
 	});
 
 	test("up on top-most line should stay at the same location", () => {
-		Cursor.move(new vscode.Position(0, 0));
+		let cursor = new Cursor(0, 1);
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 1);
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 0);
+		let next = cursor.up();
+		assert.equal(next.position.line, 0);
+		assert.equal(next.position.character, 1);
 
-		let up = Cursor.up();
-		assert.equal(up.line, 0);
-		assert.equal(up.character, 0);
+		next = next.move();
+		assert.equal(next.position.line, 0);
+		assert.equal(next.position.character, 1);
+
+		let curPos = Cursor.getActualPosition();
+		assert.equal(next.position.line, curPos.line);
+		assert.equal(next.position.character, curPos.character);
 	});
 
 	test("keep same column as up/down", () => {
-		Cursor.move(new vscode.Position(0, 0));
-		Cursor.move(Cursor.right());
-		Cursor.move(Cursor.right());
+		let cursor = new Cursor(0, 2).down();
 
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 2);
+		assert.equal(cursor.position.line, 1);
+		assert.equal(cursor.position.character, 0);
 
-		Cursor.move(Cursor.down());
-
-		current = Cursor.currentPosition();
-		assert.equal(current.line, 1);
-		assert.equal(current.character, 0);
-
-		Cursor.move(Cursor.down());
-
-		current = Cursor.currentPosition();
-		assert.equal(current.line, 2);
-		assert.equal(current.character, 2);
+		cursor = cursor.down();
+		assert.equal(cursor.position.line, 2);
+		assert.equal(cursor.position.character, 2);
 	});
 
 	test("get line begin cursor", () => {
-		Cursor.move(new vscode.Position(0, 0));
-
-		let pos = Cursor.lineBegin();
-
-		assert.equal(pos.line, 0);
-		assert.equal(pos.character, 0);
-
-		Cursor.move(Cursor.down());
-
-		pos = Cursor.lineBegin();
-
-		assert.equal(pos.line, 1);
-		assert.equal(pos.character, 0);
+		let cursor = new Cursor(0, 2).lineBegin();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 0);
 	});
 
 	test("get line end cursor", () => {
-		Cursor.move(new vscode.Position(0, 0));
+		let cursor = new Cursor(0, 0).lineEnd();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, text[0].length);
 
-		let pos = Cursor.lineEnd();
-
-		assert.equal(pos.line, 0);
-		assert.equal(pos.character, text[0].length);
-
-		Cursor.move(Cursor.down());
-
-		pos = Cursor.lineEnd();
-
-		assert.equal(pos.line, 1);
-		assert.equal(pos.character, text[1].length);
+		cursor = new Cursor(2, 0).lineEnd();
+		assert.equal(cursor.position.line, 2);
+		assert.equal(cursor.position.character, text[2].length);
 	});
 
 	test("get document begin cursor", () => {
-		var cursor = Cursor.documentBegin();
-
-		assert.equal(cursor.line, 0);
-		assert.equal(cursor.character, 0);
+		let cursor = new Cursor(1, 1).documentBegin();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 0);
 	});
 
 	test("get document end cursor", () => {
-		var cursor = Cursor.documentEnd();
-
-		assert.equal(cursor.line, 2);
-		assert.equal(cursor.character, text[2].length);
+		let cursor = new Cursor(1, 1).documentEnd();
+		assert.equal(cursor.position.line, text.length - 1);
+		assert.equal(cursor.position.character, text[text.length - 1].length);
 	});
 
 	test("wordRight should move cursor word right", () => {
-		Cursor.move(new vscode.Position(0, 0));
-
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 0);
-
-		var wordRight = Cursor.wordRight();
-		assert.equal(wordRight.line, 0);
-		assert.equal(wordRight.character, 5);
+		let cursor = new Cursor(0, 0).wordRight();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 5);
 	});
 
 	test("wordLeft should move cursor word left", () => {
-		Cursor.move(new vscode.Position(0, 3));
-
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 3);
-
-		var wordLeft = Cursor.wordLeft();
-		assert.equal(wordLeft.line, 0);
-		assert.equal(wordLeft.character, 0);
+		let cursor = new Cursor(0, 3).wordLeft();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 0);
 	});
 
 	test("wordRight on last word should stay on line at last character", () => {
-		Cursor.move(new vscode.Position(0, 6));
-
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 6);
-
-		var pos = Cursor.wordRight();
-		assert.equal(pos.line, 0);
-		assert.equal(pos.character, 8);
+		let cursor = new Cursor(0, 6).wordRight();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 8);
 	});
 
 	test("wordRight on end of line should move to next word on next line", () => {
-		Cursor.move(new vscode.Position(0, 8));
-
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 0);
-		assert.equal(current.character, 8);
-
-		var pos = Cursor.wordRight();
-		assert.equal(pos.line, 1);
-		assert.equal(pos.character, 0);
+		let cursor = new Cursor(0, 8).wordRight();
+		assert.equal(cursor.position.line, 1);
+		assert.equal(cursor.position.character, 0);
 	});
 
 	test("wordLeft on first word should move to previous line of end of line", () => {
-		Cursor.move(new vscode.Position(2, 0));
-
-		let current = Cursor.currentPosition();
-		assert.equal(current.line, 2);
-		assert.equal(current.character, 0);
-
-		var pos = Cursor.wordLeft();
-		assert.equal(pos.line, 1);
-		assert.equal(pos.character, 1);
+		let cursor = new Cursor(2, 0).wordLeft();
+		assert.equal(cursor.position.line, 1);
+		assert.equal(cursor.position.character, 1);
 	});
 
-	test("get first line begin cursor on first non-blank character", () => {
-		let cursor = Cursor.firstLineNonBlankChar();
-
-		assert.equal(cursor.line, 0);
-		assert.equal(cursor.character, 0);
-
+	test("get first line begin cursor on first non-blank character", (done) => {
 		TextEditor.insert("  ", new vscode.Position(0, 0)).then(() => {
-			assert.equal(cursor.line, 0);
-			assert.equal(cursor.character, 2);
-		});
+			let cursor = new Cursor(0, 0).firstLineNonBlankChar();
+			assert.equal(cursor.position.line, 0);
+			assert.equal(cursor.position.character, 2);
+		}).then(done, done);
 	});
 
-	test("get last line begin cursor on first non-blank character", () => {
-		let cursor = Cursor.lastLineNonBlankChar();
-
-		assert.equal(cursor.line, 2);
-		assert.equal(cursor.character, 0);
-
-		let line = Cursor.documentEnd().line;
-		TextEditor.insert("  ", new vscode.Position(line, 0)).then(() => {
-			assert.equal(cursor.line, 2);
-			assert.equal(cursor.character, 2);
-		});
+	test("get last line begin cursor on first non-blank character", (done) => {
+		let lastLine = new Cursor().documentEnd().position.line;
+		TextEditor.insert("  ", new vscode.Position(lastLine, 0)).then(() => {
+			let cursor = new Cursor(0, 0).lastLineNonBlankChar();
+			assert.equal(cursor.position.line, lastLine);
+			assert.equal(cursor.position.character, 2);
+		}).then(done, done);
 	});
 });
