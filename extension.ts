@@ -21,6 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("esc"));
     registerCommand(context, 'extension.vim_colon', () => handleKeyEvent(":"));
     registerCommand(context, 'extension.vim_space', () => handleKeyEvent("space"));
+    registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("backspace"));
 
     registerCommand(context, 'extension.vim_a', () => handleKeyEvent("a"));
     registerCommand(context, 'extension.vim_b', () => handleKeyEvent("b"));
