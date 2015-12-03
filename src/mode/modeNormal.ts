@@ -2,11 +2,11 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
-import Caret from './../cursor/caret';
-import TextEditor from './../textEditor';
+import {Caret} from './../motion/motion';
 
 export default class CommandMode extends Mode {
 	private keyHandler : { [key : string] : () => void; } = {};
+    private caret : Caret = new Caret();
 
 	constructor() {
 		super(ModeName.Normal);
@@ -15,35 +15,34 @@ export default class CommandMode extends Mode {
 			":" : () => { showCmdLine(); },
 			"u" : () => { vscode.commands.executeCommand("undo"); },
 			"ctrl+r" : () => { vscode.commands.executeCommand("redo"); },
-			"h" : () => { Caret.move(Caret.left()); },
-			"j" : () => { Caret.move(Caret.down()); },
-			"k" : () => { Caret.move(Caret.up()); },
-			"l" : () => { Caret.move(Caret.right()); },
-			"$" : () => { Caret.move(Caret.lineEnd()); },
-			"^" : () => { Caret.move(Caret.lineBegin()); },
-			"gg" : () => { Caret.move(Caret.firstLineNonBlankChar()); },
-			"G" : () => { Caret.move(Caret.lastLineNonBlankChar()); },
-			"w" : () => { Caret.move(Caret.wordRight()); },
-			"b" : () => { Caret.move(Caret.wordLeft()); },
+			"h" : () => { this.caret.left().move(); },
+			"j" : () => { this.caret.down().move(); },
+			"k" : () => { this.caret.up().move(); },
+			"l" : () => { this.caret.right().move(); },
+			"$" : () => { this.caret.lineEnd().move(); },
+			"^" : () => { this.caret.lineBegin().move(); },
+			"gg" : () => {this.caret.firstLineNonBlankChar().move(); },
+			"G" : () => { this.caret.lastLineNonBlankChar().move(); },
+			"w" : () => { this.caret.wordRight().move(); },
+			"b" : () => { this.caret.wordLeft().move(); },
 			">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
 			"<<" : () => { vscode.commands.executeCommand("editor.action.outdentLines"); },
 			"dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
 			"dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
 			"db" : () => { vscode.commands.executeCommand("deleteWordLeft"); },
-			"esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); },
-			"x" : () => { this.CommandDelete(1); }
+			// "x" : () => { this.CommandDelete(1); }
+			"esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); }
 		};
 	}
 
 	ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
 		if (key === 'esc' || key === 'ctrl+[') {
-			Caret.move(Caret.left());
 			return true;
 		}
 	}
 
 	HandleActivation(key : string) : void {
-		// do nothing
+		this.caret.reset();
 	}
 
 	HandleKeyEvent(key : string) : void {
@@ -65,6 +64,7 @@ export default class CommandMode extends Mode {
 		}
 	}
 
+/*
     private CommandDelete(n: number) : void {
         let pos = Caret.currentPosition();
         let end = pos.translate(0, n);
@@ -77,4 +77,5 @@ export default class CommandMode extends Mode {
 			}
 		});
     }
+*/
 }

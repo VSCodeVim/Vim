@@ -1,19 +1,14 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import TextEditor from './../src/textEditor';
-import Cursor from './../src/cursor/cursor';
-
-import * as testUtils from './testUtils';
 
 suite("text editor", () => {
 	suiteSetup(done => {
-        testUtils.clearTextEditor()
-			.then(done);
+		TextEditor.delete().then(() => done());
 	});
 
 	suiteTeardown(done => {
-        testUtils.clearTextEditor()
-			.then(done);
+		TextEditor.delete().then(() => done());
 	});
 
 	test("insert 'Hello World'", done => {
@@ -44,7 +39,7 @@ suite("text editor", () => {
 		assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
 
 		var end = new vscode.Position(0, 5);
-		var range = new vscode.Range(Cursor.documentBegin(), end);
+		var range = new vscode.Range(new vscode.Position(0, 0), end);
 
 		TextEditor.delete(range).then( x => {
 			let actualText = TextEditor.readLine(0);
