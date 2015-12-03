@@ -31,35 +31,6 @@ See our [release notes](https://github.com/VSCodeVim/Vim/releases) for full deta
 	* Editing: `u`, `ctrl+r`
 	* File Operations: `:q`, `:w`
 
-## Contributing
-
-Contributions are extremely welcomed! 
-Take a look at [Extension API](https://code.visualstudio.com/docs/extensionAPI/overview) on how to get started and our current [issues](https://github.com/VSCodeVim/Vim/issues) to see what we are working on next.
-
-### Developing
-
-1. Install prerequisites:
-   * latest [Visual Studio Code](https://code.visualstudio.com/)
-   * [Node.js](https://nodejs.org/) v4.0.0 or higher
-2. Fork and clone the repo, then
-
-	```bash
-	$ npm install
-	$ npm install -g gulp
-	$ gulp init
-	```
-
-3. Open the folder in VS Code
-
-#### Submitting a PR
-
-You've made some changes, and you are ready to submit a PR? Please make sure:
-
-1. Tests pass:
-	* `gulp`: run tslint and tests
-	* [Launch tests within VS Code](https://code.visualstudio.com/docs/extensions/testing-extensions)
-2. Commits are squashed
-
 ## License
 
 [MIT](LICENSE.txt)

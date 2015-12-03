@@ -1,46 +1,52 @@
-**You want to help? Awesome!**
 
-VSCode is really easy to create extensions for. You can find out everything you need to know from
-[Extending Visual Studio Code](https://code.visualstudio.com/docs/extensions/overview) on the VSCode
-website. The debugging experience is pretty cool, BTW.
+# Contribution Guide
 
-## How to be a Really Useful Contributor:**
+The following is a set of guidelines for contributing to Vim for VSCode.
+These are just guidelines, not rules, use your best judgment and feel free to propose changes to this document in a pull request.
+If you need help with Vim for VSCode or have questions, please come visit our [Slack](http://slackin.westus.cloudapp.azure.com/) community. 
+Thanks for helping us make Vim for VSCode better.
 
-Vim has, like, hundreds of commands, shortcuts, modes and stuff that can be added to VSCode/Vim.
-It's an *embarrassingly-parallel* development project: lots of people working on lots of different
-features at the same time.
+## Submitting Issues
 
-Of course, you don't want to be working on something that is already done, or that somebody else
-has nearly finished.
+The [GitHub issue tracker](https://github.com/VSCodeVim/Vim/issues) is the preferred channel for tracking bugs and enhancement suggestions.
+When creating a new bug report do:
 
-### You will need
+* Search against existing issues to check if someoby else has already reported your problem or requested your idea
+* Include as many details as possible. Include screenshots/gifs where applicable and repro steps.
 
-1. The latest version of [VSCode](https://code.visualstudio.com/), obviously.
-1. Node.js installed on your development machine.
-1. The NPM packages `gulp` and `tsd` installed globally:
-  * `npm install -g gulp tsd`
-  * Remember `sudo` if you're on Linux :smile:
+## Submitting Pull Requests
 
-### Before you start
+Pull requests are *awesome*. 
+If you're looking to raise a PR for something which doesn't have an open issue, consider creating an issue first. 
+This will start the discussion of whether the change is worthwhile and ensure somebody else isn't already working on the same change.
+When submitting a PR, please ensure:
 
-1. Familiarize yourself with the existing code, so you know how things are done and what useful utility functions or classes might already exist.
-1. Search through Issues and Pull Requests to see if anyone else is doing what you're planning to do.
-  * If somebody is, maybe ask if they could use any help.
-1. If you find no mention of the feature you want to add, then open an Issue describing the feature and saying you're working on it.
+1. Tests pass:
+	* `gulp`: run tslint and tests
+	* [Launch tests within VS Code](https://code.visualstudio.com/docs/extensions/testing-extensions)
+2. Commits are squashed
 
-### When you start
-1. Fork the repo and clone from your fork.
-  * If you already have a fork, make sure you've added the VSCodeVim/Vim repo as an upstream remote:
-    * `git remote add upstream git@github.com:VSCodeVim/Vim.git`
-    * Then `git pull upstream master`
-1. Run `npm install` to install the development dependencies.
-1. Run `gulp init` to run any other prep jobs.
-1. `git checkout -b sensible-feature-branch-name`
-1. Hack on your feature and get it working.
-  * If any of the code is testable, add tests for it.
-1. Commit, push and create a Pull Request.
-1. Engage in a friendly and polite manner with any feedback on your PR.
+### Installation/Setup
 
-### Extra tips
-1. You might add a bunch of `console.log("Work, you ******")` calls while working on your feature. You should probably remove these before opening a Pull Request.
-2. You might find that the VSCode Extensions API doesn't provide the functionality you need to make a feature work. If that happens, try heading to the [VSCode Issues](https://github.com/microsoft/vscode/issues) page and asking nicely if anyone knows of a way to do whatever it is, and if not, whether perhaps the necessary extension point might be added.
+1. Install prerequisites:
+   * latest [Visual Studio Code](https://code.visualstudio.com/)
+   * [Node.js](https://nodejs.org/) v4.0.0 or higher
+2. Fork and clone the repo, then
+
+	```bash
+	$ npm install
+	$ npm install -g gulp
+	$ gulp init
+	```
+
+3. Open the folder in VS Code
+
+### Developer Tips
+
+1. Refer to Visual Studio Code's documentation for [extensions](https://code.visualstudio.com/docs/extensions/overview)
+2. Debug the extension in VS Code by adding breakpoints or `console.log("MY-MESSAGE");`.
+3. If you find the VSCode Extensions API is missing functionality or has a bug, try reporting the issue at [VSCode Issues](https://github.com/microsoft/vscode/issues).
+
+## Styleguides
+
+We are adhering to VSCode's [coding guidelines](https://github.com/Microsoft/vscode/wiki/Coding-Guidelines).
