@@ -36,9 +36,7 @@ export default class CommandMode extends Mode {
 	}
 
 	ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
-		if (key === 'esc' || key === 'ctrl+[') {
-			return true;
-		}
+		return (key === 'esc' || key === 'ctrl+[');
 	}
 
 	HandleActivation(key : string) : void {

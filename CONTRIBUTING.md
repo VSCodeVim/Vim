@@ -11,7 +11,7 @@ Thanks for helping us make Vim for VSCode better.
 The [GitHub issue tracker](https://github.com/VSCodeVim/Vim/issues) is the preferred channel for tracking bugs and enhancement suggestions.
 When creating a new bug report do:
 
-* Search against existing issues to check if someoby else has already reported your problem or requested your idea
+* Search against existing issues to check if somebody else has already reported your problem or requested your idea
 * Include as many details as possible. Include screenshots/gifs where applicable and repro steps.
 
 ## Submitting Pull Requests
