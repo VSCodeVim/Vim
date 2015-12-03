@@ -1,6 +1,21 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import TextEditor from "./../textEditor";
+import {ModeName} from './../mode/mode';
+import ModeHandler from "./../mode/modeHandler";
+
+const blockCursorDecoration = vscode.window.createTextEditorDecorationType({
+	dark: {
+		backgroundColor: 'rgba(224, 224, 224, 0.5)',
+		borderColor: 'rgba(240, 240, 240, 0.8)'
+	},
+	light: {
+		backgroundColor: 'rgba(32, 32, 32, 0.5)',
+		borderColor: 'rgba(16, 16, 16, 0.8)'
+	},
+	borderStyle: 'solid',
+	borderWidth: '1px'
+});
 
 export default class Cursor {
 	private static prevColumn: number = 0;
@@ -152,6 +167,26 @@ export default class Cursor {
 
 		let column = TextEditor.readLine(line).length;
 		return new vscode.Position(line, column);
+	}
+
+	static blockCursor(modeHandler: ModeHandler) : void {
+		vscode.window.onDidChangeTextEditorSelection((e) => {
+			if (modeHandler.currentMode.Name !== ModeName.Normal) {
+				return;
+			}
+			if (e.selections.length === 1) {
+				let sel = e.selections[0];
+				if (sel.start.isEqual(sel.end)) {
+					let range = new vscode.Range(sel.start, sel.end.translate(0, 1));
+					e.textEditor.setDecorations(blockCursorDecoration, [range]);
+				}
+			}
+		});
+		modeHandler.onModeChanged((mode) => {
+			if (mode.Name !== ModeName.Normal) {
+				vscode.window.activeTextEditor.setDecorations(blockCursorDecoration, []);
+			}
+		});
 	}
 
 	private static isLineBeginning(position : vscode.Position) : boolean {

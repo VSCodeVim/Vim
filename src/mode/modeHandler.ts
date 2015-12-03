@@ -7,8 +7,11 @@ import InsertMode from './modeInsert';
 import VisualMode from './modeVisual';
 import Configuration from '../configuration';
 
+type ModeChangedHandler = (mode: Mode) => void;
+
 export default class ModeHandler {
     private modes : Mode[];
+    private modeChangedHandlers: ModeChangedHandler[] = [];
     private statusBarItem : vscode.StatusBarItem;
     configuration : Configuration;
 
@@ -39,6 +42,10 @@ export default class ModeHandler {
 
         var statusBarText = (this.currentMode.Name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText.toUpperCase());
+
+        for (let handler of this.modeChangedHandlers) {
+            handler(this.currentMode);
+        }
     }
 
     handleKeyEvent(key : string) : void {
@@ -66,6 +73,10 @@ export default class ModeHandler {
         }
 
         this.currentMode.HandleKeyEvent(key);
+    }
+
+    onModeChanged(handler: (newMode: Mode) => void) : void {
+        this.modeChangedHandlers.push(handler);
     }
 
     private setupStatusBarItem(text : string) : void {
