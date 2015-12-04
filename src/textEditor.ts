@@ -6,27 +6,28 @@ export default class TextEditor {
 			position = vscode.window.activeTextEditor.selection.active;
 		}
 
-		return vscode.window.activeTextEditor.edit((editBuilder) => {
+		return vscode.window.activeTextEditor.edit(editBuilder => {
 			editBuilder.insert(position, text);
 		});
 	}
 
 	static delete(range: vscode.Range = null) : Thenable<boolean> {
 		if (range === null) {
+			// delete entire document
 			let start = new vscode.Position(0, 0);
 			let lastLine = vscode.window.activeTextEditor.document.lineCount - 1;
 			let end = vscode.window.activeTextEditor.document.lineAt(lastLine).range.end;
 
 			range = new vscode.Range(start, end);
 		}
-		return vscode.window.activeTextEditor.edit((editBuilder) => {
+		return vscode.window.activeTextEditor.edit(editBuilder => {
 			editBuilder.delete(range);
 		});
 	}
 
 
 	static replace(range: vscode.Range, text: string) : Thenable<boolean> {
-		return vscode.window.activeTextEditor.edit((editBuilder) => {
+		return vscode.window.activeTextEditor.edit(editBuilder => {
 			editBuilder.replace(range, text);
 		});
 	}

@@ -10,11 +10,12 @@ export default class VisualMode extends Mode {
         return (key === "v" || key === "V") && (currentMode === ModeName.Normal);
     }
 
-    HandleActivation(key : string) : void {
-        // do nothing
+    HandleActivation(key : string) : Thenable<{}> {
+        return Promise.resolve({});
     }
 
-    HandleKeyEvent(key : string) : void {
+    HandleKeyEvent(key : string) : Thenable<{}> {
         this.keyHistory.push(key);
+        return Promise.resolve({});
     }
 }

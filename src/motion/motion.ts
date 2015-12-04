@@ -19,6 +19,7 @@ abstract class Motion<T extends Motion<any>> {
 			line = currentPosition.line;
 			character = currentPosition.character;
 		}
+
 		this.prevColumn = character;
 		this.position = new vscode.Position(line, character);
 	}

@@ -4,7 +4,7 @@ import ModeInsert from '../../src/mode/modeInsert';
 import {ModeName} from '../../src/mode/mode';
 import {Cursor} from '../../src/motion/motion';
 import TextEditor from '../../src/textEditor';
-import * as testUtils from '../testUtils';
+import TestHelpers from '../testHelpers';
 
 let modeHandler: ModeInsert = null;
 
@@ -29,69 +29,69 @@ suite("Mode Insert", () => {
     });
 
     test("can handle key events", (done) => {
-        let expected = "!";
-
         modeHandler.HandleKeyEvent("!")
             .then(() => {
-                return testUtils.assertTextEditorText(expected);
+                return TestHelpers.assertEqualLines(["!"]);
             }).then(done, done);
     });
 
     test("Can handle 'o'", (done) => {
-        let expected = "text\n";
-
         TextEditor.insert("text")
             .then(() => {
                 return modeHandler.HandleActivation("o");
-            }).then(() => {
-                return testUtils.assertTextEditorText(expected);
-            }).then(done, done);
+            })
+            .then(() => {
+                return TestHelpers.assertEqualLines(["text", ""]);
+            })
+            .then(done, done);
     });
 
     test("Can handle 'O'", (done) => {
-        let expected = "\ntext";
-
         TextEditor.insert("text")
             .then(() => {
                 return modeHandler.HandleActivation("O");
-            }).then(() => {
-                return testUtils.assertTextEditorText(expected);
-            }).then(done, done);
+            })
+            .then(() => {
+                return TestHelpers.assertEqualLines(["", "text"]);
+            })
+            .then(done, done);
     });
 
     test("Can handle 'i'", (done) => {
-        let expected = "text!text";
-
         TextEditor.insert("texttext")
             .then(() => {
                 new Cursor(0, 4).move();
-            }).then(() => {
+            })
+            .then(() => {
                 return modeHandler.HandleActivation("i");
-            }).then(() => {
+            })
+            .then(() => {
                 return modeHandler.HandleKeyEvent("!");
-            }).then(() => {
-               return testUtils.assertTextEditorText(expected);
-            }).then(done, done);
+            })
+            .then(() => {
+               return TestHelpers.assertEqualLines(["text!text"]);
+            })
+            .then(done, done);
     });
 
     test("Can handle 'I'", (done) => {
-        let expected = "!text";
-
         TextEditor.insert("text")
             .then(() => {
                 new Cursor(0, 4).move();
-            }).then(() => {
+            })
+            .then(() => {
                 return modeHandler.HandleActivation("I");
-            }).then(() => {
+            })
+            .then(() => {
                 return modeHandler.HandleKeyEvent("!");
-            }).then(() => {
-               return testUtils.assertTextEditorText(expected);
-            }).then(done, done);
+            })
+            .then(() => {
+               return TestHelpers.assertEqualLines(["!text"]);
+            })
+            .then(done, done);
     });
 
     test("Can handle 'a'", (done) => {
-        let expected = "textt!ext";
-
         TextEditor.insert("texttext")
             .then(() => {
                 new Cursor(0, 4).move();
@@ -100,13 +100,11 @@ suite("Mode Insert", () => {
             }).then(() => {
                 return modeHandler.HandleKeyEvent("!");
             }).then(() => {
-               return testUtils.assertTextEditorText(expected);
+               return TestHelpers.assertEqualLines(["textt!ext"]);
             }).then(done, done);
     });
 
     test("Can handle 'A'", (done) => {
-        let expected = "text!";
-
         TextEditor.insert("text")
             .then(() => {
                 new Cursor(0, 0).move();
@@ -115,7 +113,7 @@ suite("Mode Insert", () => {
             }).then(() => {
                 return modeHandler.HandleKeyEvent("!");
             }).then(() => {
-               return testUtils.assertTextEditorText(expected);
+               return TestHelpers.assertEqualLines(["text!"]);
             }).then(done, done);
     });
 });
