@@ -3,17 +3,17 @@ import * as parser from "./parser";
 import * as util from "../util";
 
 // Shows the vim command line.
-export function showCmdLine(initialText = "") {
+export function showCmdLine(initialText = "") : Thenable<{}> {
 	if (!vscode.window.activeTextEditor) {
-		util.showInfo("No active document.");
-		return;
+		return util.showInfo("No active document.");
 	}
 
 	const options : vscode.InputBoxOptions = {
 		prompt: "Vim command line",
 		value: initialText
 	};
-	vscode.window.showInputBox(options).then(
+
+	return vscode.window.showInputBox(options).then(
 		runCmdLine,
 		vscode.window.showErrorMessage
 	);

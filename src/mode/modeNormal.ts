@@ -4,62 +4,66 @@ import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import {Caret} from './../motion/motion';
 
-export default class CommandMode extends Mode {
-	private keyHandler : { [key : string] : () => void; } = {};
-    private caret : Caret = new Caret();
+export default class NormalMode extends Mode {
+	private caret : Caret;
+	private keyHandler : { [key : string] : (caret : Caret) => Thenable<{}>; } = {
+		":" : () => { return showCmdLine(); },
+		"u" : () => { return vscode.commands.executeCommand("undo"); },
+		"ctrl+r" : () => { return vscode.commands.executeCommand("redo"); },
+		"h" : c => { return Promise.resolve(c.left().move()); },
+		"j" : c => { return Promise.resolve(c.down().move()); },
+		"k" : c => { return Promise.resolve(c.up().move()); },
+		"l" : c => { return Promise.resolve(c.right().move()); },
+		"$" : c => { return Promise.resolve(c.lineEnd().move()); },
+		"^" : c => { return Promise.resolve(c.lineBegin().move()); },
+		"gg" : c => {return Promise.resolve(c.firstLineNonBlankChar().move()); },
+		"G" : c => { return Promise.resolve(c.lastLineNonBlankChar().move()); },
+		"w" : c => { return Promise.resolve(c.wordRight().move()); },
+		"b" : c => { return Promise.resolve(c.wordLeft().move()); },
+		">>" : () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
+		"<<" : () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
+		"dd" : () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
+		"dw" : () => { return vscode.commands.executeCommand("deleteWordRight"); },
+		"db" : () => { return vscode.commands.executeCommand("deleteWordLeft"); },
+		// "x" : () => { this.CommandDelete(1); }
+		"esc": () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
+	};
 
 	constructor() {
 		super(ModeName.Normal);
-
-		this.keyHandler = {
-			":" : () => { showCmdLine(); },
-			"u" : () => { vscode.commands.executeCommand("undo"); },
-			"ctrl+r" : () => { vscode.commands.executeCommand("redo"); },
-			"h" : () => { this.caret.left().move(); },
-			"j" : () => { this.caret.down().move(); },
-			"k" : () => { this.caret.up().move(); },
-			"l" : () => { this.caret.right().move(); },
-			"$" : () => { this.caret.lineEnd().move(); },
-			"^" : () => { this.caret.lineBegin().move(); },
-			"gg" : () => {this.caret.firstLineNonBlankChar().move(); },
-			"G" : () => { this.caret.lastLineNonBlankChar().move(); },
-			"w" : () => { this.caret.wordRight().move(); },
-			"b" : () => { this.caret.wordLeft().move(); },
-			">>" : () => { vscode.commands.executeCommand("editor.action.indentLines"); },
-			"<<" : () => { vscode.commands.executeCommand("editor.action.outdentLines"); },
-			"dd" : () => { vscode.commands.executeCommand("editor.action.deleteLines"); },
-			"dw" : () => { vscode.commands.executeCommand("deleteWordRight"); },
-			"db" : () => { vscode.commands.executeCommand("deleteWordLeft"); },
-			// "x" : () => { this.CommandDelete(1); }
-			"esc": () => { vscode.commands.executeCommand("workbench.action.closeMessages"); }
-		};
+		this.caret = new Caret();
 	}
 
 	ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
 		return (key === 'esc' || key === 'ctrl+[');
 	}
 
-	HandleActivation(key : string) : void {
-		this.caret.reset().left().move();
+	HandleActivation(key : string) : Thenable<{}> {
+		return Promise.resolve(this.caret.reset().left().move());
 	}
 
-	HandleKeyEvent(key : string) : void {
+	HandleKeyEvent(key : string) : Thenable<{}>  {
 		this.keyHistory.push(key);
 
-		let keyHandled = false;
+		return new Promise(resolve => {
+			let keyHandled = false;
+			let keysPressed : string;
 
-		for (let window = this.keyHistory.length; window > 0; window--) {
-			let keysPressed = _.takeRight(this.keyHistory, window).join('');
-			if (this.keyHandler[keysPressed] !== undefined) {
-				keyHandled = true;
-				this.keyHandler[keysPressed]();
-				break;
+			for (let window = this.keyHistory.length; window > 0; window--) {
+				keysPressed = _.takeRight(this.keyHistory, window).join('');
+				if (this.keyHandler[keysPressed] !== undefined) {
+					keyHandled = true;
+					break;
+				}
 			}
-		}
 
-		if (keyHandled) {
-			this.keyHistory = [];
-		}
+			if (keyHandled) {
+				this.keyHistory = [];
+				return this.keyHandler[keysPressed](this.caret);
+			}
+
+			resolve();
+		});
 	}
 
 /*

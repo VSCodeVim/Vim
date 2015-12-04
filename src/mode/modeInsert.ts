@@ -4,56 +4,56 @@ import TextEditor from './../textEditor';
 import {Cursor} from './../motion/motion';
 
 export default class InsertMode extends Mode {
-
-    private activationKeyHandler : { [ key : string] : (cursor : Cursor) => Thenable<void> | void; };
-    private cursor : Cursor = new Cursor();
+    private cursor : Cursor;
+    private activationKeyHandler : { [ key : string] : (cursor : Cursor) => Thenable<{}> } = {
+        "i" : () => {
+            // insert at cursor
+            return Promise.resolve({});
+        },
+        "I" : c => {
+            // insert at line beginning
+            return Promise.resolve(c.lineBegin().move());
+        },
+        "a" : c => {
+            // append after the cursor
+            return Promise.resolve(c.right().move());
+        },
+        "A" : c => {
+            // append at the end of the line
+	       return Promise.resolve(c.lineEnd().move());
+        },
+        "o" : () => {
+            // open blank line below current line
+	       return vscode.commands.executeCommand("editor.action.insertLineAfter");
+        },
+        "O" : () => {
+            // open blank line above current line
+	       return vscode.commands.executeCommand("editor.action.insertLineBefore");
+        }
+    };
 
     constructor() {
         super(ModeName.Insert);
-
-        this.activationKeyHandler = {
-            // insert at cursor
-            "i" : (cursor) => {
-                // nothing
-            },
-
-            // insert at the beginning of the line
-            "I" : (cursor) => { cursor.lineBegin().move(); },
-
-            // append after the cursor
-            "a" : (cursor) => { cursor.right().move(); },
-
-            // append at the end of the line
-            "A" : (cursor) => { cursor.lineEnd().move(); },
-
-            // open blank line below current line
-            "o" : () => {
-                return vscode.commands.executeCommand("editor.action.insertLineAfter");
-            },
-
-            // open blank line above current line
-            "O" : () => {
-                return vscode.commands.executeCommand("editor.action.insertLineBefore");
-            }
-        };
+        this.cursor = new Cursor();
     }
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
         return key in this.activationKeyHandler;
     }
 
-    HandleActivation(key : string) : Thenable<void> | void {
+    HandleActivation(key : string) : Thenable<{}> {
         this.cursor.reset();
         return this.activationKeyHandler[key](this.cursor);
     }
 
-    HandleKeyEvent(key : string) : Thenable<boolean> {
+    HandleKeyEvent(key : string) : Thenable<{}> {
         this.keyHistory.push(key);
-        var thenable = TextEditor.insert(this.ResolveKeyValue(key));
 
-        vscode.commands.executeCommand("editor.action.triggerSuggest");
-
-        return thenable;
+        return TextEditor
+                .insert(this.ResolveKeyValue(key))
+                .then(() => {
+                    return vscode.commands.executeCommand("editor.action.triggerSuggest");
+                });
     }
 
     // Some keys have names that are different to their value.

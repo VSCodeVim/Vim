@@ -33,7 +33,7 @@ export abstract class Mode {
 
     abstract ShouldBeActivated(key : string, currentMode : ModeName) : boolean;
 
-    abstract HandleActivation(key : string) : Thenable<void> | void;
+    abstract HandleActivation(key : string) : Thenable<{}>;
 
-    abstract HandleKeyEvent(key : string) : void;
+    abstract HandleKeyEvent(key : string) : Thenable<{}>;
 }
