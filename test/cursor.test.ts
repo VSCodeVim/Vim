@@ -1,8 +1,6 @@
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import TextEditor from './../src/textEditor';
 import {Cursor} from './../src/motion/motion';
-
 
 suite("cursor", () => {
 	let text: Array<string> = [
@@ -221,20 +219,19 @@ suite("cursor", () => {
 		assert.equal(cursor.position.character, 1);
 	});
 
-	test("get first line begin cursor on first non-blank character", (done) => {
-		TextEditor.insert("  ", new vscode.Position(0, 0)).then(() => {
-			let cursor = new Cursor(0, 0).firstLineNonBlankChar();
-			assert.equal(cursor.position.line, 0);
-			assert.equal(cursor.position.character, 2);
-		}).then(done, done);
+	test("get first line begin cursor on first non-blank character", () => {
+		let cursor = new Cursor();
+		let pos = cursor.firstLineNonBlankChar().position;
+
+		assert.equal(pos.line, 0);
+		assert.equal(pos.character, 0);
 	});
 
-	test("get last line begin cursor on first non-blank character", (done) => {
-		let lastLine = new Cursor().documentEnd().position.line;
-		TextEditor.insert("  ", new vscode.Position(lastLine, 0)).then(() => {
-			let cursor = new Cursor(0, 0).lastLineNonBlankChar();
-			assert.equal(cursor.position.line, lastLine);
-			assert.equal(cursor.position.character, 2);
-		}).then(done, done);
+	test("get last line begin cursor on first non-blank character", () => {
+		let cursor = new Cursor();
+		let pos = cursor.lastLineNonBlankChar().position;
+
+		assert.equal(pos.line, 2);
+		assert.equal(pos.character, 0);
 	});
 });
