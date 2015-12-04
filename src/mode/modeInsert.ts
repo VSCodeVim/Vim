@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import TextEditor from './../textEditor';
 import {Cursor} from './../motion/motion';
+import {KeyState} from '../keyState';
 
 export default class InsertMode extends Mode {
     private cursor : Cursor;
@@ -36,6 +37,22 @@ export default class InsertMode extends Mode {
         super(ModeName.Insert);
         this.cursor = new Cursor();
     }
+
+    handleKeys(state : KeyState) {
+        while (!state.isAtEof) {
+            const c = state.next();
+            if (this.shouldRequestModeChange(c)) {
+                state.nextMode = c;
+                return null;
+            }
+            this.HandleKeyEvent(c);
+            // console.warn("insert: " + c);
+        }
+    }
+    
+	private shouldRequestModeChange(key : string) : boolean {
+		return (key === 'esc');
+	}	    
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
         return key in this.activationKeyHandler;

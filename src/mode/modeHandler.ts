@@ -6,11 +6,13 @@ import NormalMode from './modeNormal';
 import InsertMode from './modeInsert';
 import VisualMode from './modeVisual';
 import Configuration from '../configuration';
+import {KeyState, TopHandler} from '../keyState';
 
-export default class ModeHandler {
-    private modes : Mode[];
+export default class ModeHandler implements TopHandler {
+    modes : Mode[];
     private statusBarItem : vscode.StatusBarItem;
     configuration : Configuration;
+    keyState : KeyState;
 
     constructor() {
         this.configuration = Configuration.fromUserFile();
@@ -22,6 +24,7 @@ export default class ModeHandler {
         ];
 
         this.setCurrentModeByName(ModeName.Normal);
+        this.keyState = new KeyState();
     }
 
     get currentMode() : Mode {
@@ -30,6 +33,25 @@ export default class ModeHandler {
         });
 
         return currentMode;
+    }
+    
+    handleModeChange(key : string) {
+        var currentModeName = this.currentMode.Name;
+        var nextMode : Mode;
+        var inactiveModes = _.filter(this.modes, (m) => !m.IsActive);
+
+        _.forEach(inactiveModes, (m, i) => {
+            if (m.ShouldBeActivated(key, currentModeName)) {
+                nextMode = m;
+            }
+        });
+
+        if (nextMode) {
+            this.currentMode.HandleDeactivation();
+
+            nextMode.HandleActivation(key);
+            this.setCurrentModeByName(nextMode.Name);
+        }        
     }
 
     setCurrentModeByName(modeName : ModeName) {
@@ -47,25 +69,8 @@ export default class ModeHandler {
         // https://github.com/Microsoft/vscode/issues/713
         key = this.configuration.keyboardLayout.translate(key);
 
-        var currentModeName = this.currentMode.Name;
-        var nextMode : Mode;
-        var inactiveModes = _.filter(this.modes, (m) => !m.IsActive);
-
-        _.forEach(inactiveModes, (m, i) => {
-            if (m.ShouldBeActivated(key, currentModeName)) {
-                nextMode = m;
-            }
-        });
-
-        if (nextMode) {
-            this.currentMode.HandleDeactivation();
-
-            nextMode.HandleActivation(key);
-            this.setCurrentModeByName(nextMode.Name);
-            return;
-        }
-
-        this.currentMode.HandleKeyEvent(key);
+        this.keyState.addKey(key);
+        this.keyState.handle(this);
     }
 
     private setupStatusBarItem(text : string) : void {

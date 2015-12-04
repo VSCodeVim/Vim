@@ -1,10 +1,12 @@
+import {ConcreteModeHandler, KeyState} from '../keyState';
+
 export enum ModeName {
     Normal,
     Insert,
     Visual,
 }
 
-export abstract class Mode {
+export abstract class Mode implements ConcreteModeHandler {
     private isActive : boolean;
     private name : ModeName;
     protected keyHistory : string[];
@@ -18,6 +20,8 @@ export abstract class Mode {
     get Name(): ModeName {
         return this.name;
     }
+
+    abstract handleKeys(state: KeyState) : void;
 
     get IsActive() : boolean {
         return this.isActive;
