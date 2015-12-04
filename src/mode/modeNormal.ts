@@ -2,7 +2,9 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
+import {TextAction, Register} from './../register';
 import {Caret} from './../motion/motion';
+import TextEditor from "./../textEditor";
 
 export default class CommandMode extends Mode {
 	private keyHandler : { [key : string] : () => void; } = {};
@@ -15,6 +17,9 @@ export default class CommandMode extends Mode {
 			":" : () => { showCmdLine(); },
 			"u" : () => { vscode.commands.executeCommand("undo"); },
 			"ctrl+r" : () => { vscode.commands.executeCommand("redo"); },
+			"yy": () => { this.copy(); },
+			"p": () => { this.pasteBelow(); },
+			"P": () => { this.pasteAbove(); },
 			"h" : () => { this.caret.left().move(); },
 			"j" : () => { this.caret.down().move(); },
 			"k" : () => { this.caret.up().move(); },
@@ -75,5 +80,20 @@ export default class CommandMode extends Mode {
 			}
 		});
     }
-*/
+	*/
+
+	private copy(): void {
+		let text = TextEditor.readLine();
+		Register.set(TextAction.Copy, text);
+	}
+
+	private pasteBelow(): void {
+		let pos = this.caret.lineEnd().position;
+		let insertPos = new vscode.Position(pos.line, pos.character + 1);
+		TextEditor.insert(`\n${Register.getUnnamed()}`, insertPos);
+	}
+
+	private pasteAbove(): void {
+		TextEditor.insert(`${Register.getUnnamed()}\n`, this.caret.lineBegin().position);
+	}
 }
