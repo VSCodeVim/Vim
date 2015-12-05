@@ -1,13 +1,36 @@
 # VSCodeVim
 
+[![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim) [![Build status](https://ci.appveyor.com/api/projects/status/0t6ljij7g5h0ddx8?svg=true)](https://ci.appveyor.com/project/guillermooo/vim) [![Slack Status](http://slackin.westus.cloudapp.azure.com/badge.svg)](http://slackin.westus.cloudapp.azure.com)
 
-[![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
+Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables the power of the Vim keybinding experience within Visual Studio Code.
 
-Vim for Visual Studio Code. *Coming Soon!* :gift:
+![Screenshot](images/screen.png)
 
-## Contributing
+## Install
 
-... would be awesome! Take a look at [Extension API](https://code.visualstudio.com/docs/extensionAPI/overview) on how to get started.
+1. Within Visual Studio Code, open the command palette (`Ctrl-Shift-P` / `Cmd-Shift-P`)
+2. Select `Install Extension` and search for 'vim' *or* run `ext install vim`
+
+## Project Status
+
+See our [release notes](https://github.com/VSCodeVim/Vim/releases) for full details.
+
+### Completed
+
+* Switching Modes:
+    * Visual: `v`, `V`
+    * Command: `Esc`, `Ctrl+[`
+	* Insert: `i`, `I`, `a`, `A`, `o`, `O`
+	* Current Mode displayed in the status bar in the bottom left
+
+* Commands:
+	* Command Palette: `:`
+	* Navigation: `h`, `j`, `k`, `l`, `w`, `b`, `gg`, `G`, `$`, `^`, `w`, `b`
+	* Indentation: `>>`, `<<`
+	* Deletion: `dd`, `dw`, `db`
+	* Editing: `u`, `ctrl+r`
+	* File Operations: `:q`, `:w`
 
 ## License
+
 [MIT](LICENSE.txt)

@@ -1,7 +1,18 @@
+notifications:
+ email: false
+
 language: node_js
+
 node_js:
- - "0.12"
-install: npm install
+ - "4.1.1"
+
+env:
+ - TSD_GITHUB_TOKEN=8742b29e67faa29aa25564ff7317b50fd7c1327d
+
+install: 
+ - npm install
 before_script:
-  - npm install -g gulp
-script: gulp
+ - npm install -g gulp
+ - gulp init
+script: 
+ - gulp
