@@ -67,7 +67,7 @@ class KeyMapperDeDeQwertz implements KeyMapper {
             '>': ':',
             '\\': '<',
             '<': ';',
-            '^': '&',
+            '^': '&'
         };
     }
 
