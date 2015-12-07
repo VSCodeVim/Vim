@@ -31,6 +31,12 @@ See our [release notes](https://github.com/VSCodeVim/Vim/releases) for full deta
 	* Editing: `u`, `ctrl+r`
 	* File Operations: `:q`, `:w`
 
+## Developing and Debugging
+
+To get started developing, you will need node installed and on your `$PATH`.  Run `npm install` at the repository root.  With the project open in VSCode, pressing F5 will launch the extension host.
+
+You can find more detailed instructions [here](https://code.visualstudio.com/docs/extensions/debugging-extensions).
+
 ## License
 
 [MIT](LICENSE.txt)
