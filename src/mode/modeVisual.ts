@@ -1,4 +1,5 @@
 import {ModeName, Mode} from './mode';
+import {KeyState} from '../keyState';
 
 export default class VisualMode extends Mode {
     constructor() {
@@ -12,6 +13,9 @@ export default class VisualMode extends Mode {
 
     HandleActivation(key : string) : Thenable<{}> {
         return Promise.resolve({});
+    }
+
+    handleKeys(state : KeyState) : void {
     }
 
     HandleKeyEvent(key : string) : Thenable<{}> {

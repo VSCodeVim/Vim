@@ -1,10 +1,19 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import TextEditor from "./../textEditor";
+import {KeyState} from "../keyState";
 
-abstract class Motion<T extends Motion<any>> {
+export interface VimOperation {
+	execute(state : KeyState) : void;
+	push(motion : VimOperation) : void;
+	select() : void;
+}
+
+abstract class Motion<T extends Motion<any>> implements VimOperation {
 	private static nonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 	private prevColumn: number = 0;
+	private ops : Array<VimOperation> = [];
+	private doSelect : boolean;
 
 	public static getActualPosition(): vscode.Position {
 		return vscode.window.activeTextEditor.selection.active;
@@ -27,6 +36,7 @@ abstract class Motion<T extends Motion<any>> {
 	protected abstract maxLineLength(line: number) : number;
 
 	public reset() : T {
+		this.doSelect = false;
 		this.position = Motion.getActualPosition();
 		return <any>this;
 	}
@@ -38,6 +48,32 @@ abstract class Motion<T extends Motion<any>> {
 		let range = new vscode.Range(this.position, this.position);
 		vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
 
+		return <any>this;
+	}
+	
+	execute(state : KeyState) : void {
+		if (state.requestInput) {
+			return;
+		}
+		if (this.doSelect) {
+			this.select();
+		} else {
+			this.move();
+		}
+	}
+	
+	push(motion : VimOperation) : void {
+		throw new Error("invalid operation");
+	}
+	
+	public select() : void {
+		let current = Motion.getActualPosition();
+		let selection = new vscode.Selection(current, this.position);
+		vscode.window.activeTextEditor.selection = selection;
+	}
+	
+	public selecting() : T {
+		this.doSelect = true;
 		return <any>this;
 	}
 
@@ -127,6 +163,14 @@ abstract class Motion<T extends Motion<any>> {
 
 	public lineEnd() : T {
 		this.position = this.getLineEnd();
+		return <any>this;
+	}
+	
+	fullLine() : T {
+		const currentPosition = vscode.window.activeTextEditor.selection.active;
+		this.position = new vscode.Position(currentPosition.line, 0);
+		vscode.window.activeTextEditor.selection = new vscode.Selection(this.position, this.position);
+		this.lineEnd();
 		return <any>this;
 	}
 
@@ -253,4 +297,116 @@ export class Cursor extends Motion<Cursor> {
 		return TextEditor.readLine(line).length;
 	}
 
+}
+
+export class Operator implements VimOperation {
+	private motion : VimOperation;
+	private action : () => void;
+	private ops : Array<VimOperation> = [];
+	
+	push(op : VimOperation) : void {
+		this.ops.push(op);
+	}
+	
+	execute(state : KeyState) : void {
+		if (state.requestInput) {
+			return;
+		}		
+		this.action();
+	}
+	
+	private exec(name : string) {
+		vscode.commands.executeCommand(name);
+	}
+	
+	select() : void {
+		throw new Error("invalid operation for an operator");
+	}
+	
+	delete(motion : VimOperation = null) {
+		this.push(motion);
+		this.action = () => this.exec("deleteRight");
+		return this;
+	}
+	
+	copy(motion : VimOperation = null) {
+		this.push(motion);
+		this.action = () => this.exec("editor.action.clipboardCopyAction");
+		return this;
+	}
+	
+	undo() {
+		this.action = () => this.exec("undo");
+		return this;
+	}
+}
+
+
+export class RequestInput implements VimOperation {
+	execute(state : KeyState) : void {
+		state.requestInput = true;
+	}
+	
+	push(op : VimOperation) {
+	}
+	
+	select() {
+		throw new Error("invalid operation");
+	}
+}
+
+export class StopRequestingInput implements VimOperation {	
+	execute(state : KeyState) : void {
+		state.requestInput = false;
+	}
+	
+	push(op : VimOperation) {
+	}
+	
+	select() {
+		throw new Error("invalid operation");
+	}
+}
+
+export class ChangeMode implements VimOperation {
+	key : string;
+	
+	execute(state : KeyState) : void {
+		state.nextMode = this.key;
+	}
+	
+	constructor(key : string) {
+		this.key = key;
+	}
+	
+	push(op : VimOperation) {
+	}
+	
+	select() {
+		throw new Error("invalid operation");
+	}
+}
+
+export class Root implements VimOperation {
+	private ops : Array<VimOperation> = [];
+	
+	execute(state : KeyState) : void {
+		if (this.ops.length === 0 || state.requestInput) {
+			return;
+		}
+		const op = this.ops.pop()
+		if (!op) {
+			return;
+		}
+		op.execute(state);
+		this.execute(state);
+	}
+	
+	push(op : VimOperation) {
+		this.ops.push(op);
+	}
+	
+	select() {
+		throw new Error("invalid operation");
+	}
 }
