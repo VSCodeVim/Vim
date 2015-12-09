@@ -5,7 +5,12 @@ import {showCmdLine} from './../cmd_line/main';
 import {Caret} from './../motion/motion';
 
 export default class NormalMode extends Mode {
-	private caret : Caret;
+	private _caret : Caret;
+	private get caret() : Caret {
+		this._caret = this._caret || new Caret();
+		return this._caret;
+	}
+
 	private keyHandler : { [key : string] : (caret : Caret) => Thenable<{}>; } = {
 		":" : () => { return showCmdLine(); },
 		"u" : () => { return vscode.commands.executeCommand("undo"); },
@@ -31,7 +36,6 @@ export default class NormalMode extends Mode {
 
 	constructor() {
 		super(ModeName.Normal);
-		this.caret = new Caret();
 	}
 
 	ShouldBeActivated(key : string, currentMode : ModeName) : boolean {

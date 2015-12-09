@@ -76,4 +76,8 @@ export default class ModeHandler {
         this.statusBarItem.text = (text) ? '-- ' + text + ' --' : '';
         this.statusBarItem.show();
     }
+
+    dispose() {
+        this.statusBarItem.dispose();
+    }
 }

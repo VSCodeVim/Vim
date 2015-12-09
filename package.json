@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#a5c9a2",
@@ -36,10 +36,7 @@
   "main": "./out/extension",
   "contributes": {
     "commands": [
-      {
-        "command": "extension.showCmdLine",
-        "title": "Vim: Show Command Line"
-      }
+        { "command": "extension.showCmdLine", "title": "Vim: Show Command Line" }
     ],
     "keybindings": [
         { "key": "Escape", "command": "extension.vim_esc", "when": "editorTextFocus" },

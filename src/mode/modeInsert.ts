@@ -4,7 +4,12 @@ import TextEditor from './../textEditor';
 import {Cursor} from './../motion/motion';
 
 export default class InsertMode extends Mode {
-    private cursor : Cursor;
+	private _cursor : Cursor;
+	private get cursor() : Cursor {
+		this._cursor = this._cursor || new Cursor();
+		return this._cursor;
+	}
+
     private activationKeyHandler : { [ key : string] : (cursor : Cursor) => Thenable<{}> } = {
         "i" : () => {
             // insert at cursor
@@ -34,7 +39,6 @@ export default class InsertMode extends Mode {
 
     constructor() {
         super(ModeName.Insert);
-        this.cursor = new Cursor();
     }
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
