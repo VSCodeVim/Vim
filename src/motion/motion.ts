@@ -119,11 +119,26 @@ abstract class Motion<T extends Motion<any>> {
 
 		return <any>this;
 	}
-	
+
 	public endOfWord() : T {
-		let nextPos = Motion.getEndOfCurrentWordPosition(this.position);
-		this.position = new vscode.Position(nextPos.line, nextPos.character);
-		//this.wordRight();
+		if (this.position.character >= this.maxLineLength(this.position.line) - 1) {
+			if (!TextEditor.isLastLine(this.position)) {
+				let line = TextEditor.getLineAt(this.position.translate(1));
+
+				this.position = new vscode.Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
+				let nextPos = Motion.getEndOfCurrentWordPosition(this.position);
+				if (nextPos != null) {
+					this.position = new vscode.Position(nextPos.line, nextPos.character);
+				}
+				
+			}
+		} else {
+			let nextPos = Motion.getEndOfCurrentWordPosition(this.position);
+			if (nextPos === null) {
+				return this.lineEnd();
+			}
+			this.position = new vscode.Position(nextPos.line, nextPos.character);
+		}
 		return <any>this;
 	}
 
@@ -208,7 +223,7 @@ abstract class Motion<T extends Motion<any>> {
 
 		return null;
 	}
-	
+
 	private static getEndOfCurrentWordPosition(position : vscode.Position): vscode.Position {
 		let segments = ["(^[\t ]*$)"];
 		segments.push(`([^\\s${_.escapeRegExp(Motion.nonWordCharacters) }]+)`);
@@ -226,7 +241,7 @@ abstract class Motion<T extends Motion<any>> {
 				var word = words[index].trim();
 				if (word.length > 0) {
 					startWord = line.text.indexOf(word, endWord);
-					endWord = startWord + word.length;
+					endWord = startWord + word.length - 1;
 
 					if (position.character < endWord) {
 						return new vscode.Position(position.line, endWord);

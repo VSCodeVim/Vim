@@ -221,6 +221,36 @@ suite("cursor", () => {
 		assert.equal(cursor.position.character, 1);
 	});
 
+	test("endOfCurrentWord should move cursor to end of current word", () => {
+		let cursor = new Cursor(0, 0).endOfWord();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 3);
+	});
+	
+	test("endOfCurrentWord should move cursor to end of current word for the middle", () => {
+		let cursor = new Cursor(0, 2).endOfWord();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 3);
+	});
+	
+	test("endOfCurrentWord should move cursor to end of next word if already on the end", () => {
+		let cursor = new Cursor(0, 3).endOfWord();
+		assert.equal(cursor.position.line, 0);
+		assert.equal(cursor.position.character, 7);
+	});
+	
+	test("endOfCurrentWord should move cursor to next line (single character word)", () => {
+		let cursor = new Cursor(0, 7).endOfWord();
+		assert.equal(cursor.position.line, 1);
+		assert.equal(cursor.position.character, 0);
+	});
+	
+	test("endOfCurrentWord should move cursor to next line", () => {
+		let cursor = new Cursor(1, 0).endOfWord();
+		assert.equal(cursor.position.line, 2);
+		assert.equal(cursor.position.character, 5);
+	});
+
 	test("get first line begin cursor on first non-blank character", (done) => {
 		TextEditor.insert("  ", new vscode.Position(0, 0)).then(() => {
 			let cursor = new Cursor(0, 0).firstLineNonBlankChar();
