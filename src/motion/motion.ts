@@ -121,7 +121,7 @@ abstract class Motion<T extends Motion<any>> {
 	}
 
 	public endOfWord() : T {
-		if (this.position.character >= this.maxLineLength(this.position.line) - 1) {
+		if (this.position.character >= Motion.getLastNonBlankCharAtLine(this.position.line)) {
 			if (!TextEditor.isLastLine(this.position)) {
 				let line = TextEditor.getLineAt(this.position.translate(1));
 
@@ -286,6 +286,11 @@ abstract class Motion<T extends Motion<any>> {
 
 	private static getFirstNonBlankCharAtLine(line: number): number {
 		return TextEditor.readLine(line).match(/^\s*/)[0].length;
+	}
+	
+	private static getLastNonBlankCharAtLine(line: number): number {
+		let trimmed = TextEditor.readLine(line).replace(/~+$/, '');
+		return trimmed.length - 1;
 	}
 }
 
