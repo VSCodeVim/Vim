@@ -25,6 +25,7 @@ export default class NormalMode extends Mode {
 		"G" : c => { return Promise.resolve(c.lastLineNonBlankChar().move()); },
 		"w" : c => { return Promise.resolve(c.wordRight().move()); },
 		"b" : c => { return Promise.resolve(c.wordLeft().move()); },
+		"e" : c => { return Promise.resolve(c.endOfWord().move()); },
 		">>" : () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
 		"<<" : () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
 		"dd" : () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
