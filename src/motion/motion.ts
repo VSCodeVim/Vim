@@ -120,6 +120,50 @@ abstract class Motion<T extends Motion<any>> {
 		return <any>this;
 	}
 
+	public endOfWord() : T {
+		if (this.position.character >= Motion.getLastNonBlankCharAtLine(this.position.line)) {
+			if (!TextEditor.isLastLine(this.position)) {
+				let line = TextEditor.getLineAt(this.position.translate(1));
+
+				this.position = new vscode.Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
+				let nextPos = Motion.getEndOfCurrentWordPosition(this.position);
+				if (nextPos != null) {
+					this.position = new vscode.Position(nextPos.line, nextPos.character);
+				}
+				
+			}
+		} else {
+			let nextPos = Motion.getEndOfCurrentWordPosition(this.position);
+			if (nextPos === null) {
+				return this.lineEnd();
+			}
+			this.position = new vscode.Position(nextPos.line, nextPos.character);
+		}
+		return <any>this;
+	}
+
+	public endOfWord() : T {
+		if (this.position.character >= Motion.getLastNonBlankCharAtLine(this.position.line)) {
+			if (!TextEditor.isLastLine(this.position)) {
+				let line = TextEditor.getLineAt(this.position.translate(1));
+
+				this.position = new vscode.Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
+				let nextPos = Motion.getEndOfCurrentWordPosition(this.position);
+				if (nextPos != null) {
+					this.position = new vscode.Position(nextPos.line, nextPos.character);
+				}
+				
+			}
+		} else {
+			let nextPos = Motion.getEndOfCurrentWordPosition(this.position);
+			if (nextPos === null) {
+				return this.lineEnd();
+			}
+			this.position = new vscode.Position(nextPos.line, nextPos.character);
+		}
+		return <any>this;
+	}
+
 	public lineBegin() : T {
 		this.position = new vscode.Position(this.position.line, 0);
 		return <any>this;
@@ -202,6 +246,64 @@ abstract class Motion<T extends Motion<any>> {
 		return null;
 	}
 
+	private static getEndOfCurrentWordPosition(position : vscode.Position): vscode.Position {
+		let segments = ["(^[\t ]*$)"];
+		segments.push(`([^\\s${_.escapeRegExp(Motion.nonWordCharacters) }]+)`);
+		segments.push(`[\\s${_.escapeRegExp(Motion.nonWordCharacters) }]+`);
+
+		let reg = new RegExp(segments.join("|"), "g");
+		let line = TextEditor.getLineAt(position);
+		let words = line.text.match(reg);
+
+		let startWord: number;
+		let endWord: number;
+
+		if (words) {
+			for (var index = 0; index < words.length; index++) {
+				var word = words[index].trim();
+				if (word.length > 0) {
+					startWord = line.text.indexOf(word, endWord);
+					endWord = startWord + word.length - 1;
+
+					if (position.character < endWord) {
+						return new vscode.Position(position.line, endWord);
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private static getEndOfCurrentWordPosition(position : vscode.Position): vscode.Position {
+		let segments = ["(^[\t ]*$)"];
+		segments.push(`([^\\s${_.escapeRegExp(Motion.nonWordCharacters) }]+)`);
+		segments.push(`[\\s${_.escapeRegExp(Motion.nonWordCharacters) }]+`);
+
+		let reg = new RegExp(segments.join("|"), "g");
+		let line = TextEditor.getLineAt(position);
+		let words = line.text.match(reg);
+
+		let startWord: number;
+		let endWord: number;
+
+		if (words) {
+			for (var index = 0; index < words.length; index++) {
+				var word = words[index].trim();
+				if (word.length > 0) {
+					startWord = line.text.indexOf(word, endWord);
+					endWord = startWord + word.length - 1;
+
+					if (position.character < endWord) {
+						return new vscode.Position(position.line, endWord);
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
 	private static getPreviousWordPosition(position : vscode.Position): vscode.Position {
 		let segments = ["(^[\t ]*$)"];
 		segments.push(`([^\\s${_.escapeRegExp(Motion.nonWordCharacters) }]+)`);
@@ -235,6 +337,11 @@ abstract class Motion<T extends Motion<any>> {
 
 	private static getFirstNonBlankCharAtLine(line: number): number {
 		return TextEditor.readLine(line).match(/^\s*/)[0].length;
+	}
+	
+	private static getLastNonBlankCharAtLine(line: number): number {
+		let trimmed = TextEditor.readLine(line).replace(/~+$/, '');
+		return trimmed.length - 1;
 	}
 }
 
