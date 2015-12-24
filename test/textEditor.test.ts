@@ -52,7 +52,7 @@ suite("text editor", () => {
 
 		var range = vscode.window.activeTextEditor.document.lineAt(0).range;
 
-		return TextEditor.delete(range).then( x => {
+		return TextEditor.delete(range).then(x => {
 			let actualText = TextEditor.readLine(0);
 			assert.equal(actualText, "");
 		});
