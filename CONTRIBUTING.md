@@ -32,9 +32,8 @@ When submitting a PR, ensure:
 2. Fork and clone the repo, then
 
 	```bash
-	$ npm install
 	$ npm install -g gulp
-	$ gulp init
+	$ npm install
 	```
 
 3. Open the folder in VS Code

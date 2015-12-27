@@ -1,16 +1,10 @@
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import TextEditor from './../textEditor';
-import {Cursor} from './../motion/motion';
+import {Motion} from './../motion/motion';
 
 export default class InsertMode extends Mode {
-	private _cursor : Cursor;
-	private get cursor() : Cursor {
-		this._cursor = this._cursor || new Cursor();
-		return this._cursor;
-	}
-
-    private activationKeyHandler : { [ key : string] : (cursor : Cursor) => Thenable<{}> } = {
+    private activationKeyHandler : { [ key : string] : (motion : Motion) => Thenable<{}> } = {
         "i" : () => {
             // insert at cursor
             return Promise.resolve({});
@@ -37,8 +31,8 @@ export default class InsertMode extends Mode {
         }
     };
 
-    constructor() {
-        super(ModeName.Insert);
+    constructor(motion : Motion) {
+        super(ModeName.Insert, motion);
     }
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
@@ -46,8 +40,7 @@ export default class InsertMode extends Mode {
     }
 
     HandleActivation(key : string) : Thenable<{}> {
-        this.cursor.reset();
-        return this.activationKeyHandler[key](this.cursor);
+        return this.activationKeyHandler[key](this.Motion);
     }
 
     HandleKeyEvent(key : string) : Thenable<{}> {

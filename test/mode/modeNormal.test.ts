@@ -2,12 +2,13 @@ import * as assert from 'assert';
 
 import ModeNormal from '../../src/mode/modeNormal';
 import {ModeName} from '../../src/mode/mode';
+import {Motion} from '../../src/motion/motion';
 
 suite("Mode Normal", () => {
     test("can be activated", () => {
         let activationKeys = ['esc', 'ctrl+['];
-
-        let modeHandler = new ModeNormal();
+        let motion = new Motion();
+        let modeHandler = new ModeNormal(motion);
 
         for (let i = 0; i < activationKeys.length; i++) {
             let key = activationKeys[i];

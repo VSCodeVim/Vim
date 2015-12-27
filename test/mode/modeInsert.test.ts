@@ -2,20 +2,22 @@ import * as assert from 'assert';
 
 import ModeInsert from '../../src/mode/modeInsert';
 import {ModeName} from '../../src/mode/mode';
-import {Cursor} from '../../src/motion/motion';
+import {Motion, MotionMode} from '../../src/motion/motion';
 import TextEditor from '../../src/textEditor';
 import TestHelpers from '../testHelpers';
 
-let modeHandler: ModeInsert = null;
+let modeInsert: ModeInsert = null;
+let motion : Motion = null;
 
 suite("Mode Insert", () => {
 	setup((done) => {
-        modeHandler = new ModeInsert();
+        motion = new Motion(MotionMode.Cursor);
+        modeInsert = new ModeInsert(motion);
 		TextEditor.delete().then(() => done());
 	});
 
 	teardown((done) => {
-        modeHandler = null;
+        modeInsert = null;
 		TextEditor.delete().then(() => done());
 	});
 
@@ -24,96 +26,92 @@ suite("Mode Insert", () => {
 
         for (let i = 0; i < activationKeys.length; i++) {
             let key = activationKeys[i];
-            assert.equal(modeHandler.ShouldBeActivated(key, ModeName.Insert), true, key);
+            assert.equal(modeInsert.ShouldBeActivated(key, ModeName.Insert), true, key);
         }
     });
 
-    test("can handle key events", (done) => {
-        modeHandler.HandleKeyEvent("!")
+    test("can handle key events", () => {
+        return modeInsert.HandleKeyEvent("!")
             .then(() => {
                 return TestHelpers.assertEqualLines(["!"]);
-            }).then(done, done);
+            });
     });
 
-    test("Can handle 'o'", (done) => {
-        TextEditor.insert("text")
+    test("Can handle 'o'", () => {
+        return TextEditor.insert("text")
             .then(() => {
-                return modeHandler.HandleActivation("o");
+                return modeInsert.HandleActivation("o");
             })
             .then(() => {
                 return TestHelpers.assertEqualLines(["text", ""]);
-            })
-            .then(done, done);
+            });
     });
 
-    test("Can handle 'O'", (done) => {
-        TextEditor.insert("text")
+    test("Can handle 'O'", () => {
+        return TextEditor.insert("text")
             .then(() => {
-                return modeHandler.HandleActivation("O");
+                return modeInsert.HandleActivation("O");
             })
             .then(() => {
                 return TestHelpers.assertEqualLines(["", "text"]);
-            })
-            .then(done, done);
+            });
     });
 
-    test("Can handle 'i'", (done) => {
-        TextEditor.insert("texttext")
+    test("Can handle 'i'", () => {
+        return TextEditor.insert("texttext")
             .then(() => {
-                new Cursor(0, 4).move();
+                motion = motion.move(0, 4);
             })
             .then(() => {
-                return modeHandler.HandleActivation("i");
+                return modeInsert.HandleActivation("i");
             })
             .then(() => {
-                return modeHandler.HandleKeyEvent("!");
+                return modeInsert.HandleKeyEvent("!");
             })
             .then(() => {
                return TestHelpers.assertEqualLines(["text!text"]);
-            })
-            .then(done, done);
+            });
     });
 
-    test("Can handle 'I'", (done) => {
-        TextEditor.insert("text")
+    test("Can handle 'I'", () => {
+        return TextEditor.insert("text")
             .then(() => {
-                new Cursor(0, 4).move();
+                motion = motion.move(0, 3);
             })
             .then(() => {
-                return modeHandler.HandleActivation("I");
+                return modeInsert.HandleActivation("I");
             })
             .then(() => {
-                return modeHandler.HandleKeyEvent("!");
+                return modeInsert.HandleKeyEvent("!");
             })
             .then(() => {
                return TestHelpers.assertEqualLines(["!text"]);
-            })
-            .then(done, done);
+            });
     });
 
-    test("Can handle 'a'", (done) => {
-        TextEditor.insert("texttext")
+    test("Can handle 'a'", () => {
+        return TextEditor.insert("texttext")
             .then(() => {
-                new Cursor(0, 4).move();
+                motion = motion.move(0, 4);
             }).then(() => {
-                return modeHandler.HandleActivation("a");
+                return modeInsert.HandleActivation("a");
             }).then(() => {
-                return modeHandler.HandleKeyEvent("!");
+                return modeInsert.HandleKeyEvent("!");
             }).then(() => {
                return TestHelpers.assertEqualLines(["textt!ext"]);
-            }).then(done, done);
+            });
     });
 
-    test("Can handle 'A'", (done) => {
-        TextEditor.insert("text")
+    test("Can handle 'A'", () => {
+        return TextEditor.insert("text")
             .then(() => {
-                new Cursor(0, 0).move();
+                motion = motion.move(0, 0);
             }).then(() => {
-                return modeHandler.HandleActivation("A");
+                return modeInsert.HandleActivation("A");
             }).then(() => {
-                return modeHandler.HandleKeyEvent("!");
+                return modeInsert.HandleKeyEvent("!");
             }).then(() => {
                return TestHelpers.assertEqualLines(["text!"]);
-            }).then(done, done);
+            });
     });
 });

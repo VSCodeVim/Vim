@@ -2,30 +2,31 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import {Mode, ModeName} from './mode';
+import {Motion, MotionMode} from './../motion/motion';
 import NormalMode from './modeNormal';
 import InsertMode from './modeInsert';
-import VisualMode from './modeVisual';
 import Configuration from '../configuration';
 
-export default class ModeHandler {
-    private modes : Mode[];
-    private statusBarItem : vscode.StatusBarItem;
-    configuration : Configuration;
+export default class ModeHandler implements vscode.Disposable {
+    private _motion : Motion;
+    private _modes : Mode[];
+    private _statusBarItem : vscode.StatusBarItem;
+    private _configuration : Configuration;
 
     constructor() {
-        this.configuration = Configuration.fromUserFile();
+        this._configuration = Configuration.fromUserFile();
 
-        this.modes = [
-            new NormalMode(),
-            new InsertMode(),
-            new VisualMode(),
+        this._motion = new Motion();
+        this._modes = [
+            new NormalMode(this._motion),
+            new InsertMode(this._motion),
         ];
 
         this.setCurrentModeByName(ModeName.Normal);
     }
 
     get currentMode() : Mode {
-        var currentMode = this.modes.find((mode, index) => {
+        var currentMode = this._modes.find((mode, index) => {
             return mode.IsActive;
         });
 
@@ -33,9 +34,19 @@ export default class ModeHandler {
     }
 
     setCurrentModeByName(modeName : ModeName) {
-        this.modes.forEach(mode => {
+        this._modes.forEach(mode => {
             mode.IsActive = (mode.Name === modeName);
         });
+
+        switch (modeName) {
+            case ModeName.Insert:
+                this._motion = this._motion.changeMode(MotionMode.Caret);
+                break;
+
+            case ModeName.Normal:
+                this._motion = this._motion.changeMode(MotionMode.Cursor);
+                break;
+        }
 
         var statusBarText = (this.currentMode.Name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText.toUpperCase());
@@ -45,11 +56,11 @@ export default class ModeHandler {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
-        key = this.configuration.keyboardLayout.translate(key);
+        key = this._configuration.keyboardLayout.translate(key);
 
         var currentModeName = this.currentMode.Name;
         var nextMode : Mode;
-        var inactiveModes = _.filter(this.modes, (m) => !m.IsActive);
+        var inactiveModes = _.filter(this._modes, (m) => !m.IsActive);
 
         _.forEach(inactiveModes, (m, i) => {
             if (m.ShouldBeActivated(key, currentModeName)) {
@@ -59,7 +70,6 @@ export default class ModeHandler {
 
         if (nextMode) {
             this.currentMode.HandleDeactivation();
-
             nextMode.HandleActivation(key);
             this.setCurrentModeByName(nextMode.Name);
             return;
@@ -69,15 +79,16 @@ export default class ModeHandler {
     }
 
     private setupStatusBarItem(text : string) : void {
-        if (!this.statusBarItem) {
-            this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+        if (!this._statusBarItem) {
+            this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
 
-        this.statusBarItem.text = (text) ? '-- ' + text + ' --' : '';
-        this.statusBarItem.show();
+        this._statusBarItem.text = (text) ? '-- ' + text + ' --' : '';
+        this._statusBarItem.show();
     }
 
     dispose() {
-        this.statusBarItem.dispose();
+        this._statusBarItem.dispose();
+        this._motion.dispose();
     }
 }
