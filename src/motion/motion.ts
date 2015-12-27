@@ -155,6 +155,18 @@ abstract class Motion<T extends Motion<any>> {
 		return <any>this;
 	}
 
+    public goToEndOfCurrentWord(): T {
+        let endIndex = this.currentWordEndIndex(this.position);
+        if (this.position.character === TextEditor.getLineAt(this.position).text.length) {
+            let line = TextEditor.getLineAt(this.position.translate(1));
+            this.position = new vscode.Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
+            this.goToEndOfCurrentWord();
+        } else {
+            this.position = new vscode.Position(this.position.line, endIndex);
+        }
+        return <any>this;
+    }
+
 	private isLineBeginning(position : vscode.Position) : boolean {
 		return position.character === 0;
 	}
@@ -172,6 +184,20 @@ abstract class Motion<T extends Motion<any>> {
 	private getLineEnd() : vscode.Position {
 		return new vscode.Position(this.position.line, this.maxLineLength(this.position.line));
 	}
+
+    private currentWordEndIndex(position: vscode.Position) : number {
+        let line = TextEditor.getLineAt(position);
+        let wordDelimiters: string[] = ["(", ")", "[", "]", "{", "}", ":", " ",
+         "=", "<", ">", "|", "/", "'", "\"", "~", "`", "@", "*", "+", "-", "?", ",", ".", ";"];
+        if (wordDelimiters.indexOf(line.text.charAt(position.character)) !== -1) {
+            return position.character + 1;
+        }
+        for (var index = position.character; index < line.text.length; index++) {
+            if (wordDelimiters.indexOf(line.text.charAt(index)) !== -1) {
+                return index;
+            }
+        }
+    }
 
 	private static getNextWordPosition(position : vscode.Position): vscode.Position {
 		let segments = ["(^[\t ]*$)"];
