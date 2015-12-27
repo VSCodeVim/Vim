@@ -4,7 +4,7 @@ import TextEditor from "./../textEditor";
 
 abstract class Motion<T extends Motion<any>> {
 	private static nonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
-	private prevColumn: number = 0;
+	private activeColumn: number = 0;
 
 	public static getActualPosition(): vscode.Position {
 		return vscode.window.activeTextEditor.selection.active;
@@ -20,7 +20,7 @@ abstract class Motion<T extends Motion<any>> {
 			character = currentPosition.character;
 		}
 
-		this.prevColumn = character;
+		this.activeColumn = character;
 		this.position = new vscode.Position(line, character);
 	}
 
@@ -44,7 +44,7 @@ abstract class Motion<T extends Motion<any>> {
 	public left() : T {
 		if (!this.isLineBeginning(this.position)) {
 			this.position = this.position.translate(0, -1);
-			this.prevColumn = this.position.character;
+		    this.activeColumn = this.position.character;
 		}
 
 		return <any>this;
@@ -53,7 +53,7 @@ abstract class Motion<T extends Motion<any>> {
 	public right() : T {
 		if (!this.isLineEnd(this.position)) {
 			this.position = this.position.translate(0, 1);
-			this.prevColumn = this.position.character;
+	       	this.activeColumn = this.position.character;
 		}
 
 		return <any>this;
@@ -64,10 +64,15 @@ abstract class Motion<T extends Motion<any>> {
 			let newLine = this.position.line + 1;
 
 			let lineLength = TextEditor.readLine(newLine).length;
-			let newCharMax = lineLength > 0 ? lineLength - 1 : 0;
-			let newChar = Math.min(newCharMax, this.prevColumn);
+            if (lineLength < this.activeColumn) {
+                this.position = new vscode.Position(newLine, lineLength);
+            } else {
+                let newCharMax = lineLength > 0 ? lineLength - 1 : 0;
+			    let newChar = Math.min(newCharMax, this.activeColumn);
+			    this.position = new vscode.Position(newLine, newChar);
+                this.activeColumn = newChar;
+            }
 
-			this.position = new vscode.Position(newLine, newChar);
 		}
 
 		return <any>this;
@@ -78,10 +83,14 @@ abstract class Motion<T extends Motion<any>> {
 			let newLine = this.position.line - 1;
 
 			let lineLength = TextEditor.readLine(newLine).length;
-			let newCharMax = lineLength > 0 ? lineLength - 1 : 0;
-			let newChar = Math.min(newCharMax, this.prevColumn);
+            if (lineLength < this.activeColumn) {
+                this.position = new vscode.Position(newLine, lineLength);
+            } else {
+			    let newCharMax = lineLength > 0 ? lineLength - 1 : 0;
+			    let newChar = Math.min(newCharMax, this.activeColumn);
+			    this.position = new vscode.Position(newLine, newChar);
+            }
 
-			this.position = new vscode.Position(newLine, newChar);
 		}
 
 		return <any>this;
@@ -97,7 +106,7 @@ abstract class Motion<T extends Motion<any>> {
 
 		let nextPos = Motion.getPreviousWordPosition(this.position);
 		this.position = new vscode.Position(nextPos.line, nextPos.character);
-
+        this.activeColumn = nextPos.character;
 		return <any>this;
 	}
 
@@ -113,8 +122,8 @@ abstract class Motion<T extends Motion<any>> {
 			if (nextPos === null) {
 				return this.lineEnd();
 			}
-
 			this.position = new vscode.Position(nextPos.line, nextPos.character);
+            this.activeColumn = nextPos.character;
 		}
 
 		return <any>this;
@@ -122,16 +131,19 @@ abstract class Motion<T extends Motion<any>> {
 
 	public lineBegin() : T {
 		this.position = new vscode.Position(this.position.line, 0);
+        this.activeColumn = 0;
 		return <any>this;
 	}
 
 	public lineEnd() : T {
 		this.position = this.getLineEnd();
+        this.activeColumn = this.position.character;
 		return <any>this;
 	}
 
 	public firstLineNonBlankChar() : T {
 		this.position = new vscode.Position(0, Motion.getFirstNonBlankCharAtLine(0));
+        this.activeColumn = this.position.character;
 		return <any>this;
 	}
 
@@ -140,11 +152,13 @@ abstract class Motion<T extends Motion<any>> {
 		let character = Motion.getFirstNonBlankCharAtLine(line);
 
 		this.position = new vscode.Position(line, character);
+        this.activeColumn = character;
 		return <any>this;
 	}
 
 	public documentBegin() : T {
 		this.position = new vscode.Position(0, 0);
+        this.activeColumn = 0;
 		return <any>this;
 	}
 
@@ -152,6 +166,7 @@ abstract class Motion<T extends Motion<any>> {
 		let lineCount = TextEditor.getLineCount();
 		let line = lineCount > 0 ? lineCount - 1 : 0;
 		this.position = new vscode.Position(line, TextEditor.readLine(line).length);
+        this.activeColumn = this.position.character;
 		return <any>this;
 	}
 
@@ -163,6 +178,7 @@ abstract class Motion<T extends Motion<any>> {
             this.goToEndOfCurrentWord();
         } else {
             this.position = new vscode.Position(this.position.line, endIndex);
+            this.activeColumn = endIndex;
         }
         return <any>this;
     }
