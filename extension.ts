@@ -6,6 +6,7 @@ import {showCmdLine} from './src/cmd_line/main';
 import * as cc from './src/cmd_line/lexer';
 import ModeHandler from "./src/mode/modeHandler";
 import {ModeName} from "./src/mode/mode";
+import Cursor from "./src/cursor/cursor";
 
 var modeHandler : ModeHandler;
 
@@ -106,5 +107,6 @@ function registerCommand(context: vscode.ExtensionContext, command: string, call
 
 function handleKeyEvent(key:string) {
     modeHandler = modeHandler || new ModeHandler();
+    Cursor.blockCursor(modeHandler);
     modeHandler.handleKeyEvent(key);
 }
