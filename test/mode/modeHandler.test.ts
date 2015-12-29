@@ -20,7 +20,9 @@ suite("Mode Handler", () => {
         modeHandler.setCurrentModeByName(ModeName.Insert);
         assert.equal(modeHandler.currentMode.Name, ModeName.Insert);
 
+        /*
         modeHandler.setCurrentModeByName(ModeName.Visual);
         assert.equal(modeHandler.currentMode.Name, ModeName.Visual);
+        */
     });
 });

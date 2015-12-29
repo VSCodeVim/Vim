@@ -1,3 +1,5 @@
+import {Motion} from './../motion/motion';
+
 export enum ModeName {
     Normal,
     Insert,
@@ -5,26 +7,36 @@ export enum ModeName {
 }
 
 export abstract class Mode {
-    private isActive : boolean;
-    private name : ModeName;
+    private _isActive : boolean;
+    private _name : ModeName;
+    private _motion : Motion;
     protected keyHistory : string[];
 
-    constructor(name: ModeName) {
-        this.name = name;
-        this.isActive = false;
+    constructor(name: ModeName, motion : Motion) {
+        this._name = name;
+        this._motion = motion;
+        this._isActive = false;
         this.keyHistory = [];
     }
 
     get Name(): ModeName {
-        return this.name;
+        return this._name;
+    }
+
+    get Motion() : Motion {
+        return this._motion;
+    }
+
+    set Motion(val : Motion) {
+        this._motion = val;
     }
 
     get IsActive() : boolean {
-        return this.isActive;
+        return this._isActive;
     }
 
     set IsActive(val : boolean) {
-        this.isActive = val;
+        this._isActive = val;
     }
 
     public HandleDeactivation() : void {

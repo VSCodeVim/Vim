@@ -2,16 +2,10 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
-import {Caret} from './../motion/motion';
+import {Motion} from './../motion/motion';
 
 export default class NormalMode extends Mode {
-	private _caret : Caret;
-	private get caret() : Caret {
-		this._caret = this._caret || new Caret();
-		return this._caret;
-	}
-
-	private keyHandler : { [key : string] : (caret : Caret) => Thenable<{}>; } = {
+	private keyHandler : { [key : string] : (motion : Motion) => Thenable<{}>; } = {
 		":" : () => { return showCmdLine(); },
 		"u" : () => { return vscode.commands.executeCommand("undo"); },
 		"ctrl+r" : () => { return vscode.commands.executeCommand("redo"); },
@@ -36,8 +30,8 @@ export default class NormalMode extends Mode {
 		"esc": () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
 	};
 
-	constructor() {
-		super(ModeName.Normal);
+	constructor(motion : Motion) {
+		super(ModeName.Normal, motion);
 	}
 
 	ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
@@ -45,7 +39,8 @@ export default class NormalMode extends Mode {
 	}
 
 	HandleActivation(key : string) : Thenable<{}> {
-		return Promise.resolve(this.caret.reset().left().move());
+        this.Motion.left().move();
+		return Promise.resolve(this.Motion);
 	}
 
 	HandleKeyEvent(key : string) : Thenable<{}>  {
@@ -65,7 +60,7 @@ export default class NormalMode extends Mode {
 
 			if (keyHandled) {
 				this.keyHistory = [];
-				return this.keyHandler[keysPressed](this.caret);
+				return this.keyHandler[keysPressed](this.Motion);
 			}
 
 			resolve();
