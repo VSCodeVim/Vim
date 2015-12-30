@@ -9,10 +9,10 @@ export enum MotionMode {
 export class Motion implements vscode.Disposable {
     /// Certain motions like j, k, and | record data about the desired column within the span.
     /// This value may or may not be a valid point within the line
-	private _desiredColumn: number = 0;
+    private _desiredColumn: number = 0;
     private _motionMode : MotionMode;
-	private _position : Position;
-    private _selectionChangeHandler : vscode.Disposable;
+    private _position : Position;
+    private _disposables: vscode.Disposable[];
 
     public get position() : Position {
         return this._position;
@@ -26,7 +26,7 @@ export class Motion implements vscode.Disposable {
             this.changeMode(mode);
         }
 
-        this._selectionChangeHandler = vscode.window.onDidChangeTextEditorSelection(e => {
+        this._disposables.push(vscode.window.onDidChangeTextEditorSelection(e => {
             let selection = e.selections[0];
 
             if (selection) {
@@ -36,7 +36,7 @@ export class Motion implements vscode.Disposable {
                 this.setPosition(new Position(line, char), true);
                 this.changeMode(this._motionMode);
             }
-        });
+        }));
 	}
 
     public changeMode(mode : MotionMode) : Motion {
@@ -143,7 +143,9 @@ export class Motion implements vscode.Disposable {
     }
 
     dispose() {
-        this._selectionChangeHandler.dispose();
+        _.each(this._disposables, d => {
+            d.dispose();  
+        });
     }
 
     private setPosition(position: Position, updateDesiredColumn = false) {
