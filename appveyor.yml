@@ -4,13 +4,9 @@ environment:
   clone_depth: 1
 
 install:
-  - ps: start-filedownload https://az764295.vo.msecnd.net/public/0.10.1-release/VSCode-win32.zip
-  - ps: 7z.exe x .\VSCode-win32.zip -oC:\VSCode > $null
-  - ps: install-product node $env:node_js_version
-  - npm install
   - npm install -g gulp
-  - gulp init
-  - C:\VSCode\bin\code.cmd
+  - npm install
+  - npm run vscode:prepublish
 
 build: off
 

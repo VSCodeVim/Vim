@@ -25,7 +25,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "0.10.x"
+    "vscode": "^0.10.1"
   },
   "categories": [
     "Other"
@@ -140,7 +140,7 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-mocha": "^2.2.0",
-    "gulp-soften": "0.0.1",
+    "gulp-soften": "^0.0.1",
     "gulp-shell": "^0.5.1",
     "gulp-tsd": "^0.0.4",
     "gulp-tslint": "^3.6.0",
@@ -149,7 +149,7 @@
     "tsd": "^0.6.5",
     "tslint": "^3.2.1",    
     "typescript": "^1.6.2",
-    "vscode": "^0.10.7"
+    "vscode": "0.10.x"
   },
   "dependencies": {
     "lodash": "^3.10.1"

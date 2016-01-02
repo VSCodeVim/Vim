@@ -1,25 +1,23 @@
 import * as assert from 'assert';
-
+import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import ModeInsert from '../../src/mode/modeInsert';
 import {ModeName} from '../../src/mode/mode';
 import {Motion, MotionMode} from '../../src/motion/motion';
 import TextEditor from '../../src/textEditor';
-import TestHelpers from '../testHelpers';
-
-let modeInsert: ModeInsert = null;
-let motion : Motion = null;
 
 suite("Mode Insert", () => {
-    setup((done) => {
-        motion = new Motion(MotionMode.Cursor);
-        modeInsert = new ModeInsert(motion);
-        TextEditor.delete().then(() => done());
+
+    let motion : Motion;
+    let modeInsert : ModeInsert;
+
+    setup(() => {
+        return setupWorkspace().then(() => {
+            motion = new Motion(MotionMode.Cursor);
+            modeInsert = new ModeInsert(motion);
+        });
     });
 
-    teardown((done) => {
-        modeInsert = null;
-        TextEditor.delete().then(() => done());
-    });
+    teardown(cleanUpWorkspace);
 
     test("can be activated", () => {
         let activationKeys = ['i', 'I', 'o', 'O', 'a', 'A'];
@@ -33,7 +31,7 @@ suite("Mode Insert", () => {
     test("can handle key events", () => {
         return modeInsert.HandleKeyEvent("!")
             .then(() => {
-                return TestHelpers.assertEqualLines(["!"]);
+                return assertEqualLines(["!"]);
             });
     });
 
@@ -43,7 +41,7 @@ suite("Mode Insert", () => {
                 return modeInsert.HandleActivation("o");
             })
             .then(() => {
-                return TestHelpers.assertEqualLines(["text", ""]);
+                return assertEqualLines(["text", ""]);
             });
     });
 
@@ -53,7 +51,7 @@ suite("Mode Insert", () => {
                 return modeInsert.HandleActivation("O");
             })
             .then(() => {
-                return TestHelpers.assertEqualLines(["", "text"]);
+                return assertEqualLines(["", "text"]);
             });
     });
 
@@ -69,7 +67,7 @@ suite("Mode Insert", () => {
                 return modeInsert.HandleKeyEvent("!");
             })
             .then(() => {
-               return TestHelpers.assertEqualLines(["text!text"]);
+               return assertEqualLines(["text!text"]);
             });
     });
 
@@ -85,7 +83,7 @@ suite("Mode Insert", () => {
                 return modeInsert.HandleKeyEvent("!");
             })
             .then(() => {
-               return TestHelpers.assertEqualLines(["!text"]);
+               return assertEqualLines(["!text"]);
             });
     });
 
@@ -98,7 +96,7 @@ suite("Mode Insert", () => {
             }).then(() => {
                 return modeInsert.HandleKeyEvent("!");
             }).then(() => {
-               return TestHelpers.assertEqualLines(["textt!ext"]);
+               return assertEqualLines(["textt!ext"]);
             });
     });
 
@@ -111,7 +109,7 @@ suite("Mode Insert", () => {
             }).then(() => {
                 return modeInsert.HandleKeyEvent("!");
             }).then(() => {
-               return TestHelpers.assertEqualLines(["text!"]);
+               return assertEqualLines(["text!"]);
             });
     });
 });

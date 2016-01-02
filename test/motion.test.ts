@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as vscode from "vscode";
 import TextEditor from './../src/textEditor';
 import {Motion, MotionMode} from './../src/motion/motion';
+import {setupWorkspace, cleanUpWorkspace} from './testUtils';
 
 suite("motion", () => {
     let motionModes = [MotionMode.Caret, MotionMode.Cursor];
@@ -12,13 +13,13 @@ suite("motion", () => {
         " whose fleece was "
     ];
 
-    setup(done => {
-        TextEditor.insert(text.join('\n')).then(() => done());
+    suiteSetup(() => {
+        return setupWorkspace().then(() => {
+            return TextEditor.insert(text.join('\n'));
+        });
     });
 
-    teardown(done => {
-        TextEditor.delete().then(() => done());
-    });
+    suiteTeardown(cleanUpWorkspace);
 
     test("char right: should move one column right", () => {
         motionModes.forEach(o => {
