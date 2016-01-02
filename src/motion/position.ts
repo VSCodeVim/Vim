@@ -8,7 +8,7 @@ export enum PositionOptions {
 }
 
 export class Position extends vscode.Position {
-	private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
+    private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
     private static WordDelimiters: string[] = ["(", ")", "[", "]", "{", "}", ":", " ",
          "=", "<", ">", "|", "/", "'", "\"", "~", "`", "@", "*", "+", "-", "?", ",", ".", ";"];
 
@@ -20,11 +20,11 @@ export class Position extends vscode.Position {
         super(line, character);
 
         let segments = ["(^[\t ]*$)"];
-		segments.push(`([^\\s${_.escapeRegExp(Position.NonWordCharacters) }]+)`);
-		segments.push(`[\\s${_.escapeRegExp(Position.NonWordCharacters) }]+`);
+        segments.push(`([^\\s${_.escapeRegExp(Position.NonWordCharacters) }]+)`);
+        segments.push(`[\\s${_.escapeRegExp(Position.NonWordCharacters) }]+`);
 
         this.positionOptions = options;
-		this._nonWordCharRegex = new RegExp(segments.join("|"), "g");
+        this._nonWordCharRegex = new RegExp(segments.join("|"), "g");
     }
 
     public setLocation(line: number, character: number) : Position {
@@ -32,114 +32,114 @@ export class Position extends vscode.Position {
         return position;
     }
 
-	public getLeft() : Position {
+    public getLeft() : Position {
         if (!Position.isLineBeginning(this)) {
             return new Position(this.line, this.character - 1, this.positionOptions);
-		}
+        }
 
-		return this;
-	}
+        return this;
+    }
 
-	public getRight() : Position {
-		if (!Position.isLineEnd(this)) {
+    public getRight() : Position {
+        if (!Position.isLineEnd(this)) {
             return new Position(this.line, this.character + 1, this.positionOptions);
-		}
+        }
 
-		return this;
-	}
+        return this;
+    }
 
-	public getDown(desiredColumn: number) : Position {
-		if (this.getDocumentEnd().line !== this.line) {
-			let nextLine = this.line + 1;
+    public getDown(desiredColumn: number) : Position {
+        if (this.getDocumentEnd().line !== this.line) {
+            let nextLine = this.line + 1;
             let nextLineLength = Position.getLineLength(nextLine, this.positionOptions);
 
             return new Position(nextLine, Math.min(nextLineLength, desiredColumn), this.positionOptions);
-		}
+        }
 
-		return this;
-	}
+        return this;
+    }
 
-	public getUp(desiredColumn: number) : Position {
-		if (this.getDocumentBegin().line !== this.line) {
-			let prevLine = this.line - 1;
-			let prevLineLength  = Position.getLineLength(prevLine, this.positionOptions);
+    public getUp(desiredColumn: number) : Position {
+        if (this.getDocumentBegin().line !== this.line) {
+            let prevLine = this.line - 1;
+            let prevLineLength  = Position.getLineLength(prevLine, this.positionOptions);
 
             return new Position(prevLine, Math.min(prevLineLength, desiredColumn), this.positionOptions);
-		}
+        }
 
-		return this;
-	}
+        return this;
+    }
 
-	public getWordLeft() : Position {
-		let currentLine = TextEditor.getLineAt(this);
+    public getWordLeft() : Position {
+        let currentLine = TextEditor.getLineAt(this);
 
-		if (!TextEditor.isFirstLine(this) && this.character <= currentLine.firstNonWhitespaceCharacterIndex) {
+        if (!TextEditor.isFirstLine(this) && this.character <= currentLine.firstNonWhitespaceCharacterIndex) {
             // go to previous line
             let prevLine = new Position(this.line - 1, this.character, this.positionOptions);
-			return prevLine.getLineEnd();
-		}
+            return prevLine.getLineEnd();
+        }
 
-		let line = TextEditor.getLineAt(this);
-		let words = line.text.match(this._nonWordCharRegex);
+        let line = TextEditor.getLineAt(this);
+        let words = line.text.match(this._nonWordCharRegex);
 
-		let startWord: number;
-		let endWord: number;
+        let startWord: number;
+        let endWord: number;
 
-		if (words) {
-			words = words.reverse();
-			endWord = line.range.end.character;
-			for (var index = 0; index < words.length; index++) {
-				endWord = endWord - words[index].length;
-				var word = words[index].trim();
-				if (word.length > 0) {
-					startWord = line.text.indexOf(word, endWord);
+        if (words) {
+            words = words.reverse();
+            endWord = line.range.end.character;
+            for (var index = 0; index < words.length; index++) {
+                endWord = endWord - words[index].length;
+                var word = words[index].trim();
+                if (word.length > 0) {
+                    startWord = line.text.indexOf(word, endWord);
 
-					if (startWord !== -1 && this.character > startWord) {
-						return new Position(this.line, startWord, this.positionOptions);
-					}
-				}
-			}
-		}
+                    if (startWord !== -1 && this.character > startWord) {
+                        return new Position(this.line, startWord, this.positionOptions);
+                    }
+                }
+            }
+        }
 
         return this.getLineBegin();
-	}
+    }
 
-	public getWordRight() : Position {
-		if (!TextEditor.isLastLine(this) && this.character === this.getLineEnd().character) {
+    public getWordRight() : Position {
+        if (!TextEditor.isLastLine(this) && this.character === this.getLineEnd().character) {
             // go to next line
             let line = TextEditor.getLineAt(this.translate(1));
             return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
-		}
+        }
 
-		let line = TextEditor.getLineAt(this);
-		let words = line.text.match(this._nonWordCharRegex);
+        let line = TextEditor.getLineAt(this);
+        let words = line.text.match(this._nonWordCharRegex);
 
-		let startWord: number;
-		let endWord: number;
+        let startWord: number;
+        let endWord: number;
 
-		if (words) {
-			for (var index = 0; index < words.length; index++) {
-				var word = words[index].trim();
-				if (word.length > 0) {
-					startWord = line.text.indexOf(word, endWord);
-					endWord = startWord + word.length;
+        if (words) {
+            for (var index = 0; index < words.length; index++) {
+                var word = words[index].trim();
+                if (word.length > 0) {
+                    startWord = line.text.indexOf(word, endWord);
+                    endWord = startWord + word.length;
 
-					if (this.character < startWord) {
-						return new Position(this.line, startWord, this.positionOptions);
-					}
-				}
-			}
-		}
+                    if (this.character < startWord) {
+                        return new Position(this.line, startWord, this.positionOptions);
+                    }
+                }
+            }
+        }
 
         return this.getLineEnd();
-	}
+    }
 
     public getCurrentWordEnd(): Position {
-		if (!TextEditor.isLastLine(this) && this.character === this.getLineEnd().character) {
+        if (!TextEditor.isLastLine(this) && this.character === this.getLineEnd().character) {
             // go to next line
             let line = TextEditor.getLineAt(this.translate(1));
             return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
-		}
+        }
 
         let line = TextEditor.getLineAt(this);
 
@@ -156,24 +156,24 @@ export class Position extends vscode.Position {
         return this.getLineEnd();
     }
 
-	public getLineBegin() : Position {
+    public getLineBegin() : Position {
         return new Position(this.line, 0, this.positionOptions);
-	}
+    }
 
-	public getLineEnd() : Position {
+    public getLineEnd() : Position {
         return new Position(this.line, Position.getLineLength(this.line, this.positionOptions), this.positionOptions);
-	}
+    }
 
-	public getDocumentBegin() : Position {
-		return new Position(0, 0, this.positionOptions);
-	}
+    public getDocumentBegin() : Position {
+        return new Position(0, 0, this.positionOptions);
+    }
 
-	public getDocumentEnd() : Position {
-		let lineCount = TextEditor.getLineCount();
-		let line = lineCount > 0 ? lineCount - 1 : 0;
+    public getDocumentEnd() : Position {
+        let lineCount = TextEditor.getLineCount();
+        let line = lineCount > 0 ? lineCount - 1 : 0;
         let char = Position.getLineLength(line, this.positionOptions);
-		return new Position(line, char, this.positionOptions);
-	}
+        return new Position(line, char, this.positionOptions);
+    }
 
     public isValid() : boolean {
         // line
@@ -184,9 +184,9 @@ export class Position extends vscode.Position {
 
         // char
         let charCount = Position.getLineLength(this.line, this.positionOptions);
-		if (this.character > charCount) {
+        if (this.character > charCount) {
             return false;
-		}
+        }
 
         // options
         if (this.positionOptions === null) {
@@ -197,17 +197,17 @@ export class Position extends vscode.Position {
         return true;
     }
 
-	private static isLineBeginning(position : Position) : boolean {
-		return position.character === 0;
-	}
+    private static isLineBeginning(position : Position) : boolean {
+        return position.character === 0;
+    }
 
-	private static isLineEnd(position : Position) : boolean {
-		return position.character === Position.getLineLength(position.line, position.positionOptions);
-	}
+    private static isLineEnd(position : Position) : boolean {
+        return position.character === Position.getLineLength(position.line, position.positionOptions);
+    }
 
-	public static getFirstNonBlankCharAtLine(line: number): number {
-		return TextEditor.readLine(line).match(/^\s*/)[0].length;
-	}
+    public static getFirstNonBlankCharAtLine(line: number): number {
+        return TextEditor.readLine(line).match(/^\s*/)[0].length;
+    }
 
     private static getLineLength(line : number, options : PositionOptions) : number {
         switch (options) {

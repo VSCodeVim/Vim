@@ -15,8 +15,8 @@ var testRunner = require('vscode/lib/testrunner');
 // You can directly control Mocha options by uncommenting the following lines
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
 testRunner.configure({
-	ui: 'tdd',
-	useColors: true
+    ui: 'tdd',
+    useColors: true
 });
 
 module.exports = testRunner;

@@ -1,28 +1,28 @@
 // Tokens for the Vim command line.
 
 export enum TokenType {
-	Unknown,
-	Eof,
-	LineNumber,
-	Dot,
-	Dollar,
-	Percent,
-	Comma,
-	Plus,
-	Minus,
-	CommandName,
-	CommandArgs,
-	ForwardSearch,
-	ReverseSearch,
-	Offset
+    Unknown,
+    Eof,
+    LineNumber,
+    Dot,
+    Dollar,
+    Percent,
+    Comma,
+    Plus,
+    Minus,
+    CommandName,
+    CommandArgs,
+    ForwardSearch,
+    ReverseSearch,
+    Offset
 }
 
 export class Token {
-	type : TokenType;
-	content : string;
+    type : TokenType;
+    content : string;
 
-	constructor(type : TokenType, content : string) {
-		this.type = type;
-		this.content = content;
-	}
+    constructor(type : TokenType, content : string) {
+        this.type = type;
+        this.content = content;
+    }
 }

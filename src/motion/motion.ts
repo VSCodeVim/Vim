@@ -12,13 +12,13 @@ export class Motion implements vscode.Disposable {
     private _desiredColumn: number = 0;
     private _motionMode : MotionMode;
     private _position : Position;
-    private _disposables: vscode.Disposable[];
+    private _disposables = new Array<vscode.Disposable>();
 
     public get position() : Position {
         return this._position;
     }
 
-	public constructor(mode : MotionMode = null) {
+    public constructor(mode : MotionMode = null) {
         let currentPosition = vscode.window.activeTextEditor.selection.active;
         this.setPosition(new Position(currentPosition.line, currentPosition.character), true);
 
@@ -37,7 +37,7 @@ export class Motion implements vscode.Disposable {
                 this.changeMode(this._motionMode);
             }
         }));
-	}
+    }
 
     public changeMode(mode : MotionMode) : Motion {
         this._motionMode = mode;
@@ -57,85 +57,85 @@ export class Motion implements vscode.Disposable {
         return this;
     }
 
-	public move(line : number = null, character : number = null) : Motion {
+    public move(line : number = null, character : number = null) : Motion {
         if (line !== null && character != null) {
             this.setPosition(this.position.setLocation(line, character), true);
-		}
+        }
 
         if (!this.position.isValid()) {
             throw new RangeError();
         }
 
-		let selection = new vscode.Selection(this.position, this.position);
-		vscode.window.activeTextEditor.selection = selection;
+        let selection = new vscode.Selection(this.position, this.position);
+        vscode.window.activeTextEditor.selection = selection;
 
-		let range = new vscode.Range(this.position, this.position);
-		vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
-		return this;
-	}
+        let range = new vscode.Range(this.position, this.position);
+        vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+        return this;
+    }
 
-	public left() : Motion {
+    public left() : Motion {
         this.setPosition(this.position.getLeft(), true);
-		return this;
-	}
+        return this;
+    }
 
-	public right() : Motion {
+    public right() : Motion {
         this.setPosition(this.position.getRight(), true);
-		return this;
-	}
+        return this;
+    }
 
-	public down() : Motion {
+    public down() : Motion {
         this.setPosition(this.position.getDown(this._desiredColumn));
-		return this;
-	}
+        return this;
+    }
 
-	public up() : Motion {
+    public up() : Motion {
         this.setPosition(this.position.getUp(this._desiredColumn));
-		return this;
-	}
+        return this;
+    }
 
-	public wordLeft(): Motion {
+    public wordLeft(): Motion {
         this.setPosition(this.position.getWordLeft(), true);
-		return this;
-	}
+        return this;
+    }
 
-	public wordRight() : Motion {
+    public wordRight() : Motion {
         this.setPosition(this.position.getWordRight(), true);
-		return this;
-	}
+        return this;
+    }
 
-	public lineBegin() : Motion {
+    public lineBegin() : Motion {
         this.setPosition(this.position.getLineBegin(), true);
-		return this;
-	}
+        return this;
+    }
 
-	public lineEnd() : Motion {
+    public lineEnd() : Motion {
         this.setPosition(this.position.getLineEnd(), true);
-		return this;
-	}
+        return this;
+    }
 
-	public firstLineNonBlankChar() : Motion {
+    public firstLineNonBlankChar() : Motion {
         this.setPosition(this.position.setLocation(0, Position.getFirstNonBlankCharAtLine(0)), true);
-		return this;
-	}
+        return this;
+    }
 
-	public lastLineNonBlankChar() : Motion {
+    public lastLineNonBlankChar() : Motion {
         let lastLine = this.position.getDocumentEnd().line;
-		let character = Position.getFirstNonBlankCharAtLine(lastLine);
+        let character = Position.getFirstNonBlankCharAtLine(lastLine);
 
         this.setPosition(this.position.setLocation(lastLine, character), true);
-		return this;
-	}
+        return this;
+    }
 
-	public documentBegin() : Motion {
+    public documentBegin() : Motion {
         this.setPosition(this.position.getDocumentBegin(), true);
-		return this;
-	}
+        return this;
+    }
 
-	public documentEnd() : Motion {
+    public documentEnd() : Motion {
         this.setPosition(this.position.getDocumentEnd(), true);
-		return this;
-	}
+        return this;
+    }
 
     public goToEndOfCurrentWord(): Motion {
         this.setPosition(this.position.getCurrentWordEnd(), true);
@@ -144,7 +144,7 @@ export class Motion implements vscode.Disposable {
 
     dispose() {
         _.each(this._disposables, d => {
-            d.dispose();  
+            d.dispose();
         });
     }
 

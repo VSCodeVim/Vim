@@ -19,15 +19,15 @@ export default class InsertMode extends Mode {
         },
         "A" : c => {
             // append at the end of the line
-	       return Promise.resolve(c.lineEnd().move());
+           return Promise.resolve(c.lineEnd().move());
         },
         "o" : () => {
             // open blank line below current line
-	       return vscode.commands.executeCommand("editor.action.insertLineAfter");
+           return vscode.commands.executeCommand("editor.action.insertLineAfter");
         },
         "O" : () => {
             // open blank line above current line
-	       return vscode.commands.executeCommand("editor.action.insertLineBefore");
+           return vscode.commands.executeCommand("editor.action.insertLineBefore");
         }
     };
 

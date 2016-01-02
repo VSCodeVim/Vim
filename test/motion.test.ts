@@ -5,20 +5,20 @@ import {Motion, MotionMode} from './../src/motion/motion';
 
 suite("motion", () => {
     let motionModes = [MotionMode.Caret, MotionMode.Cursor];
-	let text: Array<string> = [
-		"mary had",
-		"a",
-		"little lamb",
+    let text: Array<string> = [
+        "mary had",
+        "a",
+        "little lamb",
         " whose fleece was "
-	];
+    ];
 
-	setup(done => {
-		TextEditor.insert(text.join('\n')).then(() => done());
-	});
+    setup(done => {
+        TextEditor.insert(text.join('\n')).then(() => done());
+    });
 
-	teardown(done => {
-		TextEditor.delete().then(() => done());
-	});
+    teardown(done => {
+        TextEditor.delete().then(() => done());
+    });
 
     test("char right: should move one column right", () => {
         motionModes.forEach(o => {
@@ -160,23 +160,23 @@ suite("motion", () => {
         assert.equal(motion.position.character, 2);
     });
 
-	test("line begin", () => {
+    test("line begin", () => {
         motionModes.forEach(o => {
             let motion = new Motion(o).move(0, 3).lineBegin();
             assert.equal(motion.position.line, 0);
             assert.equal(motion.position.character, 0);
         });
-	});
+    });
 
     test("line end", () => {
         let motion = new Motion(MotionMode.Cursor).move(0, 0).lineEnd();
-		assert.equal(motion.position.line, 0);
-		assert.equal(motion.position.character, text[0].length);
+        assert.equal(motion.position.line, 0);
+        assert.equal(motion.position.character, text[0].length);
 
-		motion = motion.move(2, 0).lineEnd();
-		assert.equal(motion.position.line, 2);
-		assert.equal(motion.position.character, text[2].length);
-	});
+        motion = motion.move(2, 0).lineEnd();
+        assert.equal(motion.position.line, 2);
+        assert.equal(motion.position.character, text[2].length);
+    });
 
     test("document begin", () => {
         motionModes.forEach(o => {
@@ -184,13 +184,13 @@ suite("motion", () => {
             assert.equal(motion.position.line, 0);
             assert.equal(motion.position.character, 0);
         });
-	});
+    });
 
     test("document end", () => {
         let motion = new Motion(MotionMode.Cursor).move(0, 0).documentEnd();
-		assert.equal(motion.position.line, text.length - 1);
-		assert.equal(motion.position.character, text[text.length - 1].length);
-	});
+        assert.equal(motion.position.line, text.length - 1);
+        assert.equal(motion.position.character, text[text.length - 1].length);
+    });
 
     suite("word right", () => {
         test("move to word right", () => {
@@ -226,15 +226,15 @@ suite("motion", () => {
         });
     });
 
-	test("line begin cursor on first non-blank character", () => {
+    test("line begin cursor on first non-blank character", () => {
         let motion = new Motion(MotionMode.Caret).move(3, 3).firstLineNonBlankChar();
-	    assert.equal(motion.position.line, 0);
+        assert.equal(motion.position.line, 0);
         assert.equal(motion.position.character, 0);
-	});
+    });
 
-	test("last line begin cursor on first non-blank character", () => {
+    test("last line begin cursor on first non-blank character", () => {
         let motion = new Motion(MotionMode.Caret).move(0, 0).lastLineNonBlankChar();
-	    assert.equal(motion.position.line, 3);
+        assert.equal(motion.position.line, 3);
         assert.equal(motion.position.character, 1);
-	});
+    });
 });
