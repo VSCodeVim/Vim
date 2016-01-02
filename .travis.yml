@@ -1,17 +1,27 @@
 notifications:
- email: false
+  email: false
+
+sudo: false
 
 language: node_js
 
 node_js:
- - "4.1.1"
+  - "0.12"
 
 env:
- - TSD_GITHUB_TOKEN=8742b29e67faa29aa25564ff7317b50fd7c1327d
+  - TSD_GITHUB_TOKEN=8742b29e67faa29aa25564ff7317b50fd7c1327d
 
-install: 
- - npm install -g gulp
- - npm install
+before_install:
+  - if [ $TRAVIS_OS_NAME == "linux" ]; then
+      export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
+      sh -e /etc/init.d/xvfb start;
+      sleep 3;
+    fi
+    
+install:
+  - npm install
+  - npm run vscode:prepublish
 
 script:
- - gulp
+  - gulp
+  - npm test --silent

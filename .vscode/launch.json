@@ -10,7 +10,7 @@
 			"args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outDir": "out",
+			"outDir": "out/src",
 			"preLaunchTask": "npm"
 		},
 		{
@@ -21,7 +21,7 @@
 			"args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionTestsPath=${workspaceRoot}/out/test" ],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outDir": "out",
+			"outDir": "out/test",
 			"preLaunchTask": "npm"
 		}
 	]

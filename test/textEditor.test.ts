@@ -1,15 +1,12 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import TextEditor from './../src/textEditor';
+import {setupWorkspace, cleanUpWorkspace} from './testUtils';
 
 suite("text editor", () => {
-    suiteSetup(done => {
-        TextEditor.delete().then(() => done());
-    });
+    suiteSetup(setupWorkspace);
 
-    suiteTeardown(done => {
-        TextEditor.delete().then(() => done());
-    });
+    suiteTeardown(cleanUpWorkspace);
 
     test("insert 'Hello World'", () => {
         let expectedText = "Hello World";
