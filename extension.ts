@@ -8,11 +8,14 @@ import ModeHandler from "./src/mode/modeHandler";
 import {ModeName} from "./src/mode/mode";
 
 var modeHandler : ModeHandler;
+var extensionContext : vscode.ExtensionContext;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "vim" is now active!');
+    
+    extensionContext = context;
 
     registerCommand(context, 'extension.showCmdLine', () => showCmdLine());
 
@@ -105,6 +108,10 @@ function registerCommand(context: vscode.ExtensionContext, command: string, call
 }
 
 function handleKeyEvent(key:string) {
-    modeHandler = modeHandler || new ModeHandler();
+    if (!modeHandler) {
+        modeHandler = new ModeHandler();
+        extensionContext.subscriptions.push(modeHandler);   
+    }
+    
     modeHandler.handleKeyEvent(key);
 }

@@ -10,16 +10,16 @@ let modeInsert: ModeInsert = null;
 let motion : Motion = null;
 
 suite("Mode Insert", () => {
-	setup((done) => {
+    setup((done) => {
         motion = new Motion(MotionMode.Cursor);
         modeInsert = new ModeInsert(motion);
-		TextEditor.delete().then(() => done());
-	});
+        TextEditor.delete().then(() => done());
+    });
 
-	teardown((done) => {
+    teardown((done) => {
         modeInsert = null;
-		TextEditor.delete().then(() => done());
-	});
+        TextEditor.delete().then(() => done());
+    });
 
     test("can be activated", () => {
         let activationKeys = ['i', 'I', 'o', 'O', 'a', 'A'];

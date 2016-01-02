@@ -3,6 +3,7 @@ var gulp = require('gulp'),
     tsd = require('gulp-tsd'),
     shell = require('gulp-shell'),
     mocha = require('gulp-mocha'),
+    soften = require('gulp-soften'),
     trimlines = require('gulp-trimlines');
 
 var paths = {
@@ -23,11 +24,12 @@ gulp.task('tsd', function (callback) {
 });
 
 gulp.task('trim-whitespace', function() {
-  return gulp.src([paths.scripts_ts, paths.tests_ts], { base: "./" })
-    .pipe(trimlines({
-        leading: false
-    }))
-    .pipe(gulp.dest('./'));
+    return gulp.src([paths.scripts_ts, paths.tests_ts], { base: "./" })
+        .pipe(soften(4))
+        .pipe(trimlines({
+            leading: false
+        }))
+        .pipe(gulp.dest('./'));
 });
 
 gulp.task('compile', ['trim-whitespace'], shell.task([

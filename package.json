@@ -140,6 +140,7 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-mocha": "^2.2.0",
+    "gulp-soften": "0.0.1",
     "gulp-shell": "^0.5.1",
     "gulp-tsd": "^0.0.4",
     "gulp-tslint": "^3.6.0",
