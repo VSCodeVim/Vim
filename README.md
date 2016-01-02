@@ -11,6 +11,13 @@ Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) e
 1. Within Visual Studio Code, open the command palette (`Ctrl-Shift-P` / `Cmd-Shift-P`)
 2. Select `Install Extension` and search for 'vim' *or* run `ext install vim`
 
+## Configure
+
+Adjust configurations through user settings (File -> Preferences -> User Settings).
+
+* vim.keyboardLayout: 
+    * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`
+    
 ## Project Status
 
 See our [release notes](https://github.com/VSCodeVim/Vim/releases) for full details.
@@ -18,14 +25,13 @@ See our [release notes](https://github.com/VSCodeVim/Vim/releases) for full deta
 ### Completed
 
 * Switching Modes:
-    * Visual: `v`, `V`
     * Command: `Esc`, `Ctrl+[`
 	* Insert: `i`, `I`, `a`, `A`, `o`, `O`
 	* Current Mode displayed in the status bar in the bottom left
 
 * Commands:
 	* Command Palette: `:`
-	* Navigation: `h`, `j`, `k`, `l`, `w`, `b`, `gg`, `G`, `$`, `^`, `w`, `b`
+	* Navigation: `h`, `j`, `k`, `l`, `$`, `0`, `^`, `gg`, `G`, `w`, `e`, `b`
 	* Indentation: `>>`, `<<`
 	* Deletion: `dd`, `dw`, `db`
 	* Editing: `u`, `ctrl+r`
