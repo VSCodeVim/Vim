@@ -14,6 +14,23 @@ export class Motion implements vscode.Disposable {
     private _position : Position;
     private _disposables = new Array<vscode.Disposable>();
 
+    // Caret Styling
+    private _caretDecoration = vscode.window.createTextEditorDecorationType(
+    {
+        dark: {
+            // used for dark colored themes
+            backgroundColor: 'rgba(224, 224, 224, 0.4)',
+            borderColor: 'rgba(240, 240, 240, 0.8)'
+        },
+        light: {
+            // used for light colored themes
+            backgroundColor: 'rgba(32, 32, 32, 0.4)',
+            borderColor: 'rgba(16, 16, 16, 0.8)'
+        },
+        borderStyle: 'solid',
+        borderWidth: '1px'
+    });
+
     public get position() : Position {
         return this._position;
     }
@@ -44,13 +61,21 @@ export class Motion implements vscode.Disposable {
     public changeMode(mode : MotionMode) : Motion {
         this._motionMode = mode;
 
+        let range = new vscode.Range(this.position, this.position.translate(0, 1));
+
         switch (this._motionMode) {
             case MotionMode.Caret:
+                // Stylize Caret
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
+
                 // Valid Positions for Caret: [0, eol)
                 this.position.positionOptions = PositionOptions.CharacterWiseExclusive;
                 break;
 
             case MotionMode.Cursor:
+                // Remove Caret Styling
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
+
                 // Valid Positions for Caret: [0, eol]
                 this.position.positionOptions = PositionOptions.CharacterWiseInclusive;
                 break;
