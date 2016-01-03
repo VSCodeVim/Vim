@@ -36,6 +36,10 @@ See our [release notes](https://github.com/VSCodeVim/Vim/releases) for full deta
 	* Deletion: `dd`, `dw`, `db`
 	* Editing: `u`, `ctrl+r`
 	* File Operations: `:q`, `:w`
+    
+## Contributing
+
+This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors). *Thank you!* :heart: 
 
 ## License
 
