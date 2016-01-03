@@ -81,8 +81,10 @@ export class Motion implements vscode.Disposable {
     }
 
     public move(line : number = null, character : number = null) : Motion {
-        if (line !== null && character !== null) {
+        if (line !== null) {
             this._position = this.position.setLocation(line, character);
+        }
+        if (character !== null && character > this._desiredColumn) {
             this._desiredColumn = this._position.character;
         }
 
