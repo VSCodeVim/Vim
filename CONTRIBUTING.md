@@ -20,7 +20,7 @@ If you're looking to raise a PR for something which doesn't have an open issue, 
 When submitting a PR, ensure:
 
 1. Tests pass:
-	* `gulp`: run tslint and tests
+	* `gulp`: run tslint
 	* [Launch tests within VS Code](https://code.visualstudio.com/docs/extensions/testing-extensions)
 2. Commits are squashed
 

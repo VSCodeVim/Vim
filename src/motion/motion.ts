@@ -45,15 +45,19 @@ export class Motion implements vscode.Disposable {
         }
 
         this._disposables.push(vscode.window.onDidChangeTextEditorSelection(e => {
+            // handle scenarios where mouse used to change current position
             let selection = e.selections[0];
 
             if (selection) {
                 let line = selection.active.line;
                 let char = selection.active.character;
-
-                this._position = new Position(line, char);
-                this._desiredColumn = this._position.character;
-                this.changeMode(this._motionMode);
+                
+                if (this.position.line !== line ||
+                    this.position.character !== char) {
+                    this._position = new Position(line, char);
+                    this._desiredColumn = this._position.character;
+                    this.changeMode(this._motionMode);
+                }
             }
         }));
     }
@@ -61,21 +65,13 @@ export class Motion implements vscode.Disposable {
     public changeMode(mode : MotionMode) : Motion {
         this._motionMode = mode;
 
-        let range = new vscode.Range(this.position, this.position.translate(0, 1));
-
         switch (this._motionMode) {
             case MotionMode.Caret:
-                // Stylize Caret
-                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
-
                 // Valid Positions for Caret: [0, eol)
                 this.position.positionOptions = PositionOptions.CharacterWiseExclusive;
                 break;
 
             case MotionMode.Cursor:
-                // Remove Caret Styling
-                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
-
                 // Valid Positions for Caret: [0, eol]
                 this.position.positionOptions = PositionOptions.CharacterWiseInclusive;
                 break;
@@ -85,7 +81,7 @@ export class Motion implements vscode.Disposable {
     }
 
     public move(line : number = null, character : number = null) : Motion {
-        if (line !== null && character != null) {
+        if (line !== null && character !== null) {
             this._position = this.position.setLocation(line, character);
             this._desiredColumn = this._position.character;
         }
@@ -97,8 +93,21 @@ export class Motion implements vscode.Disposable {
         let selection = new vscode.Selection(this.position, this.position);
         vscode.window.activeTextEditor.selection = selection;
 
-        let range = new vscode.Range(this.position, this.position);
+        let range = new vscode.Range(this.position, this.position.translate(0, 1));
         vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+        
+        switch (this._motionMode) {
+            case MotionMode.Caret:
+                // Stylize Caret
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
+                break;
+
+            case MotionMode.Cursor:
+                // Remove Caret Styling
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
+                break;
+        }
+        
         return this;
     }
 
