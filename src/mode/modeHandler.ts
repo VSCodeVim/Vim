@@ -40,11 +40,11 @@ export default class ModeHandler implements vscode.Disposable {
 
         switch (modeName) {
             case ModeName.Insert:
-                this._motion = this._motion.changeMode(MotionMode.Caret);
+                this._motion = this._motion.changeMode(MotionMode.Cursor);
                 break;
 
             case ModeName.Normal:
-                this._motion = this._motion.changeMode(MotionMode.Cursor);
+                this._motion = this._motion.changeMode(MotionMode.Caret);
                 break;
         }
 
@@ -70,8 +70,8 @@ export default class ModeHandler implements vscode.Disposable {
 
         if (nextMode) {
             this.currentMode.HandleDeactivation();
-            nextMode.HandleActivation(key);
             this.setCurrentModeByName(nextMode.Name);
+            nextMode.HandleActivation(key);
             return;
         }
 
