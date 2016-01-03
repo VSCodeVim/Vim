@@ -120,13 +120,12 @@ suite("motion", () => {
     suite("line up", () => {
         motionModes.forEach(o => {
             test("should move cursor one line up", () => {
+
                 let motion = new Motion(o).move(1, 0);
                 assert.equal(motion.position.line, 1);
-                assert.equal(motion.position.character, 0);
 
                 motion = motion.up().move();
                 assert.equal(motion.position.line, 0);
-                assert.equal(motion.position.character, 0);
 
                 let curPos = vscode.window.activeTextEditor.selection.active;
                 assert.equal(motion.position.line, curPos.line);
