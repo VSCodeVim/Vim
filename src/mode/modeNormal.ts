@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import {Motion} from './../motion/motion';
+import {DeleteAction} from './../action/deleteAction';
 
 export default class NormalMode extends Mode {
     private keyHandler : { [key : string] : (motion : Motion) => Thenable<{}>; } = {
@@ -27,7 +28,7 @@ export default class NormalMode extends Mode {
         "dd" : () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
         "dw" : () => { return vscode.commands.executeCommand("deleteWordRight"); },
         "db" : () => { return vscode.commands.executeCommand("deleteWordLeft"); },
-        "x" : () => { return vscode.commands.executeCommand("deleteRight"); },
+        "x" : m => { return DeleteAction.Character(m); },
         "esc": () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
 

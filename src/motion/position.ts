@@ -33,7 +33,7 @@ export class Position extends vscode.Position {
     }
 
     public getLeft() : Position {
-        if (!Position.isLineBeginning(this)) {
+        if (!this.isLineBeginning()) {
             return new Position(this.line, this.character - 1, this.positionOptions);
         }
 
@@ -41,7 +41,7 @@ export class Position extends vscode.Position {
     }
 
     public getRight() : Position {
-        if (!Position.isLineEnd(this)) {
+        if (!this.isLineEnd()) {
             return new Position(this.line, this.character + 1, this.positionOptions);
         }
 
@@ -196,12 +196,12 @@ export class Position extends vscode.Position {
         return true;
     }
 
-    private static isLineBeginning(position : Position) : boolean {
-        return position.character === 0;
+    public isLineBeginning() : boolean {
+        return this.character === 0;
     }
 
-    private static isLineEnd(position : Position) : boolean {
-        return position.character === Position.getLineLength(position.line, position.positionOptions);
+    public isLineEnd() : boolean {
+        return this.character === Position.getLineLength(this.line, this.positionOptions);
     }
 
     public static getFirstNonBlankCharAtLine(line: number): number {
