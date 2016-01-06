@@ -1,6 +1,6 @@
-# Vim
-
 [![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim) [![Build status](https://ci.appveyor.com/api/projects/status/github/vscodevim/vim?branch=master&svg=true&retina=true)](https://ci.appveyor.com/project/guillermooo/vim/branch/master) [![Slack Status](https://vscodevim-slackin.azurewebsites.net/badge.svg)](https://vscodevim-slackin.azurewebsites.net)
+
+# Vim
 
 Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables the power of the Vim keybinding experience within Visual Studio Code. 
 
@@ -20,7 +20,7 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
     
 ## Project Status
 
-Check out our [release notes](https://github.com/VSCodeVim/Vim/releases) for a change log.
+Check out our [release notes](https://github.com/VSCodeVim/Vim/releases) for more notes. The tables below are obviously an incomplete list, but show, at a glance, the current commands supported:
 
 ### Keys in Insert Mode
 Status              | Key                       | Description
@@ -111,15 +111,13 @@ Status              | Key                       | Description
 :white_check_mark:  | <<                        | move N lines one shiftwidth left
 :white_check_mark:  | >>                        | move N lines one shiftwidth right
 
-### Undo/Reo
+### Undo/Redo
 
 Status              | Key                       | Description
 ------------------- | ------------------------- | -------------------------
 :white_check_mark:  | u                         | undo last change
 :white_check_mark:  | CTRL-R                    | redo last undone change
                     | U                         | restore last changed line
-
-
 
 ## Contributing
 
