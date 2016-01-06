@@ -16,7 +16,7 @@ Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) e
 Adjust configurations through user settings (File -> Preferences -> User Settings).
 
 * vim.keyboardLayout: 
-    * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`
+    * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`, `da-DK (QWERTY)`
     
 ## Project Status
 
