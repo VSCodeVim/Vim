@@ -26,7 +26,7 @@ export default class ModeHandler implements vscode.Disposable {
     }
 
     get currentMode() : Mode {
-        var currentMode = this._modes.find((mode, index) => {
+        let currentMode = this._modes.find((mode, index) => {
             return mode.IsActive;
         });
 
@@ -48,7 +48,7 @@ export default class ModeHandler implements vscode.Disposable {
                 break;
         }
 
-        var statusBarText = (this.currentMode.Name === ModeName.Normal) ? '' : ModeName[modeName];
+        let statusBarText = (this.currentMode.Name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText.toUpperCase());
     }
 
@@ -58,9 +58,9 @@ export default class ModeHandler implements vscode.Disposable {
         // https://github.com/Microsoft/vscode/issues/713
         key = this._configuration.keyboardLayout.translate(key);
 
-        var currentModeName = this.currentMode.Name;
-        var nextMode : Mode;
-        var inactiveModes = _.filter(this._modes, (m) => !m.IsActive);
+        let currentModeName = this.currentMode.Name;
+        let nextMode : Mode;
+        let inactiveModes = _.filter(this._modes, (m) => !m.IsActive);
 
         _.forEach(inactiveModes, (m, i) => {
             if (m.ShouldBeActivated(key, currentModeName)) {

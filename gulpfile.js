@@ -12,6 +12,7 @@ var paths = {
 };
 
 gulp.task('tsd', function (callback) {
+    // reinstall typescript definitions
     return gulp.src('./gulp_tsd.json').pipe(tsd({
         command: 'reinstall',
         config: './tsd.json'
@@ -19,6 +20,8 @@ gulp.task('tsd', function (callback) {
 });
 
 gulp.task('fix-whitespace', function() {
+    // 1. change tabs to spaces
+    // 2. trim trailing whitespace
     return gulp.src([paths.scripts_ts, paths.tests_ts], { base: "./" })
         .pipe(soften(4))
         .pipe(trimlines({
@@ -26,10 +29,6 @@ gulp.task('fix-whitespace', function() {
         }))
         .pipe(gulp.dest('./'));
 });
-
-gulp.task('compile', ['fix-whitespace'], shell.task([
-  'node ./node_modules/vscode/bin/compile -p ./',
-]));
 
 gulp.task('tslint', ['fix-whitespace'], function() {
     return gulp.src([paths.scripts_ts, paths.tests_ts])
@@ -39,5 +38,9 @@ gulp.task('tslint', ['fix-whitespace'], function() {
         }));
 });
 
+gulp.task('compile', shell.task([
+  'node ./node_modules/vscode/bin/compile -p ./',
+]));
+
 gulp.task('init', ['tsd']);
-gulp.task('default', ['fix-whitespace', 'tslint']);
+gulp.task('default', ['tslint', 'compile']);

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+
 import {ModeName, Mode} from './mode';
 import TextEditor from './../textEditor';
 import {Motion} from './../motion/motion';

@@ -10,8 +10,6 @@ import {ModeName} from "./src/mode/mode";
 var modeHandler : ModeHandler;
 var extensionContext : vscode.ExtensionContext;
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "vim" is now active!');
     

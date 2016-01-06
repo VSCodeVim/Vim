@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
+
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import {Motion} from './../motion/motion';

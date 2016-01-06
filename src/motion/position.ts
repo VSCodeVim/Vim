@@ -193,7 +193,6 @@ export class Position extends vscode.Position {
             return false;
         }
 
-
         return true;
     }
 
@@ -220,8 +219,7 @@ export class Position extends vscode.Position {
                 return TextEditor.readLine(line).length;
 
             default:
-                throw new Error("Unhandled: " + options);
+                throw new Error("Unhandled PositionOptions: " + options);
         }
     }
-
 }
