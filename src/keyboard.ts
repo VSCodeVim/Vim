@@ -27,6 +27,8 @@ export class KeyboardLayout {
                 return new KeyboardLayout(new KeyMapperDeDeQwertz());
             case 'da-DK (QWERTY)':
                 return new KeyboardLayout(new KeyMapperDaDKQwerty());
+            case 'sv-SE (QWERTY)':
+                return new KeyboardLayout(new KeyMapperSvSEQwerty());
             default:
                 return new KeyboardLayout();
         }
@@ -99,6 +101,30 @@ class KeyMapperDaDKQwerty implements KeyMapper {
 
     get name() : string {
         return 'da-DK (QWERTY)';
+    }
+
+    get(key : string) : string {
+        return this.mappings[key] || key;
+    }
+}
+
+class KeyMapperSvSEQwerty implements KeyMapper {
+
+    private mappings = {};
+
+    constructor() {
+        this.mappings = {
+            'oem_102': '<', // Only works when building from source atm, should work next vscode update
+            'shift+oem_102': '>', // Only works when building from source atm, should work next vscode update
+            '>': ':',
+            '<': ';',
+            ':': '^',
+            '^': '&'
+        };
+    }
+
+    get name() : string {
+        return 'sv-SE (QWERTY)';
     }
 
     get(key : string) : string {

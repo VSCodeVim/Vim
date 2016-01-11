@@ -97,6 +97,9 @@ export function activate(context: vscode.ExtensionContext) {
     
     registerCommand(context, 'extension.vim_backslash', () => handleKeyEvent("\\"));
     
+    registerCommand(context, 'extension.vim_oem_102', () => handleKeyEvent("oem_102"));
+    registerCommand(context, 'extension.vim_shift_oem_102', () => handleKeyEvent("shift+oem_102"));
+    
     context.subscriptions.push(modeHandler); 
 }
 
