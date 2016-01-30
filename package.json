@@ -44,6 +44,8 @@
         { "key": ":", "command": "extension.vim_colon", "when": "editorTextFocus" },
         { "key": "space", "command": "extension.vim_space", "when": "editorTextFocus" },
         { "key": "\\", "command": "extension.vim_backslash", "when": "editorTextFocus" },
+        { "key": "Shift+[", "command": "extension.vim_left_curly_bracket", "when": "editorTextFocus" },
+        { "key": "Shift+]", "command": "extension.vim_right_curly_bracket", "when": "editorTextFocus" },
 
         { "key": "a", "command": "extension.vim_a", "when": "editorTextFocus" },
         { "key": "b", "command": "extension.vim_b", "when": "editorTextFocus" },
@@ -115,7 +117,7 @@
 
         { "key": "Ctrl+[", "command": "extension.vim_ctrl_[", "when": "editorTextFocus" },
         { "key": "Ctrl+r", "command": "extension.vim_ctrl_r", "when": "editorTextFocus" },
-        
+
         { "key": "Shift+,", "command": "extension.vim_<", "when": "editorTextFocus" },
         { "key": "Shift+.", "command": "extension.vim_>", "when": "editorTextFocus" },
         { "key": "oem_102", "command": "extension.vim_oem_102", "when": "editorTextFocus" },
@@ -149,7 +151,7 @@
     "gulp-trimlines": "^1.0.0",
     "gulp-typescript": "^2.9.2",
     "tsd": "^0.6.5",
-    "tslint": "^3.2.1",    
+    "tslint": "^3.2.1",
     "typescript": "^1.6.2",
     "vscode": "0.10.x"
   },

@@ -239,3 +239,72 @@ suite("motion", () => {
         assert.equal(motion.position.character, 1);
     });
 });
+
+
+suite("paragraph motion", () => {
+    let text: Array<string> = [
+        "this text has", // 0
+        "",              // 1
+        "many",          // 2
+        "paragraphs",    // 3
+        "",              // 4
+        "",              // 5
+        "in it.",        // 6
+        "",              // 7
+        "WOW"            // 8
+    ];
+
+    suiteSetup(() => {
+        return setupWorkspace().then(() => {
+            return TextEditor.insert(text.join('\n'));
+        });
+    });
+
+    suiteTeardown(cleanUpWorkspace);
+
+    suite("paragraph down", () => {
+        test("move down normally", () => {
+            let motion = new Motion(MotionMode.Caret).move(0, 0).goToEndOfCurrentParagraph();
+            assert.equal(motion.position.line, 1);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("move down longer paragraph", () => {
+            let motion = new Motion(MotionMode.Caret).move(2, 0).goToEndOfCurrentParagraph();
+            assert.equal(motion.position.line, 4);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("move down starting inside empty line", () => {
+            let motion = new Motion(MotionMode.Caret).move(4, 0).goToEndOfCurrentParagraph();
+            assert.equal(motion.position.line, 7);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("paragraph at end of document", () => {
+            let motion = new Motion(MotionMode.Caret).move(7, 0).goToEndOfCurrentParagraph();
+            assert.equal(motion.position.line, 8);
+            assert.equal(motion.position.character, 2);
+        });
+    });
+
+    suite("paragraph up", () => {
+        test("move up short paragraph", () => {
+            let motion = new Motion(MotionMode.Caret).move(1, 0).goToBeginningOfCurrentParagraph();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("move up longer paragraph", () => {
+            let motion = new Motion(MotionMode.Caret).move(3, 0).goToBeginningOfCurrentParagraph();
+            assert.equal(motion.position.line, 1);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("move up starting inside empty line", () => {
+            let motion = new Motion(MotionMode.Caret).move(5, 0).goToBeginningOfCurrentParagraph();
+            assert.equal(motion.position.line, 1);
+            assert.equal(motion.position.character, 0);
+        });
+    });
+});
