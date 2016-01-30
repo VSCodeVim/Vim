@@ -12,7 +12,7 @@ var extensionContext : vscode.ExtensionContext;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "vim" is now active!');
-    
+
     extensionContext = context;
 
     registerCommand(context, 'extension.showCmdLine', () => showCmdLine());
@@ -20,6 +20,8 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("esc"));
     registerCommand(context, 'extension.vim_colon', () => handleKeyEvent(":"));
     registerCommand(context, 'extension.vim_space', () => handleKeyEvent("space"));
+    registerCommand(context, 'extension.vim_left_curly_bracket', () => handleKeyEvent("{"));
+    registerCommand(context, 'extension.vim_right_curly_bracket', () => handleKeyEvent("}"));
 
     registerCommand(context, 'extension.vim_a', () => handleKeyEvent("a"));
     registerCommand(context, 'extension.vim_b', () => handleKeyEvent("b"));
@@ -84,23 +86,23 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_6', () => handleKeyEvent("6"));
     registerCommand(context, 'extension.vim_7', () => handleKeyEvent("7"));
     registerCommand(context, 'extension.vim_8', () => handleKeyEvent("8"));
-    registerCommand(context, 'extension.vim_9', () => handleKeyEvent("9"));   
+    registerCommand(context, 'extension.vim_9', () => handleKeyEvent("9"));
 
     registerCommand(context, 'extension.vim_$', () => handleKeyEvent("$"));
     registerCommand(context, 'extension.vim_^', () => handleKeyEvent("^"));
 
     registerCommand(context, 'extension.vim_ctrl_r', () => handleKeyEvent("ctrl+r"));
     registerCommand(context, 'extension.vim_ctrl_[', () => handleKeyEvent("ctrl+["));
-    
+
     registerCommand(context, 'extension.vim_<', () => handleKeyEvent("<"));
     registerCommand(context, 'extension.vim_>', () => handleKeyEvent(">"));
-    
+
     registerCommand(context, 'extension.vim_backslash', () => handleKeyEvent("\\"));
-    
+
     registerCommand(context, 'extension.vim_oem_102', () => handleKeyEvent("oem_102"));
     registerCommand(context, 'extension.vim_shift_oem_102', () => handleKeyEvent("shift+oem_102"));
-    
-    context.subscriptions.push(modeHandler); 
+
+    context.subscriptions.push(modeHandler);
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
@@ -108,11 +110,11 @@ function registerCommand(context: vscode.ExtensionContext, command: string, call
     context.subscriptions.push(disposable);
 }
 
-function handleKeyEvent(key:string) {
+function handleKeyEvent(key: string) {
     if (!modeHandler) {
         modeHandler = new ModeHandler();
-        extensionContext.subscriptions.push(modeHandler);   
+        extensionContext.subscriptions.push(modeHandler);
     }
-    
+
     modeHandler.handleKeyEvent(key);
 }

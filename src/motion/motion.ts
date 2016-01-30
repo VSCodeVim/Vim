@@ -191,6 +191,18 @@ export class Motion implements vscode.Disposable {
         return this;
     }
 
+    public goToEndOfCurrentParagraph(): Motion {
+      this._position = this.position.getCurrentParagraphEnd();
+      this._desiredColumn = this.position.character;
+      return this;
+    }
+
+    public goToBeginningOfCurrentParagraph(): Motion {
+      this._position = this.position.getCurrentParagraphBeginning();
+      this._desiredColumn = this.position.character;
+      return this;
+    }
+
     dispose() {
         _.each(this._disposables, d => {
             d.dispose();

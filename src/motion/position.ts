@@ -48,6 +48,9 @@ export class Position extends vscode.Position {
         return this;
     }
 
+    /**
+     * Get the position of the line directly below the current line.
+     */
     public getDown(desiredColumn: number) : Position {
         if (this.getDocumentEnd().line !== this.line) {
             let nextLine = this.line + 1;
@@ -59,6 +62,9 @@ export class Position extends vscode.Position {
         return this;
     }
 
+    /**
+     * Get the position of the line directly above the current line.
+     */
     public getUp(desiredColumn: number) : Position {
         if (this.getDocumentBegin().line !== this.line) {
             let prevLine = this.line - 1;
@@ -156,10 +162,51 @@ export class Position extends vscode.Position {
         return this.getLineEnd();
     }
 
+    /**
+     * Get the end of the current paragraph.
+     */
+    public getCurrentParagraphEnd(): Position {
+      let pos: Position = this;
+
+      // If we're not in a paragraph yet, go down until we are.
+      while (TextEditor.getLineAt(pos).text === "" && !TextEditor.isLastLine(pos)) {
+        pos = pos.getDown(0);
+      }
+
+      // Go until we're outside of the paragraph, or at the end of the document.
+      while (TextEditor.getLineAt(pos).text !== "" && pos.line < TextEditor.getLineCount() - 1) {
+         pos = pos.getDown(0);
+      }
+
+      return pos.getLineEnd();
+    }
+
+    /**
+     * Get the beginning of the current paragraph.
+     */
+    public getCurrentParagraphBeginning(): Position {
+      let pos: Position = this;
+
+      // If we're not in a paragraph yet, go up until we are.
+      while (TextEditor.getLineAt(pos).text === "" && !TextEditor.isFirstLine(pos)) {
+          pos = pos.getUp(0);
+      }
+
+      // Go until we're outside of the paragraph, or at the beginning of the document.
+      while (pos.line > 0 && TextEditor.getLineAt(pos).text !== "") {
+          pos = pos.getUp(0);
+      }
+
+      return pos.getLineBegin();
+    }
+
     public getLineBegin() : Position {
         return new Position(this.line, 0, this.positionOptions);
     }
 
+    /**
+     * Returns a new position at the end of this position's line.
+     */
     public getLineEnd() : Position {
         return new Position(this.line, Position.getLineLength(this.line, this.positionOptions), this.positionOptions);
     }
@@ -196,10 +243,16 @@ export class Position extends vscode.Position {
         return true;
     }
 
+    /**
+     * Is this position at the beginning of the line?
+     */
     public isLineBeginning() : boolean {
         return this.character === 0;
     }
 
+    /**
+     * Is this position at the end of the line?
+     */
     public isLineEnd() : boolean {
         return this.character === Position.getLineLength(this.line, this.positionOptions);
     }
