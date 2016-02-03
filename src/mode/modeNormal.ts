@@ -25,6 +25,7 @@ export default class NormalMode extends Mode {
         "b" : c => { return Promise.resolve(c.wordLeft().move()); },
         "}" : c => { return Promise.resolve(c.goToEndOfCurrentParagraph().move()); },
         "{" : c => { return Promise.resolve(c.goToBeginningOfCurrentParagraph().move()); },
+        "%" : () => { return vscode.commands.executeCommand("editor.action.jumpToBracket"); },
         ">>" : () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
         "<<" : () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
         "dd" : () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
