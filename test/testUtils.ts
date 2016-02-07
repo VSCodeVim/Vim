@@ -1,4 +1,6 @@
-import TextEditor from '../src/textEditor';
+"use strict";
+
+import {TextEditor} from '../src/textEditor';
 import * as vscode from "vscode";
 import * as assert from 'assert';
 import {join} from 'path';
@@ -9,40 +11,36 @@ function rndName() {
     return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
 }
 
-function createRandomFile(contents = ''): Thenable<vscode.Uri> {
-    return new Promise((resolve, reject) => {
-        const tmpFile = join(os.tmpdir(), rndName());
-        fs.writeFile(tmpFile, contents, (error) => {
-            if (error) {
-                return reject(error);
-            }
+async function createRandomFile(contents: string): Promise<vscode.Uri> {
+    const tmpFile = join(os.tmpdir(), rndName());
 
-            resolve(vscode.Uri.file(tmpFile));
-        });
-    });
+    try {
+        await fs.writeFile(tmpFile, contents);
+    } catch (error) {
+        throw error;
+    }
+
+    return vscode.Uri.file(tmpFile);
 }
 
-export function assertEqualLines(expectedLines : string[]) {
+export function assertEqualLines(expectedLines: string[]) {
     assert.equal(TextEditor.getLineCount(), expectedLines.length);
 
     for (let i = 0; i < expectedLines.length; i++) {
-        assert.equal(TextEditor.readLine(i), expectedLines[i]);
+        assert.equal(TextEditor.readLineAt(i), expectedLines[i]);
     }
 }
 
+export async function setupWorkspace(): Promise<any> {
+    const file   = await createRandomFile("");
+    const doc    = await vscode.workspace.openTextDocument(file);
 
-export function setupWorkspace() : Thenable<any> {
-    return createRandomFile().then(file => {
-        return vscode.workspace.openTextDocument(file).then(doc => {
-            return vscode.window.showTextDocument(doc).then(editor => {
-                const active = vscode.window.activeTextEditor;
-                assert.ok(active);
-            });
-        });
-    });
+    await vscode.window.showTextDocument(doc);
+
+    assert.ok(vscode.window.activeTextEditor);
 }
 
-export function cleanUpWorkspace(): Thenable<any> {
+export function cleanUpWorkspace(): Promise<any> {
     // https://github.com/Microsoft/vscode/blob/master/extensions/vscode-api-tests/src/utils.ts
     return new Promise((c, e) => {
         if (vscode.window.visibleTextEditors.length === 0) {

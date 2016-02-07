@@ -1,3 +1,5 @@
+"use strict";
+
 import * as token from './token';
 import * as node from './node';
 import * as lexer from './lexer';

@@ -1,34 +1,36 @@
+"use strict";
+
 import * as vscode from 'vscode';
 
 import {ModeName, Mode} from './mode';
-import TextEditor from './../textEditor';
+import {TextEditor} from './../textEditor';
 import {Motion} from './../motion/motion';
 
-export default class InsertMode extends Mode {
-    private activationKeyHandler : { [ key : string] : (motion : Motion) => Thenable<{}> } = {
-        "i" : () => {
+export class InsertMode extends Mode {
+    private activationKeyHandler : { [ key : string] : (motion : Motion) => Promise<{}> } = {
+        "i" : async () => {
             // insert at cursor
-            return Promise.resolve({});
+            return {};
         },
-        "I" : c => {
+        "I" : async (c) => {
             // insert at line beginning
-            return Promise.resolve(c.lineBegin().move());
+            return c.lineBegin().move();
         },
-        "a" : c => {
+        "a" : async (c) => {
             // append after the cursor
-            return Promise.resolve(c.right().move());
+            return c.right().move();
         },
-        "A" : c => {
+        "A" : async (c) => {
             // append at the end of the line
-           return Promise.resolve(c.lineEnd().move());
+           return c.lineEnd().move();
         },
-        "o" : () => {
+        "o" : async () => {
             // open blank line below current line
-           return vscode.commands.executeCommand("editor.action.insertLineAfter");
+           return await vscode.commands.executeCommand("editor.action.insertLineAfter");
         },
-        "O" : () => {
+        "O" : async () => {
             // open blank line above current line
-           return vscode.commands.executeCommand("editor.action.insertLineBefore");
+           return await vscode.commands.executeCommand("editor.action.insertLineBefore");
         }
     };
 
@@ -36,27 +38,25 @@ export default class InsertMode extends Mode {
         super(ModeName.Insert, motion);
     }
 
-    ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
+    shouldBeActivated(key : string, currentMode : ModeName) : boolean {
         return key in this.activationKeyHandler;
     }
 
-    HandleActivation(key : string) : Thenable<{}> {
-        return this.activationKeyHandler[key](this.Motion);
+    handleActivation(key : string) : Promise<{}> {
+        return this.activationKeyHandler[key](this.motion);
     }
 
-    HandleKeyEvent(key : string) : Thenable<{}> {
+    async handleKeyEvent(key : string) : Promise<{}> {
         this.keyHistory.push(key);
 
-        return TextEditor
-                .insert(this.ResolveKeyValue(key))
-                .then(() => {
-                    return vscode.commands.executeCommand("editor.action.triggerSuggest");
-                });
+        await TextEditor.insert(this.resolveKeyValue(key));
+
+        return vscode.commands.executeCommand("editor.action.triggerSuggest");
     }
 
     // Some keys have names that are different to their value.
     // TODO: we probably need to put this somewhere else.
-    private ResolveKeyValue(key : string) : string {
+    private resolveKeyValue(key : string) : string {
         switch (key) {
             case 'space':
                 return ' ';

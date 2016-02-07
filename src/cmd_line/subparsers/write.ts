@@ -1,9 +1,11 @@
+"use strict";
+
 import {WriteCommand, WriteCommandArguments} from '../commands/write';
 import {Scanner} from '../scanner';
 
 export function parseWriteCommandArgs(args : string) : WriteCommand {
     if (!args) {
-        return new WriteCommand();
+        return new WriteCommand({});
     }
     var scannedArgs : WriteCommandArguments = {};
     var scanner = new Scanner(args);
@@ -33,7 +35,7 @@ export function parseWriteCommandArgs(args : string) : WriteCommand {
                 // :write ++opt=value
                 scanner.expect('+');
                 scanner.ignore();
-                scanner.expectOneOf('bin', 'nobin', 'ff', 'enc');
+                scanner.expectOneOf(['bin', 'nobin', 'ff', 'enc']);
                 scannedArgs.opt = scanner.emit();
                 scanner.expect('=');
                 scanner.ignore();

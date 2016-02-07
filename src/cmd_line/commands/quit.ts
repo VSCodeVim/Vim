@@ -1,3 +1,5 @@
+"use strict";
+
 import vscode = require('vscode');
 
 import node = require('../node');
@@ -15,7 +17,7 @@ export interface QuitCommandArguments extends node.CommandArgs {
 export class QuitCommand extends node.CommandBase {
     protected _arguments : QuitCommandArguments;
 
-    constructor(args : QuitCommandArguments = {}) {
+    constructor(args : QuitCommandArguments) {
         super();
         this._name = 'quit';
         this._shortName = 'q';

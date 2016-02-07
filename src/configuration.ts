@@ -1,6 +1,8 @@
+"use strict";
+
 import {KeyboardLayout} from "./keyboard";
 
-export default class Configuration {
+export class Configuration {
 
     keyboardLayout : KeyboardLayout;
 
