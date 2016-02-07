@@ -11,7 +11,7 @@ suite("Mode Normal", () => {
     teardown(cleanUpWorkspace);
 
     test("can be activated", () => {
-        let activationKeys = ['esc', 'ctrl+['];
+        let activationKeys = ['esc', 'ctrl+[', 'ctrl+c'];
         let motion = new Motion();
         let modeHandler = new ModeNormal(motion);
 
