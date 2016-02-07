@@ -23,10 +23,11 @@ suite("Mode Normal", () => {
 
     test("can be activated", () => {
         let activationKeys = ['esc', 'ctrl+[', 'ctrl+c'];
+        let motion = new Motion(null);
 
         for (let i = 0; i < activationKeys.length; i++) {
             let key = activationKeys[i];
-            assert.equal(modeNormal.shouldBeActivated(key, ModeName.Insert), true, key);
+            assert.equal(modeHandler.shouldBeActivated(key, ModeName.Insert), true, key);
         }
     });
 
