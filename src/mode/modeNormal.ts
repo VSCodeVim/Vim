@@ -9,7 +9,7 @@ import {Motion} from './../motion/motion';
 import {DeleteAction} from './../action/deleteAction';
 
 export class NormalMode extends Mode {
-    private keyHandler : { [key : string] : (motion : Motion) => Promise<{}>; } = {
+    protected keyHandler : { [key : string] : (motion : Motion) => Promise<{}>; } = {
         ":" : async () => { return showCmdLine(""); },
         "u" : async () => { return vscode.commands.executeCommand("undo"); },
         "ctrl+r" : async () => { return vscode.commands.executeCommand("redo"); },
@@ -50,17 +50,17 @@ export class NormalMode extends Mode {
         return (key === 'esc' || key === 'ctrl+[' || key === "ctrl+c");
     }
 
-    async handleActivation(key : string): Promise<{}> {
+    async handleActivation(key : string): Promise<void> {
         this.motion.left().move();
 
-        return this.motion;
+        await this.motion;
     }
 
-    async handleKeyEvent(key : string): Promise<{}>  {
+    async handleKeyEvent(key : string): Promise<void>  {
         this.keyHistory.push(key);
 
         let keyHandled = false;
-        let keysPressed : string;
+        let keysPressed: string;
 
         for (let window = this.keyHistory.length; window > 0; window--) {
             keysPressed = _.takeRight(this.keyHistory, window).join('');
@@ -72,7 +72,7 @@ export class NormalMode extends Mode {
 
         if (keyHandled) {
             this.keyHistory = [];
-            return this.keyHandler[keysPressed](this.motion);
+            await this.keyHandler[keysPressed](this.motion);
         }
     }
 }

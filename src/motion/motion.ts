@@ -37,6 +37,10 @@ export class Motion implements vscode.Disposable {
         return this._position;
     }
 
+    public set position(val: Position) {
+        this._position = val;
+    }
+
     public constructor(mode: MotionMode) {
         // initialize to current position
         let currentPosition = vscode.window.activeTextEditor.selection.active;
@@ -52,8 +56,10 @@ export class Motion implements vscode.Disposable {
             let selection = e.selections[0];
 
             if (selection) {
-                let line = selection.active.line;
-                let char = selection.active.character;
+                const whosFirst = selection.anchor.compareTo(selection.active);
+
+                let line = whosFirst > 0 ? selection.active.line      : selection.anchor.line;
+                let char = whosFirst > 0 ? selection.active.character : selection.anchor.character;
 
                 if (this.position.line !== line ||
                     this.position.character !== char) {
@@ -100,7 +106,24 @@ export class Motion implements vscode.Disposable {
         let selection = new vscode.Selection(this.position, this.position);
         vscode.window.activeTextEditor.selection = selection;
 
-        let range = new vscode.Range(this.position, this.position.translate(0, 1));
+        this.highlightBlock(this.position);
+
+        return this;
+    }
+
+    /**
+     * Allows us to simulate a block cursor by highlighting a 1 character
+     * space at the provided position in a lighter color.
+     */
+    private highlightBlock(start: Position): void {
+        this.highlightRange(start, start.getRight());
+    }
+
+    /**
+     * Highlights the range from start to end in the color of a block cursor.
+     */
+    private highlightRange(start: Position, end: Position): void {
+        let range = new vscode.Range(start, end);
         vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
 
         switch (this._motionMode) {
@@ -114,8 +137,14 @@ export class Motion implements vscode.Disposable {
                 vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
                 break;
         }
+    }
 
-        return this;
+    public selectTo(other: Position): void {
+        let selection = new vscode.Selection(this.position, other);
+
+        vscode.window.activeTextEditor.selection = selection;
+
+        this.highlightBlock(other.getLeft());
     }
 
     public left() : Motion {
