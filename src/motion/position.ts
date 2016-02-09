@@ -107,7 +107,11 @@ export class Position extends vscode.Position {
             }
         }
 
-        return this.getLineBegin();
+        if (this.line === this.getDocumentEnd().line) {
+            return this.getLineEnd();
+        } else {
+            return new Position(this.line + 1, 0, this.positionOptions);
+        }
     }
 
     public getWordRight() : Position {
@@ -117,11 +121,11 @@ export class Position extends vscode.Position {
             return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
         }
 
-        let line = TextEditor.getLineAt(this);
+        let line  = TextEditor.getLineAt(this);
         let words = line.text.match(this._nonWordCharRegex);
 
         let startWord: number;
-        let endWord: number;
+        let endWord  : number;
 
         if (words) {
             for (var index = 0; index < words.length; index++) {
@@ -137,7 +141,11 @@ export class Position extends vscode.Position {
             }
         }
 
-        return this.getLineEnd();
+        if (this.line === this.getDocumentEnd().line) {
+            return this.getLineEnd();
+        } else {
+            return new Position(this.line + 1, 0, this.positionOptions);
+        }
     }
 
     public getCurrentWordEnd(): Position {
