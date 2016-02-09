@@ -6,7 +6,7 @@ import {setupWorkspace, cleanUpWorkspace} from './testUtils';
 
 suite("motion", () => {
     let motionModes = [MotionMode.Caret, MotionMode.Cursor];
-    let text: Array<string> = [
+    let text: string[] = [
         "mary had",
         "a",
         "little lamb",
@@ -193,6 +193,35 @@ suite("motion", () => {
         assert.equal(motion.position.character, text[text.length - 1].length);
     });
 
+    test("line begin cursor on first non-blank character", () => {
+        let motion = new Motion(MotionMode.Caret).move(3, 3).firstLineNonBlankChar();
+        assert.equal(motion.position.line, 0);
+        assert.equal(motion.position.character, 0);
+    });
+
+    test("last line begin cursor on first non-blank character", () => {
+        let motion = new Motion(MotionMode.Caret).move(0, 0).lastLineNonBlankChar();
+        assert.equal(motion.position.line, 3);
+        assert.equal(motion.position.character, 1);
+    });
+});
+
+suite("word motion", () => {
+    let text: string[] = [
+        "mary had",
+        "a",
+        "little lamb",
+        " hose fleece wassss"
+    ];
+
+    suiteSetup(() => {
+        return setupWorkspace().then(() => {
+            return TextEditor.insert(text.join('\n'));
+        });
+    });
+
+    suiteTeardown(cleanUpWorkspace);
+
     suite("word right", () => {
         test("move to word right", () => {
             let motion = new Motion(MotionMode.Caret).move(0, 0).wordRight();
@@ -200,10 +229,16 @@ suite("motion", () => {
             assert.equal(motion.position.character, 5);
         });
 
-        test("last word should stay on line at last character", () => {
+        test("last word should move to next line", () => {
             let motion = new Motion(MotionMode.Caret).move(0, 6).wordRight();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 7);
+            assert.equal(motion.position.line, 1);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("last word on last line should go to end of document (special case!)", () => {
+            let motion = new Motion(MotionMode.Caret).move(3, 14).wordRight();
+            assert.equal(motion.position.line, 3);
+            assert.equal(motion.position.character, 18);
         });
 
         test("end of line should move to next word on next line", () => {
