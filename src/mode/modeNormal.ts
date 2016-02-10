@@ -39,7 +39,7 @@ export default class NormalMode extends Mode {
     }
 
     ShouldBeActivated(key : string, currentMode : ModeName) : boolean {
-        return (key === 'esc' || key === 'ctrl+[');
+        return (key === 'esc' || key === 'ctrl+[' || key === "ctrl+c");
     }
 
     HandleActivation(key : string) : Thenable<{}> {
