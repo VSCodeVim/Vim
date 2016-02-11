@@ -64,7 +64,7 @@ export default class NormalMode extends Mode {
 
             if (keyHandled) {
                 this.keyHistory = [];
-                return this.keyHandler[keysPressed](this.Motion);
+                return resolve(this.keyHandler[keysPressed](this.Motion));
             }
 
             resolve();
