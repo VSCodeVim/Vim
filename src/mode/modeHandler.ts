@@ -1,13 +1,15 @@
+"use strict";
+
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import {Mode, ModeName} from './mode';
 import {Motion, MotionMode} from './../motion/motion';
-import NormalMode from './modeNormal';
-import InsertMode from './modeInsert';
-import Configuration from '../configuration';
+import {NormalMode} from './modeNormal';
+import {InsertMode} from './modeInsert';
+import {Configuration} from '../configuration';
 
-export default class ModeHandler implements vscode.Disposable {
+export class ModeHandler implements vscode.Disposable {
     private _motion : Motion;
     private _modes : Mode[];
     private _statusBarItem : vscode.StatusBarItem;
@@ -16,7 +18,7 @@ export default class ModeHandler implements vscode.Disposable {
     constructor() {
         this._configuration = Configuration.fromUserFile();
 
-        this._motion = new Motion();
+        this._motion = new Motion(null);
         this._modes = [
             new NormalMode(this._motion),
             new InsertMode(this._motion),
@@ -27,7 +29,7 @@ export default class ModeHandler implements vscode.Disposable {
 
     get currentMode() : Mode {
         let currentMode = this._modes.find((mode, index) => {
-            return mode.IsActive;
+            return mode.isActive;
         });
 
         return currentMode;
@@ -35,7 +37,7 @@ export default class ModeHandler implements vscode.Disposable {
 
     setCurrentModeByName(modeName : ModeName) {
         this._modes.forEach(mode => {
-            mode.IsActive = (mode.Name === modeName);
+            mode.isActive = (mode.name === modeName);
         });
 
         switch (modeName) {
@@ -48,7 +50,7 @@ export default class ModeHandler implements vscode.Disposable {
                 break;
         }
 
-        let statusBarText = (this.currentMode.Name === ModeName.Normal) ? '' : ModeName[modeName];
+        const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText.toUpperCase());
     }
 
@@ -58,24 +60,27 @@ export default class ModeHandler implements vscode.Disposable {
         // https://github.com/Microsoft/vscode/issues/713
         key = this._configuration.keyboardLayout.translate(key);
 
-        let currentModeName = this.currentMode.Name;
+        let currentModeName = this.currentMode.name;
         let nextMode : Mode;
-        let inactiveModes = _.filter(this._modes, (m) => !m.IsActive);
+        let inactiveModes = _.filter(this._modes, (m) => !m.isActive);
 
-        _.forEach(inactiveModes, (m, i) => {
-            if (m.ShouldBeActivated(key, currentModeName)) {
-                nextMode = m;
+        for (let mode of inactiveModes) {
+          if (mode.shouldBeActivated(key, currentModeName)) {
+            if (nextMode) {
+              console.error("More that one mode matched in handleKeyEvent!");
             }
-        });
 
-        if (nextMode) {
-            this.currentMode.HandleDeactivation();
-            this.setCurrentModeByName(nextMode.Name);
-            nextMode.HandleActivation(key);
-            return;
+            nextMode = mode;
+          }
         }
 
-        this.currentMode.HandleKeyEvent(key);
+        if (nextMode) {
+            this.currentMode.handleDeactivation();
+            this.setCurrentModeByName(nextMode.name);
+            nextMode.handleActivation(key);
+        } else {
+            this.currentMode.handleKeyEvent(key);
+        }
     }
 
     private setupStatusBarItem(text : string) : void {

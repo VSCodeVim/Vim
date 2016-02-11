@@ -1,3 +1,5 @@
+"use strict";
+
 import * as vscode from "vscode";
 import {Position, PositionOptions} from './position';
 
@@ -35,10 +37,10 @@ export class Motion implements vscode.Disposable {
         return this._position;
     }
 
-    public constructor(mode : MotionMode = null) {
+    public constructor(mode: MotionMode) {
         // initialize to current position
         let currentPosition = vscode.window.activeTextEditor.selection.active;
-        this._position = new Position(currentPosition.line, currentPosition.character);
+        this._position = new Position(currentPosition.line, currentPosition.character, null);
         this._desiredColumn = this._position.character;
 
         if (mode !== null) {
@@ -55,7 +57,7 @@ export class Motion implements vscode.Disposable {
 
                 if (this.position.line !== line ||
                     this.position.character !== char) {
-                    this._position = new Position(line, char);
+                    this._position = new Position(line, char, null);
                     this._desiredColumn = this._position.character;
                     this.changeMode(this._motionMode);
                 }
@@ -81,7 +83,11 @@ export class Motion implements vscode.Disposable {
         return this;
     }
 
-    public move(line : number = null, character : number = null) : Motion {
+    public move(): Motion {
+        return this.moveTo(null, null);
+    }
+
+    public moveTo(line: number, character: number) : Motion {
         if (line !== null && character !== null) {
             this._position = this.position.setLocation(line, character);
             this._desiredColumn = this._position.character;

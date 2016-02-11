@@ -1,3 +1,5 @@
+"use strict";
+
 // Tokens for the Vim command line.
 
 export enum TokenType {

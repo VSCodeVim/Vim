@@ -1,32 +1,41 @@
+"use strict";
+
 import * as vscode from "vscode";
 
-export default class TextEditor {
-    static insert(text: string, position: vscode.Position = null) : Thenable<boolean> {
-        if (position === null) {
-            position = vscode.window.activeTextEditor.selection.active;
-        }
+export class TextEditor {
+    static async insert(text: string): Promise<boolean> {
+        return vscode.window.activeTextEditor.edit(editBuilder => {
+            editBuilder.insert(vscode.window.activeTextEditor.selection.active, text);
+        });
+    }
 
+    static async insertAt(text: string, position: vscode.Position): Promise<boolean> {
         return vscode.window.activeTextEditor.edit(editBuilder => {
             editBuilder.insert(position, text);
         });
     }
 
-    static delete(range: vscode.Range = null) : Thenable<boolean> {
-        if (range === null) {
-            // delete entire document
-            let start = new vscode.Position(0, 0);
-            let lastLine = vscode.window.activeTextEditor.document.lineCount - 1;
-            let end = vscode.window.activeTextEditor.document.lineAt(lastLine).range.end;
-
-            range = new vscode.Range(start, end);
-        }
+    static async delete(range: vscode.Range): Promise<boolean> {
         return vscode.window.activeTextEditor.edit(editBuilder => {
             editBuilder.delete(range);
         });
     }
 
+    /**
+     * Delete the entire document.
+     */
+    static async deleteDocument(): Promise<boolean> {
+        const start    = new vscode.Position(0, 0);
+        const lastLine = vscode.window.activeTextEditor.document.lineCount - 1;
+        const end      = vscode.window.activeTextEditor.document.lineAt(lastLine).range.end;
+        const range    = new vscode.Range(start, end);
 
-    static replace(range: vscode.Range, text: string) : Thenable<boolean> {
+        return vscode.window.activeTextEditor.edit(editBuilder => {
+            editBuilder.delete(range);
+        });
+    }
+
+    static async replace(range: vscode.Range, text: string): Promise<boolean> {
         return vscode.window.activeTextEditor.edit(editBuilder => {
             editBuilder.replace(range, text);
         });
@@ -36,7 +45,13 @@ export default class TextEditor {
         return vscode.window.activeTextEditor.document.getText();
     }
 
-    static readLine(lineNo: number = null): string {
+    static readLine(): string {
+        const lineNo = vscode.window.activeTextEditor.selection.active.line;
+
+        return vscode.window.activeTextEditor.document.lineAt(lineNo).text;
+    }
+
+    static readLineAt(lineNo: number): string {
         if (lineNo === null) {
             lineNo = vscode.window.activeTextEditor.selection.active.line;
         }
@@ -48,7 +63,7 @@ export default class TextEditor {
         return vscode.window.activeTextEditor.document.lineAt(lineNo).text;
     }
 
-    static getLineCount() {
+    static getLineCount(): number {
         return vscode.window.activeTextEditor.document.lineCount;
     }
 
@@ -56,7 +71,7 @@ export default class TextEditor {
         return vscode.window.activeTextEditor.document.lineAt(position);
     }
 
-    static isFirstLine(position : vscode.Position) : boolean {
+    static isFirstLine(position : vscode.Position): boolean {
         return position.line === 0;
     }
 

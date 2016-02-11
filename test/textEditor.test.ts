@@ -1,6 +1,8 @@
+"use strict";
+
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import TextEditor from './../src/textEditor';
+import {TextEditor} from './../src/textEditor';
 import {setupWorkspace, cleanUpWorkspace} from './testUtils';
 
 suite("text editor", () => {
@@ -8,56 +10,53 @@ suite("text editor", () => {
 
     suiteTeardown(cleanUpWorkspace);
 
-    test("insert 'Hello World'", () => {
+    test("insert 'Hello World'", async () => {
         let expectedText = "Hello World";
 
-        return TextEditor.insert(expectedText).then(x => {
-            assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
-            let actualText = TextEditor.readLine(0);
-            assert.equal(actualText, expectedText);
-        });
+        await TextEditor.insert(expectedText);
+
+        assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
+        let actualText = TextEditor.readLineAt(0);
+        assert.equal(actualText, expectedText);
     });
 
-    test("replace 'World' with 'Foo Bar'", () => {
+    test("replace 'World' with 'Foo Bar'", async () => {
         let newText = "Foo Bar";
         let start = new vscode.Position(0, 6);
         let end = new vscode.Position(0, 11);
         let range : vscode.Range = new vscode.Range(start, end);
 
-        return TextEditor.replace(range, newText).then( x => {
-            assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
-
-            let actualText = TextEditor.readLine(0);
-            assert.equal(actualText, "Hello Foo Bar");
-        });
-    });
-
-    test("delete `Hello`", () => {
+        await TextEditor.replace(range, newText);
         assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
 
-        var end = new vscode.Position(0, 5);
-        var range = new vscode.Range(new vscode.Position(0, 0), end);
-
-        return TextEditor.delete(range).then( x => {
-            let actualText = TextEditor.readLine(0);
-            assert.equal(actualText, " Foo Bar");
-        });
+        let actualText = TextEditor.readLineAt(0);
+        assert.equal(actualText, "Hello Foo Bar");
     });
 
-    test("delete the whole line", () => {
+    test("delete `Hello`", async () => {
         assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
 
-        var range = vscode.window.activeTextEditor.document.lineAt(0).range;
+        let end = new vscode.Position(0, 5);
+        let range = new vscode.Range(new vscode.Position(0, 0), end);
 
-        return TextEditor.delete(range).then(x => {
-            let actualText = TextEditor.readLine(0);
-            assert.equal(actualText, "");
-        });
+        await TextEditor.delete(range);
+        let actualText = TextEditor.readLineAt(0);
+        assert.equal(actualText, " Foo Bar");
+    });
+
+    test("delete the whole line", async () => {
+        assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
+
+        let range = vscode.window.activeTextEditor.document.lineAt(0).range;
+
+        await TextEditor.delete(range);
+        let actualText = TextEditor.readLineAt(0);
+        assert.equal(actualText, "");
     });
 
     test("try to read lines that don't exist", () => {
         assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
-        assert.throws(() => TextEditor.readLine(1), RangeError);
-        assert.throws(() => TextEditor.readLine(2), RangeError);
+        assert.throws(() => TextEditor.readLineAt(1), RangeError);
+        assert.throws(() => TextEditor.readLineAt(2), RangeError);
     });
 });

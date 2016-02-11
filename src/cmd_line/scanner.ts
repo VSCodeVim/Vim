@@ -1,3 +1,4 @@
+"use strict";
 
 // Provides state and behavior to scan an input string character by character.
 export class Scanner {
@@ -59,7 +60,7 @@ export class Scanner {
     }
 
     // skips text while any of chars matches and ignores the text span
-    skipRun(...chars : string[]) : void {
+    skipRun(chars : string[]) : void {
         if (this.isAtEof) {
             return;
         }
@@ -98,7 +99,7 @@ export class Scanner {
         this.pos += value.length;
     }
 
-    expectOneOf(...values : string[]) : void {
+    expectOneOf(values : string[]) : void {
         let match = values.filter(s => this.input.substr(this.pos).startsWith(s));
         if (match.length !== 1) {
             if (match.length > 1) {

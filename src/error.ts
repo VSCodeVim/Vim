@@ -1,3 +1,5 @@
+"use strict";
+
 import * as util from "./util";
 
 interface VimErrors {

@@ -1,3 +1,5 @@
+"use strict";
+
 import {Motion} from './../motion/motion';
 
 export enum ModeName {
@@ -12,40 +14,40 @@ export abstract class Mode {
     private _motion : Motion;
     protected keyHistory : string[];
 
-    constructor(name: ModeName, motion : Motion) {
+    constructor(name: ModeName, motion: Motion) {
         this._name = name;
         this._motion = motion;
         this._isActive = false;
         this.keyHistory = [];
     }
 
-    get Name(): ModeName {
+    get name(): ModeName {
         return this._name;
     }
 
-    get Motion() : Motion {
+    get motion() : Motion {
         return this._motion;
     }
 
-    set Motion(val : Motion) {
+    set motion(val : Motion) {
         this._motion = val;
     }
 
-    get IsActive() : boolean {
+    get isActive() : boolean {
         return this._isActive;
     }
 
-    set IsActive(val : boolean) {
+    set isActive(val : boolean) {
         this._isActive = val;
     }
 
-    public HandleDeactivation() : void {
+    public handleDeactivation() : void {
         this.keyHistory = [];
     }
 
-    abstract ShouldBeActivated(key : string, currentMode : ModeName) : boolean;
+    abstract shouldBeActivated(key : string, currentMode : ModeName) : boolean;
 
-    abstract HandleActivation(key : string) : Thenable<{}>;
+    abstract handleActivation(key : string) : Promise<{}>;
 
-    abstract HandleKeyEvent(key : string) : Thenable<{}>;
+    abstract handleKeyEvent(key : string) : Promise<{}>;
 }

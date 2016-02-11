@@ -1,3 +1,5 @@
+"use strict";
+
 import * as assert from 'assert';
 import {Scanner} from '../../src/cmd_line/scanner';
 
@@ -86,11 +88,11 @@ suite("command line scanner", () => {
 
     test("can expect one of a set", () => {
         var state = new Scanner("dog cat");
-        state.expectOneOf("dog", "mule", "monkey");
+        state.expectOneOf(["dog", "mule", "monkey"]);
     });
 
     test("can expect only one of a set", () => {
         var state = new Scanner("dog cat");
-        assert.throws(() => state.expectOneOf("mule", "monkey"));
+        assert.throws(() => state.expectOneOf(["mule", "monkey"]));
     });
 });
