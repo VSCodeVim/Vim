@@ -1,3 +1,5 @@
+"use strict";
+
 // XXX: use graceful-fs ??
 import fs = require('fs');
 
@@ -22,7 +24,7 @@ export interface WriteCommandArguments extends node.CommandArgs {
 export class WriteCommand extends node.CommandBase {
     protected _arguments : WriteCommandArguments;
 
-    constructor(args : WriteCommandArguments = {}) {
+    constructor(args : WriteCommandArguments) {
         super();
         this._name = 'write';
         this._shortName = 'w';

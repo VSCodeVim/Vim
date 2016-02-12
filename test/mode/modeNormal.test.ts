@@ -1,19 +1,21 @@
+"use strict";
+
 import * as assert from 'assert';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
-import ModeNormal from '../../src/mode/modeNormal';
+import {NormalMode} from '../../src/mode/modeNormal';
 import {ModeName} from '../../src/mode/mode';
 import {Motion, MotionMode} from '../../src/motion/motion';
-import TextEditor from '../../src/textEditor';
+import {TextEditor} from '../../src/textEditor';
 
 suite("Mode Normal", () => {
 
     let motion : Motion;
-    let modeNormal : ModeNormal;
+    let modeNormal : NormalMode;
 
     setup(() => {
         return setupWorkspace().then(() => {
             motion = new Motion(MotionMode.Cursor);
-            modeNormal = new ModeNormal(motion);
+            modeNormal = new NormalMode(motion);
         });
     });
 
@@ -24,23 +26,23 @@ suite("Mode Normal", () => {
 
         for (let i = 0; i < activationKeys.length; i++) {
             let key = activationKeys[i];
-            assert.equal(modeNormal.ShouldBeActivated(key, ModeName.Insert), true, key);
+            assert.equal(modeNormal.shouldBeActivated(key, ModeName.Insert), true, key);
         }
     });
 
     test("Can handle 'x'", () => {
         return TextEditor.insert("text")
             .then(() => {
-                motion = motion.move(0, 2);
+                motion = motion.moveTo(0, 2);
             })
             .then(() => {
-                return modeNormal.HandleKeyEvent("x");
+                return modeNormal.handleKeyEvent("x");
             })
             .then(() => {
                 return assertEqualLines(["tet"]);
             })
             .then(() => {
-                return modeNormal.HandleKeyEvent("x");
+                return modeNormal.handleKeyEvent("x");
             })
             .then(() => {
                 return assertEqualLines(["te"]);

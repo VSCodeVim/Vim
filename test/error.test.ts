@@ -1,3 +1,5 @@
+"use strict";
+
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
 import {VimError, ErrorCode} from '../src/error';
