@@ -9,11 +9,14 @@ export class DeleteAction {
         let start = motion.position;
         let end   = start.translate(0, 1);
         let range = new vscode.Range(start, end);
+        let isEOL = motion.position.isLineEnd();
 
         await TextEditor.delete(range);
-
-        if (motion.position.isLineEnd()) {
+        
+        if (isEOL) {
             return motion.left().move();
+        } else {
+            return motion.move();
         }
     }
 }
