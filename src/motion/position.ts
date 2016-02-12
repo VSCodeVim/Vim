@@ -1,6 +1,8 @@
+"use strict";
+
 import * as _ from "lodash";
 import * as vscode from "vscode";
-import TextEditor from "./../textEditor";
+import {TextEditor} from "./../textEditor";
 
 export enum PositionOptions {
     CharacterWiseInclusive,
@@ -16,7 +18,7 @@ export class Position extends vscode.Position {
 
     public positionOptions: PositionOptions = null;
 
-    constructor(line: number, character: number, options : PositionOptions = null) {
+    constructor(line: number, character: number, options: PositionOptions) {
         super(line, character);
 
         let segments = ["(^[\t ]*$)"];
@@ -107,7 +109,11 @@ export class Position extends vscode.Position {
             }
         }
 
-        return this.getLineBegin();
+        if (this.line === this.getDocumentEnd().line) {
+            return this.getLineEnd();
+        } else {
+            return new Position(this.line + 1, 0, this.positionOptions);
+        }
     }
 
     public getWordRight() : Position {
@@ -117,11 +123,11 @@ export class Position extends vscode.Position {
             return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
         }
 
-        let line = TextEditor.getLineAt(this);
+        let line  = TextEditor.getLineAt(this);
         let words = line.text.match(this._nonWordCharRegex);
 
         let startWord: number;
-        let endWord: number;
+        let endWord  : number;
 
         if (words) {
             for (var index = 0; index < words.length; index++) {
@@ -137,7 +143,11 @@ export class Position extends vscode.Position {
             }
         }
 
-        return this.getLineEnd();
+        if (this.line === this.getDocumentEnd().line) {
+            return this.getLineEnd();
+        } else {
+            return new Position(this.line + 1, 0, this.positionOptions);
+        }
     }
 
     public getCurrentWordEnd(): Position {
@@ -219,6 +229,7 @@ export class Position extends vscode.Position {
         let lineCount = TextEditor.getLineCount();
         let line = lineCount > 0 ? lineCount - 1 : 0;
         let char = Position.getLineLength(line, this.positionOptions);
+
         return new Position(line, char, this.positionOptions);
     }
 
@@ -258,18 +269,18 @@ export class Position extends vscode.Position {
     }
 
     public static getFirstNonBlankCharAtLine(line: number): number {
-        return TextEditor.readLine(line).match(/^\s*/)[0].length;
+        return TextEditor.readLineAt(line).match(/^\s*/)[0].length;
     }
 
-    private static getLineLength(line : number, options : PositionOptions) : number {
+    private static getLineLength(line: number, options: PositionOptions) : number {
         switch (options) {
             case PositionOptions.CharacterWiseExclusive:
                 // Valid Positions for Caret: [0, eol)
-                var len = TextEditor.readLine(line).length;
+                var len = TextEditor.readLineAt(line).length;
                 return len > 0 ? len - 1 : len;
             case PositionOptions.CharacterWiseInclusive:
                 // Valid Positions for Caret: [0, eol]
-                return TextEditor.readLine(line).length;
+                return TextEditor.readLineAt(line).length;
 
             default:
                 throw new Error("Unhandled PositionOptions: " + options);

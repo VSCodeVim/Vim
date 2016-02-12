@@ -1,3 +1,5 @@
+"use strict";
+
 import * as assert from 'assert';
 import * as parser from '../../src/cmd_line/parser';
 import * as node from '../../src/cmd_line/node';

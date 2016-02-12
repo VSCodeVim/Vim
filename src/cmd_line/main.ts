@@ -1,9 +1,11 @@
+"use strict";
+
 import * as vscode from "vscode";
 import * as parser from "./parser";
 import * as util from "../util";
 
 // Shows the vim command line.
-export function showCmdLine(initialText = "") : Thenable<{}> {
+export async function showCmdLine(initialText: string): Promise<{}> {
     if (!vscode.window.activeTextEditor) {
         return util.showInfo("No active document.");
     }
@@ -13,10 +15,13 @@ export function showCmdLine(initialText = "") : Thenable<{}> {
         value: initialText
     };
 
-    return vscode.window.showInputBox(options).then(
-        runCmdLine,
-        vscode.window.showErrorMessage
-    );
+    try {
+        runCmdLine(await vscode.window.showInputBox(options));
+    } catch (e) {
+        vscode.window.showErrorMessage(e.toString());
+
+        return;
+    }
 }
 
 function runCmdLine(s : string) : void {

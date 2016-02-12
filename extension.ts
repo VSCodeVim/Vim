@@ -1,10 +1,12 @@
+"use strict"
+
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 
 import * as vscode from 'vscode';
 import {showCmdLine} from './src/cmd_line/main';
 import * as cc from './src/cmd_line/lexer';
-import ModeHandler from "./src/mode/modeHandler";
+import {ModeHandler} from "./src/mode/modeHandler";
 import {ModeName} from "./src/mode/mode";
 
 var modeHandler : ModeHandler;
@@ -15,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     extensionContext = context;
 
-    registerCommand(context, 'extension.showCmdLine', () => showCmdLine());
+    registerCommand(context, 'extension.showCmdLine', () => showCmdLine(""));
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("esc"));
     registerCommand(context, 'extension.vim_colon', () => handleKeyEvent(":"));
@@ -96,6 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     registerCommand(context, 'extension.vim_%', () => handleKeyEvent("%"));
     
+    registerCommand(context, 'extension.vim_ctrl_c', () => handleKeyEvent("ctrl+c"));
     registerCommand(context, 'extension.vim_<', () => handleKeyEvent("<"));
     registerCommand(context, 'extension.vim_>', () => handleKeyEvent(">"));
 
@@ -108,7 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
-    let disposable =  vscode.commands.registerCommand(command, callback);
+    let disposable = vscode.commands.registerCommand(command, callback);
     context.subscriptions.push(disposable);
 }
 
