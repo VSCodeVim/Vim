@@ -209,10 +209,11 @@ suite("motion", () => {
 
 suite("word motion", () => {
     let text: string[] = [
-        "mary had",
-        "a",
-        "little lamb",
-        " hose fleece wassss"
+        "if (true) {",
+        "  return true;",
+        "} else {",
+        "  return false;",
+        "} // endif"
     ];
 
     suiteSetup(() => {
@@ -225,43 +226,80 @@ suite("word motion", () => {
 
     suite("word right", () => {
         test("move to word right", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 0).wordRight();
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 3).wordRight();
             assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 5);
+            assert.equal(motion.position.character, 4);
         });
 
         test("last word should move to next line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 6).wordRight();
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 10).wordRight();
             assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 0);
+            assert.equal(motion.position.character, 2);
         });
 
         test("last word on last line should go to end of document (special case!)", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(3, 14).wordRight();
-            assert.equal(motion.position.line, 3);
-            assert.equal(motion.position.character, 18);
+            let motion = new Motion(MotionMode.Caret).moveTo(4, 6).wordRight();
+            assert.equal(motion.position.line, 4);
+            assert.equal(motion.position.character, 9);
         });
 
-        test("end of line should move to next word on next line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 7).wordRight();
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 0);
-        });
     });
 
     suite("word left", () => {
-        test("move cursor word left", () => {
+        test("move cursor word left across spaces", () => {
             let motion = new Motion(MotionMode.Caret).moveTo(0, 3).wordLeft();
             assert.equal(motion.position.line, 0);
             assert.equal(motion.position.character, 0);
         });
 
-        test("first word should move to previous line of end of line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(2, 0).wordLeft();
-            assert.equal(motion.position.line, 1);
+        test("move cursor word left within word", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 5).wordLeft();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 4);
+        });
+
+        test("first word should move to previous line, beginning of last word", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(1, 2).wordLeft();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 10);
+        });
+
+    });
+
+    suite("WORD right", () => {
+        test("move to WORD right", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 3).WORDRight();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 10);
+        });
+
+        test("last WORD should move to next line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(1, 10).WORDRight();
+            assert.equal(motion.position.line, 2);
             assert.equal(motion.position.character, 0);
         });
     });
+
+    suite("WORD left", () => {
+        test("move cursor WORD left across spaces", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 3).WORDLeft();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("move cursor WORD left within WORD", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 5).WORDLeft();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 3);
+        });
+
+        test("first WORD should move to previous line, beginning of last WORD", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(2, 0).WORDLeft();
+            assert.equal(motion.position.line, 1);
+            assert.equal(motion.position.character, 9);
+        });
+    });
+
 
     test("line begin cursor on first non-blank character", () => {
         let motion = new Motion(MotionMode.Caret).moveTo(3, 3).firstLineNonBlankChar();
@@ -271,8 +309,8 @@ suite("word motion", () => {
 
     test("last line begin cursor on first non-blank character", () => {
         let motion = new Motion(MotionMode.Caret).moveTo(0, 0).lastLineNonBlankChar();
-        assert.equal(motion.position.line, 3);
-        assert.equal(motion.position.character, 1);
+        assert.equal(motion.position.line, 4);
+        assert.equal(motion.position.character, 0);
     });
 });
 
