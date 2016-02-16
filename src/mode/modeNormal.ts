@@ -27,6 +27,8 @@ export class NormalMode extends Mode {
         "b" : async (c) => { return c.wordLeft().move(); },
         "}" : async (c) => { return c.goToEndOfCurrentParagraph().move(); },
         "{" : async (c) => { return c.goToBeginningOfCurrentParagraph().move(); },
+        "ctrl+f": async (c) => { return vscode.commands.executeCommand("cursorPageDown"); },
+        "ctrl+b": async (c) => { return vscode.commands.executeCommand("cursorPageUp"); },
         "%" : async () => { return vscode.commands.executeCommand("editor.action.jumpToBracket"); },
         ">>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
         "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
