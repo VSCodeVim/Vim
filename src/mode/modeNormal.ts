@@ -34,6 +34,7 @@ export class NormalMode extends Mode {
         "dw" : async () => { return vscode.commands.executeCommand("deleteWordRight"); },
         "db" : async () => { return vscode.commands.executeCommand("deleteWordLeft"); },
         "x" : async (m) => { return DeleteAction.Character(m); },
+        "X" : async (m) => { return vscode.commands.executeCommand("deleteLeft"); },
         "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
 
