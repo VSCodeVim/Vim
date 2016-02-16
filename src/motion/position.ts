@@ -109,10 +109,10 @@ export class Position extends vscode.Position {
             }
         }
 
-        if (this.line === this.getDocumentEnd().line) {
-            return this.getLineEnd();
+        if (this.line === 0) {
+            return this.getLineBegin();
         } else {
-            return new Position(this.line + 1, 0, this.positionOptions);
+            return new Position(this.line - 1, 0, this.positionOptions);
         }
     }
 
