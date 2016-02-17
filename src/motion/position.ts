@@ -11,12 +11,12 @@ export enum PositionOptions {
 
 export class Position extends vscode.Position {
     private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
-    private static NonWORDCharacters = "";
+    private static NonBigWordCharacters = "";
     private static WordDelimiters: string[] = ["(", ")", "[", "]", "{", "}", ":", " ",
          "=", "<", ">", "|", "/", "'", "\"", "~", "`", "@", "*", "+", "-", "?", ",", ".", ";"];
 
     private _nonWordCharRegex : RegExp;
-    private _nonWORDCharRegex : RegExp;
+    private _nonBigWordCharRegex : RegExp;
 
     public positionOptions: PositionOptions = null;
 
@@ -26,7 +26,7 @@ export class Position extends vscode.Position {
         this.positionOptions = options;
 
         this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
-        this._nonWORDCharRegex = this.makeWordRegex(Position.NonWORDCharacters);
+        this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
     }
 
     private makeWordRegex(characterSet: string) : RegExp {
@@ -128,8 +128,8 @@ export class Position extends vscode.Position {
         return this.getWordLeftWithRegex(this._nonWordCharRegex);
     }
 
-    public getWORDLeft() : Position {
-        return this.getWordLeftWithRegex(this._nonWORDCharRegex);
+    public getBigWordLeft() : Position {
+        return this.getWordLeftWithRegex(this._nonBigWordCharRegex);
     }
 
     private getWordRightWithRegex(regex: RegExp) : Position {
@@ -171,8 +171,8 @@ export class Position extends vscode.Position {
         return this.getWordRightWithRegex(this._nonWordCharRegex);
     }
 
-    public getWORDRight() : Position {
-        return this.getWordRightWithRegex(this._nonWORDCharRegex);
+    public getBigWordRight() : Position {
+        return this.getWordRightWithRegex(this._nonBigWordCharRegex);
     }
 
     public getCurrentWordEnd(): Position {

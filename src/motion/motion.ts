@@ -146,8 +146,8 @@ export class Motion implements vscode.Disposable {
         return this;
     }
 
-    public WORDLeft(): Motion {
-        this._position = this.position.getWORDLeft();
+    public bigWordLeft(): Motion {
+        this._position = this.position.getBigWordLeft();
         this._desiredColumn = this._position.character;
         return this;
     }
@@ -158,8 +158,8 @@ export class Motion implements vscode.Disposable {
         return this;
     }
 
-    public WORDRight() : Motion {
-        this._position = this.position.getWORDRight();
+    public bigWordRight() : Motion {
+        this._position = this.position.getBigWordRight();
         this._desiredColumn = this._position.character;
         return this;
     }
