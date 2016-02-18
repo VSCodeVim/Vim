@@ -8,9 +8,9 @@ import {Motion} from './../motion/motion';
 
 export class InsertMode extends Mode {
     private activationKeyHandler : { [ key : string] : (motion : Motion) => Promise<{}> } = {
-        "i" : async () => {
+        "i" : async (c) => {
             // insert at cursor
-            return {};
+            return c.move();
         },
         "I" : async (c) => {
             // insert at line beginning
