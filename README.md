@@ -51,7 +51,7 @@ Status              | Key                       | Description
                     | &#124;                    | to column N (default: 1)
                     | f<char>                   | to the Nth occurrence of <char> to the right
                     | F<char>                   | to the Nth occurrence of <char> to the left
-                    | t<char>                   |till before the Nth occurrence of <char> to the right
+                    | t<char>                   | till before the Nth occurrence of <char> to the right
                     | T<char>                   | till before the Nth occurrence of <char> to the left
                     | ;                         | repeat the last "f", "F", "t", or "T" N times
                     | ,                         | repeat the last "f", "F", "t", or "T" N times in opposite direction
@@ -67,18 +67,21 @@ Status              | Key                       | Description
 :white_check_mark:  | G                         | goto last line, on the first non-blank character
 :white_check_mark:  | gg                        | goto frst line, on the firstnon-blank character
                     | %                         | goto line N percentage down in the file.  N must be given, otherwise it is the % command.
+matching brace      | %                         | jump to matching brace, C-style comment, C/C++ preprocessor conditional                   
                     | gk                        | up N screen lines (differs from "k" when line wraps)
                     | gj                        | down N screen lines (differs from "j" when line wraps)
+:white_check_mark:  | CTRL-F                    | page down
+:white_check_mark:  | CTRL-B                    | page up
 
 #### Word Motions
 Status              | Key                       | Description
 ------------------- | ------------------------- | -------------------------
 :white_check_mark:  | w                         | words forward
-                    | W                         | N blank-separated WORDS forward
+:white_check_mark:  | W                         | N blank-separated WORDS forward
 :white_check_mark:  | e                         | forward to the end of the word
                     | E                         | forward to the end of the Nth blank-separated WORD
 :white_check_mark:  | b                         | words backward
-                    | B                         | N blank-separated WORDS backward
+:white_check_mark:  | B                         | N blank-separated WORDS backward
                     | ge                        | backward to the end of the Nth word
                     | gE                        | backward to the end of the Nth blank-separated WORD
 
@@ -97,7 +100,7 @@ Status              | Key                       | Description
 ------------------- | ------------------------- | -------------------------
 :white_check_mark:  | x                         | delete characters under and after the cursor
                     | <Del>                     | delete N characters under and after the cursor
-                    | X                         | delete N characters before the cursor
+:white_check_mark:  | X                         | delete N characters before the cursor
 dw, db              | d{motion}                 | delete the text that is moved over with {motion}
                     | {visual}d                 | delete the highlighted text
 :white_check_mark:  | dd                        | delete N lines
