@@ -1,12 +1,9 @@
 "use strict";
 
-import {Position, PositionOptions} from './../motion/position';
-import { TextEditor } from './../textEditor'
-import { Operator } from './Operator'
-import { ModeHandler } from './../mode/modeHandler.ts'
-import { ModeName } from './../mode/mode'
-
-import * as vscode from 'vscode'
+import { Position } from './../motion/position';
+import { DeleteOperator } from './delete';
+import { ModeHandler } from './../mode/modeHandler.ts';
+import { ModeName } from './../mode/mode';
 
 export class ChangeOperator {
     private _modeHandler: ModeHandler;
@@ -21,7 +18,7 @@ export class ChangeOperator {
      * Run this operator on a range.
      */
     public async run(start: Position, end: Position): Promise<void> {
-        await TextEditor.delete(new vscode.Range(start, end));
+        await new DeleteOperator(this._modeHandler).run(start, end);
 
         this._modeHandler.setCurrentModeByName(ModeName.Insert);
     }

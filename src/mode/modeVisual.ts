@@ -1,19 +1,24 @@
 "use strict";
 
-import * as vscode from 'vscode';
-import * as _      from 'lodash'
+import * as _      from 'lodash';
 
-import {ModeName, Mode} from './mode';
-import {TextEditor} from './../textEditor';
-import {Motion} from './../motion/motion';
-import {Position, PositionOptions} from './../motion/position';
-import { Operator } from './../operator/operator'
-import { DeleteOperator } from './../operator/delete'
-import { ModeHandler } from './modeHandler.ts'
-import { ChangeOperator } from './../operator/change'
+import { ModeName, Mode } from './mode';
+import { Motion} from './../motion/motion';
+import { Position } from './../motion/position';
+import { Operator } from './../operator/operator';
+import { DeleteOperator } from './../operator/delete';
+import { ModeHandler } from './modeHandler.ts';
+import { ChangeOperator } from './../operator/change';
 
 export class VisualMode extends Mode {
+    /**
+     * The part of the selection that stays in the same place when motions are applied.
+     */
     private _selectionStart: Position;
+
+    /**
+     * The part of the selection that moves.
+     */
     private _selectionStop : Position;
     private _modeHandler   : ModeHandler;
 
@@ -22,6 +27,7 @@ export class VisualMode extends Mode {
     constructor(motion: Motion, modeHandler: ModeHandler) {
         super(ModeName.Visual, motion);
 
+        this._modeHandler = modeHandler;
         this._keysToOperators = {
             // TODO: use DeleteOperator.key()
 
@@ -29,8 +35,8 @@ export class VisualMode extends Mode {
             // simply allow the operators to say what mode they transition into.
             'd': new DeleteOperator(modeHandler),
             'x': new DeleteOperator(modeHandler),
-            'c': new ChangeOperator(modeHandler),
-        }
+            'c': new ChangeOperator(modeHandler)
+        };
     }
 
     shouldBeActivated(key: string, currentMode: ModeName): boolean {
@@ -39,9 +45,9 @@ export class VisualMode extends Mode {
 
     async handleActivation(key: string): Promise<void> {
         this._selectionStart = this.motion.position;
-        this._selectionStop  = this._selectionStart.getRight();
+        this._selectionStop  = this._selectionStart;
 
-        this.motion.selectTo(this._selectionStop);
+        this.motion.select(this._selectionStart, this._selectionStop);
     }
 
     handleDeactivation(): void {
@@ -73,7 +79,25 @@ export class VisualMode extends Mode {
             this._selectionStop = await this.keyToNewPosition[keysPressed](this._selectionStop);
 
             this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
-            this.motion.selectTo(this._selectionStop.getRight());
+
+            /**
+             * Always select the letter that we started visual mode on, no matter
+             * if we are in front or behind it. Imagine that we started visual mode
+             * with some text like this:
+             *
+             *   abc|def
+             *
+             * (The | represents the cursor.) If we now press w, we'll select def,
+             * but if we hit b we expect to select abcd, so we need to getRight() on the
+             * start of the selection when it precedes where we started visual mode.
+             */
+
+            // TODO this could be abstracted out
+            if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
+                this.motion.select(this._selectionStart, this._selectionStop);
+            } else {
+                this.motion.select(this._selectionStart.getRight(), this._selectionStop);
+            }
 
             this.keyHistory = [];
         }
@@ -82,7 +106,6 @@ export class VisualMode extends Mode {
     }
 
     private async _handleOperator(): Promise<boolean> {
-        let keyHandled = false;
         let keysPressed: string;
         let operator: Operator;
 
@@ -95,10 +118,10 @@ export class VisualMode extends Mode {
         }
 
         if (operator) {
-            if (this._selectionStart.compareTo(this._selectionStop)) {
-                operator.run(this._selectionStart, this._selectionStop.getRight());
+            if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
+                await operator.run(this._selectionStart, this._selectionStop.getRight());
             } else {
-                operator.run(this._selectionStop, this._selectionStart.getRight());
+                await operator.run(this._selectionStart.getRight(), this._selectionStop);
             }
         }
 

@@ -1,6 +1,6 @@
 "use strict";
 
-import {Position, PositionOptions} from './../motion/position';
+import { Position } from './../motion/position';
 
 export abstract class Operator {
     /**

@@ -40,7 +40,7 @@ export async function setupWorkspace(): Promise<any> {
     assert.ok(vscode.window.activeTextEditor);
 }
 
-export function cleanUpWorkspace(): Promise<any> {
+export async function cleanUpWorkspace(): Promise<any> {
     // https://github.com/Microsoft/vscode/blob/master/extensions/vscode-api-tests/src/utils.ts
     return new Promise((c, e) => {
         if (vscode.window.visibleTextEditors.length === 0) {

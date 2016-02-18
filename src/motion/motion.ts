@@ -139,12 +139,12 @@ export class Motion implements vscode.Disposable {
         }
     }
 
-    public selectTo(other: Position): void {
-        let selection = new vscode.Selection(this.position, other);
+    public select(from: Position, to: Position): void {
+        let selection = new vscode.Selection(from, to);
 
         vscode.window.activeTextEditor.selection = selection;
 
-        this.highlightBlock(other.getLeft());
+        this.highlightBlock(to);
     }
 
     public left() : Motion {

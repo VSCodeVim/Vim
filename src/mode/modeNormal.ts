@@ -52,8 +52,6 @@ export class NormalMode extends Mode {
 
     async handleActivation(key : string): Promise<void> {
         this.motion.left().move();
-
-        await this.motion;
     }
 
     async handleKeyEvent(key : string): Promise<void>  {
