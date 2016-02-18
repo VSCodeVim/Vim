@@ -12,7 +12,7 @@ export class DeleteAction {
         let isEOL = motion.position.isLineEnd();
 
         await TextEditor.delete(range);
-        
+
         if (isEOL) {
             return motion.left().move();
         } else {
