@@ -1,6 +1,6 @@
 var gulp = require('gulp'),
     tslint = require('gulp-tslint'),
-    tsd = require('gulp-tsd'),
+    typings = require('gulp-typings'),
     shell = require('gulp-shell'),
     mocha = require('gulp-mocha'),
     soften = require('gulp-soften'),
@@ -11,12 +11,10 @@ var paths = {
     tests_ts: "test/**/*.ts"
 };
 
-gulp.task('tsd', function (callback) {
+gulp.task('typings', function () {
     // reinstall typescript definitions
-    return gulp.src('./gulp_tsd.json').pipe(tsd({
-        command: 'reinstall',
-        config: './tsd.json'
-    }, callback));
+    return gulp.src('./typings.json')
+               .pipe(typings());
 });
 
 gulp.task('fix-whitespace', function() {
@@ -42,5 +40,5 @@ gulp.task('compile', shell.task([
   'node ./node_modules/vscode/bin/compile -p ./',
 ]));
 
-gulp.task('init', ['tsd']);
+gulp.task('init', ['typings']);
 gulp.task('default', ['tslint', 'compile']);

@@ -9,14 +9,14 @@
     "color": "#a5c9a2",
     "theme": "light"
   },
-  "license" : "MIT",
+  "license": "MIT",
   "keywords": [
     "vim",
     "vi",
     "vscodevim",
     "vsc-vim"
   ],
- "repository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/VSCodeVim/Vim.git"
   },
@@ -149,15 +149,15 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-mocha": "^2.2.0",
-    "gulp-soften": "^0.0.1",
     "gulp-shell": "^0.5.1",
-    "gulp-tsd": "^0.0.4",
-    "gulp-tslint": "^3.6.0",
+    "gulp-soften": "^0.0.1",
     "gulp-trimlines": "^1.0.0",
+    "gulp-tslint": "^3.6.0",
     "gulp-typescript": "^2.9.2",
-    "tsd": "^0.6.5",
+    "gulp-typings": "^1.1.0",
     "tslint": "^3.2.1",
     "typescript": "^1.6.2",
+    "typings": "^0.6.8",
     "vscode": "0.10.x"
   },
   "dependencies": {
