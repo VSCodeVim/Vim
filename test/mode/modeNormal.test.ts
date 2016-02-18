@@ -12,11 +12,11 @@ suite("Mode Normal", () => {
     let motion : Motion;
     let modeNormal : NormalMode;
 
-    setup(() => {
-        return setupWorkspace().then(() => {
-            motion = new Motion(MotionMode.Cursor);
-            modeNormal = new NormalMode(motion);
-        });
+    setup(async () => {
+        await setupWorkspace();
+
+        motion = new Motion(MotionMode.Cursor);
+        modeNormal = new NormalMode(motion);
     });
 
     teardown(cleanUpWorkspace);
@@ -30,22 +30,13 @@ suite("Mode Normal", () => {
         }
     });
 
-    test("Can handle 'x'", () => {
-        return TextEditor.insert("text")
-            .then(() => {
-                motion = motion.moveTo(0, 2);
-            })
-            .then(() => {
-                return modeNormal.handleKeyEvent("x");
-            })
-            .then(() => {
-                return assertEqualLines(["tet"]);
-            })
-            .then(() => {
-                return modeNormal.handleKeyEvent("x");
-            })
-            .then(() => {
-                return assertEqualLines(["te"]);
-            });
+    test("Can handle 'x'", async () => {
+        await TextEditor.insert("text");
+
+        motion = motion.moveTo(0, 2);
+        await modeNormal.handleKeyEvent("x");
+        await assertEqualLines(["tet"]);
+        await modeNormal.handleKeyEvent("x");
+        assertEqualLines(["te"]);
     });
 });
