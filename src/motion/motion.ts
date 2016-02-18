@@ -146,8 +146,20 @@ export class Motion implements vscode.Disposable {
         return this;
     }
 
+    public bigWordLeft(): Motion {
+        this._position = this.position.getBigWordLeft();
+        this._desiredColumn = this._position.character;
+        return this;
+    }
+
     public wordRight() : Motion {
         this._position = this.position.getWordRight();
+        this._desiredColumn = this._position.character;
+        return this;
+    }
+
+    public bigWordRight() : Motion {
+        this._position = this.position.getBigWordRight();
         this._desiredColumn = this._position.character;
         return this;
     }
