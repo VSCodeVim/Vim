@@ -56,10 +56,8 @@ export class Motion implements vscode.Disposable {
             let selection = e.selections[0];
 
             if (selection) {
-                const whosFirst = selection.anchor.compareTo(selection.active);
-
-                let line = whosFirst > 0 ? selection.active.line      : selection.anchor.line;
-                let char = whosFirst > 0 ? selection.active.character : selection.anchor.character;
+                let line = selection.active.line;
+                let char = selection.active.character;
 
                 if (this.position.line !== line ||
                     this.position.character !== char) {

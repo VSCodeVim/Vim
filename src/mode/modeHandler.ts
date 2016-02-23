@@ -21,7 +21,7 @@ export class ModeHandler implements vscode.Disposable {
 
         this._motion = new Motion(null);
         this._modes = [
-            new NormalMode(this._motion),
+            new NormalMode(this._motion, this),
             new InsertMode(this._motion),
             new VisualMode(this._motion, this),
         ];

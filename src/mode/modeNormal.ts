@@ -6,7 +6,8 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import {Motion} from './../motion/motion';
-import {DeleteAction} from './../action/deleteAction';
+import {ModeHandler} from './modeHandler';
+import {DeleteOperator} from './../operator/delete';
 
 export class NormalMode extends Mode {
     protected keyHandler : { [key : string] : (motion : Motion) => Promise<{}>; } = {
@@ -37,13 +38,17 @@ export class NormalMode extends Mode {
         "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
         "dw" : async () => { return vscode.commands.executeCommand("deleteWordRight"); },
         "db" : async () => { return vscode.commands.executeCommand("deleteWordLeft"); },
-        "x" : async (m) => { return DeleteAction.Character(m); },
+        "x" : async (m) => { await new DeleteOperator(this._modeHandler).run(m.position, m.position.getRight()); return {}; },
         "X" : async (m) => { return vscode.commands.executeCommand("deleteLeft"); },
         "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
 
-    constructor(motion : Motion) {
+    private _modeHandler: ModeHandler;
+
+    constructor(motion : Motion, modeHandler: ModeHandler) {
         super(ModeName.Normal, motion);
+
+        this._modeHandler = modeHandler;
     }
 
     shouldBeActivated(key : string, currentMode : ModeName) : boolean {
