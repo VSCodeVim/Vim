@@ -12,8 +12,6 @@ export enum PositionOptions {
 export class Position extends vscode.Position {
     private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
     private static NonBigWordCharacters = "";
-    private static WordDelimiters: string[] = ["(", ")", "[", "]", "{", "}", ":", " ",
-         "=", "<", ">", "|", "/", "'", "\"", "~", "`", "@", "*", "+", "-", "?", ",", ".", ";"];
 
     private _nonWordCharRegex : RegExp;
     private _nonBigWordCharRegex : RegExp;
@@ -95,25 +93,11 @@ export class Position extends vscode.Position {
     }
 
     public getCurrentWordEnd(): Position {
-        if (!TextEditor.isLastLine(this) && this.character === this.getLineEnd().character) {
-            // go to next line
-            let line = TextEditor.getLineAt(this.translate(1));
-            return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
-        }
+        return this.getCurrentWordEndWithRegex(this._nonWordCharRegex);
+    }
 
-        let line = TextEditor.getLineAt(this);
-
-        if (Position.WordDelimiters.indexOf(line.text.charAt(this.character)) !== -1) {
-            return new Position(this.line, this.character + 1, this.positionOptions);
-        }
-
-        for (var index = this.character; index < line.text.length; index++) {
-            if (Position.WordDelimiters.indexOf(line.text.charAt(index)) !== -1) {
-                return new Position(this.line, index, this.positionOptions);
-            }
-        }
-
-        return this.getLineEnd();
+    public getCurrentBigWordEnd(): Position {
+        return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex);
     }
 
     /**
@@ -240,9 +224,9 @@ export class Position extends vscode.Position {
     }
 
     private getWordLeftWithRegex(regex: RegExp) : Position {
-        var workingPosition = new Position(this.line, this.character, this.positionOptions);
-        var currentLine = TextEditor.getLineAt(this);
-        var currentCharacter = this.character;
+        let workingPosition = new Position(this.line, this.character, this.positionOptions);
+        let currentLine = TextEditor.getLineAt(this);
+        let currentCharacter = this.character;
 
         if (!TextEditor.isFirstLine(this) && this.character <= currentLine.firstNonWhitespaceCharacterIndex) {
             // perform search from very end of previous line (after last character)
@@ -262,7 +246,7 @@ export class Position extends vscode.Position {
             positions.push(result.index);
         }
 
-        for (var index = 0; index < positions.length; index++) {
+        for (let index = 0; index < positions.length; index++) {
             let position = positions[positions.length - 1 - index];
             if (currentCharacter > position) {
                 return new Position(workingPosition.line, position, workingPosition.positionOptions);
@@ -296,7 +280,7 @@ export class Position extends vscode.Position {
             positions.push(result.index);
         }
 
-        for (var index = 0; index < positions.length; index++) {
+        for (let index = 0; index < positions.length; index++) {
             let position = positions[index];
             if (this.character < position) {
                 return new Position(this.line, position, this.positionOptions);
@@ -310,5 +294,40 @@ export class Position extends vscode.Position {
             let line = TextEditor.getLineAt(this.translate(1));
             return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
         }
+    }
+
+    private getCurrentWordEndWithRegex(regex: RegExp) : Position {
+        let workingPosition = new Position(this.line, this.character, this.positionOptions);
+        let currentLine = TextEditor.getLineAt(this);
+        let currentCharacter = this.character;
+
+        if (!TextEditor.isLastLine(this) && this.character >= this.getLineEnd().character) {
+            // go to next line
+            workingPosition = new Position(this.line + 1, this.character, this.positionOptions);
+            currentLine = TextEditor.getLineAt(workingPosition);
+            currentCharacter = 0;
+        }
+
+        let positions = [];
+
+        regex.lastIndex = 0;
+        while (true) {
+            let result = regex.exec(currentLine.text);
+            if (result === null) {
+                break;
+            }
+            positions.push(result.index + result[0].length - 1);
+        }
+
+        for (let index = 0; index < positions.length; index++) {
+            let position = positions[index];
+            if (currentCharacter < position) {
+                return new Position(workingPosition.line, position, workingPosition.positionOptions);
+            }
+        }
+
+        // Wasn't at end of the line (of not last line), and couldn't find a column in the middle of the string?
+        // We'll just go to the end of the line?
+        return this.getLineEnd();
     }
 }

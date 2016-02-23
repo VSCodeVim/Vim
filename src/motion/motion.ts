@@ -209,6 +209,12 @@ export class Motion implements vscode.Disposable {
         return this;
     }
 
+    public goToEndOfCurrentBigWord(): Motion {
+        this._position = this.position.getCurrentBigWordEnd();
+        this._desiredColumn = this._position.character;
+        return this;
+    }
+
     public goToEndOfCurrentParagraph(): Motion {
       this._position = this.position.getCurrentParagraphEnd();
       this._desiredColumn = this.position.character;

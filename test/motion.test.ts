@@ -300,6 +300,45 @@ suite("word motion", () => {
         });
     });
 
+    suite("end of word right", () => {
+        test("move to end of current word right", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 4).goToEndOfCurrentWord();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 7);
+        });
+
+        test("move to end of next word right", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 7).goToEndOfCurrentWord();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 8);
+        });
+
+        test("end of last word should move to next line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 10).goToEndOfCurrentWord();
+            assert.equal(motion.position.line, 1);
+            assert.equal(motion.position.character, 7);
+        });
+    });
+
+    suite("end of WORD right", () => {
+        test("move to end of current WORD right", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 4).goToEndOfCurrentBigWord();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 8);
+        });
+
+        test("move to end of next WORD right", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 8).goToEndOfCurrentBigWord();
+            assert.equal(motion.position.line, 0);
+            assert.equal(motion.position.character, 10);
+        });
+
+        test("end of last WORD should move to next line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(0, 10).goToEndOfCurrentBigWord();
+            assert.equal(motion.position.line, 1);
+            assert.equal(motion.position.character, 7);
+        });
+    });
 
     test("line begin cursor on first non-blank character", () => {
         let motion = new Motion(MotionMode.Caret).moveTo(3, 3).firstLineNonBlankChar();
