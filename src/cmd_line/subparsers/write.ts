@@ -1,13 +1,13 @@
 "use strict";
 
-import {WriteCommand, WriteCommandArguments} from '../commands/write';
+import {WriteCommand, IWriteCommandArguments} from '../commands/write';
 import {Scanner} from '../scanner';
 
 export function parseWriteCommandArgs(args : string) : WriteCommand {
     if (!args) {
         return new WriteCommand({});
     }
-    var scannedArgs : WriteCommandArguments = {};
+    var scannedArgs : IWriteCommandArguments = {};
     var scanner = new Scanner(args);
     while (true) {
         scanner.skipWhiteSpace();

@@ -3,9 +3,9 @@
 import * as vscode from "vscode";
 
 export class KeyboardLayout {
-    private mapper : KeyMapper;
+    private mapper : IKeyMapper;
 
-    constructor(mapper? : KeyMapper) {
+    constructor(mapper? : IKeyMapper) {
         this.mapper = mapper;
     }
 
@@ -37,12 +37,12 @@ export class KeyboardLayout {
     }
 }
 
-export interface KeyMapper {
+export interface IKeyMapper {
     name : string;
     get(key : string) : string;
 }
 
-class KeyMapperEsEsQwerty implements KeyMapper {
+class KeyMapperEsEsQwerty implements IKeyMapper {
 
     private mappings = {};
 
@@ -64,7 +64,7 @@ class KeyMapperEsEsQwerty implements KeyMapper {
     }
 }
 
-class KeyMapperDeDeQwertz implements KeyMapper {
+class KeyMapperDeDeQwertz implements IKeyMapper {
 
     private mappings = {};
 
@@ -87,7 +87,7 @@ class KeyMapperDeDeQwertz implements KeyMapper {
 }
 
 
-class KeyMapperDaDKQwerty implements KeyMapper {
+class KeyMapperDaDKQwerty implements IKeyMapper {
 
     private mappings = {};
 
@@ -110,7 +110,7 @@ class KeyMapperDaDKQwerty implements KeyMapper {
     }
 }
 
-class KeyMapperSvSEQwerty implements KeyMapper {
+class KeyMapperSvSEQwerty implements IKeyMapper {
 
     private mappings = {};
 

@@ -1,6 +1,6 @@
 {
   "name": "vim",
   "ambientDependencies": {
-    "lodash": "github:DefinitelyTyped/DefinitelyTyped/lodash/lodash.d.ts#36c6ce86fb64bafb28ec95dc78c6b98228b45c8d"
+    "lodash": "github:DefinitelyTyped/DefinitelyTyped/lodash/lodash.d.ts#7b7aa2027a8fb6219a8bcf1b6bb12bcd0ff9539d"
   }
 }

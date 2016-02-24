@@ -1,13 +1,13 @@
 "use strict";
 
 // XXX: use graceful-fs ??
-import fs = require('fs');
+import * as fs from 'fs';
 
-import node = require('../node');
-import util = require('../../util');
-import error = require('../../error');
+import * as node from '../node';
+import * as util from '../../util';
+import * as error from '../../error';
 
-export interface WriteCommandArguments extends node.CommandArgs {
+export interface IWriteCommandArguments extends node.ICommandArgs {
     opt? : string;
     optValue? : string;
     bang? : boolean;
@@ -22,16 +22,16 @@ export interface WriteCommandArguments extends node.CommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:write
 //
 export class WriteCommand extends node.CommandBase {
-    protected _arguments : WriteCommandArguments;
+    protected _arguments : IWriteCommandArguments;
 
-    constructor(args : WriteCommandArguments) {
+    constructor(args : IWriteCommandArguments) {
         super();
         this._name = 'write';
         this._shortName = 'w';
         this._arguments = args;
     }
 
-    get arguments() : WriteCommandArguments {
+    get arguments() : IWriteCommandArguments {
         return this._arguments;
     }
 

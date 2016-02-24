@@ -4,15 +4,15 @@ import {Scanner} from "./scanner";
 import {Token, TokenType} from "./token";
 
 // Describes a function that can lex part of a Vim command line.
-interface LexFunction {
-    (state: Scanner, tokens: Token[]) : LexFunction;
+interface ILexFunction {
+    (state: Scanner, tokens: Token[]) : ILexFunction;
 }
 
 export function lex(input : string) : Token[] {
     // We use a character scanner as state for the lexer.
     var state = new Scanner(input);
     var tokens : Token[] = [];
-    var f : LexFunction = LexerFunctions.lexRange;
+    var f : ILexFunction = LexerFunctions.lexRange;
     while (f) {
         // Each lexing function returns the next lexing function or null.
         f = f(state, tokens);
@@ -27,7 +27,7 @@ function emitToken(type : TokenType, state : Scanner) : Token {
 
 module LexerFunctions {
     // Starts lexing a Vim command line and delegates on other lexer functions as needed.
-    export function lexRange(state : Scanner, tokens : Token[]): LexFunction  {
+    export function lexRange(state : Scanner, tokens : Token[]): ILexFunction  {
         while (true) {
             if (state.isAtEof) {
                 break;
@@ -74,7 +74,7 @@ module LexerFunctions {
         return null;
     }
 
-    function lexLineRef(state : Scanner, tokens : Token[]): LexFunction  {
+    function lexLineRef(state : Scanner, tokens : Token[]): ILexFunction  {
         // The first digit has already been lexed.
         while (true) {
             if (state.isAtEof) {
@@ -100,10 +100,9 @@ module LexerFunctions {
                     return lexRange;
             }
         }
-        return null;
     }
 
-    function lexCommand(state : Scanner, tokens : Token[]): LexFunction  {
+    function lexCommand(state : Scanner, tokens : Token[]): ILexFunction  {
         // The first character of the command's name has already been lexed.
         while (true) {
             if (state.isAtEof) {
@@ -131,7 +130,7 @@ module LexerFunctions {
         return null;
     }
 
-    function lexForwardSearch(state : Scanner, tokens : Token[]): LexFunction  {
+    function lexForwardSearch(state : Scanner, tokens : Token[]): ILexFunction  {
         // The first slash has already been lexed.
         state.skip("/"); // XXX: really?
         var escaping : boolean;
@@ -157,7 +156,7 @@ module LexerFunctions {
         return lexRange;
     }
 
-    function lexReverseSearch(state : Scanner, tokens : Token[]): LexFunction  {
+    function lexReverseSearch(state : Scanner, tokens : Token[]): ILexFunction  {
         // The first question mark has already been lexed.
         state.skip("?"); // XXX: really?
         var escaping : boolean;
