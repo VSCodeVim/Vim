@@ -71,6 +71,10 @@ export class TextEditor {
         return vscode.window.activeTextEditor.document.lineAt(position);
     }
 
+    static getSelection(): vscode.Range {
+        return vscode.window.activeTextEditor.selection;
+    }
+
     static isFirstLine(position : vscode.Position): boolean {
         return position.line === 0;
     }
