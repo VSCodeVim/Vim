@@ -8,7 +8,7 @@ export function parseQuitCommandArgs(args : string) : node.QuitCommand {
     if (!args) {
         return new node.QuitCommand({});
     }
-    var scannedArgs : node.QuitCommandArguments = {};
+    var scannedArgs : node.IQuitCommandArguments = {};
     var scanner = new Scanner(args);
     const c = scanner.next();
     if (c === '!') {

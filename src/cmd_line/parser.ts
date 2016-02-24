@@ -5,13 +5,13 @@ import * as node from './node';
 import * as lexer from './lexer';
 import {commandParsers} from './subparser';
 
-interface ParseFunction {
-    (state : ParserState, command : node.CommandLine) : ParseFunction;
+interface IParseFunction {
+    (state : ParserState, command : node.CommandLine) : IParseFunction;
 }
 
 export function parse(input : string) : node.CommandLine {
     var cmd = new node.CommandLine();
-    var f : ParseFunction = parseLineRange;
+    var f : IParseFunction = parseLineRange;
     let state : ParserState = new ParserState(input);
     while (f) {
         f = f(state, cmd);
@@ -19,7 +19,7 @@ export function parse(input : string) : node.CommandLine {
     return cmd;
 }
 
-function parseLineRange(state : ParserState, commandLine : node.CommandLine) : ParseFunction {
+function parseLineRange(state : ParserState, commandLine : node.CommandLine) : IParseFunction {
     while (true) {
         let tok = state.next();
         switch (tok.type) {
@@ -44,7 +44,7 @@ function parseLineRange(state : ParserState, commandLine : node.CommandLine) : P
     }
 }
 
-function parseCommand(state : ParserState, commandLine : node.CommandLine) : ParseFunction {
+function parseCommand(state : ParserState, commandLine : node.CommandLine) : IParseFunction {
     while (!state.isAtEof) {
         var tok = state.next();
         switch (tok.type) {

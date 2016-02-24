@@ -2,7 +2,7 @@
 
 import * as util from "./util";
 
-interface VimErrors {
+interface IVimErrors {
     [index: number] : string;
 }
 
@@ -12,7 +12,7 @@ export enum ErrorCode {
     E488 = 488
 }
 
-const errors : VimErrors = {
+const errors : IVimErrors = {
     32: "No file name",
     37: "No write since last change (add ! to override)",
     488: "Trailing characters"
@@ -20,7 +20,6 @@ const errors : VimErrors = {
 
 
 export class VimError extends Error {
-
     private _code : number;
     private _message : string;
 

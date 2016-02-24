@@ -2,7 +2,7 @@
 
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
-import {KeyboardLayout, KeyMapper} from '../src/keyboard';
+import {KeyboardLayout, IKeyMapper} from '../src/keyboard';
 
 suite("KeyboardLayout", () => {
 
@@ -19,7 +19,7 @@ suite("KeyboardLayout", () => {
     });
 
     test("can use custom mapper", () => {
-        class FakeMapper implements KeyMapper {
+        class FakeMapper implements IKeyMapper {
             get name() : string {
                 return "fake mapper";
             }
