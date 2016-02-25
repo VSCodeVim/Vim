@@ -212,7 +212,9 @@ suite("word motion", () => {
         "if (true) {",
         "  return true;",
         "} else {",
+        "",
         "  return false;",
+        "  ",
         "} // endif"
     ];
 
@@ -237,9 +239,21 @@ suite("word motion", () => {
             assert.equal(motion.position.character, 2);
         });
 
+        test("last word should move to next line stops on empty line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(2, 7).wordRight();
+            assert.equal(motion.position.line, 3);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("last word should move to next line skips whitespace only line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(4, 14).wordRight();
+            assert.equal(motion.position.line, 6);
+            assert.equal(motion.position.character, 0);
+        });
+
         test("last word on last line should go to end of document (special case!)", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(4, 6).wordRight();
-            assert.equal(motion.position.line, 4);
+            let motion = new Motion(MotionMode.Caret).moveTo(6, 6).wordRight();
+            assert.equal(motion.position.line, 6);
             assert.equal(motion.position.character, 9);
         });
 
@@ -264,6 +278,17 @@ suite("word motion", () => {
             assert.equal(motion.position.character, 10);
         });
 
+        test("first word should move to previous line, stops on empty line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(4, 2).wordLeft();
+            assert.equal(motion.position.line, 3);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("first word should move to previous line, skips whitespace only line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(6, 0).wordLeft();
+            assert.equal(motion.position.line, 4);
+            assert.equal(motion.position.character, 14);
+        });
     });
 
     suite("WORD right", () => {
@@ -276,6 +301,18 @@ suite("word motion", () => {
         test("last WORD should move to next line", () => {
             let motion = new Motion(MotionMode.Caret).moveTo(1, 10).bigWordRight();
             assert.equal(motion.position.line, 2);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("last WORD should move to next line stops on empty line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(2, 7).bigWordRight();
+            assert.equal(motion.position.line, 3);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("last WORD should move to next line skips whitespace only line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(4, 12).bigWordRight();
+            assert.equal(motion.position.line, 6);
             assert.equal(motion.position.character, 0);
         });
     });
@@ -298,6 +335,18 @@ suite("word motion", () => {
             assert.equal(motion.position.line, 1);
             assert.equal(motion.position.character, 9);
         });
+
+        test("first WORD should move to previous line, stops on empty line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(4, 2).bigWordLeft();
+            assert.equal(motion.position.line, 3);
+            assert.equal(motion.position.character, 0);
+        });
+
+        test("first WORD should move to previous line, skips whitespace only line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(6, 0).bigWordLeft();
+            assert.equal(motion.position.line, 4);
+            assert.equal(motion.position.character, 9);
+        });
     });
 
     suite("end of word right", () => {
@@ -317,6 +366,18 @@ suite("word motion", () => {
             let motion = new Motion(MotionMode.Caret).moveTo(0, 10).goToEndOfCurrentWord();
             assert.equal(motion.position.line, 1);
             assert.equal(motion.position.character, 7);
+        });
+
+        test("end of last word should move to next line skips empty line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(2, 7).goToEndOfCurrentWord();
+            assert.equal(motion.position.line, 4);
+            assert.equal(motion.position.character, 7);
+        });
+
+        test("end of last word should move to next line skips whitespace only line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(4, 14).goToEndOfCurrentWord();
+            assert.equal(motion.position.line, 6);
+            assert.equal(motion.position.character, 0);
         });
     });
 
@@ -338,17 +399,29 @@ suite("word motion", () => {
             assert.equal(motion.position.line, 1);
             assert.equal(motion.position.character, 7);
         });
+
+        test("end of last WORD should move to next line skips empty line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(2, 7).goToEndOfCurrentWord();
+            assert.equal(motion.position.line, 4);
+            assert.equal(motion.position.character, 7);
+        });
+
+        test("end of last WORD should move to next line skips whitespace only line", () => {
+            let motion = new Motion(MotionMode.Caret).moveTo(4, 14).goToEndOfCurrentWord();
+            assert.equal(motion.position.line, 6);
+            assert.equal(motion.position.character, 0);
+        });
     });
 
     test("line begin cursor on first non-blank character", () => {
-        let motion = new Motion(MotionMode.Caret).moveTo(3, 3).firstLineNonBlankChar();
+        let motion = new Motion(MotionMode.Caret).moveTo(4, 3).firstLineNonBlankChar();
         assert.equal(motion.position.line, 0);
         assert.equal(motion.position.character, 0);
     });
 
     test("last line begin cursor on first non-blank character", () => {
         let motion = new Motion(MotionMode.Caret).moveTo(0, 0).lastLineNonBlankChar();
-        assert.equal(motion.position.line, 4);
+        assert.equal(motion.position.line, 6);
         assert.equal(motion.position.character, 0);
     });
 });

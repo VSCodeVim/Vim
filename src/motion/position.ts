@@ -224,32 +224,36 @@ export class Position extends vscode.Position {
     }
 
     private getWordLeftWithRegex(regex: RegExp) : Position {
-        let workingPosition = new Position(this.line, this.character, this.positionOptions);
         let currentLine = TextEditor.getLineAt(this);
-        let currentCharacter = this.character;
 
-        if (!TextEditor.isFirstLine(this) && this.character <= currentLine.firstNonWhitespaceCharacterIndex) {
-            // perform search from very end of previous line (after last character)
-            workingPosition = new Position(this.line - 1, this.character, this.positionOptions);
-            currentLine = TextEditor.getLineAt(workingPosition);
-            currentCharacter = workingPosition.getLineEnd().character + 1;
-        }
-
-        let positions = [];
-
-        regex.lastIndex = 0;
-        while (true) {
-            let result = regex.exec(currentLine.text);
-            if (result === null) {
-                break;
+        if (currentLine.text.length === 0) {
+            if (TextEditor.isFirstLine(this)) {
+                return this.getLineBegin();
+            } else {
+                // perform search from very end of previous line (after last character)
+                let newPosition = new Position(this.line - 1, this.character, this.positionOptions);
+                newPosition = new Position(newPosition.line, newPosition.getLineEnd().character + 1, newPosition.positionOptions);
+                return newPosition.getWordLeftWithRegex(regex);
             }
-            positions.push(result.index);
         }
 
-        for (let index = 0; index < positions.length; index++) {
-            let position = positions[positions.length - 1 - index];
-            if (currentCharacter > position) {
-                return new Position(workingPosition.line, position, workingPosition.positionOptions);
+        if (this.character > currentLine.firstNonWhitespaceCharacterIndex) {
+            let positions = [];
+
+            regex.lastIndex = 0;
+            while (true) {
+                let result = regex.exec(currentLine.text);
+                if (result === null) {
+                    break;
+                }
+                positions.push(result.index);
+            }
+
+            for (let index = 0; index < positions.length; index++) {
+                let position = positions[positions.length - 1 - index];
+                if (this.character > position) {
+                    return new Position(this.line, position, this.positionOptions);
+                }
             }
         }
 
@@ -257,77 +261,118 @@ export class Position extends vscode.Position {
             return this.getLineBegin();
         } else {
             let prevLine = new Position(this.line - 1, 0, this.positionOptions);
-            return prevLine.getLineEnd();
+            let line = TextEditor.getLineAt(prevLine);
+            if (line.text.length === 0) {
+                return prevLine;
+            } else {
+                // perform search from very end of previous line (after last character)
+                prevLine = new Position(prevLine.line, prevLine.getLineEnd().character + 1, prevLine.positionOptions);
+                return prevLine.getWordLeftWithRegex(regex);
+            }
         }
     }
 
     private getWordRightWithRegex(regex: RegExp) : Position {
-        if (!TextEditor.isLastLine(this) && this.character >= this.getLineEnd().character) {
-            // go to next line
-            let line = TextEditor.getLineAt(this.translate(1));
-            return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
-        }
+        let currPosLine = this.line;
+        let currPosCharacter = this.character; // we don't use a Position because sometimes we want to a Position.character to be -1
 
-        let currentLine = TextEditor.getLineAt(this);
-        let positions = [];
-
-        regex.lastIndex = 0;
         while (true) {
-            let result = regex.exec(currentLine.text);
-            if (result === null) {
-                break;
+            let workingPosition = new Position(currPosLine, 0, this.positionOptions);
+            let currLine = TextEditor.getLineAt(workingPosition);
+            if (currLine.text.length === 0) {
+                if (TextEditor.isLastLine(workingPosition)) {
+                    return workingPosition.getLineEnd();
+                } else {
+                    currPosLine += 1;
+                    currPosCharacter = -1;
+                    continue;
+                }
+            } else if (currLine.isEmptyOrWhitespace) {
+                currPosLine += 1;
+                currPosCharacter = -1;
+                continue;
             }
-            positions.push(result.index);
-        }
 
-        for (let index = 0; index < positions.length; index++) {
-            let position = positions[index];
-            if (this.character < position) {
-                return new Position(this.line, position, this.positionOptions);
+            let positions = [];
+
+            regex.lastIndex = 0;
+            while (true) {
+                let result = regex.exec(currLine.text);
+                if (result === null) {
+                    break;
+                }
+                positions.push(result.index);
             }
-        }
 
-        if (this.line === this.getDocumentEnd().line) {
-            return this.getLineEnd();
-        } else {
-            // go to next line
-            let line = TextEditor.getLineAt(this.translate(1));
-            return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
+            for (let index = 0; index < positions.length; index++) {
+                let position = positions[index];
+                if (currPosCharacter < position) {
+                    return new Position(currPosLine, position, this.positionOptions);
+                }
+            }
+
+            if (currPosLine === this.getDocumentEnd().line) {
+                return workingPosition.getLineEnd();
+            } else {
+                // go to next line
+                let newPosition = new Position(currPosLine + 1, 0, this.positionOptions);
+                let line = TextEditor.getLineAt(newPosition);
+                if (line.text.length === 0) {
+                    return newPosition;
+                } else {
+                    currPosLine += 1;
+                    currPosCharacter = -1;
+                    continue;
+                }
+            }
         }
     }
 
     private getCurrentWordEndWithRegex(regex: RegExp) : Position {
-        let workingPosition = new Position(this.line, this.character, this.positionOptions);
-        let currentLine = TextEditor.getLineAt(this);
-        let currentCharacter = this.character;
+        let currPosLine = this.line;
+        let currPosCharacter = this.character; // we don't use a Position because sometimes we want to a Position.character to be -1
 
-        if (!TextEditor.isLastLine(this) && this.character >= this.getLineEnd().character) {
-            // go to next line
-            workingPosition = new Position(this.line + 1, this.character, this.positionOptions);
-            currentLine = TextEditor.getLineAt(workingPosition);
-            currentCharacter = 0;
-        }
-
-        let positions = [];
-
-        regex.lastIndex = 0;
         while (true) {
-            let result = regex.exec(currentLine.text);
-            if (result === null) {
-                break;
-            }
-            positions.push(result.index + result[0].length - 1);
-        }
+            let workingPosition = new Position(currPosLine, 0, this.positionOptions);
+            let currLine = TextEditor.getLineAt(workingPosition);
 
-        for (let index = 0; index < positions.length; index++) {
-            let position = positions[index];
-            if (currentCharacter < position) {
-                return new Position(workingPosition.line, position, workingPosition.positionOptions);
+            if (currLine.text.length === 0 || currLine.isEmptyOrWhitespace) {
+                if (TextEditor.isLastLine(workingPosition)) {
+                    return workingPosition.getLineEnd();
+                } else {
+                    // go to next line
+                    currPosLine += 1;
+                    currPosCharacter = -1;
+                    continue;
+                }
+            }
+
+            let positions = [];
+
+            regex.lastIndex = 0;
+            while (true) {
+                let result = regex.exec(currLine.text);
+                if (result === null) {
+                    break;
+                }
+                positions.push(result.index + result[0].length - 1);
+            }
+
+            for (let index = 0; index < positions.length; index++) {
+                let position = positions[index];
+                if (currPosCharacter < position) {
+                    return new Position(currPosLine, position, this.positionOptions);
+                }
+            }
+
+            if (currPosLine === this.getDocumentEnd().line) {
+                return workingPosition.getLineEnd();
+            } else {
+                // go to next line
+                currPosLine += 1;
+                currPosCharacter = -1;
+                continue;
             }
         }
-
-        // Wasn't at end of the line (of not last line), and couldn't find a column in the middle of the string?
-        // We'll just go to the end of the line?
-        return this.getLineEnd();
     }
 }
