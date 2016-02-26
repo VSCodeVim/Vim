@@ -217,7 +217,7 @@ export class Position extends vscode.Position {
 
     private makeWordRegex(characterSet: string) : RegExp {
         let escaped = characterSet && _.escapeRegExp(characterSet);
-        let segments = ["(^[\t ]*$)"];
+        let segments = [];
         segments.push(`([^\\s${escaped}]+)`);
         segments.push(`[${escaped}]+`);
         return new RegExp(segments.join("|"), "g");
@@ -225,35 +225,21 @@ export class Position extends vscode.Position {
 
     private getWordLeftWithRegex(regex: RegExp) : Position {
         let currentLine = TextEditor.getLineAt(this);
+        let positions = [];
 
-        if (currentLine.text.length === 0) {
-            if (TextEditor.isFirstLine(this)) {
-                return this.getLineBegin();
-            } else {
-                // perform search from very end of previous line (after last character)
-                let newPosition = new Position(this.line - 1, this.character, this.positionOptions);
-                newPosition = new Position(newPosition.line, newPosition.getLineEnd().character + 1, newPosition.positionOptions);
-                return newPosition.getWordLeftWithRegex(regex);
+        regex.lastIndex = 0;
+        while (true) {
+            let result = regex.exec(currentLine.text);
+            if (result === null) {
+                break;
             }
+            positions.push(result.index);
         }
 
-        if (this.character > currentLine.firstNonWhitespaceCharacterIndex) {
-            let positions = [];
-
-            regex.lastIndex = 0;
-            while (true) {
-                let result = regex.exec(currentLine.text);
-                if (result === null) {
-                    break;
-                }
-                positions.push(result.index);
-            }
-
-            for (let index = 0; index < positions.length; index++) {
-                let position = positions[positions.length - 1 - index];
-                if (this.character > position) {
-                    return new Position(this.line, position, this.positionOptions);
-                }
+        for (let index = 0; index < positions.length; index++) {
+            let position = positions[positions.length - 1 - index];
+            if (this.character > position) {
+                return new Position(this.line, position, this.positionOptions);
             }
         }
 
@@ -279,20 +265,6 @@ export class Position extends vscode.Position {
         while (true) {
             let workingPosition = new Position(currPosLine, 0, this.positionOptions);
             let currLine = TextEditor.getLineAt(workingPosition);
-            if (currLine.text.length === 0) {
-                if (TextEditor.isLastLine(workingPosition)) {
-                    return workingPosition.getLineEnd();
-                } else {
-                    currPosLine += 1;
-                    currPosCharacter = -1;
-                    continue;
-                }
-            } else if (currLine.isEmptyOrWhitespace) {
-                currPosLine += 1;
-                currPosCharacter = -1;
-                continue;
-            }
-
             let positions = [];
 
             regex.lastIndex = 0;
@@ -335,18 +307,6 @@ export class Position extends vscode.Position {
         while (true) {
             let workingPosition = new Position(currPosLine, 0, this.positionOptions);
             let currLine = TextEditor.getLineAt(workingPosition);
-
-            if (currLine.text.length === 0 || currLine.isEmptyOrWhitespace) {
-                if (TextEditor.isLastLine(workingPosition)) {
-                    return workingPosition.getLineEnd();
-                } else {
-                    // go to next line
-                    currPosLine += 1;
-                    currPosCharacter = -1;
-                    continue;
-                }
-            }
-
             let positions = [];
 
             regex.lastIndex = 0;
