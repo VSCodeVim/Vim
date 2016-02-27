@@ -220,7 +220,10 @@ export class Position extends vscode.Position {
         let segments = [];
         segments.push(`([^\\s${escaped}]+)`);
         segments.push(`[${escaped}]+`);
-        return new RegExp(segments.join("|"), "g");
+        segments.push(`$^`);
+        let result = new RegExp(segments.join("|"), "g");
+
+        return result;
     }
 
     private getWordLeftWithRegex(regex: RegExp) : Position {
@@ -258,46 +261,33 @@ export class Position extends vscode.Position {
         }
     }
 
-    private getWordRightWithRegex(regex: RegExp) : Position {
-        let currPosLine = this.line;
-        let currPosCharacter = this.character; // we don't use a Position because sometimes we want to a Position.character to be -1
+    private getAllPositions(line: string, regex: RegExp): number[] {
+        let positions: number[] = [];
+        let result = regex.exec(line);
 
-        while (true) {
-            let workingPosition = new Position(currPosLine, 0, this.positionOptions);
-            let currLine = TextEditor.getLineAt(workingPosition);
-            let positions = [];
+        while (result) {
+            positions.push(result.index);
 
-            regex.lastIndex = 0;
-            while (true) {
-                let result = regex.exec(currLine.text);
-                if (result === null) {
-                    break;
-                }
-                positions.push(result.index);
-            }
+             // Handles the case where an empty string match causes lastIndex not to advance,
+             // which gets us in an infinite loop.
+            if (result.index === regex.lastIndex) { regex.lastIndex++; }
+            result = regex.exec(line);
+        }
 
-            for (let index = 0; index < positions.length; index++) {
-                let position = positions[index];
-                if (currPosCharacter < position) {
-                    return new Position(currPosLine, position, this.positionOptions);
-                }
-            }
+        return positions;
+    }
 
-            if (currPosLine === this.getDocumentEnd().line) {
-                return workingPosition.getLineEnd();
-            } else {
-                // go to next line
-                let newPosition = new Position(currPosLine + 1, 0, this.positionOptions);
-                let line = TextEditor.getLineAt(newPosition);
-                if (line.text.length === 0) {
-                    return newPosition;
-                } else {
-                    currPosLine += 1;
-                    currPosCharacter = -1;
-                    continue;
-                }
+    private getWordRightWithRegex(regex: RegExp): Position {
+        for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
+            let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+            let newCharacter = _.find(positions, index => index > this.character || currentLine != this.line);
+
+            if (newCharacter !== undefined) {
+                return new Position(currentLine, newCharacter, this.positionOptions);
             }
         }
+
+        return new Position(TextEditor.getLineCount() - 1, 0, this.positionOptions).getLineEnd();
     }
 
     private getCurrentWordEndWithRegex(regex: RegExp) : Position {
