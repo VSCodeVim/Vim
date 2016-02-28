@@ -39,15 +39,24 @@ export class NormalMode extends Mode {
         "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
         "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
         "d{rangeable}" : async (ranger) => {
-            let range = await ranger();
+            const range = await ranger();
             await new DeleteOperator(this._modeHandler).run(range[0], range[1]); return {};
         },
         "c{rangeable}" : async (ranger) => {
-            let range = await ranger();
+            const range = await ranger();
             await new ChangeOperator(this._modeHandler).run(range[0], range[1]); return {};
         },
-        "x" : async (c) => { await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight()); return {}; },
-        "X" : async (c) => { return vscode.commands.executeCommand("deleteLeft"); },
+        "x" : async () => { await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight()); return {}; },
+        "X" : async () => { return vscode.commands.executeCommand("deleteLeft"); },
+
+        "." : async () => {
+            if (this._lastAction && this._lastAction.length >= 2) {
+                const handler = this._lastAction[0];
+                const ranger = this._lastAction[1];
+                await handler(ranger);
+            }
+            return {};
+         },
         "esc": async () => { this.resetState(); return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
     // TODO: motion => ctX, cfX
@@ -60,6 +69,7 @@ export class NormalMode extends Mode {
     private _state: ParserState;
     private _commandCount;
     private _motionCount;
+    private _lastAction = null;
 
     constructor(motion : Motion, modeHandler: ModeHandler) {
         super(ModeName.Normal, motion);
@@ -128,8 +138,8 @@ export class NormalMode extends Mode {
     private findCommandHandler() : any {
         // see if it fits a command now, returns handler if found
         for (let window = this.keyHistory.length; window > 0; window--) {
-            let command = _.take(this.keyHistory, window).join('');
-            let argument = _.takeRight(this.keyHistory, this.keyHistory.length - window).join('');
+            const command = _.take(this.keyHistory, window).join('');
+            const argument = _.takeRight(this.keyHistory, this.keyHistory.length - window).join('');
 
             // check if motion
             const motionHandler = this.findInCommandMap(command, argument, this.keyToNewPosition);
@@ -152,21 +162,24 @@ export class NormalMode extends Mode {
             }
 
             // check if non-motion command
-            let handler = this.findInCommandMap(command, argument, this.keyHandler);
+            const handler = this.findInCommandMap(command, argument, this.keyHandler);
             if (handler) {
-                return [async (c, mover) => {
+                return [async (c, ranger) => {
                     for (let i = 0; i < (c || 1); i++) {
-                        await handler(mover);
+                        await handler(ranger);
                     }
-                    // TODO handler and mover should be saved for .
+                    if (command !== ".") {
+                        // save for ".", but not "."
+                        this._lastAction = [handler, ranger];
+                    }
                 }, argument];
             }
         }
 
         // no handler found yet, see if it is a valid prefix
         for (let window = this.keyHistory.length; window > 0; window--) {
-            let command = _.take(this.keyHistory, window).join('');
-            let argument = _.takeRight(this.keyHistory, this.keyHistory.length - window).join('');
+            const command = _.take(this.keyHistory, window).join('');
+            const argument = _.takeRight(this.keyHistory, this.keyHistory.length - window).join('');
 
             if (this.isValidPrefixInCommandMap(command, argument, this.keyToNewPosition) ||
                 this.isValidPrefixInCommandMap(command, argument, this.keyHandler)) {
@@ -179,7 +192,7 @@ export class NormalMode extends Mode {
 
     private findInCommandMap(command, argument, map) : any {
         if (argument.length === 0) {
-            let handler = map[command];
+            const handler = map[command];
             if (handler) {
                 return handler;
             }

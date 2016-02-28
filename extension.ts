@@ -24,6 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_space', () => handleKeyEvent("space"));
     registerCommand(context, 'extension.vim_left_curly_bracket', () => handleKeyEvent("{"));
     registerCommand(context, 'extension.vim_right_curly_bracket', () => handleKeyEvent("}"));
+    registerCommand(context, 'extension.vim_period', () => handleKeyEvent("."));
 
     registerCommand(context, 'extension.vim_a', () => handleKeyEvent("a"));
     registerCommand(context, 'extension.vim_b', () => handleKeyEvent("b"));
@@ -99,7 +100,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_ctrl_b', () => handleKeyEvent("ctrl+b"));
 
     registerCommand(context, 'extension.vim_%', () => handleKeyEvent("%"));
-    
+
     registerCommand(context, 'extension.vim_ctrl_c', () => handleKeyEvent("ctrl+c"));
     registerCommand(context, 'extension.vim_<', () => handleKeyEvent("<"));
     registerCommand(context, 'extension.vim_>', () => handleKeyEvent(">"));

@@ -46,6 +46,7 @@
         { "key": "\\", "command": "extension.vim_backslash", "when": "editorTextFocus" },
         { "key": "Shift+[", "command": "extension.vim_left_curly_bracket", "when": "editorTextFocus" },
         { "key": "Shift+]", "command": "extension.vim_right_curly_bracket", "when": "editorTextFocus" },
+        { "key": ".", "command": "extension.vim_period", "when": "editorTextFocus" },
 
         { "key": "a", "command": "extension.vim_a", "when": "editorTextFocus" },
         { "key": "b", "command": "extension.vim_b", "when": "editorTextFocus" },
