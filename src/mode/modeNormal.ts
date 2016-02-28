@@ -18,7 +18,7 @@ enum ParserState {
 }
 
 export class NormalMode extends Mode {
-    protected keyHandler : { [key : string] : (mover) => Promise<{}>; } = {
+    protected keyHandler : { [key : string] : (ranger) => Promise<{}>; } = {
         ":" : async () => { return showCmdLine(""); },
         "u" : async () => { return vscode.commands.executeCommand("undo"); },
         "ctrl+r" : async () => { return vscode.commands.executeCommand("redo"); },
@@ -38,11 +38,13 @@ export class NormalMode extends Mode {
         ">>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
         "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
         "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
-        "d{rangeable}" : async (mover) => {
-            await new DeleteOperator(this._modeHandler).run(this.motion.position, await mover()); return {};
+        "d{rangeable}" : async (ranger) => {
+            let range = await ranger();
+            await new DeleteOperator(this._modeHandler).run(range[0], range[1]); return {};
         },
-        "c{rangeable}" : async (mover) => {
-            await new ChangeOperator(this._modeHandler).run(this.motion.position, await mover()); return {};
+        "c{rangeable}" : async (ranger) => {
+            let range = await ranger();
+            await new ChangeOperator(this._modeHandler).run(range[0], range[1]); return {};
         },
         "x" : async (c) => { await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight()); return {}; },
         "X" : async (c) => { return vscode.commands.executeCommand("deleteLeft"); },
@@ -111,8 +113,8 @@ export class NormalMode extends Mode {
             // we can handle this now
             const handler = retval[0];
             const argument = retval[1];
-            const mover = this.makeMotion(this._motionCount, argument);
-            await handler(this._commandCount, mover);
+            const ranger = this.makeRanger(this._motionCount, argument);
+            await handler(this._commandCount, ranger);
             this.resetState();
         } else if (retval === true) {
             // handler === true, valid command prefix
@@ -156,6 +158,7 @@ export class NormalMode extends Mode {
                     for (let i = 0; i < (c || 1); i++) {
                         await handler(mover);
                     }
+                    // TODO handler and mover should be saved for .
                 }, argument];
             }
         }
@@ -239,18 +242,18 @@ export class NormalMode extends Mode {
         return NormalMode.ValidTextObjectPrefixes.indexOf(argument) > -1;
     }
 
-    // input can be motion or text object
-    private makeMotion(count, input) : any {
+    // input can be motion or text object, returns a range maker
+    private makeRanger(count, input) : any {
         if (!input) {
-            return () => this.motion.position;
+            return () => [this.motion.position, this.motion.position];
         }
 
         if (this.isValidTextObject(input)) {
-            // TODO make a text object mover
-            return () => this.motion.position;
+            // TODO make a text object ranger
+            return () => [this.motion.position, this.motion.position];
         }
 
-        // make motion mover
+        // make motion ranger
         let command, argument, handler;
         for (let window = input.length; window > 0; window--) {
             command = input.slice(0, window);
@@ -268,10 +271,10 @@ export class NormalMode extends Mode {
                 for (let i = 0; i < (count || 1); i++) {
                     position = await handler(position, argument);
                 }
-                return position;
+                return [this.motion.position, position];
             };
         }
 
-        return () => this.motion.position;
+        return () => [this.motion.position, this.motion.position];
     }
 }
