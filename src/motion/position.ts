@@ -212,6 +212,42 @@ export class Position extends vscode.Position {
         return this.character === Position.getLineLength(this.line, this.positionOptions);
     }
 
+    public tilForwards(argument : string) : Position {
+        const line = TextEditor.getLineAt(this);
+        const index = line.text.indexOf(argument, this.character + 1);
+        if (index > -1) {
+            return new Position(this.line, index - 1, this.positionOptions);
+        }
+        return this;
+    }
+
+    public tilBackwards(argument : string) : Position {
+        const line = TextEditor.getLineAt(this);
+        const index = line.text.lastIndexOf(argument, this.character - 1);
+        if (index > -1) {
+            return new Position(this.line, index + 1, this.positionOptions);
+        }
+        return this;
+    }
+
+    public findForwards(argument : string) : Position {
+        const line = TextEditor.getLineAt(this);
+        const index = line.text.indexOf(argument, this.character + 1);
+        if (index > -1) {
+            return new Position(this.line, index, this.positionOptions);
+        }
+        return this;
+    }
+
+    public findBackwards(argument : string) : Position {
+        const line = TextEditor.getLineAt(this);
+        const index = line.text.lastIndexOf(argument, this.character - 1);
+        if (index > -1) {
+            return new Position(this.line, index, this.positionOptions);
+        }
+        return this;
+    }
+
     public static getFirstNonBlankCharAtLine(line: number): number {
         return TextEditor.readLineAt(line).match(/^\s*/)[0].length;
     }

@@ -46,7 +46,7 @@ export abstract class Mode {
         this.keyHistory = [];
     }
 
-    protected keyToNewPosition: { [key: string]: (motion: Position) => Promise<Position>; } = {
+    protected keyToNewPosition: { [key: string]: (motion: Position, argument: string) => Promise<Position>; } = {
         "h" : async (c) => { return c.getLeft(); },
         "j" : async (c) => { return c.getDown(c.character); },
         "k" : async (c) => { return c.getUp(c.character); },
@@ -64,8 +64,18 @@ export abstract class Mode {
         "w" : async (c) => { return c.getWordRight(); },
         "e" : async (c) => { return c.getCurrentWordEnd(); },
         "b" : async (c) => { return c.getWordLeft(); },
+        "W" : async (c) => { return c.getBigWordRight(); },
+        "B" : async (c) => { return c.getBigWordLeft(); },
         "}" : async (c) => { return c.getCurrentParagraphEnd(); },
-        "{" : async (c) => { return c.getCurrentParagraphBeginning(); }
+        "{" : async (c) => { return c.getCurrentParagraphBeginning(); },
+
+        // "ctrl+f": async () => { return vscode.commands.executeCommand("cursorPageDown"); },
+        // "ctrl+b": async () => { return vscode.commands.executeCommand("cursorPageUp"); },
+        // "%" : async () => { return vscode.commands.executeCommand("editor.action.jumpToBracket"); },
+        "t{argument}" : async (c, argument) => { return c.tilForwards(argument); },
+        "T{argument}" : async (c, argument) => { return c.tilBackwards(argument); },
+        "f{argument}" : async (c, argument) => { return c.findForwards(argument); },
+        "F{argument}" : async (c, argument) => { return c.findBackwards(argument); },
     };
 
     abstract shouldBeActivated(key : string, currentMode : ModeName) : boolean;

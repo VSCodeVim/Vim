@@ -18,33 +18,22 @@ enum ParserState {
 }
 
 export class NormalMode extends Mode {
-    protected keyHandler : { [key : string] : (ranger) => Promise<{}>; } = {
+    protected keyHandler : { [key : string] : (ranger, argument : string) => Promise<{}>; } = {
         ":" : async () => { return showCmdLine(""); },
         "u" : async () => { return vscode.commands.executeCommand("undo"); },
         "ctrl+r" : async () => { return vscode.commands.executeCommand("redo"); },
-
-        // TODO move these to motions map in Mode.keyToNewPosition
-        "^" : async () => { return vscode.commands.executeCommand("cursorHome"); },
-        "W" : async () => { return this.motion.bigWordRight().move(); },
-        "B" : async () => { return this.motion.bigWordLeft().move(); },
-        "ctrl+f": async () => { return vscode.commands.executeCommand("cursorPageDown"); },
-        "ctrl+b": async () => { return vscode.commands.executeCommand("cursorPageUp"); },
-        "%" : async () => { return vscode.commands.executeCommand("editor.action.jumpToBracket"); },
-        "t{argument}" : async () => { return showCmdLine(""); },
-        "T{argument}" : async () => { return showCmdLine(""); },
-        "f{argument}" : async () => { return showCmdLine(""); },
-        "F{argument}" : async () => { return showCmdLine(""); },
-
         ">>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
         "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
         "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
         "d{rangeable}" : async (ranger) => {
             const range = await ranger();
-            await new DeleteOperator(this._modeHandler).run(range[0], range[1]); return {};
+            await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
+            return {};
         },
         "c{rangeable}" : async (ranger) => {
             const range = await ranger();
-            await new ChangeOperator(this._modeHandler).run(range[0], range[1]); return {};
+            await new ChangeOperator(this._modeHandler).run(range[0], range[1]);
+            return {};
         },
         "x" : async () => { await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight()); return {}; },
         "X" : async () => { return vscode.commands.executeCommand("deleteLeft"); },
@@ -155,7 +144,7 @@ export class NormalMode extends Mode {
                 return [async (c) => {
                     let position = this.motion.position;
                     for (let i = 0; i < (c || 1); i++) {
-                        position = await motionHandler(position);
+                        position = await motionHandler(position, argument);
                     }
                     return this.motion.moveTo(position.line, position.character);
                 }, null];
@@ -166,11 +155,11 @@ export class NormalMode extends Mode {
             if (handler) {
                 return [async (c, ranger) => {
                     for (let i = 0; i < (c || 1); i++) {
-                        await handler(ranger);
+                        await handler(ranger, argument);
                     }
                     if (command !== ".") {
                         // save for ".", but not "."
-                        this._lastAction = [handler, ranger];
+                        this._lastAction = [handler, ranger, argument];
                     }
                 }, argument];
             }
