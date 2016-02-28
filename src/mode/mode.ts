@@ -48,8 +48,8 @@ export abstract class Mode {
 
     protected keyToNewPosition: { [key: string]: (motion: Position) => Promise<Position>; } = {
         "h" : async (c) => { return c.getLeft(); },
-        "j" : async (c) => { return c.getDown(0); },
-        "k" : async (c) => { return c.getUp(0); },
+        "j" : async (c) => { return c.getDown(c.character); },
+        "k" : async (c) => { return c.getUp(c.character); },
         "l" : async (c) => { return c.getRight(); },
         // "^" : async () => { return vscode.commands.executeCommand("cursorHome"); },
         "gg" : async (c) => {

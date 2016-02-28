@@ -7,7 +7,9 @@ import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import {Motion} from './../motion/motion';
 import {ModeHandler} from './modeHandler';
+import {ChangeOperator} from './../operator/change';
 import {DeleteOperator} from './../operator/delete';
+import {Position} from './../motion/position';
 
 enum ParserState {
     CountPending,
@@ -16,44 +18,38 @@ enum ParserState {
 }
 
 export class NormalMode extends Mode {
-    protected keyHandler : { [key : string] : (count : Number) => Promise<{}>; } = {
+    protected keyHandler : { [key : string] : (mover) => Promise<{}>; } = {
         ":" : async () => { return showCmdLine(""); },
-        "u" : async (c) => { return vscode.commands.executeCommand("undo"); },
-        "ctrl+r" : async (c) => { return vscode.commands.executeCommand("redo"); },
-        "h" : async (c) => { return this.motion.left().move(); },
-        "j" : async (c) => { return this.motion.down().move(); },
-        "k" : async (c) => { return this.motion.up().move(); },
-        "l" : async (c) => { return this.motion.right().move(); },
-        "$" : async (c) => { return this.motion.lineEnd().move(); },
-        "0" : async (c) => { return this.motion.lineBegin().move(); },
+        "u" : async () => { return vscode.commands.executeCommand("undo"); },
+        "ctrl+r" : async () => { return vscode.commands.executeCommand("redo"); },
+
+        // TODO move these to motions map in Mode.keyToNewPosition
         "^" : async () => { return vscode.commands.executeCommand("cursorHome"); },
-        "gg" : async (c) => { return this.motion.firstLineNonBlankChar().move(); },
-        "G" : async (c) => { return this.motion.lastLineNonBlankChar().move(); },
-        "w" : async (c) => { return this.motion.wordRight().move(); },
-        "W" : async (c) => { return this.motion.bigWordRight().move(); },
-        "e" : async (c) => { return this.motion.goToEndOfCurrentWord().move(); },
-        "b" : async (c) => { return this.motion.wordLeft().move(); },
-        "B" : async (c) => { return this.motion.bigWordLeft().move(); },
-        "}" : async (c) => { return this.motion.goToEndOfCurrentParagraph().move(); },
-        "{" : async (c) => { return this.motion.goToBeginningOfCurrentParagraph().move(); },
-        "ctrl+f": async (c) => { return vscode.commands.executeCommand("cursorPageDown"); },
-        "ctrl+b": async (c) => { return vscode.commands.executeCommand("cursorPageUp"); },
+        "W" : async () => { return this.motion.bigWordRight().move(); },
+        "B" : async () => { return this.motion.bigWordLeft().move(); },
+        "ctrl+f": async () => { return vscode.commands.executeCommand("cursorPageDown"); },
+        "ctrl+b": async () => { return vscode.commands.executeCommand("cursorPageUp"); },
         "%" : async () => { return vscode.commands.executeCommand("editor.action.jumpToBracket"); },
-        ">>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
-        "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
-        "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
-        "d{rangeable}" : async () => { return vscode.commands.executeCommand("deleteWordRight"); },
         "t{argument}" : async () => { return showCmdLine(""); },
         "T{argument}" : async () => { return showCmdLine(""); },
         "f{argument}" : async () => { return showCmdLine(""); },
         "F{argument}" : async () => { return showCmdLine(""); },
+
+        ">>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
+        "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
+        "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
+        "d{rangeable}" : async (mover) => {
+            await new DeleteOperator(this._modeHandler).run(this.motion.position, await mover()); return {};
+        },
+        "c{rangeable}" : async (mover) => {
+            await new ChangeOperator(this._modeHandler).run(this.motion.position, await mover()); return {};
+        },
         "x" : async (c) => { await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight()); return {}; },
         "X" : async (c) => { return vscode.commands.executeCommand("deleteLeft"); },
-        "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
+        "esc": async () => { this.resetState(); return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
     // TODO: motion => ctX, cfX
 
-    private static ValidMotions = ['h', 'j', 'k', 'l', '$', '0', '^', 'gg', 'G', 'w', 'W', 'e', 'E', 'b', 'B', '}', '{', '%', 't{rangeable}', 'f{rangeable}'];
     private static ValidTextObjectPrefixes = ['i', 'a'];
     private static ValidTextObjectSuffixes = ['w', 's', 'p', '"', '\'', '`', ')', ']', '}', 't', '>'];
 
@@ -79,30 +75,10 @@ export class NormalMode extends Mode {
         this.resetState();
     }
 
-    async oldhandleKeyEvent(key : string): Promise<void>  {
-        this.keyHistory.push(key);
-
-        let keyHandled = false;
-        let keysPressed: string;
-
-        for (let window = this.keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this.keyHistory, window).join('');
-            if (this.keyHandler[keysPressed] !== undefined) {
-                keyHandled = true;
-                break;
-            }
-        }
-
-        if (keyHandled) {
-            this.keyHistory = [];
-            await this.keyHandler[keysPressed](this._commandCount);
-        }
-    }
-
     async handleKeyEvent(key : string): Promise<void> {
         if (this._state === ParserState.CountPending) {
             if (key.match(/^\d$/)) {
-                this._commandCount = this._commandCount * 10 + key;
+                this._commandCount = this._commandCount * 10 + parseInt(key, 10);
                 return;
             }
             this._state = ParserState.CommandPending;
@@ -112,7 +88,7 @@ export class NormalMode extends Mode {
             return this.tryToHandleCommand();
         } else if (this._state === ParserState.OperatorPending) {
             if (key.match(/^\d$/)) {
-                this._motionCount = this._motionCount * 10 + key;
+                this._motionCount = this._motionCount * 10 + parseInt(key, 10);
                 return;
             }
             this.keyHistory.push(key);
@@ -129,14 +105,15 @@ export class NormalMode extends Mode {
 
     private async tryToHandleCommand() : Promise<void> {
         // handler will be a function, true or false
-        let handler = this.findCommandHandler();
-        if (typeof handler === 'function') {
+        const retval = this.findCommandHandler();
+        if (typeof retval[0] === 'function') {
             // we can handle this now
-            // TODO convert motion into range
-            // TODO convert text object into range
-            await handler(this.motion);
+            const handler = retval[0];
+            const argument = retval[1];
+            const mover = this.makeMotion(this._motionCount, argument);
+            await handler(this._commandCount, mover);
             this.resetState();
-        } else if (handler === true) {
+        } else if (retval === true) {
             // handler === true, valid command prefix
             // can't do anything for now
         } else {
@@ -146,59 +123,155 @@ export class NormalMode extends Mode {
     }
 
     private findCommandHandler() : any {
-        // try to find an exact match handler first
-        let keys = this.keyHistory.join('');
-        let handler = this.keyHandler[keys];
-        if (handler) {
-            return handler;
-        } else if (this.keyHistory.length == 2) {
-            // see if it is a valid argument type command (t/f/r)
-            // search for command{argument}
-            keys = this.keyHistory[0] + '{argument}';
-            handler = this.keyHandler[keys];
+        // see if it fits a command now, returns handler if found
+        for (let window = this.keyHistory.length; window > 0; window--) {
+            let command = _.take(this.keyHistory, window).join('');
+            let argument = _.takeRight(this.keyHistory, this.keyHistory.length - window).join('');
+
+            // check if motion
+            const motionHandler = this.findInCommandMap(command, argument, this.keyToNewPosition);
+            if (motionHandler) {
+                if (command === "G" && this._commandCount > 0) {
+                    // special case G (goto line number)
+                    return [async (c) => {
+                        const lastLine = this.motion.position.getDocumentEnd().line;
+                        const newLine = Math.min(c - 1, lastLine);
+                        return this.motion.moveTo(newLine, Position.getFirstNonBlankCharAtLine(newLine));
+                    }, null];
+                }
+                return [async (c) => {
+                    let position = this.motion.position;
+                    for (let i = 0; i < (c || 1); i++) {
+                        position = await motionHandler(position);
+                    }
+                    return this.motion.moveTo(position.line, position.character);
+                }, null];
+            }
+
+            // check if non-motion command
+            let handler = this.findInCommandMap(command, argument, this.keyHandler);
+            if (handler) {
+                return [async (c, mover) => {
+                    for (let i = 0; i < (c || 1); i++) {
+                        await handler(mover);
+                    }
+                }, argument];
+            }
+        }
+
+        // no handler found yet, see if it is a valid prefix
+        for (let window = this.keyHistory.length; window > 0; window--) {
+            let command = _.take(this.keyHistory, window).join('');
+            let argument = _.takeRight(this.keyHistory, this.keyHistory.length - window).join('');
+
+            if (this.isValidPrefixInCommandMap(command, argument, this.keyToNewPosition) ||
+                this.isValidPrefixInCommandMap(command, argument, this.keyHandler)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private findInCommandMap(command, argument, map) : any {
+        if (argument.length === 0) {
+            let handler = map[command];
+            if (handler) {
+                return handler;
+            }
+        } else {
+            let keys = command + '{argument}';
+            let handler = map[keys];
             if (handler) {
                 return handler;
             }
 
-            keys = this.keyHistory[0] + '{rangeable}';
-            let currKey = this.keyHistory[1];
-            // else if valid motion search for {rangeable}
-            if (NormalMode.ValidMotions.indexOf(currKey) > -1) {
-                handler = this.keyHandler[keys];
-                if (handler) {
+            keys = command + '{rangeable}';
+            handler = map[keys];
+            if (handler) {
+                if (this.isValidMotion(argument)) {
+                    return handler;
+                } else if (this.isValidTextObject(argument)) {
                     return handler;
                 }
             }
+            return null;
+        }
+    }
 
-            // else if valid motion prefix (like gg), search for {rangeable}
-            // else if valid text-object prefix search for {rangeable}
-            if (this.isValidMotionPrefix(currKey) ||
-                NormalMode.ValidTextObjectPrefixes.indexOf(currKey) > -1) {
-                if (this.keyHandler[keys]) {
-                    return true;
-                }
-            }
-        } else if (this.keyHistory.length == 3) {
-            // see if it is a valid text object, search for {rangeable}
-            let prefix = this.keyHistory[1];
-            let suffix = this.keyHistory[2];
-            if (NormalMode.ValidTextObjectPrefixes.indexOf(prefix) > -1 &&
-                NormalMode.ValidTextObjectSuffixes.indexOf(suffix) > -1) {
-                keys = this.keyHistory[0] + '{rangeable}';
+    private isValidPrefixInCommandMap(command, argument, map) : any {
+        if (argument.length === 0) {
+           return !!_.find(_.keys(map), key => _.startsWith(key, command) );
+        } else {
+            // no need to test command+{argument} because argument is only single key
+            // see if it is a valid motion/text object prefix
+            const keys = command + '{rangeable}';
+            return map[keys] && (this.isValidMotionPrefix(argument) || this.isValidTextObjectPrefix(argument));
+        }
+    }
 
-                handler = this.keyHandler[keys];
-                if (handler) {
-                    return handler;
-                }
+    private isValidMotion(input : string) : boolean {
+        for (let window = input.length; window > 0; window--) {
+            const command = input.slice(0, window);
+            const argument = input.slice(window);
+
+            const handler = this.findInCommandMap(command, argument, this.keyToNewPosition);
+            if (handler) {
+                return true;
             }
         }
         return false;
     }
 
-    private isValidMotionPrefix(input : string) : boolean {
-        return _.find(NormalMode.ValidMotions, (key) => {
-           return key.indexOf(input) === 0;
-        })
+    private isValidTextObject(argument : string) : boolean {
+        const prefix = argument.slice(0, 1);
+        const suffix = argument.slice(1);
+        return NormalMode.ValidTextObjectPrefixes.indexOf(prefix) > -1 &&
+               NormalMode.ValidTextObjectSuffixes.indexOf(suffix) > -1;
     }
 
+    private isValidMotionPrefix(input: string) : boolean {
+        return this.isValidPrefixInCommandMap(input, '', this.keyToNewPosition);
+    }
+
+    private isValidTextObjectPrefix(argument : string) : boolean {
+        return NormalMode.ValidTextObjectPrefixes.indexOf(argument) > -1;
+    }
+
+    // input can be motion or text object
+    private makeMotion(count, input) : any {
+        if (!input) {
+            return () => this.motion.position;
+        }
+
+        if (this.isValidTextObject(input)) {
+            // TODO make a text object mover
+            return () => this.motion.position;
+        }
+
+        // make motion mover
+        let command, argument, handler;
+        for (let window = input.length; window > 0; window--) {
+            command = input.slice(0, window);
+            argument = input.slice(window);
+
+            handler = this.findInCommandMap(command, argument, this.keyToNewPosition);
+            if (handler) {
+                break;
+            }
+        }
+
+        if (handler) {
+            return async () => {
+                console.log('running motion');
+                let position = this.motion.position;
+                for (let i = 0; i < (count || 1); i++) {
+                    position = await handler(position, argument);
+                }
+                return position;
+            };
+        }
+
+        return () => this.motion.position;
+    }
 }
