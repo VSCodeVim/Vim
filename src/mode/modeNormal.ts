@@ -85,6 +85,7 @@ export class NormalMode extends Mode {
             return this.handleKeyEvent(key);
         } else if (this._state === ParserState.CommandPending) {
             this.keyHistory.push(key);
+            this._state = ParserState.OperatorPending;
             return this.tryToHandleCommand();
         } else if (this._state === ParserState.OperatorPending) {
             if (key.match(/^\d$/)) {
@@ -263,7 +264,6 @@ export class NormalMode extends Mode {
 
         if (handler) {
             return async () => {
-                console.log('running motion');
                 let position = this.motion.position;
                 for (let i = 0; i < (count || 1); i++) {
                     position = await handler(position, argument);
