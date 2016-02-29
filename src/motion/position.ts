@@ -263,7 +263,7 @@ export class Position extends vscode.Position {
     private getWordLeftWithRegex(regex: RegExp) : Position {
         for (let currentLine = this.line; currentLine >= 0; currentLine--) {
             let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
-            let newCharacter = _.find(positions.reverse(), index => index < this.character || currentLine != this.line);
+            let newCharacter = _.find(positions.reverse(), index => index < this.character || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
                 return new Position(currentLine, newCharacter, this.positionOptions);
@@ -276,7 +276,7 @@ export class Position extends vscode.Position {
     private getWordRightWithRegex(regex: RegExp): Position {
         for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
             let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
-            let newCharacter = _.find(positions, index => index > this.character || currentLine != this.line);
+            let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
                 return new Position(currentLine, newCharacter, this.positionOptions);
@@ -289,7 +289,7 @@ export class Position extends vscode.Position {
     private getCurrentWordEndWithRegex(regex: RegExp) : Position {
         for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
             let positions    = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
-            let newCharacter = _.find(positions, index => index > this.character || currentLine != this.line);
+            let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
                 return new Position(currentLine, newCharacter, this.positionOptions);
