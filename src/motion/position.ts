@@ -254,12 +254,14 @@ export class Position extends vscode.Position {
         let positions = [];
 
         regex.lastIndex = 0;
-        while (true) {
-            let result = regex.exec(currentLine.text);
-            if (result === null) {
-                break;
+        if (currentLine.text) {
+            while (true) {
+                let result = regex.exec(currentLine.text);
+                if (result === null) {
+                    break;
+                }
+                positions.push(result.index);
             }
-            positions.push(result.index);
         }
 
         for (var index = 0; index < positions.length; index++) {
