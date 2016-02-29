@@ -8,9 +8,9 @@ import {Motion} from './../motion/motion';
 
 export class InsertMode extends Mode {
     private activationKeyHandler : { [ key : string] : (motion : Motion) => Promise<{}> } = {
-        "i" : async () => {
+        "i" : async (c) => {
             // insert at cursor
-            return {};
+            return c.move();
         },
         "I" : async (c) => {
             // insert at line beginning
@@ -42,16 +42,15 @@ export class InsertMode extends Mode {
         return key in this.activationKeyHandler;
     }
 
-    handleActivation(key : string) : Promise<{}> {
-        return this.activationKeyHandler[key](this.motion);
+    async handleActivation(key : string): Promise<void> {
+        await this.activationKeyHandler[key](this.motion);
     }
 
-    async handleKeyEvent(key : string) : Promise<{}> {
+    async handleKeyEvent(key : string) : Promise<void> {
         this.keyHistory.push(key);
 
         await TextEditor.insert(this.resolveKeyValue(key));
-
-        return vscode.commands.executeCommand("editor.action.triggerSuggest");
+        await vscode.commands.executeCommand("editor.action.triggerSuggest");
     }
 
     // Some keys have names that are different to their value.

@@ -100,7 +100,6 @@ module LexerFunctions {
                     return lexRange;
             }
         }
-        return null;
     }
 
     function lexCommand(state : Scanner, tokens : Token[]): LexFunction  {

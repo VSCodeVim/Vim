@@ -6,10 +6,11 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import {Motion} from './../motion/motion';
-import {DeleteAction} from './../action/deleteAction';
+import {ModeHandler} from './modeHandler';
+import {DeleteOperator} from './../operator/delete';
 
 export class NormalMode extends Mode {
-    private keyHandler : { [key : string] : (motion : Motion) => Promise<{}>; } = {
+    protected keyHandler : { [key : string] : (motion : Motion) => Promise<{}>; } = {
         ":" : async () => { return showCmdLine(""); },
         "u" : async () => { return vscode.commands.executeCommand("undo"); },
         "ctrl+r" : async () => { return vscode.commands.executeCommand("redo"); },
@@ -38,30 +39,32 @@ export class NormalMode extends Mode {
         "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
         "dw" : async () => { return vscode.commands.executeCommand("deleteWordRight"); },
         "db" : async () => { return vscode.commands.executeCommand("deleteWordLeft"); },
-        "x" : async (m) => { return DeleteAction.Character(m); },
+        "x" : async (m) => { await new DeleteOperator(this._modeHandler).run(m.position, m.position.getRight()); return {}; },
         "X" : async (m) => { return vscode.commands.executeCommand("deleteLeft"); },
         "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
 
-    constructor(motion : Motion) {
+    private _modeHandler: ModeHandler;
+
+    constructor(motion : Motion, modeHandler: ModeHandler) {
         super(ModeName.Normal, motion);
+
+        this._modeHandler = modeHandler;
     }
 
     shouldBeActivated(key : string, currentMode : ModeName) : boolean {
         return (key === 'esc' || key === 'ctrl+[' || key === "ctrl+c");
     }
 
-    async handleActivation(key : string): Promise<{}> {
+    async handleActivation(key : string): Promise<void> {
         this.motion.left().move();
-
-        return this.motion;
     }
 
-    async handleKeyEvent(key : string): Promise<{}>  {
+    async handleKeyEvent(key : string): Promise<void>  {
         this.keyHistory.push(key);
 
         let keyHandled = false;
-        let keysPressed : string;
+        let keysPressed: string;
 
         for (let window = this.keyHistory.length; window > 0; window--) {
             keysPressed = _.takeRight(this.keyHistory, window).join('');
@@ -73,7 +76,7 @@ export class NormalMode extends Mode {
 
         if (keyHandled) {
             this.keyHistory = [];
-            return this.keyHandler[keysPressed](this.motion);
+            await this.keyHandler[keysPressed](this.motion);
         }
     }
 }

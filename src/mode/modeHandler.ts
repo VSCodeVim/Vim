@@ -7,6 +7,7 @@ import {Mode, ModeName} from './mode';
 import {Motion, MotionMode} from './../motion/motion';
 import {NormalMode} from './modeNormal';
 import {InsertMode} from './modeInsert';
+import {VisualMode} from './modeVisual';
 import {Configuration} from '../configuration';
 
 export class ModeHandler implements vscode.Disposable {
@@ -20,25 +21,22 @@ export class ModeHandler implements vscode.Disposable {
 
         this._motion = new Motion(null);
         this._modes = [
-            new NormalMode(this._motion),
+            new NormalMode(this._motion, this),
             new InsertMode(this._motion),
+            new VisualMode(this._motion, this),
         ];
 
         this.setCurrentModeByName(ModeName.Normal);
     }
 
     get currentMode() : Mode {
-        let currentMode = this._modes.find((mode, index) => {
-            return mode.isActive;
-        });
-
-        return currentMode;
+        return this._modes.find(mode => mode.isActive);
     }
 
     setCurrentModeByName(modeName : ModeName) {
-        this._modes.forEach(mode => {
+        for (let mode of this._modes) {
             mode.isActive = (mode.name === modeName);
-        });
+        }
 
         switch (modeName) {
             case ModeName.Insert:
@@ -88,7 +86,7 @@ export class ModeHandler implements vscode.Disposable {
             this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
 
-        this._statusBarItem.text = (text) ? '-- ' + text + ' --' : '';
+        this._statusBarItem.text = text ? `--${text}--` : '';
         this._statusBarItem.show();
     }
 

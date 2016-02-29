@@ -37,6 +37,10 @@ export class Motion implements vscode.Disposable {
         return this._position;
     }
 
+    public set position(val: Position) {
+        this._position = val;
+    }
+
     public constructor(mode: MotionMode) {
         // initialize to current position
         let currentPosition = vscode.window.activeTextEditor.selection.active;
@@ -100,7 +104,24 @@ export class Motion implements vscode.Disposable {
         let selection = new vscode.Selection(this.position, this.position);
         vscode.window.activeTextEditor.selection = selection;
 
-        let range = new vscode.Range(this.position, this.position.translate(0, 1));
+        this.highlightBlock(this.position);
+
+        return this;
+    }
+
+    /**
+     * Allows us to simulate a block cursor by highlighting a 1 character
+     * space at the provided position in a lighter color.
+     */
+    private highlightBlock(start: Position): void {
+        this.highlightRange(start, start.getRight());
+    }
+
+    /**
+     * Highlights the range from start to end in the color of a block cursor.
+     */
+    private highlightRange(start: Position, end: Position): void {
+        let range = new vscode.Range(start, end);
         vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
 
         switch (this._motionMode) {
@@ -114,8 +135,14 @@ export class Motion implements vscode.Disposable {
                 vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
                 break;
         }
+    }
 
-        return this;
+    public select(from: Position, to: Position): void {
+        let selection = new vscode.Selection(from, to);
+
+        vscode.window.activeTextEditor.selection = selection;
+
+        this.highlightBlock(to);
     }
 
     public left() : Motion {
