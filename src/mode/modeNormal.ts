@@ -39,16 +39,16 @@ export class NormalMode extends Mode {
         "X" : async () => { return vscode.commands.executeCommand("deleteLeft"); },
 
         "." : async () => {
-            if (this._lastAction && this._lastAction.length >= 2) {
+            if (this._lastAction && this._lastAction.length >= 3) {
                 const handler = this._lastAction[0];
                 const ranger = this._lastAction[1];
-                await handler(ranger);
+                const argument = this._lastAction[2];
+                await handler(ranger, argument);
             }
             return {};
          },
         "esc": async () => { this.resetState(); return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
-    // TODO: motion => ctX, cfX
 
     private static ValidTextObjectPrefixes = ['i', 'a'];
     private static ValidTextObjectSuffixes = ['w', 's', 'p', '"', '\'', '`', ')', ']', '}', 't', '>'];
@@ -112,8 +112,7 @@ export class NormalMode extends Mode {
             // we can handle this now
             const handler = retval[0];
             const argument = retval[1];
-            const ranger = this.makeRanger(this._motionCount, argument);
-            await handler(this._commandCount, ranger);
+            await handler(this._commandCount);
             this.resetState();
         } else if (retval === true) {
             // handler === true, valid command prefix
@@ -153,7 +152,8 @@ export class NormalMode extends Mode {
             // check if non-motion command
             const handler = this.findInCommandMap(command, argument, this.keyHandler);
             if (handler) {
-                return [async (c, ranger) => {
+                const ranger = this.makeRanger(this._motionCount, argument);
+                return [async (c) => {
                     for (let i = 0; i < (c || 1); i++) {
                         await handler(ranger, argument);
                     }
