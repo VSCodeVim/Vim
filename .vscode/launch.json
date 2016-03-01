@@ -11,7 +11,7 @@
             // "runtimeArgs": ["--harmony-default-parameters", "--harmony-rest-parameters"],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outDir": "out/src",
+			"outDir": "${workspaceRoot}/out/src",
 			"preLaunchTask": "npm"
 		},
 		{
@@ -23,7 +23,7 @@
             // "runtimeArgs": ["--js-flags=\"--harmony --harmony-default-parameters\""],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outDir": "out/test",
+			"outDir": "${workspaceRoot}/out/test",
 			"preLaunchTask": "npm"
 		}
 	]
