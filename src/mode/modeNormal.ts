@@ -26,6 +26,7 @@ export class NormalMode extends Mode {
         "w" : async (c) => { return c.wordRight().move(); },
         "W" : async (c) => { return c.bigWordRight().move(); },
         "e" : async (c) => { return c.goToEndOfCurrentWord().move(); },
+        "E" : async (c) => { return c.goToEndOfCurrentBigWord().move(); },
         "b" : async (c) => { return c.wordLeft().move(); },
         "B" : async (c) => { return c.bigWordLeft().move(); },
         "}" : async (c) => { return c.goToEndOfCurrentParagraph().move(); },
