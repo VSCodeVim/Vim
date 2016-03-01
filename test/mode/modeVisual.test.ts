@@ -25,6 +25,7 @@ suite("Mode Visual", () => {
 
     test("can be activated", () => {
         assert.equal(visualMode.shouldBeActivated("v", ModeName.Normal), true, "v didn't trigger visual mode...");
+        assert.equal(visualMode.shouldBeActivated("v", ModeName.Insert), false, "activated from insert mode");
     });
 
     test("Can handle w", async () => {
