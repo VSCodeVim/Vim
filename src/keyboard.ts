@@ -49,9 +49,14 @@ class KeyMapperEsEsQwerty implements KeyMapper {
     constructor() {
         this.mappings = {
             '>': ':',
-            // '\\': '<', // doesn't really work; in my keyboard there are two keys for \ in US
+            '<': ';',
+            '`': '<',
+            '~': '>',
             ';': 'ñ',
-            "'": "´"
+            ':': 'Ñ',
+            "'": "´",
+            '\\': 'ç',
+            '}': '*'
         };
     }
 
