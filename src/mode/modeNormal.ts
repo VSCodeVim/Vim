@@ -132,19 +132,8 @@ export class NormalMode extends Mode {
             // check if motion
             const motionHandler = this.findInCommandMap(command, argument, this.keyToNewPosition);
             if (motionHandler) {
-                if (command === "G" && this._commandCount > 0) {
-                    // special case G (goto line number)
-                    return [async (c) => {
-                        const lastLine = this.motion.position.getDocumentEnd().line;
-                        const newLine = Math.min(c - 1, lastLine);
-                        return this.motion.moveTo(newLine, Position.getFirstNonBlankCharAtLine(newLine));
-                    }, null];
-                }
                 return [async (c) => {
-                    let position = this.motion.position;
-                    for (let i = 0; i < (c || 1); i++) {
-                        position = await motionHandler(position, argument);
-                    }
+                    const position = await motionHandler(this.motion.position, c, argument);
                     return this.motion.moveTo(position.line, position.character);
                 }, null];
             }
@@ -269,10 +258,7 @@ export class NormalMode extends Mode {
 
         if (handler) {
             return async () => {
-                let position = this.motion.position;
-                for (let i = 0; i < (count || 1); i++) {
-                    position = await handler(position, argument);
-                }
+                const position = await handler(this.motion.position, count, argument);
                 return [this.motion.position, position];
             };
         }
