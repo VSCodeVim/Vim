@@ -32,7 +32,7 @@ export class Position extends vscode.Position {
         return position;
     }
 
-    public getLeft(count : number) : Position {
+    public getLeft(count? : number) : Position {
         count = count || 1;
         let position : Position = this;
         while (count) {
@@ -44,7 +44,7 @@ export class Position extends vscode.Position {
         return position;
     }
 
-    public getRight(count : number) : Position {
+    public getRight(count? : number) : Position {
         count = count || 1;
         let position : Position = this;
         while (count) {
@@ -59,7 +59,7 @@ export class Position extends vscode.Position {
     /**
      * Get the position of the line directly below the current line.
      */
-    public getDown(desiredColumn: number, count : number) : Position {
+    public getDown(desiredColumn : number, count? : number) : Position {
         count = count || 1;
         let position : Position = this;
         while (count) {
@@ -77,8 +77,8 @@ export class Position extends vscode.Position {
     /**
      * Get the position of the line directly above the current line.
      */
-    public getUp(desiredColumn: number, count : number) : Position {
-                count = count || 1;
+    public getUp(desiredColumn : number, count? : number) : Position {
+        count = count || 1;
         let position : Position = this;
         while (count) {
             if (position.getDocumentBegin().line !== position.line) {
@@ -92,45 +92,48 @@ export class Position extends vscode.Position {
         return position;
     }
 
-    public getWordLeft(count : number) : Position {
-        return this.getWordLeftWithRegex(this._nonWordCharRegex);
+    public getWordLeft(count? : number) : Position {
+        return this.getWordLeftWithRegex(this._nonWordCharRegex, count || 1);
     }
 
-    public getBigWordLeft(count : number) : Position {
-        return this.getWordLeftWithRegex(this._nonBigWordCharRegex);
+    public getBigWordLeft(count? : number) : Position {
+        return this.getWordLeftWithRegex(this._nonBigWordCharRegex, count || 1);
     }
 
-    public getWordRight(count : number) : Position {
-        return this.getWordRightWithRegex(this._nonWordCharRegex);
+    public getWordRight(count? : number) : Position {
+        return this.getWordRightWithRegex(this._nonWordCharRegex, count || 1);
     }
 
-    public getBigWordRight(count : number) : Position {
-        return this.getWordRightWithRegex(this._nonBigWordCharRegex);
+    public getBigWordRight(count? : number) : Position {
+        return this.getWordRightWithRegex(this._nonBigWordCharRegex, count || 1);
     }
 
-    public getCurrentWordEnd(count : number) : Position {
-        return this.getCurrentWordEndWithRegex(this._nonWordCharRegex);
+    public getCurrentWordEnd(count? : number) : Position {
+        return this.getCurrentWordEndWithRegex(this._nonWordCharRegex, count || 1);
     }
 
-    public getCurrentBigWordEnd(ccount : number) : Position {
-        return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex);
+    public getCurrentBigWordEnd(count? : number) : Position {
+        return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex, count || 1);
     }
 
     /**
      * Get the end of the current paragraph.
      */
-    public getCurrentParagraphEnd(count : number): Position {
+    public getCurrentParagraphEnd(count? : number) : Position {
         count = count || 1;
         let pos: Position = this;
 
-        // If we're not in a paragraph yet, go down until we are.
-        while (TextEditor.getLineAt(pos).text === "" && !TextEditor.isLastLine(pos)) {
-            pos = pos.getDown(0);
-        }
+        while (count) {
+            // If we're not in a paragraph yet, go down until we are.
+            while (TextEditor.getLineAt(pos).text === "" && !TextEditor.isLastLine(pos)) {
+                pos = pos.getDown(0);
+            }
 
-        // Go until we're outside of the paragraph, or at the end of the document.
-        while (TextEditor.getLineAt(pos).text !== "" && pos.line < TextEditor.getLineCount() - 1) {
-            pos = pos.getDown(0);
+            // Go until we're outside of the paragraph, or at the end of the document.
+            while (TextEditor.getLineAt(pos).text !== "" && pos.line < TextEditor.getLineCount() - 1) {
+                pos = pos.getDown(0);
+            }
+            count --;
         }
 
         return pos.getLineEnd();
@@ -139,17 +142,21 @@ export class Position extends vscode.Position {
     /**
      * Get the beginning of the current paragraph.
      */
-    public getCurrentParagraphBeginning(count : number): Position {
+    public getCurrentParagraphBeginning(count? : number) : Position {
+        count = count || 1;
         let pos: Position = this;
 
-        // If we're not in a paragraph yet, go up until we are.
-        while (TextEditor.getLineAt(pos).text === "" && !TextEditor.isFirstLine(pos)) {
-            pos = pos.getUp(0);
-        }
+        while (count) {
+            // If we're not in a paragraph yet, go up until we are.
+            while (TextEditor.getLineAt(pos).text === "" && !TextEditor.isFirstLine(pos)) {
+                pos = pos.getUp(0);
+            }
 
-        // Go until we're outside of the paragraph, or at the beginning of the document.
-        while (pos.line > 0 && TextEditor.getLineAt(pos).text !== "") {
-            pos = pos.getUp(0);
+            // Go until we're outside of the paragraph, or at the beginning of the document.
+            while (pos.line > 0 && TextEditor.getLineAt(pos).text !== "") {
+                pos = pos.getUp(0);
+            }
+            count--;
         }
 
         return pos.getLineBegin();
@@ -317,39 +324,48 @@ export class Position extends vscode.Position {
         return positions;
     }
 
-    private getWordLeftWithRegex(regex: RegExp) : Position {
+    private getWordLeftWithRegex(regex : RegExp, count : number) : Position {
+        if (!count) {
+            return this;
+        }
         for (let currentLine = this.line; currentLine >= 0; currentLine--) {
             let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
             let newCharacter = _.find(positions.reverse(), index => index < this.character || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
-                return new Position(currentLine, newCharacter, this.positionOptions);
+                return new Position(currentLine, newCharacter, this.positionOptions).getWordLeftWithRegex(regex, count - 1);
             }
         }
 
         return new Position(0, 0, this.positionOptions).getLineBegin();
     }
 
-    private getWordRightWithRegex(regex: RegExp): Position {
+    private getWordRightWithRegex(regex : RegExp, count : number) : Position {
+        if (!count) {
+            return this;
+        }
         for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
             let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
             let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
-                return new Position(currentLine, newCharacter, this.positionOptions);
+                return new Position(currentLine, newCharacter, this.positionOptions).getWordRightWithRegex(regex, count - 1);
             }
         }
 
         return new Position(TextEditor.getLineCount() - 1, 0, this.positionOptions).getLineEnd();
     }
 
-    private getCurrentWordEndWithRegex(regex: RegExp) : Position {
+    private getCurrentWordEndWithRegex(regex : RegExp, count : number) : Position {
+        if (!count) {
+            return this;
+        }
         for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
             let positions    = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
             let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
-                return new Position(currentLine, newCharacter, this.positionOptions);
+                return new Position(currentLine, newCharacter, this.positionOptions).getCurrentWordEndWithRegex(regex, count - 1);
             }
         }
 
