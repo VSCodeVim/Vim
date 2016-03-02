@@ -56,7 +56,7 @@ export abstract class Mode {
             return new Position(0, Position.getFirstNonBlankCharAtLine(0), null); },
         "G" : async (p, c) => {
             const lastLine = p.getDocumentEnd().line;
-            if (c == 0) {
+            if (c === 0) {
                 return new Position(lastLine, Position.getFirstNonBlankCharAtLine(lastLine), null);
             } else {
                 const newLine = Math.min(c - 1, lastLine);
@@ -80,7 +80,7 @@ export abstract class Mode {
         "t{argument}" : async (p, c, argument) => { return p.tilForwards(argument, c); },
         "T{argument}" : async (p, c, argument) => { return p.tilBackwards(argument, c); },
         "f{argument}" : async (p, c, argument) => { return p.findForwards(argument, c); },
-        "F{argument}" : async (p, c, argument) => { return p.findBackwards(argument, c); },
+        "F{argument}" : async (p, c, argument) => { return p.findBackwards(argument, c); }
     };
 
     abstract shouldBeActivated(key : string, currentMode : ModeName) : boolean;

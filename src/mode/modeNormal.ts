@@ -9,7 +9,6 @@ import {Motion} from './../motion/motion';
 import {ModeHandler} from './modeHandler';
 import {ChangeOperator} from './../operator/change';
 import {DeleteOperator} from './../operator/delete';
-import {Position} from './../motion/position';
 
 enum ParserState {
     CountPending,
@@ -111,7 +110,6 @@ export class NormalMode extends Mode {
         if (typeof retval[0] === 'function') {
             // we can handle this now
             const handler = retval[0];
-            const argument = retval[1];
             await handler(this._commandCount);
             this.resetState();
         } else if (retval === true) {
