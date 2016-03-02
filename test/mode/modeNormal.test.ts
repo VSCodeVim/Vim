@@ -31,6 +31,8 @@ suite("Mode Normal", () => {
             let key = activationKeys[i];
             assert.equal(modeNormal.shouldBeActivated(key, ModeName.Insert), true, key);
         }
+        
+        assert.equal(modeNormal.shouldBeActivated("v", ModeName.Visual), true, "couldn't deactivate from visual with v");
     });
 
     test("Can handle 'x'", async () => {

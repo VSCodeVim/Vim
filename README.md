@@ -79,7 +79,7 @@ Status              | Key                       | Description
 :white_check_mark:  | w                         | words forward
 :white_check_mark:  | W                         | N blank-separated WORDS forward
 :white_check_mark:  | e                         | forward to the end of the word
-                    | E                         | forward to the end of the Nth blank-separated WORD
+:white_check_mark:  | E                         | forward to the end of the Nth blank-separated WORD
 :white_check_mark:  | b                         | words backward
 :white_check_mark:  | B                         | N blank-separated WORDS backward
                     | ge                        | backward to the end of the Nth word

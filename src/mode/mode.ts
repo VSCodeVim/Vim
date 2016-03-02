@@ -69,6 +69,7 @@ export abstract class Mode {
         "e" : async (p, c) => { return p.getCurrentWordEnd(c); },
         "b" : async (p, c) => { return p.getWordLeft(c); },
         "W" : async (p, c) => { return p.getBigWordRight(c); },
+        "E" : async (p, c) => { return p.getCurrentBigWordEnd(c); },
         "B" : async (p, c) => { return p.getBigWordLeft(c); },
         "}" : async (p, c) => { return p.getCurrentParagraphEnd(c); },
         "{" : async (p, c) => { return p.getCurrentParagraphBeginning(c); },

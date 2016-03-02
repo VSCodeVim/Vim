@@ -12,8 +12,6 @@ export enum PositionOptions {
 export class Position extends vscode.Position {
     private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
     private static NonBigWordCharacters = "";
-    private static WordDelimiters: string[] = ["(", ")", "[", "]", "{", "}", ":", " ",
-         "=", "<", ">", "|", "/", "'", "\"", "~", "`", "@", "*", "+", "-", "?", ",", ".", ";"];
 
     private _nonWordCharRegex : RegExp;
     private _nonBigWordCharRegex : RegExp;
@@ -110,26 +108,12 @@ export class Position extends vscode.Position {
         return this.getWordRightWithRegex(this._nonBigWordCharRegex);
     }
 
-    public getCurrentWordEnd(count : number): Position {
-        if (!TextEditor.isLastLine(this) && this.character === this.getLineEnd().character) {
-            // go to next line
-            let line = TextEditor.getLineAt(this.translate(1));
-            return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
-        }
+    public getCurrentWordEnd(count : number) : Position {
+        return this.getCurrentWordEndWithRegex(this._nonWordCharRegex);
+    }
 
-        let line = TextEditor.getLineAt(this);
-
-        if (Position.WordDelimiters.indexOf(line.text.charAt(this.character)) !== -1) {
-            return new Position(this.line, this.character + 1, this.positionOptions);
-        }
-
-        for (var index = this.character; index < line.text.length; index++) {
-            if (Position.WordDelimiters.indexOf(line.text.charAt(index)) !== -1) {
-                return new Position(this.line, index, this.positionOptions);
-            }
-        }
-
-        return this.getLineEnd();
+    public getCurrentBigWordEnd(ccount : number) : Position {
+        return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex);
     }
 
     /**
@@ -290,82 +274,85 @@ export class Position extends vscode.Position {
 
     private makeWordRegex(characterSet: string) : RegExp {
         let escaped = characterSet && _.escapeRegExp(characterSet);
-        let segments = ["(^[\t ]*$)"];
+        let segments = [];
         segments.push(`([^\\s${escaped}]+)`);
         segments.push(`[${escaped}]+`);
-        return new RegExp(segments.join("|"), "g");
+        segments.push(`$^`);
+        let result = new RegExp(segments.join("|"), "g");
+
+        return result;
+    }
+
+    private getAllPositions(line: string, regex: RegExp): number[] {
+        let positions: number[] = [];
+        let result = regex.exec(line);
+
+        while (result) {
+            positions.push(result.index);
+
+             // Handles the case where an empty string match causes lastIndex not to advance,
+             // which gets us in an infinite loop.
+            if (result.index === regex.lastIndex) { regex.lastIndex++; }
+            result = regex.exec(line);
+        }
+
+        return positions;
+    }
+
+    private getAllEndPositions(line: string, regex: RegExp): number[] {
+        let positions: number[] = [];
+        let result = regex.exec(line);
+
+        while (result) {
+            if (result[0].length) {
+                positions.push(result.index + result[0].length - 1);
+            }
+
+             // Handles the case where an empty string match causes lastIndex not to advance,
+             // which gets us in an infinite loop.
+            if (result.index === regex.lastIndex) { regex.lastIndex++; }
+            result = regex.exec(line);
+        }
+
+        return positions;
     }
 
     private getWordLeftWithRegex(regex: RegExp) : Position {
-        var workingPosition = new Position(this.line, this.character, this.positionOptions);
-        var currentLine = TextEditor.getLineAt(this);
-        var currentCharacter = this.character;
+        for (let currentLine = this.line; currentLine >= 0; currentLine--) {
+            let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+            let newCharacter = _.find(positions.reverse(), index => index < this.character || currentLine !== this.line);
 
-        if (!TextEditor.isFirstLine(this) && this.character <= currentLine.firstNonWhitespaceCharacterIndex) {
-            // perform search from very end of previous line (after last character)
-            workingPosition = new Position(this.line - 1, this.character, this.positionOptions);
-            currentLine = TextEditor.getLineAt(workingPosition);
-            currentCharacter = workingPosition.getLineEnd().character + 1;
-        }
-
-        let positions = [];
-
-        regex.lastIndex = 0;
-        while (true) {
-            let result = regex.exec(currentLine.text);
-            if (result === null) {
-                break;
-            }
-            positions.push(result.index);
-        }
-
-        for (var index = 0; index < positions.length; index++) {
-            let position = positions[positions.length - 1 - index];
-            if (currentCharacter > position) {
-                return new Position(workingPosition.line, position, workingPosition.positionOptions);
+            if (newCharacter !== undefined) {
+                return new Position(currentLine, newCharacter, this.positionOptions);
             }
         }
 
-        if (this.line === 0) {
-            return this.getLineBegin();
-        } else {
-            let prevLine = new Position(this.line - 1, 0, this.positionOptions);
-            return prevLine.getLineEnd();
-        }
+        return new Position(0, 0, this.positionOptions).getLineBegin();
     }
 
-    private getWordRightWithRegex(regex: RegExp) : Position {
-        if (!TextEditor.isLastLine(this) && this.character >= this.getLineEnd().character) {
-            // go to next line
-            let line = TextEditor.getLineAt(this.translate(1));
-            return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
-        }
+    private getWordRightWithRegex(regex: RegExp): Position {
+        for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
+            let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+            let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
 
-        let currentLine = TextEditor.getLineAt(this);
-        let positions = [];
-
-        regex.lastIndex = 0;
-        while (true) {
-            let result = regex.exec(currentLine.text);
-            if (result === null) {
-                break;
-            }
-            positions.push(result.index);
-        }
-
-        for (var index = 0; index < positions.length; index++) {
-            let position = positions[index];
-            if (this.character < position) {
-                return new Position(this.line, position, this.positionOptions);
+            if (newCharacter !== undefined) {
+                return new Position(currentLine, newCharacter, this.positionOptions);
             }
         }
 
-        if (this.line === this.getDocumentEnd().line) {
-            return this.getLineEnd();
-        } else {
-            // go to next line
-            let line = TextEditor.getLineAt(this.translate(1));
-            return new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex, this.positionOptions);
+        return new Position(TextEditor.getLineCount() - 1, 0, this.positionOptions).getLineEnd();
+    }
+
+    private getCurrentWordEndWithRegex(regex: RegExp) : Position {
+        for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
+            let positions    = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+            let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
+
+            if (newCharacter !== undefined) {
+                return new Position(currentLine, newCharacter, this.positionOptions);
+            }
         }
+
+        return new Position(TextEditor.getLineCount() - 1, 0, this.positionOptions).getLineEnd();
     }
 }

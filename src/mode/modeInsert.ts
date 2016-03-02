@@ -39,7 +39,7 @@ export class InsertMode extends Mode {
     }
 
     shouldBeActivated(key : string, currentMode : ModeName) : boolean {
-        return key in this.activationKeyHandler;
+        return key in this.activationKeyHandler && currentMode === ModeName.Normal;
     }
 
     async handleActivation(key : string): Promise<void> {
