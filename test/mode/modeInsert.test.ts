@@ -25,8 +25,10 @@ suite("Mode Insert", () => {
         let activationKeys = ['i', 'I', 'o', 'O', 'a', 'A'];
 
         for (let key of activationKeys) {
-            assert.equal(modeInsert.shouldBeActivated(key, ModeName.Insert), true, key);
+            assert.equal(modeInsert.shouldBeActivated(key, ModeName.Normal), true, key);
         }
+        
+        assert.equal(modeInsert.shouldBeActivated("i", ModeName.Visual), false, "can be activated from visual");
     });
 
     test("can handle key events", async () => {

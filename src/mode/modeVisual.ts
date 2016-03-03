@@ -40,7 +40,7 @@ export class VisualMode extends Mode {
     }
 
     shouldBeActivated(key: string, currentMode: ModeName): boolean {
-        return key === "v";
+        return key === "v" && currentMode === ModeName.Normal;
     }
 
     async handleActivation(key: string): Promise<void> {
