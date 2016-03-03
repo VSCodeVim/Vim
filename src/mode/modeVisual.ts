@@ -22,32 +22,42 @@ export class VisualMode extends Mode {
     private _selectionStop : Position;
     private _modeHandler   : ModeHandler;
 
-    private _keysToOperators: { [key: string]: Operator };
+    protected commands: { [key: string]: (ranger, argument : string) => Promise<{}>; };
 
     constructor(motion: Motion, modeHandler: ModeHandler) {
         super(ModeName.Visual, motion);
 
         this._modeHandler = modeHandler;
-        this._keysToOperators = {
+        this.commands = {
             // TODO: use DeleteOperator.key()
 
             // TODO: Don't pass in mode handler to DeleteOperators,
             // simply allow the operators to say what mode they transition into.
-            'd': new DeleteOperator(modeHandler),
-            'x': new DeleteOperator(modeHandler),
-            'c': new ChangeOperator(modeHandler)
+            "d" : async (ranger) => {
+                const range = await ranger();
+                await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
+                return {};
+            },
+            "x" : async (ranger) => {
+                const range = await ranger();
+                await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
+                return {};
+            },
+            "c" : async (ranger) => {
+                const range = await ranger();
+                await new ChangeOperator(this._modeHandler).run(range[0], range[1]);
+                return {};
+            },
+            "esc" : async () => { this._modeHandler.setCurrentModeByName(ModeName.Normal); return {}; }
         };
     }
 
-    shouldBeActivated(key: string, currentMode: ModeName): boolean {
-        return key === "v" && currentMode === ModeName.Normal;
-    }
-
-    async handleActivation(key: string): Promise<void> {
+    handleActivation() {
         this._selectionStart = this.motion.position;
         this._selectionStop  = this._selectionStart;
 
         this.motion.select(this._selectionStart, this._selectionStop);
+        return;
     }
 
     handleDeactivation(): void {
@@ -56,29 +66,12 @@ export class VisualMode extends Mode {
         this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
     }
 
-    /**
-     * TODO:
-     *
-     * Eventually, the following functions should be moved into a unified
-     * key handler and dispatcher thing.
-     */
+    makeMotionHandler(motion, argument) {
+        return async (c) => {
 
-    private async _handleMotion(): Promise<boolean> {
-        let keyHandled = false;
-        let keysPressed: string;
+            this._selectionStop = await motion(this._selectionStop, c, argument);
 
-        for (let window = this.keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this.keyHistory, window).join('');
-            if (this.keyToNewPosition[keysPressed] !== undefined) {
-                keyHandled = true;
-                break;
-            }
-        }
-
-        if (keyHandled) {
-            this._selectionStop = await this.keyToNewPosition[keysPressed](this._selectionStop);
-
-            this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
+            const position = this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
 
             /**
              * Always select the letter that we started visual mode on, no matter
@@ -99,42 +92,20 @@ export class VisualMode extends Mode {
                 this.motion.select(this._selectionStart.getRight(), this._selectionStop);
             }
 
-            this.keyHistory = [];
-        }
-
-        return keyHandled;
+            return position;
+        };
     }
 
-    private async _handleOperator(): Promise<boolean> {
-        let keysPressed: string;
-        let operator: Operator;
-
-        for (let window = this.keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this.keyHistory, window).join('');
-            if (this._keysToOperators[keysPressed] !== undefined) {
-                operator = this._keysToOperators[keysPressed];
-                break;
-            }
-        }
-
-        if (operator) {
-            if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
-                await operator.run(this._selectionStart, this._selectionStop.getRight());
-            } else {
-                await operator.run(this._selectionStart.getRight(), this._selectionStop);
-            }
-        }
-
-        return !!operator;
-    }
-
-    async handleKeyEvent(key: string): Promise<void> {
-        this.keyHistory.push(key);
-
-        const wasMotion = await this._handleMotion();
-
-        if (!wasMotion) {
-            await this._handleOperator();
-        }
+    makeCommandHandler(command, ranger, argument) {
+        return async (c) => {
+            const ranger = () => {
+                if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
+                    return [this._selectionStart, this._selectionStop.getRight()];
+                } else {
+                    return [this._selectionStart.getRight(), this._selectionStop];
+                }
+            };
+            await command(ranger);
+        };
     }
 }

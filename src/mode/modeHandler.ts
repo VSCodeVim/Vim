@@ -22,7 +22,7 @@ export class ModeHandler implements vscode.Disposable {
         this._motion = new Motion(null);
         this._modes = [
             new NormalMode(this._motion, this),
-            new InsertMode(this._motion),
+            new InsertMode(this._motion, this),
             new VisualMode(this._motion, this),
         ];
 
@@ -34,8 +34,16 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     setCurrentModeByName(modeName : ModeName) {
+        if (this.currentMode) {
+            this.currentMode.handleDeactivation();
+        }
+
+        let nextMode : Mode;
         for (let mode of this._modes) {
             mode.isActive = (mode.name === modeName);
+            if (mode.isActive) {
+                nextMode = mode;
+            }
         }
 
         switch (modeName) {
@@ -50,6 +58,8 @@ export class ModeHandler implements vscode.Disposable {
 
         const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText.toUpperCase());
+
+        nextMode.handleActivation();
     }
 
     handleKeyEvent(key : string) : void {
@@ -58,27 +68,7 @@ export class ModeHandler implements vscode.Disposable {
         // https://github.com/Microsoft/vscode/issues/713
         key = this._configuration.keyboardLayout.translate(key);
 
-        let currentModeName = this.currentMode.name;
-        let nextMode : Mode;
-        let inactiveModes = _.filter(this._modes, (m) => !m.isActive);
-
-        for (let mode of inactiveModes) {
-          if (mode.shouldBeActivated(key, currentModeName)) {
-            if (nextMode) {
-              console.error("More that one mode matched in handleKeyEvent!");
-            }
-
-            nextMode = mode;
-          }
-        }
-
-        if (nextMode) {
-            this.currentMode.handleDeactivation();
-            this.setCurrentModeByName(nextMode.name);
-            nextMode.handleActivation(key);
-        } else {
-            this.currentMode.handleKeyEvent(key);
-        }
+        this.currentMode.handleKeyEvent(key);
     }
 
     private setupStatusBarItem(text : string) : void {

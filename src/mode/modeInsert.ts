@@ -5,52 +5,48 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {TextEditor} from './../textEditor';
 import {Motion} from './../motion/motion';
+import { ModeHandler } from './modeHandler.ts';
+import { Position } from './../motion/position';
 
 export class InsertMode extends Mode {
-    private activationKeyHandler : { [ key : string] : (motion : Motion) => Promise<{}> } = {
-        "i" : async (c) => {
-            // insert at cursor
-            return c.move();
-        },
-        "I" : async (c) => {
-            // insert at line beginning
-            return c.lineBegin().move();
-        },
-        "a" : async (c) => {
-            // append after the cursor
-            return c.right().move();
-        },
-        "A" : async (c) => {
-            // append at the end of the line
-           return c.lineEnd().move();
-        },
-        "o" : async () => {
-            // open blank line below current line
-           return await vscode.commands.executeCommand("editor.action.insertLineAfter");
-        },
-        "O" : async () => {
-            // open blank line above current line
-           return await vscode.commands.executeCommand("editor.action.insertLineBefore");
-        }
+    private _modeHandler   : ModeHandler;
+
+    protected motions: { [key: string]: (position: Position, count: number, argument: string) => Promise<Position>; } = { };
+    protected commands : { [key : string] : (ranger, argument : string) => Promise<{}>; } = {
+        "esc" : async () => { this._modeHandler.setCurrentModeByName(ModeName.Normal); return {}; }
     };
 
-    constructor(motion : Motion) {
+    constructor(motion : Motion, modeHandler: ModeHandler) {
         super(ModeName.Insert, motion);
+        this._modeHandler = modeHandler;
     }
 
-    shouldBeActivated(key : string, currentMode : ModeName) : boolean {
-        return key in this.activationKeyHandler && currentMode === ModeName.Normal;
+    handleActivation() {
+        return;
     }
 
-    async handleActivation(key : string): Promise<void> {
-        await this.activationKeyHandler[key](this.motion);
-    }
-
-    async handleKeyEvent(key : string) : Promise<void> {
+    async handleKeyEvent(key : string) : Promise<boolean> {
         this.keyHistory.push(key);
 
-        await TextEditor.insert(this.resolveKeyValue(key));
-        await vscode.commands.executeCommand("editor.action.triggerSuggest");
+        const retval = this.findCommandHandler();
+        if (typeof retval[0] === 'function') {
+            // we can handle this now
+            const handler = retval[0];
+            await handler(0);
+            this.resetState();
+            return true;
+        } else if (retval === true) {
+            // handler === true, valid command prefix
+            // can't do anything for now
+            return true;
+        } else {
+            // handler === false, not valid (we'll insert the key), reset state
+            await TextEditor.insert(this.resolveKeyValue(key));
+            await vscode.commands.executeCommand("editor.action.triggerSuggest");
+
+            this.resetState();
+            return true;
+        }
     }
 
     // Some keys have names that are different to their value.

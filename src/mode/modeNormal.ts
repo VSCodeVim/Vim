@@ -1,6 +1,5 @@
 "use strict";
 
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import {ModeName, Mode} from './mode';
@@ -10,14 +9,8 @@ import {ModeHandler} from './modeHandler';
 import {ChangeOperator} from './../operator/change';
 import {DeleteOperator} from './../operator/delete';
 
-enum ParserState {
-    CountPending,
-    CommandPending,
-    OperatorPending  // expects number (for count), or non-number for motion/text-object/argument
-}
-
 export class NormalMode extends Mode {
-    protected keyHandler : { [key : string] : (ranger, argument : string) => Promise<{}>; } = {
+    protected commands : { [key : string] : (ranger, argument : string) => Promise<{}>; } = {
         ":" : async () => { return showCmdLine(""); },
         "u" : async () => { return vscode.commands.executeCommand("undo"); },
         "ctrl+r" : async () => { return vscode.commands.executeCommand("redo"); },
@@ -46,221 +39,76 @@ export class NormalMode extends Mode {
             }
             return {};
          },
-        "esc": async () => { this.resetState(); return vscode.commands.executeCommand("workbench.action.closeMessages"); }
-    };
+        "esc" : async () => { this.resetState(); return vscode.commands.executeCommand("workbench.action.closeMessages"); },
 
-    private static ValidTextObjectPrefixes = ['i', 'a'];
-    private static ValidTextObjectSuffixes = ['w', 's', 'p', '"', '\'', '`', ')', ']', '}', 't', '>'];
+        "v" : async () => {
+            this._modeHandler.setCurrentModeByName(ModeName.Visual);
+            return {};
+        },
+        "i" : async () => {
+            // insert at cursor
+            this._modeHandler.setCurrentModeByName(ModeName.Insert);
+            return this.motion.move();
+        },
+        "I" : async () => {
+            // insert at line beginning
+            this._modeHandler.setCurrentModeByName(ModeName.Insert);
+            return this.motion.lineBegin().move();
+        },
+        "a" : async () => {
+            // append after the cursor
+            this._modeHandler.setCurrentModeByName(ModeName.Insert);
+            return this.motion.right().move();
+        },
+        "A" : async () => {
+            // append at the end of the line
+            this._modeHandler.setCurrentModeByName(ModeName.Insert);
+            return this.motion.lineEnd().move();
+        },
+        "o" : async () => {
+            // open blank line below current line
+            this._modeHandler.setCurrentModeByName(ModeName.Insert);
+            return await vscode.commands.executeCommand("editor.action.insertLineAfter");
+        },
+        "O" : async () => {
+            // open blank line above current line
+            this._modeHandler.setCurrentModeByName(ModeName.Insert);
+            return await vscode.commands.executeCommand("editor.action.insertLineBefore");
+        }
+    };
 
     private _modeHandler: ModeHandler;
 
-    private _state: ParserState;
-    private _commandCount;
-    private _motionCount;
     private _lastAction = null;
 
     constructor(motion : Motion, modeHandler: ModeHandler) {
         super(ModeName.Normal, motion);
 
         this._modeHandler = modeHandler;
-        this.resetState();
     }
 
-    shouldBeActivated(key : string, currentMode : ModeName) : boolean {
-        return (key === 'esc' || key === 'ctrl+[' || key === "ctrl+c" || (key === "v" && currentMode === ModeName.Visual));
-    }
-
-    async handleActivation(key : string): Promise<void> {
+    async handleActivation(): Promise<void> {
         this.motion.left().move();
         this.resetState();
     }
 
-    async handleKeyEvent(key : string): Promise<void> {
-        if (this._state === ParserState.CountPending) {
-            if (key.match(/^\d$/)) {
-                this._commandCount = this._commandCount * 10 + parseInt(key, 10);
-                return;
+    makeMotionHandler(motion, argument) {
+        return async (c) => {
+            const position = await motion(this.motion.position, c, argument);
+            return this.motion.moveTo(position.line, position.character);
+        };
+    }
+
+    makeCommandHandler(command, ranger, argument) {
+        return async (c) => {
+            for (let i = 0; i < (c || 1); i++) {
+                await command(ranger, argument);
             }
-            this._state = ParserState.CommandPending;
-            return this.handleKeyEvent(key);
-        } else if (this._state === ParserState.CommandPending) {
-            this.keyHistory.push(key);
-            this._state = ParserState.OperatorPending;
-            return this.tryToHandleCommand();
-        } else if (this._state === ParserState.OperatorPending) {
-            if (key.match(/^\d$/)) {
-                this._motionCount = this._motionCount * 10 + parseInt(key, 10);
-                return;
+            if (command !== ".") {
+                // save for ".", but not "."
+                this._lastAction = [command, ranger, argument];
             }
-            this.keyHistory.push(key);
-            return this.tryToHandleCommand();
-        }
+        };
     }
 
-    private resetState() {
-        this._state = ParserState.CountPending;
-        this._commandCount = 0;
-        this._motionCount = 0;
-        this.keyHistory = [];
-    }
-
-    private async tryToHandleCommand() : Promise<void> {
-        // handler will be a function, true or false
-        const retval = this.findCommandHandler();
-        if (typeof retval[0] === 'function') {
-            // we can handle this now
-            const handler = retval[0];
-            await handler(this._commandCount);
-            this.resetState();
-        } else if (retval === true) {
-            // handler === true, valid command prefix
-            // can't do anything for now
-        } else {
-            // handler === false, not valid, reset state
-            this.resetState();
-        }
-    }
-
-    private findCommandHandler() : any {
-        // see if it fits a command now, returns handler if found
-        for (let window = this.keyHistory.length; window > 0; window--) {
-            const command = _.take(this.keyHistory, window).join('');
-            const argument = _.takeRight(this.keyHistory, this.keyHistory.length - window).join('');
-
-            // check if motion
-            const motionHandler = this.findInCommandMap(command, argument, this.keyToNewPosition);
-            if (motionHandler) {
-                return [async (c) => {
-                    const position = await motionHandler(this.motion.position, c, argument);
-                    return this.motion.moveTo(position.line, position.character);
-                }, null];
-            }
-
-            // check if non-motion command
-            const handler = this.findInCommandMap(command, argument, this.keyHandler);
-            if (handler) {
-                const ranger = this.makeRanger(this._motionCount, argument);
-                return [async (c) => {
-                    for (let i = 0; i < (c || 1); i++) {
-                        await handler(ranger, argument);
-                    }
-                    if (command !== ".") {
-                        // save for ".", but not "."
-                        this._lastAction = [handler, ranger, argument];
-                    }
-                }, argument];
-            }
-        }
-
-        // no handler found yet, see if it is a valid prefix
-        for (let window = this.keyHistory.length; window > 0; window--) {
-            const command = _.take(this.keyHistory, window).join('');
-            const argument = _.takeRight(this.keyHistory, this.keyHistory.length - window).join('');
-
-            if (this.isValidPrefixInCommandMap(command, argument, this.keyToNewPosition) ||
-                this.isValidPrefixInCommandMap(command, argument, this.keyHandler)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private findInCommandMap(command, argument, map) : any {
-        if (argument.length === 0) {
-            const handler = map[command];
-            if (handler) {
-                return handler;
-            }
-        } else {
-            let keys = command + '{argument}';
-            let handler = map[keys];
-            if (handler) {
-                return handler;
-            }
-
-            keys = command + '{rangeable}';
-            handler = map[keys];
-            if (handler) {
-                if (this.isValidMotion(argument)) {
-                    return handler;
-                } else if (this.isValidTextObject(argument)) {
-                    return handler;
-                }
-            }
-            return null;
-        }
-    }
-
-    private isValidPrefixInCommandMap(command, argument, map) : any {
-        if (argument.length === 0) {
-           return !!_.find(_.keys(map), key => _.startsWith(key, command) );
-        } else {
-            // no need to test command+{argument} because argument is only single key
-            // see if it is a valid motion/text object prefix
-            const keys = command + '{rangeable}';
-            return map[keys] && (this.isValidMotionPrefix(argument) || this.isValidTextObjectPrefix(argument));
-        }
-    }
-
-    private isValidMotion(input : string) : boolean {
-        for (let window = input.length; window > 0; window--) {
-            const command = input.slice(0, window);
-            const argument = input.slice(window);
-
-            const handler = this.findInCommandMap(command, argument, this.keyToNewPosition);
-            if (handler) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private isValidTextObject(argument : string) : boolean {
-        const prefix = argument.slice(0, 1);
-        const suffix = argument.slice(1);
-        return NormalMode.ValidTextObjectPrefixes.indexOf(prefix) > -1 &&
-               NormalMode.ValidTextObjectSuffixes.indexOf(suffix) > -1;
-    }
-
-    private isValidMotionPrefix(input: string) : boolean {
-        return this.isValidPrefixInCommandMap(input, '', this.keyToNewPosition);
-    }
-
-    private isValidTextObjectPrefix(argument : string) : boolean {
-        return NormalMode.ValidTextObjectPrefixes.indexOf(argument) > -1;
-    }
-
-    // input can be motion or text object, returns a range maker
-    private makeRanger(count, input) : any {
-        if (!input) {
-            return () => [this.motion.position, this.motion.position];
-        }
-
-        if (this.isValidTextObject(input)) {
-            // TODO make a text object ranger
-            return () => [this.motion.position, this.motion.position];
-        }
-
-        // make motion ranger
-        let command, argument, handler;
-        for (let window = input.length; window > 0; window--) {
-            command = input.slice(0, window);
-            argument = input.slice(window);
-
-            handler = this.findInCommandMap(command, argument, this.keyToNewPosition);
-            if (handler) {
-                break;
-            }
-        }
-
-        if (handler) {
-            return async () => {
-                const position = await handler(this.motion.position, count, argument);
-                return [this.motion.position, position];
-            };
-        }
-
-        return () => [this.motion.position, this.motion.position];
-    }
 }
