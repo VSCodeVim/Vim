@@ -27,7 +27,7 @@ suite("Mode Insert", () => {
         for (let key of activationKeys) {
             assert.equal(modeInsert.shouldBeActivated(key, ModeName.Normal), true, key);
         }
-        
+
         assert.equal(modeInsert.shouldBeActivated("i", ModeName.Visual), false, "can be activated from visual");
     });
 

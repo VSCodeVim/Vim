@@ -7,7 +7,8 @@ import * as util from "../util";
 // Shows the vim command line.
 export async function showCmdLine(initialText: string): Promise<{}> {
     if (!vscode.window.activeTextEditor) {
-        return util.showInfo("No active document.");
+        console.log("No active document.");
+        return;
     }
 
     const options : vscode.InputBoxOptions = {
@@ -18,38 +19,23 @@ export async function showCmdLine(initialText: string): Promise<{}> {
     try {
         runCmdLine(await vscode.window.showInputBox(options));
     } catch (e) {
-        vscode.window.showErrorMessage(e.toString());
-
-        return;
+        return util.showError(e.toString());
     }
 }
 
-function runCmdLine(s : string) : void {
-    if (!(s && s.trim())) {
+function runCmdLine(command : string) : Promise<{}> {
+    if (!command || command.length === 0) {
         return;
     }
 
     try {
-        var cmd = parser.parse(s);
-    } catch (e) {
-        util.showError(e);
-        return;
-    }
-
-    if (cmd.isEmpty) {
-        return;
-    }
-
-    try {
-        cmd.execute(vscode.window.activeTextEditor);
-    } catch (e) {
-        try {
-            e.display();
+        var cmd = parser.parse(command);
+        if (cmd.isEmpty) {
             return;
-        } catch (ee) {
-            // ignore
         }
 
-        util.showError(e);
+        cmd.execute(vscode.window.activeTextEditor);
+    } catch (e) {
+        return util.showError(e);
     }
 }
