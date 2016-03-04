@@ -9,8 +9,8 @@ node_js:
   - "0.12"
 
 env:
-  - TSD_GITHUB_TOKEN=8742b29e67faa29aa25564ff7317b50fd7c1327d
-
+  - GITHUB_TOKEN=1b17d62d38a4846efa7ea4de4b773b581787b0f1 
+  
 before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
