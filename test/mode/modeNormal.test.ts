@@ -25,7 +25,7 @@ suite("Mode Normal", () => {
     teardown(cleanUpWorkspace);
 
     test("can be activated", () => {
-        let activationKeys = ['esc', 'ctrl+[', 'ctrl+c'];
+        let activationKeys = ['esc', 'ctrl+['];
 
         for (let i = 0; i < activationKeys.length; i++) {
             let key = activationKeys[i];

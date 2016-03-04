@@ -25,7 +25,7 @@ suite("setup", () => {
         let pkg = require(__dirname + '/../../package.json');
         assert.ok(pkg);
 
-        let keys = _.pluck(pkg.contributes.keybindings, "key");
+        let keys = _.map(pkg.contributes.keybindings, "key");
         let duplicateKeys = _.filter(keys, function(x, i, array) {
             return _.includes(array, x, i + 1);
         });
