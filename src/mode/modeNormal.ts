@@ -31,11 +31,8 @@ export class NormalMode extends Mode {
         "X" : async () => { return vscode.commands.executeCommand("deleteLeft"); },
 
         "." : async () => {
-            if (this._lastAction && this._lastAction.length >= 3) {
-                const handler = this._lastAction[0];
-                const ranger = this._lastAction[1];
-                const argument = this._lastAction[2];
-                await handler(ranger, argument);
+            if (this._lastAction) {
+                await this._lastAction();
             }
             return {};
          },
@@ -77,6 +74,8 @@ export class NormalMode extends Mode {
         }
     };
 
+    private repeatBlacklist = [":", "u", "ctrl+r", ".", "esc", "v", "i", "I", "a", "A", "o", "O"];
+
     private _modeHandler: ModeHandler;
 
     private _lastAction = null;
@@ -101,14 +100,24 @@ export class NormalMode extends Mode {
 
     makeCommandHandler(command, ranger, argument) {
         return async (c) => {
+            const action = async () => { await command(ranger, argument); };
             for (let i = 0; i < (c || 1); i++) {
-                await command(ranger, argument);
+                action();
             }
-            if (command !== ".") {
+            if (!this.inRepeatBlacklist(command)) {
                 // save for ".", but not "."
-                this._lastAction = [command, ranger, argument];
+                this._lastAction = action;
             }
         };
+    }
+
+    private inRepeatBlacklist(command) {
+        for (const key of this.repeatBlacklist) {
+            if (command === this.commands[key]) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
