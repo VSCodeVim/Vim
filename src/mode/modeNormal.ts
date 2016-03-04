@@ -65,10 +65,21 @@ export class NormalMode extends Mode {
 
         let keyHandled = false;
         let keysPressed: string;
+        let count = 1;
 
         for (let window = this.keyHistory.length; window > 0; window--) {
             keysPressed = _.takeRight(this.keyHistory, window).join('');
             if (this.keyHandler[keysPressed] !== undefined) {
+                if (this.keyHistory.length - 1 - window >= 0) {
+                    count = +_.takeRightWhile (_.slice(this.keyHistory, 0, this.keyHistory.length - window), n => !isNaN(+n)).join('');
+                }
+
+                if (keysPressed === '0' && count > 0) {
+                    continue;
+                }
+
+                count = Math.max (count, 1);
+
                 keyHandled = true;
                 break;
             }
@@ -76,7 +87,9 @@ export class NormalMode extends Mode {
 
         if (keyHandled) {
             this.keyHistory = [];
-            await this.keyHandler[keysPressed](this.motion);
+            for (let i = 0; i < count; i++) {
+                await this.keyHandler[keysPressed](this.motion);
+            }
         }
     }
 }

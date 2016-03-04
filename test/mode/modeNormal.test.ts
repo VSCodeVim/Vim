@@ -44,4 +44,14 @@ suite("Mode Normal", () => {
         await modeNormal.handleKeyEvent("x");
         assertEqualLines(["te"]);
     });
+    
+    test("Can handle [count]", async () => {
+        await TextEditor.insert("text");
+        
+        motion = motion.moveTo(0, 0);
+        await modeNormal.handleKeyEvent("3");
+        await modeNormal.handleKeyEvent("l");
+        assert.equal(motion.position.line, 0);
+        assert.equal(motion.position.character, 3);
+    });
 });
