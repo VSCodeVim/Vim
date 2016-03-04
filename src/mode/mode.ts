@@ -66,14 +66,14 @@ export abstract class Mode {
         "l" : async (p, c) => { return p.getRight(c); },
         // "^" : async () => { return vscode.commands.executeCommand("cursorHome"); },
         "gg" : async (p) => {
-            return new Position(0, Position.getFirstNonBlankCharAtLine(0), null); },
+            return new Position(0, Position.getFirstNonBlankCharAtLine(0), p.positionOptions; },
         "G" : async (p, c) => {
             const lastLine = p.getDocumentEnd().line;
             if (c === 0) {
-                return new Position(lastLine, Position.getFirstNonBlankCharAtLine(lastLine), null);
+                return new Position(lastLine, Position.getFirstNonBlankCharAtLine(lastLine), p.positionOptions);
             } else {
                 const newLine = Math.min(c - 1, lastLine);
-                return new Position(newLine, Position.getFirstNonBlankCharAtLine(newLine), null);
+                return new Position(newLine, Position.getFirstNonBlankCharAtLine(newLine), p.positionOptions);
             }
         },
         "$" : async (p, c, argument, inclusive) => { return p.getLineEnd(inclusive); },
