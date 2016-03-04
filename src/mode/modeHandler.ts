@@ -34,7 +34,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     setCurrentModeByName(modeName : ModeName, activate? : boolean) {
-        if (this.currentMode) {
+        if (this.currentMode && activate !== false) {
             this.currentMode.handleDeactivation();
         }
 

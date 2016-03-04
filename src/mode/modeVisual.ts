@@ -32,6 +32,7 @@ export class VisualMode extends Mode {
         const deleteHandler = async (ranger) => {
             const range = await ranger();
             await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
+            this._modeHandler.setCurrentModeByName(ModeName.Normal, false);
             this.fixPosition();
             return {};
         };

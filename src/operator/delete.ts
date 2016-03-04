@@ -37,7 +37,5 @@ export class DeleteOperator {
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
-
-        this._modeHandler.setCurrentModeByName(ModeName.Normal);
     }
 }

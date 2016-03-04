@@ -59,7 +59,7 @@ export abstract class Mode {
         this.keyHistory = [];
     }
 
-    protected motions: { [key: string]: (position: Position, count: number, argument: string) => Promise<Position>; } = {
+    protected motions: { [key: string]: (position: Position, count: number, argument: string, inclusive?: boolean) => Promise<Position>; } = {
         "h" : async (p, c) => { return p.getLeft(c); },
         "j" : async (p, c) => { return p.getDown(p.character, c); },
         "k" : async (p, c) => { return p.getUp(p.character, c); },
@@ -90,10 +90,10 @@ export abstract class Mode {
         // "ctrl+f": async () => { return vscode.commands.executeCommand("cursorPageDown"); },
         // "ctrl+b": async () => { return vscode.commands.executeCommand("cursorPageUp"); },
         // "%" : async () => { return vscode.commands.executeCommand("editor.action.jumpToBracket"); },
-        "t{argument}" : async (p, c, argument) => { return p.tilForwards(argument, c); },
-        "T{argument}" : async (p, c, argument) => { return p.tilBackwards(argument, c); },
-        "f{argument}" : async (p, c, argument) => { return p.findForwards(argument, c); },
-        "F{argument}" : async (p, c, argument) => { return p.findBackwards(argument, c); }
+        "t{argument}" : async (p, c, argument, inclusive) => { return p.tilForwards(argument, c, inclusive); },
+        "T{argument}" : async (p, c, argument, inclusive) => { return p.tilBackwards(argument, c, inclusive); },
+        "f{argument}" : async (p, c, argument, inclusive) => { return p.findForwards(argument, c, inclusive); },
+        "F{argument}" : async (p, c, argument, inclusive) => { return p.findBackwards(argument, c, inclusive); }
     };
 
     protected commands : { [key : string] : (ranger, argument : string) => Promise<{}>; } = { };
@@ -290,7 +290,7 @@ export abstract class Mode {
 
         if (handler) {
             return async () => {
-                const position = await handler(this.motion.position, count, argument);
+                const position = await handler(this.motion.position, count, argument, true);
                 return [this.motion.position, position];
             };
         }
