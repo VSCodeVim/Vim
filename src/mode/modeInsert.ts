@@ -15,6 +15,7 @@ export class InsertMode extends Mode {
     protected commands : { [key : string] : (ranger, argument : string) => Promise<{}>; } = {
         "esc" : async () => { this._modeHandler.setCurrentModeByName(ModeName.Normal); return {}; }
     };
+    protected suggestWhitelist = /[\w\.]/;
 
     constructor(motion : Motion, modeHandler: ModeHandler) {
         super(ModeName.Insert, motion);
@@ -35,14 +36,13 @@ export class InsertMode extends Mode {
             await handler(0);
             this.resetState();
             return true;
-        } else if (retval === true) {
-            // handler === true, valid command prefix
-            // can't do anything for now
-            return true;
         } else {
             // handler === false, not valid (we'll insert the key), reset state
-            await TextEditor.insert(this.resolveKeyValue(key));
-            await vscode.commands.executeCommand("editor.action.triggerSuggest");
+            const translatedKey = this.resolveKeyValue(key);
+            await TextEditor.insert(translatedKey);
+            if (this.suggestWhitelist.test(translatedKey)) {
+                await vscode.commands.executeCommand("editor.action.triggerSuggest");
+            }
 
             this.resetState();
             return true;
