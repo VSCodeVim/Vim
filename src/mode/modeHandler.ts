@@ -33,7 +33,7 @@ export class ModeHandler implements vscode.Disposable {
         return this._modes.find(mode => mode.isActive);
     }
 
-    setCurrentModeByName(modeName : ModeName) {
+    setCurrentModeByName(modeName : ModeName, activate? : boolean) {
         if (this.currentMode) {
             this.currentMode.handleDeactivation();
         }
@@ -59,7 +59,9 @@ export class ModeHandler implements vscode.Disposable {
         const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText.toUpperCase());
 
-        nextMode.handleActivation();
+        if (activate !== false) {
+            nextMode.handleActivation();
+        }
     }
 
     handleKeyEvent(key : string) : void {

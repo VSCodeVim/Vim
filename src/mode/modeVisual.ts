@@ -28,27 +28,28 @@ export class VisualMode extends Mode {
         super(ModeName.Visual, motion);
 
         this._modeHandler = modeHandler;
+
+        const deleteHandler = async (ranger) => {
+            const range = await ranger();
+            await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
+            this.fixPosition();
+            return {};
+        };
+
         this.commands = {
             // TODO: use DeleteOperator.key()
 
             // TODO: Don't pass in mode handler to DeleteOperators,
             // simply allow the operators to say what mode they transition into.
-            "d" : async (ranger) => {
-                const range = await ranger();
-                await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
-                return {};
-            },
-            "x" : async (ranger) => {
-                const range = await ranger();
-                await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
-                return {};
-            },
+            "d" : deleteHandler,
+            "x" : deleteHandler,
             "c" : async (ranger) => {
                 const range = await ranger();
                 await new ChangeOperator(this._modeHandler).run(range[0], range[1]);
+                this.fixPosition();
                 return {};
             },
-            "esc" : async () => { this._modeHandler.setCurrentModeByName(ModeName.Normal); return {}; }
+            "esc" : async () => { this._modeHandler.setCurrentModeByName(ModeName.Normal, false); return {}; }
         };
     }
 
@@ -107,5 +108,13 @@ export class VisualMode extends Mode {
             };
             await command(ranger);
         };
+    }
+
+    private fixPosition() {
+        if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
+            this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
+        } else {
+            this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
+        }
     }
 }
