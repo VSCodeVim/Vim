@@ -49,7 +49,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
-        this.setupStatusBarItem(statusBarText.toUpperCase());
+        this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
     }
 
     handleKeyEvent(key : string) : void {
@@ -81,12 +81,12 @@ export class ModeHandler implements vscode.Disposable {
         }
     }
 
-    private setupStatusBarItem(text : string) : void {
+    setupStatusBarItem(text : string) : void {
         if (!this._statusBarItem) {
             this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
 
-        this._statusBarItem.text = text ? `--${text}--` : '';
+        this._statusBarItem.text = text || '';
         this._statusBarItem.show();
     }
 
