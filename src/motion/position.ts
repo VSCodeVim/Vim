@@ -169,8 +169,8 @@ export class Position extends vscode.Position {
     /**
      * Returns a new position at the end of this position's line.
      */
-    public getLineEnd() : Position {
-        return new Position(this.line, Position.getLineLength(this.line, this.positionOptions), this.positionOptions);
+    public getLineEnd(inclusive? : boolean) : Position {
+        return new Position(this.line, Position.getLineLength(this.line, this.positionOptions) + (inclusive ? 1 : 0), this.positionOptions);
     }
 
     public getDocumentBegin() : Position {

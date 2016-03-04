@@ -76,7 +76,7 @@ export abstract class Mode {
                 return new Position(newLine, Position.getFirstNonBlankCharAtLine(newLine), null);
             }
         },
-        "$" : async (p) => { return p.getLineEnd(); },
+        "$" : async (p, c, argument, inclusive) => { return p.getLineEnd(inclusive); },
         "0" : async (p) => { return p.getLineBegin(); },
         "w" : async (p, c) => { return p.getWordRight(c); },
         "e" : async (p, c) => { return p.getCurrentWordEnd(c); },
