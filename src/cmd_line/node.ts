@@ -97,7 +97,7 @@ export class CommandLine {
     }
 }
 
-export interface CommandArgs {
+export interface ICommandArgs {
     bang? : boolean;
     range? : LineRange;
 }
@@ -118,10 +118,10 @@ export abstract class CommandBase {
     }
     protected _shortName : string;
 
-    get arguments() : CommandArgs {
+    get arguments() : ICommandArgs {
         return this._arguments;
     }
-    protected _arguments : CommandArgs;
+    protected _arguments : ICommandArgs;
 
     abstract execute() : void;
 }

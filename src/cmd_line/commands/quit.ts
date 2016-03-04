@@ -1,11 +1,10 @@
 "use strict";
 
-import vscode = require('vscode');
+import * as vscode from "vscode";
+import * as node from "../node";
+import * as error from '../../error';
 
-import node = require('../node');
-import error = require('../../error');
-
-export interface QuitCommandArguments extends node.CommandArgs {
+export interface IQuitCommandArguments extends node.ICommandArgs {
     bang?: boolean;
     range?: node.LineRange;
 }
@@ -15,16 +14,16 @@ export interface QuitCommandArguments extends node.CommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
 //
 export class QuitCommand extends node.CommandBase {
-    protected _arguments : QuitCommandArguments;
+    protected _arguments : IQuitCommandArguments;
 
-    constructor(args : QuitCommandArguments) {
+    constructor(args : IQuitCommandArguments) {
         super();
         this._name = 'quit';
         this._shortName = 'q';
         this._arguments = args;
     }
 
-    get arguments() : QuitCommandArguments {
+    get arguments() : IQuitCommandArguments {
         return this._arguments;
     }
 
