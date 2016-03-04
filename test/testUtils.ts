@@ -13,14 +13,13 @@ function rndName() {
 
 async function createRandomFile(contents: string): Promise<vscode.Uri> {
     const tmpFile = join(os.tmpdir(), rndName());
-
+    
     try {
-        await fs.writeFile(tmpFile, contents);
+        fs.writeFileSync(tmpFile, contents);
+        return vscode.Uri.file(tmpFile);
     } catch (error) {
         throw error;
     }
-
-    return vscode.Uri.file(tmpFile);
 }
 
 export function assertEqualLines(expectedLines: string[]) {
