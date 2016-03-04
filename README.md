@@ -96,17 +96,17 @@ Status              | Key                       | Description
 :white_check_mark:  | O                         | open a new line above the current line, append text (N times)
 
 ### Deleting Text
-Status              | Key                       | Description
-------------------- | ------------------------- | -------------------------
-:white_check_mark:  | x                         | delete characters under and after the cursor
-                    | <Del>                     | delete N characters under and after the cursor
-:white_check_mark:  | X                         | delete N characters before the cursor
-dw, db              | d{motion}                 | delete the text that is moved over with {motion}
-                    | {visual}d                 | delete the highlighted text
-:white_check_mark:  | dd                        | delete N lines
-                    | D                         | delete to end-of-line (and N-1 more lines)
-                    | J                         | join N-1 lines (delete newlines)
-                    | {visual}J                 | join the highlighted lines
+Status                 | Key                       | Description
+---------------------- | ------------------------- | -------------------------
+:white_check_mark:     | x                         | delete characters under and after the cursor
+                       | <Del>                     | delete N characters under and after the cursor
+:white_check_mark:     | X                         | delete N characters before the cursor
+dw, dW, db, dB, de, dE | d{motion}                 | delete the text that is moved over with {motion}
+                       | {visual}d                 | delete the highlighted text
+:white_check_mark:     | dd                        | delete N lines
+                       | D                         | delete to end-of-line (and N-1 more lines)
+                       | J                         | join N-1 lines (delete newlines)
+                       | {visual}J                 | join the highlighted lines
                     
 ### Changing Text
 Status              | Key                       | Description
