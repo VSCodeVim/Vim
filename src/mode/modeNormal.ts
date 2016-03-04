@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
-import {Motion} from './../motion/motion';
+import {Motion, MotionMode} from './../motion/motion';
 import {ModeHandler} from './modeHandler';
 import {DeleteOperator} from './../operator/delete';
 
@@ -37,8 +37,46 @@ export class NormalMode extends Mode {
         ">>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
         "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
         "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
-        "dw" : async () => { return vscode.commands.executeCommand("deleteWordRight"); },
-        "db" : async () => { return vscode.commands.executeCommand("deleteWordLeft"); },
+        "dw" : async (m) => {
+            m.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getWordRight());
+            this.motion.left().move();
+            return {};
+        },
+        "dW" : async (m) => {
+            m.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getBigWordRight());
+            this.motion.left().move();
+            return {};
+        },
+        "db" : async (m) => {
+            m.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getWordLeft());
+            return {};
+        },
+        "dB" : async (m) => {
+            m.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getBigWordLeft());
+            return {};
+        },
+        "de" : async (m) => {
+            m.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getCurrentWordEnd());
+            this.motion.left().move();
+            return {};
+        },
+        "dE" : async (m) => {
+            m.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getCurrentBigWordEnd());
+            this.motion.left().move();
+            return {};
+        },
+        "D" : async (m) => {
+            m.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getLineEnd());
+            this.motion.left().move();
+            return {};
+        },
         "x" : async (m) => { await new DeleteOperator(this._modeHandler).run(m.position, m.position.getRight()); return {}; },
         "X" : async (m) => { return vscode.commands.executeCommand("deleteLeft"); },
         "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }

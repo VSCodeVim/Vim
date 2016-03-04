@@ -292,6 +292,9 @@ export class Position extends vscode.Position {
             let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
+                if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
+                    newCharacter++;
+                }
                 return new Position(currentLine, newCharacter, this.positionOptions);
             }
         }
