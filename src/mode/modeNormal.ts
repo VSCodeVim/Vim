@@ -27,7 +27,10 @@ export class NormalMode extends Mode {
             await new ChangeOperator(this._modeHandler).run(range[0], range[1]);
             return {};
         },
-        "x" : async () => { await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight()); return {}; },
+        "x" : async () => {
+            await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight());
+            return {};
+        },
         "X" : async () => { return vscode.commands.executeCommand("deleteLeft"); },
 
         "." : async () => {
@@ -102,7 +105,7 @@ export class NormalMode extends Mode {
         return async (c) => {
             const action = async () => { await command(ranger, argument); };
             for (let i = 0; i < (c || 1); i++) {
-                action();
+                await action();
             }
             if (!this.inRepeatBlacklist(command)) {
                 // save for ".", but not "."

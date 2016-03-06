@@ -150,9 +150,9 @@ export abstract class Mode {
     protected async tryToHandleCommand() : Promise<boolean> {
         // handler will be a function, true or false
         const retval = this.findCommandHandler();
-        if (typeof retval[0] === 'function') {
+        if (typeof retval === 'function') {
             // we can handle this now
-            const handler = retval[0];
+            const handler = retval;
             await handler(this._commandCount);
             this.resetState();
             return true;
@@ -175,14 +175,14 @@ export abstract class Mode {
             // check if motion
             const motion = this.findInCommandMap(command, argument, this.motions);
             if (motion) {
-                return [this.makeMotionHandler(motion, argument), null];
+                return this.makeMotionHandler(motion, argument);
             }
 
             // check if non-motion command
             const handler = this.findInCommandMap(command, argument, this.commands);
             if (handler) {
                 const ranger = this.makeRanger(this._motionCount, argument);
-                return [this.makeCommandHandler(handler, ranger, argument), argument];
+                return this.makeCommandHandler(handler, ranger, argument);
             }
         }
 

@@ -30,13 +30,14 @@ export class InsertMode extends Mode {
         this.keyHistory.push(key);
 
         const retval = this.findCommandHandler();
-        if (typeof retval[0] === 'function') {
+        if (typeof retval === 'function') {
             // we can handle this now
-            const handler = retval[0];
+            const handler = retval;
             await handler(0);
             this.resetState();
             return true;
         } else {
+            // TODO handler == true (have prefix), to support multi-key commands like "jk" to escape
             // handler === false, not valid (we'll insert the key), reset state
             const translatedKey = this.resolveKeyValue(key);
             await TextEditor.insert(translatedKey);

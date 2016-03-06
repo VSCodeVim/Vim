@@ -9,39 +9,90 @@ import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from '../../src/mode/modeHandler';
 
 suite("Mode Normal", () => {
-
-    let motion : Motion;
-    let modeNormal : NormalMode;
     let modeHandler: ModeHandler;
 
     setup(async () => {
         await setupWorkspace();
 
         modeHandler = new ModeHandler();
-        motion      = new Motion(MotionMode.Cursor);
-        modeNormal  = new NormalMode(motion, modeHandler);
     });
 
     teardown(cleanUpWorkspace);
 
-    test("can be activated", () => {
-        let activationKeys = ['esc', 'ctrl+['];
-
-        for (let i = 0; i < activationKeys.length; i++) {
-            let key = activationKeys[i];
-            assert.equal(modeNormal.shouldBeActivated(key, ModeName.Insert), true, key);
-        }
-
-        assert.equal(modeNormal.shouldBeActivated("v", ModeName.Visual), true, "couldn't deactivate from visual with v");
-    });
-
     test("Can handle 'x'", async () => {
         await TextEditor.insert("text");
 
-        motion = motion.moveTo(0, 2);
-        await modeNormal.handleKeyEvent("x");
-        await assertEqualLines(["tet"]);
-        await modeNormal.handleKeyEvent("x");
+        modeHandler.currentMode.motion.moveTo(0, 2);
+        await modeHandler.handleKeyEvent("x");
+        assertEqualLines(["tet"]);
+        await modeHandler.handleKeyEvent("x");
         assertEqualLines(["te"]);
+    });
+
+    test("Can handle 'v'", async () => {
+        await modeHandler.handleKeyEvent("v");
+        assert.equal(modeHandler.currentMode.name, ModeName.Visual, "should be in visual mode now");
+    });
+
+    test("Can handle 'o'", async () => {
+        await TextEditor.insert("text");
+
+        await modeHandler.handleKeyEvent("o");
+        assert.equal(modeHandler.currentMode.name, ModeName.Insert, "should be in insert mode now");
+        return assertEqualLines(["text", ""]);
+    });
+
+    test("Can handle 'O'", async () => {
+        await TextEditor.insert("text");
+
+        await modeHandler.handleKeyEvent("O");
+        assert.equal(modeHandler.currentMode.name, ModeName.Insert, "should be in insert mode now");
+        return assertEqualLines(["", "text"]);
+    });
+
+    test("Can handle 'i'", async () => {
+        await TextEditor.insert("texttext");
+        modeHandler.currentMode.motion.moveTo(0, 4);
+
+        await modeHandler.handleKeyEvent("i");
+        assert.equal(modeHandler.currentMode.name, ModeName.Insert, "should be in insert mode now");
+
+        await modeHandler.handleKeyEvent("!");
+        return assertEqualLines(["text!text"]);
+    });
+
+    test("Can handle 'I'", async () => {
+        await TextEditor.insert("text");
+        modeHandler.currentMode.motion.moveTo(0, 3);
+
+        await modeHandler.handleKeyEvent("I");
+        assert.equal(modeHandler.currentMode.name, ModeName.Insert, "should be in insert mode now");
+
+        await modeHandler.handleKeyEvent("!");
+        return assertEqualLines(["!text"]);
+    });
+
+    test("Can handle 'a'", async () => {
+        await TextEditor.insert("texttext");
+        modeHandler.currentMode.motion.moveTo(0, 4);
+
+        await modeHandler.handleKeyEvent("a");
+        assert.equal(modeHandler.currentMode.name, ModeName.Insert, "should be in insert mode now");
+
+        await modeHandler.handleKeyEvent("!");
+        return assertEqualLines(["textt!ext"]);
+    });
+
+    test("Can handle 'A'", async () => {
+        await TextEditor.insert("text");
+        modeHandler.currentMode.motion.moveTo(0, 0);
+
+        await modeHandler.handleKeyEvent("A");
+        assert.equal(modeHandler.currentMode.name, ModeName.Insert, "should be in insert mode now");
+
+        console.log("going to insert");
+        await modeHandler.handleKeyEvent("!");
+        console.log("inserted");
+        return assertEqualLines(["text!"]);
     });
 });

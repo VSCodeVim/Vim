@@ -64,13 +64,13 @@ export class ModeHandler implements vscode.Disposable {
         }
     }
 
-    handleKeyEvent(key : string) : void {
+    async handleKeyEvent(key : string) : Promise<void> {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
         key = this._configuration.keyboardLayout.translate(key);
 
-        this.currentMode.handleKeyEvent(key);
+        await this.currentMode.handleKeyEvent(key);
     }
 
     private setupStatusBarItem(text : string) : void {
