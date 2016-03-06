@@ -73,7 +73,11 @@
         { "key": "x", "command": "extension.vim_x", "when": "editorTextFocus" },
         { "key": "y", "command": "extension.vim_y", "when": "editorTextFocus" },
         { "key": "z", "command": "extension.vim_z", "when": "editorTextFocus" },
-
+        { "key": "up", "command": "extension.vim_up", "when": "editorTextFocus" },
+        { "key": "down", "command": "extension.vim_down", "when": "editorTextFocus" },
+        { "key": "left", "command": "extension.vim_left", "when": "editorTextFocus" },
+        { "key": "right", "command": "extension.vim_right", "when": "editorTextFocus" },
+        
         { "key": "Shift+a", "command": "extension.vim_A", "when": "editorTextFocus" },
         { "key": "Shift+b", "command": "extension.vim_B", "when": "editorTextFocus" },
         { "key": "Shift+c", "command": "extension.vim_C", "when": "editorTextFocus" },

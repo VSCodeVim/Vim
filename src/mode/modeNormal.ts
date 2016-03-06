@@ -41,6 +41,10 @@ export class NormalMode extends Mode {
         "db" : async () => { return vscode.commands.executeCommand("deleteWordLeft"); },
         "x" : async (m) => { await new DeleteOperator(this._modeHandler).run(m.position, m.position.getRight()); return {}; },
         "X" : async (m) => { return vscode.commands.executeCommand("deleteLeft"); },
+        "up" : async (c) => { return await vscode.commands.executeCommand("cursorUp"); },
+        "down" : async (c) => { return await vscode.commands.executeCommand("cursorDown");  },
+        "left" : async (c) => { return await vscode.commands.executeCommand("cursorLeft");  },
+        "right" : async (c) => { return await vscode.commands.executeCommand("cursorRight");  },
         "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
 

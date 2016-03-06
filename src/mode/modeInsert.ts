@@ -34,6 +34,13 @@ export class InsertMode extends Mode {
         }
     };
 
+    protected keyHandler : { [key : string] : (motion : Motion) => Promise<{}>; } = {
+        "up" : async (c) => { return await vscode.commands.executeCommand("cursorUp"); },
+        "down" : async (c) => { return await vscode.commands.executeCommand("cursorDown");  },
+        "left" : async (c) => { return await vscode.commands.executeCommand("cursorLeft");  },
+        "right" : async (c) => { return await vscode.commands.executeCommand("cursorRight");  }
+    }
+
     constructor(motion : Motion) {
         super(ModeName.Insert, motion);
     }
@@ -48,9 +55,13 @@ export class InsertMode extends Mode {
 
     async handleKeyEvent(key : string) : Promise<void> {
         this.keyHistory.push(key);
-
-        await TextEditor.insert(this.resolveKeyValue(key));
-        await vscode.commands.executeCommand("editor.action.triggerSuggest");
+        
+        if (this.keyHandler[key] !== undefined) {
+            await this.keyHandler[key](this.motion);
+        } else {
+            await TextEditor.insert(this.resolveKeyValue(key));
+            await vscode.commands.executeCommand("editor.action.triggerSuggest");
+        }
     }
 
     // Some keys have names that are different to their value.
