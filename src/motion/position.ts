@@ -56,6 +56,18 @@ export class Position extends vscode.Position {
         return position;
     }
 
+    public getRightMore(count? : number) : Position {
+        count = count || 1;
+        let position : Position = this;
+        while (count) {
+            if (this.character < Position.getLineLength(this.line, this.positionOptions) + 1) {
+                return new Position(this.line, this.character + 1, this.positionOptions);
+            }
+            count--;
+        }
+        return position;
+    }
+
     /**
      * Get the position of the line directly below the current line.
      */

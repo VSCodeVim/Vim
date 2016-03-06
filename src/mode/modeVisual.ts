@@ -9,6 +9,7 @@ import { Operator } from './../operator/operator';
 import { DeleteOperator } from './../operator/delete';
 import { ModeHandler } from './modeHandler.ts';
 import { ChangeOperator } from './../operator/change';
+import { TextEditor } from './../textEditor';
 
 export class VisualMode extends Mode {
     /**
@@ -65,7 +66,7 @@ export class VisualMode extends Mode {
     handleDeactivation(): void {
         super.handleDeactivation();
 
-        this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
+        this.safeMoveTo(this._selectionStop);
     }
 
     makeMotionHandler(motion, argument) {
@@ -91,7 +92,7 @@ export class VisualMode extends Mode {
             if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
                 this.motion.select(this._selectionStart, this._selectionStop);
             } else {
-                this.motion.select(this._selectionStart.getRight(), this._selectionStop);
+                this.motion.select(this._selectionStart.getRightMore(), this._selectionStop);
             }
 
             return position;
@@ -102,9 +103,9 @@ export class VisualMode extends Mode {
         return async (c) => {
             const ranger = () => {
                 if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
-                    return [this._selectionStart, this._selectionStop.getRight()];
+                    return [this._selectionStart, this._selectionStop.getRightMore()];
                 } else {
-                    return [this._selectionStart.getRight(), this._selectionStop];
+                    return [this._selectionStart.getRightMore(), this._selectionStop];
                 }
             };
             await command(ranger);
@@ -113,9 +114,19 @@ export class VisualMode extends Mode {
 
     private fixPosition() {
         if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
-            this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
+            this.safeMoveTo(this._selectionStart);
         } else {
-            this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
+            this.safeMoveTo(this._selectionStop);
         }
+    }
+
+    private safeMoveTo(position : Position) {
+        const text = TextEditor.getLineAt(position).text;
+        if (text.length == 0) {
+            position = new Position(position.line, 0, position.positionOptions);
+        } else if (position.character >= text.length) {
+            position = new Position(position.line, text.length - 1, position.positionOptions);
+        }
+        this.motion.moveTo(position.line, position.character);
     }
 }

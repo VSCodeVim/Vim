@@ -2,12 +2,13 @@
 
 import * as vscode from 'vscode';
 
-import {ModeName, Mode} from './mode';
-import {showCmdLine} from './../cmd_line/main';
-import {Motion} from './../motion/motion';
-import {ModeHandler} from './modeHandler';
-import {ChangeOperator} from './../operator/change';
-import {DeleteOperator} from './../operator/delete';
+import { ModeName, Mode } from './mode';
+import { showCmdLine } from './../cmd_line/main';
+import { Motion } from './../motion/motion';
+import { ModeHandler } from './modeHandler';
+import { ChangeOperator } from './../operator/change';
+import { DeleteOperator } from './../operator/delete';
+import { TextEditor } from './../textEditor';
 
 export class NormalMode extends Mode {
     protected commands : { [key : string] : (ranger, argument : string) => Promise<{}>; } = {
@@ -28,7 +29,12 @@ export class NormalMode extends Mode {
             return {};
         },
         "x" : async () => {
-            await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight());
+            await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRightMore());
+
+            if (this._modeHandler.currentMode.motion.position.character >= TextEditor.getLineAt(this.motion.position).text.length) {
+                const position = this._modeHandler.currentMode.motion.position.getLeft();
+                this._modeHandler.currentMode.motion.moveTo(position.line, position.character);
+            }
             return {};
         },
         "X" : async () => { return vscode.commands.executeCommand("deleteLeft"); },
