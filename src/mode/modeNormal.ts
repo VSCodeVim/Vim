@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 import { ModeName, Mode } from './mode';
 import { showCmdLine } from './../cmd_line/main';
-import { Motion } from './../motion/motion';
+import { Motion, MotionMode } from './../motion/motion';
 import { ModeHandler } from './modeHandler';
 import { ChangeOperator } from './../operator/change';
 import { DeleteOperator } from './../operator/delete';
@@ -18,23 +18,28 @@ export class NormalMode extends Mode {
         ">>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
         "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
         "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
+        "D" : async () => {
+            this.motion.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getLineEnd());
+            this.fixPosition();
+            return {};
+        },
         "d{rangeable}" : async (ranger) => {
+            this.motion.changeMode(MotionMode.Cursor);
             const range = await ranger();
             await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
+            this.fixPosition();
             return {};
         },
         "c{rangeable}" : async (ranger) => {
+            this.motion.changeMode(MotionMode.Cursor);
             const range = await ranger();
             await new ChangeOperator(this._modeHandler).run(range[0], range[1]);
             return {};
         },
         "x" : async () => {
             await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRightMore());
-
-            if (this._modeHandler.currentMode.motion.position.character >= TextEditor.getLineAt(this.motion.position).text.length) {
-                const position = this._modeHandler.currentMode.motion.position.getLeft();
-                this._modeHandler.currentMode.motion.moveTo(position.line, position.character);
-            }
+            this.fixPosition();
             return {};
         },
         "X" : async () => { return vscode.commands.executeCommand("deleteLeft"); },
@@ -127,6 +132,13 @@ export class NormalMode extends Mode {
             }
         }
         return false;
+    }
+
+    private fixPosition() {
+        if (this._modeHandler.currentMode.motion.position.character >= TextEditor.getLineAt(this.motion.position).text.length) {
+            const position = this._modeHandler.currentMode.motion.position.getLeft();
+            this._modeHandler.currentMode.motion.moveTo(position.line, position.character);
+        }
     }
 
 }

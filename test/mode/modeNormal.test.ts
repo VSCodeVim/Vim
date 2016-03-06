@@ -90,9 +90,56 @@ suite("Mode Normal", () => {
         await modeHandler.handleKeyEvent("A");
         assert.equal(modeHandler.currentMode.name, ModeName.Insert, "should be in insert mode now");
 
-        console.log("going to insert");
         await modeHandler.handleKeyEvent("!");
-        console.log("inserted");
         return assertEqualLines(["text!"]);
+    });
+
+    test("Can handle 'dw'", async () => {
+        await TextEditor.insert("text text");
+
+        modeHandler.currentMode.motion.moveTo(0, 5);
+        await modeHandler.handleKeyEvent("d");
+        await modeHandler.handleKeyEvent("w");
+        assertEqualLines(["text "]);
+        await modeHandler.handleKeyEvent("d");
+        await modeHandler.handleKeyEvent("w");
+        assertEqualLines(["text"]);
+        await modeHandler.handleKeyEvent("d");
+        await modeHandler.handleKeyEvent("w");
+        assertEqualLines(["tex"]);
+    });
+
+    test("Can handle 'de'", async () => {
+        await TextEditor.insert("text text");
+
+        modeHandler.currentMode.motion.moveTo(0, 0);
+        await modeHandler.handleKeyEvent("d");
+        await modeHandler.handleKeyEvent("e");
+        assertEqualLines([" text"]);
+        await modeHandler.handleKeyEvent("d");
+        await modeHandler.handleKeyEvent("e");
+        assertEqualLines([""]);
+    });
+
+    test("Can handle 'db'", async () => {
+        await TextEditor.insert("text text");
+
+        modeHandler.currentMode.motion.moveTo(0, 8);
+        await modeHandler.handleKeyEvent("d");
+        await modeHandler.handleKeyEvent("b");
+        assertEqualLines(["text t"]);
+        await modeHandler.handleKeyEvent("d");
+        await modeHandler.handleKeyEvent("b");
+        assertEqualLines(["t"]);
+    });
+
+    test("Can handle 'D'", async () => {
+        await TextEditor.insert("text");
+
+        modeHandler.currentMode.motion.moveTo(0, 2);
+        await modeHandler.handleKeyEvent("D");
+        await assertEqualLines(["te"]);
+        await modeHandler.handleKeyEvent("D");
+        await assertEqualLines(["t"]);
     });
 });
