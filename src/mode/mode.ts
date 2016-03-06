@@ -13,13 +13,13 @@ export abstract class Mode {
     private _isActive : boolean;
     private _name : ModeName;
     private _motion : Motion;
-    protected keyHistory : string[];
+    protected _keyHistory : string[];
 
     constructor(name: ModeName, motion: Motion) {
         this._name = name;
         this._motion = motion;
         this._isActive = false;
-        this.keyHistory = [];
+        this._keyHistory = [];
     }
 
     get name(): ModeName {
@@ -42,8 +42,12 @@ export abstract class Mode {
         this._isActive = val;
     }
 
+    get keyHistory() : string[] {
+        return this._keyHistory;
+    }
+
     public handleDeactivation() : void {
-        this.keyHistory = [];
+        this._keyHistory = [];
     }
 
     protected keyToNewPosition: { [key: string]: (motion: Position) => Promise<Position>; } = {
@@ -72,5 +76,5 @@ export abstract class Mode {
 
     abstract handleActivation(key : string) : Promise<void>;
 
-    abstract handleKeyEvent(key : string) : Promise<void>;
+    abstract handleKeyEvent(key : string) : Promise<boolean>;
 }

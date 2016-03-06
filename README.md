@@ -82,8 +82,8 @@ Status              | Key                       | Description
 :white_check_mark:  | E                         | forward to the end of the Nth blank-separated WORD
 :white_check_mark:  | b                         | words backward
 :white_check_mark:  | B                         | N blank-separated WORDS backward
-                    | ge                        | backward to the end of the Nth word
-                    | gE                        | backward to the end of the Nth blank-separated WORD
+:white_check_mark:  | ge                        | backward to the end of the Nth word
+:white_check_mark:  | gE                        | backward to the end of the Nth blank-separated WORD
 
 ### Insert Mode Commands
 Status              | Key                       | Description
@@ -107,7 +107,16 @@ dw, dW, db, dB, de, dE | d{motion}                 | delete the text that is mov
                        | D                         | delete to end-of-line (and N-1 more lines)
                        | J                         | join N-1 lines (delete newlines)
                        | {visual}J                 | join the highlighted lines
-                    
+
+### Deleting and Inserting
+Status                 | Key                       | Description
+---------------------- | ------------------------- | -------------------------
+:white_check_mark:     | C                         | Delete from the cursor position to the end of the line and enter insert mode
+:white_check_mark:     | cw                        | Delete from the cursor position to the end of the word and enter insert mode
+:white_check_mark:     | cW                        | Delete from the cursor position to the end of the WORD and enter insert mode
+:white_check_mark:     | ciw                       | Delete word and enter insert mode
+:white_check_mark:     | caw                       | Delete word, right-side blanks and enter insert mode
+
 ### Changing Text
 Status              | Key                       | Description
 ------------------- | ------------------------- | -------------------------
