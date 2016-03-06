@@ -21,6 +21,7 @@ export class NormalMode extends Mode {
         "D" : async () => {
             this.motion.changeMode(MotionMode.Cursor);
             await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getLineEnd());
+            this.motion.changeMode(MotionMode.Caret);
             this.fixPosition();
             return {};
         },
@@ -28,17 +29,20 @@ export class NormalMode extends Mode {
             this.motion.changeMode(MotionMode.Cursor);
             const range = await ranger();
             await new DeleteOperator(this._modeHandler).run(range[0], range[1]);
+            this.motion.changeMode(MotionMode.Caret);
             this.fixPosition();
             return {};
         },
         "c{rangeable}" : async (ranger) => {
-            this.motion.changeMode(MotionMode.Cursor);
+
             const range = await ranger();
             await new ChangeOperator(this._modeHandler).run(range[0], range[1]);
             return {};
         },
         "x" : async () => {
-            await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRightMore());
+            this.motion.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight());
+            this.motion.changeMode(MotionMode.Caret);
             this.fixPosition();
             return {};
         },

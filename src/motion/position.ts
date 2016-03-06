@@ -181,8 +181,8 @@ export class Position extends vscode.Position {
     /**
      * Returns a new position at the end of this position's line.
      */
-    public getLineEnd(inclusive? : boolean) : Position {
-        return new Position(this.line, Position.getLineLength(this.line, this.positionOptions) + (inclusive ? 1 : 0), this.positionOptions);
+    public getLineEnd() : Position {
+        return new Position(this.line, Position.getLineLength(this.line, this.positionOptions), this.positionOptions);
     }
 
     public getDocumentBegin() : Position {
@@ -232,30 +232,30 @@ export class Position extends vscode.Position {
         return this.character === Position.getLineLength(this.line, this.positionOptions);
     }
 
-    public tilForwards(argument : string, count : number, inclusive?: boolean) : Position {
+    public tilForwards(argument : string, count : number) : Position {
         const position = this.findHelper(argument, count, +1);
-        if (inclusive) {
+        if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
             return new Position(this.line, position.character, this.positionOptions);
         } else {
             return new Position(this.line, position.character - 1, this.positionOptions);
         }
     }
 
-    public tilBackwards(argument : string, count : number, inclusive?: boolean) : Position {
+    public tilBackwards(argument : string, count : number) : Position {
         const position = this.findHelper(argument, count, -1);
         return new Position(this.line, position.character + 1, this.positionOptions);
     }
 
-    public findForwards(argument : string, count : number, inclusive?: boolean) : Position {
+    public findForwards(argument : string, count : number) : Position {
         const position = this.findHelper(argument, count, +1);
-        if (inclusive) {
+        if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
             return new Position(this.line, position.character + 1, this.positionOptions);
         } else {
             return new Position(this.line, position.character, this.positionOptions);
         }
     }
 
-    public findBackwards(argument : string, count : number, inclusive?: boolean) : Position {
+    public findBackwards(argument : string, count : number) : Position {
         return this.findHelper(argument, count, -1);
     }
 
