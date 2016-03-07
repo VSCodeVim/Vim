@@ -234,7 +234,9 @@ export class Position extends vscode.Position {
 
     public tilForwards(argument : string, count : number) : Position {
         const position = this.findHelper(argument, count, +1);
-        if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
+        if (!position) {
+          return this;
+        } if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
             return new Position(this.line, position.character, this.positionOptions);
         } else {
             return new Position(this.line, position.character - 1, this.positionOptions);
@@ -243,12 +245,17 @@ export class Position extends vscode.Position {
 
     public tilBackwards(argument : string, count : number) : Position {
         const position = this.findHelper(argument, count, -1);
+        if (!position) {
+            return this;
+        }
         return new Position(this.line, position.character + 1, this.positionOptions);
     }
 
     public findForwards(argument : string, count : number) : Position {
         const position = this.findHelper(argument, count, +1);
-        if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
+        if (!position) {
+            return this;
+        } else if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
             return new Position(this.line, position.character + 1, this.positionOptions);
         } else {
             return new Position(this.line, position.character, this.positionOptions);
@@ -256,7 +263,11 @@ export class Position extends vscode.Position {
     }
 
     public findBackwards(argument : string, count : number) : Position {
-        return this.findHelper(argument, count, -1);
+        const position = this.findHelper(argument, count, -1);
+        if (!position) {
+            return this;
+        }
+        return position;
     }
 
     public static getFirstNonBlankCharAtLine(line: number): number {
@@ -296,7 +307,7 @@ export class Position extends vscode.Position {
         if (index > -1) {
             return new Position(this.line, index, this.positionOptions);
         } else {
-            return this;
+            return null;
         }
     }
 

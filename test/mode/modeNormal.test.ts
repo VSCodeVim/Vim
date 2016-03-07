@@ -142,4 +142,112 @@ suite("Mode Normal", () => {
         await modeHandler.handleKeyEvent("D");
         await assertEqualLines(["t"]);
     });
+
+    test("Can handle 't'", async () => {
+        await TextEditor.insert("text text");
+
+        modeHandler.currentMode.motion.moveTo(0, 0);
+        await modeHandler.handleKeyEvent("t");
+        await modeHandler.handleKeyEvent("o");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 0);
+
+        await modeHandler.handleKeyEvent("t");
+        await modeHandler.handleKeyEvent("x");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 1);
+
+        await modeHandler.handleKeyEvent("2");
+        await modeHandler.handleKeyEvent("t");
+        await modeHandler.handleKeyEvent("x");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 6);
+
+        // No more x's, don't go anywhere
+        await modeHandler.handleKeyEvent("t");
+        await modeHandler.handleKeyEvent("x");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 6);
+    });
+
+    test("Can handle 'T'", async () => {
+        await TextEditor.insert("text text");
+
+        modeHandler.currentMode.motion.moveTo(0, 8);
+        await modeHandler.handleKeyEvent("T");
+        await modeHandler.handleKeyEvent("z");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 8);
+
+        await modeHandler.handleKeyEvent("T");
+        await modeHandler.handleKeyEvent("e");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 7);
+
+        await modeHandler.handleKeyEvent("2");
+        await modeHandler.handleKeyEvent("T");
+        await modeHandler.handleKeyEvent("e");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 2);
+
+        // No more x's, don't go anywhere
+        await modeHandler.handleKeyEvent("T");
+        await modeHandler.handleKeyEvent("e");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 2);
+    });
+
+    test("Can handle 'f'", async () => {
+        await TextEditor.insert("text text");
+
+        modeHandler.currentMode.motion.moveTo(0, 0);
+        await modeHandler.handleKeyEvent("f");
+        await modeHandler.handleKeyEvent("o");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 0);
+
+        await modeHandler.handleKeyEvent("f");
+        await modeHandler.handleKeyEvent("x");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 2);
+
+        await modeHandler.handleKeyEvent("2");
+        await modeHandler.handleKeyEvent("f");
+        await modeHandler.handleKeyEvent("t");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 5);
+
+        // No more x's, don't go anywhere
+        await modeHandler.handleKeyEvent("t");
+        await modeHandler.handleKeyEvent("o");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 5);
+    });
+
+    test("Can handle 'F'", async () => {
+        await TextEditor.insert("text text");
+
+        modeHandler.currentMode.motion.moveTo(0, 8);
+        await modeHandler.handleKeyEvent("F");
+        await modeHandler.handleKeyEvent("z");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 8);
+
+        await modeHandler.handleKeyEvent("F");
+        await modeHandler.handleKeyEvent("e");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 6);
+
+        await modeHandler.handleKeyEvent("2");
+        await modeHandler.handleKeyEvent("F");
+        await modeHandler.handleKeyEvent("t");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 3);
+
+        // No more x's, don't go anywhere
+        await modeHandler.handleKeyEvent("F");
+        await modeHandler.handleKeyEvent("z");
+        assert.equal(modeHandler.currentMode.motion.position.line, 0);
+        assert.equal(modeHandler.currentMode.motion.position.character, 3);
+    });
 });
