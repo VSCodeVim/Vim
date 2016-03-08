@@ -1,6 +1,8 @@
 "use strict";
 
 import * as _ from 'lodash';
+import * as vscode from 'vscode';
+
 import {Motion} from './../motion/motion';
 import {Position} from './../motion/position';
 
@@ -64,7 +66,7 @@ export abstract class Mode {
         "j" : async (p, c) => { return p.getDown(p.character, c); },
         "k" : async (p, c) => { return p.getUp(p.character, c); },
         "l" : async (p, c) => { return p.getRight(c); },
-        // "^" : async () => { return vscode.commands.executeCommand("cursorHome"); },
+        "^" : async () => { await vscode.commands.executeCommand("cursorHome"); return this._motion.position; },
         "gg" : async (p) => {
             return new Position(0, Position.getFirstNonBlankCharAtLine(0), p.positionOptions); },
         "G" : async (p, c) => {
@@ -87,9 +89,17 @@ export abstract class Mode {
         "}" : async (p, c) => { return p.getCurrentParagraphEnd(c); },
         "{" : async (p, c) => { return p.getCurrentParagraphBeginning(c); },
 
-        // "ctrl+f": async () => { return vscode.commands.executeCommand("cursorPageDown"); },
-        // "ctrl+b": async () => { return vscode.commands.executeCommand("cursorPageUp"); },
-        // "%" : async () => { return vscode.commands.executeCommand("editor.action.jumpToBracket"); },
+        "ctrl+f": async () => { await vscode.commands.executeCommand("cursorPageDown"); return this._motion.position; },
+        "ctrl+b": async () => { await vscode.commands.executeCommand("cursorPageUp"); return this._motion.position; },
+        "%" : async () => {
+            const oldPosition = this._motion.position;
+            await vscode.commands.executeCommand("editor.action.jumpToBracket");
+            if (oldPosition === this._motion.position) {
+                return this._motion.position;
+            } else {
+                return this._motion.position.getLeft();
+            }
+        },
         "t{argument}" : async (p, c, argument) => { return p.tilForwards(argument, c); },
         "T{argument}" : async (p, c, argument) => { return p.tilBackwards(argument, c); },
         "f{argument}" : async (p, c, argument) => { return p.findForwards(argument, c); },
