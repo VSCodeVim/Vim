@@ -3,7 +3,6 @@
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
 import { ModeHandler } from './../mode/modeHandler.ts';
-import { ModeName } from './../mode/mode';
 
 import * as vscode from 'vscode';
 
@@ -37,7 +36,5 @@ export class DeleteOperator {
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
-
-        this._modeHandler.setCurrentModeByName(ModeName.Normal);
     }
 }

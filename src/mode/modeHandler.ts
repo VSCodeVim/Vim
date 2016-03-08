@@ -1,6 +1,5 @@
 "use strict";
 
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import {Mode, ModeName} from './mode';
@@ -22,7 +21,7 @@ export class ModeHandler implements vscode.Disposable {
         this._motion = new Motion(null);
         this._modes = [
             new NormalMode(this._motion, this),
-            new InsertMode(this._motion),
+            new InsertMode(this._motion, this),
             new VisualMode(this._motion, this),
         ];
 
@@ -33,9 +32,17 @@ export class ModeHandler implements vscode.Disposable {
         return this._modes.find(mode => mode.isActive);
     }
 
-    setCurrentModeByName(modeName : ModeName) {
+    setCurrentModeByName(modeName : ModeName, activate? : boolean) {
+        if (this.currentMode && activate !== false) {
+            this.currentMode.handleDeactivation();
+        }
+
+        let nextMode : Mode;
         for (let mode of this._modes) {
             mode.isActive = (mode.name === modeName);
+            if (mode.isActive) {
+                nextMode = mode;
+            }
         }
 
         switch (modeName) {
@@ -50,35 +57,19 @@ export class ModeHandler implements vscode.Disposable {
 
         const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText.toUpperCase());
+
+        if (activate !== false) {
+            nextMode.handleActivation();
+        }
     }
 
-    handleKeyEvent(key : string) : void {
+    async handleKeyEvent(key : string) : Promise<void> {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
         key = this._configuration.keyboardLayout.translate(key);
 
-        let currentModeName = this.currentMode.name;
-        let nextMode : Mode;
-        let inactiveModes = _.filter(this._modes, (m) => !m.isActive);
-
-        for (let mode of inactiveModes) {
-          if (mode.shouldBeActivated(key, currentModeName)) {
-            if (nextMode) {
-              console.error("More that one mode matched in handleKeyEvent!");
-            }
-
-            nextMode = mode;
-          }
-        }
-
-        if (nextMode) {
-            this.currentMode.handleDeactivation();
-            this.setCurrentModeByName(nextMode.name);
-            nextMode.handleActivation(key);
-        } else {
-            this.currentMode.handleKeyEvent(key);
-        }
+        await this.currentMode.handleKeyEvent(key);
     }
 
     private setupStatusBarItem(text : string) : void {
