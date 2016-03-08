@@ -2,9 +2,7 @@
 
 import * as assert from 'assert';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
-import {NormalMode} from '../../src/mode/modeNormal';
 import {ModeName} from '../../src/mode/mode';
-import {Motion, MotionMode} from '../../src/motion/motion';
 import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from '../../src/mode/modeHandler';
 

@@ -1,11 +1,8 @@
 "use strict";
 
-import * as _      from 'lodash';
-
 import { ModeName, Mode } from './mode';
 import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
-import { Operator } from './../operator/operator';
 import { DeleteOperator } from './../operator/delete';
 import { ModeHandler } from './modeHandler.ts';
 import { ChangeOperator } from './../operator/change';
@@ -101,14 +98,14 @@ export class VisualMode extends Mode {
 
     makeCommandHandler(command, ranger, argument) {
         return async (c) => {
-            const ranger = () => {
+            const selectionRanger = () => {
                 if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
                     return [this._selectionStart, this._selectionStop.getRightMore()];
                 } else {
                     return [this._selectionStart.getRightMore(), this._selectionStop];
                 }
             };
-            await command(ranger);
+            await command(selectionRanger);
         };
     }
 
@@ -122,7 +119,7 @@ export class VisualMode extends Mode {
 
     private safeMoveTo(position : Position) {
         const text = TextEditor.getLineAt(position).text;
-        if (text.length == 0) {
+        if (text.length === 0) {
             position = new Position(position.line, 0, position.positionOptions);
         } else if (position.character >= text.length) {
             position = new Position(position.line, text.length - 1, position.positionOptions);

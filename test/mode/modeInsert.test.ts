@@ -1,11 +1,8 @@
 "use strict";
 
-import * as assert from 'assert';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import {InsertMode} from '../../src/mode/modeInsert';
-import {ModeName} from '../../src/mode/mode';
 import {Motion, MotionMode} from '../../src/motion/motion';
-import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from '../../src/mode/modeHandler';
 
 

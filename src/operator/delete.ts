@@ -3,7 +3,6 @@
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
 import { ModeHandler } from './../mode/modeHandler.ts';
-import { ModeName } from './../mode/mode';
 
 import * as vscode from 'vscode';
 

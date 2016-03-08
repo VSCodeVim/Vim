@@ -3,9 +3,7 @@
 import * as assert from 'assert';
 import {ModeHandler} from '../../src/mode/modeHandler';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
-import {VisualMode} from '../../src/mode/modeVisual';
 import {ModeName} from '../../src/mode/mode';
-import {Motion, MotionMode} from '../../src/motion/motion';
 import {TextEditor} from '../../src/textEditor';
 
 suite("Mode Visual", () => {
