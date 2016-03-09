@@ -31,6 +31,16 @@ export class InsertMode extends Mode {
         "O" : async () => {
             // open blank line above current line
            return await vscode.commands.executeCommand("editor.action.insertLineBefore");
+        },
+        "s" : async (c) => {
+            // delete current char than enter inert mode
+            await TextEditor.delete(new vscode.Range(c.position, c.position.getRight()));
+            return {};
+        },
+        "S" : async (c) => {
+            // delete current line than enter inert mode
+            await TextEditor.delete(new vscode.Range(c.position.getLineBegin(), c.position.getLineEnd()));
+            return {};
         }
     };
 
@@ -39,7 +49,7 @@ export class InsertMode extends Mode {
         "down" : async (c) => { return await vscode.commands.executeCommand("cursorDown");  },
         "left" : async (c) => { return await vscode.commands.executeCommand("cursorLeft");  },
         "right" : async (c) => { return await vscode.commands.executeCommand("cursorRight");  }
-    }
+    };
 
     constructor(motion : Motion) {
         super(ModeName.Insert, motion);
@@ -55,7 +65,7 @@ export class InsertMode extends Mode {
 
     async handleKeyEvent(key : string) : Promise<void> {
         this.keyHistory.push(key);
-        
+
         if (this.keyHandler[key] !== undefined) {
             await this.keyHandler[key](this.motion);
         } else {
