@@ -107,6 +107,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     registerCommand(context, 'extension.vim_oem_102', () => handleKeyEvent("oem_102"));
     registerCommand(context, 'extension.vim_shift_oem_102', () => handleKeyEvent("shift+oem_102"));
+    
+    registerCommand(context, 'extension.vim_up', () => handleKeyEvent("up"));
+    registerCommand(context, 'extension.vim_down', () => handleKeyEvent("down"));
+    registerCommand(context, 'extension.vim_left', () => handleKeyEvent("left"));
+    registerCommand(context, 'extension.vim_right', () => handleKeyEvent("right"));
 
     context.subscriptions.push(modeHandler);
 }
