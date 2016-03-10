@@ -17,7 +17,13 @@ export function activate(context: vscode.ExtensionContext) {
 
     extensionContext = context;
 
-    registerCommand(context, 'extension.showCmdLine', () => showCmdLine(""));
+    registerCommand(context, 'extension.showCmdLine', () => {
+        if (!modeHandler) {
+            modeHandler = new ModeHandler();
+            extensionContext.subscriptions.push(modeHandler);
+        }
+        showCmdLine("", modeHandler);
+    });
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("esc"));
     registerCommand(context, 'extension.vim_colon', () => handleKeyEvent(":"));

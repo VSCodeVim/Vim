@@ -2,10 +2,12 @@
 
 // XXX: use graceful-fs ??
 import * as fs from 'fs';
+import * as path from 'path';
 
 import * as node from '../node';
 import * as util from '../../util';
 import * as error from '../../error';
+import {ModeHandler} from "../../mode/modeHandler";
 
 export interface IWriteCommandArguments extends node.ICommandArgs {
     opt? : string;
@@ -35,7 +37,7 @@ export class WriteCommand extends node.CommandBase {
         return this._arguments;
     }
 
-    execute() : void {
+    execute(modeHandler : ModeHandler) : void {
         if (this.arguments.opt) {
             util.showError("Not implemented.");
             return;
@@ -59,30 +61,28 @@ export class WriteCommand extends node.CommandBase {
                 if (this.arguments.bang) {
                     fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
                         if (e) {
-                            util.showError(e.message);
+                            modeHandler.setupStatusBarItem(e.message);
                         } else {
-                            this.save();
+                            this.save(modeHandler);
                         }
                     });
                 } else {
-                    util.showError(accessErr.message);
+                    modeHandler.setupStatusBarItem(accessErr.message);
                 }
             } else {
-                this.save();
+                this.save(modeHandler);
             }
         });
     }
 
-    private save() {
+    private save(modeHandler : ModeHandler) {
         this.activeTextEditor.document.save().then(
             (ok) => {
-                if (ok) {
-                    util.showInfo("File saved.");
-                } else {
-                    util.showError("File not saved.");
-                }
+                modeHandler.setupStatusBarItem('"' + path.basename(this.activeTextEditor.document.fileName) +
+                '" ' + this.activeTextEditor.document.lineCount + 'L ' +
+                this.activeTextEditor.document.getText().length + 'C written');
             },
-            (e) => util.showError(e)
+            (e) => modeHandler.setupStatusBarItem(e)
         );
     }
 }

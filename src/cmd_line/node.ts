@@ -2,6 +2,7 @@
 
 import * as vscode from "vscode";
 import * as token from "./token";
+import {ModeHandler} from "../mode/modeHandler";
 
 export class LineRange {
     left : token.Token[];
@@ -86,14 +87,14 @@ export class CommandLine {
         return ":" + this.range.toString() + " " + this.command.toString();
     }
 
-    execute(document : vscode.TextEditor) : void {
+    execute(document : vscode.TextEditor, modeHandler : ModeHandler) : void {
         if (!this.command) {
             this.range.execute(document);
             return;
         }
 
         // TODO: calc range
-        this.command.execute();
+        this.command.execute(modeHandler);
     }
 }
 
@@ -123,5 +124,5 @@ export abstract class CommandBase {
     }
     protected _arguments : ICommandArgs;
 
-    abstract execute() : void;
+    abstract execute(modeHandler : ModeHandler) : void;
 }
