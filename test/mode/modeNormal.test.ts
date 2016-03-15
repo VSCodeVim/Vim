@@ -76,7 +76,7 @@ suite("Mode Normal", () => {
         await modeNormal.handleKeyEvent("db");
         await assertEqualLines(["t"]);
     });
-    
+
     test("Can handle 'D'", async () => {
         await TextEditor.insert("text");
 
