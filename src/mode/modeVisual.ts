@@ -67,8 +67,8 @@ export class VisualMode extends Mode {
         let keyHandled = false;
         let keysPressed: string;
 
-        for (let window = this.keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this.keyHistory, window).join('');
+        for (let window = this._keyHistory.length; window > 0; window--) {
+            keysPressed = _.takeRight(this._keyHistory, window).join('');
             if (this.keyToNewPosition[keysPressed] !== undefined) {
                 keyHandled = true;
                 break;
@@ -99,7 +99,7 @@ export class VisualMode extends Mode {
                 this.motion.select(this._selectionStart.getRight(), this._selectionStop);
             }
 
-            this.keyHistory = [];
+            this._keyHistory = [];
         }
 
         return keyHandled;
@@ -109,8 +109,8 @@ export class VisualMode extends Mode {
         let keysPressed: string;
         let operator: Operator;
 
-        for (let window = this.keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this.keyHistory, window).join('');
+        for (let window = this._keyHistory.length; window > 0; window--) {
+            keysPressed = _.takeRight(this._keyHistory, window).join('');
             if (this._keysToOperators[keysPressed] !== undefined) {
                 operator = this._keysToOperators[keysPressed];
                 break;
@@ -128,13 +128,13 @@ export class VisualMode extends Mode {
         return !!operator;
     }
 
-    async handleKeyEvent(key: string): Promise<void> {
-        this.keyHistory.push(key);
+    async handleKeyEvent(key: string): Promise<boolean> {
+        this._keyHistory.push(key);
 
         const wasMotion = await this._handleMotion();
 
         if (!wasMotion) {
-            await this._handleOperator();
+            return await this._handleOperator();
         }
     }
 }

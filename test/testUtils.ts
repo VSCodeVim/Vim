@@ -13,7 +13,7 @@ function rndName() {
 
 async function createRandomFile(contents: string): Promise<vscode.Uri> {
     const tmpFile = join(os.tmpdir(), rndName());
-    
+
     try {
         fs.writeFileSync(tmpFile, contents);
         return vscode.Uri.file(tmpFile);

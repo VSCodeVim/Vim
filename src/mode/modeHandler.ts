@@ -59,11 +59,12 @@ export class ModeHandler implements vscode.Disposable {
         key = this._configuration.keyboardLayout.translate(key);
 
         let currentModeName = this.currentMode.name;
+        let keysPressed = this.currentMode.keyHistory.join('') + key;
         let nextMode : Mode;
         let inactiveModes = _.filter(this._modes, (m) => !m.isActive);
 
         for (let mode of inactiveModes) {
-          if (mode.shouldBeActivated(key, currentModeName)) {
+          if (mode.shouldBeActivated(keysPressed, currentModeName)) {
             if (nextMode) {
               console.error("More that one mode matched in handleKeyEvent!");
             }
