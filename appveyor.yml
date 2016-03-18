@@ -1,9 +1,11 @@
 environment:
-  node_js_version: "4.1.1"
+  nodejs_version: "4.2"
   GITHUB_TOKEN: "1b17d62d38a4846efa7ea4de4b773b581787b0f1"
   clone_depth: 1
 
 install:
+  - node --version
+  - npm --version
   - npm install -g gulp
   - npm install
   - npm run vscode:prepublish

@@ -6,7 +6,7 @@ sudo: false
 language: node_js
 
 node_js:
-  - "0.12"
+  - "4.2"
 
 env:
   - GITHUB_TOKEN=1b17d62d38a4846efa7ea4de4b773b581787b0f1 
