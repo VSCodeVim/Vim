@@ -14,6 +14,7 @@ import {TextEditor} from './../textEditor';
 export class NormalMode extends Mode {
     protected keyHandler : { [key : string] : (motion : Motion) => Promise<{}>; } = {
         ":" : async () => { return showCmdLine("", this._modeHandler); },
+        "/" : async () => { return vscode.commands.executeCommand("workbench.view.search"); },
         "u" : async () => { return vscode.commands.executeCommand("undo"); },
         "ctrl+r" : async () => { return vscode.commands.executeCommand("redo"); },
         "h" : async (c) => { return c.left().move(); },
