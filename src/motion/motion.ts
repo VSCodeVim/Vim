@@ -114,7 +114,7 @@ export class Motion implements vscode.Disposable {
      * space at the provided position in a lighter color.
      */
     private highlightBlock(start: Position): void {
-        this.highlightRange(start, start.getRight());
+        this.highlightRange(start, new Position(start.line, start.character + 1, start.positionOptions));
     }
 
     /**
