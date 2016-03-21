@@ -20,7 +20,6 @@ export class DeleteOperator {
      * Run this operator on a range.
      */
     public async run(start: Position, end: Position): Promise<void> {
-
         // Imagine we have selected everything with an X in
         // the following text (there is no character on the
         // second line at all, just a block cursor):
@@ -32,12 +31,11 @@ export class DeleteOperator {
         // second lines. Therefore we have to advance the cursor to the next
         // line.
 
-        if (TextEditor.getLineAt(end).text === "") {
+        if (start.line !== end.line && TextEditor.getLineAt(end).text === "") {
             end = end.getDown(0);
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
-
         this._modeHandler.setCurrentModeByName(ModeName.Normal);
     }
 }

@@ -91,13 +91,16 @@ export class NormalMode extends Mode {
         "dw" : async (m) => {
             m.changeMode(MotionMode.Cursor);
             await new DeleteOperator(this._modeHandler).run(m.position, m.position.getWordRight());
-            this.motion.left().move();
+
+            if (m.lineEnd().position === m.position) {
+                m.left().move();
+            }
+
             return {};
         },
         "dW" : async (m) => {
             m.changeMode(MotionMode.Cursor);
             await new DeleteOperator(this._modeHandler).run(m.position, m.position.getBigWordRight());
-            this.motion.left().move();
             return {};
         },
         "db" : async (m) => {
@@ -113,7 +116,6 @@ export class NormalMode extends Mode {
         "de" : async (m) => {
             m.changeMode(MotionMode.Cursor);
             await new DeleteOperator(this._modeHandler).run(m.position, m.position.getCurrentWordEnd());
-            this.motion.left().move();
             return {};
         },
         "dE" : async (m) => {

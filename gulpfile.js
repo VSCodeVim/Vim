@@ -4,6 +4,10 @@ var gulp = require('gulp'),
     shell = require('gulp-shell'),
     mocha = require('gulp-mocha'),
     soften = require('gulp-soften'),
+    git = require('gulp-git'),
+    bump = require('gulp-bump'),
+    filter = require('gulp-filter'),
+    tag_version = require('gulp-tag-version'),
     trimlines = require('gulp-trimlines');
 
 var paths = {
@@ -11,10 +15,22 @@ var paths = {
     tests_ts: "test/**/*.ts"
 };
 
+function versionBump(importance) {
+    return gulp.src(['./package.json'])
+        .pipe(bump({type: importance}))
+        .pipe(gulp.dest('./'))
+        .pipe(git.commit('bump package version'))
+        .pipe(filter('package.json'))
+        .pipe(tag_version());
+}
+ 
+gulp.task('patch', function() { return versionBump('patch'); })
+gulp.task('feature', function() { return versionBump('minor'); })
+gulp.task('release', function() { return versionBump('major'); })
+
 gulp.task('typings', function () {
-    // reinstall typescript definitions
     return gulp.src('./typings.json')
-               .pipe(typings());
+        .pipe(typings());
 });
 
 gulp.task('fix-whitespace', function() {
@@ -42,3 +58,4 @@ gulp.task('compile', shell.task([
 
 gulp.task('init', ['typings']);
 gulp.task('default', ['tslint', 'compile']);
+gulp.task('release', ['default', 'patch']);
