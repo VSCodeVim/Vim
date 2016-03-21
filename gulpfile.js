@@ -25,8 +25,8 @@ function versionBump(importance) {
 }
  
 gulp.task('patch', function() { return versionBump('patch'); })
-gulp.task('feature', function() { return versionBump('minor'); })
-gulp.task('release', function() { return versionBump('major'); })
+gulp.task('minor', function() { return versionBump('minor'); })
+gulp.task('major', function() { return versionBump('major'); })
 
 gulp.task('typings', function () {
     return gulp.src('./typings.json')
