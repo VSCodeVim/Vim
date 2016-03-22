@@ -1,7 +1,5 @@
 "use strict";
 
-import * as _      from 'lodash';
-
 import { ModeName, Mode } from './mode';
 import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
@@ -41,7 +39,7 @@ export class VisualMode extends Mode {
             await new ChangeOperator(this._modeHandler).run(r[0], r[1]);
             return {};
         }
-    }
+    };
 
     shouldBeActivated(key: string, currentMode: ModeName): boolean {
         return key === "v" && currentMode === ModeName.Normal;

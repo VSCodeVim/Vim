@@ -30,6 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_space', () => handleKeyEvent("space"));
     registerCommand(context, 'extension.vim_left_curly_bracket', () => handleKeyEvent("{"));
     registerCommand(context, 'extension.vim_right_curly_bracket', () => handleKeyEvent("}"));
+    registerCommand(context, 'extension.vim_forwardslash', () => handleKeyEvent("/"));
 
     registerCommand(context, 'extension.vim_a', () => handleKeyEvent("a"));
     registerCommand(context, 'extension.vim_b', () => handleKeyEvent("b"));
