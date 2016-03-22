@@ -39,6 +39,7 @@ export class Motion implements vscode.Disposable {
 
     public set position(val: Position) {
         this._position = val;
+        this.redraw();
     }
 
     public constructor(mode: MotionMode) {
@@ -59,8 +60,8 @@ export class Motion implements vscode.Disposable {
                 let line = selection.active.line;
                 let char = selection.active.character;
 
-                this._position = new Position(line, char, null);
-                this._desiredColumn = this._position.character;
+                this.position = new Position(line, char, null);
+                this._desiredColumn = this.position.character;
                 this.changeMode(this._motionMode);
             }
         }));
@@ -68,7 +69,35 @@ export class Motion implements vscode.Disposable {
 
     public changeMode(mode : MotionMode) : Motion {
         this._motionMode = mode;
+        this.redraw();
+        return this;
+    }
+    
+    public move(): Motion {
+        return this.moveTo(null, null);
+    }
 
+    public moveTo(line: number, character: number) : Motion {
+        if (line !== null && character !== null) {
+            this._position = this._position.setLocation(line, character);
+            this._desiredColumn = this._position.character;
+        }
+
+        if (!this.position.isValid()) {
+            throw new RangeError(`Invalid position. Line=${line}, Character=${character}`);
+        }
+
+        let selection = new vscode.Selection(this.position, this.position);
+        vscode.window.activeTextEditor.selection = selection;
+
+        if (this._motionMode === MotionMode.Caret) {
+            this.highlightBlock(this.position);
+        }
+
+        return this;
+    }
+
+    private redraw() : void {
         switch (this._motionMode) {
             case MotionMode.Caret:
                 // Valid Positions for Caret: [0, eol)
@@ -88,32 +117,8 @@ export class Motion implements vscode.Disposable {
                 vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
                 break;
         }
-
-        return this;
     }
-
-    public move(): Motion {
-        return this.moveTo(null, null);
-    }
-
-    public moveTo(line: number, character: number) : Motion {
-        if (line !== null && character !== null) {
-            this._position = this.position.setLocation(line, character);
-            this._desiredColumn = this._position.character;
-        }
-
-        if (!this.position.isValid()) {
-            throw new RangeError(`Invalid position. Line=${line}, Character=${character}`);
-        }
-
-        let selection = new vscode.Selection(this.position, this.position);
-        vscode.window.activeTextEditor.selection = selection;
-
-        this.highlightBlock(this.position);
-
-        return this;
-    }
-
+    
     /**
      * Allows us to simulate a block cursor by highlighting a 1 character
      * space at the provided position in a lighter color.

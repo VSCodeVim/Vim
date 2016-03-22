@@ -4,14 +4,13 @@ import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
 import { ModeHandler } from './../mode/modeHandler.ts';
 import { ModeName } from './../mode/mode';
+import { Operator } from './operator';
 
 import * as vscode from 'vscode';
 
-export class DeleteOperator {
-    private _modeHandler: ModeHandler;
-
+export class DeleteOperator extends Operator {
     constructor(modeHandler: ModeHandler) {
-        this._modeHandler = modeHandler;
+        super(modeHandler);
     }
 
     public key(): string { return "d"; }
@@ -36,6 +35,6 @@ export class DeleteOperator {
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
-        this._modeHandler.setCurrentModeByName(ModeName.Normal);
+        this.modeHandler.setCurrentModeByName(ModeName.Normal);
     }
 }
