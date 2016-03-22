@@ -91,11 +91,11 @@ export class NormalMode extends Mode {
         "dw" : async (m) => {
             m.changeMode(MotionMode.Cursor);
             await new DeleteOperator(this._modeHandler).run(m.position, m.position.getWordRight());
-
+            
             if (m.lineEnd().position === m.position) {
                 m.left().move();
             }
-
+                        
             return {};
         },
         "dW" : async (m) => {
@@ -130,7 +130,11 @@ export class NormalMode extends Mode {
             this.motion.left().move();
             return {};
         },
-        "x" : async (m) => { await new DeleteOperator(this._modeHandler).run(m.position, m.position.getRight()); return {}; },
+        "x" : async (m) => {
+            m.changeMode(MotionMode.Cursor);            
+            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getRight()); 
+            return {}; 
+        },
         "X" : async (m) => { return vscode.commands.executeCommand("deleteLeft"); },
         "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };

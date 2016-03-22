@@ -39,6 +39,7 @@ export class Motion implements vscode.Disposable {
 
     public set position(val: Position) {
         this._position = val;
+        this.redraw();
     }
 
     public constructor(mode: MotionMode) {
@@ -59,41 +60,26 @@ export class Motion implements vscode.Disposable {
                 let line = selection.active.line;
                 let char = selection.active.character;
 
-                if (this.position.line !== line ||
-                    this.position.character !== char) {
-                    this._position = new Position(line, char, null);
-                    this._desiredColumn = this._position.character;
-                    this.changeMode(this._motionMode);
-                }
+                this.position = new Position(line, char, null);
+                this._desiredColumn = this.position.character;
+                this.changeMode(this._motionMode);
             }
         }));
     }
 
     public changeMode(mode : MotionMode) : Motion {
         this._motionMode = mode;
-
-        switch (this._motionMode) {
-            case MotionMode.Caret:
-                // Valid Positions for Caret: [0, eol)
-                this.position.positionOptions = PositionOptions.CharacterWiseExclusive;
-                break;
-
-            case MotionMode.Cursor:
-                // Valid Positions for Caret: [0, eol]
-                this.position.positionOptions = PositionOptions.CharacterWiseInclusive;
-                break;
-        }
-
+        this.redraw();
         return this;
     }
-
+    
     public move(): Motion {
         return this.moveTo(null, null);
     }
 
     public moveTo(line: number, character: number) : Motion {
         if (line !== null && character !== null) {
-            this._position = this.position.setLocation(line, character);
+            this._position = this._position.setLocation(line, character);
             this._desiredColumn = this._position.character;
         }
 
@@ -104,11 +90,35 @@ export class Motion implements vscode.Disposable {
         let selection = new vscode.Selection(this.position, this.position);
         vscode.window.activeTextEditor.selection = selection;
 
-        this.highlightBlock(this.position);
+        if (this._motionMode === MotionMode.Caret) {
+            this.highlightBlock(this.position);
+        }
 
         return this;
     }
 
+    private redraw() : void {
+        switch (this._motionMode) {
+            case MotionMode.Caret:
+                // Valid Positions for Caret: [0, eol)
+                this._position.positionOptions = PositionOptions.CharacterWiseExclusive;
+                
+                if (this.position.character > this._position.getLineEnd().character) {
+                    this._position = this._position.getLineEnd();
+                    this._desiredColumn = this._position.character;
+                }
+                
+                this.highlightBlock(this.position);
+                break;
+
+            case MotionMode.Cursor:
+                // Valid Positions for Caret: [0, eol]
+                this.position.positionOptions = PositionOptions.CharacterWiseInclusive;
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
+                break;
+        }
+    }
+    
     /**
      * Allows us to simulate a block cursor by highlighting a 1 character
      * space at the provided position in a lighter color.
@@ -123,18 +133,7 @@ export class Motion implements vscode.Disposable {
     private highlightRange(start: Position, end: Position): void {
         let range = new vscode.Range(start, end);
         vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
-
-        switch (this._motionMode) {
-            case MotionMode.Caret:
-                // Stylize Caret
-                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
-                break;
-
-            case MotionMode.Cursor:
-                // Remove Caret Styling
-                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
-                break;
-        }
+        vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
     }
 
     public select(from: Position, to: Position): void {
