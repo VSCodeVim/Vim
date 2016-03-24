@@ -58,13 +58,6 @@ export class VisualMode extends Mode {
         this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
     }
 
-    /**
-     * TODO:
-     *
-     * Eventually, the following functions should be moved into a unified
-     * key handler and dispatcher thing.
-     */
-
     private async _handleMotion(): Promise<boolean> {
         let keyHandled = false;
         let keysPressed: string;
@@ -93,8 +86,6 @@ export class VisualMode extends Mode {
              * but if we hit b we expect to select abcd, so we need to getRight() on the
              * start of the selection when it precedes where we started visual mode.
              */
-
-            // TODO this could be abstracted out
             if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
                 this.motion.select(this._selectionStart, this._selectionStop);
             } else {
@@ -130,7 +121,7 @@ export class VisualMode extends Mode {
         return !!operator;
     }
 
-    async handleKeyEvent(key: string): Promise<boolean> {
+    async handleKeyEvent(key: string): Promise<Boolean> {
         this._keyHistory.push(key);
 
         const wasMotion = await this._handleMotion();
@@ -138,5 +129,7 @@ export class VisualMode extends Mode {
         if (!wasMotion) {
             return await this._handleOperator();
         }
+
+        return true;
     }
 }

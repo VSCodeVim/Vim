@@ -1,14 +1,12 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es6",
-		"outDir": "out",
-		"noLib": true,
-		"sourceMap": true
-	},
-	"exclude": [
-        "node_modules",
-        "typings/browser.d.ts",
-        "typings/browser"
-	]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "outDir": "out",
+    "noLib": true,
+    "sourceMap": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

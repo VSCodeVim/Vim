@@ -79,5 +79,5 @@ export abstract class Mode {
 
     abstract handleActivation(key : string) : Promise<void>;
 
-    abstract handleKeyEvent(key : string) : Promise<boolean>;
+    abstract handleKeyEvent(key : string) : Promise<Boolean>;
 }
