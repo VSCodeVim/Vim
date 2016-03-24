@@ -16,7 +16,7 @@ export class Position extends vscode.Position {
     private _nonWordCharRegex : RegExp;
     private _nonBigWordCharRegex : RegExp;
 
-    public positionOptions: PositionOptions = null;
+    public positionOptions: PositionOptions;
 
     constructor(line: number, character: number, options: PositionOptions) {
         super(line, character);

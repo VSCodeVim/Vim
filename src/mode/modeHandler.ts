@@ -19,7 +19,7 @@ export class ModeHandler implements vscode.Disposable {
     constructor() {
         this._configuration = Configuration.fromUserFile();
 
-        this._motion = new Motion(null);
+        this._motion = new Motion(MotionMode.Caret);
         this._modes = [
             new NormalMode(this._motion, this),
             new InsertMode(this._motion),
@@ -40,11 +40,11 @@ export class ModeHandler implements vscode.Disposable {
 
         switch (modeName) {
             case ModeName.Insert:
-                this._motion = this._motion.changeMode(MotionMode.Cursor);
+                this._motion.motionMode = MotionMode.Cursor;
                 break;
 
             case ModeName.Normal:
-                this._motion = this._motion.changeMode(MotionMode.Caret);
+                this._motion.motionMode = MotionMode.Caret;
                 break;
         }
 

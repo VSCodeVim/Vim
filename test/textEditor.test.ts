@@ -6,9 +6,15 @@ import {TextEditor} from './../src/textEditor';
 import {setupWorkspace, cleanUpWorkspace} from './testUtils';
 
 suite("text editor", () => {
-    suiteSetup(setupWorkspace);
+    let tmpFile: vscode.Uri;
 
-    suiteTeardown(cleanUpWorkspace);
+    setup(async () => {
+        tmpFile = await setupWorkspace();
+    });
+
+    teardown(async () => {
+        await cleanUpWorkspace(tmpFile);
+    });
 
     test("insert 'Hello World'", async () => {
         let expectedText = "Hello World";

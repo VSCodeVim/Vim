@@ -1,6 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
+import * as vscode from "vscode";
 import {ModeHandler} from '../../src/mode/modeHandler';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import {VisualMode} from '../../src/mode/modeVisual';
@@ -12,16 +13,20 @@ suite("Mode Visual", () => {
     let motion: Motion;
     let visualMode: VisualMode;
     let modeHandler: ModeHandler;
+    let tmpFile: vscode.Uri;
 
-    setup(async () => {
-        await setupWorkspace();
+    suiteSetup(async () => {
+        tmpFile = await setupWorkspace();
 
         modeHandler = new ModeHandler();
         motion      = new Motion(MotionMode.Cursor);
         visualMode  = new VisualMode(motion, modeHandler);
     });
 
-    teardown(cleanUpWorkspace);
+    suiteTeardown(async () => {
+        await cleanUpWorkspace(tmpFile);
+        modeHandler.dispose();
+    });
 
     test("can be activated", () => {
         assert.equal(visualMode.shouldBeActivated("v", ModeName.Normal), true, "v didn't trigger visual mode...");
