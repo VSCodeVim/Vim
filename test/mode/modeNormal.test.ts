@@ -4,7 +4,7 @@ import * as assert from 'assert';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import {NormalMode} from '../../src/mode/modeNormal';
 import {ModeName} from '../../src/mode/mode';
-import {Motion, MotionMode} from '../../src/motion/motion';
+import {Motion} from '../../src/motion/motion';
 import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from '../../src/mode/modeHandler';
 
@@ -18,14 +18,14 @@ suite("Mode Normal", () => {
         await setupWorkspace();
 
         modeHandler = new ModeHandler();
-        motion      = new Motion(MotionMode.Cursor);
+        motion      = modeHandler.motion;
         modeNormal  = new NormalMode(motion, modeHandler);
     });
 
     teardown(cleanUpWorkspace);
 
     test("can be activated", () => {
-        let activationKeys = ['esc', 'ctrl+['];
+        let activationKeys = ['<esc>', 'ctrl+['];
 
         for (let i = 0; i < activationKeys.length; i++) {
             let key = activationKeys[i];
@@ -46,9 +46,11 @@ suite("Mode Normal", () => {
     });
 
     test("Can handle 'dw'", async () => {
-        await TextEditor.insert("text text");
+        await TextEditor.insert("text text text");
 
         motion = motion.moveTo(0, 5);
+        await modeNormal.handleKeyEvent("dw");
+        await assertEqualLines(["text text"]);
         await modeNormal.handleKeyEvent("dw");
         await assertEqualLines(["text "]);
         await modeNormal.handleKeyEvent("dw");
@@ -93,7 +95,7 @@ suite("Mode Normal", () => {
         motion = motion.moveTo(0, 6);
         await modeNormal.handleKeyEvent("g");
         await modeNormal.handleKeyEvent("e");
-        await assert.equal(motion.position.character, 4, "wrong position");
+        await assert.equal(motion.position.character, 3, "wrong position");
     });
 
     test("Can handle 'C'", async () => {

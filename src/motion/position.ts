@@ -112,12 +112,12 @@ export class Position extends vscode.Position {
         return this.getWordRightWithRegex(this._nonBigWordCharRegex, count || 1);
     }
 
-    public getLastWordEnd(): Position {
-        return this.getLastWordEndWithRegex(this._nonWordCharRegex);
+    public getLastWordEnd(count? : number): Position {
+        return this.getLastWordEndWithRegex(this._nonWordCharRegex, count || 1);
     }
 
-    public getLastBigWordEnd(): Position {
-        return this.getLastWordEndWithRegex(this._nonBigWordCharRegex);
+    public getLastBigWordEnd(count? : number): Position {
+        return this.getLastWordEndWithRegex(this._nonBigWordCharRegex, count || 1);
     }
 
     public getCurrentWordEnd(count? : number): Position {
@@ -385,7 +385,10 @@ export class Position extends vscode.Position {
         return new Position(TextEditor.getLineCount() - 1, 0, this.positionOptions).getLineEnd();
     }
 
-    private getLastWordEndWithRegex(regex: RegExp) : Position {
+    private getLastWordEndWithRegex(regex: RegExp, count: number) : Position {
+        if (!count) {
+            return this;
+        }
         for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
             let positions    = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
             let index = _.findIndex(positions, index => index >= this.character || currentLine !== this.line);
@@ -400,7 +403,7 @@ export class Position extends vscode.Position {
                 if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
                     newCharacter++;
                 }
-                return new Position(currentLine, newCharacter, this.positionOptions);
+                return new Position(currentLine, newCharacter, this.positionOptions).getLastWordEndWithRegex(regex, count - 1);
             }
         }
 

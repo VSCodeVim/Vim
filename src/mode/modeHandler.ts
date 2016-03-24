@@ -15,6 +15,7 @@ export class ModeHandler implements vscode.Disposable {
     private _modes : Mode[];
     private _statusBarItem : vscode.StatusBarItem;
     private _configuration : Configuration;
+    private _processingInput = false;
 
     constructor() {
         this._configuration = Configuration.fromUserFile();
@@ -31,6 +32,10 @@ export class ModeHandler implements vscode.Disposable {
 
     get currentMode() : Mode {
         return this._modes.find(mode => mode.isActive);
+    }
+
+    get motion() : Motion {
+        return this._motion;
     }
 
     setCurrentModeByName(modeName : ModeName) {
@@ -52,7 +57,7 @@ export class ModeHandler implements vscode.Disposable {
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
     }
 
-    handleKeyEvent(key : string) : void {
+    async handleKeyEvent(key : string) : Promise<void> {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
@@ -64,7 +69,7 @@ export class ModeHandler implements vscode.Disposable {
         let inactiveModes = _.filter(this._modes, (m) => !m.isActive);
 
         for (let mode of inactiveModes) {
-          if (mode.shouldBeActivated(keysPressed, currentModeName)) {
+          if (!this._processingInput && mode.shouldBeActivated(keysPressed, currentModeName)) {
             if (nextMode) {
               console.error("More that one mode matched in handleKeyEvent!");
             }
@@ -78,7 +83,8 @@ export class ModeHandler implements vscode.Disposable {
             this.setCurrentModeByName(nextMode.name);
             nextMode.handleActivation(key);
         } else {
-            this.currentMode.handleKeyEvent(key);
+            let retval = await this.currentMode.handleKeyEvent(key);
+            this._processingInput = retval === true;
         }
     }
 

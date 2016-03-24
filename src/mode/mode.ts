@@ -4,7 +4,7 @@ import * as _      from 'lodash';
 import * as vscode from 'vscode';
 
 import {KeyParser} from './keyParser';
-import {Motion} from './../motion/motion';
+import {Motion, MotionMode} from './../motion/motion';
 import {Position, PositionOptions} from './../motion/position';
 
 export enum ModeName {
@@ -85,6 +85,8 @@ export abstract class Mode {
         "<count>E" : async (p, o) => { return p.getCurrentBigWordEnd(o.count); },
         "<count>b" : async (p, o) => { return p.getWordLeft(o.count); },
         "<count>B" : async (p, o) => { return p.getBigWordLeft(o.count); },
+        "<count>ge" : async (p, o) => { return p.getLastWordEnd(o.count); },
+        "<count>gE" : async (p, o) => { return p.getLastBigWordEnd(o.count); },
         "<count>}" : async (p, o) => { return p.getCurrentParagraphEnd(o.count); },
         "<count>{" : async (p, o) => { return p.getCurrentParagraphEnd(o.count); },
         "<count><c-f>": async (p, o) => { await vscode.commands.executeCommand("cursorPageDown"); return this._motion.position; },
@@ -105,7 +107,7 @@ export abstract class Mode {
         "<count>F<argument>" : async (p, o) => { return p.findBackwards(o.argument, o.count); }
     };
 
-    protected textObjects : { [key : string] : () => Promise<{}>; } = {
+    protected textObjects : { [key : string] : (postion : Position) => Promise<Array<Position>>; } = {
     };
 
     protected commands : { [key : string] : (range : Array<Position>) => Promise<{}>; } = {
@@ -115,11 +117,12 @@ export abstract class Mode {
 
     abstract handleActivation(key : string) : Promise<void>;
 
-    public async handleKeyEvent(key : string) : Promise<void> {
+    public async handleKeyEvent(key : string) : Promise<boolean> {
         const retval = this._keyParser.digestKey(key);
         if (retval && retval.command) {
-            return await this.handleCommand(retval);
+            await this.handleCommand(retval);
         }
+        return retval;
     }
 
     async handleCommand(command) : Promise<void> {
@@ -129,9 +132,19 @@ export abstract class Mode {
             this.motion.moveTo(position.line, position.character);
         } else if (this.commands[commandString]) {
             let range = [];
-            if (command.textObject) {
-                // TODO make range for textObject
+            if (command.textObject && this.textObjects[command.textObject]) {
+                this.motion.changeMode(MotionMode.Cursor);
+                range = await this.textObjects[command.textObject](this.motion.position);
             } else if (command.motion && this.motions[command.motion.command]) {
+                if (commandString === "<register><count>c<range>") {
+                    // cw/cW actually behaves like ce/CE
+                    if (command.motion.command === "<count>w") {
+                        command.motion.command = "<count>e";
+                    } else if (command.motion.command === "<count>W") {
+                        command.motion.command = "<count>E";
+                    }
+                }
+
                 range[0] = this.motion.position;
 
                 const position = new Position(this.motion.position.line, this.motion.position.character,
