@@ -1,5 +1,6 @@
 "use strict";
 
+import * as _ from "lodash";
 import * as vscode from "vscode";
 import {Position, PositionOptions} from './position';
 
@@ -33,24 +34,36 @@ export class Motion implements vscode.Disposable {
         borderWidth: '1px'
     });
 
+    public set motionMode(val: MotionMode) {
+        this._motionMode = val;
+        this._position.positionOptions = this.getPositionOptionFromMotionMode(val);
+        this.redraw();
+    };
+
     public get position() : Position {
         return this._position;
     }
 
     public set position(val: Position) {
         this._position = val;
+
+        if (this._position.character > this._position.getLineEnd().character) {
+            this._position = this._position.getLineEnd();
+            this._desiredColumn = this._position.character;
+        }
+
         this.redraw();
     }
 
     public constructor(mode: MotionMode) {
         // initialize to current position
         let currentPosition = vscode.window.activeTextEditor.selection.active;
-        this._position = new Position(currentPosition.line, currentPosition.character, null);
+        let positionOption = this.getPositionOptionFromMotionMode(mode);
+
+        this._position = new Position(currentPosition.line, currentPosition.character, positionOption);
         this._desiredColumn = this._position.character;
 
-        if (mode !== null) {
-            this.changeMode(mode);
-        }
+        this.motionMode = mode;
 
         this._disposables.push(vscode.window.onDidChangeTextEditorSelection(e => {
             // handle scenarios where mouse used to change current position
@@ -60,19 +73,13 @@ export class Motion implements vscode.Disposable {
                 let line = selection.active.line;
                 let char = selection.active.character;
 
-                this.position = new Position(line, char, null);
+                this.position = new Position(line, char, this.position.positionOptions);
                 this._desiredColumn = this.position.character;
-                this.changeMode(this._motionMode);
+                this.motionMode = mode;
             }
         }));
     }
 
-    public changeMode(mode : MotionMode) : Motion {
-        this._motionMode = mode;
-        this.redraw();
-        return this;
-    }
-    
     public move(): Motion {
         return this.moveTo(null, null);
     }
@@ -90,9 +97,7 @@ export class Motion implements vscode.Disposable {
         let selection = new vscode.Selection(this.position, this.position);
         vscode.window.activeTextEditor.selection = selection;
 
-        if (this._motionMode === MotionMode.Caret) {
-            this.highlightBlock(this.position);
-        }
+        this.redraw();
 
         return this;
     }
@@ -100,25 +105,15 @@ export class Motion implements vscode.Disposable {
     private redraw() : void {
         switch (this._motionMode) {
             case MotionMode.Caret:
-                // Valid Positions for Caret: [0, eol)
-                this._position.positionOptions = PositionOptions.CharacterWiseExclusive;
-                
-                if (this.position.character > this._position.getLineEnd().character) {
-                    this._position = this._position.getLineEnd();
-                    this._desiredColumn = this._position.character;
-                }
-                
                 this.highlightBlock(this.position);
                 break;
 
             case MotionMode.Cursor:
-                // Valid Positions for Caret: [0, eol]
-                this.position.positionOptions = PositionOptions.CharacterWiseInclusive;
                 vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
                 break;
         }
     }
-    
+
     /**
      * Allows us to simulate a block cursor by highlighting a 1 character
      * space at the provided position in a lighter color.
@@ -263,6 +258,21 @@ export class Motion implements vscode.Disposable {
       this._position = this.position.getCurrentParagraphBeginning();
       this._desiredColumn = this.position.character;
       return this;
+    }
+
+   private getPositionOptionFromMotionMode(val: MotionMode) {
+        switch (val) {
+            case MotionMode.Caret:
+                // Valid Positions for Caret: [0, eol)
+                return PositionOptions.CharacterWiseExclusive;
+
+            case MotionMode.Cursor:
+                // Valid Positions for Caret: [0, eol]
+                return PositionOptions.CharacterWiseInclusive;
+
+            default:
+                throw new Error("unknown " + val);
+        }
     }
 
     dispose() {

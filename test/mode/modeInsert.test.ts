@@ -1,6 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
+import * as vscode from "vscode";
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import {InsertMode} from '../../src/mode/modeInsert';
 import {ModeName} from '../../src/mode/mode';
@@ -11,15 +12,17 @@ suite("Mode Insert", () => {
 
     let motion: Motion;
     let modeInsert: InsertMode;
+    let tmpFile: vscode.Uri;
 
     setup(async () => {
-        await setupWorkspace();
-
+        tmpFile = await setupWorkspace();
         motion = new Motion(MotionMode.Cursor);
         modeInsert = new InsertMode(motion);
     });
 
-    teardown(cleanUpWorkspace);
+    teardown(async () => {
+        await cleanUpWorkspace(tmpFile);
+    });
 
     test("can be activated", () => {
         let activationKeys = ['i', 'I', 'o', 'O', 'a', 'A'];

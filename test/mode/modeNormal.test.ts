@@ -1,6 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
+import * as vscode from "vscode";
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import {NormalMode} from '../../src/mode/modeNormal';
 import {ModeName} from '../../src/mode/mode';
@@ -13,16 +14,20 @@ suite("Mode Normal", () => {
     let motion : Motion;
     let modeNormal : NormalMode;
     let modeHandler: ModeHandler;
+    let tmpFile: vscode.Uri;
 
     setup(async () => {
-        await setupWorkspace();
+        tmpFile = await setupWorkspace();
 
         modeHandler = new ModeHandler();
         motion      = new Motion(MotionMode.Cursor);
         modeNormal  = new NormalMode(motion, modeHandler);
     });
 
-    teardown(cleanUpWorkspace);
+    teardown(async () => {
+        await cleanUpWorkspace(tmpFile);
+        modeHandler.dispose();
+    });
 
     test("can be activated", () => {
         let activationKeys = ['esc', 'ctrl+['];

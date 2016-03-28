@@ -2,25 +2,28 @@
 
 import * as assert from 'assert';
 import * as vscode from "vscode";
-import {TextEditor} from './../src/textEditor';
-import {Motion, MotionMode} from './../src/motion/motion';
-import {setupWorkspace, cleanUpWorkspace} from './testUtils';
+import {TextEditor} from './../../src/textEditor';
+import {Motion, MotionMode} from './../../src/motion/motion';
+import {setupWorkspace, cleanUpWorkspace} from './../testUtils';
 
 suite("motion", () => {
-    let motionModes = [MotionMode.Caret, MotionMode.Cursor];
-    let text: string[] = [
+    const motionModes = [MotionMode.Caret, MotionMode.Cursor];
+    const text: string[] = [
         "mary had",
         "a",
         "little lamb",
         " whose fleece was "
     ];
+    let tmpFile: vscode.Uri;
 
     suiteSetup(async () => {
-        await setupWorkspace();
+        tmpFile = await setupWorkspace();
         await TextEditor.insert(text.join('\n'));
     });
 
-    suiteTeardown(cleanUpWorkspace);
+    suiteTeardown(async () => {
+        await cleanUpWorkspace(tmpFile);
+    });
 
     test("char right: should move one column right", () => {
         for (let o of motionModes) {
@@ -120,7 +123,7 @@ suite("motion", () => {
 
     suite("line up", () => {
         motionModes.forEach(o => {
-            test("should move cursor one line up", () => {
+            test("should move cursor one line up: " + o, () => {
                 let motion = new Motion(o).moveTo(1, 0);
                 assert.equal(motion.position.line, 1);
                 assert.equal(motion.position.character, 0);
@@ -134,7 +137,7 @@ suite("motion", () => {
                 assert.equal(motion.position.character, curPos.character);
             });
 
-            test("top-most line should stay at the same location", () => {
+            test("top-most line should stay at the same location: " + o, () => {
                 let motion = new Motion(o).moveTo(0, 1);
                 assert.equal(motion.position.line, 0);
                 assert.equal(motion.position.character, 1);
@@ -208,7 +211,8 @@ suite("motion", () => {
 });
 
 suite("word motion", () => {
-    let text: string[] = [
+    let tmpFile: vscode.Uri;
+    const text: string[] = [
         "if (true) {",
         "  return true;",
         "} else {",
@@ -218,13 +222,14 @@ suite("word motion", () => {
         "} // endif"
     ];
 
-    suiteSetup(() => {
-        return setupWorkspace().then(() => {
-            return TextEditor.insert(text.join('\n'));
-        });
+    suiteSetup(async () => {
+        tmpFile = await setupWorkspace();
+        await TextEditor.insert(text.join('\n'));
     });
 
-    suiteTeardown(cleanUpWorkspace);
+    suiteTeardown(async () => {
+        await cleanUpWorkspace(tmpFile);
+    });
 
     suite("word right", () => {
         test("move to word right", () => {
@@ -426,9 +431,9 @@ suite("word motion", () => {
     });
 });
 
-
 suite("paragraph motion", () => {
-    let text: Array<string> = [
+    let tmpFile: vscode.Uri;
+    const text: Array<string> = [
         "this text has", // 0
         "",              // 1
         "many",          // 2
@@ -440,13 +445,14 @@ suite("paragraph motion", () => {
         "WOW"            // 8
     ];
 
-    suiteSetup(() => {
-        return setupWorkspace().then(() => {
-            return TextEditor.insert(text.join('\n'));
-        });
+    suiteSetup(async () => {
+        tmpFile = await setupWorkspace();
+        await TextEditor.insert(text.join('\n'));
     });
 
-    suiteTeardown(cleanUpWorkspace);
+    suiteTeardown(async () => {
+        await cleanUpWorkspace(tmpFile);
+    });
 
     suite("paragraph down", () => {
         test("move down normally", () => {
