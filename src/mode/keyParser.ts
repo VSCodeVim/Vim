@@ -1,8 +1,18 @@
 "use strict";
 
 import * as _ from 'lodash';
+/// <reference path="bennu.d.ts"
 import { text, parse, incremental } from 'bennu';
 import { stream } from 'nu-stream';
+
+interface IVimCommand {
+    command: string;
+    argument?: string;
+    count: number;
+    motion?: string;
+    motionCount?: number;
+    textObject?: string;
+}
 
 export class KeyParser {
     private initialParserState;
@@ -69,11 +79,11 @@ export class KeyParser {
         const parts = [];
         function readStrings(s2) {
             stream.forEach(value => {
-            if (typeof value === 'string') {
-                parts.push(value);
-            } else {
-                readStrings(value);
-            }
+                if (typeof value === 'string') {
+                    parts.push(value);
+                } else {
+                    readStrings(value);
+                }
             }, s2);
         }
         readStrings(s);
@@ -112,7 +122,9 @@ export class KeyParser {
             }
         );
 
-        const range = parse.late(() => { return parse.either(compiledTextObjects, compiledMotions); });
+        let compiledMotionsForwardVariable;
+
+        const range = parse.late(() => { return parse.either(compiledTextObjects, compiledMotionsForwardVariable); });
 
         const compiledMotions = parse.choicea(
             motions.map((m) => {
@@ -121,11 +133,11 @@ export class KeyParser {
                     parse.bind(
                         parse.enumerationa(keys.map(convertKeyToParser)),
                         (x) => {
-                            let command = { command: m };
+                            let command : IVimCommand = { command: m, count: 0 };
                             stream.forEach((value) => {
                                 if (value.argument !== undefined ||
                                     value.count !== undefined) {
-                                    command = _.extend(command, value);
+                                    command = <IVimCommand>_.extend(command, value);
                                 }
                             }, x);
                             return parse.always(command);
@@ -134,6 +146,7 @@ export class KeyParser {
                 );
             })
         );
+        compiledMotionsForwardVariable = compiledMotions;
 
         const compiledCommands = parse.choicea(
             commands.map((c) => {
@@ -142,7 +155,7 @@ export class KeyParser {
                     parse.bind(
                         parse.enumerationa(keys.map(convertKeyToParser)),
                         (x) => {
-                            let command = { command: c, motion: null };
+                            let command: IVimCommand = { command: c, motion: null, count: 0};
                             stream.forEach((value) => {
                                 if (value.command !== undefined) {
                                     // motion
@@ -151,7 +164,7 @@ export class KeyParser {
                                     value.count !== undefined ||
                                     value.register !== undefined ||
                                     value.textObject !== undefined) {
-                                    command = _.extend(command, value);
+                                    command = <IVimCommand>_.extend(command, value);
                                 }
                             }, x);
                             return parse.always(command);
