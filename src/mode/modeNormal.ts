@@ -1,6 +1,5 @@
 "use strict";
 
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import {ModeName, Mode} from './mode';
@@ -9,134 +8,72 @@ import {Motion, MotionMode} from './../motion/motion';
 import {ModeHandler} from './modeHandler';
 import {DeleteOperator} from './../operator/delete';
 import {ChangeOperator} from './../operator/change';
-import {TextEditor} from './../textEditor';
+import {Position} from './../motion/position';
+import {TextEditor} from "./../textEditor";
 
 export class NormalMode extends Mode {
-    protected keyHandler : { [key : string] : (motion : Motion) => Promise<{}>; } = {
-        ":" : async () => { return showCmdLine("", this._modeHandler); },
-        "/" : async () => { return vscode.commands.executeCommand("workbench.view.search"); },
-        "u" : async () => { return vscode.commands.executeCommand("undo"); },
-        "ctrl+r" : async () => { return vscode.commands.executeCommand("redo"); },
-        "h" : async (c) => { return c.left().move(); },
-        "j" : async (c) => { return c.down().move(); },
-        "k" : async (c) => { return c.up().move(); },
-        "l" : async (c) => { return c.right().move(); },
-        "$" : async (c) => { return c.lineEnd().move(); },
-        "0" : async (c) => { return c.lineBegin().move(); },
-        "^" : async () => { return vscode.commands.executeCommand("cursorHome"); },
-        "gg" : async (c) => { return c.firstLineNonBlankChar().move(); },
-        "G" : async (c) => { return c.lastLineNonBlankChar().move(); },
-        "w" : async (c) => { return c.wordRight().move(); },
-        "W" : async (c) => { return c.bigWordRight().move(); },
-        "e" : async (c) => { return c.goToEndOfCurrentWord().move(); },
-        "E" : async (c) => { return c.goToEndOfCurrentBigWord().move(); },
-        "ge" : async (c) => { return c.goToEndOfLastWord().move(); },
-        "gE" : async (c) => { return c.goToEndOfLastWord().move(); },
-        "b" : async (c) => { return c.wordLeft().move(); },
-        "B" : async (c) => { return c.bigWordLeft().move(); },
-        "}" : async (c) => { return c.goToEndOfCurrentParagraph().move(); },
-        "{" : async (c) => { return c.goToBeginningOfCurrentParagraph().move(); },
-        "ctrl+f": async (c) => { return vscode.commands.executeCommand("cursorPageDown"); },
-        "ctrl+b": async (c) => { return vscode.commands.executeCommand("cursorPageUp"); },
-        "%" : async () => { return vscode.commands.executeCommand("editor.action.jumpToBracket"); },
-        ">>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
-        "<<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
-        "cw" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            let currentChar = TextEditor.getLineAt(m.position).text[m.position.character];
+
+    protected textObjects : { [key : string] : (position: Position) => Promise<Array<Position>>; } = {
+        "iw" : async (p) => {
+            const range = [];
+            const currentChar = TextEditor.getLineAt(p).text[p.character];
             if (currentChar === ' ' || currentChar === '\t') {
-                await new ChangeOperator(this._modeHandler).run(m.position, m.position.getWordRight());
+                range[0] = p.getLastWordEnd();
+                range[1] = p.getWordRight();
             } else {
-                await new ChangeOperator(this._modeHandler).run(m.position, m.position.getCurrentWordEnd());
+                range[0] = p.getWordLeft();
+                range[1] = p.getCurrentWordEnd();
             }
-            return {};
+            return range;
         },
-        "cW" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            let currentChar = TextEditor.getLineAt(m.position).text[m.position.character];
+        "aw" : async (p) => {
+            const range = [];
+            const currentChar = TextEditor.getLineAt(p).text[p.character];
             if (currentChar === ' ' || currentChar === '\t') {
-                await new ChangeOperator(this._modeHandler).run(m.position, m.position.getWordRight());
+                range[0] = p.getLastWordEnd();
+                range[1] = p.getCurrentWordEnd();
             } else {
-                await new ChangeOperator(this._modeHandler).run(m.position, m.position.getCurrentBigWordEnd());
+                range[0] = p.getWordLeft();
+                range[1] = p.getWordRight();
             }
+            return range;
+        },
+    };
+
+    protected commands : { [key : string] : (range : Array<Position>) => Promise<{}>; } = {
+        ":" : async (r) => { return showCmdLine("", this._modeHandler); },
+        "u" : async (r) => { return vscode.commands.executeCommand("undo"); },
+        "<c-r>" : async (r) => { return vscode.commands.executeCommand("redo"); },
+
+        // "<count>>>" : async () => { return vscode.commands.executeCommand("editor.action.indentLines"); },
+        // "<count><<" : async () => { return vscode.commands.executeCommand("editor.action.outdentLines"); },
+        "<register><count>dd" : async (r) => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
+        "<register><count>d<range>" : async (r) => {
+            this.motion.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(r[0], r[1]);
             return {};
         },
-        "ciw" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            let currentChar = TextEditor.getLineAt(m.position).text[m.position.character];
-            if (currentChar === ' ' || currentChar === '\t') {
-                await new ChangeOperator(this._modeHandler).run(m.position.getLastWordEnd(), m.position.getWordRight());
-            } else {
-                await new ChangeOperator(this._modeHandler).run(m.position.getWordLeft(), m.position.getCurrentWordEnd());
-            }
-            this._modeHandler.setCurrentModeByName(ModeName.Insert);
+        "<register><count>c<range>" : async (r) => {
+            await new ChangeOperator(this._modeHandler).run(r[0], r[1]);
             return {};
         },
-        "caw" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            let currentChar = TextEditor.getLineAt(m.position).text[m.position.character];
-            if (currentChar === ' ' || currentChar === '\t') {
-                await new ChangeOperator(this._modeHandler).run(m.position.getLastWordEnd(), m.position.getCurrentWordEnd());
-            } else {
-                await new ChangeOperator(this._modeHandler).run(m.position.getWordLeft(), m.position.getWordRight());
-            }
+        "<register><count>D" : async (r) => {
+            this.motion.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getLineEnd());
             return {};
         },
-        "C" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            await new ChangeOperator(this._modeHandler).run(m.position, m.position.getLineEnd());
+        "<register><count>C" : async (r) => {
+            this.motion.changeMode(MotionMode.Cursor);
+            await new ChangeOperator(this._modeHandler).run(this.motion.position, this.motion.position.getLineEnd());
             return {};
         },
-        "dd" : async () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
-        "dw" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getWordRight());
-            
-            if (m.lineEnd().position === m.position) {
-                m.left().move();
-            }
-                        
+        "x" : async (r) => {
+            this.motion.changeMode(MotionMode.Cursor);
+            await new DeleteOperator(this._modeHandler).run(this.motion.position, this.motion.position.getRight());
             return {};
         },
-        "dW" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getBigWordRight());
-            return {};
-        },
-        "db" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getWordLeft());
-            return {};
-        },
-        "dB" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getBigWordLeft());
-            return {};
-        },
-        "de" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getCurrentWordEnd());
-            return {};
-        },
-        "dE" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getCurrentBigWordEnd());
-            this.motion.left().move();
-            return {};
-        },
-        "D" : async (m) => {
-            m.changeMode(MotionMode.Cursor);
-            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getLineEnd());
-            this.motion.left().move();
-            return {};
-        },
-        "x" : async (m) => {
-            m.changeMode(MotionMode.Cursor);            
-            await new DeleteOperator(this._modeHandler).run(m.position, m.position.getRight()); 
-            return {}; 
-        },
-        "X" : async (m) => { return vscode.commands.executeCommand("deleteLeft"); },
-        "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
+        "X" : async (r) => { return vscode.commands.executeCommand("deleteLeft"); },
+        "<esc>": async (r) => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
 
     private _modeHandler: ModeHandler;
@@ -145,35 +82,16 @@ export class NormalMode extends Mode {
         super(ModeName.Normal, motion);
 
         this._modeHandler = modeHandler;
+
+        this.initializeParser();
     }
 
     shouldBeActivated(key : string, currentMode : ModeName) : boolean {
-        return (key === 'esc' || key === 'ctrl+[' || (key === "v" && currentMode === ModeName.Visual));
+        return (key === '<esc>' || key === 'ctrl+[' || (key === "v" && currentMode === ModeName.Visual));
     }
 
     async handleActivation(key : string): Promise<void> {
         this.motion.left().move();
     }
 
-    async handleKeyEvent(key : string): Promise<boolean>  {
-        this._keyHistory.push(key);
-
-        let keyHandled = false;
-        let keysPressed: string;
-
-        for (let window = this._keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this._keyHistory, window).join('');
-            if (this.keyHandler[keysPressed] !== undefined) {
-                keyHandled = true;
-                break;
-            }
-        }
-
-        if (keyHandled) {
-            this._keyHistory = [];
-            await this.keyHandler[keysPressed](this.motion);
-        }
-
-        return keyHandled;
-    }
 }

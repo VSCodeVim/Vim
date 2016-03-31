@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {TextEditor} from './../textEditor';
 import {Motion} from './../motion/motion';
+import {Position} from './../motion/position';
 
 export class InsertMode extends Mode {
     private activationKeyHandler : { [ key : string] : (motion : Motion) => Promise<{}> } = {
@@ -34,8 +35,14 @@ export class InsertMode extends Mode {
         }
     };
 
+    // TODO add mapping for arrow keys here
+    protected motions : { [key : string] : (position : Position, options) => Promise<Position>; } = { };
+
+    protected commands : { [key : string] : () => Promise<{}>; } = { };
+
     constructor(motion : Motion) {
         super(ModeName.Insert, motion);
+        this.initializeParser();
     }
 
     shouldBeActivated(key : string, currentMode : ModeName) : boolean {
@@ -47,10 +54,15 @@ export class InsertMode extends Mode {
     }
 
     async handleKeyEvent(key : string) : Promise<boolean> {
-        await TextEditor.insert(this.resolveKeyValue(key));
-        await vscode.commands.executeCommand("editor.action.triggerSuggest");
+        const retval = this.keyParser.digestKey(key);
 
-        return true;
+        if (retval && retval.command) {
+            await this.handleCommand(retval);
+        } else if (retval === false) {
+            await TextEditor.insert(this.resolveKeyValue(key));
+            await vscode.commands.executeCommand("editor.action.triggerSuggest");
+        }
+        return retval;
     }
 
     // Some keys have names that are different to their value.
