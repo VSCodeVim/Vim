@@ -46,15 +46,15 @@ suite("Mode Normal", () => {
     });
 
     test("Can handle 'dw'", async () => {
-        await TextEditor.insert("text text");
+        await TextEditor.insert("text text text");
 
         motion = motion.moveTo(0, 5);
+        await modeNormal.handleKeyEvent("dw");
+        await assertEqualLines(["text text"]);
         await modeNormal.handleKeyEvent("dw");
         await assertEqualLines(["text "]);
         await modeNormal.handleKeyEvent("dw");
         await assertEqualLines(["text"]);
-        await modeNormal.handleKeyEvent("dw");
-        await assertEqualLines(["tex"]);
     });
 
     test("Can handle 'de'", async () => {
