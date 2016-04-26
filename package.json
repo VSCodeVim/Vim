@@ -148,7 +148,7 @@
   },
   "dependencies": {
     "lodash": "^4.5.1",
-    "copy-paste",: "1.1.4"
+    "copy-paste": "^1.1.4"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
