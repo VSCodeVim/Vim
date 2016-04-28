@@ -2,7 +2,7 @@
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { copy, paste } from "copy-paste";
+import { copy } from "copy-paste";
 import { ModeHandler } from "../../src/mode/modeHandler";
 import { PutOperator } from "../../src/operator/put";
 import { TextEditor } from '../../src/textEditor';

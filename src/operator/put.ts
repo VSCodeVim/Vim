@@ -18,16 +18,16 @@ export class PutOperator extends Operator {
      * Run this operator on a range.
      */
     public async run(start: Position, end: Position): Promise<void> {
-    	return new Promise<void>((resolve, reject) => {
-    		paste(async (err, data) => {
-    			if (err) {
-					reject();
-    			} else {
-					await TextEditor.insertAt(data, start.getRight());
-					this.modeHandler.currentMode.motion.moveTo(start.line, start.getRight().character);
-					resolve();
-    			}
-    		})
-    	});
+        return new Promise<void>((resolve, reject) => {
+            paste(async (err, data) => {
+                if (err) {
+                    reject();
+                } else {
+                    await TextEditor.insertAt(data, start.getRight());
+                    this.modeHandler.currentMode.motion.moveTo(start.line, start.getRight().character);
+                    resolve();
+                }
+            });
+        });
     }
 }
