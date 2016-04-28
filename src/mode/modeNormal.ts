@@ -137,7 +137,10 @@ export class NormalMode extends Mode {
             return {};
         },
         "X" : async (m) => { return vscode.commands.executeCommand("deleteLeft"); },
-        "p" : async (m) => { await new PutOperator(this._modeHandler).run(m.position, null);},
+        "p" : async (m) => {
+            await new PutOperator(this._modeHandler).run(m.position, null);
+            return {};
+        },
         "esc": async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
     };
 
