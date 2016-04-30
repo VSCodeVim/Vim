@@ -1,7 +1,7 @@
 notifications:
   email: false
 
-sudo: false
+sudo: required
 
 language: node_js
 
@@ -12,6 +12,8 @@ env:
   - GITHUB_TOKEN=1b17d62d38a4846efa7ea4de4b773b581787b0f1 
   
 before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y xclip
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
       sh -e /etc/init.d/xvfb start;
