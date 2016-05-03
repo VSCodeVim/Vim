@@ -35,7 +35,7 @@ export class VisualMode extends Mode {
             // simply allow the operators to say what mode they transition into.
             'd': new DeleteOperator(modeHandler),
             'x': new DeleteOperator(modeHandler),
-            'c': new ChangeOperator(modeHandler)
+            'c': new ChangeOperator(modeHandler),
         };
     }
 
