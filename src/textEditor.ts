@@ -1,6 +1,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import {copy} from "copy-paste";
 
 export class TextEditor {
     static async insert(text: string): Promise<boolean> {
@@ -16,6 +17,7 @@ export class TextEditor {
     }
 
     static async delete(range: vscode.Range): Promise<boolean> {
+        copy(vscode.window.activeTextEditor.document.getText(range));
         return vscode.window.activeTextEditor.edit(editBuilder => {
             editBuilder.delete(range);
         });
