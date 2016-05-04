@@ -92,7 +92,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     dispose() {
+        this._statusBarItem.hide();
         this._statusBarItem.dispose();
-        this._motion.dispose();
+        this._motion.dispose();        
     }
 }
