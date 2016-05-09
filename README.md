@@ -2,7 +2,7 @@
 
 # Vim
 
-Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables the power of the Vim keybinding experience within Visual Studio Code. 
+Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables the power of the Vim keybinding experience within Visual Studio Code. This is a work-in-progress and contributions are welcomed and loved!
 
 ![Screenshot](images/screen.png)
 
