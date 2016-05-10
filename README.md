@@ -104,7 +104,7 @@ Status                 | Key                       | Description
 dw, dW, db, dB, de, dE | d{motion}                 | delete the text that is moved over with {motion}
                        | {visual}d                 | delete the highlighted text
 :white_check_mark:     | dd                        | delete N lines
-                       | D                         | delete to end-of-line (and N-1 more lines)
+:white_check_mark:     | D                         | delete to end-of-line (and N-1 more lines)
                        | J                         | join N-1 lines (delete newlines)
                        | {visual}J                 | join the highlighted lines
 
