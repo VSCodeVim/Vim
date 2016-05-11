@@ -15,9 +15,18 @@ export class TextEditor {
             editBuilder.insert(position, text);
         });
     }
+    
+    static async copy(range: vscode.Range): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const text = vscode.window.activeTextEditor.document.getText(range); 
+            copy(text, (err) => {
+                (err) ? reject() : resolve()
+            });
+        });
+    }
 
     static async delete(range: vscode.Range): Promise<boolean> {
-        copy(vscode.window.activeTextEditor.document.getText(range));
+        TextEditor.copy(range);
         return vscode.window.activeTextEditor.edit(editBuilder => {
             editBuilder.delete(range);
         });
@@ -76,7 +85,7 @@ export class TextEditor {
     static getSelection(): vscode.Range {
         return vscode.window.activeTextEditor.selection;
     }
-
+    
     static isFirstLine(position : vscode.Position): boolean {
         return position.line === 0;
     }
