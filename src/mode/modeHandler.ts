@@ -32,6 +32,10 @@ export class ModeHandler implements vscode.Disposable {
     get currentMode() : Mode {
         return this._modes.find(mode => mode.isActive);
     }
+    
+    setNormal() {
+        this.setCurrentModeByName(ModeName.Normal);
+    }
 
     setCurrentModeByName(modeName : ModeName) {
         for (let mode of this._modes) {
