@@ -7,6 +7,7 @@ import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
 import { Operator } from './../operator/operator';
 import { DeleteOperator } from './../operator/delete';
+import { YankOperator } from './../operator/yank';
 import { ModeHandler } from './modeHandler.ts';
 import { ChangeOperator } from './../operator/change';
 
@@ -36,6 +37,7 @@ export class VisualMode extends Mode {
             'd': new DeleteOperator(modeHandler),
             'x': new DeleteOperator(modeHandler),
             'c': new ChangeOperator(modeHandler),
+            'y': new YankOperator(modeHandler),
         };
     }
 
