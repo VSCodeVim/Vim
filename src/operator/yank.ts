@@ -1,7 +1,6 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { copy } from 'copy-paste';
 import { Position } from './../motion/position';
 import { Operator } from './operator';
 import { ModeHandler } from './../mode/modeHandler.ts';
