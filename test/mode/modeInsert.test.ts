@@ -1,6 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
+import {newDefaultInsertKeymap} from '../../src/mode/commands';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import {InsertMode} from '../../src/mode/modeInsert';
 import {ModeName} from '../../src/mode/mode';
@@ -16,7 +17,7 @@ suite("Mode Insert", () => {
         await setupWorkspace();
 
         motion = new Motion(MotionMode.Cursor);
-        modeInsert = new InsertMode(motion);
+        modeInsert = new InsertMode(motion, newDefaultInsertKeymap());
     });
 
     teardown(cleanUpWorkspace);

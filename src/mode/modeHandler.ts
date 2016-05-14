@@ -3,6 +3,7 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
+import * as cmds from './commands';
 import {Mode, ModeName} from './mode';
 import {Motion, MotionMode} from './../motion/motion';
 import {NormalMode} from './modeNormal';
@@ -19,11 +20,20 @@ export class ModeHandler implements vscode.Disposable {
     constructor() {
         this._configuration = Configuration.fromUserFile();
 
+        // This probably should be somewhere else but will work for now.
+        // TODO: Only override default settings specified instead of all of them
+        let normalKeymap = vscode.workspace.getConfiguration("vim")
+            .get("normalModeKeybindings", cmds.newDefaultNormalKeymap());
+        let insertKeymap = vscode.workspace.getConfiguration("vim")
+            .get("insertModeKeybindings", cmds.newDefaultInsertKeymap());
+        let visualKeymap = vscode.workspace.getConfiguration("vim")
+            .get("visualModeKeybindings", cmds.newDefaultVisualKeymap());
+
         this._motion = new Motion(null);
         this._modes = [
-            new NormalMode(this._motion, this),
-            new InsertMode(this._motion),
-            new VisualMode(this._motion, this),
+            new NormalMode(this._motion, this, normalKeymap),
+            new InsertMode(this._motion, insertKeymap),
+            new VisualMode(this._motion, this, visualKeymap),
         ];
 
         this.setCurrentModeByName(ModeName.Normal);

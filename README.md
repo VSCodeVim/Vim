@@ -18,6 +18,109 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 
 * vim.keyboardLayout: 
     * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`, `da-DK (QWERTY)`
+
+Keybindings can be overridden for a mode by supplying a `{string: string}` object defining what key or keys should preform what action when pressed. 
+
+Note: Currently, by defining keybindings for a mode, all bindings for that mode will be overridden. This should be fixed in a future update.
+
+Note: Currently, the escape key is still hardcoded to exit insert mode and the `v` key is still hardcoded to exit visual mode.
+
+Example:
+```json
+{
+    "vim.normalModeKeybindings": {
+        "d": "DeleteChar",
+        "D": "DeleteLastChar"
+    },
+    "vim.insertModeKeybindings": {
+        "e": "InsertAtCursor",
+        "E": "InsertAfterCursor"
+    }
+}
+```
+
+* vim.normalModeKeybindings
+    * Supported Actions:
+```
+    MoveUp
+    MoveDown
+    MoveLeft
+    MoveRight
+
+    MoveLineBegin
+    MoveLineEnd
+    MoveWordBegin
+    MoveWordEnd
+    MoveFullWordBegin
+    MoveFullWordEnd
+    MoveLastWord
+    MoveLastFullWord
+    MoveLastWordEnd
+    MoveLastFullWordEnd
+
+    MoveFullPageUp
+    MoveFullPageDown
+
+    MoveParagraphBegin
+    MoveParagraphEnd
+
+    MoveNonBlank
+    MoveNonBlankFirst
+    MoveNonBlankLast
+    MoveMatchingBracket
+
+    // Find
+    Find
+
+    // Text Modification
+    Undo
+    Redo
+    Copy
+    Paste
+
+    ChangeWord
+    ChangeFullWord
+    ChangeCurrentWord
+    ChangeCurrentWordToNext
+    ChangeToLineEnd
+
+    DeleteLine
+    DeleteToNextWord
+    DeleteToFullNextWord
+    DeleteToWordEnd
+    DeleteToFullWordEnd
+    DeleteToWordBegin
+    DeleteToFullWordBegin
+    DeleteToLineEnd
+
+    DeleteChar
+    DeleteLastChar
+
+    Indent
+    Outdent
+
+    // Misc
+    EnterCommand
+    ExitMessages
+```
+
+* vim.insertModeKeybindings
+    * Supported Actions:
+```
+    // Enter insert mode
+    InsertAtCursor
+    InsertAtLineBegin
+    InsertAfterCursor
+    InsertAtLineEnd
+    InsertNewLineBelow
+    InsertNewLineAbove
+```
+
+* vim.visualModeKeybindings
+    * Supported Actions:
+```
+    EnterVisualMode
+```
     
 ## Project Status
 

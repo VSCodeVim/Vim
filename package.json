@@ -136,6 +136,18 @@
           "default": "en-US (QWERTY)",
           "type": "string",
           "description": "Keyboard layout to use to translated key presses."
+        },
+        "vim.normalModeKeybindings": {
+          "type": "object",
+          "description": "Keybinding overrides to use for normal mode."
+        },
+        "vim.insertModeKeybindings": {
+          "type": "object",
+          "description": "Keybinding overrides to use for insert mode."
+        },
+        "vim.visualModeKeybindings": {
+          "type": "object",
+          "description": "Keybinding overrides to use for visual mode."
         }
       }
     }
