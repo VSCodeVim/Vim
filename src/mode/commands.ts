@@ -45,6 +45,12 @@ export enum Command {
     // Find
     Find,
 
+    // Folding
+    Fold,
+    Unfold,
+    FoldAll,
+    UnfoldAll,
+
     // Text Modification
     Undo,
     Redo,
@@ -131,6 +137,12 @@ export function newDefaultNormalKeymap() : {[key: string]: Command} {
         "X": Command.DeleteLastChar,
 
         "/": Command.Find,
+
+        "zc": Command.Fold,
+        "zo": Command.Unfold,
+        "zC": Command.FoldAll,
+        "zO": Command.UnfoldAll,
+
         ":": Command.EnterCommand,
         "v": Command.EnterVisualMode,
         "esc": Command.ExitMessages

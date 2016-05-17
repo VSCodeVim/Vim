@@ -20,6 +20,14 @@ export class NormalMode extends Mode {
                 return async () => { return showCmdLine("", this._modeHandler); };
             case Command.Find:
                 return async () => { return vscode.commands.executeCommand("actions.find"); };
+            case Command.Fold:
+                return async () => { return vscode.commands.executeCommand("editor.fold"); };
+            case Command.Unfold:
+                return async () => { return vscode.commands.executeCommand("editor.unfold"); };
+            case Command.FoldAll:
+                return async () => { return vscode.commands.executeCommand("editor.foldAll"); };
+            case Command.UnfoldAll:
+                return async () => { return vscode.commands.executeCommand("editor.unfoldAll"); };
             case Command.Undo:
                 return async () => { return vscode.commands.executeCommand("undo"); };
             case Command.Redo :
