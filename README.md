@@ -1,8 +1,9 @@
+[![Stories in Ready](https://badge.waffle.io/VSCodeVim/Vim.png?label=ready&title=Ready)](https://waffle.io/VSCodeVim/Vim)
 [![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim) [![Build status](https://ci.appveyor.com/api/projects/status/github/vscodevim/vim?branch=master&svg=true&retina=true)](https://ci.appveyor.com/project/jpoon/vim/branch/master) [![Slack Status](https://vscodevim-slackin.azurewebsites.net/badge.svg)](https://vscodevim-slackin.azurewebsites.net)
 
 # Vim
 
-Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables the power of the Vim keybinding experience within Visual Studio Code. 
+Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables the power of the Vim keybinding experience within Visual Studio Code. This is a work-in-progress and contributions are welcomed and loved!
 
 ![Screenshot](images/screen.png)
 
@@ -17,6 +18,109 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 
 * vim.keyboardLayout: 
     * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`, `da-DK (QWERTY)`
+
+Keybindings can be overridden for a mode by supplying a `{string: string}` object defining what key or keys should preform what action when pressed. 
+
+Note: Currently, by defining keybindings for a mode, all bindings for that mode will be overridden. This should be fixed in a future update.
+
+Note: Currently, the escape key is still hardcoded to exit insert mode and the `v` key is still hardcoded to exit visual mode.
+
+Example:
+```json
+{
+    "vim.normalModeKeybindings": {
+        "d": "DeleteChar",
+        "D": "DeleteLastChar"
+    },
+    "vim.insertModeKeybindings": {
+        "e": "InsertAtCursor",
+        "E": "InsertAfterCursor"
+    }
+}
+```
+
+* vim.normalModeKeybindings
+    * Supported Actions:
+```
+    MoveUp
+    MoveDown
+    MoveLeft
+    MoveRight
+
+    MoveLineBegin
+    MoveLineEnd
+    MoveWordBegin
+    MoveWordEnd
+    MoveFullWordBegin
+    MoveFullWordEnd
+    MoveLastWord
+    MoveLastFullWord
+    MoveLastWordEnd
+    MoveLastFullWordEnd
+
+    MoveFullPageUp
+    MoveFullPageDown
+
+    MoveParagraphBegin
+    MoveParagraphEnd
+
+    MoveNonBlank
+    MoveNonBlankFirst
+    MoveNonBlankLast
+    MoveMatchingBracket
+
+    // Find
+    Find
+
+    // Text Modification
+    Undo
+    Redo
+    Copy
+    Paste
+
+    ChangeWord
+    ChangeFullWord
+    ChangeCurrentWord
+    ChangeCurrentWordToNext
+    ChangeToLineEnd
+
+    DeleteLine
+    DeleteToNextWord
+    DeleteToFullNextWord
+    DeleteToWordEnd
+    DeleteToFullWordEnd
+    DeleteToWordBegin
+    DeleteToFullWordBegin
+    DeleteToLineEnd
+
+    DeleteChar
+    DeleteLastChar
+
+    Indent
+    Outdent
+
+    // Misc
+    EnterCommand
+    ExitMessages
+```
+
+* vim.insertModeKeybindings
+    * Supported Actions:
+```
+    // Enter insert mode
+    InsertAtCursor
+    InsertAtLineBegin
+    InsertAfterCursor
+    InsertAtLineEnd
+    InsertNewLineBelow
+    InsertNewLineAbove
+```
+
+* vim.visualModeKeybindings
+    * Supported Actions:
+```
+    EnterVisualMode
+```
     
 ## Project Status
 
@@ -104,7 +208,7 @@ Status                 | Key                       | Description
 dw, dW, db, dB, de, dE | d{motion}                 | delete the text that is moved over with {motion}
                        | {visual}d                 | delete the highlighted text
 :white_check_mark:     | dd                        | delete N lines
-                       | D                         | delete to end-of-line (and N-1 more lines)
+:white_check_mark:     | D                         | delete to end-of-line (and N-1 more lines)
                        | J                         | join N-1 lines (delete newlines)
                        | {visual}J                 | join the highlighted lines
 

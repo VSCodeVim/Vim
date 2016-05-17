@@ -3,6 +3,7 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
+import * as cmds from './commands';
 import {Mode, ModeName} from './mode';
 import {Motion, MotionMode} from './../motion/motion';
 import {NormalMode} from './modeNormal';
@@ -19,11 +20,33 @@ export class ModeHandler implements vscode.Disposable {
     constructor() {
         this._configuration = Configuration.fromUserFile();
 
+        // This probably should be somewhere else but will work for now.
+        let normalKeymap = cmds.newDefaultNormalKeymap();
+        let insertKeymap = cmds.newDefaultInsertKeymap();
+        let visualKeymap = cmds.newDefaultVisualKeymap();
+        let normalKeymapConf = vscode.workspace.getConfiguration("vim")
+            .get("normalModeKeybindings", cmds.newDefaultNormalKeymap());
+        let insertKeymapConf = vscode.workspace.getConfiguration("vim")
+            .get("insertModeKeybindings", cmds.newDefaultInsertKeymap());
+        let visualKeymapConf = vscode.workspace.getConfiguration("vim")
+            .get("visualModeKeybindings", cmds.newDefaultVisualKeymap());
+
+        let copyFunc = function (to: {[key: string]: cmds.Command},
+                                 source: {[key: string]: cmds.Command}) {
+            for (var key in source) {
+                if (source.hasOwnProperty(key)) {
+                    to[key] = source[key];
+                }
+            }
+        };
+        copyFunc(normalKeymap, normalKeymapConf);
+        copyFunc(insertKeymap, insertKeymapConf);
+        copyFunc(visualKeymap, visualKeymapConf);
         this._motion = new Motion(null);
         this._modes = [
-            new NormalMode(this._motion, this),
-            new InsertMode(this._motion),
-            new VisualMode(this._motion, this),
+            new NormalMode(this._motion, this, normalKeymap),
+            new InsertMode(this._motion, insertKeymap),
+            new VisualMode(this._motion, this, visualKeymap),
         ];
 
         this.setCurrentModeByName(ModeName.Normal);

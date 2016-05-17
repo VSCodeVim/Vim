@@ -2,6 +2,7 @@
 
 import * as _      from 'lodash';
 
+import {Command} from './commands';
 import { ModeName, Mode } from './mode';
 import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
@@ -24,8 +25,8 @@ export class VisualMode extends Mode {
 
     private _keysToOperators: { [key: string]: Operator };
 
-    constructor(motion: Motion, modeHandler: ModeHandler) {
-        super(ModeName.Visual, motion);
+    constructor(motion: Motion, modeHandler: ModeHandler, keymap: {[key: string]: Command}) {
+        super(ModeName.Visual, motion, keymap);
 
         this._modeHandler = modeHandler;
         this._keysToOperators = {
@@ -40,7 +41,8 @@ export class VisualMode extends Mode {
     }
 
     shouldBeActivated(key: string, currentMode: ModeName): boolean {
-        return key === "v" && currentMode === ModeName.Normal;
+        let command : Command = this._keymap[key];
+        return command === Command.EnterVisualMode && currentMode === ModeName.Normal;
     }
 
     async handleActivation(key: string): Promise<void> {

@@ -1,6 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
+import {newDefaultVisualKeymap} from '../../src/mode/commands';
 import {ModeHandler} from '../../src/mode/modeHandler';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import {VisualMode} from '../../src/mode/modeVisual';
@@ -18,7 +19,7 @@ suite("Mode Visual", () => {
 
         modeHandler = new ModeHandler();
         motion      = new Motion(MotionMode.Cursor);
-        visualMode  = new VisualMode(motion, modeHandler);
+        visualMode  = new VisualMode(motion, modeHandler, newDefaultVisualKeymap());
     });
 
     teardown(cleanUpWorkspace);
