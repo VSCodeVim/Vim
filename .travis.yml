@@ -32,5 +32,6 @@ install:
   - npm run vscode:prepublish
 
 script:
+  - npm install -g gulp
   - gulp
   - npm test --silent
