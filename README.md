@@ -2,7 +2,7 @@
 
 # Vim
 
-Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables the power of the Vim keybinding experience within Visual Studio Code. This is a work-in-progress and contributions are welcomed and loved!
+Vim (aka. VSCodeVim) is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables the power of the Vim keybinding experience within Visual Studio Code. This is a _work in progress_ and contributions are welcomed and loved!
 
 ![Screenshot](images/screen.png)
 
@@ -18,11 +18,9 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 * vim.keyboardLayout: 
     * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`, `da-DK (QWERTY)`
 
-Keybindings can be overridden for a mode by supplying a `{string: string}` object defining what key or keys should preform what action when pressed. 
+Keybindings can be overridden for a mode by supplying a `{string: string}` object defining what key(s) should perform a given action. 
 
-Note: Currently, by defining keybindings for a mode, all bindings for that mode will be overridden. This should be fixed in a future update.
-
-Note: Currently, the escape key is still hardcoded to exit insert mode and the `v` key is still hardcoded to exit visual mode.
+_Note_: Currently, by defining keybindings for a mode, all bindings for that mode will be overridden. This should be fixed in a future update.
 
 Example:
 ```json
@@ -38,9 +36,11 @@ Example:
 }
 ```
 
+Supported Actions
+
 * vim.normalModeKeybindings
-    * Supported Actions:
-```
+   
+   ```
     MoveUp
     MoveDown
     MoveLeft
@@ -101,11 +101,11 @@ Example:
     // Misc
     EnterCommand
     ExitMessages
-```
+   ```
 
 * vim.insertModeKeybindings
-    * Supported Actions:
-```
+
+   ```
     // Enter insert mode
     InsertAtCursor
     InsertAtLineBegin
@@ -113,13 +113,13 @@ Example:
     InsertAtLineEnd
     InsertNewLineBelow
     InsertNewLineAbove
-```
+   ```
 
 * vim.visualModeKeybindings
-    * Supported Actions:
-```
+
+   ```
     EnterVisualMode
-```
+   ```
     
 ## Project Status
 
