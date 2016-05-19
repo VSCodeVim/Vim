@@ -44,10 +44,8 @@ export class InsertMode extends Mode {
         await this.handleActivationKey(command)(this.motion);
     }
 
-    async handleKeyEvent(key : string) : Promise<boolean> {
+    async handleKeyEvent(key : string) : Promise<Boolean> {
         await TextEditor.insert(this.resolveKeyValue(key));
-        await vscode.commands.executeCommand("editor.action.triggerSuggest");
-
         return true;
     }
 

@@ -75,19 +75,18 @@ export class ModeHandler implements vscode.Disposable {
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
     }
 
-    handleKeyEvent(key : string) : void {
+    handleKeyEvent(key : string) : Promise<Boolean> {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
         key = this._configuration.keyboardLayout.translate(key);
 
         let currentModeName = this.currentMode.name;
-        let keysPressed = this.currentMode.keyHistory.join('') + key;
         let nextMode : Mode;
         let inactiveModes = _.filter(this._modes, (m) => !m.isActive);
 
         for (let mode of inactiveModes) {
-          if (mode.shouldBeActivated(keysPressed, currentModeName)) {
+          if (mode.shouldBeActivated(key, currentModeName)) {
             if (nextMode) {
               console.error("More that one mode matched in handleKeyEvent!");
             }
@@ -99,9 +98,9 @@ export class ModeHandler implements vscode.Disposable {
         if (nextMode) {
             this.currentMode.handleDeactivation();
             this.setCurrentModeByName(nextMode.name);
-            nextMode.handleActivation(key);
+            return nextMode.handleActivation(key).then(() => { return true; });
         } else {
-            this.currentMode.handleKeyEvent(key);
+            return this.currentMode.handleKeyEvent(key);
         }
     }
 
@@ -117,6 +116,6 @@ export class ModeHandler implements vscode.Disposable {
     dispose() {
         this._statusBarItem.hide();
         this._statusBarItem.dispose();
-        this._motion.dispose();        
+        this._motion.dispose();
     }
 }
