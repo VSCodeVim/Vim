@@ -2,7 +2,7 @@
 
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
-import {KeyboardLayout, IKeyMapper} from '../src/keyboard';
+import {KeyboardLayout, IKeyMapper} from '../src/configuration/keyboard';
 
 suite("KeyboardLayout", () => {
 

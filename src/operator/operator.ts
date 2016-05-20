@@ -17,7 +17,7 @@ export abstract class Operator {
     /**
      * What key triggers this operator?
      */
-    abstract key(): string;
+    // abstract key(): string;
 
     /**
      * Run this operator on a range.

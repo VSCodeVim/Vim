@@ -3,7 +3,7 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import {Command} from './commands';
+import {Command, CommandKeyHandler} from './../configuration/commandKeyMap';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import {Motion, MotionMode} from './../motion/motion';
@@ -198,13 +198,13 @@ export class NormalMode extends Mode {
             case Command.ExitMessages:
                 return async () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); };
             default:
-                return async () => {return {}; };
+                return async () => { return {}; };
         }
     }
 
     private _modeHandler: ModeHandler;
 
-    constructor(motion : Motion, modeHandler: ModeHandler, keymap: {[key: string]: Command}) {
+    constructor(motion : Motion, modeHandler: ModeHandler, keymap: CommandKeyHandler) {
         super(ModeName.Normal, motion, keymap);
 
         this._modeHandler = modeHandler;

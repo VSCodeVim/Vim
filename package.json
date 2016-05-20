@@ -50,15 +50,15 @@
           "type": "string",
           "description": "Keyboard layout to use to translated key presses."
         },
-        "vim.normalModeKeybindings": {
+        "vim.normalModeKeyBindings": {
           "type": "object",
           "description": "Keybinding overrides to use for normal mode."
         },
-        "vim.insertModeKeybindings": {
+        "vim.insertModeKeyBindings": {
           "type": "object",
           "description": "Keybinding overrides to use for insert mode."
         },
-        "vim.visualModeKeybindings": {
+        "vim.visualModeKeyBindings": {
           "type": "object",
           "description": "Keybinding overrides to use for visual mode."
         }

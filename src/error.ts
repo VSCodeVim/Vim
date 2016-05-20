@@ -18,7 +18,6 @@ const errors : IVimErrors = {
     488: "Trailing characters"
 };
 
-
 export class VimError extends Error {
     private _code : number;
     private _message : string;

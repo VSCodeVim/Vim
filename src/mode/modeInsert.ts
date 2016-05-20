@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 
-import {Command} from './commands';
+import {CommandKeyHandler, Command} from './../configuration/commandKeyMap';
 import {ModeName, Mode} from './mode';
 import {TextEditor} from './../textEditor';
 import {Motion} from './../motion/motion';
@@ -31,7 +31,7 @@ export class InsertMode extends Mode {
         }
     }
 
-    constructor(motion : Motion, keymap : {[key: string]: Command}) {
+    constructor(motion : Motion, keymap : CommandKeyHandler) {
         super(ModeName.Insert, motion, keymap);
     }
 
@@ -45,18 +45,7 @@ export class InsertMode extends Mode {
     }
 
     async handleKeyEvent(key : string) : Promise<Boolean> {
-        await TextEditor.insert(this.resolveKeyValue(key));
+        await TextEditor.insert(key);
         return true;
-    }
-
-    // Some keys have names that are different to their value.
-    // TODO: we probably need to put this somewhere else.
-    private resolveKeyValue(key : string) : string {
-        switch (key) {
-            case 'space':
-                return ' ';
-            default:
-                return key;
-        }
     }
 }
