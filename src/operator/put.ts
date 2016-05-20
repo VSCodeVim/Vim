@@ -12,7 +12,7 @@ export class PutOperator extends Operator {
         super(modeHandler);
     }
 
-    public key(): string { return "p"; }
+    // public key(): string { return "p"; }
 
     /**
      * Run this operator on a range.

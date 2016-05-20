@@ -2,7 +2,7 @@
 
 import * as _      from 'lodash';
 
-import {Command} from './commands';
+import { Command, CommandKeyHandler } from './../configuration/commandKeyMap';
 import { ModeName, Mode } from './mode';
 import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
@@ -25,13 +25,11 @@ export class VisualMode extends Mode {
 
     private _keysToOperators: { [key: string]: Operator };
 
-    constructor(motion: Motion, modeHandler: ModeHandler, keymap: {[key: string]: Command}) {
+    constructor(motion: Motion, modeHandler: ModeHandler, keymap: CommandKeyHandler) {
         super(ModeName.Visual, motion, keymap);
 
         this._modeHandler = modeHandler;
         this._keysToOperators = {
-            // TODO: use DeleteOperator.key()
-
             // TODO: Don't pass in mode handler to DeleteOperators,
             // simply allow the operators to say what mode they transition into.
             'd': new DeleteOperator(modeHandler),

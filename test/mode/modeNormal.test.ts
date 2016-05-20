@@ -1,7 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
-import {newDefaultNormalKeymap} from '../../src/mode/commands';
+import {CommandKeyMap} from '../../src/configuration/commandKeyMap';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
 import {NormalMode} from '../../src/mode/modeNormal';
 import {ModeName} from '../../src/mode/mode';
@@ -20,7 +20,7 @@ suite("Mode Normal", () => {
 
         modeHandler = new ModeHandler();
         motion      = new Motion(MotionMode.Cursor);
-        modeNormal  = new NormalMode(motion, modeHandler, newDefaultNormalKeymap());
+        modeNormal  = new NormalMode(motion, modeHandler, CommandKeyMap.DefaultNormalKeyMap());
     });
 
     teardown(cleanUpWorkspace);

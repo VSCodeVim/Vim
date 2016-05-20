@@ -25,22 +25,21 @@ _Note_: Currently, by defining keybindings for a mode, all bindings for that mod
 Example:
 ```json
 {
-    "vim.normalModeKeybindings": {
+    "vim.normalModeKeyBindings": {
         "d": "DeleteChar",
         "D": "DeleteLastChar"
     },
-    "vim.insertModeKeybindings": {
+    "vim.insertModeKeyBindings": {
         "e": "InsertAtCursor",
         "E": "InsertAfterCursor"
     }
 }
 ```
 
-Supported Actions
+* vim.normalModeKeyBindings
+    * Supported Actions:
 
-* vim.normalModeKeybindings
-   
-   ```
+    ```
     MoveUp
     MoveDown
     MoveLeft
@@ -70,7 +69,13 @@ Supported Actions
 
     // Find
     Find
-
+    
+    // Folding
+    Fold
+    Unfold
+    FoldAll
+    UnfoldAll
+    
     // Text Modification
     Undo
     Redo
@@ -103,9 +108,9 @@ Supported Actions
     ExitMessages
    ```
 
-* vim.insertModeKeybindings
-
-   ```
+* vim.insertModeKeyBindings
+    * Supported Actions:
+    ```
     // Enter insert mode
     InsertAtCursor
     InsertAtLineBegin
@@ -115,8 +120,8 @@ Supported Actions
     InsertNewLineAbove
    ```
 
-* vim.visualModeKeybindings
-
+* vim.visualModeKeyBindings
+   * Supported Actions:
    ```
     EnterVisualMode
    ```

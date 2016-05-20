@@ -1,6 +1,6 @@
 "use strict";
 
-import {Command} from './commands';
+import {CommandKeyHandler} from './../configuration/commandKeyMap';
 import {Motion} from './../motion/motion';
 import {Position} from './../motion/position';
 
@@ -15,9 +15,9 @@ export abstract class Mode {
     private _name : ModeName;
     private _motion : Motion;
     protected _keyHistory : string[];
-    protected _keymap : {[key: string]: Command};
+    protected _keymap : CommandKeyHandler;
 
-    constructor(name: ModeName, motion: Motion, keymap: {[key: string]: Command}) {
+    constructor(name: ModeName, motion: Motion, keymap: CommandKeyHandler) {
         this._name = name;
         this._motion = motion;
         this._isActive = false;

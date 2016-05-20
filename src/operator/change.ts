@@ -12,7 +12,7 @@ export class ChangeOperator extends Operator {
         super(modeHandler);
     }
 
-    public key(): string { return "d"; }
+    // public key(): string { return "d"; }
 
     /**
      * Run this operator on a range.
