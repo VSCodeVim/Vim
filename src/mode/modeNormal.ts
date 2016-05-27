@@ -211,13 +211,10 @@ export class NormalMode extends Mode {
     }
 
     shouldBeActivated(key : string, currentMode : ModeName) : boolean {
-        // TODO: Have these keybinds configurable
-        return (key === 'esc' || key === 'ctrl+[' || (key === "v" && currentMode === ModeName.Visual));
+        return (key === '<esc>' || key === '<c-[>' || key === '<c-c>' || (key === "v" && currentMode === ModeName.Visual));
     }
 
-    async handleActivation(key : string): Promise<void> {
-        this.motion.left().move();
-    }
+    async handleActivation(key : string): Promise<void> { ; }
 
     async handleKeyEvent(key : string): Promise<Boolean>  {
         this._keyHistory.push(key);
