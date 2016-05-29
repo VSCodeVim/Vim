@@ -30,6 +30,16 @@ export function assertEqualLines(expectedLines: string[]) {
     }
 }
 
+/**
+ * Assert that the first two arguments are equal, and fail a test otherwise.
+ *
+ * The only difference between this and assert.equal is that here we
+ * check to ensure the types of the variables are correct.
+ */
+export function assertEqual<T>(one: T, two: T, message: string = ""): void {
+    assert.equal(one, two, message);
+}
+
 export async function setupWorkspace(): Promise<any> {
     const file   = await createRandomFile("");
     const doc    = await vscode.workspace.openTextDocument(file);

@@ -29,10 +29,13 @@ export class ModeHandler implements vscode.Disposable {
         this.setCurrentModeByName(ModeName.Normal);
     }
 
+    /**
+     * The active mode.
+     */
     get currentMode() : Mode {
         return this._modes.find(mode => mode.isActive);
     }
-    
+
     setNormal() {
         this.setCurrentModeByName(ModeName.Normal);
     }
@@ -56,7 +59,7 @@ export class ModeHandler implements vscode.Disposable {
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
     }
 
-    handleKeyEvent(key : string) : Promise<Boolean> {
+    async handleKeyEvent(key : string) : Promise<Boolean> {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
@@ -79,9 +82,18 @@ export class ModeHandler implements vscode.Disposable {
         if (nextMode) {
             this.currentMode.handleDeactivation();
             this.setCurrentModeByName(nextMode.name);
-            return nextMode.handleActivation(key).then(() => { return true; });
+
+            await nextMode.handleActivation(key);
+
+            return true;
         } else {
             return this.currentMode.handleKeyEvent(key);
+        }
+    }
+
+    async handleMultipleKeyEvents(keys: string[]): Promise<void> {
+        for (const key of keys) {
+            await this.handleKeyEvent(key);
         }
     }
 

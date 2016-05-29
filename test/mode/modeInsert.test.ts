@@ -1,93 +1,118 @@
 "use strict";
 
-import * as assert from 'assert';
-import {CommandKeyMap} from '../../src/configuration/commandKeyMap';
-import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
-import {InsertMode} from '../../src/mode/modeInsert';
+import {setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from './../testUtils';
 import {ModeName} from '../../src/mode/mode';
-import {Motion, MotionMode} from '../../src/motion/motion';
 import {TextEditor} from '../../src/textEditor';
+import {ModeHandler} from "../../src/mode/modeHandler";
 
 suite("Mode Insert", () => {
-
-    let motion: Motion;
-    let modeInsert: InsertMode;
+    let modeHandler: ModeHandler;
 
     setup(async () => {
         await setupWorkspace();
 
-        motion = new Motion(MotionMode.Cursor);
-        modeInsert = new InsertMode(motion, CommandKeyMap.DefaultInsertKeyMap());
+        modeHandler = new ModeHandler();
     });
 
     teardown(cleanUpWorkspace);
 
-    test("can be activated", () => {
-        let activationKeys = ['i', 'I', 'o', 'O', 'a', 'A'];
+    test("can be activated", async () => {
+        let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A'];
 
         for (let key of activationKeys) {
-            assert.equal(modeInsert.shouldBeActivated(key, ModeName.Normal), true, key);
-        }
+            await modeHandler.handleKeyEvent(key);
+            assertEqual(modeHandler.currentMode.name, ModeName.Insert);
 
-        assert.equal(modeInsert.shouldBeActivated("i", ModeName.Visual), false, "can be activated from visual");
+            await modeHandler.handleKeyEvent('<esc>');
+        }
     });
 
     test("can handle key events", async () => {
-        await modeInsert.handleKeyEvent("!");
+        await modeHandler.handleMultipleKeyEvents(['i', '!']);
 
         return assertEqualLines(["!"]);
     });
 
+    test("<esc> doesn't change cursor position", async () => {
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            'h', 'e', 'l', 'l', 'o',
+            '<esc>'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 5, "<esc> moved cursor position.");
+    });
+
     test("Can handle 'o'", async () => {
-        await TextEditor.insert("text");
-        await modeInsert.handleActivation("o");
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't',
+            '<esc>',
+            'o'
+        ]);
 
         return assertEqualLines(["text", ""]);
     });
 
     test("Can handle 'O'", async () => {
-        await TextEditor.insert("text");
-        await modeInsert.handleActivation("O");
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't',
+            '<esc>',
+            'O'
+        ]);
 
         return assertEqualLines(["", "text"]);
     });
 
     test("Can handle 'i'", async () => {
-        await TextEditor.insert("texttext");
-
-        motion = motion.moveTo(0, 4);
-        await modeInsert.handleActivation("i");
-        await modeInsert.handleKeyEvent("!");
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't', 't', 'e', 'x', 't', // insert 'texttext'
+            '<esc>',
+            '^', 'l', 'l', 'l', 'l',                // move to the 4th character
+            'i',
+            '!'                                     // insert a !
+        ]);
 
         assertEqualLines(["text!text"]);
     });
 
     test("Can handle 'I'", async () => {
-        await TextEditor.insert("text");
-        motion = motion.moveTo(0, 3);
-
-        await modeInsert.handleActivation("I");
-        await modeInsert.handleKeyEvent("!");
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't',
+            '<esc>',
+            '^', 'l', 'l', 'l',
+            'I',
+            '!',
+        ]);
 
         assertEqualLines(["!text"]);
     });
 
     test("Can handle 'a'", async () => {
-        await TextEditor.insert("texttext");
-
-        motion = motion.moveTo(0, 4);
-        await modeInsert.handleActivation("a");
-        await modeInsert.handleKeyEvent("!");
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't', 't', 'e', 'x', 't', // insert 'texttext'
+            '<esc>',
+            '^', 'l', 'l', 'l', 'l',                // move to the 4th character
+            'a',
+            '!'                                     // append a !
+        ]);
 
         assertEqualLines(["textt!ext"]);
     });
 
     test("Can handle 'A'", async () => {
-        await TextEditor.insert("text");
-
-        motion = motion.moveTo(0, 0);
-        await modeInsert.handleActivation("A");
-        await modeInsert.handleKeyEvent("!");
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't',
+            '<esc>',
+            '^',
+            'A',
+            '!',
+        ]);
 
         assertEqualLines(["text!"]);
     });

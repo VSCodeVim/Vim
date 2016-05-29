@@ -1,33 +1,37 @@
-"use strict"
+"use strict";
+
+/**
+ * Extension.ts is a lightweight wrapper around ModeHandler. It converts key
+ * events to their string names and passes them on to ModeHandler via
+ * handleKeyEvent().
+ */
 
 import * as vscode from 'vscode';
 import {showCmdLine} from './src/cmd_line/main';
-import * as cc from './src/cmd_line/lexer';
 import {ModeHandler} from "./src/mode/modeHandler";
-import {ModeName} from "./src/mode/mode";
 
-var modeHandler : ModeHandler;
-var extensionContext : vscode.ExtensionContext;
+var extensionContext: vscode.ExtensionContext;
+var modeHandler: ModeHandler;
 
 export function activate(context: vscode.ExtensionContext) {
     extensionContext = context;
 
     registerCommand(context, 'type', async (args) => {
-		if (!vscode.window.activeTextEditor) {
-			return;
-		}
-        
+        if (!vscode.window.activeTextEditor) {
+            return;
+        }
+
         console.log(args.text);
-        
+
         var isHandled = await handleKeyEvent(args.text);
 
-        if (!isHandled) {        
+        if (!isHandled) {
             vscode.commands.executeCommand('default:type', {
                 text: args.text
             });
         }
     });
-    
+
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("esc"));
     registerCommand(context, 'extension.showCmdLine', () => {
         if (!modeHandler) {

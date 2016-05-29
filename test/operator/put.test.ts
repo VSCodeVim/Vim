@@ -19,7 +19,10 @@ suite("put operator", () => {
         const position = new Position(0, 0, PositionOptions.CharacterWiseExclusive);
         const mode = new ModeHandler();
         const put = new PutOperator(mode);
-        copy(expectedText);
+
+        await new Promise(resolve => {
+            copy(expectedText, () => resolve());
+        });
 
         await put.run(position, position);
 
@@ -39,7 +42,10 @@ suite("put operator", () => {
         const position = new Position(0, 3, PositionOptions.CharacterWiseExclusive);
         const mode = new ModeHandler();
         const put = new PutOperator(mode);
-        copy(phrase);
+
+        await new Promise(resolve => {
+            copy(phrase, () => resolve());
+        });
 
         // using ^ to show the cusor position
         // before : the dog

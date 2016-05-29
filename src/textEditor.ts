@@ -33,7 +33,7 @@ export class TextEditor {
     }
 
     /**
-     * Delete the entire document.
+     * Removes all text in the entire document.
      */
     static async deleteDocument(): Promise<boolean> {
         const start    = new vscode.Position(0, 0);
