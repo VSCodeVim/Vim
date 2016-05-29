@@ -332,7 +332,7 @@ class ActionOutdent extends BaseAction {
 
 class ActionChangeWord {
   modes = [ModeName.Normal];
-  key = "";
+  key = "cw";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -347,7 +347,7 @@ class ActionChangeWord {
 
 class ActionChangeFullWord {
   modes = [ModeName.Normal];
-  key = "";
+  key = "cW";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -363,7 +363,7 @@ class ActionChangeFullWord {
 
 class ActionChangeCurrentWord {
   modes = [ModeName.Normal];
-  key = "";
+  key = "ciw";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -380,7 +380,7 @@ class ActionChangeCurrentWord {
 
 class ActionChangeCurrentWordToNext {
   modes = [ModeName.Normal];
-  key = "";
+  key = "caw";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -396,7 +396,7 @@ class ActionChangeCurrentWordToNext {
 
 class ActionChangeToLineEnd {
   modes = [ModeName.Normal];
-  key = "";
+  key = "C";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -406,7 +406,7 @@ class ActionChangeToLineEnd {
 
 class ActionDeleteLine extends BaseAction {
   modes = [ModeName.Normal];
-  key = "D";
+  key = "dd";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     vscode.commands.executeCommand("editor.action.deleteLines");
@@ -415,7 +415,7 @@ class ActionDeleteLine extends BaseAction {
 
 class ActionDeleteToNextWord {
   modes = [ModeName.Normal];
-  key = "";
+  key = "dw";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -429,7 +429,7 @@ class ActionDeleteToNextWord {
 
 class ActionDeleteToFullNextWord  {
   modes = [ModeName.Normal];
-  key = "";
+  key = "dW";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -439,7 +439,7 @@ class ActionDeleteToFullNextWord  {
 
 class ActionDeleteToWordBegin {
   modes = [ModeName.Normal];
-  key = "";
+  key = "db";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -449,7 +449,7 @@ class ActionDeleteToWordBegin {
 
 class ActionDeleteToFullWordBegin {
   modes = [ModeName.Normal];
-  key = "";
+  key = "dB";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -459,7 +459,7 @@ class ActionDeleteToFullWordBegin {
 
 class ActionDeleteToWordEnd {
   modes = [ModeName.Normal];
-  key = "";
+  key = "de";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -469,7 +469,7 @@ class ActionDeleteToWordEnd {
 
 class ActionDeleteToFullWordEnd {
   modes = [ModeName.Normal];
-  key = "";
+  key = "dE";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -480,7 +480,7 @@ class ActionDeleteToFullWordEnd {
 
 class ActionDeleteToLineEnd {
   modes = [ModeName.Normal];
-  key = "";
+  key = "D";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -491,7 +491,7 @@ class ActionDeleteToLineEnd {
 
 class ActionDeleteChar {
   modes = [ModeName.Normal];
-  key = "";
+  key = "x";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     motion.changeMode(MotionMode.Cursor);
@@ -501,7 +501,7 @@ class ActionDeleteChar {
 
 class ActionDeleteLastChar {
   modes = [ModeName.Normal];
-  key = "";
+  key = "X";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     vscode.commands.executeCommand("deleteLeft");
@@ -510,7 +510,7 @@ class ActionDeleteLastChar {
 
 class ActionPaste {
   modes = [ModeName.Normal];
-  key = "";
+  key = "p";
 
   public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
     await new PutOperator(modeHandler).run(motion.position, null);
