@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("esc"));
+    registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
     registerCommand(context, 'extension.showCmdLine', () => {
         if (!modeHandler) {
             modeHandler = new ModeHandler();
