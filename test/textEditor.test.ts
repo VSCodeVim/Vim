@@ -2,9 +2,9 @@
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import {paste} from "copy-paste";
 import {TextEditor} from './../src/textEditor';
 import {setupWorkspace, cleanUpWorkspace} from './testUtils';
+import { Register } from './../src/register/register';
 
 suite("text editor", () => {
     suiteSetup(setupWorkspace);
@@ -68,7 +68,7 @@ suite("text editor", () => {
         const range = vscode.window.activeTextEditor.document.lineAt(0).range;
 
         await TextEditor.delete(range);
-        const actualText = paste();
+        const actualText = Register.get();
         assert.equal(actualText, expectedText);
     });
 });

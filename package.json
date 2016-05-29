@@ -72,8 +72,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
   },
   "dependencies": {
-    "lodash": "^4.12.0",
-    "copy-paste": "^1.2.0"
+    "lodash": "^4.12.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
