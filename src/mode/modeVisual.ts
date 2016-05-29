@@ -59,43 +59,33 @@ export class VisualMode extends Mode {
         this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
     }
 
-    private async _handleMotion(): Promise<boolean> {
-        let keysPressed: string;
-        let action: BaseAction;
+    private async _handleMotion(position: Position): Promise<boolean> {
+        this._selectionStop = position;
+        this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
 
-        for (let window = this._keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this._keyHistory, window).join('');
-            action = Actions.getRelevantAction(keysPressed);
-
-            if (action) { break; }
+        /**
+         * Always select the letter that we started visual mode on, no matter
+         * if we are in front or behind it. Imagine that we started visual mode
+         * with some text like this:
+         *
+         *   abc|def
+         *
+         * (The | represents the cursor.) If we now press w, we'll select def,
+         * but if we hit b we expect to select abcd, so we need to getRight() on the
+         * start of the selection when it precedes where we started visual mode.
+         */
+        if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
+            this.motion.select(this._selectionStart, this._selectionStop);
+        } else {
+            this.motion.select(this._selectionStart.getRight(), this._selectionStop);
         }
 
-        if (action) {
-            this._selectionStop = await action.execAction(this._modeHandler, this._selectionStop);
-            this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
+        this._keyHistory = [];
 
-            /**
-             * Always select the letter that we started visual mode on, no matter
-             * if we are in front or behind it. Imagine that we started visual mode
-             * with some text like this:
-             *
-             *   abc|def
-             *
-             * (The | represents the cursor.) If we now press w, we'll select def,
-             * but if we hit b we expect to select abcd, so we need to getRight() on the
-             * start of the selection when it precedes where we started visual mode.
-             */
-            if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
-                this.motion.select(this._selectionStart, this._selectionStop);
-            } else {
-                this.motion.select(this._selectionStart.getRight(), this._selectionStop);
-            }
-
-            this._keyHistory = [];
-        }
-
-        return !!action;
+        return true;
     }
+
+    // TODO.
 
     private async _handleOperator(): Promise<boolean> {
         let keysPressed: string;
@@ -121,15 +111,9 @@ export class VisualMode extends Mode {
         return !!operator;
     }
 
-    async handleKeyEvent(key: string): Promise<Boolean> {
-        this._keyHistory.push(key);
+    public async handleAction(action: BaseAction): Promise<void> {
+        const result = await action.execAction(this._modeHandler, this.motion.position);
 
-        const wasMotion = await this._handleMotion();
-
-        if (!wasMotion) {
-            return await this._handleOperator();
-        }
-
-        return true;
+        await this._handleMotion(result);
     }
 }

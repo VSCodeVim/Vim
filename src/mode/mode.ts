@@ -1,12 +1,14 @@
 "use strict";
 
-import {CommandKeyHandler} from './../configuration/commandKeyMap';
-import {Motion} from './../motion/motion';
+import { CommandKeyHandler } from './../configuration/commandKeyMap';
+import { Motion } from './../motion/motion';
+import { BaseAction } from './../actions/actions'
 
 export enum ModeName {
     Normal,
     Insert,
     Visual,
+    VisualLine,
 }
 
 export abstract class Mode {
@@ -52,9 +54,9 @@ export abstract class Mode {
         this._keyHistory = [];
     }
 
+    abstract handleAction(action: BaseAction): Promise<void>;
+
     abstract shouldBeActivated(key : string, currentMode : ModeName) : boolean;
 
     abstract handleActivation(key : string) : Promise<void>;
-
-    abstract handleKeyEvent(key : string) : Promise<Boolean>;
 }

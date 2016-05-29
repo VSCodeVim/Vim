@@ -23,27 +23,9 @@ export class NormalMode extends Mode {
 
     async handleActivation(key: string): Promise<void> { ; }
 
-    async handleKeyEvent(key: string): Promise<Boolean>  {
-        this._keyHistory.push(key);
+    public async handleAction(action: BaseAction): Promise<void> {
+        const result = await action.execAction(this._modeHandler, this.motion.position);
 
-        let keysPressed: string;
-        let action: BaseAction;
-
-        for (let window = this._keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this._keyHistory, window).join('');
-
-            action = Actions.getRelevantAction(keysPressed);
-
-            if (action) { break; }
-        }
-
-        if (action) {
-            this._keyHistory = [];
-
-            const result = await action.execAction(this._modeHandler, this.motion.position);
-            this.motion.moveTo(result.line, result.character);
-        }
-
-        return !!action;
+        this.motion.moveTo(result.line, result.character);
     }
 }

@@ -2,10 +2,11 @@
 
 import * as vscode from 'vscode';
 
-import {CommandKeyHandler, Command} from './../configuration/commandKeyMap';
-import {ModeName, Mode} from './mode';
-import {TextEditor} from './../textEditor';
-import {Motion} from './../motion/motion';
+import { CommandKeyHandler, Command } from './../configuration/commandKeyMap';
+import { ModeName, Mode } from './mode';
+import { TextEditor } from './../textEditor';
+import { Motion } from './../motion/motion';
+import { BaseAction } from './../actions/actions'
 
 export class InsertMode extends Mode {
     protected handleActivationKey(command : Command) : (motion: Motion) => Promise<{}> {
@@ -31,21 +32,23 @@ export class InsertMode extends Mode {
         }
     }
 
-    constructor(motion : Motion, keymap : CommandKeyHandler) {
+    constructor(motion: Motion, keymap : CommandKeyHandler) {
         super(ModeName.Insert, motion, keymap);
     }
 
-    shouldBeActivated(key : string, currentMode : ModeName) : boolean {
+    shouldBeActivated(key: string, currentMode : ModeName) : boolean {
         return key in this._keymap && currentMode === ModeName.Normal;
     }
 
-    async handleActivation(key : string): Promise<void> {
+    async handleActivation(key: string): Promise<void> {
         let command : Command = this._keymap[key];
         await this.handleActivationKey(command)(this.motion);
     }
 
-    async handleKeyEvent(key : string) : Promise<Boolean> {
-        await TextEditor.insert(key);
-        return true;
+    async handleAction(action: BaseAction): Promise<void> {
+        // TODO: Really dumb, especially since there are actually actions
+        // that work in insert mode.
+
+        await TextEditor.insert(action.key);
     }
 }

@@ -3,18 +3,20 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import {Mode, ModeName} from './mode';
-import {Motion, MotionMode} from './../motion/motion';
-import {NormalMode} from './modeNormal';
-import {InsertMode} from './modeInsert';
-import {VisualMode} from './modeVisual';
-import {Configuration} from '../configuration/configuration';
+import { Mode, ModeName } from './mode';
+import { Motion, MotionMode } from './../motion/motion';
+import { NormalMode } from './modeNormal';
+import { InsertMode } from './modeInsert';
+import { VisualMode } from './modeVisual';
+import { BaseAction, Actions } from './../actions/actions'
+import { Configuration } from '../configuration/configuration';
 
 export class ModeHandler implements vscode.Disposable {
-    private _motion : Motion;
-    private _modes : Mode[];
-    private _statusBarItem : vscode.StatusBarItem;
-    private _configuration : Configuration;
+    private _motion: Motion;
+    private _modes: Mode[];
+    private _statusBarItem: vscode.StatusBarItem;
+    private _configuration: Configuration;
+    private _keyHistory: string[];
 
     constructor() {
         this._configuration = Configuration.fromUserFile();
@@ -66,7 +68,7 @@ export class ModeHandler implements vscode.Disposable {
         key = this._configuration.keyboardLayout.translate(key);
 
         let currentModeName = this.currentMode.name;
-        let nextMode : Mode;
+        let nextMode: Mode;
         let inactiveModes = _.filter(this._modes, (m) => !m.isActive);
 
         for (let mode of inactiveModes) {
@@ -79,16 +81,48 @@ export class ModeHandler implements vscode.Disposable {
           }
         }
 
+
         if (nextMode) {
             this.currentMode.handleDeactivation();
             this.setCurrentModeByName(nextMode.name);
 
             await nextMode.handleActivation(key);
 
+            this._keyHistory = [];
+
             return true;
-        } else {
-            return this.currentMode.handleKeyEvent(key);
         }
+
+        if (currentModeName === ModeName.Insert) {
+            // TODO: There are about 100 better ways to do this.
+            await this.currentMode.handleAction({ key: key } as BaseAction);
+
+            console.log('key is ', key);
+
+            return true;
+        }
+
+        let action: BaseAction;
+
+        this._keyHistory.push(key);
+
+        for (let window = this._keyHistory.length; window > 0; window--) {
+            let keysPressed = _.takeRight(this._keyHistory, window).join('');
+
+            action = Actions.getRelevantAction(keysPressed);
+
+            if (action) { break; }
+        }
+
+        if (action) {
+            this._keyHistory = [];
+
+            this.currentMode.handleAction(action);
+
+            return true;
+        }
+
+        return false;
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
