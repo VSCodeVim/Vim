@@ -8,7 +8,7 @@ import { Motion, MotionMode } from './../motion/motion';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
-import { BaseAction, Actions } from './../actions/actions'
+import { BaseMovement, Actions } from './../actions/actions'
 import { Configuration } from '../configuration/configuration';
 
 export class ModeHandler implements vscode.Disposable {
@@ -95,14 +95,12 @@ export class ModeHandler implements vscode.Disposable {
 
         if (currentModeName === ModeName.Insert) {
             // TODO: There are about 100 better ways to do this.
-            await this.currentMode.handleAction({ key: key } as BaseAction);
-
-            console.log('key is ', key);
+            await this.currentMode.handleAction({ key: key } as BaseMovement);
 
             return true;
         }
 
-        let action: BaseAction;
+        let action: BaseMovement;
 
         this._keyHistory.push(key);
 

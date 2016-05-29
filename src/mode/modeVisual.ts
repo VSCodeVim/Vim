@@ -11,7 +11,7 @@ import { DeleteOperator } from './../operator/delete';
 import { YankOperator } from './../operator/yank';
 import { ModeHandler } from './modeHandler.ts';
 import { ChangeOperator } from './../operator/change';
-import { Actions, BaseAction } from './../actions/actions';
+import { Actions, BaseMovement } from './../actions/actions';
 
 export class VisualMode extends Mode {
     /**
@@ -111,7 +111,7 @@ export class VisualMode extends Mode {
         return !!operator;
     }
 
-    public async handleAction(action: BaseAction): Promise<void> {
+    public async handleAction(action: BaseMovement): Promise<void> {
         const result = await action.execAction(this._modeHandler, this.motion.position);
 
         await this._handleMotion(result);

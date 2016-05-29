@@ -6,7 +6,7 @@ import { CommandKeyHandler } from './../configuration/commandKeyMap';
 import { ModeName, Mode } from './mode';
 import { Motion } from './../motion/motion';
 import { ModeHandler } from './modeHandler';
-import { BaseAction, Actions } from './../actions/actions';
+import { BaseMovement, Actions } from './../actions/actions';
 
 export class NormalMode extends Mode {
     private _modeHandler: ModeHandler;
@@ -23,7 +23,7 @@ export class NormalMode extends Mode {
 
     async handleActivation(key: string): Promise<void> { ; }
 
-    public async handleAction(action: BaseAction): Promise<void> {
+    public async handleAction(action: BaseMovement): Promise<void> {
         const result = await action.execAction(this._modeHandler, this.motion.position);
 
         this.motion.moveTo(result.line, result.character);

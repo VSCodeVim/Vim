@@ -9,10 +9,6 @@ import {TextEditor} from './../textEditor';
 import {Position} from './../motion/position';
 import * as vscode from 'vscode';
 
-/**
- * An action is the most basic sort of thing you can do in vim.
- * 'h', 'j', 'w' etc are all actions.
- */
 export abstract class BaseAction {
   /**
    * Modes that this action can be run in.
@@ -23,7 +19,12 @@ export abstract class BaseAction {
    * The key you press to trigger the action.
    */
   public key: string;
+}
 
+/**
+ * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
+ */
+export abstract class BaseMovement extends BaseAction {
   /**
    * Is this action valid in the current Vim state?
    */
@@ -43,12 +44,14 @@ export abstract class BaseAction {
   public abstract async execAction(modeHandler: ModeHandler, position: Position): Promise<Position>;
 }
 
+
+
 export class Actions {
 
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
    */
-  public static allActions: BaseAction[] = [];
+  public static allActions: BaseMovement[] = [];
 
   /**
    * Gets the action that should be triggered given a key
@@ -57,7 +60,7 @@ export class Actions {
    * TODO - this is a great place for optional types, once
    * Typescript 2.0 lands!
    */
-  public static getRelevantAction(keysPressed: string): BaseAction {
+  public static getRelevantAction(keysPressed: string): BaseMovement {
     for (const action of Actions.allActions) {
       if (action.key === keysPressed) {
         return action;
@@ -68,7 +71,7 @@ export class Actions {
   }
 }
 
-function RegisterAction(action) {
+export function RegisterAction(action) {
     Actions.allActions.push(new action());
 }
 
@@ -171,7 +174,7 @@ class ActionRedo extends BaseAction {
 */
 
 @RegisterAction
-class ActionMoveLeft extends BaseAction {
+class MoveLeft extends BaseMovement {
   modes = [ModeName.Normal];
   key = "h";
 
@@ -181,7 +184,7 @@ class ActionMoveLeft extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveUp extends BaseAction {
+class MoveUp extends BaseMovement {
   modes = [ModeName.Normal];
   key = "k";
 
@@ -191,7 +194,7 @@ class ActionMoveUp extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveDown extends BaseAction {
+class MoveDown extends BaseMovement {
   modes = [ModeName.Normal];
   key = "j";
 
@@ -201,7 +204,7 @@ class ActionMoveDown extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveRight extends BaseAction {
+class MoveRight extends BaseMovement {
   modes = [ModeName.Normal];
   key = "l";
 
@@ -211,7 +214,7 @@ class ActionMoveRight extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveLineEnd extends BaseAction {
+class MoveLineEnd extends BaseMovement {
   modes = [ModeName.Normal];
   key = "$";
 
@@ -221,7 +224,7 @@ class ActionMoveLineEnd extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveLineBegin extends BaseAction {
+class MoveLineBegin extends BaseMovement {
   modes = [ModeName.Normal];
   key = "0";
 
@@ -231,7 +234,7 @@ class ActionMoveLineBegin extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveNonBlank extends BaseAction {
+class MoveNonBlank extends BaseMovement {
   modes = [ModeName.Normal];
   key = "^";
 
@@ -241,7 +244,7 @@ class ActionMoveNonBlank extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveNonBlankFirst extends BaseAction {
+class MoveNonBlankFirst extends BaseMovement {
   modes = [ModeName.Normal];
   key = "gg";
 
@@ -251,7 +254,7 @@ class ActionMoveNonBlankFirst extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveNonBlankLast extends BaseAction {
+class MoveNonBlankLast extends BaseMovement {
   modes = [ModeName.Normal];
   key = "G";
 
@@ -261,7 +264,7 @@ class ActionMoveNonBlankLast extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveWordBegin extends BaseAction {
+class MoveWordBegin extends BaseMovement {
   modes = [ModeName.Normal];
   key = "w";
 
@@ -271,7 +274,7 @@ class ActionMoveWordBegin extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveFullWordBegin extends BaseAction {
+class MoveFullWordBegin extends BaseMovement {
   modes = [ModeName.Normal];
   key = "W";
 
@@ -281,7 +284,7 @@ class ActionMoveFullWordBegin extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveWordEnd extends BaseAction {
+class MoveWordEnd extends BaseMovement {
   modes = [ModeName.Normal];
   key = "e";
 
@@ -291,7 +294,7 @@ class ActionMoveWordEnd extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveFullWordEnd extends BaseAction {
+class MoveFullWordEnd extends BaseMovement {
   modes = [ModeName.Normal];
   key = "E";
 
@@ -301,7 +304,7 @@ class ActionMoveFullWordEnd extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveLastWordEnd  extends BaseAction {
+class MoveLastWordEnd  extends BaseMovement {
   modes = [ModeName.Normal];
   key = "ge";
 
@@ -311,7 +314,7 @@ class ActionMoveLastWordEnd  extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveLastFullWordEnd extends BaseAction {
+class MoveLastFullWordEnd extends BaseMovement {
   modes = [ModeName.Normal];
   key = "gE";
 
@@ -321,7 +324,7 @@ class ActionMoveLastFullWordEnd extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveBeginningWord extends BaseAction {
+class MoveBeginningWord extends BaseMovement {
   modes = [ModeName.Normal];
   key = "b";
 
@@ -331,7 +334,7 @@ class ActionMoveBeginningWord extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveBeginningFullWord extends BaseAction {
+class MoveBeginningFullWord extends BaseMovement {
   modes = [ModeName.Normal];
   key = "B";
 
@@ -341,7 +344,7 @@ class ActionMoveBeginningFullWord extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveParagraphEnd extends BaseAction {
+class MoveParagraphEnd extends BaseMovement {
   modes = [ModeName.Normal];
   key = "}";
 
@@ -351,7 +354,7 @@ class ActionMoveParagraphEnd extends BaseAction {
 }
 
 @RegisterAction
-class ActionMoveParagraphBegin extends BaseAction {
+class MoveParagraphBegin extends BaseMovement {
   modes = [ModeName.Normal];
   key = "{";
 

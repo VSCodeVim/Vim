@@ -2,7 +2,7 @@
 
 import { CommandKeyHandler } from './../configuration/commandKeyMap';
 import { Motion } from './../motion/motion';
-import { BaseAction } from './../actions/actions'
+import { BaseMovement } from './../actions/actions';
 
 export enum ModeName {
     Normal,
@@ -54,7 +54,7 @@ export abstract class Mode {
         this._keyHistory = [];
     }
 
-    abstract handleAction(action: BaseAction): Promise<void>;
+    abstract handleAction(action: BaseMovement): Promise<void>;
 
     abstract shouldBeActivated(key : string, currentMode : ModeName) : boolean;
 

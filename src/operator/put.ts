@@ -5,22 +5,19 @@ import { Operator } from './operator';
 import { ModeHandler } from './../mode/modeHandler.ts';
 import { TextEditor } from './../textEditor';
 import { Register } from './../register/register';
+import { RegisterAction } from './../actions/actions';
 
+@RegisterAction
 export class PutOperator extends Operator {
-
-    constructor(modeHandler: ModeHandler) {
-        super(modeHandler);
-    }
-
-    // public key(): string { return "p"; }
+    public key: string = "p";
 
     /**
      * Run this operator on a range.
      */
-    public async run(start: Position, end: Position): Promise<void> {
+    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<void> {
         const data = Register.get();
 
         await TextEditor.insertAt(data, start.getRight());
-        this.modeHandler.currentMode.motion.moveTo(start.line, start.getRight().character);
+        modeHandler.currentMode.motion.moveTo(start.line, start.getRight().character);
     }
 }

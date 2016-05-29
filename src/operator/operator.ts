@@ -2,25 +2,13 @@
 
 import { Position } from './../motion/position';
 import { ModeHandler } from './../mode/modeHandler.ts';
+import { BaseAction } from './../actions/actions';
+import { RegisterAction } from './../actions/actions';
 
-export abstract class Operator {
-    private _modeHandler: ModeHandler;
-
-    constructor(modeHandler: ModeHandler) {
-        this._modeHandler = modeHandler;
-    }
-
-    get modeHandler() : ModeHandler {
-        return this._modeHandler;
-    }
-
-    /**
-     * What key triggers this operator?
-     */
-    // abstract key(): string;
-
+@RegisterAction
+export abstract class Operator extends BaseAction {
     /**
      * Run this operator on a range.
      */
-    abstract run(start: Position, stop: Position): Promise<void>;
+    abstract run(modeHandler: ModeHandler, start: Position, stop: Position): Promise<void>;
 }

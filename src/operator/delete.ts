@@ -7,18 +7,16 @@ import { ModeName } from './../mode/mode';
 import { Operator } from './operator';
 
 import * as vscode from 'vscode';
+import { RegisterAction } from './../actions/actions';
 
+@RegisterAction
 export class DeleteOperator extends Operator {
-    constructor(modeHandler: ModeHandler) {
-        super(modeHandler);
-    }
-
-    // public key(): string { return "d"; }
+    public key: string = "d";
 
     /**
      * Run this operator on a range.
      */
-    public async run(start: Position, end: Position): Promise<void> {
+    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<void> {
         // Imagine we have selected everything with an X in
         // the following text (there is no character on the
         // second line at all, just a block cursor):
@@ -35,6 +33,6 @@ export class DeleteOperator extends Operator {
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
-        this.modeHandler.setCurrentModeByName(ModeName.Normal);
+        modeHandler.setCurrentModeByName(ModeName.Normal);
     }
 }
