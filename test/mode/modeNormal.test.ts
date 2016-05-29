@@ -1,11 +1,8 @@
 "use strict";
 
 import * as assert from 'assert';
-import {CommandKeyMap} from '../../src/configuration/commandKeyMap';
 import {setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from './../testUtils';
-import {NormalMode} from '../../src/mode/modeNormal';
 import {ModeName} from '../../src/mode/mode';
-import {Motion, MotionMode} from '../../src/motion/motion';
 import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from '../../src/mode/modeHandler';
 
@@ -114,7 +111,7 @@ suite("Mode Normal", () => {
         ]);
 
         await assertEqualLines(["te"]);
-        await modeHandler.handleKeyEvent('D')
+        await modeHandler.handleKeyEvent('D');
         await assertEqualLines(["t"]);
     });
 

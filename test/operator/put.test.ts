@@ -2,12 +2,12 @@
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { copy } from "copy-paste";
 import { ModeHandler } from "../../src/mode/modeHandler";
 import { PutOperator } from "../../src/operator/put";
 import { TextEditor } from '../../src/textEditor';
 import { Position, PositionOptions } from "../../src/motion/position";
 import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { Register } from '../../src/register/register';
 
 suite("put operator", () => {
     suiteSetup(setupWorkspace);
@@ -20,9 +20,7 @@ suite("put operator", () => {
         const mode = new ModeHandler();
         const put = new PutOperator(mode);
 
-        await new Promise(resolve => {
-            copy(expectedText, () => resolve());
-        });
+        Register.put(expectedText);
 
         await put.run(position, position);
 
@@ -43,9 +41,7 @@ suite("put operator", () => {
         const mode = new ModeHandler();
         const put = new PutOperator(mode);
 
-        await new Promise(resolve => {
-            copy(phrase, () => resolve());
-        });
+        Register.put(phrase);
 
         // using ^ to show the cusor position
         // before : the dog
