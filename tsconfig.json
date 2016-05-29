@@ -4,7 +4,8 @@
     "target": "es6",
     "outDir": "out",
     "noLib": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "experimentalDecorators": true
   },
   "exclude": [
     "node_modules"

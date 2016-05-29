@@ -12,6 +12,7 @@ import {DeleteOperator} from './../operator/delete';
 import {ChangeOperator} from './../operator/change';
 import {PutOperator} from './../operator/put';
 import {TextEditor} from './../textEditor';
+import {BaseAction, Actions} from './../actions/actions';
 
 export class NormalMode extends Mode {
     protected handleKey(command : Command) : (motion: Motion) => Promise<{}> {
@@ -221,20 +222,24 @@ export class NormalMode extends Mode {
 
         let keyHandled = false;
         let keysPressed: string;
-        let command: Command;
+        let action: BaseAction;
 
         for (let window = this._keyHistory.length; window > 0; window--) {
             keysPressed = _.takeRight(this._keyHistory, window).join('');
-            command = this._keymap[keysPressed];
-            if (command !== undefined) {
-                keyHandled = true;
-                break;
+
+            for (const a of Actions.allActions) {
+                if (a.key === keysPressed) {
+                    keyHandled = true;
+                    action = a;
+
+                    break;
+                }
             }
         }
 
         if (keyHandled) {
             this._keyHistory = [];
-            await this.handleKey(command)(this.motion);
+            await action.execAction(this._modeHandler, this.motion);
         }
 
         return true;

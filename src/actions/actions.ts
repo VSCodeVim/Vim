@@ -12,7 +12,7 @@ import * as vscode from 'vscode';
  * An action is the most basic sort of thing you can do in vimotion.
  * 'h', 'j', 'w' etc are all actions.
  */
-abstract class BaseAction {
+export abstract class BaseAction {
   /**
    * Modes that this action can be run in.
    */
@@ -42,6 +42,19 @@ abstract class BaseAction {
   public abstract async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void>;
 }
 
+export class Actions {
+
+  /**
+   * Every Vim action will be added here with the @RegisterAction decorator.
+   */
+  public static allActions: BaseAction[] = [];
+}
+
+function RegisterAction(action) {
+    Actions.allActions.push(new action());
+}
+
+@RegisterAction
 class ActionEnterCommand extends BaseAction {
   modes = [ModeName.Normal];
   key = ":";
@@ -51,6 +64,7 @@ class ActionEnterCommand extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionFind extends BaseAction {
   modes = [ModeName.Normal];
   key = "/";
@@ -60,6 +74,7 @@ class ActionFind extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionFold extends BaseAction {
   modes = [ModeName.Normal];
   key = "zc";
@@ -69,6 +84,7 @@ class ActionFold extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionUnfold extends BaseAction {
   modes = [ModeName.Normal];
   key = "zo";
@@ -78,6 +94,7 @@ class ActionUnfold extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionFoldAll extends BaseAction {
   modes = [ModeName.Normal];
   key = "zC";
@@ -87,6 +104,7 @@ class ActionFoldAll extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionUnfoldAll extends BaseAction {
   modes = [ModeName.Normal];
   key = "zO";
@@ -96,6 +114,7 @@ class ActionUnfoldAll extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionUndo extends BaseAction {
   modes = [ModeName.Normal];
   key = "u";
@@ -105,6 +124,7 @@ class ActionUndo extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionRedo extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+r";
@@ -114,6 +134,7 @@ class ActionRedo extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveLeft extends BaseAction {
   modes = [ModeName.Normal];
   key = "h";
@@ -123,15 +144,7 @@ class ActionMoveLeft extends BaseAction {
   }
 }
 
-class ActionMoveDown extends BaseAction {
-  modes = [ModeName.Normal];
-  key = "j";
-
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.down().move();
-  }
-}
-
+@RegisterAction
 class ActionMoveUp extends BaseAction {
   modes = [ModeName.Normal];
   key = "k";
@@ -141,6 +154,7 @@ class ActionMoveUp extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveRight extends BaseAction {
   modes = [ModeName.Normal];
   key = "l";
@@ -150,6 +164,7 @@ class ActionMoveRight extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveLineEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "$";
@@ -159,6 +174,7 @@ class ActionMoveLineEnd extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveLineBegin extends BaseAction {
   modes = [ModeName.Normal];
   key = "0";
@@ -168,6 +184,7 @@ class ActionMoveLineBegin extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveNonBlank extends BaseAction {
   modes = [ModeName.Normal];
   key = "^";
@@ -177,6 +194,7 @@ class ActionMoveNonBlank extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveNonBlankFirst extends BaseAction {
   modes = [ModeName.Normal];
   key = "gg";
@@ -186,6 +204,7 @@ class ActionMoveNonBlankFirst extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveNonBlankLast extends BaseAction {
   modes = [ModeName.Normal];
   key = "G";
@@ -195,6 +214,7 @@ class ActionMoveNonBlankLast extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveWordBegin extends BaseAction {
   modes = [ModeName.Normal];
   key = "w";
@@ -204,6 +224,7 @@ class ActionMoveWordBegin extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveFullWordBegin extends BaseAction {
   modes = [ModeName.Normal];
   key = "W";
@@ -213,6 +234,7 @@ class ActionMoveFullWordBegin extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveWordEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "e";
@@ -222,6 +244,7 @@ class ActionMoveWordEnd extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveFullWordEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "E";
@@ -231,6 +254,7 @@ class ActionMoveFullWordEnd extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveLastWordEnd  extends BaseAction {
   modes = [ModeName.Normal];
   key = "ge";
@@ -240,6 +264,7 @@ class ActionMoveLastWordEnd  extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveLastFullWordEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "gE";
@@ -249,6 +274,7 @@ class ActionMoveLastFullWordEnd extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveBeginningWord extends BaseAction {
   modes = [ModeName.Normal];
   key = "b";
@@ -258,6 +284,7 @@ class ActionMoveBeginningWord extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveBeginningFullWord extends BaseAction {
   modes = [ModeName.Normal];
   key = "B";
@@ -267,6 +294,7 @@ class ActionMoveBeginningFullWord extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveParagraphEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "}";
@@ -276,6 +304,7 @@ class ActionMoveParagraphEnd extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveParagraphBegin extends BaseAction {
   modes = [ModeName.Normal];
   key = "{";
@@ -285,6 +314,7 @@ class ActionMoveParagraphBegin extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveFullPageDown extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+f";
@@ -294,6 +324,7 @@ class ActionMoveFullPageDown extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveFullPageUp extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+b";
@@ -303,6 +334,7 @@ class ActionMoveFullPageUp extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionMoveMatchingBracket extends BaseAction {
   modes = [ModeName.Normal];
   key = "%";
@@ -312,6 +344,7 @@ class ActionMoveMatchingBracket extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionIndent extends BaseAction {
   modes = [ModeName.Normal];
   key = ">>";
@@ -321,6 +354,7 @@ class ActionIndent extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionOutdent extends BaseAction {
   modes = [ModeName.Normal];
   key = "<<";
@@ -330,6 +364,7 @@ class ActionOutdent extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionChangeWord {
   modes = [ModeName.Normal];
   key = "cw";
@@ -345,6 +380,7 @@ class ActionChangeWord {
   }
 }
 
+@RegisterAction
 class ActionChangeFullWord {
   modes = [ModeName.Normal];
   key = "cW";
@@ -361,6 +397,7 @@ class ActionChangeFullWord {
   }
 }
 
+@RegisterAction
 class ActionChangeCurrentWord {
   modes = [ModeName.Normal];
   key = "ciw";
@@ -378,6 +415,7 @@ class ActionChangeCurrentWord {
   }
 }
 
+@RegisterAction
 class ActionChangeCurrentWordToNext {
   modes = [ModeName.Normal];
   key = "caw";
@@ -394,6 +432,7 @@ class ActionChangeCurrentWordToNext {
   }
 }
 
+@RegisterAction
 class ActionChangeToLineEnd {
   modes = [ModeName.Normal];
   key = "C";
@@ -404,6 +443,7 @@ class ActionChangeToLineEnd {
   }
 }
 
+@RegisterAction
 class ActionDeleteLine extends BaseAction {
   modes = [ModeName.Normal];
   key = "dd";
@@ -413,6 +453,7 @@ class ActionDeleteLine extends BaseAction {
   }
 }
 
+@RegisterAction
 class ActionDeleteToNextWord {
   modes = [ModeName.Normal];
   key = "dw";
@@ -427,6 +468,7 @@ class ActionDeleteToNextWord {
   }
 }
 
+@RegisterAction
 class ActionDeleteToFullNextWord  {
   modes = [ModeName.Normal];
   key = "dW";
@@ -437,6 +479,7 @@ class ActionDeleteToFullNextWord  {
   }
 }
 
+@RegisterAction
 class ActionDeleteToWordBegin {
   modes = [ModeName.Normal];
   key = "db";
@@ -447,6 +490,7 @@ class ActionDeleteToWordBegin {
   }
 }
 
+@RegisterAction
 class ActionDeleteToFullWordBegin {
   modes = [ModeName.Normal];
   key = "dB";
@@ -457,6 +501,7 @@ class ActionDeleteToFullWordBegin {
   }
 }
 
+@RegisterAction
 class ActionDeleteToWordEnd {
   modes = [ModeName.Normal];
   key = "de";
@@ -467,6 +512,7 @@ class ActionDeleteToWordEnd {
   }
 }
 
+@RegisterAction
 class ActionDeleteToFullWordEnd {
   modes = [ModeName.Normal];
   key = "dE";
@@ -478,6 +524,7 @@ class ActionDeleteToFullWordEnd {
   }
 }
 
+@RegisterAction
 class ActionDeleteToLineEnd {
   modes = [ModeName.Normal];
   key = "D";
@@ -489,6 +536,7 @@ class ActionDeleteToLineEnd {
   }
 }
 
+@RegisterAction
 class ActionDeleteChar {
   modes = [ModeName.Normal];
   key = "x";
@@ -499,6 +547,7 @@ class ActionDeleteChar {
   }
 }
 
+@RegisterAction
 class ActionDeleteLastChar {
   modes = [ModeName.Normal];
   key = "X";
@@ -508,6 +557,7 @@ class ActionDeleteLastChar {
   }
 }
 
+@RegisterAction
 class ActionPaste {
   modes = [ModeName.Normal];
   key = "p";
