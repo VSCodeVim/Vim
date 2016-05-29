@@ -1,4 +1,4 @@
-import { ModeHandler } from './../mode/modeHandler'
+import { ModeHandler } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { showCmdLine } from './../cmd_line/main';
 import { Motion, MotionMode } from './../motion/motion';
