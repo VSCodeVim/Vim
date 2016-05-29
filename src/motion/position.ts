@@ -208,6 +208,14 @@ export class Position extends vscode.Position {
         return TextEditor.readLineAt(line).match(/^\s*/)[0].length;
     }
 
+    public getFirstLineNonBlankChar(): Position {
+        return new Position(this.line, Position.getFirstNonBlankCharAtLine(this.line), this.positionOptions);
+    }
+
+    public getDocumentStart(): Position {
+        return new Position(0, 0, this.positionOptions);
+    }
+
     private static getLineLength(line: number, options: PositionOptions) : number {
         switch (options) {
             case PositionOptions.CharacterWiseExclusive:

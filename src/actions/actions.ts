@@ -6,10 +6,11 @@ import {DeleteOperator} from './../operator/delete';
 import {ChangeOperator} from './../operator/change';
 import {PutOperator} from './../operator/put';
 import {TextEditor} from './../textEditor';
+import {Position} from './../motion/position';
 import * as vscode from 'vscode';
 
 /**
- * An action is the most basic sort of thing you can do in vimotion.
+ * An action is the most basic sort of thing you can do in vim.
  * 'h', 'j', 'w' etc are all actions.
  */
 export abstract class BaseAction {
@@ -39,7 +40,7 @@ export abstract class BaseAction {
    * TODO: The dream is to not pass in modeHandler, only motion.
    * This is quite a far off dream, though.
    */
-  public abstract async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void>;
+  public abstract async execAction(modeHandler: ModeHandler, position: Position): Promise<Position>;
 }
 
 export class Actions {
@@ -54,13 +55,16 @@ function RegisterAction(action) {
     Actions.allActions.push(new action());
 }
 
+/*
 @RegisterAction
 class ActionEnterCommand extends BaseAction {
   modes = [ModeName.Normal];
   key = ":";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await showCmdLine("", modeHandler);
+
+    return {};
   }
 }
 
@@ -69,8 +73,10 @@ class ActionFind extends BaseAction {
   modes = [ModeName.Normal];
   key = "/";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("actions.find");
+
+    return {};
   }
 }
 
@@ -79,8 +85,10 @@ class ActionFold extends BaseAction {
   modes = [ModeName.Normal];
   key = "zc";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("editor.fold");
+
+    return {};
   }
 }
 
@@ -89,8 +97,10 @@ class ActionUnfold extends BaseAction {
   modes = [ModeName.Normal];
   key = "zo";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("editor.unfold");
+
+    return {};
   }
 }
 
@@ -99,8 +109,10 @@ class ActionFoldAll extends BaseAction {
   modes = [ModeName.Normal];
   key = "zC";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("editor.foldAll");
+
+    return {};
   }
 }
 
@@ -109,8 +121,10 @@ class ActionUnfoldAll extends BaseAction {
   modes = [ModeName.Normal];
   key = "zO";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("editor.unfoldAll");
+
+    return {};
   }
 }
 
@@ -119,8 +133,10 @@ class ActionUndo extends BaseAction {
   modes = [ModeName.Normal];
   key = "u";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("undo");
+
+    return { undo: true };
   }
 }
 
@@ -129,18 +145,21 @@ class ActionRedo extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+r";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("redo");
+
+    return { redo: true };
   }
 }
+*/
 
 @RegisterAction
 class ActionMoveLeft extends BaseAction {
   modes = [ModeName.Normal];
   key = "h";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.left().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getLeft();
   }
 }
 
@@ -149,8 +168,18 @@ class ActionMoveUp extends BaseAction {
   modes = [ModeName.Normal];
   key = "k";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.up().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getUp(0) // TODO: Need to determine current col;
+  }
+}
+
+@RegisterAction
+class ActionMoveDown extends BaseAction {
+  modes = [ModeName.Normal];
+  key = "j";
+
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getDown(0) // TODO: Need to determine current col;
   }
 }
 
@@ -159,8 +188,8 @@ class ActionMoveRight extends BaseAction {
   modes = [ModeName.Normal];
   key = "l";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.right().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getRight();
   }
 }
 
@@ -169,8 +198,8 @@ class ActionMoveLineEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "$";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.lineEnd().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getLineEnd();
   }
 }
 
@@ -179,8 +208,8 @@ class ActionMoveLineBegin extends BaseAction {
   modes = [ModeName.Normal];
   key = "0";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.lineBegin().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getLineBegin();
   }
 }
 
@@ -189,8 +218,8 @@ class ActionMoveNonBlank extends BaseAction {
   modes = [ModeName.Normal];
   key = "^";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await vscode.commands.executeCommand("cursorHome");
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getFirstLineNonBlankChar();
   }
 }
 
@@ -199,8 +228,8 @@ class ActionMoveNonBlankFirst extends BaseAction {
   modes = [ModeName.Normal];
   key = "gg";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.firstLineNonBlankChar().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getDocumentStart();
   }
 }
 
@@ -209,8 +238,8 @@ class ActionMoveNonBlankLast extends BaseAction {
   modes = [ModeName.Normal];
   key = "G";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.lastLineNonBlankChar().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getDocumentEnd();
   }
 }
 
@@ -219,8 +248,8 @@ class ActionMoveWordBegin extends BaseAction {
   modes = [ModeName.Normal];
   key = "w";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.wordRight().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getWordRight();
   }
 }
 
@@ -229,8 +258,8 @@ class ActionMoveFullWordBegin extends BaseAction {
   modes = [ModeName.Normal];
   key = "W";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.bigWordRight().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getBigWordRight();
   }
 }
 
@@ -239,8 +268,8 @@ class ActionMoveWordEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "e";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.goToEndOfCurrentWord().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getCurrentWordEnd();
   }
 }
 
@@ -249,8 +278,8 @@ class ActionMoveFullWordEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "E";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.goToEndOfCurrentBigWord().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getCurrentBigWordEnd();
   }
 }
 
@@ -259,8 +288,8 @@ class ActionMoveLastWordEnd  extends BaseAction {
   modes = [ModeName.Normal];
   key = "ge";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.goToEndOfLastWord().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getLastWordEnd();
   }
 }
 
@@ -269,8 +298,8 @@ class ActionMoveLastFullWordEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "gE";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.goToEndOfLastWord().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getLastBigWordEnd();
   }
 }
 
@@ -279,8 +308,8 @@ class ActionMoveBeginningWord extends BaseAction {
   modes = [ModeName.Normal];
   key = "b";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.wordLeft().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getWordLeft();
   }
 }
 
@@ -289,8 +318,8 @@ class ActionMoveBeginningFullWord extends BaseAction {
   modes = [ModeName.Normal];
   key = "B";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.bigWordLeft().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getBigWordLeft();
   }
 }
 
@@ -299,8 +328,8 @@ class ActionMoveParagraphEnd extends BaseAction {
   modes = [ModeName.Normal];
   key = "}";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.goToEndOfCurrentParagraph().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getCurrentParagraphEnd();
   }
 }
 
@@ -309,18 +338,22 @@ class ActionMoveParagraphBegin extends BaseAction {
   modes = [ModeName.Normal];
   key = "{";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    await motion.goToBeginningOfCurrentParagraph().move();
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return position.getCurrentParagraphBeginning();
   }
 }
 
+
+/*
 @RegisterAction
 class ActionMoveFullPageDown extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+f";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("cursorPageDown");
+
+    return {};
   }
 }
 
@@ -329,8 +362,10 @@ class ActionMoveFullPageUp extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+b";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("cursorPageUp");
+
+    return {};
   }
 }
 
@@ -339,8 +374,10 @@ class ActionMoveMatchingBracket extends BaseAction {
   modes = [ModeName.Normal];
   key = "%";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("editor.action.jumpToBracket");
+
+    return {};
   }
 }
 
@@ -349,8 +386,10 @@ class ActionIndent extends BaseAction {
   modes = [ModeName.Normal];
   key = ">>";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("editor.action.indentLines");
+
+    return {};
   }
 }
 
@@ -359,23 +398,27 @@ class ActionOutdent extends BaseAction {
   modes = [ModeName.Normal];
   key = "<<";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await vscode.commands.executeCommand("editor.action.outdentLines");
+
+    return {};
   }
 }
+
 
 @RegisterAction
 class ActionChangeWord {
   modes = [ModeName.Normal];
   key = "cw";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
-    motion.changeMode(MotionMode.Cursor);
-    let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    // motion.changeMode(MotionMode.Cursor); // TODO
+
+    let currentChar = TextEditor.getLineAt(position).text[position.character];
     if (currentChar === ' ' || currentChar === '\t') {
-      await new ChangeOperator(modeHandler).run(motion.position, motion.position.getWordRight());
+      await new ChangeOperator(modeHandler).run(position, position.getWordRight());
     } else {
-      await new ChangeOperator(modeHandler).run(motion.position, motion.position.getCurrentWordEnd());
+      await new ChangeOperator(modeHandler).run(position, position.getCurrentWordEnd());
     }
   }
 }
@@ -385,7 +428,7 @@ class ActionChangeFullWord {
   modes = [ModeName.Normal];
   key = "cW";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
     if (currentChar === ' ' || currentChar === '\t') {
@@ -402,7 +445,7 @@ class ActionChangeCurrentWord {
   modes = [ModeName.Normal];
   key = "ciw";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
     if (currentChar === ' ' || currentChar === '\t') {
@@ -420,7 +463,7 @@ class ActionChangeCurrentWordToNext {
   modes = [ModeName.Normal];
   key = "caw";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
     if (currentChar === ' ' || currentChar === '\t') {
@@ -437,7 +480,7 @@ class ActionChangeToLineEnd {
   modes = [ModeName.Normal];
   key = "C";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new ChangeOperator(modeHandler).run(motion.position, motion.position.getLineEnd());
   }
@@ -448,7 +491,7 @@ class ActionDeleteLine extends BaseAction {
   modes = [ModeName.Normal];
   key = "dd";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     vscode.commands.executeCommand("editor.action.deleteLines");
   }
 }
@@ -458,7 +501,7 @@ class ActionDeleteToNextWord {
   modes = [ModeName.Normal];
   key = "dw";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new DeleteOperator(modeHandler).run(motion.position, motion.position.getWordRight());
 
@@ -473,7 +516,7 @@ class ActionDeleteToFullNextWord  {
   modes = [ModeName.Normal];
   key = "dW";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new DeleteOperator(modeHandler).run(motion.position, motion.position.getBigWordRight());
   }
@@ -484,7 +527,7 @@ class ActionDeleteToWordBegin {
   modes = [ModeName.Normal];
   key = "db";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new DeleteOperator(modeHandler).run(motion.position, motion.position.getWordLeft());
   }
@@ -495,7 +538,7 @@ class ActionDeleteToFullWordBegin {
   modes = [ModeName.Normal];
   key = "dB";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new DeleteOperator(modeHandler).run(motion.position, motion.position.getBigWordLeft());
   }
@@ -506,7 +549,7 @@ class ActionDeleteToWordEnd {
   modes = [ModeName.Normal];
   key = "de";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new DeleteOperator(modeHandler).run(motion.position, motion.position.getCurrentWordEnd());
   }
@@ -517,19 +560,20 @@ class ActionDeleteToFullWordEnd {
   modes = [ModeName.Normal];
   key = "dE";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new DeleteOperator(modeHandler).run(motion.position, motion.position.getCurrentBigWordEnd());
     motion.left().move();
   }
 }
 
+
 @RegisterAction
 class ActionDeleteToLineEnd {
   modes = [ModeName.Normal];
   key = "D";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new DeleteOperator(modeHandler).run(motion.position, motion.position.getLineEnd());
     motion.left().move();
@@ -541,7 +585,7 @@ class ActionDeleteChar {
   modes = [ModeName.Normal];
   key = "x";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     motion.changeMode(MotionMode.Cursor);
     await new DeleteOperator(modeHandler).run(motion.position, motion.position.getRight());
   }
@@ -552,7 +596,7 @@ class ActionDeleteLastChar {
   modes = [ModeName.Normal];
   key = "X";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     vscode.commands.executeCommand("deleteLeft");
   }
 }
@@ -562,7 +606,8 @@ class ActionPaste {
   modes = [ModeName.Normal];
   key = "p";
 
-  public async execAction(modeHandler: ModeHandler, motion: Motion): Promise<void> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     await new PutOperator(modeHandler).run(motion.position, null);
   }
 }
+*/

@@ -46,7 +46,9 @@ export class NormalMode extends Mode {
 
         if (keyHandled) {
             this._keyHistory = [];
-            await action.execAction(this._modeHandler, this.motion);
+
+            const result = await action.execAction(this._modeHandler, this.motion.position);
+            this.motion.moveTo(result.line, result.character);
         }
 
         return true;
