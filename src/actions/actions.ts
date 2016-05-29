@@ -49,6 +49,23 @@ export class Actions {
    * Every Vim action will be added here with the @RegisterAction decorator.
    */
   public static allActions: BaseAction[] = [];
+
+  /**
+   * Gets the action that should be triggered given a key
+   * sequence, or undefined if there isn't one.
+   *
+   * TODO - this is a great place for optional types, once
+   * Typescript 2.0 lands!
+   */
+  public static getRelevantAction(keysPressed: string): BaseAction {
+    for (const action of Actions.allActions) {
+      if (action.key === keysPressed) {
+        return action;
+      }
+    }
+
+    return undefined;
+  }
 }
 
 function RegisterAction(action) {
@@ -169,7 +186,7 @@ class ActionMoveUp extends BaseAction {
   key = "k";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    return position.getUp(0) // TODO: Need to determine current col;
+    return position.getUp(0); // TODO: Need to determine current col;
   }
 }
 
@@ -179,7 +196,7 @@ class ActionMoveDown extends BaseAction {
   key = "j";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    return position.getDown(0) // TODO: Need to determine current col;
+    return position.getDown(0); // TODO: Need to determine current col;
   }
 }
 

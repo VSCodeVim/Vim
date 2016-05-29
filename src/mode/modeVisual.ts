@@ -11,6 +11,7 @@ import { DeleteOperator } from './../operator/delete';
 import { YankOperator } from './../operator/yank';
 import { ModeHandler } from './modeHandler.ts';
 import { ChangeOperator } from './../operator/change';
+import { Actions, BaseAction } from './../actions/actions';
 
 export class VisualMode extends Mode {
     /**
@@ -59,20 +60,18 @@ export class VisualMode extends Mode {
     }
 
     private async _handleMotion(): Promise<boolean> {
-        let keyHandled = false;
         let keysPressed: string;
+        let action: BaseAction;
 
         for (let window = this._keyHistory.length; window > 0; window--) {
             keysPressed = _.takeRight(this._keyHistory, window).join('');
-            if (this.keyToNewPosition[keysPressed] !== undefined) {
-                keyHandled = true;
-                break;
-            }
+            action = Actions.getRelevantAction(keysPressed);
+
+            if (action) { break; }
         }
 
-        if (keyHandled) {
-            this._selectionStop = await this.keyToNewPosition[keysPressed](this._selectionStop);
-
+        if (action) {
+            this._selectionStop = await action.execAction(this._modeHandler, this._selectionStop);
             this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
 
             /**
@@ -95,7 +94,7 @@ export class VisualMode extends Mode {
             this._keyHistory = [];
         }
 
-        return keyHandled;
+        return !!action;
     }
 
     private async _handleOperator(): Promise<boolean> {
@@ -104,6 +103,7 @@ export class VisualMode extends Mode {
 
         for (let window = this._keyHistory.length; window > 0; window--) {
             keysPressed = _.takeRight(this._keyHistory, window).join('');
+
             if (this._keysToOperators[keysPressed] !== undefined) {
                 operator = this._keysToOperators[keysPressed];
                 break;
