@@ -18,7 +18,7 @@ export class PutOperator extends Operator {
      * Run this operator on a range.
      */
     public async run(start: Position, end: Position): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             paste(async (err, data) => {
                 if (err) {
                     reject();
