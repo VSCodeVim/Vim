@@ -1,6 +1,7 @@
 import { ModeHandler } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { Position } from './../motion/position';
+import * as vscode from 'vscode';
 
 export abstract class BaseAction {
   /**
@@ -45,11 +46,8 @@ export abstract class BaseMovement extends BaseAction {
 export abstract class BaseCommand extends BaseAction {
   /**
    * Run the command.
-   *
-   * TODO: The dream is to not pass in modeHandler, only motion.
-   * This is quite a far off dream, though.
    */
-  public abstract async exec(modeHandler: ModeHandler): Promise<void>;
+  public abstract async exec(modeHandler: ModeHandler, position: Position): Promise<Position>;
 }
 
 export class Actions {
@@ -66,9 +64,9 @@ export class Actions {
    * TODO - this is a great place for optional types, once
    * Typescript 2.0 lands!
    */
-  public static getRelevantAction(keysPressed: string): BaseAction {
+  public static getRelevantAction(keysPressed: string, mode: ModeName): BaseAction {
     for (const action of Actions.allActions) {
-      if (action.key === keysPressed) {
+      if (action.key === keysPressed && action.modes.indexOf(mode) !== -1) {
         return action;
       }
     }
@@ -184,8 +182,34 @@ class CommandEsc extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   key = "<esc>";
 
-  public async exec(modeHandler: ModeHandler): Promise<void> {
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
     modeHandler.setCurrentModeByName(ModeName.Normal);
+
+    return position;
+  }
+}
+
+@RegisterAction
+class CommandVInVisualMode extends BaseCommand {
+  modes = [ModeName.Visual];
+  key = "v";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    modeHandler.setCurrentModeByName(ModeName.Normal);
+
+    return position;
+  }
+}
+
+@RegisterAction
+class CommandVInNormalMode extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "v";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    modeHandler.setCurrentModeByName(ModeName.Visual);
+
+    return position;
   }
 }
 
@@ -194,8 +218,90 @@ class CommandOpenSquareBracket extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   key = "<c-[>";
 
-  public async exec(modeHandler: ModeHandler): Promise<void> {
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
     modeHandler.setCurrentModeByName(ModeName.Normal);
+
+    return position;
+  }
+}
+
+// begin insert commands
+
+@RegisterAction
+class CommandInsertAtCursor extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "i";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    modeHandler.setCurrentModeByName(ModeName.Insert);
+
+    return position;
+  }
+}
+
+@RegisterAction
+class CommandInsertAtLineBegin extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "I";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    modeHandler.setCurrentModeByName(ModeName.Insert);
+
+    return position.getLineBegin();
+  }
+}
+
+@RegisterAction
+class CommandInsertAfterCursor extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "a";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    modeHandler.setCurrentModeByName(ModeName.Insert);
+
+    return position.getRight();
+  }
+}
+
+@RegisterAction
+class CommandInsertAtLineEnd extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "A";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    modeHandler.setCurrentModeByName(ModeName.Insert);
+
+    return position.getLineEnd();
+  }
+}
+
+@RegisterAction
+class CommandInsertNewLineAbove extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "O";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    // TODO: This code no good.
+    await vscode.commands.executeCommand("editor.action.insertLineBefore");
+
+    modeHandler.setCurrentModeByName(ModeName.Insert);
+
+    return position;
+  }
+}
+
+@RegisterAction
+class CommandInsertNewLineBefore extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "o";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    // TODO: This code no good.
+    await vscode.commands.executeCommand("editor.action.insertLineAfter");
+
+    modeHandler.setCurrentModeByName(ModeName.Insert);
+
+    return new Position(position.line + 1, 0, position.positionOptions);
   }
 }
 

@@ -20,6 +20,6 @@ export class YankOperator extends BaseOperator {
         await TextEditor.copy(new vscode.Range(start, end))
 
         modeHandler.currentMode.motion.select(end, end);
-        modeHandler.setNormal();
+        modeHandler.setCurrentModeByName(ModeName.Normal);
     }
 }

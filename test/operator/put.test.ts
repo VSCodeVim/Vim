@@ -14,11 +14,16 @@ suite("put operator", () => {
 
     suiteTeardown(cleanUpWorkspace);
 
+    test ("stuff doesnt work", () => {
+        assert(false);
+    });
+
+/*
     test("put 'the dog' into empty file", async () => {
         const expectedText = "the dog";
         const position = new Position(0, 0, PositionOptions.CharacterWiseExclusive);
         const mode = new ModeHandler();
-        const put = new PutOperator(mode);
+        const put = new PutOperator();
 
         Register.put(expectedText);
 
@@ -39,7 +44,7 @@ suite("put operator", () => {
         const expectedText = `the ${phrase}dog`;
         const position = new Position(0, 3, PositionOptions.CharacterWiseExclusive);
         const mode = new ModeHandler();
-        const put = new PutOperator(mode);
+        const put = new PutOperator();
 
         Register.put(phrase);
 
@@ -60,4 +65,5 @@ suite("put operator", () => {
         assert.equal(cursorPosition.character, position.getRight().character,
             "cursor should be on start of put content");
     });
+    */
 });

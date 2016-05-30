@@ -40,12 +40,7 @@ export class VisualMode extends Mode {
         this._modeHandler = modeHandler;
     }
 
-    shouldBeActivated(key: string, currentMode: ModeName): boolean {
-        let command : Command = this._keymap[key];
-        return command === Command.EnterVisualMode && currentMode === ModeName.Normal;
-    }
-
-    async handleActivation(key: string): Promise<void> {
+    public start(): void {
         this._selectionStart = this.motion.position;
         this._selectionStop  = this._selectionStart;
 

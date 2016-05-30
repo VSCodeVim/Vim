@@ -24,6 +24,13 @@ suite("Mode Visual", () => {
 
     teardown(cleanUpWorkspace);
 
+    test("I broke visual mode tests", async () => {
+        assert(false, "I BROKE THEM!");
+    });
+
+    /*
+    TODO
+
     test("can be activated", () => {
         assert.equal(visualMode.shouldBeActivated("v", ModeName.Normal), true, "v didn't trigger visual mode...");
         assert.equal(visualMode.shouldBeActivated("v", ModeName.Insert), false, "activated from insert mode");
@@ -116,4 +123,7 @@ suite("Mode Visual", () => {
 
         assert.equal(((visualMode as any)._modeHandler as ModeHandler).currentMode.name, ModeName.Insert);
     });
+    */
+
+
 });

@@ -15,10 +15,4 @@ export class NormalMode extends Mode {
 
         this._modeHandler = modeHandler;
     }
-
-    shouldBeActivated(key: string, currentMode: ModeName) : boolean {
-        return ((key === "v" && currentMode === ModeName.Visual));
-    }
-
-    async handleActivation(key: string): Promise<void> { ; }
 }

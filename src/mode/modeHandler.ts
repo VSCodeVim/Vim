@@ -66,9 +66,9 @@ export class ActionState {
     public getAction(mode: ModeName): BaseAction {
         for (let window = this.keysPressed.length; window > 0; window--) {
             let keysPressed = _.takeRight(this.keysPressed, window).join('');
-            let action = Actions.getRelevantAction(keysPressed);
+            let action = Actions.getRelevantAction(keysPressed, mode);
 
-            if (action && action.modes.indexOf(mode) !== -1) {
+            if (action) {
                 this.keysPressed = [];
                 return action;
             }
@@ -86,6 +86,7 @@ export class ModeHandler implements vscode.Disposable {
     constructor() {
         this._configuration = Configuration.fromUserFile();
 
+        this._actionState = new ActionState();
         this._motion = new Motion(null);
         this._modes = [
             new NormalMode(this._motion, this, this._configuration.commandKeyMap.normalModeKeyMap),
@@ -99,17 +100,26 @@ export class ModeHandler implements vscode.Disposable {
     /**
      * The active mode.
      */
-    get currentMode() : Mode {
+    get currentMode(): Mode {
         return this._modes.find(mode => mode.isActive);
     }
 
-    setNormal() {
-        this.setCurrentModeByName(ModeName.Normal);
-    }
+    setCurrentModeByName(modeName: ModeName) {
+        let activeMode: Mode;
 
-    setCurrentModeByName(modeName : ModeName) {
+        if (this.currentMode) {
+            this.currentMode.handleDeactivation();
+        }
+
+        // TODO actually making these into functions on modes
+        // like we used to have is a good idea.
+
         for (let mode of this._modes) {
-            mode.isActive = (mode.name === modeName);
+            if (mode.name === modeName) {
+                activeMode = mode;
+            }
+
+            mode.isActive = (mode.name === modeName)
         }
 
         switch (modeName) {
@@ -120,43 +130,24 @@ export class ModeHandler implements vscode.Disposable {
             case ModeName.Normal:
                 this._motion = this._motion.changeMode(MotionMode.Caret);
                 break;
+
+            case ModeName.Visual:
+                (activeMode as VisualMode).start();
+                break;
         }
 
         const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
     }
 
-    async handleKeyEvent(key : string) : Promise<Boolean> {
+    async handleKeyEvent(key: string): Promise<Boolean> {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
+
         key = this._configuration.keyboardLayout.translate(key);
 
         let currentModeName = this.currentMode.name;
-        let nextMode: Mode;
-        let inactiveModes = _.filter(this._modes, (m) => !m.isActive);
-
-        for (let mode of inactiveModes) {
-          if (mode.shouldBeActivated(key, currentModeName)) {
-            if (nextMode) {
-              console.error("More that one mode matched in handleKeyEvent!");
-            }
-
-            nextMode = mode;
-          }
-        }
-
-
-        if (nextMode) {
-            this.currentMode.handleDeactivation();
-            this.setCurrentModeByName(nextMode.name);
-
-            await nextMode.handleActivation(key);
-
-            this._actionState = new ActionState();
-
-            return true;
-        }
 
         this._actionState.keysPressed.push(key);
 
@@ -166,7 +157,7 @@ export class ModeHandler implements vscode.Disposable {
         if (!action && currentModeName === ModeName.Insert) {
             // TODO: Slightly janky, for reasons that are hard to describe.
 
-            await this.currentMode.handleAction(this._actionState);
+            await (this.currentMode as any).handleAction(this._actionState);
             this._actionState = new ActionState();
 
             return true;
@@ -206,7 +197,9 @@ export class ModeHandler implements vscode.Disposable {
 
         if (readyToExecute) {
             if (this._actionState.command) {
-                await this._actionState.command.exec(this);
+                let newPosition = await this._actionState.command.exec(this, this._motion.position);
+
+                this._motion.moveTo(newPosition.line, newPosition.character);
             } else if (this._actionState.operator) {
                 await this._actionState.operator.run(this, this._actionState.motionStart, this._actionState.motionStop);
             } else {
