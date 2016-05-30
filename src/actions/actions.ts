@@ -1,5 +1,6 @@
 import { ModeHandler } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
+import { TextEditor } from './../textEditor';
 import { Position } from './../motion/position';
 import * as vscode from 'vscode';
 
@@ -495,6 +496,29 @@ class MoveParagraphBegin extends BaseMovement {
   }
 }
 
+@RegisterAction
+class ActionDeleteChar extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "x";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    await TextEditor.delete(new vscode.Range(position, position.getRight()));
+
+    return position;
+  }
+}
+
+@RegisterAction
+class ActionDeleteLastChar extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "X";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+
+    return position.getLeft();
+  }
+}
 
 /*
 @RegisterAction
@@ -616,26 +640,6 @@ class ActionDeleteToLineEnd {
   }
 }
 
-@RegisterAction
-class ActionDeleteChar {
-  modes = [ModeName.Normal];
-  key = "x";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new DeleteOperator(modeHandler).run(motion.position, motion.position.getRight());
-  }
-}
-
-@RegisterAction
-class ActionDeleteLastChar {
-  modes = [ModeName.Normal];
-  key = "X";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    vscode.commands.executeCommand("deleteLeft");
-  }
-}
 
 @RegisterAction
 class ActionPaste {
