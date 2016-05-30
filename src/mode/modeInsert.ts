@@ -6,7 +6,7 @@ import { CommandKeyHandler, Command } from './../configuration/commandKeyMap';
 import { ModeName, Mode } from './mode';
 import { TextEditor } from './../textEditor';
 import { Motion } from './../motion/motion';
-import { BaseMovement } from './../actions/actions'
+import { ActionState } from './modeHandler';
 
 export class InsertMode extends Mode {
     protected handleActivationKey(command : Command) : (motion: Motion) => Promise<{}> {
@@ -45,10 +45,10 @@ export class InsertMode extends Mode {
         await this.handleActivationKey(command)(this.motion);
     }
 
-    async handleAction(action: BaseMovement): Promise<void> {
-        // TODO: Really dumb, especially since there are actually actions
+    async handleAction(action: ActionState): Promise<void> {
+        // TODO: REALLY dumb, especially since there are actually actions
         // that work in insert mode.
 
-        await TextEditor.insert(action.key);
+        await TextEditor.insert(action.keysPressed[0]);
     }
 }

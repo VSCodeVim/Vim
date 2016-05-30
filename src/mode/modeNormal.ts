@@ -5,8 +5,7 @@ import * as _ from 'lodash';
 import { CommandKeyHandler } from './../configuration/commandKeyMap';
 import { ModeName, Mode } from './mode';
 import { Motion } from './../motion/motion';
-import { ModeHandler } from './modeHandler';
-import { BaseMovement, Actions } from './../actions/actions';
+import { ModeHandler, ActionState } from './modeHandler';
 
 export class NormalMode extends Mode {
     private _modeHandler: ModeHandler;
@@ -23,9 +22,8 @@ export class NormalMode extends Mode {
 
     async handleActivation(key: string): Promise<void> { ; }
 
-    public async handleAction(action: BaseMovement): Promise<void> {
-        const result = await action.execAction(this._modeHandler, this.motion.position);
-
-        this.motion.moveTo(result.line, result.character);
+    //TODO: Remove! Never used.
+    public async handleAction(action: ActionState): Promise<void> {
+        this.motion.moveTo(action.motionStop.line, action.motionStop.character);
     }
 }

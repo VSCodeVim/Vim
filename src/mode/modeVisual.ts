@@ -6,12 +6,13 @@ import { Command, CommandKeyHandler } from './../configuration/commandKeyMap';
 import { ModeName, Mode } from './mode';
 import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
-import { Operator } from './../operator/operator';
+import { BaseOperator } from './../operator/operator';
 import { DeleteOperator } from './../operator/delete';
 import { YankOperator } from './../operator/yank';
 import { ModeHandler } from './modeHandler.ts';
 import { ChangeOperator } from './../operator/change';
 import { Actions, BaseMovement } from './../actions/actions';
+import { ActionState } from './modeHandler';
 
 export class VisualMode extends Mode {
     /**
@@ -25,20 +26,18 @@ export class VisualMode extends Mode {
     private _selectionStop : Position;
     private _modeHandler   : ModeHandler;
 
-    private _keysToOperators: { [key: string]: Operator };
+    public get selectionStart(): Position {
+        return this._selectionStart;
+    }
+
+    public get selectionStop(): Position {
+        return this._selectionStop;
+    }
 
     constructor(motion: Motion, modeHandler: ModeHandler, keymap: CommandKeyHandler) {
         super(ModeName.Visual, motion, keymap);
 
         this._modeHandler = modeHandler;
-        this._keysToOperators = {
-            // TODO: Don't pass in mode handler to DeleteOperators,
-            // simply allow the operators to say what mode they transition into.
-            'd': new DeleteOperator(modeHandler),
-            'x': new DeleteOperator(modeHandler),
-            'c': new ChangeOperator(modeHandler),
-            'y': new YankOperator(modeHandler),
-        };
     }
 
     shouldBeActivated(key: string, currentMode: ModeName): boolean {
@@ -59,7 +58,7 @@ export class VisualMode extends Mode {
         this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
     }
 
-    private async _handleMotion(position: Position): Promise<boolean> {
+    public async handleMotion(position: Position): Promise<boolean> {
         this._selectionStop = position;
         this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
 
@@ -87,9 +86,10 @@ export class VisualMode extends Mode {
 
     // TODO.
 
+    /*
     private async _handleOperator(): Promise<boolean> {
         let keysPressed: string;
-        let operator: Operator;
+        let operator: BaseOperator;
 
         for (let window = this._keyHistory.length; window > 0; window--) {
             keysPressed = _.takeRight(this._keyHistory, window).join('');
@@ -110,10 +110,9 @@ export class VisualMode extends Mode {
 
         return !!operator;
     }
+    */
 
-    public async handleAction(action: BaseMovement): Promise<void> {
-        const result = await action.execAction(this._modeHandler, this.motion.position);
-
-        await this._handleMotion(result);
+    public async handleAction(action: ActionState): Promise<void> {
+        await this._handleMotion(action.motionStop);
     }
 }

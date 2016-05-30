@@ -1,14 +1,14 @@
 "use strict";
 
 import { Position } from './../motion/position';
-import { Operator } from './operator';
+import { BaseOperator } from './operator';
 import { ModeHandler } from './../mode/modeHandler.ts';
 import { TextEditor } from './../textEditor';
 import { Register } from './../register/register';
 import { RegisterAction } from './../actions/actions';
 
 @RegisterAction
-export class PutOperator extends Operator {
+export class PutOperator extends BaseOperator {
     public key: string = "p";
 
     /**

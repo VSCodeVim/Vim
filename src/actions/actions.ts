@@ -1,13 +1,6 @@
 import { ModeHandler } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
-import { showCmdLine } from './../cmd_line/main';
-import { Motion, MotionMode } from './../motion/motion';
-import {DeleteOperator} from './../operator/delete';
-import {ChangeOperator} from './../operator/change';
-import {PutOperator} from './../operator/put';
-import {TextEditor} from './../textEditor';
-import {Position} from './../motion/position';
-import * as vscode from 'vscode';
+import { Position } from './../motion/position';
 
 export abstract class BaseAction {
   /**
@@ -44,8 +37,6 @@ export abstract class BaseMovement extends BaseAction {
   public abstract async execAction(modeHandler: ModeHandler, position: Position): Promise<Position>;
 }
 
-
-
 export class Actions {
 
   /**
@@ -60,7 +51,7 @@ export class Actions {
    * TODO - this is a great place for optional types, once
    * Typescript 2.0 lands!
    */
-  public static getRelevantAction(keysPressed: string): BaseMovement {
+  public static getRelevantAction(keysPressed: string): BaseAction {
     for (const action of Actions.allActions) {
       if (action.key === keysPressed) {
         return action;
@@ -72,7 +63,7 @@ export class Actions {
 }
 
 export function RegisterAction(action) {
-    Actions.allActions.push(new action());
+  Actions.allActions.push(new action());
 }
 
 /*

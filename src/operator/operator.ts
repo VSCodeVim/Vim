@@ -6,7 +6,7 @@ import { BaseAction } from './../actions/actions';
 import { RegisterAction } from './../actions/actions';
 
 @RegisterAction
-export abstract class Operator extends BaseAction {
+export abstract class BaseOperator extends BaseAction {
     /**
      * Run this operator on a range.
      */

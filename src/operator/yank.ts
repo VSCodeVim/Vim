@@ -2,13 +2,13 @@
 
 import * as vscode from "vscode";
 import { Position } from './../motion/position';
-import { Operator } from './operator';
+import { BaseOperator } from './operator';
 import { ModeHandler } from './../mode/modeHandler.ts';
 import { TextEditor } from './../textEditor';
 import { RegisterAction } from './../actions/actions';
 
 @RegisterAction
-export class YankOperator extends Operator {
+export class YankOperator extends BaseOperator {
     public key: string = "y";
 
     /**

@@ -8,15 +8,78 @@ import { Motion, MotionMode } from './../motion/motion';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
-import { BaseMovement, Actions } from './../actions/actions'
+import { BaseMovement, BaseAction, Actions } from './../actions/actions';
+import { BaseOperator } from './../operator/operator';
 import { Configuration } from '../configuration/configuration';
+import { DeleteOperator } from './../operator/delete';
+import { ChangeOperator } from './../operator/change';
+import { PutOperator } from './../operator/put';
+import { YankOperator } from './../operator/yank';
+import { Position } from './../motion/position';
+
+
+// TODO: This is REALLY dumb...
+// figure out some way to force include this stuff...
+new DeleteOperator();
+new ChangeOperator();
+new PutOperator();
+new YankOperator();
+// TODO - or maybe just get rid of decorators
+// they're nice but introduce a weird class of bugs ;_;
+
+
+/**
+ * The ActionState class represents state relevant to the current
+ * action that the user is doing. Example: Imagine that the user types:
+ *
+ * 5"qdw
+ *
+ * Then the relevent state would be
+ *   * count of 5
+ *   * copy into q register
+ *   * delete operator
+ *   * word movement
+ */
+export class ActionState {
+    /**
+     * Keeps track of the most recent keys pressed. Comes in handy when parsing
+     * multiple length movements, e.g. gg.
+     */
+    public keysPressed: string[] = [];
+
+    /**
+     * The operator (e.g. d, y, >>) the user wants to run, if there is one.
+     */
+    public operator: BaseOperator = undefined;
+
+    public motionStart: Position;
+
+    public motionStop: Position;
+
+    /**
+     * The number of times the user wants to repeat this command.
+     */
+    public count: number = 1;
+
+    public getAction(): BaseAction {
+        for (let window = this.keysPressed.length; window > 0; window--) {
+            let keysPressed = _.takeRight(this.keysPressed, window).join('');
+            let action = Actions.getRelevantAction(keysPressed);
+
+            if (action) {
+                this.keysPressed = [];
+                return action;
+            }
+        }
+    }
+}
 
 export class ModeHandler implements vscode.Disposable {
     private _motion: Motion;
     private _modes: Mode[];
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
-    private _keyHistory: string[];
+    private _actionState: ActionState;
 
     constructor() {
         this._configuration = Configuration.fromUserFile();
@@ -88,39 +151,73 @@ export class ModeHandler implements vscode.Disposable {
 
             await nextMode.handleActivation(key);
 
-            this._keyHistory = [];
+            this._actionState = new ActionState();
 
             return true;
         }
+
+        this._actionState.keysPressed.push(key);
 
         if (currentModeName === ModeName.Insert) {
-            // TODO: There are about 100 better ways to do this.
-            await this.currentMode.handleAction({ key: key } as BaseMovement);
+            // TODO: Getting less dumb, but I still feel like this can be
+            // handled more elegantly.
+
+            // Especially since vim considers iasdfg<esc> a single action.
+
+            await this.currentMode.handleAction(this._actionState);
+            this._actionState = new ActionState();
 
             return true;
         }
 
-        let action: BaseMovement;
+        let action = this._actionState.getAction();
+        let readyToExecute = false;
 
-        this._keyHistory.push(key);
-
-        for (let window = this._keyHistory.length; window > 0; window--) {
-            let keysPressed = _.takeRight(this._keyHistory, window).join('');
-
-            action = Actions.getRelevantAction(keysPressed);
-
-            if (action) { break; }
-        }
-
+        // update our state appropriately. If the action is complete, flag that
+        // we are ready to transform the document.
         if (action) {
-            this._keyHistory = [];
+            if (action instanceof BaseMovement) {
+                this._actionState.motionStart = this._motion.position;
+                this._actionState.motionStop = await action.execAction(this, this._motion.position);
 
-            this.currentMode.handleAction(action);
+                readyToExecute = true;
+            }
 
-            return true;
+            if (action instanceof BaseOperator) {
+                if (this.currentMode instanceof VisualMode) {
+                    this._actionState.motionStart = (this.currentMode as VisualMode).selectionStart;
+                    this._actionState.motionStop = (this.currentMode as VisualMode).selectionStop;
+
+                    readyToExecute = true;
+                } else if (currentModeName === ModeName.VisualLine) {
+                    console.log("TODO -- handle visual line operators! (should be easy...)");
+
+                    return false;
+                }
+
+                this._actionState.operator = action;
+            }
         }
 
-        return false;
+        if (readyToExecute) {
+            if (this._actionState.operator) {
+                await this._actionState.operator.run(this, this._actionState.motionStart, this._actionState.motionStop);
+            } else {
+                let stop = this._actionState.motionStop;
+
+                if (this.currentMode instanceof NormalMode) {
+                    this._motion.moveTo(stop.line, stop.character);
+                } else if (this.currentMode instanceof VisualMode) {
+                    await (this.currentMode as VisualMode).handleMotion(stop);
+                } else {
+                    console.log("TODO: My janky thing doesn't handle this case!");
+                }
+            }
+
+            this._actionState = new ActionState();
+        }
+
+        return !!action;
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {

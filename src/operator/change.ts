@@ -2,14 +2,14 @@
 
 import { Position } from './../motion/position';
 import { DeleteOperator } from './delete';
-import { Operator } from './operator';
+import { BaseOperator } from './operator';
 import { ModeHandler } from './../mode/modeHandler.ts';
 import { ModeName } from './../mode/mode';
 import { RegisterAction } from './../actions/actions';
 
 @RegisterAction
-export class ChangeOperator extends Operator {
-    public key: string = "y";
+export class ChangeOperator extends BaseOperator {
+    public key: string = "c";
 
     /**
      * Run this operator on a range.

@@ -4,13 +4,13 @@ import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
 import { ModeHandler } from './../mode/modeHandler.ts';
 import { ModeName } from './../mode/mode';
-import { Operator } from './operator';
+import { BaseOperator } from './operator';
 
 import * as vscode from 'vscode';
 import { RegisterAction } from './../actions/actions';
 
 @RegisterAction
-export class DeleteOperator extends Operator {
+export class DeleteOperator extends BaseOperator {
     public key: string = "d";
 
     /**
