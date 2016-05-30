@@ -17,7 +17,7 @@ export class NormalMode extends Mode {
     }
 
     shouldBeActivated(key: string, currentMode: ModeName) : boolean {
-        return (key === '<esc>' || key === '<c-[>' || (key === "v" && currentMode === ModeName.Visual));
+        return ((key === "v" && currentMode === ModeName.Visual));
     }
 
     async handleActivation(key: string): Promise<void> { ; }

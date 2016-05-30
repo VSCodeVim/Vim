@@ -11,7 +11,8 @@ import { RegisterAction } from './../actions/actions';
 
 @RegisterAction
 export class DeleteOperator extends BaseOperator {
-    public key: string = "d";
+    public key = "d";
+    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     /**
      * Run this operator on a range.

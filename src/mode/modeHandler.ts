@@ -8,7 +8,7 @@ import { Motion, MotionMode } from './../motion/motion';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
-import { BaseMovement, BaseAction, Actions } from './../actions/actions';
+import { BaseMovement, BaseAction, BaseCommand, Actions } from './../actions/actions';
 import { BaseOperator } from './../operator/operator';
 import { Configuration } from '../configuration/configuration';
 import { DeleteOperator } from './../operator/delete';
@@ -52,6 +52,8 @@ export class ActionState {
      */
     public operator: BaseOperator = undefined;
 
+    public command: BaseCommand = undefined;
+
     public motionStart: Position;
 
     public motionStop: Position;
@@ -61,12 +63,12 @@ export class ActionState {
      */
     public count: number = 1;
 
-    public getAction(): BaseAction {
+    public getAction(mode: ModeName): BaseAction {
         for (let window = this.keysPressed.length; window > 0; window--) {
             let keysPressed = _.takeRight(this.keysPressed, window).join('');
             let action = Actions.getRelevantAction(keysPressed);
 
-            if (action) {
+            if (action && action.modes.indexOf(mode) !== -1) {
                 this.keysPressed = [];
                 return action;
             }
@@ -158,20 +160,17 @@ export class ModeHandler implements vscode.Disposable {
 
         this._actionState.keysPressed.push(key);
 
-        if (currentModeName === ModeName.Insert) {
-            // TODO: Getting less dumb, but I still feel like this can be
-            // handled more elegantly.
+        let action = this._actionState.getAction(currentModeName);
+        let readyToExecute = false;
 
-            // Especially since vim considers iasdfg<esc> a single action.
+        if (!action && currentModeName === ModeName.Insert) {
+            // TODO: Slightly janky, for reasons that are hard to describe.
 
             await this.currentMode.handleAction(this._actionState);
             this._actionState = new ActionState();
 
             return true;
         }
-
-        let action = this._actionState.getAction();
-        let readyToExecute = false;
 
         // update our state appropriately. If the action is complete, flag that
         // we are ready to transform the document.
@@ -197,10 +196,18 @@ export class ModeHandler implements vscode.Disposable {
 
                 this._actionState.operator = action;
             }
+
+            if (action instanceof BaseCommand) {
+                this._actionState.command = action;
+
+                readyToExecute = true;
+            }
         }
 
         if (readyToExecute) {
-            if (this._actionState.operator) {
+            if (this._actionState.command) {
+                await this._actionState.command.exec(this);
+            } else if (this._actionState.operator) {
                 await this._actionState.operator.run(this, this._actionState.motionStart, this._actionState.motionStop);
             } else {
                 let stop = this._actionState.motionStop;

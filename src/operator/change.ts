@@ -10,6 +10,7 @@ import { RegisterAction } from './../actions/actions';
 @RegisterAction
 export class ChangeOperator extends BaseOperator {
     public key: string = "c";
+    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     /**
      * Run this operator on a range.

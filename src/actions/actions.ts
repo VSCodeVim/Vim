@@ -37,6 +37,21 @@ export abstract class BaseMovement extends BaseAction {
   public abstract async execAction(modeHandler: ModeHandler, position: Position): Promise<Position>;
 }
 
+/**
+ * A command is something like <esc>, :, v, i, etc.
+ *
+ * TODO commands are a bit weird. should look into them more?
+ */
+export abstract class BaseCommand extends BaseAction {
+  /**
+   * Run the command.
+   *
+   * TODO: The dream is to not pass in modeHandler, only motion.
+   * This is quite a far off dream, though.
+   */
+  public abstract async exec(modeHandler: ModeHandler): Promise<void>;
+}
+
 export class Actions {
 
   /**
@@ -165,8 +180,28 @@ class ActionRedo extends BaseAction {
 */
 
 @RegisterAction
+class CommandEsc extends BaseCommand {
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
+  key = "<esc>";
+
+  public async exec(modeHandler: ModeHandler): Promise<void> {
+    modeHandler.setCurrentModeByName(ModeName.Normal);
+  }
+}
+
+@RegisterAction
+class CommandOpenSquareBracket extends BaseCommand {
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
+  key = "<c-[>";
+
+  public async exec(modeHandler: ModeHandler): Promise<void> {
+    modeHandler.setCurrentModeByName(ModeName.Normal);
+  }
+}
+
+@RegisterAction
 class MoveLeft extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "h";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -176,7 +211,7 @@ class MoveLeft extends BaseMovement {
 
 @RegisterAction
 class MoveUp extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "k";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -186,7 +221,7 @@ class MoveUp extends BaseMovement {
 
 @RegisterAction
 class MoveDown extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "j";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -196,7 +231,7 @@ class MoveDown extends BaseMovement {
 
 @RegisterAction
 class MoveRight extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "l";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -206,7 +241,7 @@ class MoveRight extends BaseMovement {
 
 @RegisterAction
 class MoveLineEnd extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "$";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -216,7 +251,7 @@ class MoveLineEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLineBegin extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "0";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -226,7 +261,7 @@ class MoveLineBegin extends BaseMovement {
 
 @RegisterAction
 class MoveNonBlank extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "^";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -236,7 +271,7 @@ class MoveNonBlank extends BaseMovement {
 
 @RegisterAction
 class MoveNonBlankFirst extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "gg";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -246,7 +281,7 @@ class MoveNonBlankFirst extends BaseMovement {
 
 @RegisterAction
 class MoveNonBlankLast extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "G";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -256,7 +291,7 @@ class MoveNonBlankLast extends BaseMovement {
 
 @RegisterAction
 class MoveWordBegin extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "w";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -266,7 +301,7 @@ class MoveWordBegin extends BaseMovement {
 
 @RegisterAction
 class MoveFullWordBegin extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "W";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -276,7 +311,7 @@ class MoveFullWordBegin extends BaseMovement {
 
 @RegisterAction
 class MoveWordEnd extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "e";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -286,7 +321,7 @@ class MoveWordEnd extends BaseMovement {
 
 @RegisterAction
 class MoveFullWordEnd extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "E";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -296,7 +331,7 @@ class MoveFullWordEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLastWordEnd  extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "ge";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -306,7 +341,7 @@ class MoveLastWordEnd  extends BaseMovement {
 
 @RegisterAction
 class MoveLastFullWordEnd extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "gE";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -316,7 +351,7 @@ class MoveLastFullWordEnd extends BaseMovement {
 
 @RegisterAction
 class MoveBeginningWord extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "b";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -326,7 +361,7 @@ class MoveBeginningWord extends BaseMovement {
 
 @RegisterAction
 class MoveBeginningFullWord extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "B";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -336,7 +371,7 @@ class MoveBeginningFullWord extends BaseMovement {
 
 @RegisterAction
 class MoveParagraphEnd extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "}";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
@@ -346,7 +381,7 @@ class MoveParagraphEnd extends BaseMovement {
 
 @RegisterAction
 class MoveParagraphBegin extends BaseMovement {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "{";
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
