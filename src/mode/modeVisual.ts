@@ -87,32 +87,12 @@ export class VisualMode extends Mode {
     // TODO.
 
     /*
-    private async _handleOperator(): Promise<boolean> {
-        let keysPressed: string;
-        let operator: BaseOperator;
-
-        for (let window = this._keyHistory.length; window > 0; window--) {
-            keysPressed = _.takeRight(this._keyHistory, window).join('');
-
-            if (this._keysToOperators[keysPressed] !== undefined) {
-                operator = this._keysToOperators[keysPressed];
-                break;
-            }
+    if (operator) {
+        if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
+            await operator.run(this._selectionStart, this._selectionStop.getRight());
+        } else {
+            await operator.run(this._selectionStart.getRight(), this._selectionStop);
         }
-
-        if (operator) {
-            if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
-                await operator.run(this._selectionStart, this._selectionStop.getRight());
-            } else {
-                await operator.run(this._selectionStart.getRight(), this._selectionStop);
-            }
-        }
-
-        return !!operator;
     }
     */
-
-    public async handleAction(action: ActionState): Promise<void> {
-        await this._handleMotion(action.motionStop);
-    }
 }

@@ -21,9 +21,4 @@ export class NormalMode extends Mode {
     }
 
     async handleActivation(key: string): Promise<void> { ; }
-
-    //TODO: Remove! Never used.
-    public async handleAction(action: ActionState): Promise<void> {
-        this.motion.moveTo(action.motionStop.line, action.motionStop.character);
-    }
 }

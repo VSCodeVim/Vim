@@ -418,40 +418,6 @@ class ActionOutdent extends BaseAction {
 
 
 @RegisterAction
-class ActionChangeWord {
-  modes = [ModeName.Normal];
-  key = "cw";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    // motion.changeMode(MotionMode.Cursor); // TODO
-
-    let currentChar = TextEditor.getLineAt(position).text[position.character];
-    if (currentChar === ' ' || currentChar === '\t') {
-      await new ChangeOperator(modeHandler).run(position, position.getWordRight());
-    } else {
-      await new ChangeOperator(modeHandler).run(position, position.getCurrentWordEnd());
-    }
-  }
-}
-
-@RegisterAction
-class ActionChangeFullWord {
-  modes = [ModeName.Normal];
-  key = "cW";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
-    if (currentChar === ' ' || currentChar === '\t') {
-      await new ChangeOperator(modeHandler).run(motion.position, motion.position.getWordRight());
-    } else {
-      await new ChangeOperator(modeHandler).run(motion.position, motion.position.getCurrentBigWordEnd());
-    }
-
-  }
-}
-
-@RegisterAction
 class ActionChangeCurrentWord {
   modes = [ModeName.Normal];
   key = "ciw";
@@ -496,88 +462,6 @@ class ActionChangeToLineEnd {
     await new ChangeOperator(modeHandler).run(motion.position, motion.position.getLineEnd());
   }
 }
-
-@RegisterAction
-class ActionDeleteLine extends BaseAction {
-  modes = [ModeName.Normal];
-  key = "dd";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    vscode.commands.executeCommand("editor.action.deleteLines");
-  }
-}
-
-@RegisterAction
-class ActionDeleteToNextWord {
-  modes = [ModeName.Normal];
-  key = "dw";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new DeleteOperator(modeHandler).run(motion.position, motion.position.getWordRight());
-
-    if (motion.position.character >= motion.position.getLineEnd().character) {
-      motion.left().move();
-    }
-  }
-}
-
-@RegisterAction
-class ActionDeleteToFullNextWord  {
-  modes = [ModeName.Normal];
-  key = "dW";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new DeleteOperator(modeHandler).run(motion.position, motion.position.getBigWordRight());
-  }
-}
-
-@RegisterAction
-class ActionDeleteToWordBegin {
-  modes = [ModeName.Normal];
-  key = "db";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new DeleteOperator(modeHandler).run(motion.position, motion.position.getWordLeft());
-  }
-}
-
-@RegisterAction
-class ActionDeleteToFullWordBegin {
-  modes = [ModeName.Normal];
-  key = "dB";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new DeleteOperator(modeHandler).run(motion.position, motion.position.getBigWordLeft());
-  }
-}
-
-@RegisterAction
-class ActionDeleteToWordEnd {
-  modes = [ModeName.Normal];
-  key = "de";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new DeleteOperator(modeHandler).run(motion.position, motion.position.getCurrentWordEnd());
-  }
-}
-
-@RegisterAction
-class ActionDeleteToFullWordEnd {
-  modes = [ModeName.Normal];
-  key = "dE";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new DeleteOperator(modeHandler).run(motion.position, motion.position.getCurrentBigWordEnd());
-    motion.left().move();
-  }
-}
-
 
 @RegisterAction
 class ActionDeleteToLineEnd {

@@ -55,8 +55,6 @@ export abstract class Mode {
         this._keyHistory = [];
     }
 
-    abstract handleAction(action: ActionState): Promise<void>;
-
     abstract shouldBeActivated(key: string, currentMode: ModeName): boolean;
 
     abstract handleActivation(key: string): Promise<void>;
