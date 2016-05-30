@@ -2,17 +2,10 @@
 
 import * as _      from 'lodash';
 
-import { Command, CommandKeyHandler } from './../configuration/commandKeyMap';
 import { ModeName, Mode } from './mode';
 import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
-import { BaseOperator } from './../operator/operator';
-import { DeleteOperator } from './../operator/delete';
-import { YankOperator } from './../operator/yank';
 import { ModeHandler } from './modeHandler.ts';
-import { ChangeOperator } from './../operator/change';
-import { Actions, BaseMovement } from './../actions/actions';
-import { ActionState } from './modeHandler';
 
 export class VisualMode extends Mode {
     /**
@@ -34,8 +27,8 @@ export class VisualMode extends Mode {
         return this._selectionStop;
     }
 
-    constructor(motion: Motion, modeHandler: ModeHandler, keymap: CommandKeyHandler) {
-        super(ModeName.Visual, motion, keymap);
+    constructor(motion: Motion, modeHandler: ModeHandler) {
+        super(ModeName.Visual, motion);
 
         this._modeHandler = modeHandler;
     }
@@ -73,8 +66,6 @@ export class VisualMode extends Mode {
         } else {
             this.motion.select(this._selectionStart.getRight(), this._selectionStop);
         }
-
-        this._keyHistory = [];
 
         return true;
     }

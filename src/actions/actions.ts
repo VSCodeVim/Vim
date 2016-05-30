@@ -185,7 +185,7 @@ class CommandEsc extends BaseCommand {
   public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
     modeHandler.setCurrentModeByName(ModeName.Normal);
 
-    return position;
+    return position.getLeft();
   }
 }
 

@@ -9,8 +9,8 @@ import { Motion } from './../motion/motion';
 import { ActionState } from './modeHandler';
 
 export class InsertMode extends Mode {
-     constructor(motion: Motion, keymap : CommandKeyHandler) {
-        super(ModeName.Insert, motion, keymap);
+     constructor(motion: Motion) {
+        super(ModeName.Insert, motion);
     }
 
     async handleAction(action: ActionState): Promise<void> {
