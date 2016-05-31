@@ -528,7 +528,7 @@ export class MoveWordBegin extends BaseMovement {
   public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
 
     if (actionState.operator instanceof ChangeOperator) {
-      return position.getCurrentWordEnd();
+      return position.getCurrentWordEnd().getRight();
     } else {
       return position.getWordRight();
     }
