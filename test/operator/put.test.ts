@@ -3,11 +3,12 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { ModeHandler } from "../../src/mode/modeHandler";
-import { PutOperator } from "../../src/operator/put";
+import { PutOperator } from "../../src/actions/actions";
 import { TextEditor } from '../../src/textEditor';
 import { Position, PositionOptions } from "../../src/motion/position";
 import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { Register } from '../../src/register/register';
+
 
 suite("put operator", () => {
     suiteSetup(setupWorkspace);

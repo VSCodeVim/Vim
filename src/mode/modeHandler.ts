@@ -8,18 +8,19 @@ import { Motion, MotionMode } from './../motion/motion';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
-import { BaseMovement, BaseAction, BaseCommand, Actions, MoveWordBegin } from './../actions/actions';
-import { BaseOperator } from './../operator/operator';
+import {
+    BaseMovement, BaseAction, BaseCommand, Actions,
+    MoveWordBegin, BaseOperator, DeleteOperator, ChangeOperator,
+    PutOperator, YankOperator } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
-import { DeleteOperator } from './../operator/delete';
-import { ChangeOperator } from './../operator/change';
-import { PutOperator } from './../operator/put';
-import { YankOperator } from './../operator/yank';
 import { Position } from './../motion/position';
 import { TextEditor } from '../../src/textEditor';
 
 // TODO: This is REALLY dumb...
 // figure out some way to force include this stuff...
+new BaseAction();
+new BaseOperator();
+
 new DeleteOperator();
 new ChangeOperator();
 new PutOperator();
@@ -202,7 +203,7 @@ export class ModeHandler implements vscode.Disposable {
         let currentModeName = this.currentMode.name;
 
         if (this._actionState.command) {
-            let newPosition = await this._actionState.command.exec(this, this._motion.position);
+            let newPosition = await this._actionState.command.exec(this, this._motion.position, this._actionState);
 
             this._motion.moveTo(newPosition.line, newPosition.character);
 
@@ -212,8 +213,8 @@ export class ModeHandler implements vscode.Disposable {
         start = this._motion.position;
         if (this._actionState.movement) {
             stop = this._actionState.operator ?
-                await this._actionState.movement.execActionForOperator(this, start) :
-                await this._actionState.movement.execAction           (this, start);
+                await this._actionState.movement.execActionForOperator(this, start, this._actionState) :
+                await this._actionState.movement.execAction           (this, start, this._actionState);
         }
 
         if (this._actionState.operator) {

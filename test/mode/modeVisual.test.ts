@@ -19,7 +19,7 @@ suite("Mode Visual", () => {
 
         modeHandler = new ModeHandler();
         motion      = new Motion(MotionMode.Cursor);
-        visualMode  = new VisualMode(motion, modeHandler, CommandKeyMap.DefaultVisualKeyMap());
+        visualMode  = new VisualMode(motion, modeHandler);
     });
 
     teardown(cleanUpWorkspace);

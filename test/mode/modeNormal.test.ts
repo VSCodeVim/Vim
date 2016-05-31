@@ -155,6 +155,8 @@ suite("Mode Normal", () => {
 
     These tests don't pass because the functionality is broken!
 
+    TODO
+
     test("Can handle 'ciw'", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext text text'.split('')

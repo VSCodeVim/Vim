@@ -2,24 +2,7 @@
 
 import * as vscode from "vscode";
 import { Position } from './../motion/position';
-import { BaseOperator } from './operator';
 import { ModeHandler } from './../mode/modeHandler.ts';
 import { TextEditor } from './../textEditor';
-import { RegisterAction } from './../actions/actions';
+import { RegisterAction, BaseOperator } from './../actions/actions';
 import { ModeName } from './../mode/mode';
-
-@RegisterAction
-export class YankOperator extends BaseOperator {
-    public key: string = "y";
-    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-
-    /**
-     * Run this operator on a range.
-     */
-    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<void> {
-        await TextEditor.copy(new vscode.Range(start, end))
-
-        modeHandler.currentMode.motion.select(end, end);
-        modeHandler.setCurrentModeByName(ModeName.Normal);
-    }
-}
