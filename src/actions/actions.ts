@@ -284,7 +284,6 @@ class CommandEsc extends BaseCommand {
   }
 }
 
-
 @RegisterAction
 class CommandDeleteToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
@@ -295,7 +294,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
 
     await TextEditor.delete(new vscode.Range(position, end));
 
-    return position;
+    return new Position(position.line, position.character - 1, position.positionOptions);
   }
 }
 
@@ -411,7 +410,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
 
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
-    return position;
+    return new Position(position.line, 0, position.positionOptions);
   }
 }
 
