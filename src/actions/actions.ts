@@ -526,8 +526,17 @@ export class MoveWordBegin extends BaseMovement {
   key = "w";
 
   public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
-
     if (actionState.operator instanceof ChangeOperator) {
+
+      /*
+        From the Vim manual:
+
+        Special case: "cw" and "cW" are treated like "ce" and "cE" if the cursor is
+        on a non-blank.  This is because "cw" is interpreted as change-word, and a
+        word does not include the following white space.  {Vi: "cw" when on a blank
+        followed by other blanks changes only the first blank; this is probably a
+        bug, because "dw" deletes all the blanks}
+      */
       return position.getCurrentWordEnd().getRight();
     } else {
       return position.getWordRight();
@@ -541,7 +550,13 @@ class MoveFullWordBegin extends BaseMovement {
   key = "W";
 
   public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
-    return position.getBigWordRight();
+    if (actionState.operator instanceof ChangeOperator) {
+
+      // See note for w
+      return position.getCurrentBigWordEnd().getRight();
+    } else {
+      return position.getBigWordRight();
+    }
   }
 }
 
