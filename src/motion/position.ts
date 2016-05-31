@@ -40,6 +40,21 @@ export class Position extends vscode.Position {
         return this;
     }
 
+    /**
+     * Same as getLeft, but goes up to the previous line on line
+     * breaks.
+     *
+     * Equivalent to left arrow (in a non-vim editor!)
+     */
+    public getLeftThroughLineBreaks(): Position {
+        if (!this.isLineBeginning()) {
+            return this.getLeft();
+        }
+
+        return new Position(this.line - 1, 0, this.positionOptions)
+            .getLineEnd();
+    }
+
     public getRight() : Position {
         if (!this.isLineEnd()) {
             return new Position(this.line, this.character + 1, this.positionOptions);
@@ -202,6 +217,10 @@ export class Position extends vscode.Position {
      */
     public isLineEnd() : boolean {
         return this.character === Position.getLineLength(this.line, this.positionOptions);
+    }
+
+    public isAtDocumentEnd(): boolean {
+        return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
     }
 
     public static getFirstNonBlankCharAtLine(line: number): number {

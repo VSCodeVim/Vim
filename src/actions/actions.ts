@@ -397,7 +397,7 @@ class MoveNonBlankLast extends BaseMovement {
 }
 
 @RegisterAction
-class MoveWordBegin extends BaseMovement {
+export class MoveWordBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "w";
 

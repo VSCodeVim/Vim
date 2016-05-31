@@ -27,6 +27,19 @@ export class VisualMode extends Mode {
         return this._selectionStop;
     }
 
+    /**
+     * I don't even know.
+     *
+     * TODO
+     */
+    public static transformStartStop(start: Position, stop: Position): [Position, Position] {
+        if (start.compareTo(stop) <= 0) {
+            return [start, stop.getRight()];
+        } else {
+            return [start.getRight(), stop];
+        }
+    }
+
     constructor(motion: Motion, modeHandler: ModeHandler) {
         super(ModeName.Visual, motion);
 

@@ -8,7 +8,7 @@ import { Motion, MotionMode } from './../motion/motion';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
-import { BaseMovement, BaseAction, BaseCommand, Actions } from './../actions/actions';
+import { BaseMovement, BaseAction, BaseCommand, Actions, MoveWordBegin } from './../actions/actions';
 import { BaseOperator } from './../operator/operator';
 import { Configuration } from '../configuration/configuration';
 import { DeleteOperator } from './../operator/delete';
@@ -16,7 +16,7 @@ import { ChangeOperator } from './../operator/change';
 import { PutOperator } from './../operator/put';
 import { YankOperator } from './../operator/yank';
 import { Position } from './../motion/position';
-
+import { TextEditor } from '../../src/textEditor';
 
 // TODO: This is REALLY dumb...
 // figure out some way to force include this stuff...
@@ -54,9 +54,7 @@ export class ActionState {
 
     public command: BaseCommand = undefined;
 
-    public motionStart: Position;
-
-    public motionStop: Position;
+    public movement: BaseMovement = undefined;
 
     /**
      * The number of times the user wants to repeat this command.
@@ -167,22 +165,17 @@ export class ModeHandler implements vscode.Disposable {
         // we are ready to transform the document.
         if (action) {
             if (action instanceof BaseMovement) {
-                this._actionState.motionStart = this._motion.position;
-                this._actionState.motionStop = await action.execAction(this, this._motion.position);
+                this._actionState.movement = action;
 
                 readyToExecute = true;
             }
 
             if (action instanceof BaseOperator) {
-                if (this.currentMode instanceof VisualMode) {
-                    this._actionState.motionStart = (this.currentMode as VisualMode).selectionStart;
-                    this._actionState.motionStop = (this.currentMode as VisualMode).selectionStop;
+                // Visual modes do not require a motion action.
 
+                if (currentModeName === ModeName.Visual ||
+                    currentModeName === ModeName.VisualLine) {
                     readyToExecute = true;
-                } else if (currentModeName === ModeName.VisualLine) {
-                    console.log("TODO -- handle visual line operators! (should be easy...)");
-
-                    return false;
                 }
 
                 this._actionState.operator = action;
@@ -196,28 +189,86 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (readyToExecute) {
-            if (this._actionState.command) {
-                let newPosition = await this._actionState.command.exec(this, this._motion.position);
-
-                this._motion.moveTo(newPosition.line, newPosition.character);
-            } else if (this._actionState.operator) {
-                await this._actionState.operator.run(this, this._actionState.motionStart, this._actionState.motionStop);
-            } else {
-                let stop = this._actionState.motionStop;
-
-                if (this.currentMode instanceof NormalMode) {
-                    this._motion.moveTo(stop.line, stop.character);
-                } else if (this.currentMode instanceof VisualMode) {
-                    await (this.currentMode as VisualMode).handleMotion(stop);
-                } else {
-                    console.log("TODO: My janky thing doesn't handle this case!");
-                }
-            }
+            await this.executeState();
 
             this._actionState = new ActionState();
         }
 
         return !!action;
+    }
+
+    private async executeState(): Promise<void> {
+        let start: Position, stop: Position;
+        let currentModeName = this.currentMode.name;
+
+        if (this._actionState.command) {
+            let newPosition = await this._actionState.command.exec(this, this._motion.position);
+
+            this._motion.moveTo(newPosition.line, newPosition.character);
+
+            return;
+        }
+
+        if (this._actionState.movement) {
+            start = this._motion.position;
+            stop  = await this._actionState.movement.execAction(this, start);
+        }
+
+        if (this._actionState.operator) {
+            if (currentModeName === ModeName.Visual ||
+                currentModeName === ModeName.VisualLine) {
+
+                start = (this.currentMode as VisualMode).selectionStart;
+                stop  = (this.currentMode as VisualMode).selectionStop;
+
+                const res = VisualMode.transformStartStop(start, stop);
+
+                start = res[0]; stop = res[1];
+            }
+
+            this._motion.changeMode(MotionMode.Cursor);
+
+            /*
+
+            From the Vim documentation:
+
+            Another special case: When using the "w" motion in combination with an
+            operator and the last word moved over is at the end of a line, the end of
+            that word becomes the end of the operated text, not the first word in the
+            next line.
+
+            */
+
+            if (this._actionState.movement instanceof MoveWordBegin) {
+                if (stop.isLineBeginning()) {
+                    stop = stop.getLeftThroughLineBreaks();
+                }
+
+                if (stop.isLineEnd()) {
+                    // Yes... we actually push the position OFF THE EDGE OF THE DOCUMENT.
+
+                    // Why, Vim? WHY?
+                    stop = new Position(stop.line, stop.character + 1, stop.positionOptions);
+                }
+            }
+
+            await this._actionState.operator.run(this, start, stop);
+
+            // TODO: redraw or something
+            if (this._motion.position.character >= TextEditor.getLineAt(this._motion.position).text.length) {
+                this._motion = this._motion.left();
+            }
+        } else {
+            if (this.currentMode instanceof NormalMode) {
+                this._motion.moveTo(stop.line, stop.character);
+            } else if (this.currentMode instanceof VisualMode) {
+                await (this.currentMode as VisualMode).handleMotion(stop);
+            } else {
+                console.log("TODO: My janky thing doesn't handle this case!");
+
+                return;
+            }
+        }
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
