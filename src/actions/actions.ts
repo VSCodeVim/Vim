@@ -37,6 +37,15 @@ export abstract class BaseMovement extends BaseAction {
    * This is quite a far off dream, though.
    */
   public abstract async execAction(modeHandler: ModeHandler, position: Position): Promise<Position>;
+
+  /**
+   * Run the action in an operator context. 99% of the time, this function can be
+   * ignored, as it is exactly the same as the above function. (But pay attention
+   * to e!)
+   */
+  public async execActionForOperator(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    return await this.execAction(modeHandler, position);
+  }
 }
 
 /**
@@ -423,6 +432,12 @@ class MoveWordEnd extends BaseMovement {
 
   public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
     return position.getCurrentWordEnd();
+  }
+
+  public async execActionForOperator(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    const end = position.getCurrentWordEnd();
+
+    return new Position(end.line, end.character + 1, end.positionOptions);
   }
 }
 

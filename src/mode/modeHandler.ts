@@ -209,9 +209,11 @@ export class ModeHandler implements vscode.Disposable {
             return;
         }
 
+        start = this._motion.position;
         if (this._actionState.movement) {
-            start = this._motion.position;
-            stop  = await this._actionState.movement.execAction(this, start);
+            stop = this._actionState.operator ?
+                await this._actionState.movement.execActionForOperator(this, start) :
+                await this._actionState.movement.execAction           (this, start);
         }
 
         if (this._actionState.operator) {
