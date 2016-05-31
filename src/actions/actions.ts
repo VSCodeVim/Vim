@@ -647,11 +647,12 @@ class MoveParagraphBegin extends BaseMovement {
 
 @RegisterAction
 class ActionDeleteChar extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual];
   key = "x";
 
   public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
     await TextEditor.delete(new vscode.Range(position, position.getRight()));
+    modeHandler.setCurrentModeByName(ModeName.Normal);
 
     return position;
   }
@@ -663,7 +664,11 @@ class ActionDeleteLastChar extends BaseCommand {
   key = "X";
 
   public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
-    await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+    if (modeHandler.currentMode.name === ModeName.Visual) {
+      console.log("TODO: Delete the whole line!!!");
+    } else {
+      await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+    }
 
     return position.getLeft();
   }
