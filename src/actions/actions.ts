@@ -199,6 +199,22 @@ class CommandEsc extends BaseCommand {
   }
 }
 
+
+@RegisterAction
+class CommandChangeToLineEnd extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "C";
+
+  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+    const end = new Position(position.line, position.getLineEnd().character + 1, position.positionOptions);
+
+    await TextEditor.delete(new vscode.Range(position, end));
+    modeHandler.setCurrentModeByName(ModeName.Insert);
+
+    return position;
+  }
+}
+
 @RegisterAction
 class CommandVInVisualMode extends BaseCommand {
   modes = [ModeName.Visual];
@@ -629,17 +645,6 @@ class ActionChangeCurrentWordToNext {
       await new ChangeOperator(modeHandler).run(motion.position.getWordLeft(), motion.position.getWordRight());
     }
 
-  }
-}
-
-@RegisterAction
-class ActionChangeToLineEnd {
-  modes = [ModeName.Normal];
-  key = "C";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new ChangeOperator(modeHandler).run(motion.position, motion.position.getLineEnd());
   }
 }
 
