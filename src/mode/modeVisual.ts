@@ -6,6 +6,7 @@ import { ModeName, Mode } from './mode';
 import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
 import { ModeHandler } from './modeHandler.ts';
+import { TextEditor } from './../textEditor';
 
 export class VisualMode extends Mode {
     /**
@@ -55,6 +56,14 @@ export class VisualMode extends Mode {
 
     handleDeactivation(): void {
         super.handleDeactivation();
+
+        const end = new Position(TextEditor.getLineCount() - 1, 0, this._selectionStop.positionOptions)
+            .getLineEnd();
+
+        if (end.line <  this._selectionStop.line ||
+           (end.line === this._selectionStop.line && end.character === this._selectionStop.character)) {
+            this._selectionStop = end;
+        }
 
         this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
     }
