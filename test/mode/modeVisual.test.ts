@@ -90,6 +90,18 @@ suite("Mode Visual", () => {
         assertEqualLines(["one hree"]);
     });
 
+    test("Can do vwd multiple times", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two three four".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'v', 'w', 'd',
+            'v', 'w', 'd',
+            'v', 'w', 'd'
+        ]);
+
+        assertEqualLines(["our"]);
+    });
+
     test("handles case where we go from selecting on right side to selecting on left side", async () => {
         await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
         await modeHandler.handleMultipleKeyEvents([

@@ -27,6 +27,16 @@ export class Position extends vscode.Position {
         this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
     }
 
+    /**
+     * Returns which of the 2 provided Positions comes earlier in the document.
+     */
+    public static EarlierOf(p1: Position, p2: Position): Position {
+        if (p1.line < p2.line) { return p1; }
+        if (p1.line === p2.line && p1.character < p2.character) { return p1; }
+
+        return p2;
+    }
+
     public setLocation(line: number, character: number) : Position {
         let position = new Position(line, character, this.positionOptions);
         return position;

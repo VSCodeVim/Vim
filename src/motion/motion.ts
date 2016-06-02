@@ -71,6 +71,8 @@ export class Motion implements vscode.Disposable {
                 this.changeMode(this._motionMode);
             }
         }));
+
+
     }
 
     public changeMode(mode : MotionMode) : Motion {

@@ -76,11 +76,18 @@ export class ActionState {
 }
 
 export class ModeHandler implements vscode.Disposable {
-    private _motion: Motion;
+    private __motion: Motion;
     private _modes: Mode[];
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
     private _actionState: ActionState;
+
+    private get _motion(): Motion {
+        return this.__motion;
+    }
+    private set _motion(m: Motion) {
+        this.__motion = m;
+    }
 
     constructor() {
         this._configuration = Configuration.fromUserFile();
@@ -232,14 +239,14 @@ export class ModeHandler implements vscode.Disposable {
             this._motion.changeMode(MotionMode.Cursor);
 
             /*
+                From the Vim documentation:
 
-            From the Vim documentation:
+                Another special case: When using the "w" motion in combination with an
+                operator and the last word moved over is at the end of a line, the end of
+                that word becomes the end of the operated text, not the first word in the
+                next line.
 
-            Another special case: When using the "w" motion in combination with an
-            operator and the last word moved over is at the end of a line, the end of
-            that word becomes the end of the operated text, not the first word in the
-            next line.
-
+                TODO - move this into actions.ts, add test.
             */
 
             if (this._actionState.movement instanceof MoveWordBegin) {

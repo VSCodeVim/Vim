@@ -3,6 +3,7 @@ import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register } from './../register/register';
 import { Position } from './../motion/position';
+import { VisualMode } from './../mode/modeVisual';
 import * as vscode from 'vscode';
 
 export class BaseAction {
@@ -123,6 +124,17 @@ export class DeleteOperator extends BaseOperator {
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
+
+        // This is important because handleDeactivation of Visual Mode will
+        // set the cursor to the end of the selection. Visual Mode would
+        // otherwise be in a weird state since the selection it has is no
+        // longer valid. (TODO - I wonder if there's a better way to solve this -
+        // perhaps Visual Mode should monitor selection changes and update it's
+        // anchors accordingly.)
+        if (modeHandler.currentMode.name === ModeName.Visual) {
+          (modeHandler.currentMode as VisualMode).setSelectionStop(Position.EarlierOf(start, end));
+        }
+
         modeHandler.setCurrentModeByName(ModeName.Normal);
     }
 }
@@ -770,19 +782,6 @@ class ActionChangeCurrentWordToNext {
 
   }
 }
-
-@RegisterAction
-class ActionDeleteToLineEnd {
-  modes = [ModeName.Normal];
-  key = "D";
-
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    motion.changeMode(MotionMode.Cursor);
-    await new DeleteOperator(modeHandler).run(motion.position, motion.position.getLineEnd());
-    motion.left().move();
-  }
-}
-
 
 @RegisterAction
 class ActionPaste {

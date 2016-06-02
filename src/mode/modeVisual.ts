@@ -28,6 +28,10 @@ export class VisualMode extends Mode {
         return this._selectionStop;
     }
 
+    public setSelectionStop(p: Position): void {
+        this._selectionStop = p;
+    }
+
     /**
      * I don't even know.
      *
