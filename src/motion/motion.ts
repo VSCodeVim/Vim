@@ -9,9 +9,6 @@ export enum MotionMode {
 }
 
 export class Motion implements vscode.Disposable {
-    /// Certain motions like j, k, and | record data about the desired column within the span.
-    /// This value may or may not be a valid point within the line
-    private _desiredColumn: number = 0;
     private _motionMode : MotionMode;
     private _position : Position;
     private _disposables = new Array<vscode.Disposable>();
@@ -46,7 +43,6 @@ export class Motion implements vscode.Disposable {
         // initialize to current position
         let currentPosition = vscode.window.activeTextEditor.selection.active;
         this._position = new Position(currentPosition.line, currentPosition.character, null);
-        this._desiredColumn = this._position.character;
 
         if (mode !== null) {
             this.changeMode(mode);
@@ -67,7 +63,6 @@ export class Motion implements vscode.Disposable {
                 }
 
                 this.position = newPosition;
-                this._desiredColumn = this.position.character;
                 this.changeMode(this._motionMode);
             }
         }));
@@ -88,7 +83,6 @@ export class Motion implements vscode.Disposable {
     public moveTo(line: number, character: number) : Motion {
         if (line !== null && character !== null) {
             this._position = this._position.setLocation(line, character);
-            this._desiredColumn = this._position.character;
         }
 
         if (!this.position.isValid()) {
@@ -149,65 +143,56 @@ export class Motion implements vscode.Disposable {
 
     public left() : Motion {
         this._position = this.position.getLeft();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public right() : Motion {
         this._position = this.position.getRight();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public down() : Motion {
-        this._position = this.position.getDown(this._desiredColumn);
+        this._position = this.position.getDown(0);
         return this;
     }
 
     public up() : Motion {
-        this._position = this.position.getUp(this._desiredColumn);
+        this._position = this.position.getUp(0);
         return this;
     }
 
     public wordLeft(): Motion {
         this._position = this.position.getWordLeft();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public bigWordLeft(): Motion {
         this._position = this.position.getBigWordLeft();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public wordRight() : Motion {
         this._position = this.position.getWordRight();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public bigWordRight() : Motion {
         this._position = this.position.getBigWordRight();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public lineBegin() : Motion {
         this._position = this.position.getLineBegin();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public lineEnd() : Motion {
         this._position = this.position.getLineEnd();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public firstLineNonBlankChar() : Motion {
         this._position = this.position.setLocation(0, Position.getFirstNonBlankCharAtLine(0));
-        this._desiredColumn = this._position.character;
         return this;
     }
 
@@ -216,55 +201,46 @@ export class Motion implements vscode.Disposable {
         let character = Position.getFirstNonBlankCharAtLine(lastLine);
 
         this._position = this.position.setLocation(lastLine, character);
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public documentBegin() : Motion {
         this._position = this.position.getDocumentBegin();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public documentEnd() : Motion {
         this._position = this.position.getDocumentEnd();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public goToEndOfLastWord(): Motion {
         this._position = this.position.getLastWordEnd();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public goToEndOfLastBigWord(): Motion {
         this._position = this.position.getLastBigWordEnd();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public goToEndOfCurrentWord(): Motion {
         this._position = this.position.getCurrentWordEnd();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public goToEndOfCurrentBigWord(): Motion {
         this._position = this.position.getCurrentBigWordEnd();
-        this._desiredColumn = this._position.character;
         return this;
     }
 
     public goToEndOfCurrentParagraph(): Motion {
       this._position = this.position.getCurrentParagraphEnd();
-      this._desiredColumn = this.position.character;
       return this;
     }
 
     public goToBeginningOfCurrentParagraph(): Motion {
       this._position = this.position.getCurrentParagraphBeginning();
-      this._desiredColumn = this.position.character;
       return this;
     }
 

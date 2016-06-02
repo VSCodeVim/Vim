@@ -174,6 +174,18 @@ suite("Mode Normal", () => {
         await assert.equal(modeHandler.currentMode.name === ModeName.Insert, true, "didn't enter insert mode");
     });
 
+    test("Retain same column when moving up/down", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text\ntext\ntext text'.split('')
+        );
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            'k', 'k'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 8, "same column failed");
+    });
+
     /*
 
     These tests don't pass because the functionality is broken!

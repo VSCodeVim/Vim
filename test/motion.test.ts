@@ -150,18 +150,6 @@ suite("motion", () => {
         });
     });
 
-    test("keep same column as up/down", () => {
-        let motion = new Motion(MotionMode.Caret).moveTo(0, 2);
-
-        motion = motion.down();
-        assert.equal(motion.position.line, 1);
-        assert.equal(motion.position.character, 0);
-
-        motion = motion.down();
-        assert.equal(motion.position.line, 2);
-        assert.equal(motion.position.character, 2);
-    });
-
     test("line begin", () => {
         motionModes.forEach(o => {
             let motion = new Motion(o).moveTo(0, 3).lineBegin();
