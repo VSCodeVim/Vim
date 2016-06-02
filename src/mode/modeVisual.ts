@@ -32,15 +32,6 @@ export class VisualMode extends Mode {
         this._selectionStop = p;
     }
 
-    /**
-     * I don't even know.
-     *
-     * TODO
-     */
-    public static transformStartStop(start: Position, stop: Position): [Position, Position] {
-        return [start, stop];
-    }
-
     constructor(motion: Motion, modeHandler: ModeHandler) {
         super(ModeName.Visual, motion);
 

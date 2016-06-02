@@ -236,10 +236,6 @@ export class ModeHandler implements vscode.Disposable {
 
                 start = (this.currentMode as VisualMode).selectionStart;
                 stop  = (this.currentMode as VisualMode).selectionStop;
-
-                const res = VisualMode.transformStartStop(start, stop);
-
-                start = res[0]; stop = res[1];
             }
 
             this._motion.changeMode(MotionMode.Cursor);
