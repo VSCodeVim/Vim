@@ -247,7 +247,7 @@ export class ModeHandler implements vscode.Disposable {
         let actionState = this._vimState.actionState;
 
         if (actionState.command) {
-            const newState = await actionState.command.exec(this, this._motion.position, actionState, this._vimState);
+            const newState = await actionState.command.exec(this, this._motion.position, this._vimState);
 
             this._motion.moveTo(newState.cursorPosition.line, newState.cursorPosition.character);
             this._vimState = newState;
@@ -258,8 +258,8 @@ export class ModeHandler implements vscode.Disposable {
         start = this._motion.position;
         if (actionState.movement) {
             this._vimState = actionState.operator ?
-                await actionState.movement.execActionForOperator(this, start, actionState, this._vimState) :
-                await actionState.movement.execAction           (this, start, actionState, this._vimState);
+                await actionState.movement.execActionForOperator(this, start, this._vimState) :
+                await actionState.movement.execAction           (this, start, this._vimState);
 
             actionState = this._vimState.actionState;
             stop = this._vimState.cursorPosition;
