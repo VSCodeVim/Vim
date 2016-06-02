@@ -44,7 +44,7 @@ export abstract class BaseMovement extends BaseAction {
    * This is quite a far off dream, though.
    */
   public abstract async execAction(modeHandler: ModeHandler, position: Position,
-                                   actionState: ActionState, vimState: VimState): Promise<Position>;
+                                   actionState: ActionState, vimState: VimState): Promise<VimState>;
 
   /**
    * Run the action in an operator context. 99% of the time, this function can be
@@ -52,7 +52,7 @@ export abstract class BaseMovement extends BaseAction {
    * to e!)
    */
   public async execActionForOperator(modeHandler: ModeHandler, position: Position,
-                                     actionState: ActionState, vimState: VimState): Promise<Position> {
+                                     actionState: ActionState, vimState: VimState): Promise<VimState> {
     return await this.execAction(modeHandler, position, actionState, vimState);
   }
 }
@@ -64,14 +64,14 @@ export abstract class BaseCommand extends BaseAction {
   /**
    * Run the command.
    */
-  public abstract async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position>;
+  public abstract async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState>;
 }
 
 export class BaseOperator extends BaseAction {
     /**
      * Run this operator on a range, returning the new location of the cursor.
      */
-    run(modeHandler: ModeHandler, vimState: VimState, start: Position, stop: Position): Promise<Position> { return; }
+    run(modeHandler: ModeHandler, vimState: VimState, start: Position, stop: Position): Promise<VimState> { return; }
 }
 
 export enum KeypressState {
@@ -132,7 +132,7 @@ export class DeleteOperator extends BaseOperator {
      * Deletes from the position of start to 1 past the position of end.
      */
     public async run(modeHandler: ModeHandler, vimState: VimState,
-                     start: Position, end: Position, dontChangeMode: boolean = false): Promise<Position> {
+                     start: Position, end: Position, dontChangeMode: boolean = false): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
           end = new Position(end.line, end.character + 1, end.positionOptions);
         } else {
@@ -175,10 +175,12 @@ export class DeleteOperator extends BaseOperator {
         }
 
         if (start.character >= TextEditor.getLineAt(start).text.length) {
-          return start.getLeft();
+          vimState.cursorPosition = start.getLeft();
         } else {
-          return start;
+          vimState.cursorPosition =  start;
         }
+
+        return vimState;
     }
 }
 
@@ -190,7 +192,7 @@ export class ChangeOperator extends BaseOperator {
     /**
      * Run this operator on a range.
      */
-    public async run(modeHandler: ModeHandler, vimState: VimState, start: Position, end: Position): Promise<Position> {
+    public async run(modeHandler: ModeHandler, vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const pos = await new DeleteOperator().run(modeHandler, vimState, start, end, true);
         modeHandler.setCurrentModeByName(ModeName.Insert);
 
@@ -207,13 +209,14 @@ export class PutOperator extends BaseOperator {
     /**
      * Run this operator on a range.
      */
-    public async run(modeHandler: ModeHandler, vimState: VimState, start: Position, end: Position): Promise<Position> {
+    public async run(modeHandler: ModeHandler, vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const data = Register.get();
 
         await TextEditor.insertAt(data, start.getRight());
         modeHandler.currentMode.motion.moveTo(start.line, start.getRight().character);
 
-        return start; // TODO - I think this is wrong.
+        vimState.cursorPosition = start;
+        return vimState; // TODO - I think this is wrong.
     }
 }
 
@@ -225,13 +228,14 @@ export class YankOperator extends BaseOperator {
     /**
      * Run this operator on a range.
      */
-    public async run(modeHandler: ModeHandler, vimState: VimState, start: Position, end: Position): Promise<Position> {
+    public async run(modeHandler: ModeHandler, vimState: VimState, start: Position, end: Position): Promise<VimState> {
         await TextEditor.copy(new vscode.Range(start, end))
 
         modeHandler.currentMode.motion.select(end, end);
         modeHandler.setCurrentModeByName(ModeName.Normal);
 
-        return start;
+        vimState.cursorPosition = start;
+        return vimState;
     }
 }
 
@@ -241,7 +245,7 @@ class ActionEnterCommand extends BaseAction {
   modes = [ModeName.Normal];
   key = ":";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await showCmdLine("", modeHandler);
 
     return {};
@@ -253,7 +257,7 @@ class ActionFind extends BaseAction {
   modes = [ModeName.Normal];
   key = "/";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("actions.find");
 
     return {};
@@ -265,7 +269,7 @@ class ActionFold extends BaseAction {
   modes = [ModeName.Normal];
   key = "zc";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("editor.fold");
 
     return {};
@@ -277,7 +281,7 @@ class ActionUnfold extends BaseAction {
   modes = [ModeName.Normal];
   key = "zo";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("editor.unfold");
 
     return {};
@@ -289,7 +293,7 @@ class ActionFoldAll extends BaseAction {
   modes = [ModeName.Normal];
   key = "zC";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("editor.foldAll");
 
     return {};
@@ -301,7 +305,7 @@ class ActionUnfoldAll extends BaseAction {
   modes = [ModeName.Normal];
   key = "zO";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("editor.unfoldAll");
 
     return {};
@@ -313,7 +317,7 @@ class ActionUndo extends BaseAction {
   modes = [ModeName.Normal];
   key = "u";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("undo");
 
     return { undo: true };
@@ -325,7 +329,7 @@ class ActionRedo extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+r";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("redo");
 
     return { redo: true };
@@ -338,10 +342,11 @@ class CommandEsc extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   key = "<esc>";
 
-  public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     modeHandler.setCurrentModeByName(ModeName.Normal);
 
-    return position.getLeft();
+    vimState.cursorPosition = position.getLeft();
+    return vimState;
   }
 }
 
@@ -350,7 +355,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   key = "D";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     return await new DeleteOperator().run(modeHandler, vimState, position, position.getLineEnd());
   }
 }
@@ -360,7 +365,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   key = "C";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     const pos = await new DeleteOperator().run(modeHandler, vimState, position, position.getLineEnd(), true);
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
@@ -373,10 +378,10 @@ class CommandVInVisualMode extends BaseCommand {
   modes = [ModeName.Visual];
   key = "v";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     modeHandler.setCurrentModeByName(ModeName.Normal);
 
-    return position;
+    return vimState;
   }
 }
 
@@ -385,10 +390,10 @@ class CommandVInNormalMode extends BaseCommand {
   modes = [ModeName.Normal];
   key = "v";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     modeHandler.setCurrentModeByName(ModeName.Visual);
 
-    return position;
+    return vimState;
   }
 }
 
@@ -397,10 +402,10 @@ class CommandOpenSquareBracket extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   key = "<c-[>";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     modeHandler.setCurrentModeByName(ModeName.Normal);
 
-    return position;
+    return vimState;
   }
 }
 
@@ -411,10 +416,10 @@ class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   key = "i";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
-    return position;
+    return vimState;
   }
 }
 
@@ -423,10 +428,11 @@ class CommandInsertAtLineBegin extends BaseCommand {
   modes = [ModeName.Normal];
   key = "I";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
-    return position.getLineBegin();
+    vimState.cursorPosition = position.getLineBegin();
+    return vimState;
   }
 }
 
@@ -435,10 +441,11 @@ class CommandInsertAfterCursor extends BaseCommand {
   modes = [ModeName.Normal];
   key = "a";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
-    return position.getRight();
+    vimState.cursorPosition = position.getRight();
+    return vimState;
   }
 }
 
@@ -447,10 +454,11 @@ class CommandInsertAtLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   key = "A";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
-    return position.getLineEnd();
+    vimState.cursorPosition = position.getLineEnd();
+    return vimState;
   }
 }
 
@@ -459,13 +467,14 @@ class CommandInsertNewLineAbove extends BaseCommand {
   modes = [ModeName.Normal];
   key = "O";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     // TODO: This code no good.
     await vscode.commands.executeCommand("editor.action.insertLineBefore");
 
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
-    return new Position(position.line, 0, position.positionOptions);
+    vimState.cursorPosition = new Position(position.line, 0, position.positionOptions);
+    return vimState;
   }
 }
 
@@ -474,13 +483,14 @@ class CommandInsertNewLineBefore extends BaseCommand {
   modes = [ModeName.Normal];
   key = "o";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     // TODO: This code no good.
     await vscode.commands.executeCommand("editor.action.insertLineAfter");
 
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
-    return new Position(position.line + 1, 0, position.positionOptions);
+    vimState.cursorPosition = new Position(position.line + 1, 0, position.positionOptions);
+    return vimState;
   }
 }
 
@@ -489,8 +499,9 @@ class MoveLeft extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "h";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getLeft();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getLeft();
+    return vimState;
   }
 }
 
@@ -500,8 +511,9 @@ class MoveUp extends BaseMovement {
   key = "k";
   doesntChangeDesiredColumn = true;
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getUp(vimState.desiredColumn);
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getUp(vimState.desiredColumn);
+    return vimState;
   }
 }
 
@@ -511,8 +523,9 @@ class MoveDown extends BaseMovement {
   key = "j";
   doesntChangeDesiredColumn = true;
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getDown(vimState.desiredColumn);
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getDown(vimState.desiredColumn);
+    return vimState;
   }
 }
 
@@ -521,8 +534,9 @@ class MoveRight extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "l";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getRight();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getRight();
+    return vimState;
   }
 }
 
@@ -531,8 +545,9 @@ class MoveLineEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "$";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getLineEnd();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getLineEnd();
+    return vimState;
   }
 }
 
@@ -541,8 +556,9 @@ class MoveLineBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "0";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getLineBegin();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getLineBegin();
+    return vimState;
   }
 }
 
@@ -551,8 +567,9 @@ class MoveNonBlank extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "^";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getFirstLineNonBlankChar();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getFirstLineNonBlankChar();
+    return vimState;
   }
 }
 
@@ -561,8 +578,9 @@ class MoveNonBlankFirst extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "gg";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getDocumentStart();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getDocumentStart();
+    return vimState;
   }
 }
 
@@ -571,8 +589,9 @@ class MoveNonBlankLast extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "G";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getDocumentEnd();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getDocumentEnd();
+    return vimState;
   }
 }
 
@@ -581,7 +600,7 @@ export class MoveWordBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "w";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     if (actionState.operator instanceof ChangeOperator) {
 
       /*
@@ -593,10 +612,12 @@ export class MoveWordBegin extends BaseMovement {
         followed by other blanks changes only the first blank; this is probably a
         bug, because "dw" deletes all the blanks}
       */
-      return position.getCurrentWordEnd().getRight();
+      vimState.cursorPosition = position.getCurrentWordEnd().getRight();
     } else {
-      return position.getWordRight();
+      vimState.cursorPosition = position.getWordRight();
     }
+
+    return vimState;
   }
 }
 
@@ -605,14 +626,16 @@ class MoveFullWordBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "W";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     if (actionState.operator instanceof ChangeOperator) {
 
       // See note for w
-      return position.getCurrentBigWordEnd().getRight();
+      vimState.cursorPosition = position.getCurrentBigWordEnd().getRight();
     } else {
-      return position.getBigWordRight();
+      vimState.cursorPosition = position.getBigWordRight();
     }
+
+    return vimState;
   }
 }
 
@@ -621,15 +644,17 @@ class MoveWordEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "e";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getCurrentWordEnd();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getCurrentWordEnd();
+    return vimState;
   }
 
   public async execActionForOperator(modeHandler: ModeHandler, position: Position,
-                                     actionState: ActionState, vimState: VimState): Promise<Position> {
+                                     actionState: ActionState, vimState: VimState): Promise<VimState> {
     let end = position.getCurrentWordEnd();
 
-    return new Position(end.line, end.character + 1, end.positionOptions);
+    vimState.cursorPosition = new Position(end.line, end.character + 1, end.positionOptions);
+    return vimState;
   }
 }
 
@@ -638,8 +663,9 @@ class MoveFullWordEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "E";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getCurrentBigWordEnd();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getCurrentBigWordEnd();
+    return vimState;
   }
 }
 
@@ -648,8 +674,9 @@ class MoveLastWordEnd  extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "ge";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getLastWordEnd();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getLastWordEnd();
+    return vimState;
   }
 }
 
@@ -658,8 +685,9 @@ class MoveLastFullWordEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "gE";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getLastBigWordEnd();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getLastBigWordEnd();
+    return vimState;
   }
 }
 
@@ -668,8 +696,9 @@ class MoveBeginningWord extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "b";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getWordLeft();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getWordLeft();
+    return vimState;
   }
 }
 
@@ -678,8 +707,9 @@ class MoveBeginningFullWord extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "B";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getBigWordLeft();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getBigWordLeft();
+    return vimState;
   }
 }
 
@@ -688,8 +718,9 @@ class MoveParagraphEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "}";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getCurrentParagraphEnd();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getCurrentParagraphEnd();
+    return vimState;
   }
 }
 
@@ -698,8 +729,9 @@ class MoveParagraphBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "{";
 
-  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
-    return position.getCurrentParagraphBeginning();
+  public async execAction(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
+    vimState.cursorPosition = position.getCurrentParagraphBeginning();
+    return vimState;
   }
 }
 
@@ -708,7 +740,7 @@ class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
   key = "x";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     const pos = await new DeleteOperator().run(modeHandler, vimState, position, position);
 
     modeHandler.setCurrentModeByName(ModeName.Normal);
@@ -722,7 +754,7 @@ class ActionDeleteLastChar extends BaseCommand {
   modes = [ModeName.Normal];
   key = "X";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     return await new DeleteOperator().run(modeHandler, vimState, position.getLeft(), position.getLeft(), true);
   }
 }
@@ -732,7 +764,7 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   modes = [ModeName.Visual];
   key = "X";
 
-  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<Position> {
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState, vimState: VimState): Promise<VimState> {
     return await new DeleteOperator().run(modeHandler, vimState, position.getLineBegin(), position.getLineEnd(), true);
   }
 }
@@ -743,7 +775,7 @@ class ActionMoveFullPageDown extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+f";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("cursorPageDown");
 
     return {};
@@ -755,7 +787,7 @@ class ActionMoveFullPageUp extends BaseAction {
   modes = [ModeName.Normal];
   key = "ctrl+b";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("cursorPageUp");
 
     return {};
@@ -767,7 +799,7 @@ class ActionMoveMatchingBracket extends BaseAction {
   modes = [ModeName.Normal];
   key = "%";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("editor.action.jumpToBracket");
 
     return {};
@@ -779,7 +811,7 @@ class ActionIndent extends BaseAction {
   modes = [ModeName.Normal];
   key = ">>";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("editor.action.indentLines");
 
     return {};
@@ -791,7 +823,7 @@ class ActionOutdent extends BaseAction {
   modes = [ModeName.Normal];
   key = "<<";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await vscode.commands.executeCommand("editor.action.outdentLines");
 
     return {};
@@ -804,7 +836,7 @@ class ActionChangeCurrentWord {
   modes = [ModeName.Normal];
   key = "ciw";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     motion.changeMode(MotionMode.Cursor);
     let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
     if (currentChar === ' ' || currentChar === '\t') {
@@ -822,7 +854,7 @@ class ActionChangeCurrentWordToNext {
   modes = [ModeName.Normal];
   key = "caw";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     motion.changeMode(MotionMode.Cursor);
     let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
     if (currentChar === ' ' || currentChar === '\t') {
@@ -839,7 +871,7 @@ class ActionPaste {
   modes = [ModeName.Normal];
   key = "p";
 
-  public async execAction(modeHandler: ModeHandler, position: Position): Promise<Position> {
+  public async execAction(modeHandler: ModeHandler, position: Position): Promise<VimState> {
     await new PutOperator(modeHandler).run(motion.position, null);
   }
 }

@@ -13,7 +13,7 @@ import {
     MoveWordBegin, BaseOperator, DeleteOperator, ChangeOperator,
     PutOperator, YankOperator, KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
-import { Position } from './../motion/position';
+import { Position, PositionOptions } from './../motion/position';
 import { TextEditor } from '../../src/textEditor';
 
 // TODO: This is REALLY dumb...
@@ -79,6 +79,8 @@ export class VimState {
      */
     public desiredColumn = 0;
 
+    public cursorPosition = new Position(0, 0, PositionOptions.CharacterWiseInclusive);
+
     public currentMode = ModeName.Normal;
 
     public actionState = new ActionState();
@@ -134,7 +136,7 @@ export class ModeHandler implements vscode.Disposable {
                 activeMode = mode;
             }
 
-            mode.isActive = (mode.name === modeName)
+            mode.isActive = (mode.name === modeName);
         }
 
         switch (modeName) {
@@ -245,18 +247,22 @@ export class ModeHandler implements vscode.Disposable {
         let actionState = this._vimState.actionState;
 
         if (actionState.command) {
-            let newPosition = await actionState.command.exec(this, this._motion.position, actionState, this._vimState);
+            const newState = await actionState.command.exec(this, this._motion.position, actionState, this._vimState);
 
-            this._motion.moveTo(newPosition.line, newPosition.character);
+            this._motion.moveTo(newState.cursorPosition.line, newState.cursorPosition.character);
+            this._vimState = newState;
 
             return;
         }
 
         start = this._motion.position;
         if (actionState.movement) {
-            stop = actionState.operator ?
+            this._vimState = actionState.operator ?
                 await actionState.movement.execActionForOperator(this, start, actionState, this._vimState) :
                 await actionState.movement.execAction           (this, start, actionState, this._vimState);
+
+            actionState = this._vimState.actionState;
+            stop = this._vimState.cursorPosition;
         }
 
         if (actionState.operator) {
@@ -301,8 +307,9 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            const pos = await actionState.operator.run(this, this._vimState, start, stop);
-            this._motion.moveTo(pos.line, pos.character);
+            this._vimState = await actionState.operator.run(this, this._vimState, start, stop);
+            actionState = this._vimState.actionState;
+            this._motion.moveTo(this._vimState.cursorPosition.line, this._vimState.cursorPosition.character);
         } else {
             if (this.currentMode instanceof NormalMode) {
                 this._motion.moveTo(stop.line, stop.character);
