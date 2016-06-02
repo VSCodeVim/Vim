@@ -11,7 +11,7 @@ import { VisualMode } from './modeVisual';
 import {
     BaseMovement, BaseAction, BaseCommand, Actions,
     MoveWordBegin, BaseOperator, DeleteOperator, ChangeOperator,
-    PutOperator, YankOperator } from './../actions/actions';
+    PutOperator, YankOperator, KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
 import { TextEditor } from '../../src/textEditor';
@@ -61,18 +61,6 @@ export class ActionState {
      * The number of times the user wants to repeat this command.
      */
     public count: number = 1;
-
-    public getAction(mode: ModeName): BaseAction {
-        for (let window = this.keysPressed.length; window > 0; window--) {
-            let keysPressed = _.takeRight(this.keysPressed, window).join('');
-            let action = Actions.getRelevantAction(keysPressed, mode);
-
-            if (action) {
-                this.keysPressed = [];
-                return action;
-            }
-        }
-    }
 }
 
 export class ModeHandler implements vscode.Disposable {
@@ -146,6 +134,9 @@ export class ModeHandler implements vscode.Disposable {
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
     }
 
+    /**
+     * Along with executeState(), one of the core processing functions of VSCVim.
+     */
     async handleKeyEvent(key: string): Promise<Boolean> {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
@@ -157,16 +148,31 @@ export class ModeHandler implements vscode.Disposable {
 
         this._actionState.keysPressed.push(key);
 
-        let action = this._actionState.getAction(currentModeName);
+        let action = Actions.getRelevantAction(this._actionState.keysPressed.join(""), currentModeName);
+
         let readyToExecute = false;
 
-        if (!action && currentModeName === ModeName.Insert) {
+        if (action === KeypressState.NoPossibleMatch) {
             // TODO: Slightly janky, for reasons that are hard to describe.
 
-            await (this.currentMode as any).handleAction(this._actionState);
-            this._actionState = new ActionState();
+            if (currentModeName === ModeName.Insert) {
+                await (this.currentMode as any).handleAction(this._actionState);
+                this._actionState = new ActionState();
 
+                return true;
+            } else {
+                // This is the ultimate failure case. Just insert the key into the document. This is
+                // never truly the right thing to do, and should indicate to everyone
+                // that something horrible has gone wrong.
+                console.log("Nothing could match!");
+
+                this._actionState = new ActionState();
+                return false;
+            }
+        } else if (action === KeypressState.WaitingOnKeys) {
             return true;
+        } else {
+            this._actionState.keysPressed = [];
         }
 
         // update our state appropriately. If the action is complete, flag that

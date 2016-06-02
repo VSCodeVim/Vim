@@ -52,8 +52,6 @@ export abstract class BaseMovement extends BaseAction {
 
 /**
  * A command is something like <esc>, :, v, i, etc.
- *
- * TODO commands are a bit weird. should look into them more?
  */
 export abstract class BaseCommand extends BaseAction {
   /**
@@ -69,6 +67,11 @@ export class BaseOperator extends BaseAction {
     run(modeHandler: ModeHandler, start: Position, stop: Position): Promise<void> { return; }
 }
 
+export enum KeypressState {
+  WaitingOnKeys,
+  NoPossibleMatch
+}
+
 export class Actions {
 
   /**
@@ -78,19 +81,33 @@ export class Actions {
 
   /**
    * Gets the action that should be triggered given a key
-   * sequence, or undefined if there isn't one.
+   * sequence.
    *
-   * TODO - this is a great place for optional types, once
-   * Typescript 2.0 lands!
+   * If there is a definitive action that matched, returns that action.
+   *
+   * If an action could potentially match if more keys were to be pressed, returns true. (e.g.
+   * you pressed "g" and are about to press "g" action to make the full action "gg".)
+   *
+   * If no action could ever match, returns false.
    */
-  public static getRelevantAction(keysPressed: string, mode: ModeName): BaseAction {
+  public static getRelevantAction(keysPressed: string, mode: ModeName): BaseAction | KeypressState {
+    let couldPotentiallyHaveMatch = false;
+
     for (const action of Actions.allActions) {
-      if (action.key === keysPressed && action.modes.indexOf(mode) !== -1) {
+      if (action.modes.indexOf(mode) === -1) {
+        continue;
+      }
+
+      if (action.key === keysPressed) {
         return action;
+      }
+
+      if (action.key.startsWith(keysPressed)) {
+        couldPotentiallyHaveMatch = true;
       }
     }
 
-    return undefined;
+    return couldPotentiallyHaveMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
   }
 }
 
