@@ -268,7 +268,13 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            await this._actionState.operator.run(this, start, stop);
+            // TODO - need to adjust the start... maybe... idk... ugh
+            if (this._actionState.movement) {
+                stop = stop.getLeft();
+            }
+
+            const pos = await this._actionState.operator.run(this, start, stop);
+            this._motion.moveTo(pos.line, pos.character);
         } else {
             if (this.currentMode instanceof NormalMode) {
                 this._motion.moveTo(stop.line, stop.character);

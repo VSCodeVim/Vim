@@ -62,9 +62,9 @@ export abstract class BaseCommand extends BaseAction {
 
 export class BaseOperator extends BaseAction {
     /**
-     * Run this operator on a range.
+     * Run this operator on a range, returning the new location of the cursor.
      */
-    run(modeHandler: ModeHandler, start: Position, stop: Position): Promise<void> { return; }
+    run(modeHandler: ModeHandler, start: Position, stop: Position): Promise<Position> { return; }
 }
 
 export enum KeypressState {
@@ -124,7 +124,7 @@ export class DeleteOperator extends BaseOperator {
     /**
      * Deletes from the position of start to 1 past the position of end.
      */
-    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<void> {
+    public async run(modeHandler: ModeHandler, start: Position, end: Position, dontChangeMode: boolean = false): Promise<Position> {
         if (start.compareTo(end) <= 0) {
           end = new Position(end.line, end.character + 1, end.positionOptions);
         } else {
@@ -151,15 +151,6 @@ export class DeleteOperator extends BaseOperator {
 
         await TextEditor.delete(new vscode.Range(start, end));
 
-        // TODO: Somehow move character left!
-        // TODO maybe operators should return a char position !!!!!
-
-        /*
-        if (this._motion.position.character >= TextEditor.getLineAt(this._motion.position).text.length) {
-            this._motion = this._motion.left();
-        }
-        */
-
         // This is important because handleDeactivation of Visual Mode will
         // set the cursor to the end of the selection. Visual Mode would
         // otherwise be in a weird state since the selection it has is no
@@ -170,7 +161,15 @@ export class DeleteOperator extends BaseOperator {
           (modeHandler.currentMode as VisualMode).setSelectionStop(Position.EarlierOf(start, end));
         }
 
-        modeHandler.setCurrentModeByName(ModeName.Normal);
+        if (!dontChangeMode) {
+          modeHandler.setCurrentModeByName(ModeName.Normal);
+        }
+
+        if (start.character >= TextEditor.getLineAt(start).text.length) {
+          return start.getLeft();
+        } else {
+          return start;
+        }
     }
 }
 
@@ -182,9 +181,11 @@ export class ChangeOperator extends BaseOperator {
     /**
      * Run this operator on a range.
      */
-    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<void> {
-        await new DeleteOperator().run(modeHandler, start, end);
+    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<Position> {
+        const pos = await new DeleteOperator().run(modeHandler, start, end, true);
         modeHandler.setCurrentModeByName(ModeName.Insert);
+
+        return pos;
     }
 }
 
@@ -197,11 +198,13 @@ export class PutOperator extends BaseOperator {
     /**
      * Run this operator on a range.
      */
-    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<void> {
+    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<Position> {
         const data = Register.get();
 
         await TextEditor.insertAt(data, start.getRight());
         modeHandler.currentMode.motion.moveTo(start.line, start.getRight().character);
+
+        return start; // TODO - I think this is wrong.
     }
 }
 
@@ -213,11 +216,13 @@ export class YankOperator extends BaseOperator {
     /**
      * Run this operator on a range.
      */
-    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<void> {
+    public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<Position> {
         await TextEditor.copy(new vscode.Range(start, end))
 
         modeHandler.currentMode.motion.select(end, end);
         modeHandler.setCurrentModeByName(ModeName.Normal);
+
+        return start;
     }
 }
 
@@ -337,9 +342,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
   key = "D";
 
   public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    await TextEditor.delete(new vscode.Range(position, position.getLineEnd()));
-
-    return new Position(position.line, position.character - 1, position.positionOptions);
+    return await new DeleteOperator().run(modeHandler, position, position.getLineEnd());
   }
 }
 
@@ -349,10 +352,10 @@ class CommandChangeToLineEnd extends BaseCommand {
   key = "C";
 
   public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    await TextEditor.delete(new vscode.Range(position, position.getLineEnd()));
+    const pos = await new DeleteOperator().run(modeHandler, position, position.getLineEnd(), true);
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
-    return position;
+    return pos;
   }
 }
 
@@ -694,11 +697,11 @@ class ActionDeleteChar extends BaseCommand {
   key = "x";
 
   public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
-    await new DeleteOperator().run(modeHandler, position, position);
+    const pos = await new DeleteOperator().run(modeHandler, position, position);
 
     modeHandler.setCurrentModeByName(ModeName.Normal);
 
-    return position;
+    return pos;
   }
 }
 
@@ -708,13 +711,17 @@ class ActionDeleteLastChar extends BaseCommand {
   key = "X";
 
   public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
-    if (modeHandler.currentMode.name === ModeName.Visual) {
-      console.log("TODO: Delete the whole line!!!");
-    } else {
-      await TextEditor.delete(new vscode.Range(position, position.getLeft()));
-    }
+    return await new DeleteOperator().run(modeHandler, position.getLeft(), position.getLeft(), true);
+  }
+}
 
-    return position.getLeft();
+@RegisterAction
+class ActionDeleteLineVisualMode extends BaseCommand {
+  modes = [ModeName.Visual];
+  key = "X";
+
+  public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
+    return await new DeleteOperator().run(modeHandler, position.getLineBegin(), position.getLineEnd(), true);
   }
 }
 

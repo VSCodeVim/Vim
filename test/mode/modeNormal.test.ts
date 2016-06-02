@@ -137,6 +137,17 @@ suite("Mode Normal", () => {
 
     });
 
+    test("Can handle x at end of line", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'l', 'l',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'
+        ]);
+
+        assertEqualLines([""]);
+    });
+
     test("Can handle 'C'", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext'.split('')
