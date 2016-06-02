@@ -80,6 +80,8 @@ export class VimState {
     public desiredColumn = 0;
 
     public currentMode = ModeName.Normal;
+
+    public actionState = new ActionState();
 }
 
 export class ModeHandler implements vscode.Disposable {
@@ -87,7 +89,6 @@ export class ModeHandler implements vscode.Disposable {
     private _modes: Mode[];
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
-    private _actionState: ActionState;
     private _vimState: VimState;
 
     private get _motion(): Motion {
@@ -100,7 +101,6 @@ export class ModeHandler implements vscode.Disposable {
     constructor() {
         this._configuration = Configuration.fromUserFile();
 
-        this._actionState = new ActionState();
         this._motion = new Motion(null);
         this._vimState = new VimState();
         this._modes = [
@@ -166,10 +166,11 @@ export class ModeHandler implements vscode.Disposable {
         key = this._configuration.keyboardLayout.translate(key);
 
         let currentModeName = this.currentMode.name;
+        let actionState = this._vimState.actionState;
 
-        this._actionState.keysPressed.push(key);
+        actionState.keysPressed.push(key);
 
-        let action = Actions.getRelevantAction(this._actionState.keysPressed.join(""), currentModeName);
+        let action = Actions.getRelevantAction(actionState.keysPressed.join(""), currentModeName);
 
         let readyToExecute = false;
 
@@ -177,8 +178,8 @@ export class ModeHandler implements vscode.Disposable {
             // TODO: Slightly janky, for reasons that are hard to describe.
 
             if (currentModeName === ModeName.Insert) {
-                await (this.currentMode as any).handleAction(this._actionState);
-                this._actionState = new ActionState();
+                await (this.currentMode as any).handleAction(actionState);
+                this._vimState.actionState = new ActionState();
 
                 return true;
             } else {
@@ -187,13 +188,13 @@ export class ModeHandler implements vscode.Disposable {
                 // that something horrible has gone wrong.
                 console.log("Nothing could match!");
 
-                this._actionState = new ActionState();
+                this._vimState.actionState = new ActionState();
                 return false;
             }
         } else if (action === KeypressState.WaitingOnKeys) {
             return true;
         } else {
-            this._actionState.keysPressed = [];
+            actionState.keysPressed = [];
         }
 
         // update our state appropriately. If the action is complete, flag that
@@ -201,7 +202,7 @@ export class ModeHandler implements vscode.Disposable {
         // TODO - shouldn't readyToExecute be tracked on the action itself? (yes)
         if (action) {
             if (action instanceof BaseMovement) {
-                this._actionState.movement = action;
+                actionState.movement = action;
 
                 readyToExecute = true;
             }
@@ -214,11 +215,11 @@ export class ModeHandler implements vscode.Disposable {
                     readyToExecute = true;
                 }
 
-                this._actionState.operator = action;
+                actionState.operator = action;
             }
 
             if (action instanceof BaseCommand) {
-                this._actionState.command = action;
+                actionState.command = action;
 
                 readyToExecute = true;
             }
@@ -227,12 +228,12 @@ export class ModeHandler implements vscode.Disposable {
         if (readyToExecute) {
             await this.executeState();
 
-            if ((this._actionState.movement && !this._actionState.movement.doesntChangeDesiredColumn) ||
-                this._actionState.command) {
+            if ((actionState.movement && !actionState.movement.doesntChangeDesiredColumn) ||
+                actionState.command) {
                 this._vimState.desiredColumn = this._motion.position.character;
             }
 
-            this._actionState = new ActionState();
+            this._vimState.actionState = new ActionState();
         }
 
         return !!action;
@@ -241,9 +242,10 @@ export class ModeHandler implements vscode.Disposable {
     private async executeState(): Promise<void> {
         let start: Position, stop: Position;
         let currentModeName = this.currentMode.name;
+        let actionState = this._vimState.actionState;
 
-        if (this._actionState.command) {
-            let newPosition = await this._actionState.command.exec(this, this._motion.position, this._actionState, this._vimState);
+        if (actionState.command) {
+            let newPosition = await actionState.command.exec(this, this._motion.position, actionState, this._vimState);
 
             this._motion.moveTo(newPosition.line, newPosition.character);
 
@@ -251,13 +253,13 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         start = this._motion.position;
-        if (this._actionState.movement) {
-            stop = this._actionState.operator ?
-                await this._actionState.movement.execActionForOperator(this, start, this._actionState, this._vimState) :
-                await this._actionState.movement.execAction           (this, start, this._actionState, this._vimState);
+        if (actionState.movement) {
+            stop = actionState.operator ?
+                await actionState.movement.execActionForOperator(this, start, actionState, this._vimState) :
+                await actionState.movement.execAction           (this, start, actionState, this._vimState);
         }
 
-        if (this._actionState.operator) {
+        if (actionState.operator) {
             if (currentModeName === ModeName.Visual ||
                 currentModeName === ModeName.VisualLine) {
 
@@ -278,7 +280,7 @@ export class ModeHandler implements vscode.Disposable {
                 TODO - move this into actions.ts, add test.
             */
 
-            if (this._actionState.movement instanceof MoveWordBegin) {
+            if (actionState.movement instanceof MoveWordBegin) {
                 if (stop.isLineBeginning()) {
                     stop = stop.getLeftThroughLineBreaks();
                 }
@@ -291,7 +293,7 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            if (this._actionState.movement) {
+            if (actionState.movement) {
                 if (Position.EarlierOf(start, stop) === start) {
                     stop = stop.getLeft();
                 } else {
@@ -299,7 +301,7 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            const pos = await this._actionState.operator.run(this, this._vimState, start, stop);
+            const pos = await actionState.operator.run(this, this._vimState, start, stop);
             this._motion.moveTo(pos.line, pos.character);
         } else {
             if (this.currentMode instanceof NormalMode) {
