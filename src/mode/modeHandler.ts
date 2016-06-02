@@ -28,7 +28,6 @@ new YankOperator();
 // TODO - or maybe just get rid of decorators
 // they're nice but introduce a weird class of bugs ;_;
 
-
 /**
  * The ActionState class represents state relevant to the current
  * action that the user is doing. Example: Imagine that the user types:
@@ -58,9 +57,29 @@ export class ActionState {
     public movement: BaseMovement = undefined;
 
     /**
-     * The number of times the user wants to repeat this command.
+     * The number of times the user wants to repeat this action.
      */
     public count: number = 1;
+}
+
+/**
+ * The VimState class holds permanent state that carries over from action
+ * to action.
+ *
+ * TODO: Perhaps this should have ActionState inside it, and be returned from all commands.
+ */
+export class VimState {
+    /**
+     * The column the cursor wants to be at.
+     *
+     * Example: If you go to the end of a 20 character column, this value
+     * will be 20, even if you press j and the next column is only 5 characters.
+     * This is because if the third column is 25 characters, the cursor will go
+     * back to the 20th column.
+     */
+    public desiredColumn = 0;
+
+    public currentMode = ModeName.Normal;
 }
 
 export class ModeHandler implements vscode.Disposable {
@@ -69,6 +88,7 @@ export class ModeHandler implements vscode.Disposable {
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
     private _actionState: ActionState;
+    private _vimState: VimState;
 
     private get _motion(): Motion {
         return this.__motion;
@@ -82,6 +102,7 @@ export class ModeHandler implements vscode.Disposable {
 
         this._actionState = new ActionState();
         this._motion = new Motion(null);
+        this._vimState = new VimState();
         this._modes = [
             new NormalMode(this._motion, this),
             new InsertMode(this._motion),
@@ -177,6 +198,7 @@ export class ModeHandler implements vscode.Disposable {
 
         // update our state appropriately. If the action is complete, flag that
         // we are ready to transform the document.
+        // TODO - shouldn't readyToExecute be tracked on the action itself? (yes)
         if (action) {
             if (action instanceof BaseMovement) {
                 this._actionState.movement = action;
@@ -205,6 +227,11 @@ export class ModeHandler implements vscode.Disposable {
         if (readyToExecute) {
             await this.executeState();
 
+            if ((this._actionState.movement && !this._actionState.movement.doesntChangeDesiredColumn) ||
+                this._actionState.command) {
+                this._vimState.desiredColumn = this._motion.position.character;
+            }
+
             this._actionState = new ActionState();
         }
 
@@ -216,7 +243,7 @@ export class ModeHandler implements vscode.Disposable {
         let currentModeName = this.currentMode.name;
 
         if (this._actionState.command) {
-            let newPosition = await this._actionState.command.exec(this, this._motion.position, this._actionState);
+            let newPosition = await this._actionState.command.exec(this, this._motion.position, this._actionState, this._vimState);
 
             this._motion.moveTo(newPosition.line, newPosition.character);
 
@@ -226,8 +253,8 @@ export class ModeHandler implements vscode.Disposable {
         start = this._motion.position;
         if (this._actionState.movement) {
             stop = this._actionState.operator ?
-                await this._actionState.movement.execActionForOperator(this, start, this._actionState) :
-                await this._actionState.movement.execAction           (this, start, this._actionState);
+                await this._actionState.movement.execActionForOperator(this, start, this._actionState, this._vimState) :
+                await this._actionState.movement.execAction           (this, start, this._actionState, this._vimState);
         }
 
         if (this._actionState.operator) {
@@ -272,7 +299,7 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            const pos = await this._actionState.operator.run(this, start, stop);
+            const pos = await this._actionState.operator.run(this, this._vimState, start, stop);
             this._motion.moveTo(pos.line, pos.character);
         } else {
             if (this.currentMode instanceof NormalMode) {
