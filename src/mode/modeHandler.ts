@@ -105,7 +105,7 @@ export class ModeHandler implements vscode.Disposable {
             this.currentMode.handleDeactivation();
         }
 
-        // TODO actually making these into functions on modes
+        // TODO actually making these into functions on modes -
         // like we used to have is a good idea.
 
         for (let mode of this._modes) {

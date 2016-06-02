@@ -125,6 +125,18 @@ suite("Mode Normal", () => {
         assertEqual(TextEditor.getSelection().start.character, 3, "ge failed");
     });
 
+    test("Can handle 'gg'", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext\ntext\ntext'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents(['<esc>', '$', 'j', 'k', 'j', 'g', 'g']);
+
+        assertEqual(TextEditor.getSelection().start.character, 0, "gg failed");
+        assertEqual(TextEditor.getSelection().start.line, 0, "gg failed");
+
+    });
+
     test("Can handle 'C'", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext'.split('')
