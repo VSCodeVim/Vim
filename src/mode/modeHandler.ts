@@ -269,11 +269,6 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             await this._actionState.operator.run(this, start, stop);
-
-            // TODO: redraw or something
-            if (this._motion.position.character >= TextEditor.getLineAt(this._motion.position).text.length) {
-                this._motion = this._motion.left();
-            }
         } else {
             if (this.currentMode instanceof NormalMode) {
                 this._motion.moveTo(stop.line, stop.character);

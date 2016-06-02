@@ -122,9 +122,18 @@ export class DeleteOperator extends BaseOperator {
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     /**
-     * Run this operator on a range.
+     * Deletes from the position of start to 1 past the position of end.
      */
     public async run(modeHandler: ModeHandler, start: Position, end: Position): Promise<void> {
+        if (start.compareTo(end) <= 0) {
+          end = new Position(end.line, end.character + 1, end.positionOptions);
+        } else {
+          const tmp = start;
+
+          start = new Position(end.line, end.character + 1, end.positionOptions);
+          end = tmp;
+        }
+
         // Imagine we have selected everything with an X in
         // the following text (there is no character on the
         // second line at all, just a block cursor):
@@ -141,6 +150,15 @@ export class DeleteOperator extends BaseOperator {
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
+
+        // TODO: Somehow move character left!
+        // TODO maybe operators should return a char position !!!!!
+
+        /*
+        if (this._motion.position.character >= TextEditor.getLineAt(this._motion.position).text.length) {
+            this._motion = this._motion.left();
+        }
+        */
 
         // This is important because handleDeactivation of Visual Mode will
         // set the cursor to the end of the selection. Visual Mode would
@@ -319,9 +337,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
   key = "D";
 
   public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    const end = new Position(position.line, position.getLineEnd().character + 1, position.positionOptions);
-
-    await TextEditor.delete(new vscode.Range(position, end));
+    await TextEditor.delete(new vscode.Range(position, position.getLineEnd()));
 
     return new Position(position.line, position.character - 1, position.positionOptions);
   }
@@ -333,9 +349,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   key = "C";
 
   public async exec(modeHandler: ModeHandler, position: Position): Promise<Position> {
-    const end = new Position(position.line, position.getLineEnd().character + 1, position.positionOptions);
-
-    await TextEditor.delete(new vscode.Range(position, end));
+    await TextEditor.delete(new vscode.Range(position, position.getLineEnd()));
     modeHandler.setCurrentModeByName(ModeName.Insert);
 
     return position;
@@ -680,7 +694,8 @@ class ActionDeleteChar extends BaseCommand {
   key = "x";
 
   public async exec(modeHandler: ModeHandler, position: Position, actionState: ActionState): Promise<Position> {
-    await TextEditor.delete(new vscode.Range(position, position.getRight()));
+    await new DeleteOperator().run(modeHandler, position, position);
+
     modeHandler.setCurrentModeByName(ModeName.Normal);
 
     return position;
