@@ -129,9 +129,10 @@ export class DeleteOperator extends BaseOperator {
           end = new Position(end.line, end.character + 1, end.positionOptions);
         } else {
           const tmp = start;
-
-          start = new Position(end.line, end.character + 1, end.positionOptions);
+          start = end;
           end = tmp;
+
+          end = new Position(end.line, end.character + 1, end.positionOptions)
         }
 
         // Imagine we have selected everything with an X in

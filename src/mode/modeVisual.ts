@@ -82,16 +82,4 @@ export class VisualMode extends Mode {
 
         return true;
     }
-
-    // TODO.
-
-    /*
-    if (operator) {
-        if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
-            await operator.run(this._selectionStart, this._selectionStop.getRight());
-        } else {
-            await operator.run(this._selectionStart.getRight(), this._selectionStop);
-        }
-    }
-    */
 }
