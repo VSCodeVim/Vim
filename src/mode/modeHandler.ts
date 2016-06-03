@@ -269,24 +269,44 @@ export class ModeHandler implements vscode.Disposable {
         if (action) {
             if (action instanceof BaseMovement) {
                 actionState.movement = action;
-            }
-
-            if (action instanceof BaseOperator) {
+            } else if (action instanceof BaseOperator) {
                 actionState.operator = action;
-            }
-
-            if (action instanceof BaseCommand) {
+            } else if (action instanceof BaseCommand) {
                 actionState.command = action;
             }
         }
 
         if (actionState.readyToExecute) {
-            await this.executeState();
+            this._vimState = await this.executeState();
+
+            // Update cursor position
+
+            let stop = this._vimState.cursorPosition;
+
+            if (this.currentMode instanceof NormalMode) {
+                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
+                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
+                }
+
+                this._motion.moveTo(stop.line, stop.character);
+            } else if (this.currentMode instanceof VisualMode) {
+                await (this.currentMode as VisualMode).handleMotion(stop);
+            } else if (this.currentMode instanceof InsertMode) {
+                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
+                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
+                }
+
+                this._motion.moveTo(stop.line, stop.character);
+            } else {
+                console.log("TODO: My janky thing doesn't handle this case!");
+
+                return;
+            }
+
+            // Updated desired column
 
             const movement = actionState.movement, command = actionState.command;
-
             if ((movement && !movement.doesntChangeDesiredColumn) || command) {
-
                 if (movement && movement.setsDesiredColumnToEOL) {
                     this._vimState.desiredColumn = Number.POSITIVE_INFINITY;
                 } else {
@@ -300,28 +320,24 @@ export class ModeHandler implements vscode.Disposable {
         return !!action;
     }
 
-    private async executeState(): Promise<void> {
+    private async executeState(): Promise<VimState> {
         let start: Position, stop: Position;
         let currentModeName = this.currentMode.name;
         let actionState = this._vimState.actionState;
+        let newState: VimState;
 
         if (actionState.command) {
-            const newState = await actionState.command.exec(this, this._motion.position, this._vimState);
-
-            this._motion.moveTo(newState.cursorPosition.line, newState.cursorPosition.character);
-            this._vimState = newState;
-
-            return;
+            return await actionState.command.exec(this, this._motion.position, this._vimState);
         }
 
         start = this._motion.position;
         if (actionState.movement) {
-            this._vimState = actionState.operator ?
+            newState = actionState.operator ?
                 await actionState.movement.execActionForOperator(this, start, this._vimState) :
                 await actionState.movement.execAction           (this, start, this._vimState);
 
-            actionState = this._vimState.actionState;
-            stop = this._vimState.cursorPosition;
+            actionState = newState.actionState;
+            stop        = newState.cursorPosition;
         }
 
         if (actionState.operator) {
@@ -366,23 +382,9 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            this._vimState = await actionState.operator.run(this, this._vimState, start, stop);
-            actionState = this._vimState.actionState;
-            this._motion.moveTo(this._vimState.cursorPosition.line, this._vimState.cursorPosition.character);
+            return await actionState.operator.run(this, this._vimState, start, stop);
         } else {
-            if (this.currentMode instanceof NormalMode) {
-                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
-                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
-                }
-
-                this._motion.moveTo(stop.line, stop.character);
-            } else if (this.currentMode instanceof VisualMode) {
-                await (this.currentMode as VisualMode).handleMotion(stop);
-            } else {
-                console.log("TODO: My janky thing doesn't handle this case!");
-
-                return;
-            }
+            return newState;
         }
     }
 
