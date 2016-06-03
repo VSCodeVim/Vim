@@ -136,7 +136,7 @@ export class DeleteOperator extends BaseOperator {
      * Deletes from the position of start to 1 past the position of end.
      */
     public async run(modeHandler: ModeHandler, vimState: VimState,
-                     start: Position, end: Position, dontChangeMode: boolean = false): Promise<VimState> {
+                     start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
           end = new Position(end.line, end.character + 1, end.positionOptions);
         } else {
@@ -174,15 +174,13 @@ export class DeleteOperator extends BaseOperator {
           (modeHandler.currentMode as VisualMode).setSelectionStop(Position.EarlierOf(start, end));
         }
 
-        if (!dontChangeMode) {
-          vimState.currentMode = ModeName.Normal;
-        }
-
         if (start.character >= TextEditor.getLineAt(start).text.length) {
           vimState.cursorPosition = start.getLeft();
         } else {
           vimState.cursorPosition =  start;
         }
+
+        vimState.currentMode = ModeName.Normal;
 
         return vimState;
     }
@@ -197,7 +195,7 @@ export class ChangeOperator extends BaseOperator {
      * Run this operator on a range.
      */
     public async run(modeHandler: ModeHandler, vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        const state = await new DeleteOperator().run(modeHandler, vimState, start, end, true);
+        const state = await new DeleteOperator().run(modeHandler, vimState, start, end);
         state.currentMode = ModeName.Insert;
 
         return state;
@@ -370,7 +368,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   key = "C";
 
   public async exec(modeHandler: ModeHandler, position: Position, vimState: VimState): Promise<VimState> {
-    const state = await new DeleteOperator().run(modeHandler, vimState, position, position.getLineEnd(), true);
+    const state = await new DeleteOperator().run(modeHandler, vimState, position, position.getLineEnd());
     state.currentMode = ModeName.Insert;
 
     return state;
@@ -767,7 +765,7 @@ class ActionDeleteLastChar extends BaseCommand {
   key = "X";
 
   public async exec(modeHandler: ModeHandler, position: Position, vimState: VimState): Promise<VimState> {
-    return await new DeleteOperator().run(modeHandler, vimState, position.getLeft(), position.getLeft(), true);
+    return await new DeleteOperator().run(modeHandler, vimState, position.getLeft(), position.getLeft());
   }
 }
 
@@ -777,7 +775,7 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   key = "X";
 
   public async exec(modeHandler: ModeHandler, position: Position, vimState: VimState): Promise<VimState> {
-    return await new DeleteOperator().run(modeHandler, vimState, position.getLineBegin(), position.getLineEnd(), true);
+    return await new DeleteOperator().run(modeHandler, vimState, position.getLineBegin(), position.getLineEnd());
   }
 }
 
