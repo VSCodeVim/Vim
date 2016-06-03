@@ -202,20 +202,20 @@ export class ChangeOperator extends BaseOperator {
 
 
 @RegisterAction
-export class PutOperator extends BaseOperator {
+export class PutCommand extends BaseCommand {
     public key: string = "p";
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     /**
      * Run this operator on a range.
      */
-    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        const data = Register.get();
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+        const text = Register.get();
 
-        await TextEditor.insertAt(data, start.getRight());
+        await TextEditor.insertAt(text, position.getRight());
 
-        vimState.cursorPosition = start.getRight();
-        return vimState; // TODO - I think this is wrong.
+        vimState.cursorPosition = new Position(position.line, position.character + text.length, position.positionOptions);
+        return vimState;
     }
 }
 
@@ -228,7 +228,9 @@ export class YankOperator extends BaseOperator {
      * Run this operator on a range.
      */
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        await TextEditor.copy(new vscode.Range(start, end))
+        const text = TextEditor.getText(new vscode.Range(start, end.getRight()));
+
+        Register.put(text);
 
         vimState.currentMode = ModeName.Normal;
         vimState.cursorPosition = start;
@@ -802,19 +804,30 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 }
 
 /*
+// Doing this correctly is very difficult.
+   https://github.com/Microsoft/vscode/issues/7177
 
 @RegisterAction
-class ActionMoveMatchingBracket extends BaseAction {
-  modes = [ModeName.Normal];
+class MoveToMatchingBracket extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "%";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.jumpToBracket");
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
 
-    return {};
+    vscode.window.activeTextEditor.setDecorations
+
+     await vscode.commands.executeCommand("editor.action.jumpToBracket");
+     await vscode.commands.executeCommand("editor.action.jumpToBracket");
+
+
+    vimState.cursorPosition = position.getLineEnd();
+
+    return vimState;
   }
 }
+*/
 
+/*
 @RegisterAction
 class ActionIndent extends BaseAction {
   modes = [ModeName.Normal];
@@ -871,7 +884,6 @@ class ActionChangeCurrentWordToNext {
     } else {
       await new ChangeOperator(modeHandler).run(motion.position.getWordLeft(), motion.position.getWordRight());
     }
-
   }
 }
 

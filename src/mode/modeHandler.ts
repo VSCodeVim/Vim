@@ -9,25 +9,13 @@ import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
 import {
-    BaseMovement, BaseAction, BaseCommand, Actions,
-    MoveWordBegin, BaseOperator, DeleteOperator, ChangeOperator,
-    PutOperator, YankOperator, KeypressState } from './../actions/actions';
+    BaseMovement, BaseCommand, Actions,
+    MoveWordBegin, BaseOperator,
+    KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position, PositionOptions } from './../motion/position';
 import { TextEditor } from '../../src/textEditor';
 import { showCmdLine } from '../../src/cmd_line/main';
-
-// TODO: This is REALLY dumb...
-// figure out some way to force include this stuff...
-new BaseAction();
-new BaseOperator();
-
-new DeleteOperator();
-new ChangeOperator();
-new PutOperator();
-new YankOperator();
-// TODO - or maybe just get rid of decorators
-// they're nice but introduce a weird class of bugs ;_;
 
 export enum VimCommandActions {
     DoNothing,
