@@ -1,4 +1,4 @@
-import { ModeHandler, ActionState, VimState } from './../mode/modeHandler';
+import { ModeHandler, VimCommandActions, VimState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register } from './../register/register';
@@ -229,103 +229,102 @@ export class YankOperator extends BaseOperator {
     }
 }
 
-/*
+
 @RegisterAction
-class ActionEnterCommand extends BaseAction {
+class CommandShowCommandLine extends BaseCommand {
   modes = [ModeName.Normal];
   key = ":";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await showCmdLine("", modeHandler);
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.ShowCommandLine;
 
-    return {};
+    return vimState;
   }
 }
 
 @RegisterAction
-class ActionFind extends BaseAction {
+class CommandFind extends BaseCommand {
   modes = [ModeName.Normal];
   key = "/";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("actions.find");
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.Find;
 
-    return {};
+    return vimState;
   }
 }
 
 @RegisterAction
-class ActionFold extends BaseAction {
-  modes = [ModeName.Normal];
+class CommandFold extends BaseCommand {
+  modes = [ModeName.Visual];
   key = "zc";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.fold");
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.Fold;
 
-    return {};
+    return vimState;
   }
 }
 
 @RegisterAction
-class ActionUnfold extends BaseAction {
+class CommandUnfold extends BaseCommand {
   modes = [ModeName.Normal];
   key = "zo";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.unfold");
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.Unfold;
 
-    return {};
+    return vimState;
   }
 }
 
 @RegisterAction
-class ActionFoldAll extends BaseAction {
+class CommandFoldAll extends BaseCommand {
   modes = [ModeName.Normal];
   key = "zC";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.foldAll");
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.FoldAll;
 
-    return {};
+    return vimState;
   }
 }
 
 @RegisterAction
-class ActionUnfoldAll extends BaseAction {
+class CommandUnfoldAll extends BaseCommand {
   modes = [ModeName.Normal];
   key = "zO";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.unfoldAll");
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.UnfoldAll;
 
-    return {};
+    return vimState;
   }
 }
 
 @RegisterAction
-class ActionUndo extends BaseAction {
+class CommandUndo extends BaseCommand {
   modes = [ModeName.Normal];
   key = "u";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("undo");
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.Undo;
 
-    return { undo: true };
+    return vimState;
   }
 }
 
 @RegisterAction
-class ActionRedo extends BaseAction {
+class CommandRedo extends BaseCommand {
   modes = [ModeName.Normal];
   key = "ctrl+r";
 
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("redo");
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.Redo;
 
-    return { redo: true };
+    return vimState;
   }
 }
-*/
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
@@ -466,7 +465,6 @@ class CommandInsertNewLineAbove extends BaseCommand {
   key = "O";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // TODO: This code no good.
     await vscode.commands.executeCommand("editor.action.insertLineBefore");
 
     vimState.currentMode = ModeName.Insert;
@@ -481,7 +479,6 @@ class CommandInsertNewLineBefore extends BaseCommand {
   key = "o";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // TODO: This code no good.
     await vscode.commands.executeCommand("editor.action.insertLineAfter");
 
     vimState.currentMode = ModeName.Insert;

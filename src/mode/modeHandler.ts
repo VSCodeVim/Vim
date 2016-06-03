@@ -15,6 +15,7 @@ import {
 import { Configuration } from '../configuration/configuration';
 import { Position, PositionOptions } from './../motion/position';
 import { TextEditor } from '../../src/textEditor';
+import { showCmdLine } from '../../src/cmd_line/main';
 
 // TODO: This is REALLY dumb...
 // figure out some way to force include this stuff...
@@ -27,6 +28,60 @@ new PutOperator();
 new YankOperator();
 // TODO - or maybe just get rid of decorators
 // they're nice but introduce a weird class of bugs ;_;
+
+export enum VimCommandActions {
+    DoNothing,
+    ShowCommandLine,
+    Find,
+    Fold,
+    Unfold,
+    FoldAll,
+    UnfoldAll,
+    Undo,
+    Redo,
+}
+
+/**
+ * The VimState class holds permanent state that carries over from action
+ * to action.
+ *
+ * Actions defined in actions.ts are only allowed to mutate a VimState in order to
+ * indicate what they want to do.
+ */
+export class VimState {
+    /**
+     * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
+     * be the rightmost column.
+     *
+     * Example: If you go to the end of a 20 character column, this value
+     * will be 20, even if you press j and the next column is only 5 characters.
+     * This is because if the third column is 25 characters, the cursor will go
+     * back to the 20th column.
+     */
+    public desiredColumn = 0;
+
+    /**
+     * The position the cursor will be when this action finishes.
+     */
+    public cursorPosition = new Position(0, 0, PositionOptions.CharacterWiseInclusive);
+
+    /**
+     * The mode Vim will be in once this action finishes.
+     */
+    public currentMode = ModeName.Normal;
+
+    /**
+     * This is for oddball commands that don't manipulate text in any way.
+     */
+    public commandAction = VimCommandActions.DoNothing;
+
+    private _actionState = new ActionState(this);
+    public get actionState(): ActionState { return this._actionState; }
+    public set actionState(a: ActionState) {
+        a.vimState = this;
+        this._actionState = a;
+    }
+}
 
 /**
  * The ActionState class represents state relevant to the current
@@ -120,36 +175,6 @@ export class ActionState {
 
     constructor(vimState: VimState) {
         this.vimState = vimState;
-    }
-}
-
-/**
- * The VimState class holds permanent state that carries over from action
- * to action.
- *
- * TODO: Perhaps this should have ActionState inside it, and be returned from all commands.
- */
-export class VimState {
-    /**
-     * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
-     * be the rightmost column.
-     *
-     * Example: If you go to the end of a 20 character column, this value
-     * will be 20, even if you press j and the next column is only 5 characters.
-     * This is because if the third column is 25 characters, the cursor will go
-     * back to the 20th column.
-     */
-    public desiredColumn = 0;
-
-    public cursorPosition = new Position(0, 0, PositionOptions.CharacterWiseInclusive);
-
-    public currentMode = ModeName.Normal;
-
-    private _actionState = new ActionState(this);
-    public get actionState(): ActionState { return this._actionState; }
-    public set actionState(a: ActionState) {
-        a.vimState = this;
-        this._actionState = a;
     }
 }
 
@@ -277,6 +302,21 @@ export class ModeHandler implements vscode.Disposable {
 
         if (actionState.readyToExecute) {
             this._vimState = await this.executeState();
+
+            if (this._vimState.commandAction !== VimCommandActions.DoNothing) {
+                switch (this._vimState.commandAction) {
+                    case VimCommandActions.ShowCommandLine: await showCmdLine("", this); break;
+                    case VimCommandActions.Find: await vscode.commands.executeCommand("actions.find"); break;
+                    case VimCommandActions.Fold: await vscode.commands.executeCommand("editor.fold"); break;
+                    case VimCommandActions.Unfold: await vscode.commands.executeCommand("editor.unfold"); break;
+                    case VimCommandActions.FoldAll: await vscode.commands.executeCommand("editor.foldAll"); break;
+                    case VimCommandActions.UnfoldAll: await vscode.commands.executeCommand("editor.unfoldAll"); break;
+                    case VimCommandActions.Undo: await vscode.commands.executeCommand("undo"); break;
+                    case VimCommandActions.Redo: await vscode.commands.executeCommand("redo"); break;
+                }
+
+                this._vimState.commandAction = VimCommandActions.DoNothing;
+            }
 
             // Update mode
 
