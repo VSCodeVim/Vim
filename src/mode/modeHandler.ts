@@ -45,21 +45,82 @@ export class ActionState {
      * Keeps track of the most recent keys pressed. Comes in handy when parsing
      * multiple length movements, e.g. gg.
      */
-    public keysPressed: string[] = [];
+    private _keysPressed: string[] = [];
 
     /**
      * The operator (e.g. d, y, >>) the user wants to run, if there is one.
      */
-    public operator: BaseOperator = undefined;
+    private _operator: BaseOperator = undefined;
 
-    public command: BaseCommand = undefined;
+    private _command: BaseCommand = undefined;
 
-    public movement: BaseMovement = undefined;
+    private _movement: BaseMovement = undefined;
 
     /**
      * The number of times the user wants to repeat this action.
      */
-    public count: number = 1;
+    private _count: number = 1;
+
+    public vimState: VimState;
+
+    public readyToExecute = false;
+
+    public get keysPressed(): string[] { return this._keysPressed; }
+    public set keysPressed(val: string[]) {
+        this._keysPressed = val;
+        this.actionStateChanged();
+    }
+
+    public get operator(): BaseOperator { return this._operator; }
+    public set operator(op: BaseOperator) {
+        this._operator = op;
+        this.actionStateChanged();
+    }
+
+    public get command(): BaseCommand { return this._command; }
+    public set command(command: BaseCommand) {
+        this._command = command;
+        this.actionStateChanged();
+    }
+
+    public get movement(): BaseMovement { return this._movement; }
+    public set movement(movement: BaseMovement) {
+        this._movement = movement;
+        this.actionStateChanged();
+    }
+
+    public get count(): number { return this._count; }
+    public set count(count: number) {
+        this._count = count;
+        this.actionStateChanged();
+    }
+
+    /**
+     * This function is called whenever a property on ActionState is changed.
+     * It determines if the state is ready to run - that is, if the user
+     * has typed in a fully formed command.
+     */
+    private actionStateChanged(): void {
+        if (this.movement) {
+            this.readyToExecute = true;
+        }
+
+        // Visual modes do not require a motion. They ARE the motion.
+        if (this.operator && (
+            this.vimState.currentMode === ModeName.Visual ||
+            this.vimState.currentMode === ModeName.VisualLine)) {
+
+            this.readyToExecute = true;
+        }
+
+        if (this.command) {
+            this.readyToExecute = true;
+        }
+    }
+
+    constructor(vimState: VimState) {
+        this.vimState = vimState;
+    }
 }
 
 /**
@@ -83,7 +144,12 @@ export class VimState {
 
     public currentMode = ModeName.Normal;
 
-    public actionState = new ActionState();
+    private _actionState = new ActionState(this);
+    public get actionState(): ActionState { return this._actionState; }
+    public set actionState(a: ActionState) {
+        a.vimState = this;
+        this._actionState = a;
+    }
 }
 
 export class ModeHandler implements vscode.Disposable {
@@ -127,6 +193,8 @@ export class ModeHandler implements vscode.Disposable {
         if (this.currentMode) {
             this.currentMode.handleDeactivation();
         }
+
+        this._vimState.currentMode = modeName;
 
         // TODO actually making these into functions on modes -
         // like we used to have is a good idea.
@@ -174,14 +242,12 @@ export class ModeHandler implements vscode.Disposable {
 
         let action = Actions.getRelevantAction(actionState.keysPressed.join(""), currentModeName);
 
-        let readyToExecute = false;
-
         if (action === KeypressState.NoPossibleMatch) {
             // TODO: Slightly janky, for reasons that are hard to describe.
 
             if (currentModeName === ModeName.Insert) {
                 await (this.currentMode as any).handleAction(actionState);
-                this._vimState.actionState = new ActionState();
+                this._vimState.actionState = new ActionState(this._vimState);
 
                 return true;
             } else {
@@ -190,7 +256,7 @@ export class ModeHandler implements vscode.Disposable {
                 // that something horrible has gone wrong.
                 console.log("Nothing could match!");
 
-                this._vimState.actionState = new ActionState();
+                this._vimState.actionState = new ActionState(this._vimState);
                 return false;
             }
         } else if (action === KeypressState.WaitingOnKeys) {
@@ -199,35 +265,21 @@ export class ModeHandler implements vscode.Disposable {
             actionState.keysPressed = [];
         }
 
-        // update our state appropriately. If the action is complete, flag that
-        // we are ready to transform the document.
-        // TODO - shouldn't readyToExecute be tracked on the action itself? (yes)
         if (action) {
             if (action instanceof BaseMovement) {
                 actionState.movement = action;
-
-                readyToExecute = true;
             }
 
             if (action instanceof BaseOperator) {
-                // Visual modes do not require a motion action.
-
-                if (currentModeName === ModeName.Visual ||
-                    currentModeName === ModeName.VisualLine) {
-                    readyToExecute = true;
-                }
-
                 actionState.operator = action;
             }
 
             if (action instanceof BaseCommand) {
                 actionState.command = action;
-
-                readyToExecute = true;
             }
         }
 
-        if (readyToExecute) {
+        if (actionState.readyToExecute) {
             await this.executeState();
 
             if ((actionState.movement && !actionState.movement.doesntChangeDesiredColumn) ||
@@ -235,7 +287,7 @@ export class ModeHandler implements vscode.Disposable {
                 this._vimState.desiredColumn = this._motion.position.character;
             }
 
-            this._vimState.actionState = new ActionState();
+            this._vimState.actionState = new ActionState(this._vimState);
         }
 
         return !!action;
