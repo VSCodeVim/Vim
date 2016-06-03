@@ -167,6 +167,10 @@ export class ModeHandler implements vscode.Disposable {
         this.__motion = m;
     }
 
+    private get currentModeName(): ModeName {
+        return this.currentMode.name;
+    }
+
     constructor() {
         this._configuration = Configuration.fromUserFile();
 
@@ -236,17 +240,16 @@ export class ModeHandler implements vscode.Disposable {
 
         key = this._configuration.keyboardLayout.translate(key);
 
-        let currentModeName = this.currentMode.name;
         let actionState = this._vimState.actionState;
 
         actionState.keysPressed.push(key);
 
-        let action = Actions.getRelevantAction(actionState.keysPressed.join(""), currentModeName);
+        let action = Actions.getRelevantAction(actionState.keysPressed.join(""), this.currentModeName);
 
         if (action === KeypressState.NoPossibleMatch) {
             // TODO: Slightly janky, for reasons that are hard to describe.
 
-            if (currentModeName === ModeName.Insert) {
+            if (this.currentModeName === ModeName.Insert) {
                 await (this.currentMode as any).handleAction(actionState);
                 this._vimState.actionState = new ActionState(this._vimState);
 
@@ -279,12 +282,20 @@ export class ModeHandler implements vscode.Disposable {
         if (actionState.readyToExecute) {
             this._vimState = await this.executeState();
 
+            // Update mode
+
+            if (this._vimState.currentMode !== this.currentModeName) {
+                this.setCurrentModeByName(this._vimState.currentMode)
+            }
+
             // Update cursor position
 
             let stop = this._vimState.cursorPosition;
 
-            if (stop.character >= TextEditor.getLineAt(stop).text.length) {
-                stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
+            if (!(this.currentMode instanceof InsertMode)) {
+                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
+                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
+                }
             }
 
             if (this.currentMode instanceof NormalMode) {
@@ -318,7 +329,6 @@ export class ModeHandler implements vscode.Disposable {
 
     private async executeState(): Promise<VimState> {
         let start: Position, stop: Position;
-        let currentModeName = this.currentMode.name;
         let actionState = this._vimState.actionState;
         let newState: VimState;
 
@@ -337,8 +347,8 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (actionState.operator) {
-            if (currentModeName === ModeName.Visual ||
-                currentModeName === ModeName.VisualLine) {
+            if (this.currentModeName === ModeName.Visual ||
+                this.currentModeName === ModeName.VisualLine) {
 
                 start = (this.currentMode as VisualMode).selectionStart;
                 stop  = (this.currentMode as VisualMode).selectionStop;
