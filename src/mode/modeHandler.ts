@@ -364,6 +364,10 @@ export class ModeHandler implements vscode.Disposable {
             this._motion.moveTo(this._vimState.cursorPosition.line, this._vimState.cursorPosition.character);
         } else {
             if (this.currentMode instanceof NormalMode) {
+                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
+                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
+                }
+
                 this._motion.moveTo(stop.line, stop.character);
             } else if (this.currentMode instanceof VisualMode) {
                 await (this.currentMode as VisualMode).handleMotion(stop);

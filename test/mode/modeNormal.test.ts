@@ -98,6 +98,22 @@ suite("Mode Normal", () => {
         await assertEqualLines(["t"]);
     });
 
+    test("Can handle 'dl' at end of line", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'iblah'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '$',
+            'd', 'l',
+            'd', 'l',
+            'd', 'l',
+        ]);
+
+        await assertEqualLines(["b"]);
+    });
+
     test("Can handle 'D'", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext'.split('')

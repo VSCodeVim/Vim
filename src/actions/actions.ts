@@ -533,7 +533,7 @@ class MoveRight extends BaseMovement {
   key = "l";
 
   public async execAction(modeHandler: ModeHandler, position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getRight();
+    vimState.cursorPosition = new Position(position.line, position.character + 1, position.positionOptions);
     return vimState;
   }
 }
