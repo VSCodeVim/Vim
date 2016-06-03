@@ -283,19 +283,15 @@ export class ModeHandler implements vscode.Disposable {
 
             let stop = this._vimState.cursorPosition;
 
-            if (this.currentMode instanceof NormalMode) {
-                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
-                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
-                }
+            if (stop.character >= TextEditor.getLineAt(stop).text.length) {
+                stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
+            }
 
+            if (this.currentMode instanceof NormalMode) {
                 this._motion.moveTo(stop.line, stop.character);
             } else if (this.currentMode instanceof VisualMode) {
                 await (this.currentMode as VisualMode).handleMotion(stop);
             } else if (this.currentMode instanceof InsertMode) {
-                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
-                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
-                }
-
                 this._motion.moveTo(stop.line, stop.character);
             } else {
                 console.log("TODO: My janky thing doesn't handle this case!");
