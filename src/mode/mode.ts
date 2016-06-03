@@ -39,8 +39,4 @@ export abstract class Mode {
     set isActive(val : boolean) {
         this._isActive = val;
     }
-
-    public handleDeactivation() : void {
-        ;
-    }
 }

@@ -45,20 +45,6 @@ export class VisualMode extends Mode {
         this.motion.select(this._selectionStart, this._selectionStop);
     }
 
-    handleDeactivation(): void {
-        super.handleDeactivation();
-
-        const end = new Position(TextEditor.getLineCount() - 1, 0, this._selectionStop.positionOptions)
-            .getLineEnd();
-
-        if (end.line <  this._selectionStop.line ||
-           (end.line === this._selectionStop.line && end.character === this._selectionStop.character)) {
-            this._selectionStop = end;
-        }
-
-        this.motion.moveTo(this._selectionStop.line, this._selectionStop.character);
-    }
-
     public async handleMotion(position: Position): Promise<boolean> {
         this._selectionStop = position;
         this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);

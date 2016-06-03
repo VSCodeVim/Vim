@@ -164,14 +164,8 @@ export class DeleteOperator extends BaseOperator {
 
         await TextEditor.delete(new vscode.Range(start, end));
 
-        // This is important because handleDeactivation of Visual Mode will
-        // set the cursor to the end of the selection. Visual Mode would
-        // otherwise be in a weird state since the selection it has is no
-        // longer valid. (TODO - I wonder if there's a better way to solve this -
-        // perhaps Visual Mode should monitor selection changes and update it's
-        // anchors accordingly.)
         if (modeHandler.currentMode.name === ModeName.Visual) {
-          (modeHandler.currentMode as VisualMode).setSelectionStop(Position.EarlierOf(start, end));
+          vimState.cursorPosition = Position.EarlierOf(start, end);
         }
 
         if (start.character >= TextEditor.getLineAt(start).text.length) {
@@ -345,9 +339,14 @@ class CommandEsc extends BaseCommand {
   key = "<esc>";
 
   public async exec(modeHandler: ModeHandler, position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.currentMode === ModeName.Visual) {
+      vimState.cursorPosition = position;
+    } else {
+      vimState.cursorPosition = position.getLeft();
+    }
+
     vimState.currentMode = ModeName.Normal;
 
-    vimState.cursorPosition = position.getLeft();
     return vimState;
   }
 }

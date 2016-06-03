@@ -195,10 +195,6 @@ export class ModeHandler implements vscode.Disposable {
     setCurrentModeByName(modeName: ModeName) {
         let activeMode: Mode;
 
-        if (this.currentMode) {
-            this.currentMode.handleDeactivation();
-        }
-
         this._vimState.currentMode = modeName;
 
         // TODO actually making these into functions on modes -
