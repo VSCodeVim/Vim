@@ -202,6 +202,20 @@ suite("Mode Normal", () => {
         assertEqual(TextEditor.getSelection().start.character, 8, "same column failed");
     });
 
+    test("$ always keeps cursor on EOL", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text\ntext\ntext text'.split('')
+        );
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            'g', 'g',
+            '$',
+            'j', 'j'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 8, "$ column thing failed :()");
+    });
+
     /*
 
     These tests don't pass because the functionality is broken!

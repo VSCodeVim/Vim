@@ -25,7 +25,13 @@ export abstract class BaseMovement extends BaseAction {
   /**
    * Whether we should change desiredColumn in VimState.
    */
-  public doesntChangeDesiredColumn: boolean = false;
+  public doesntChangeDesiredColumn = false;
+
+  /**
+   * This is for commands like $ which force the desired column to be at
+   * the end of even the longest line.
+   */
+  public setsDesiredColumnToEOL = false;
 
   /**
    * Is this action valid in the current Vim state?
@@ -542,6 +548,7 @@ class MoveRight extends BaseMovement {
 class MoveLineEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   key = "$";
+  setsDesiredColumnToEOL = true;
 
   public async execAction(modeHandler: ModeHandler, position: Position, vimState: VimState): Promise<VimState> {
     vimState.cursorPosition = position.getLineEnd();

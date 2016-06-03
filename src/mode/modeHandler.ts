@@ -131,7 +131,8 @@ export class ActionState {
  */
 export class VimState {
     /**
-     * The column the cursor wants to be at.
+     * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
+     * be the rightmost column.
      *
      * Example: If you go to the end of a 20 character column, this value
      * will be 20, even if you press j and the next column is only 5 characters.
@@ -282,9 +283,15 @@ export class ModeHandler implements vscode.Disposable {
         if (actionState.readyToExecute) {
             await this.executeState();
 
-            if ((actionState.movement && !actionState.movement.doesntChangeDesiredColumn) ||
-                actionState.command) {
-                this._vimState.desiredColumn = this._motion.position.character;
+            const movement = actionState.movement, command = actionState.command;
+
+            if ((movement && !movement.doesntChangeDesiredColumn) || command) {
+
+                if (movement && movement.setsDesiredColumnToEOL) {
+                    this._vimState.desiredColumn = Number.POSITIVE_INFINITY;
+                } else {
+                    this._vimState.desiredColumn = this._motion.position.character;
+                }
             }
 
             this._vimState.actionState = new ActionState(this._vimState);
