@@ -327,6 +327,31 @@ class CommandRedo extends BaseCommand {
 }
 
 @RegisterAction
+class CommandMoveFullPageDown extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "ctrl+f";
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.MoveFullPageDown;
+
+    return vimState;
+  }
+}
+
+
+@RegisterAction
+class CommandMoveFullPageUp extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "ctrl+b";
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.MoveFullPageUp;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   key = "<esc>";
@@ -770,29 +795,6 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 }
 
 /*
-@RegisterAction
-class ActionMoveFullPageDown extends BaseAction {
-  modes = [ModeName.Normal];
-  key = "ctrl+f";
-
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("cursorPageDown");
-
-    return {};
-  }
-}
-
-@RegisterAction
-class ActionMoveFullPageUp extends BaseAction {
-  modes = [ModeName.Normal];
-  key = "ctrl+b";
-
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("cursorPageUp");
-
-    return {};
-  }
-}
 
 @RegisterAction
 class ActionMoveMatchingBracket extends BaseAction {

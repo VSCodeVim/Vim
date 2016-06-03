@@ -39,6 +39,8 @@ export enum VimCommandActions {
     UnfoldAll,
     Undo,
     Redo,
+    MoveFullPageDown,
+    MoveFullPageUp
 }
 
 /**
@@ -313,6 +315,8 @@ export class ModeHandler implements vscode.Disposable {
                     case VimCommandActions.UnfoldAll: await vscode.commands.executeCommand("editor.unfoldAll"); break;
                     case VimCommandActions.Undo: await vscode.commands.executeCommand("undo"); break;
                     case VimCommandActions.Redo: await vscode.commands.executeCommand("redo"); break;
+                    case VimCommandActions.MoveFullPageDown: await vscode.commands.executeCommand("cursorPageUp"); break;
+                    case VimCommandActions.MoveFullPageUp: await vscode.commands.executeCommand("cursorPageDown"); break;
                 }
 
                 this._vimState.commandAction = VimCommandActions.DoNothing;
