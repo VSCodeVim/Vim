@@ -329,14 +329,14 @@ export class ModeHandler implements vscode.Disposable {
         let newState: VimState;
 
         if (actionState.command) {
-            return await actionState.command.exec(this, this._motion.position, this._vimState);
+            return await actionState.command.exec(this._motion.position, this._vimState);
         }
 
         start = this._motion.position;
         if (actionState.movement) {
             newState = actionState.operator ?
-                await actionState.movement.execActionForOperator(this, start, this._vimState) :
-                await actionState.movement.execAction           (this, start, this._vimState);
+                await actionState.movement.execActionForOperator(start, this._vimState) :
+                await actionState.movement.execAction           (start, this._vimState);
 
             actionState = newState.actionState;
             stop        = newState.cursorPosition;
@@ -384,7 +384,7 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            return await actionState.operator.run(this, this._vimState, start, stop);
+            return await actionState.operator.run(this._vimState, start, stop);
         } else {
             return newState;
         }
