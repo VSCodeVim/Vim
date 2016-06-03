@@ -68,6 +68,18 @@ suite("Mode Visual", () => {
         assertEqual(modeHandler.currentMode.name, ModeName.Normal);
     });
 
+    test("Can handle x across a selection", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'v', 'w', 'x'
+        ]);
+
+        assertEqualLines(["wo three"]);
+
+        assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    });
+
     test("Can do vwd in middle of sentence", async () => {
         await modeHandler.handleMultipleKeyEvents("ione two three foar".split(""));
         await modeHandler.handleMultipleKeyEvents([

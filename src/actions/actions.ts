@@ -178,13 +178,20 @@ export class DeleteOperator extends BaseOperator {
 }
 
 @RegisterAction
+export class DeleteOperatorXVisual extends BaseOperator {
+    public key: string = "x";
+    public modes = [ModeName.Visual];
+
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      return await new DeleteOperator().run(vimState, start, end);
+    }
+}
+
+@RegisterAction
 export class ChangeOperator extends BaseOperator {
     public key: string = "c";
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
-    /**
-     * Run this operator on a range.
-     */
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const state = await new DeleteOperator().run(vimState, start, end);
         state.currentMode = ModeName.Insert;
@@ -762,7 +769,7 @@ class MoveParagraphBegin extends BaseMovement {
 
 @RegisterAction
 class ActionDeleteChar extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [ModeName.Normal];
   key = "x";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
