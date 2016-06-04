@@ -224,6 +224,7 @@ Status                 | Key                       | Description
 :white_check_mark:     | cW                        | Delete from the cursor position to the end of the WORD and enter insert mode
 :white_check_mark:     | ciw                       | Delete word and enter insert mode
 :white_check_mark:     | caw                       | Delete word, right-side blanks and enter insert mode
+:white_check_mark:     | s                         | Delete character under cursor and enter insert mode
 
 ### Changing Text
 Status              | Key                       | Description
