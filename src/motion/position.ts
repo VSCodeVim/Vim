@@ -20,8 +20,7 @@ export class Position extends vscode.Position {
 
     constructor(line: number, character: number, options: PositionOptions) {
         super(line, character);
-
-        this.positionOptions = options;
+        this.positionOptions = PositionOptions.CharacterWiseExclusive;
 
         this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
         this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
@@ -79,7 +78,7 @@ export class Position extends vscode.Position {
     public getDown(desiredColumn: number) : Position {
         if (this.getDocumentEnd().line !== this.line) {
             let nextLine = this.line + 1;
-            let nextLineLength = Position.getLineLength(nextLine, this.positionOptions);
+            let nextLineLength = Position.getLineLength(nextLine);
 
             return new Position(nextLine, Math.min(nextLineLength, desiredColumn), this.positionOptions);
         }
@@ -93,7 +92,7 @@ export class Position extends vscode.Position {
     public getUp(desiredColumn: number) : Position {
         if (this.getDocumentBegin().line !== this.line) {
             let prevLine = this.line - 1;
-            let prevLineLength  = Position.getLineLength(prevLine, this.positionOptions);
+            let prevLineLength  = Position.getLineLength(prevLine);
 
             return new Position(prevLine, Math.min(prevLineLength, desiredColumn), this.positionOptions);
         }
@@ -180,7 +179,7 @@ export class Position extends vscode.Position {
      */
     public getLineEnd(opts: PositionOptions = null) : Position {
         if (opts === null) { opts = this.positionOptions; }
-        return new Position(this.line, Position.getLineLength(this.line, opts), opts);
+        return new Position(this.line, Position.getLineLength(this.line), opts);
     }
 
     public getDocumentBegin() : Position {
@@ -190,7 +189,7 @@ export class Position extends vscode.Position {
     public getDocumentEnd() : Position {
         let lineCount = TextEditor.getLineCount();
         let line = lineCount > 0 ? lineCount - 1 : 0;
-        let char = Position.getLineLength(line, this.positionOptions);
+        let char = Position.getLineLength(line);
 
         return new Position(line, char, this.positionOptions);
     }
@@ -203,8 +202,8 @@ export class Position extends vscode.Position {
         }
 
         // char
-        let charCount = Position.getLineLength(this.line, this.positionOptions);
-        if (this.character > charCount) {
+        let charCount = Position.getLineLength(this.line);
+        if (this.character > charCount + 1) {
             return false;
         }
 
@@ -226,8 +225,8 @@ export class Position extends vscode.Position {
     /**
      * Is this position at the end of the line?
      */
-    public isLineEnd() : boolean {
-        return this.character === Position.getLineLength(this.line, this.positionOptions);
+    public isLineEnd(): boolean {
+        return this.character >= Position.getLineLength(this.line);
     }
 
     public isAtDocumentEnd(): boolean {
@@ -246,19 +245,8 @@ export class Position extends vscode.Position {
         return new Position(0, 0, this.positionOptions);
     }
 
-    private static getLineLength(line: number, options: PositionOptions) : number {
-        switch (options) {
-            case PositionOptions.CharacterWiseExclusive:
-                // Valid Positions for Caret: [0, eol)
-                var len = TextEditor.readLineAt(line).length;
-                return len > 0 ? len - 1 : len;
-            case PositionOptions.CharacterWiseInclusive:
-                // Valid Positions for Caret: [0, eol]
-                return TextEditor.readLineAt(line).length;
-
-            default:
-                throw new Error("Unhandled PositionOptions: " + options);
-        }
+    public static getLineLength(line: number) : number {
+        return TextEditor.readLineAt(line).length;
     }
 
     private makeWordRegex(characterSet: string) : RegExp {
@@ -344,9 +332,6 @@ export class Position extends vscode.Position {
             }
 
             if (newCharacter !== undefined) {
-                if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
-                    newCharacter++;
-                }
                 return new Position(currentLine, newCharacter, this.positionOptions);
             }
         }
@@ -360,9 +345,6 @@ export class Position extends vscode.Position {
             let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
-                if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
-                    newCharacter++;
-                }
                 return new Position(currentLine, newCharacter, this.positionOptions);
             }
         }

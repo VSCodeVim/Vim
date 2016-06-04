@@ -53,7 +53,14 @@ export class VimState {
     /**
      * The position the cursor will be when this action finishes.
      */
-    public cursorPosition = new Position(0, 0, PositionOptions.CharacterWiseInclusive);
+    public cursorPosition = new Position(0, 0, PositionOptions.CharacterWiseExclusive);
+
+    /**
+     * The effective starting position of the movement, used along with cursorPosition to determine
+     * the range over which to run an Operator. May rarely be different than where the cursor
+     * actually starts e.g. if you use the "aw" text motion in the middle of a word.
+     */
+    public cursorStartPosition = new Position(0, 0, PositionOptions.CharacterWiseExclusive);
 
     /**
      * The mode Vim will be in once this action finishes.
@@ -264,6 +271,8 @@ export class ModeHandler implements vscode.Disposable {
                 await (this.currentMode as any).handleAction(actionState);
                 this._vimState.actionState = new ActionState(this._vimState);
 
+                this._vimState.cursorPosition = this._motion.position.getRight();
+
                 return true;
             } else {
                 // This is the ultimate failure case. Just insert the key into the document. This is
@@ -291,6 +300,11 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (actionState.readyToExecute) {
+            if (this.currentMode.name !== ModeName.Visual &&
+                this.currentMode.name !== ModeName.VisualLine) {
+                this._vimState.cursorStartPosition = this._motion.position;
+            }
+
             this._vimState = await this.executeState();
 
             if (this._vimState.commandAction !== VimCommandActions.DoNothing) {
@@ -313,7 +327,7 @@ export class ModeHandler implements vscode.Disposable {
             // Update mode
 
             if (this._vimState.currentMode !== this.currentModeName) {
-                this.setCurrentModeByName(this._vimState.currentMode)
+                this.setCurrentModeByName(this._vimState.currentMode);
             }
 
             // Update cursor position
@@ -327,9 +341,14 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             if (this.currentMode instanceof NormalMode) {
+                if (stop.character >= Position.getLineLength(stop.line)) {
+                    stop = stop.getLeft();
+                    this._vimState.cursorPosition = stop;
+                }
+
                 this._motion.moveTo(stop.line, stop.character);
             } else if (this.currentMode instanceof VisualMode) {
-                await (this.currentMode as VisualMode).handleMotion(stop);
+                await (this.currentMode as VisualMode).handleMotion(this._vimState.cursorStartPosition, stop);
             } else if (this.currentMode instanceof InsertMode) {
                 this._motion.moveTo(stop.line, stop.character);
             } else {
@@ -356,21 +375,22 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     private async executeState(): Promise<VimState> {
-        let start: Position, stop: Position;
+        let start = this._vimState.cursorStartPosition;
+        let stop = this._vimState.cursorPosition;
         let actionState = this._vimState.actionState;
         let newState: VimState;
 
         if (actionState.command) {
-            return await actionState.command.exec(this._motion.position, this._vimState);
+            return await actionState.command.exec(stop, this._vimState);
         }
 
-        start = this._motion.position;
         if (actionState.movement) {
             newState = actionState.operator ?
-                await actionState.movement.execActionForOperator(start, this._vimState) :
-                await actionState.movement.execAction           (start, this._vimState);
+                await actionState.movement.execActionForOperator(stop, this._vimState) :
+                await actionState.movement.execAction           (stop, this._vimState);
 
             actionState = newState.actionState;
+            start       = newState.cursorStartPosition;
             stop        = newState.cursorPosition;
         }
 

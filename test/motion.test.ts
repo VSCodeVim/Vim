@@ -38,20 +38,12 @@ suite("motion", () => {
         };
     });
 
-    test("char right: caret", () => {
-        let motion = new Motion(MotionMode.Caret);
-
-        motion = motion.moveTo(0, 7).right();
-        assert.equal(motion.position.line, 0);
-        assert.equal(motion.position.character, 7);
-    });
-
-    test("char right: cursor", () => {
+    test("char right", () => {
         let motion = new Motion(MotionMode.Cursor);
-        motion = motion.moveTo(0, 8).right();
+        motion = motion.moveTo(0, 9).right();
 
         assert.equal(motion.position.line, 0);
-        assert.equal(motion.position.character, 8);
+        assert.equal(motion.position.character, 9);
     });
 
     test("char left: should move cursor one column left", () => {
@@ -242,7 +234,7 @@ suite("word motion", () => {
         test("last word on last line should go to end of document (special case!)", () => {
             let motion = new Motion(MotionMode.Caret).moveTo(6, 6).wordRight();
             assert.equal(motion.position.line, 6);
-            assert.equal(motion.position.character, 9);
+            assert.equal(motion.position.character, 10);
         });
 
     });
@@ -458,7 +450,7 @@ suite("paragraph motion", () => {
         test("paragraph at end of document", () => {
             let motion = new Motion(MotionMode.Caret).moveTo(7, 0).goToEndOfCurrentParagraph();
             assert.equal(motion.position.line, 8);
-            assert.equal(motion.position.character, 2);
+            assert.equal(motion.position.character, 3);
         });
     });
 

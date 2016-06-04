@@ -45,8 +45,9 @@ export class VisualMode extends Mode {
         this.motion.select(this._selectionStart, this._selectionStop);
     }
 
-    public async handleMotion(position: Position): Promise<boolean> {
+    public async handleMotion(start: Position, position: Position): Promise<boolean> {
         this._selectionStop = position;
+        this._selectionStart = start;
         this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
 
         /**

@@ -366,9 +366,7 @@ class CommandEsc extends BaseCommand {
   key = "<esc>";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.currentMode === ModeName.Visual) {
-      vimState.cursorPosition = position;
-    } else {
+    if (vimState.currentMode !== ModeName.Visual) {
       vimState.cursorPosition = position.getLeft();
     }
 
@@ -484,7 +482,7 @@ class CommandInsertAtLineEnd extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const pos = new Position(position.line,
-                position.getLineEnd(PositionOptions.CharacterWiseInclusive).character, position.positionOptions);
+                position.getLineEnd().character + 1, position.positionOptions);
 
     vimState.currentMode = ModeName.Insert;
     vimState.cursorPosition = pos;
@@ -803,6 +801,31 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   }
 }
 
+@RegisterAction
+class MovementAWordTextObject extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual];
+  key = "aw";
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      // TODO: This is kind of a bad way to do this.
+      return new MoveWordBegin().execAction(position, vimState);
+    }
+
+    let currentChar = TextEditor.getLineAt(position).text[position.character];
+
+    if (currentChar === ' ' || currentChar === '\t') {
+      vimState.cursorStartPosition = position.getLastWordEnd();
+      vimState.cursorPosition = position.getCurrentWordEnd();
+    } else {
+      vimState.cursorStartPosition = position.getWordLeft();
+      vimState.cursorPosition = position.getWordRight();
+    }
+
+    return vimState;
+  }
+}
+
 /*
 // Doing this correctly is very difficult.
    https://github.com/Microsoft/vscode/issues/7177
@@ -871,21 +894,6 @@ class ActionChangeCurrentWord {
   }
 }
 
-@RegisterAction
-class ActionChangeCurrentWordToNext {
-  modes = [ModeName.Normal];
-  key = "caw";
-
-  public async execAction(position: Position): Promise<VimState> {
-    motion.changeMode(MotionMode.Cursor);
-    let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
-    if (currentChar === ' ' || currentChar === '\t') {
-      await new ChangeOperator(modeHandler).run(motion.position.getLastWordEnd(), motion.position.getCurrentWordEnd());
-    } else {
-      await new ChangeOperator(modeHandler).run(motion.position.getWordLeft(), motion.position.getWordRight());
-    }
-  }
-}
 
 @RegisterAction
 class ActionPaste {
