@@ -2,7 +2,7 @@ import { ModeHandler, VimCommandActions, VimState } from './../mode/modeHandler'
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register } from './../register/register';
-import { Position, PositionOptions } from './../motion/position';
+import { Position } from './../motion/position';
 import { VisualMode } from './../mode/modeVisual';
 import * as vscode from 'vscode';
 
@@ -135,13 +135,13 @@ export class DeleteOperator extends BaseOperator {
     public async run(vimState: VimState,
                      start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
-          end = new Position(end.line, end.character + 1, end.positionOptions);
+          end = new Position(end.line, end.character + 1);
         } else {
           const tmp = start;
           start = end;
           end = tmp;
 
-          end = new Position(end.line, end.character + 1, end.positionOptions)
+          end = new Position(end.line, end.character + 1)
         }
 
         // Imagine we have selected everything with an X in
@@ -214,7 +214,7 @@ export class PutCommand extends BaseCommand {
 
         await TextEditor.insertAt(text, position.getRight());
 
-        vimState.cursorPosition = new Position(position.line, position.character + text.length, position.positionOptions);
+        vimState.cursorPosition = new Position(position.line, position.character + text.length);
         return vimState;
     }
 }
@@ -482,7 +482,7 @@ class CommandInsertAtLineEnd extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const pos = new Position(position.line,
-                position.getLineEnd().character + 1, position.positionOptions);
+                position.getLineEnd().character + 1);
 
     vimState.currentMode = ModeName.Insert;
     vimState.cursorPosition = pos;
@@ -500,7 +500,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
     await vscode.commands.executeCommand("editor.action.insertLineBefore");
 
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = new Position(position.line, 0, position.positionOptions);
+    vimState.cursorPosition = new Position(position.line, 0);
     return vimState;
   }
 }
@@ -514,7 +514,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
     await vscode.commands.executeCommand("editor.action.insertLineAfter");
 
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = new Position(position.line + 1, 0, position.positionOptions);
+    vimState.cursorPosition = new Position(position.line + 1, 0);
 
     return vimState;
   }
@@ -564,7 +564,7 @@ class MoveRight extends BaseMovement {
   key = "l";
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = new Position(position.line, position.character + 1, position.positionOptions);
+    vimState.cursorPosition = new Position(position.line, position.character + 1);
 
     return vimState;
   }
@@ -685,7 +685,7 @@ class MoveWordEnd extends BaseMovement {
                                      vimState: VimState): Promise<VimState> {
     let end = position.getCurrentWordEnd();
 
-    vimState.cursorPosition = new Position(end.line, end.character + 1, end.positionOptions);
+    vimState.cursorPosition = new Position(end.line, end.character + 1);
     return vimState;
   }
 }

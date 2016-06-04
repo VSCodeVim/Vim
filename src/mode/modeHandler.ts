@@ -13,7 +13,7 @@ import {
     MoveWordBegin, BaseOperator,
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
-import { Position, PositionOptions } from './../motion/position';
+import { Position } from './../motion/position';
 import { TextEditor } from '../../src/textEditor';
 import { showCmdLine } from '../../src/cmd_line/main';
 
@@ -53,14 +53,14 @@ export class VimState {
     /**
      * The position the cursor will be when this action finishes.
      */
-    public cursorPosition = new Position(0, 0, PositionOptions.CharacterWiseExclusive);
+    public cursorPosition = new Position(0, 0);
 
     /**
      * The effective starting position of the movement, used along with cursorPosition to determine
      * the range over which to run an Operator. May rarely be different than where the cursor
      * actually starts e.g. if you use the "aw" text motion in the middle of a word.
      */
-    public cursorStartPosition = new Position(0, 0, PositionOptions.CharacterWiseExclusive);
+    public cursorStartPosition = new Position(0, 0);
 
     /**
      * The mode Vim will be in once this action finishes.
@@ -336,7 +336,7 @@ export class ModeHandler implements vscode.Disposable {
 
             if (!(this.currentMode instanceof InsertMode)) {
                 if (stop.character >= TextEditor.getLineAt(stop).text.length) {
-                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length, stop.positionOptions);
+                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length);
                 }
             }
 
@@ -424,7 +424,7 @@ export class ModeHandler implements vscode.Disposable {
                     // Yes... we actually push the position OFF THE EDGE OF THE DOCUMENT.
 
                     // Why, Vim? WHY?
-                    stop = new Position(stop.line, stop.character + 1, stop.positionOptions);
+                    stop = new Position(stop.line, stop.character + 1);
                 }
             }
 

@@ -1,7 +1,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import {Position, PositionOptions} from './position';
+import { Position } from './position';
 
 export enum MotionMode {
     Caret,
@@ -42,7 +42,7 @@ export class Motion implements vscode.Disposable {
     public constructor(mode: MotionMode) {
         // initialize to current position
         let currentPosition = vscode.window.activeTextEditor.selection.active;
-        this._position = new Position(currentPosition.line, currentPosition.character, null);
+        this._position = new Position(currentPosition.line, currentPosition.character);
 
         if (mode !== null) {
             this.changeMode(mode);
@@ -56,10 +56,10 @@ export class Motion implements vscode.Disposable {
                 let line = selection.active.line;
                 let char = selection.active.character;
 
-                var newPosition = new Position(line, char, this._position.positionOptions);
+                var newPosition = new Position(line, char);
 
                 if (char > newPosition.getLineEnd().character) {
-                   newPosition = new Position(newPosition.line, newPosition.getLineEnd().character, null);
+                   newPosition = new Position(newPosition.line, newPosition.getLineEnd().character);
                 }
 
                 this.position = newPosition;
@@ -103,14 +103,11 @@ export class Motion implements vscode.Disposable {
         switch (this._motionMode) {
             case MotionMode.Caret:
                 // Valid Positions for Caret: [0, eol)
-                this._position.positionOptions = PositionOptions.CharacterWiseExclusive;
-
                 this.highlightBlock(this.position);
                 break;
 
             case MotionMode.Cursor:
                 // Valid Positions for Caret: [0, eol]
-                this.position.positionOptions = PositionOptions.CharacterWiseInclusive;
                 vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
                 break;
         }
@@ -121,7 +118,7 @@ export class Motion implements vscode.Disposable {
      * space at the provided position in a lighter color.
      */
     private highlightBlock(start: Position): void {
-        this.highlightRange(start, new Position(start.line, start.character + 1, start.positionOptions));
+        this.highlightRange(start, new Position(start.line, start.character + 1));
     }
 
     /**
