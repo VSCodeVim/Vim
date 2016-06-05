@@ -446,8 +446,8 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             if (this.currentModeName === ModeName.VisualLine) {
-                start = Position.EarlierOf(start.getLineBegin(), this._vimState.cursorPosition);
-                stop  = Position.LaterOf(stop.getLineEnd(),      this._vimState.cursorPosition);
+                start = Position.EarlierOf(start, stop).getLineBegin();
+                stop = Position.LaterOf(start, stop).getLineEnd();
             }
 
             return await actionState.operator.run(this._vimState, start, stop);
