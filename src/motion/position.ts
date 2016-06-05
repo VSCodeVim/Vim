@@ -174,8 +174,22 @@ export class Position extends vscode.Position {
       return pos.getLineBegin();
     }
 
-    public getLineBegin() : Position {
+    /**
+     * Get the beginning of the current line.
+     */
+    public getLineBegin(): Position {
         return new Position(this.line, 0);
+    }
+
+    /**
+     * Get the beginning of the next line.
+     */
+    public getNextLineBegin(): Position {
+        if (this.line >= TextEditor.getLineCount()) {
+            return this.getLineEnd();
+        }
+
+        return new Position(this.line + 1, 0);
     }
 
     /**
