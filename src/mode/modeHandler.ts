@@ -8,7 +8,7 @@ import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
 import {
     BaseMovement, BaseCommand, Actions,
-    MoveWordBegin, BaseOperator,
+    BaseOperator,
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
@@ -430,30 +430,6 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (actionState.operator) {
-            /*
-                From the Vim documentation:
-
-                Another special case: When using the "w" motion in combination with an
-                operator and the last word moved over is at the end of a line, the end of
-                that word becomes the end of the operated text, not the first word in the
-                next line.
-
-                TODO - move this into actions.ts, add test.
-            */
-
-            if (actionState.movement instanceof MoveWordBegin) {
-                if (stop.isLineBeginning()) {
-                    stop = stop.getLeftThroughLineBreaks();
-                }
-
-                if (stop.isLineEnd()) {
-                    // Yes... we actually push the position OFF THE EDGE OF THE DOCUMENT.
-
-                    // Why, Vim? WHY?
-                    stop = new Position(stop.line, stop.character + 1);
-                }
-            }
-
             if (actionState.movement) {
                 if (Position.EarlierOf(start, stop) === start) {
                     stop = stop.getLeft();
