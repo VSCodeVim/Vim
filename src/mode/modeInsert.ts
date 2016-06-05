@@ -1,8 +1,5 @@
 "use strict";
 
-import * as vscode from 'vscode';
-
-import { CommandKeyHandler, Command } from './../configuration/commandKeyMap';
 import { ModeName, Mode } from './mode';
 import { TextEditor } from './../textEditor';
 import { Motion } from './../motion/motion';

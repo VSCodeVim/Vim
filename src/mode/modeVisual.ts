@@ -1,12 +1,9 @@
 "use strict";
 
-import * as _      from 'lodash';
-
 import { ModeName, Mode } from './mode';
 import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
 import { ModeHandler } from './modeHandler.ts';
-import { TextEditor } from './../textEditor';
 
 export class VisualMode extends Mode {
     /**

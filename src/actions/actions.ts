@@ -1,4 +1,4 @@
-import { ModeHandler, VimCommandActions, VimState } from './../mode/modeHandler';
+import { VimCommandActions, VimState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register } from './../register/register';
@@ -149,7 +149,7 @@ export class DeleteOperator extends BaseOperator {
           start = end;
           end = tmp;
 
-          end = new Position(end.line, end.character + 1)
+          end = new Position(end.line, end.character + 1);
         }
 
         // Imagine we have selected everything with an X in

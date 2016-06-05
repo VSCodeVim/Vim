@@ -1,20 +1,16 @@
 "use strict";
 
 import * as assert from 'assert';
-import {CommandKeyMap} from '../../src/configuration/commandKeyMap';
-import {ModeHandler} from '../../src/mode/modeHandler';
-import {setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from './../testUtils';
-import {VisualMode} from '../../src/mode/modeVisual';
-import {ModeName} from '../../src/mode/mode';
-import {Motion, MotionMode} from '../../src/motion/motion';
-import {TextEditor} from '../../src/textEditor';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
+import { ModeName } from '../../src/mode/mode';
+import { TextEditor } from '../../src/textEditor';
 
 suite("Mode Visual", () => {
     let modeHandler: ModeHandler;
 
     setup(async () => {
         await setupWorkspace();
-
         modeHandler = new ModeHandler();
     });
 
