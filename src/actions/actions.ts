@@ -821,12 +821,14 @@ class MovementAWordTextObject extends BaseMovement {
 
     let currentChar = TextEditor.getLineAt(position).text[position.character];
 
+    // TODO - this is a bad way to do this. we need some sort of global
+    // white space checking function.
     if (currentChar === ' ' || currentChar === '\t') {
       vimState.cursorStartPosition = position.getLastWordEnd();
       vimState.cursorPosition = position.getCurrentWordEnd();
     } else {
-      vimState.cursorStartPosition = position.getWordLeft();
-      vimState.cursorPosition = position.getWordRight();
+      vimState.cursorStartPosition = position.getWordLeft(true);
+      vimState.cursorPosition = position.getCurrentWordEnd(true);
     }
 
     return vimState;
@@ -849,10 +851,10 @@ class MovementIWordTextObject extends BaseMovement {
 
     if (currentChar === ' ' || currentChar === '\t') {
       vimState.cursorStartPosition = position.getLastWordEnd();
-      vimState.cursorPosition = position.getWordRight();
+      vimState.cursorPosition = position.getWordRight().getLeft();
     } else {
       vimState.cursorStartPosition = position.getWordLeft();
-      vimState.cursorPosition = position.getCurrentWordEnd();
+      vimState.cursorPosition = position.getWordRight().getLeft();
     }
 
     return vimState;
@@ -905,19 +907,6 @@ class ActionOutdent extends BaseAction {
     await vscode.commands.executeCommand("editor.action.outdentLines");
 
     return {};
-  }
-}
-
-
-
-
-@RegisterAction
-class ActionPaste {
-  modes = [ModeName.Normal];
-  key = "p";
-
-  public async execAction(position: Position): Promise<VimState> {
-    await new PutOperator(modeHandler).run(motion.position, null);
   }
 }
 */

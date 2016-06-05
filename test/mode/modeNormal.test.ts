@@ -215,12 +215,6 @@ suite("Mode Normal", () => {
         assertEqual(TextEditor.getSelection().start.character, 8, "$ column thing failed :()");
     });
 
-    /*
-
-    These tests don't pass because the functionality is broken!
-
-    TODO
-
     test("Can handle 'ciw'", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext text text'.split('')
@@ -258,6 +252,21 @@ suite("Mode Normal", () => {
 
         await modeHandler.handleMultipleKeyEvents([
             '<esc>',
+            '^', 'l', 'l', 'l', 'l', 'l', 'l',
+            'c', 'a', 'w'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 5, "caw is on wrong position");
+        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    });
+
+    test("Can handle 'caw' on first letter", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text text'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
             '^', 'l', 'l', 'l', 'l', 'l',
             'c', 'a', 'w'
         ]);
@@ -281,5 +290,4 @@ suite("Mode Normal", () => {
         assertEqual(TextEditor.getSelection().start.character, 4, "caw is on wrong position");
         await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
     });
-    */
 });
