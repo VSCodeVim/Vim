@@ -846,20 +846,30 @@ class MovementIWordTextObject extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   key = "iw";
 
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
+    const res = await this.execAction(position, vimState);
+
+    res.cursorPosition = res.cursorPosition.getRight();
+
+    return res;
+  }
+
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
       // TODO: This is kind of a bad way to do this.
       return new MoveWordBegin().execAction(position, vimState);
     }
 
-    let currentChar = TextEditor.getLineAt(position).text[position.character];
+    const currentChar = TextEditor.getLineAt(position).text[position.character];
 
+    // TODO - this is a bad way to do this. we need some sort of global
+    // white space checking function.
     if (currentChar === ' ' || currentChar === '\t') {
-      vimState.cursorStartPosition = position.getLastWordEnd();
+      vimState.cursorStartPosition = position.getLastWordEnd().getRight();
       vimState.cursorPosition = position.getWordRight().getLeft();
     } else {
-      vimState.cursorStartPosition = position.getWordLeft();
-      vimState.cursorPosition = position.getWordRight().getLeft();
+      vimState.cursorStartPosition = position.getWordLeft(true);
+      vimState.cursorPosition = position.getCurrentWordEnd(true);
     }
 
     return vimState;
