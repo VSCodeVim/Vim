@@ -55,3 +55,8 @@ function handleKeyEvent(key: string) : Promise<Boolean> {
 
     return modeHandler.handleKeyEvent(key);
 }
+
+process.on('unhandledRejection', function(reason, p){
+    console.log("Possibly Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    // application specific logging here
+});

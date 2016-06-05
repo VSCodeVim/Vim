@@ -1,7 +1,6 @@
 "use strict";
 
 import { ModeName, Mode } from './mode';
-import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
 import { ModeHandler } from './modeHandler.ts';
 
@@ -29,41 +28,9 @@ export class VisualMode extends Mode {
         this._selectionStop = p;
     }
 
-    constructor(motion: Motion, modeHandler: ModeHandler) {
-        super(ModeName.Visual, motion);
+    constructor(modeHandler: ModeHandler) {
+        super(ModeName.Visual);
 
         this._modeHandler = modeHandler;
-    }
-
-    public start(): void {
-        this._selectionStart = this.motion.position;
-        this._selectionStop  = this._selectionStart;
-
-        this.motion.select(this._selectionStart, this._selectionStop);
-    }
-
-    public async handleMotion(start: Position, position: Position): Promise<boolean> {
-        this._selectionStop = position;
-        this._selectionStart = start;
-        this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
-
-        /**
-         * Always select the letter that we started visual mode on, no matter
-         * if we are in front or behind it. Imagine that we started visual mode
-         * with some text like this:
-         *
-         *   abc|def
-         *
-         * (The | represents the cursor.) If we now press w, we'll select def,
-         * but if we hit b we expect to select abcd, so we need to getRight() on the
-         * start of the selection when it precedes where we started visual mode.
-         */
-        if (this._selectionStart.compareTo(this._selectionStop) <= 0) {
-            this.motion.select(this._selectionStart, this._selectionStop);
-        } else {
-            this.motion.select(this._selectionStart.getRight(), this._selectionStop);
-        }
-
-        return true;
     }
 }

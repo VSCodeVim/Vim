@@ -18,6 +18,10 @@ export class Position extends vscode.Position {
         this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
     }
 
+    public static FromVSCodePosition(pos: vscode.Position): Position {
+        return new Position(pos.line, pos.character);
+    }
+
     /**
      * Returns which of the 2 provided Positions comes earlier in the document.
      */
