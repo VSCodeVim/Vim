@@ -32,6 +32,15 @@ export class Position extends vscode.Position {
         return p2;
     }
 
+    /**
+     * Returns which of the 2 provided Positions comes later in the document.
+     */
+    public static LaterOf(p1: Position, p2: Position): Position {
+        if (Position.EarlierOf(p1, p2) === p1) { return p2; }
+
+        return p1;
+    }
+
     public setLocation(line: number, character: number) : Position {
         let position = new Position(line, character);
         return position;

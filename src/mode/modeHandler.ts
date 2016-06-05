@@ -6,6 +6,7 @@ import { Mode, ModeName } from './mode';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
+import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions,
     BaseOperator,
@@ -215,6 +216,7 @@ export class ModeHandler implements vscode.Disposable {
             new NormalMode(this),
             new InsertMode(),
             new VisualMode(this),
+            new VisualLineMode(),
         ];
 
         this.setCurrentModeByName(ModeName.Normal);
@@ -349,7 +351,8 @@ export class ModeHandler implements vscode.Disposable {
                     stop = stop.getLineEnd().getLeft();
                     this._vimState.cursorPosition = stop;
                 }
-            } else if (this.currentMode instanceof VisualMode) {
+            } else if (this.currentMode.name === ModeName.Visual ||
+                       this.currentMode.name === ModeName.VisualLine) {
                 if (stop.character >= Position.getLineLength(stop.line)) {
                     stop = stop.getLineEnd().getLeft();
                     this._vimState.cursorPosition = stop;
@@ -389,6 +392,10 @@ export class ModeHandler implements vscode.Disposable {
 
             if (this.currentMode.name === ModeName.Visual) {
                 vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
+            } else if (this.currentMode.name === ModeName.VisualLine) {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(
+                    Position.EarlierOf(start, stop).getLineBegin(),
+                    Position.LaterOf(start, stop).getLineEnd());
             } else {
                 vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
             }
@@ -436,6 +443,11 @@ export class ModeHandler implements vscode.Disposable {
                 } else {
                     start = start.getLeft();
                 }
+            }
+
+            if (this.currentModeName === ModeName.VisualLine) {
+                start = Position.EarlierOf(start, stop).getLineBegin();
+                stop = Position.LaterOf(start, stop).getLineEnd();
             }
 
             return await actionState.operator.run(this._vimState, start, stop);
