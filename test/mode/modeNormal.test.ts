@@ -240,6 +240,20 @@ suite("Mode Normal", () => {
         await assert.equal(modeHandler.currentMode.name === ModeName.Insert, true, "didn't enter insert mode");
     });
 
+    test("Can handle 's'", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '^', 's', 'k',
+        ]);
+
+        await assertEqualLines(["kext"]);
+        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    });
+
     test("Retain same column when moving up/down", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext text\ntext\ntext text'.split('')
