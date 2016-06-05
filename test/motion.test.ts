@@ -2,12 +2,11 @@
 
 import * as assert from 'assert';
 import * as vscode from "vscode";
-import {TextEditor} from './../src/textEditor';
-import {Motion, MotionMode} from './../src/motion/motion';
-import {setupWorkspace, cleanUpWorkspace} from './testUtils';
+import { TextEditor } from './../src/textEditor';
+import { Position } from './../src/motion/position';
+import { setupWorkspace, cleanUpWorkspace } from './testUtils';
 
-suite("motion", () => {
-    let motionModes = [MotionMode.Caret, MotionMode.Cursor];
+suite("old motion tests", () => {
     let text: string[] = [
         "mary had",
         "a",
@@ -23,167 +22,123 @@ suite("motion", () => {
     suiteTeardown(cleanUpWorkspace);
 
     test("char right: should move one column right", () => {
-        for (let o of motionModes) {
-            let motion = new Motion(o).moveTo(0, 0);
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 0);
+            let position = new Position(0, 0);
+            assert.equal(position.line, 0);
+            assert.equal(position.character, 0);
 
-            let next = motion.right().move();
-            assert.equal(next.position.line, 0);
-            assert.equal(next.position.character, 1);
-
-            let curPos = vscode.window.activeTextEditor.selection.active;
-            assert.equal(next.position.line, curPos.line);
-            assert.equal(next.position.character, curPos.character);
-        };
+            let next = position.getRight();
+            assert.equal(next.line, 0);
+            assert.equal(next.character, 1);
     });
 
     test("char right", () => {
-        let motion = new Motion(MotionMode.Cursor);
-        motion = motion.moveTo(0, 9).right();
+        let motion = new Position(0, 9)
+        motion = motion.getRight();
 
-        assert.equal(motion.position.line, 0);
-        assert.equal(motion.position.character, 9);
+        assert.equal(motion.line, 0);
+        assert.equal(motion.character, 9);
     });
 
     test("char left: should move cursor one column left", () => {
-        motionModes.forEach(o => {
-            let motion = new Motion(o).moveTo(0, 5);
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 5);
+        let position = new Position(0, 5);
+        assert.equal(position.line, 0);
+        assert.equal(position.character, 5);
 
-            motion = motion.left().move();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 4);
-
-            let curPos = vscode.window.activeTextEditor.selection.active;
-            assert.equal(motion.position.line, curPos.line);
-            assert.equal(motion.position.character, curPos.character);
-        });
+        position = position.getLeft();
+        assert.equal(position.line, 0);
+        assert.equal(position.character, 4);
     });
 
     test("char left: left-most column should stay at the same location", () => {
-        motionModes.forEach(o => {
-            let motion = new Motion(o).moveTo(0, 0);
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 0);
+        let motion = new Position(0, 0);
+        assert.equal(motion.line, 0);
+        assert.equal(motion.character, 0);
 
-            motion = motion.left().move();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 0);
-
-            let curPos = vscode.window.activeTextEditor.selection.active;
-            assert.equal(motion.position.line, curPos.line);
-            assert.equal(motion.position.character, curPos.character);
-        });
+        motion = motion.getLeft();
+        assert.equal(motion.line, 0);
+        assert.equal(motion.character, 0);
     });
 
     test("line down: should move cursor one line down", () => {
-        motionModes.forEach(o => {
-            let motion = new Motion(o).moveTo(1, 0);
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 0);
+        let motion = new Position(1, 0);
+        assert.equal(motion.line, 1);
+        assert.equal(motion.character, 0);
 
-            motion = motion.down().move();
-            assert.equal(motion.position.line, 2);
-            assert.equal(motion.position.character, 0);
-
-            let curPos = vscode.window.activeTextEditor.selection.active;
-            assert.equal(motion.position.line, curPos.line);
-            assert.equal(motion.position.character, curPos.character);
-        });
+        motion = motion.getDown(0);
+        assert.equal(motion.line, 2);
+        assert.equal(motion.character, 0);
     });
 
     test("line down: bottom-most line should stay at the same location", () => {
-        motionModes.forEach(o => {
-            let motion = new Motion(o).moveTo(3, 0);
-            assert.equal(motion.position.line, 3);
-            assert.equal(motion.position.character, 0);
+        let motion = new Position(3, 0);
+        assert.equal(motion.line, 3);
+        assert.equal(motion.character, 0);
 
-            motion = motion.down().move();
-            assert.equal(motion.position.line, 3);
-            assert.equal(motion.position.character, 0);
-
-            let curPos = vscode.window.activeTextEditor.selection.active;
-            assert.equal(motion.position.line, curPos.line);
-            assert.equal(motion.position.character, curPos.character);
-        });
+        motion = motion.getDown(3);
+        assert.equal(motion.line, 3);
+        assert.equal(motion.character, 0);
     });
 
     suite("line up", () => {
-        motionModes.forEach(o => {
-            test("should move cursor one line up", () => {
-                let motion = new Motion(o).moveTo(1, 0);
-                assert.equal(motion.position.line, 1);
-                assert.equal(motion.position.character, 0);
+          test("should move cursor one line up", () => {
+              let position = new Position(1, 0);
+              assert.equal(position.line, 1);
+              assert.equal(position.character, 0);
 
-                motion = motion.up().move();
-                assert.equal(motion.position.line, 0);
-                assert.equal(motion.position.character, 0);
+              position = position.getUp(0);
+              assert.equal(position.line, 0);
+              assert.equal(position.character, 0);
+          });
 
-                let curPos = vscode.window.activeTextEditor.selection.active;
-                assert.equal(motion.position.line, curPos.line);
-                assert.equal(motion.position.character, curPos.character);
-            });
+          test("top-most line should stay at the same location", () => {
+              let motion = new Position(0, 1);
+              assert.equal(motion.line, 0);
+              assert.equal(motion.character, 1);
 
-            test("top-most line should stay at the same location", () => {
-                let motion = new Motion(o).moveTo(0, 1);
-                assert.equal(motion.position.line, 0);
-                assert.equal(motion.position.character, 1);
-
-                motion = motion.up().move();
-                assert.equal(motion.position.line, 0);
-                assert.equal(motion.position.character, 1);
-
-                let curPos = vscode.window.activeTextEditor.selection.active;
-                assert.equal(motion.position.line, curPos.line);
-                assert.equal(motion.position.character, curPos.character);
-            });
-        });
+              motion = motion.getUp(0);
+              assert.equal(motion.line, 0);
+              assert.equal(motion.character, 1);
+          });
     });
 
     test("line begin", () => {
-        motionModes.forEach(o => {
-            let motion = new Motion(o).moveTo(0, 3).lineBegin();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 0);
-        });
+            let motion = new Position(0, 3).getLineBegin();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 0);
     });
 
     test("line end", () => {
-        let motion = new Motion(MotionMode.Cursor).moveTo(0, 0).lineEnd();
-        assert.equal(motion.position.line, 0);
-        assert.equal(motion.position.character, text[0].length);
+        let motion = new Position(0, 0).getLineEnd();
+        assert.equal(motion.line, 0);
+        assert.equal(motion.character, text[0].length);
 
-        motion = motion.moveTo(2, 0).lineEnd();
-        assert.equal(motion.position.line, 2);
-        assert.equal(motion.position.character, text[2].length);
+        motion = new Position(2, 0).getLineEnd();
+        assert.equal(motion.line, 2);
+        assert.equal(motion.character, text[2].length);
     });
 
     test("document begin", () => {
-        motionModes.forEach(o => {
-            let motion = new Motion(o).moveTo(1, 0).documentBegin();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 0);
-        });
+            let motion = new Position(1, 0).getDocumentBegin();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 0);
     });
 
     test("document end", () => {
-        let motion = new Motion(MotionMode.Cursor).moveTo(0, 0).documentEnd();
-        assert.equal(motion.position.line, text.length - 1);
-        assert.equal(motion.position.character, text[text.length - 1].length);
+        let motion = new Position(0, 0).getDocumentEnd();
+        assert.equal(motion.line, text.length - 1);
+        assert.equal(motion.character, text[text.length - 1].length);
     });
 
     test("line begin cursor on first non-blank character", () => {
-        let motion = new Motion(MotionMode.Caret).moveTo(3, 3).firstLineNonBlankChar();
-        assert.equal(motion.position.line, 0);
-        assert.equal(motion.position.character, 0);
+        let motion = new Position(0, 3).getFirstLineNonBlankChar();
+        assert.equal(motion.line, 0);
+        assert.equal(motion.character, 0);
     });
 
     test("last line begin cursor on first non-blank character", () => {
-        let motion = new Motion(MotionMode.Caret).moveTo(0, 0).lastLineNonBlankChar();
-        assert.equal(motion.position.line, 3);
-        assert.equal(motion.position.character, 1);
+        let motion = new Position(3, 0).getFirstLineNonBlankChar();
+        assert.equal(motion.line, 3);
+        assert.equal(motion.character, 1);
     });
 });
 
@@ -208,201 +163,201 @@ suite("word motion", () => {
 
     suite("word right", () => {
         test("move to word right", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 3).wordRight();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 4);
+            let motion = new Position(0, 3).getWordRight();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 4);
         });
 
         test("last word should move to next line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 10).wordRight();
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 2);
+            let motion = new Position(0, 10).getWordRight();
+            assert.equal(motion.line, 1);
+            assert.equal(motion.character, 2);
         });
 
         test("last word should move to next line stops on empty line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(2, 7).wordRight();
-            assert.equal(motion.position.line, 3);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(2, 7).getWordRight();
+            assert.equal(motion.line, 3);
+            assert.equal(motion.character, 0);
         });
 
         test("last word should move to next line skips whitespace only line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(4, 14).wordRight();
-            assert.equal(motion.position.line, 6);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(4, 14).getWordRight();
+            assert.equal(motion.line, 6);
+            assert.equal(motion.character, 0);
         });
 
         test("last word on last line should go to end of document (special case!)", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(6, 6).wordRight();
-            assert.equal(motion.position.line, 6);
-            assert.equal(motion.position.character, 10);
+            let motion = new Position(6, 6).getWordRight();
+            assert.equal(motion.line, 6);
+            assert.equal(motion.character, 10);
         });
 
     });
 
     suite("word left", () => {
         test("move cursor word left across spaces", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 3).wordLeft();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(0, 3).getWordLeft();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 0);
         });
 
         test("move cursor word left within word", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 5).wordLeft();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 4);
+            let motion = new Position(0, 5).getWordLeft();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 4);
         });
 
         test("first word should move to previous line, beginning of last word", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(1, 2).wordLeft();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 10);
+            let motion = new Position(1, 2).getWordLeft();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 10);
         });
 
         test("first word should move to previous line, stops on empty line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(4, 2).wordLeft();
-            assert.equal(motion.position.line, 3);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(4, 2).getWordLeft();
+            assert.equal(motion.line, 3);
+            assert.equal(motion.character, 0);
         });
 
         test("first word should move to previous line, skips whitespace only line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(6, 0).wordLeft();
-            assert.equal(motion.position.line, 4);
-            assert.equal(motion.position.character, 14);
+            let motion = new Position(6, 0).getWordLeft();
+            assert.equal(motion.line, 4);
+            assert.equal(motion.character, 14);
         });
     });
 
     suite("WORD right", () => {
         test("move to WORD right", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 3).bigWordRight();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 10);
+            let motion = new Position(0, 3).getBigWordRight();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 10);
         });
 
         test("last WORD should move to next line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(1, 10).bigWordRight();
-            assert.equal(motion.position.line, 2);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(1, 10).getBigWordRight();
+            assert.equal(motion.line, 2);
+            assert.equal(motion.character, 0);
         });
 
         test("last WORD should move to next line stops on empty line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(2, 7).bigWordRight();
-            assert.equal(motion.position.line, 3);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(2, 7).getBigWordRight();
+            assert.equal(motion.line, 3);
+            assert.equal(motion.character, 0);
         });
 
         test("last WORD should move to next line skips whitespace only line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(4, 12).bigWordRight();
-            assert.equal(motion.position.line, 6);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(4, 12).getBigWordRight();
+            assert.equal(motion.line, 6);
+            assert.equal(motion.character, 0);
         });
     });
 
     suite("WORD left", () => {
         test("move cursor WORD left across spaces", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 3).bigWordLeft();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(0, 3).getBigWordLeft();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 0);
         });
 
         test("move cursor WORD left within WORD", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 5).bigWordLeft();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 3);
+            let motion = new Position(0, 5).getBigWordLeft();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 3);
         });
 
         test("first WORD should move to previous line, beginning of last WORD", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(2, 0).bigWordLeft();
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 9);
+            let motion = new Position(2, 0).getBigWordLeft();
+            assert.equal(motion.line, 1);
+            assert.equal(motion.character, 9);
         });
 
         test("first WORD should move to previous line, stops on empty line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(4, 2).bigWordLeft();
-            assert.equal(motion.position.line, 3);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(4, 2).getBigWordLeft();
+            assert.equal(motion.line, 3);
+            assert.equal(motion.character, 0);
         });
 
         test("first WORD should move to previous line, skips whitespace only line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(6, 0).bigWordLeft();
-            assert.equal(motion.position.line, 4);
-            assert.equal(motion.position.character, 9);
+            let motion = new Position(6, 0).getBigWordLeft();
+            assert.equal(motion.line, 4);
+            assert.equal(motion.character, 9);
         });
     });
 
     suite("end of word right", () => {
         test("move to end of current word right", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 4).goToEndOfCurrentWord();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 7);
+            let motion = new Position(0, 4).getCurrentWordEnd();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 7);
         });
 
         test("move to end of next word right", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 7).goToEndOfCurrentWord();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 8);
+            let motion = new Position(0, 7).getCurrentWordEnd();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 8);
         });
 
         test("end of last word should move to next line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 10).goToEndOfCurrentWord();
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 7);
+            let motion = new Position(0, 10).getCurrentWordEnd();
+            assert.equal(motion.line, 1);
+            assert.equal(motion.character, 7);
         });
 
         test("end of last word should move to next line skips empty line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(2, 7).goToEndOfCurrentWord();
-            assert.equal(motion.position.line, 4);
-            assert.equal(motion.position.character, 7);
+            let motion = new Position(2, 7).getCurrentWordEnd();
+            assert.equal(motion.line, 4);
+            assert.equal(motion.character, 7);
         });
 
         test("end of last word should move to next line skips whitespace only line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(4, 14).goToEndOfCurrentWord();
-            assert.equal(motion.position.line, 6);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(4, 14).getCurrentWordEnd();
+            assert.equal(motion.line, 6);
+            assert.equal(motion.character, 0);
         });
     });
 
     suite("end of WORD right", () => {
         test("move to end of current WORD right", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 4).goToEndOfCurrentBigWord();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 8);
+            let motion = new Position(0, 4).getCurrentBigWordEnd();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 8);
         });
 
         test("move to end of next WORD right", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 8).goToEndOfCurrentBigWord();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 10);
+            let motion = new Position(0, 8).getCurrentBigWordEnd();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 10);
         });
 
         test("end of last WORD should move to next line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 10).goToEndOfCurrentBigWord();
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 7);
+            let motion = new Position(0, 10).getCurrentBigWordEnd();
+            assert.equal(motion.line, 1);
+            assert.equal(motion.character, 7);
         });
 
         test("end of last WORD should move to next line skips empty line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(2, 7).goToEndOfCurrentWord();
-            assert.equal(motion.position.line, 4);
-            assert.equal(motion.position.character, 7);
+            let motion = new Position(2, 7).getCurrentBigWordEnd();
+            assert.equal(motion.line, 4);
+            assert.equal(motion.character, 7);
         });
 
         test("end of last WORD should move to next line skips whitespace only line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(4, 14).goToEndOfCurrentWord();
-            assert.equal(motion.position.line, 6);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(4, 14).getCurrentBigWordEnd();
+            assert.equal(motion.line, 6);
+            assert.equal(motion.character, 0);
         });
     });
 
     test("line begin cursor on first non-blank character", () => {
-        let motion = new Motion(MotionMode.Caret).moveTo(4, 3).firstLineNonBlankChar();
-        assert.equal(motion.position.line, 0);
-        assert.equal(motion.position.character, 0);
+        let motion = new Position(4, 3).getFirstLineNonBlankChar();
+        assert.equal(motion.line, 4);
+        assert.equal(motion.character, 2);
     });
 
     test("last line begin cursor on first non-blank character", () => {
-        let motion = new Motion(MotionMode.Caret).moveTo(0, 0).lastLineNonBlankChar();
-        assert.equal(motion.position.line, 6);
-        assert.equal(motion.position.character, 0);
+        let motion = new Position(6, 0).getFirstLineNonBlankChar();
+        assert.equal(motion.line, 6);
+        assert.equal(motion.character, 0);
     });
 });
 
@@ -430,47 +385,47 @@ suite("paragraph motion", () => {
 
     suite("paragraph down", () => {
         test("move down normally", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(0, 0).goToEndOfCurrentParagraph();
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(0, 0).getCurrentParagraphEnd();
+            assert.equal(motion.line, 1);
+            assert.equal(motion.character, 0);
         });
 
         test("move down longer paragraph", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(2, 0).goToEndOfCurrentParagraph();
-            assert.equal(motion.position.line, 4);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(2, 0).getCurrentParagraphEnd();
+            assert.equal(motion.line, 4);
+            assert.equal(motion.character, 0);
         });
 
         test("move down starting inside empty line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(4, 0).goToEndOfCurrentParagraph();
-            assert.equal(motion.position.line, 7);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(4, 0).getCurrentParagraphEnd();
+            assert.equal(motion.line, 7);
+            assert.equal(motion.character, 0);
         });
 
         test("paragraph at end of document", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(7, 0).goToEndOfCurrentParagraph();
-            assert.equal(motion.position.line, 8);
-            assert.equal(motion.position.character, 3);
+            let motion = new Position(7, 0).getCurrentParagraphEnd();
+            assert.equal(motion.line, 8);
+            assert.equal(motion.character, 3);
         });
     });
 
     suite("paragraph up", () => {
         test("move up short paragraph", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(1, 0).goToBeginningOfCurrentParagraph();
-            assert.equal(motion.position.line, 0);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(1, 0).getCurrentParagraphBeginning();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 0);
         });
 
         test("move up longer paragraph", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(3, 0).goToBeginningOfCurrentParagraph();
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(3, 0).getCurrentParagraphBeginning();
+            assert.equal(motion.line, 1);
+            assert.equal(motion.character, 0);
         });
 
         test("move up starting inside empty line", () => {
-            let motion = new Motion(MotionMode.Caret).moveTo(5, 0).goToBeginningOfCurrentParagraph();
-            assert.equal(motion.position.line, 1);
-            assert.equal(motion.position.character, 0);
+            let motion = new Position(5, 0).getCurrentParagraphBeginning();
+            assert.equal(motion.line, 1);
+            assert.equal(motion.character, 0);
         });
     });
 });
