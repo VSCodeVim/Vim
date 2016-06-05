@@ -182,18 +182,11 @@ export class ActionState {
 }
 
 export class ModeHandler implements vscode.Disposable {
-    private __motion: Motion;
+    private _motion: Motion;
     private _modes: Mode[];
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
     private _vimState: VimState;
-
-    private get _motion(): Motion {
-        return this.__motion;
-    }
-    private set _motion(m: Motion) {
-        this.__motion = m;
-    }
 
     private get currentModeName(): ModeName {
         return this.currentMode.name;
@@ -367,6 +360,8 @@ export class ModeHandler implements vscode.Disposable {
 
                 return;
             }
+
+            // TODO: Draw cursor and/or selection.
 
             // Updated desired column
 
