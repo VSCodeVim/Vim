@@ -1,3 +1,5 @@
+You're thinking about adding a feature to VSCodeVim? That's awesome! Here's a basic guide to get you started. Feel free to drop by [our slack channel](https://vscodevim.slack.com/messages/general/) if you want to ask us questions directly.
+
 ### First time setup
 
 1. Clone the repository: `git clone https://github.com/VSCodeVim/Vim.git`
