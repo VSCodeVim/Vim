@@ -3,7 +3,6 @@
 import * as vscode from 'vscode';
 
 import { Mode, ModeName } from './mode';
-import { Motion, MotionMode } from './../motion/motion';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
@@ -182,7 +181,6 @@ export class ActionState {
 }
 
 export class ModeHandler implements vscode.Disposable {
-    private _motion: Motion;
     private _modes: Mode[];
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
@@ -212,12 +210,11 @@ export class ModeHandler implements vscode.Disposable {
     constructor() {
         this._configuration = Configuration.fromUserFile();
 
-        this._motion = new Motion(null);
         this._vimState = new VimState();
         this._modes = [
-            new NormalMode(this._motion, this),
-            new InsertMode(this._motion),
-            new VisualMode(this._motion, this),
+            new NormalMode(this),
+            new InsertMode(),
+            new VisualMode(this),
         ];
 
         this.setCurrentModeByName(ModeName.Normal);
@@ -267,13 +264,15 @@ export class ModeHandler implements vscode.Disposable {
         let action = Actions.getRelevantAction(actionState.keysPressed.join(""), this._vimState);
 
         if (action === KeypressState.NoPossibleMatch) {
-            // TODO: Slightly janky, for reasons that are hard to describe.
-
             if (this.currentModeName === ModeName.Insert) {
                 await (this.currentMode as any).handleAction(actionState);
                 this._vimState.actionState = new ActionState(this._vimState);
 
-                this._vimState.cursorPosition = this._motion.position.getRight();
+                // TODO: Forcing a return here and handling this case is pretty janky when you
+                // could just allow this to pass through the post processing down below anyways.
+
+                this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+                this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
                 return true;
             } else {
@@ -463,10 +462,6 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            if (!start || !stop) {
-                debugger;
-            }
-
             return await actionState.operator.run(this._vimState, start, stop);
         } else {
             return newState;
@@ -491,6 +486,5 @@ export class ModeHandler implements vscode.Disposable {
     dispose() {
         this._statusBarItem.hide();
         this._statusBarItem.dispose();
-        this._motion.dispose();
     }
 }

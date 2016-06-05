@@ -1,7 +1,6 @@
 "use strict";
 
 import { ModeName, Mode } from './mode';
-import { Motion} from './../motion/motion';
 import { Position } from './../motion/position';
 import { ModeHandler } from './modeHandler.ts';
 
@@ -29,25 +28,9 @@ export class VisualMode extends Mode {
         this._selectionStop = p;
     }
 
-    constructor(motion: Motion, modeHandler: ModeHandler) {
-        super(ModeName.Visual, motion);
+    constructor(modeHandler: ModeHandler) {
+        super(ModeName.Visual);
 
         this._modeHandler = modeHandler;
-    }
-
-    public start(): void {
-        this._selectionStart = this.motion.position;
-        this._selectionStop  = this._selectionStart;
-
-        this.motion.select(this._selectionStart, this._selectionStop);
-    }
-
-    public async handleMotion(start: Position, position: Position): Promise<boolean> {
-        this._selectionStop = position;
-        this._selectionStart = start;
-        this.motion.moveTo(this._selectionStart.line, this._selectionStart.character);
-
-
-        return true;
     }
 }
