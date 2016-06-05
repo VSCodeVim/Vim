@@ -1,10 +1,10 @@
 "use strict";
 
 import * as assert from 'assert';
-import {setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from './../testUtils';
-import {ModeName} from '../../src/mode/mode';
-import {TextEditor} from '../../src/textEditor';
-import {ModeHandler} from '../../src/mode/modeHandler';
+import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
+import { ModeName } from '../../src/mode/mode';
+import { TextEditor } from '../../src/textEditor';
+import { ModeHandler } from '../../src/mode/modeHandler';
 
 suite("Mode Normal", () => {
 
@@ -98,6 +98,22 @@ suite("Mode Normal", () => {
         await assertEqualLines(["t"]);
     });
 
+    test("Can handle 'dl' at end of line", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'iblah'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '$',
+            'd', 'l',
+            'd', 'l',
+            'd', 'l',
+        ]);
+
+        await assertEqualLines(["b"]);
+    });
+
     test("Can handle 'D'", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext'.split('')
@@ -123,6 +139,28 @@ suite("Mode Normal", () => {
         await modeHandler.handleMultipleKeyEvents(['<esc>', '$', 'g', 'e']);
 
         assertEqual(TextEditor.getSelection().start.character, 3, "ge failed");
+    });
+
+    test("Can handle 'gg'", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext\ntext\ntext'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents(['<esc>', '$', 'j', 'k', 'j', 'g', 'g']);
+
+        assertEqual(TextEditor.getSelection().start.character, 0, "gg failed");
+        assertEqual(TextEditor.getSelection().start.line, 0, "gg failed");
+    });
+
+    test("Can handle x at end of line", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'l', 'l',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'
+        ]);
+
+        assertEqualLines([""]);
     });
 
     test("Can handle 'C'", async () => {
@@ -151,9 +189,31 @@ suite("Mode Normal", () => {
         await assert.equal(modeHandler.currentMode.name === ModeName.Insert, true, "didn't enter insert mode");
     });
 
-    /*
+    test("Retain same column when moving up/down", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text\ntext\ntext text'.split('')
+        );
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            'k', 'k'
+        ]);
 
-    These tests don't pass because the functionality is broken!
+        assertEqual(TextEditor.getSelection().start.character, 8, "same column failed");
+    });
+
+    test("$ always keeps cursor on EOL", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text\ntext\ntext text'.split('')
+        );
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            'g', 'g',
+            '$',
+            'j', 'j'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 8, "$ column thing failed :()");
+    });
 
     test("Can handle 'ciw'", async () => {
         await modeHandler.handleMultipleKeyEvents(
@@ -192,6 +252,21 @@ suite("Mode Normal", () => {
 
         await modeHandler.handleMultipleKeyEvents([
             '<esc>',
+            '^', 'l', 'l', 'l', 'l', 'l', 'l',
+            'c', 'a', 'w'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 5, "caw is on wrong position");
+        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    });
+
+    test("Can handle 'caw' on first letter", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text text'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
             '^', 'l', 'l', 'l', 'l', 'l',
             'c', 'a', 'w'
         ]);
@@ -202,7 +277,7 @@ suite("Mode Normal", () => {
 
     test("Can handle 'caw' on blanks", async () => {
         await modeHandler.handleMultipleKeyEvents(
-            'itext   text text'.split('')
+            'itext   text'.split('')
         );
 
         await modeHandler.handleMultipleKeyEvents([
@@ -212,8 +287,7 @@ suite("Mode Normal", () => {
         ]);
 
         await assertEqualLines(["text"]);
-        assertEqual(TextEditor.getSelection().start.character, 4, "caw is on wrong position");
+        assertEqual(TextEditor.getSelection().start.character, 3, "caw is on wrong position");
         await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
     });
-    */
 });

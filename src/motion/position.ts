@@ -2,12 +2,7 @@
 
 import * as _ from "lodash";
 import * as vscode from "vscode";
-import {TextEditor} from "./../textEditor";
-
-export enum PositionOptions {
-    CharacterWiseInclusive,
-    CharacterWiseExclusive,
-}
+import { TextEditor } from "./../textEditor";
 
 export class Position extends vscode.Position {
     private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
@@ -16,33 +11,54 @@ export class Position extends vscode.Position {
     private _nonWordCharRegex : RegExp;
     private _nonBigWordCharRegex : RegExp;
 
-    public positionOptions: PositionOptions = null;
-
-    constructor(line: number, character: number, options: PositionOptions) {
+    constructor(line: number, character: number) {
         super(line, character);
-
-        this.positionOptions = options;
 
         this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
         this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
     }
 
+    /**
+     * Returns which of the 2 provided Positions comes earlier in the document.
+     */
+    public static EarlierOf(p1: Position, p2: Position): Position {
+        if (p1.line < p2.line) { return p1; }
+        if (p1.line === p2.line && p1.character < p2.character) { return p1; }
+
+        return p2;
+    }
+
     public setLocation(line: number, character: number) : Position {
-        let position = new Position(line, character, this.positionOptions);
+        let position = new Position(line, character);
         return position;
     }
 
     public getLeft() : Position {
         if (!this.isLineBeginning()) {
-            return new Position(this.line, this.character - 1, this.positionOptions);
+            return new Position(this.line, this.character - 1);
         }
 
         return this;
     }
 
+    /**
+     * Same as getLeft, but goes up to the previous line on line
+     * breaks.
+     *
+     * Equivalent to left arrow (in a non-vim editor!)
+     */
+    public getLeftThroughLineBreaks(): Position {
+        if (!this.isLineBeginning()) {
+            return this.getLeft();
+        }
+
+        return new Position(this.line - 1, 0)
+            .getLineEnd();
+    }
+
     public getRight() : Position {
         if (!this.isLineEnd()) {
-            return new Position(this.line, this.character + 1, this.positionOptions);
+            return new Position(this.line, this.character + 1);
         }
 
         return this;
@@ -54,9 +70,9 @@ export class Position extends vscode.Position {
     public getDown(desiredColumn: number) : Position {
         if (this.getDocumentEnd().line !== this.line) {
             let nextLine = this.line + 1;
-            let nextLineLength = Position.getLineLength(nextLine, this.positionOptions);
+            let nextLineLength = Position.getLineLength(nextLine);
 
-            return new Position(nextLine, Math.min(nextLineLength, desiredColumn), this.positionOptions);
+            return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
         }
 
         return this;
@@ -68,24 +84,30 @@ export class Position extends vscode.Position {
     public getUp(desiredColumn: number) : Position {
         if (this.getDocumentBegin().line !== this.line) {
             let prevLine = this.line - 1;
-            let prevLineLength  = Position.getLineLength(prevLine, this.positionOptions);
+            let prevLineLength  = Position.getLineLength(prevLine);
 
-            return new Position(prevLine, Math.min(prevLineLength, desiredColumn), this.positionOptions);
+            return new Position(prevLine, Math.min(prevLineLength, desiredColumn));
         }
 
         return this;
     }
 
-    public getWordLeft() : Position {
-        return this.getWordLeftWithRegex(this._nonWordCharRegex);
+    /**
+     * Inclusive is true if we consider the current position a valid result, false otherwise.
+     */
+    public getWordLeft(inclusive: boolean = false): Position {
+        return this.getWordLeftWithRegex(this._nonWordCharRegex, inclusive);
     }
 
-    public getBigWordLeft() : Position {
+    public getBigWordLeft(): Position {
         return this.getWordLeftWithRegex(this._nonBigWordCharRegex);
     }
 
-    public getWordRight() : Position {
-        return this.getWordRightWithRegex(this._nonWordCharRegex);
+    /**
+     * Inclusive is true if we consider the current position a valid result, false otherwise.
+     */
+    public getWordRight(inclusive: boolean = false) : Position {
+        return this.getWordRightWithRegex(this._nonWordCharRegex, inclusive);
     }
 
     public getBigWordRight() : Position {
@@ -100,12 +122,18 @@ export class Position extends vscode.Position {
         return this.getLastWordEndWithRegex(this._nonBigWordCharRegex);
     }
 
-    public getCurrentWordEnd(): Position {
-        return this.getCurrentWordEndWithRegex(this._nonWordCharRegex);
+    /**
+     * Inclusive is true if we consider the current position a valid result, false otherwise.
+     */
+    public getCurrentWordEnd(inclusive: boolean = false): Position {
+        return this.getCurrentWordEndWithRegex(this._nonWordCharRegex, inclusive);
     }
 
-    public getCurrentBigWordEnd(): Position {
-        return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex);
+    /**
+     * Inclusive is true if we consider the current position a valid result, false otherwise.
+     */
+    public getCurrentBigWordEnd(inclusive: boolean = false): Position {
+        return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex, inclusive);
     }
 
     /**
@@ -147,26 +175,26 @@ export class Position extends vscode.Position {
     }
 
     public getLineBegin() : Position {
-        return new Position(this.line, 0, this.positionOptions);
+        return new Position(this.line, 0);
     }
 
     /**
      * Returns a new position at the end of this position's line.
      */
     public getLineEnd() : Position {
-        return new Position(this.line, Position.getLineLength(this.line, this.positionOptions), this.positionOptions);
+        return new Position(this.line, Position.getLineLength(this.line));
     }
 
     public getDocumentBegin() : Position {
-        return new Position(0, 0, this.positionOptions);
+        return new Position(0, 0);
     }
 
     public getDocumentEnd() : Position {
         let lineCount = TextEditor.getLineCount();
         let line = lineCount > 0 ? lineCount - 1 : 0;
-        let char = Position.getLineLength(line, this.positionOptions);
+        let char = Position.getLineLength(line);
 
-        return new Position(line, char, this.positionOptions);
+        return new Position(line, char);
     }
 
     public isValid() : boolean {
@@ -177,13 +205,8 @@ export class Position extends vscode.Position {
         }
 
         // char
-        let charCount = Position.getLineLength(this.line, this.positionOptions);
-        if (this.character > charCount) {
-            return false;
-        }
-
-        // options
-        if (this.positionOptions === null) {
+        let charCount = Position.getLineLength(this.line);
+        if (this.character > charCount + 1) {
             return false;
         }
 
@@ -200,27 +223,28 @@ export class Position extends vscode.Position {
     /**
      * Is this position at the end of the line?
      */
-    public isLineEnd() : boolean {
-        return this.character === Position.getLineLength(this.line, this.positionOptions);
+    public isLineEnd(): boolean {
+        return this.character >= Position.getLineLength(this.line);
+    }
+
+    public isAtDocumentEnd(): boolean {
+        return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
     }
 
     public static getFirstNonBlankCharAtLine(line: number): number {
         return TextEditor.readLineAt(line).match(/^\s*/)[0].length;
     }
 
-    private static getLineLength(line: number, options: PositionOptions) : number {
-        switch (options) {
-            case PositionOptions.CharacterWiseExclusive:
-                // Valid Positions for Caret: [0, eol)
-                var len = TextEditor.readLineAt(line).length;
-                return len > 0 ? len - 1 : len;
-            case PositionOptions.CharacterWiseInclusive:
-                // Valid Positions for Caret: [0, eol]
-                return TextEditor.readLineAt(line).length;
+    public getFirstLineNonBlankChar(): Position {
+        return new Position(this.line, Position.getFirstNonBlankCharAtLine(this.line));
+    }
 
-            default:
-                throw new Error("Unhandled PositionOptions: " + options);
-        }
+    public getDocumentStart(): Position {
+        return new Position(0, 0);
+    }
+
+    public static getLineLength(line: number) : number {
+        return TextEditor.readLineAt(line).length;
     }
 
     private makeWordRegex(characterSet: string) : RegExp {
@@ -268,30 +292,40 @@ export class Position extends vscode.Position {
         return positions;
     }
 
-    private getWordLeftWithRegex(regex: RegExp) : Position {
+    /**
+     * Inclusive is true if we consider the current position a valid result, false otherwise.
+     */
+    private getWordLeftWithRegex(regex: RegExp, inclusive: boolean = false): Position {
         for (let currentLine = this.line; currentLine >= 0; currentLine--) {
             let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
-            let newCharacter = _.find(positions.reverse(), index => index < this.character || currentLine !== this.line);
+            let newCharacter = _.find(positions.reverse(),
+                index => ((index <  this.character && !inclusive)  ||
+                          (index <= this.character &&  inclusive)) || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
-                return new Position(currentLine, newCharacter, this.positionOptions);
+                return new Position(currentLine, newCharacter);
             }
         }
 
-        return new Position(0, 0, this.positionOptions).getLineBegin();
+        return new Position(0, 0).getLineBegin();
     }
 
-    private getWordRightWithRegex(regex: RegExp): Position {
+    /**
+     * Inclusive is true if we consider the current position a valid result, false otherwise.
+     */
+    private getWordRightWithRegex(regex: RegExp, inclusive: boolean = false): Position {
         for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
             let positions    = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
-            let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
+            let newCharacter = _.find(positions,
+                index => ((index >  this.character && !inclusive)  ||
+                          (index >= this.character &&  inclusive)) || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
-                return new Position(currentLine, newCharacter, this.positionOptions);
+                return new Position(currentLine, newCharacter);
             }
         }
 
-        return new Position(TextEditor.getLineCount() - 1, 0, this.positionOptions).getLineEnd();
+        return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
     }
 
     private getLastWordEndWithRegex(regex: RegExp) : Position {
@@ -306,29 +340,28 @@ export class Position extends vscode.Position {
             }
 
             if (newCharacter !== undefined) {
-                if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
-                    newCharacter++;
-                }
-                return new Position(currentLine, newCharacter, this.positionOptions);
+                return new Position(currentLine, newCharacter);
             }
         }
 
-        return new Position(TextEditor.getLineCount() - 1, 0, this.positionOptions).getLineEnd();
+        return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
     }
 
-    private getCurrentWordEndWithRegex(regex: RegExp) : Position {
+    /**
+     * Inclusive is true if we consider the current position a valid result, false otherwise.
+     */
+    private getCurrentWordEndWithRegex(regex: RegExp, inclusive: boolean): Position {
         for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
             let positions    = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
-            let newCharacter = _.find(positions, index => index > this.character || currentLine !== this.line);
+            let newCharacter = _.find(positions,
+                index => ((index >  this.character && !inclusive)  ||
+                          (index >= this.character &&  inclusive)) || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
-                if (this.positionOptions === PositionOptions.CharacterWiseInclusive) {
-                    newCharacter++;
-                }
-                return new Position(currentLine, newCharacter, this.positionOptions);
+                return new Position(currentLine, newCharacter);
             }
         }
 
-        return new Position(TextEditor.getLineCount() - 1, 0, this.positionOptions).getLineEnd();
+        return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
     }
 }

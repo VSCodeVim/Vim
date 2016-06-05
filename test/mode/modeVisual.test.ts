@@ -1,41 +1,35 @@
 "use strict";
 
 import * as assert from 'assert';
-import {CommandKeyMap} from '../../src/configuration/commandKeyMap';
-import {ModeHandler} from '../../src/mode/modeHandler';
-import {setupWorkspace, cleanUpWorkspace, assertEqualLines} from './../testUtils';
-import {VisualMode} from '../../src/mode/modeVisual';
-import {ModeName} from '../../src/mode/mode';
-import {Motion, MotionMode} from '../../src/motion/motion';
-import {TextEditor} from '../../src/textEditor';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
+import { ModeName } from '../../src/mode/mode';
+import { TextEditor } from '../../src/textEditor';
 
 suite("Mode Visual", () => {
-    let motion: Motion;
-    let visualMode: VisualMode;
     let modeHandler: ModeHandler;
 
     setup(async () => {
         await setupWorkspace();
-
         modeHandler = new ModeHandler();
-        motion      = new Motion(MotionMode.Cursor);
-        visualMode  = new VisualMode(motion, modeHandler, CommandKeyMap.DefaultVisualKeyMap());
     });
 
     teardown(cleanUpWorkspace);
 
-    test("can be activated", () => {
-        assert.equal(visualMode.shouldBeActivated("v", ModeName.Normal), true, "v didn't trigger visual mode...");
-        assert.equal(visualMode.shouldBeActivated("v", ModeName.Insert), false, "activated from insert mode");
+    test("can be activated", async () => {
+        await modeHandler.handleKeyEvent('v');
+        assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+        await modeHandler.handleKeyEvent('v');
+        assertEqual(modeHandler.currentMode.name, ModeName.Normal);
     });
 
     test("Can handle w", async () => {
-        await TextEditor.insert("test test test\ntest\n");
-
-        motion.moveTo(0, 0);
-
-        await visualMode.handleActivation('v');
-        await visualMode.handleKeyEvent("w");
+        await modeHandler.handleMultipleKeyEvents("itest test test\ntest\n".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'g', 'g',
+            'v', 'w'
+        ]);
 
         const sel = TextEditor.getSelection();
 
@@ -49,71 +43,102 @@ suite("Mode Visual", () => {
     });
 
     test("Can handle wd", async () => {
-        await TextEditor.insert("one two three");
-        motion.moveTo(0, 0);
-
-        await visualMode.handleActivation('v');
-        await visualMode.handleKeyEvent("w");
-        await visualMode.handleKeyEvent("d");
+        await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'v', 'w', 'd'
+        ]);
 
         assertEqualLines(["wo three"]);
     });
 
     test("Can handle x", async () => {
-        await TextEditor.insert("one two three");
-        motion.moveTo(0, 0);
-
-        await visualMode.handleActivation('v');
-        await visualMode.handleKeyEvent("x");
+        await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'v', 'x'
+        ]);
 
         assertEqualLines(["ne two three"]);
+
+        assertEqual(modeHandler.currentMode.name, ModeName.Normal);
     });
 
-    test("can do vwd in middle of sentence", async () => {
-        await TextEditor.insert("one two three foar");
-        motion.moveTo(0, 4);
+    test("Can handle x across a selection", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'v', 'w', 'x'
+        ]);
 
-        await visualMode.handleActivation('v');
-        await visualMode.handleKeyEvent("w");
-        await visualMode.handleKeyEvent("d");
+        assertEqualLines(["wo three"]);
+
+        assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    });
+
+    test("Can do vwd in middle of sentence", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two three foar".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'l', 'l', 'l', 'l',
+            'v', 'w', 'd'
+        ]);
 
         assertEqualLines(["one hree foar"]);
     });
 
-    test("handles case where we go from selecting on right side to selecting on left side", async () => {
-        await TextEditor.insert("one two three");
-        motion.moveTo(0, 4);
+    test("Can do vwd in middle of sentence", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'l', 'l', 'l', 'l',
+            'v', 'w', 'd'
+        ]);
 
-        await visualMode.handleActivation('v');
-        await visualMode.handleKeyEvent("w");
-        await visualMode.handleKeyEvent("b");
-        await visualMode.handleKeyEvent("b");
-        await visualMode.handleKeyEvent("d");
+        assertEqualLines(["one hree"]);
+    });
+
+    test("Can do vwd multiple times", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two three four".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'v', 'w', 'd',
+            'v', 'w', 'd',
+            'v', 'w', 'd'
+        ]);
+
+        assertEqualLines(["our"]);
+    });
+
+    test("handles case where we go from selecting on right side to selecting on left side", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'l', 'l', 'l', 'l',
+            'v', 'w', 'b', 'b', 'd'
+        ]);
 
         assertEqualLines(["wo three"]);
     });
 
-    test("delete operator handles empty line", async () => {
-        await TextEditor.insert("one two\n\nthree four");
-        motion.moveTo(0, 0);
-
-        await visualMode.handleActivation('v');
-        await visualMode.handleKeyEvent("}");
-        await visualMode.handleKeyEvent("d");
+    test("handles case where we delete over a newline", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two\n\nthree four".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '0', 'k', 'k',
+            'v', '}', 'd'
+        ]);
 
         assertEqualLines(["three four"]);
     });
 
-    test("Change operator", async () => {
-        await TextEditor.insert("one two three");
-        motion.moveTo(0, 0);
-
-        await visualMode.handleActivation('v');
-        await visualMode.handleKeyEvent("w");
-        await visualMode.handleKeyEvent("c");
+    test("handles change operator", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'v', 'w', 'c'
+        ]);
 
         assertEqualLines(["wo three"]);
-
-        assert.equal(((visualMode as any)._modeHandler as ModeHandler).currentMode.name, ModeName.Insert);
+        assertEqual(modeHandler.currentMode.name, ModeName.Insert);
     });
 });

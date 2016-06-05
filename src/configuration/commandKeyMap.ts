@@ -100,8 +100,8 @@ export class CommandKeyMap {
         this.visualModeKeyMap = visualModeKeyMap;
     }
 
-    static fromUserConfiguration() : CommandKeyMap {
-        let getConfig = function(keyHandlers : CommandKeyHandler, configName : string) : CommandKeyHandler {
+    static fromUserConfiguration(): CommandKeyMap {
+        let getConfig = function(keyHandlers: CommandKeyHandler, configName: string): CommandKeyHandler {
             let overrides = vscode.workspace.getConfiguration("vim")
                 .get(configName, keyHandlers);
 

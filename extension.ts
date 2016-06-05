@@ -21,8 +21,6 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        console.log(args.text);
-
         var isHandled = await handleKeyEvent(args.text);
 
         if (!isHandled) {

@@ -33,14 +33,14 @@ suite("Mode Insert", () => {
         return assertEqualLines(["!"]);
     });
 
-    test("<esc> doesn't change cursor position", async () => {
+    test("<esc> should change cursor position", async () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             'h', 'e', 'l', 'l', 'o',
             '<esc>'
         ]);
 
-        assertEqual(TextEditor.getSelection().start.character, 5, "<esc> moved cursor position.");
+        assertEqual(TextEditor.getSelection().start.character, 4, "<esc> moved cursor position.");
     });
 
     test("Can handle 'o'", async () => {
