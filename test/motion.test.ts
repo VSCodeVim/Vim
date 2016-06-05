@@ -1,7 +1,6 @@
 "use strict";
 
 import * as assert from 'assert';
-import * as vscode from "vscode";
 import { TextEditor } from './../src/textEditor';
 import { Position } from './../src/motion/position';
 import { setupWorkspace, cleanUpWorkspace } from './testUtils';
@@ -32,7 +31,7 @@ suite("old motion tests", () => {
     });
 
     test("char right", () => {
-        let motion = new Position(0, 9)
+        let motion = new Position(0, 9);
         motion = motion.getRight();
 
         assert.equal(motion.line, 0);
