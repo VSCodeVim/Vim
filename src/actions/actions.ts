@@ -664,6 +664,32 @@ export class MoveWordBegin extends BaseMovement {
 
     return vimState;
   }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
+    const result = await this.execAction(position, vimState);
+
+      /*
+          From the Vim documentation:
+
+          Another special case: When using the "w" motion in combination with an
+          operator and the last word moved over is at the end of a line, the end of
+          that word becomes the end of the operated text, not the first word in the
+          next line.
+
+          TODO - move this into actions.ts, add test.
+      */
+
+      if (result.cursorPosition.isLineBeginning()) {
+          result.cursorPosition = result.cursorPosition.getLeftThroughLineBreaks();
+      }
+
+      if (result.cursorPosition.isLineEnd()) {
+          result.cursorPosition = new Position(result.cursorPosition.line, result.cursorPosition.character + 1);
+      }
+
+    return vimState;
+  }
+
 }
 
 @RegisterAction
