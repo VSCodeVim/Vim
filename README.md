@@ -242,6 +242,8 @@ Status              | Key                       | Description
 
 ## Contributing
 
+See [here](https://github.com/VSCodeVim/Vim/blob/master/DEVELOPING.md) for how to run a development environment and make contributions.
+
 This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors). *Thank you!* :heart: 
 
 ## License
