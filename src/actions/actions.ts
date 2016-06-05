@@ -862,6 +862,20 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 }
 
 @RegisterAction
+class ActionChangeChar extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "s";
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const state = await new ChangeOperator().run(vimState, position, position);
+
+    state.currentMode = ModeName.Insert;
+
+    return state;
+  }
+}
+
+@RegisterAction
 class MovementAWordTextObject extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   key = "aw";

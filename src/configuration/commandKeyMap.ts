@@ -62,6 +62,8 @@ export enum Command {
     ChangeCurrentWordToNext,
     ChangeToLineEnd,
 
+    ChangeChar,
+
     DeleteLine,
     DeleteToNextWord,
     DeleteToFullNextWord,
@@ -160,6 +162,8 @@ export class CommandKeyMap {
             "ciw": Command.ChangeCurrentWord,
             "caw": Command.ChangeCurrentWordToNext,
             "C": Command.ChangeToLineEnd,
+
+            "s": Command.ChangeChar,
 
             "dd": Command.DeleteLine,
             "dw": Command.DeleteToNextWord,
