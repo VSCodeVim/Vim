@@ -66,6 +66,57 @@ suite("Mode Normal", () => {
         await assertEqualLines(["text"]);
     });
 
+    test("Can handle dd end-of-line", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'd', 'd'
+        ]);
+
+        assertEqualLines(["one"]);
+    });
+
+    test("Can handle dd single line", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            'd', 'd'
+        ]);
+
+        assertEqualLines([""]);
+    });
+
+    test("Can handle dd", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'g', 'g',
+            'd', 'd'
+        ]);
+
+        assertEqualLines(["two"]);
+    });
+
+    test("Can handle cc", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\none two".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'c', 'c', 'a', '<esc>'
+        ]);
+
+        assertEqualLines(["one", "a"]);
+    });
+
+
+    test("Can handle yy", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', '^',
+            'y', 'y', 'O', '<esc>', 'p'
+        ]);
+
+        assertEqualLines(["one", "one"]);
+    });
+
     test("Can handle 'de'", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext text'.split('')
