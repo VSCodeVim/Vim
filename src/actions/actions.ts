@@ -23,7 +23,9 @@ export class BaseAction {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (this.key !== key) { return false; }
     // TODO - this is not exactly correct and will eventually make me rage
+    // It's for cases like daw where a would otherwise by treated as append and insert.
     if (this instanceof BaseCommand && !vimState.actionState.isInInitialState) { return false; }
+    if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
 
     return true;
   }
@@ -35,6 +37,7 @@ export class BaseAction {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!this.key.startsWith(key)) { return false; }
     if (this instanceof BaseCommand && !vimState.actionState.isInInitialState) { return false; }
+    if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
 
     return true;
   }
@@ -56,7 +59,7 @@ export abstract class BaseMovement extends BaseAction {
   public setsDesiredColumnToEOL = false;
 
   /**
-   * Run the action.
+   * Run the movement.
    */
   public abstract async execAction(position: Position, vimState: VimState): Promise<VimState>;
 
@@ -228,7 +231,7 @@ export class PutCommand extends BaseCommand {
 
 @RegisterAction
 export class YankOperator extends BaseOperator {
-    public key: string = "y";
+    public key = "y";
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     /**
@@ -793,6 +796,45 @@ class ActionDeleteLastChar extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return await new DeleteOperator().run(vimState, position.getLeft(), position.getLeft());
+  }
+}
+
+@RegisterAction
+class MoveDD extends BaseMovement {
+  modes = [ModeName.Normal];
+  key = "d";
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.cursorStartPosition = position.getLineBegin();
+    vimState.cursorPosition = position.getNextLineBegin();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveYY extends BaseMovement {
+  modes = [ModeName.Normal];
+  key = "y";
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.cursorStartPosition = position.getLineBegin();
+    vimState.cursorPosition = position.getNextLineBegin();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveCC extends BaseMovement {
+  modes = [ModeName.Normal];
+  key = "c";
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.cursorStartPosition = position.getLineBegin();
+    vimState.cursorPosition = position.getLineEnd();
+
+    return vimState;
   }
 }
 
