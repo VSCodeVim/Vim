@@ -277,7 +277,7 @@ suite("Mode Normal", () => {
 
     test("Can handle 'caw' on blanks", async () => {
         await modeHandler.handleMultipleKeyEvents(
-            'itext   text text'.split('')
+            'itext   text'.split('')
         );
 
         await modeHandler.handleMultipleKeyEvents([
@@ -287,7 +287,7 @@ suite("Mode Normal", () => {
         ]);
 
         await assertEqualLines(["text"]);
-        assertEqual(TextEditor.getSelection().start.character, 4, "caw is on wrong position");
+        assertEqual(TextEditor.getSelection().start.character, 3, "caw is on wrong position");
         await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
     });
 });

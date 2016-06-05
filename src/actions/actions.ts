@@ -647,9 +647,7 @@ export class MoveWordBegin extends BaseMovement {
 
         Special case: "cw" and "cW" are treated like "ce" and "cE" if the cursor is
         on a non-blank.  This is because "cw" is interpreted as change-word, and a
-        word does not include the following white space.  {Vi: "cw" when on a blank
-        followed by other blanks changes only the first blank; this is probably a
-        bug, because "dw" deletes all the blanks}
+        word does not include the following white space.
       */
       vimState.cursorPosition = position.getCurrentWordEnd().getRight();
     } else {
@@ -813,28 +811,35 @@ class MovementAWordTextObject extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   key = "aw";
 
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
+    const res = await this.execAction(position, vimState);
+
+    res.cursorPosition = res.cursorPosition.getRight();
+
+    return res;
+  }
+
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
       // TODO: This is kind of a bad way to do this.
       return new MoveWordBegin().execAction(position, vimState);
     }
 
-    let currentChar = TextEditor.getLineAt(position).text[position.character];
+    const currentChar = TextEditor.getLineAt(position).text[position.character];
 
     // TODO - this is a bad way to do this. we need some sort of global
     // white space checking function.
     if (currentChar === ' ' || currentChar === '\t') {
-      vimState.cursorStartPosition = position.getLastWordEnd();
+      vimState.cursorStartPosition = position.getLastWordEnd().getRight();
       vimState.cursorPosition = position.getCurrentWordEnd();
     } else {
       vimState.cursorStartPosition = position.getWordLeft(true);
-      vimState.cursorPosition = position.getCurrentWordEnd(true);
+      vimState.cursorPosition = position.getWordRight().getLeft();
     }
 
     return vimState;
   }
 }
-
 
 @RegisterAction
 class MovementIWordTextObject extends BaseMovement {
