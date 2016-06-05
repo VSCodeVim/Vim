@@ -188,6 +188,23 @@ export class ModeHandler implements vscode.Disposable {
     private _configuration: Configuration;
     private _vimState: VimState;
 
+    // Caret Styling
+    private _caretDecoration = vscode.window.createTextEditorDecorationType(
+    {
+        dark: {
+            // used for dark colored themes
+            backgroundColor: 'rgba(224, 224, 224, 0.4)',
+            borderColor: 'rgba(240, 240, 240, 0.8)'
+        },
+        light: {
+            // used for light colored themes
+            backgroundColor: 'rgba(32, 32, 32, 0.4)',
+            borderColor: 'rgba(16, 16, 16, 0.8)'
+        },
+        borderStyle: 'solid',
+        borderWidth: '1px'
+    });
+
     private get currentModeName(): ModeName {
         return this.currentMode.name;
     }
@@ -227,20 +244,6 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             mode.isActive = (mode.name === modeName);
-        }
-
-        switch (modeName) {
-            case ModeName.Insert:
-                this._motion = this._motion.changeMode(MotionMode.Cursor);
-                break;
-
-            case ModeName.Normal:
-                this._motion = this._motion.changeMode(MotionMode.Caret);
-                break;
-
-            case ModeName.Visual:
-                (activeMode as VisualMode).start();
-                break;
         }
 
         const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
@@ -301,7 +304,7 @@ export class ModeHandler implements vscode.Disposable {
         if (actionState.readyToExecute) {
             if (this.currentMode.name !== ModeName.Visual &&
                 this.currentMode.name !== ModeName.VisualLine) {
-                this._vimState.cursorStartPosition = this._motion.position;
+                this._vimState.cursorStartPosition = this._vimState.cursorPosition;
             }
 
             this._vimState = await this.executeState();
@@ -331,7 +334,10 @@ export class ModeHandler implements vscode.Disposable {
 
             // Update cursor position
 
+            let start = this._vimState.cursorStartPosition;
             let stop = this._vimState.cursorPosition;
+
+            // Keep the cursor within bounds
 
             if (!(this.currentMode instanceof InsertMode)) {
                 if (stop.character >= TextEditor.getLineAt(stop).text.length) {
@@ -344,25 +350,49 @@ export class ModeHandler implements vscode.Disposable {
                     stop = stop.getLineEnd().getLeft();
                     this._vimState.cursorPosition = stop;
                 }
-
-                this._motion.moveTo(stop.line, stop.character);
             } else if (this.currentMode instanceof VisualMode) {
                 if (stop.character >= Position.getLineLength(stop.line)) {
                     stop = stop.getLineEnd().getLeft();
                     this._vimState.cursorPosition = stop;
                 }
 
-                await (this.currentMode as VisualMode).handleMotion(this._vimState.cursorStartPosition, stop);
-            } else if (this.currentMode instanceof InsertMode) {
-                this._motion.moveTo(stop.line, stop.character);
-            } else {
-                console.log("TODO: My janky thing doesn't handle this case!");
+                /**
+                 * Always select the letter that we started visual mode on, no matter
+                 * if we are in front or behind it. Imagine that we started visual mode
+                 * with some text like this:
+                 *
+                 *   abc|def
+                 *
+                 * (The | represents the cursor.) If we now press w, we'll select def,
+                 * but if we hit b we expect to select abcd, so we need to getRight() on the
+                 * start of the selection when it precedes where we started visual mode.
+                 */
 
-                return;
+                // TODO: At this point, start and stop become desynchronoized from cursor(Start)Position
+                // and just become where to draw the selection. This is just begging for bugs.
+
+                if (start.compareTo(stop) > 0) {
+                    start = start.getRight();
+                }
             }
 
-            // TODO: Draw cursor and/or selection.
+            // Draw block cursor.
 
+            if (this.currentMode.name !== ModeName.Insert) {
+                let range = new vscode.Range(stop, stop.getRight());
+                vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
+            } else {
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
+            }
+
+            // Draw selection (or cursor)
+
+            if (this.currentMode.name === ModeName.Visual) {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
+            } else {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
+            }
             // Updated desired column
 
             const movement = actionState.movement, command = actionState.command;
@@ -370,7 +400,7 @@ export class ModeHandler implements vscode.Disposable {
                 if (movement && movement.setsDesiredColumnToEOL) {
                     this._vimState.desiredColumn = Number.POSITIVE_INFINITY;
                 } else {
-                    this._vimState.desiredColumn = this._motion.position.character;
+                    this._vimState.desiredColumn = this._vimState.cursorPosition.character;
                 }
             }
 
@@ -401,15 +431,6 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (actionState.operator) {
-            if (this.currentModeName === ModeName.Visual ||
-                this.currentModeName === ModeName.VisualLine) {
-
-                start = (this.currentMode as VisualMode).selectionStart;
-                stop  = (this.currentMode as VisualMode).selectionStop;
-            }
-
-            this._motion.changeMode(MotionMode.Cursor);
-
             /*
                 From the Vim documentation:
 
@@ -440,6 +461,10 @@ export class ModeHandler implements vscode.Disposable {
                 } else {
                     start = start.getLeft();
                 }
+            }
+
+            if (!start || !stop) {
+                debugger;
             }
 
             return await actionState.operator.run(this._vimState, start, stop);
