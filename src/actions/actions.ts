@@ -155,6 +155,11 @@ export class DeleteOperator extends BaseOperator {
           end = new Position(end.line, end.character + 1);
         }
 
+        // TODO: This is a hack.
+        if (end.character === TextEditor.getLineAt(end).text.length) {
+          end = end.getDown(0);
+        }
+
         // Imagine we have selected everything with an X in
         // the following text (there is no character on the
         // second line at all, just a block cursor):
@@ -805,8 +810,16 @@ class MoveDD extends BaseMovement {
   key = "d";
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorStartPosition = position.getLineBegin();
-    vimState.cursorPosition = position.getNextLineBegin();
+    let start = position.getLineBegin();
+    let stop  = position.getLineEnd();
+
+    if (start.line === TextEditor.getLineCount() - 1 && start.line > 0) {
+      start = position.getPreviousLineBegin().getLineEnd();
+      stop = position.getLineEnd();
+    }
+
+    vimState.cursorStartPosition = start;
+    vimState.cursorPosition = stop;
 
     return vimState;
   }
