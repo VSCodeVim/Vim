@@ -196,7 +196,7 @@ export class DeleteOperator extends BaseOperator {
 @RegisterAction
 export class DeleteOperatorXVisual extends BaseOperator {
     public key = "x";
-    public modes = [ModeName.Visual];
+    public modes = [ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
       return await new DeleteOperator().run(vimState, start, end);
@@ -280,7 +280,7 @@ class CommandFind extends BaseCommand {
 
 @RegisterAction
 class CommandFold extends BaseCommand {
-  modes = [ModeName.Visual];
+  modes = [ModeName.Visual, ModeName.VisualLine];
   key = "zc";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -381,7 +381,8 @@ class CommandEsc extends BaseCommand {
   key = "<esc>";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.currentMode !== ModeName.Visual) {
+    if (vimState.currentMode !== ModeName.Visual &&
+        vimState.currentMode !== ModeName.VisualLine) {
       vimState.cursorPosition = position.getLeft();
     }
 
@@ -415,8 +416,8 @@ class CommandChangeToLineEnd extends BaseCommand {
 }
 
 @RegisterAction
-class CommandVInVisualMode extends BaseCommand {
-  modes = [ModeName.Visual];
+class CommandExitVisualMode extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
   key = "v";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -427,12 +428,36 @@ class CommandVInVisualMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandVInNormalMode extends BaseCommand {
+class CommandVisualMode extends BaseCommand {
   modes = [ModeName.Normal];
   key = "v";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Visual;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandVisualLineMode extends BaseCommand {
+  modes = [ModeName.Normal];
+  key = "V";
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.VisualLine;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandExitVisualLineMode extends BaseCommand {
+  modes = [ModeName.VisualLine];
+  key = "V";
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }
@@ -879,7 +904,7 @@ class MoveCC extends BaseMovement {
 
 @RegisterAction
 class ActionDeleteLineVisualMode extends BaseCommand {
-  modes = [ModeName.Visual];
+  modes = [ModeName.Visual, ModeName.VisualLine];
   key = "X";
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -916,7 +941,8 @@ class MovementAWordTextObject extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      // TODO: This is kind of a bad way to do this.
+      // TODO: This is kind of a bad way to do this, but text objects only work in
+      // visual mode if you JUST entered visual mode
       return new MoveWordBegin().execAction(position, vimState);
     }
 
@@ -951,7 +977,8 @@ class MovementIWordTextObject extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      // TODO: This is kind of a bad way to do this.
+      // TODO: This is kind of a bad way to do this, but text objects only work in
+      // visual mode if you JUST entered visual mode
       return new MoveWordBegin().execAction(position, vimState);
     }
 
