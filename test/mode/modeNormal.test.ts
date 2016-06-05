@@ -1,10 +1,10 @@
 "use strict";
 
 import * as assert from 'assert';
-import {setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from './../testUtils';
-import {ModeName} from '../../src/mode/mode';
-import {TextEditor} from '../../src/textEditor';
-import {ModeHandler} from '../../src/mode/modeHandler';
+import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
+import { ModeName } from '../../src/mode/mode';
+import { TextEditor } from '../../src/textEditor';
+import { ModeHandler } from '../../src/mode/modeHandler';
 
 suite("Mode Normal", () => {
 
