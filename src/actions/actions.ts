@@ -833,25 +833,31 @@ class MovementAWordTextObject extends BaseMovement {
   }
 }
 
-/*
+
 @RegisterAction
-class ActionChangeCurrentWord {
-  modes = [ModeName.Normal];
+class MovementIWordTextObject extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual];
   key = "iw";
 
-  public async execAction(position: Position): Promise<VimState> {
-    motion.changeMode(MotionMode.Cursor);
-    let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
-    if (currentChar === ' ' || currentChar === '\t') {
-      await new ChangeOperator(modeHandler).run(motion.position.getLastWordEnd(), motion.position.getWordRight());
-    } else {
-      await new ChangeOperator(modeHandler).run(motion.position.getWordLeft(), motion.position.getCurrentWordEnd());
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      // TODO: This is kind of a bad way to do this.
+      return new MoveWordBegin().execAction(position, vimState);
     }
-    modeHandler.setCurrentModeByName(ModeName.Insert);
 
+    let currentChar = TextEditor.getLineAt(position).text[position.character];
+
+    if (currentChar === ' ' || currentChar === '\t') {
+      vimState.cursorStartPosition = position.getLastWordEnd();
+      vimState.cursorPosition = position.getWordRight();
+    } else {
+      vimState.cursorStartPosition = position.getWordLeft();
+      vimState.cursorPosition = position.getCurrentWordEnd();
+    }
+
+    return vimState;
   }
 }
-*/
 
 /*
 // Doing this correctly is very difficult.
