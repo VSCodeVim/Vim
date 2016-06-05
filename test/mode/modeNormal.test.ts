@@ -150,7 +150,6 @@ suite("Mode Normal", () => {
 
         assertEqual(TextEditor.getSelection().start.character, 0, "gg failed");
         assertEqual(TextEditor.getSelection().start.line, 0, "gg failed");
-
     });
 
     test("Can handle x at end of line", async () => {

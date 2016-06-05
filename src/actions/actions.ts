@@ -3,7 +3,6 @@ import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register } from './../register/register';
 import { Position } from './../motion/position';
-import { VisualMode } from './../mode/modeVisual';
 import * as vscode from 'vscode';
 
 export class BaseAction {
@@ -16,6 +15,29 @@ export class BaseAction {
    * The key you press to trigger the action.
    */
   public key: string;
+
+  /**
+   * Is this action valid in the current Vim state?
+   */
+  public doesActionApply(vimState: VimState, key: string): boolean {
+    if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
+    if (this.key !== key) { return false; }
+    // TODO - this is not exactly correct and will eventually make me rage
+    if (this instanceof BaseCommand && !vimState.actionState.isInInitialState) { return false; }
+
+    return true;
+  }
+
+  /**
+   * Could the user be in the process of doing this action.
+   */
+  public couldActionApply(vimState: VimState, key: string): boolean {
+    if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
+    if (!this.key.startsWith(key)) { return false; }
+    if (this instanceof BaseCommand && !vimState.actionState.isInInitialState) { return false; }
+
+    return true;
+  }
 }
 
 /**
@@ -32,16 +54,6 @@ export abstract class BaseMovement extends BaseAction {
    * the end of even the longest line.
    */
   public setsDesiredColumnToEOL = false;
-
-  /**
-   * Is this action valid in the current Vim state?
-   */
-  public doesActionApply(modeHandler: ModeHandler, key: string): boolean {
-    if (this.modes.indexOf(modeHandler.currentMode.name) === -1) { return false; }
-    if (this.key.indexOf(key) === -1) { return false; }
-
-    return true;
-  }
 
   /**
    * Run the action.
@@ -98,19 +110,15 @@ export class Actions {
    *
    * If no action could ever match, returns false.
    */
-  public static getRelevantAction(keysPressed: string, mode: ModeName): BaseAction | KeypressState {
+  public static getRelevantAction(keysPressed: string, vimState: VimState): BaseAction | KeypressState {
     let couldPotentiallyHaveMatch = false;
 
     for (const action of Actions.allActions) {
-      if (action.modes.indexOf(mode) === -1) {
-        continue;
-      }
-
-      if (action.key === keysPressed) {
+      if (action.doesActionApply(vimState, keysPressed)) {
         return action;
       }
 
-      if (action.key.startsWith(keysPressed)) {
+      if (action.couldActionApply(vimState, keysPressed)) {
         couldPotentiallyHaveMatch = true;
       }
     }
@@ -179,7 +187,7 @@ export class DeleteOperator extends BaseOperator {
 
 @RegisterAction
 export class DeleteOperatorXVisual extends BaseOperator {
-    public key: string = "x";
+    public key = "x";
     public modes = [ModeName.Visual];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -189,7 +197,7 @@ export class DeleteOperatorXVisual extends BaseOperator {
 
 @RegisterAction
 export class ChangeOperator extends BaseOperator {
-    public key: string = "c";
+    public key = "c";
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -200,10 +208,9 @@ export class ChangeOperator extends BaseOperator {
     }
 }
 
-
 @RegisterAction
 export class PutCommand extends BaseCommand {
-    public key: string = "p";
+    public key = "p";
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     /**
@@ -827,6 +834,26 @@ class MovementAWordTextObject extends BaseMovement {
 }
 
 /*
+@RegisterAction
+class ActionChangeCurrentWord {
+  modes = [ModeName.Normal];
+  key = "iw";
+
+  public async execAction(position: Position): Promise<VimState> {
+    motion.changeMode(MotionMode.Cursor);
+    let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
+    if (currentChar === ' ' || currentChar === '\t') {
+      await new ChangeOperator(modeHandler).run(motion.position.getLastWordEnd(), motion.position.getWordRight());
+    } else {
+      await new ChangeOperator(modeHandler).run(motion.position.getWordLeft(), motion.position.getCurrentWordEnd());
+    }
+    modeHandler.setCurrentModeByName(ModeName.Insert);
+
+  }
+}
+*/
+
+/*
 // Doing this correctly is very difficult.
    https://github.com/Microsoft/vscode/issues/7177
 
@@ -876,23 +903,6 @@ class ActionOutdent extends BaseAction {
 }
 
 
-@RegisterAction
-class ActionChangeCurrentWord {
-  modes = [ModeName.Normal];
-  key = "ciw";
-
-  public async execAction(position: Position): Promise<VimState> {
-    motion.changeMode(MotionMode.Cursor);
-    let currentChar = TextEditor.getLineAt(motion.position).text[motion.position.character];
-    if (currentChar === ' ' || currentChar === '\t') {
-      await new ChangeOperator(modeHandler).run(motion.position.getLastWordEnd(), motion.position.getWordRight());
-    } else {
-      await new ChangeOperator(modeHandler).run(motion.position.getWordLeft(), motion.position.getCurrentWordEnd());
-    }
-    modeHandler.setCurrentModeByName(ModeName.Insert);
-
-  }
-}
 
 
 @RegisterAction

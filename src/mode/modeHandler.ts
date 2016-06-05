@@ -104,7 +104,7 @@ export class ActionState {
      */
     private _operator: BaseOperator = undefined;
 
-    private _command: BaseCommand = undefined;
+    private _command: BaseCommand   = undefined;
 
     private _movement: BaseMovement = undefined;
 
@@ -168,6 +168,13 @@ export class ActionState {
         if (this.command) {
             this.readyToExecute = true;
         }
+    }
+
+    public get isInInitialState(): boolean {
+        return this._operator    === undefined &&
+               this._command     === undefined &&
+               this._movement    === undefined &&
+               this._count       === 1;
     }
 
     constructor(vimState: VimState) {
@@ -262,7 +269,7 @@ export class ModeHandler implements vscode.Disposable {
 
         actionState.keysPressed.push(key);
 
-        let action = Actions.getRelevantAction(actionState.keysPressed.join(""), this.currentModeName);
+        let action = Actions.getRelevantAction(actionState.keysPressed.join(""), this._vimState);
 
         if (action === KeypressState.NoPossibleMatch) {
             // TODO: Slightly janky, for reasons that are hard to describe.
@@ -342,12 +349,17 @@ export class ModeHandler implements vscode.Disposable {
 
             if (this.currentMode instanceof NormalMode) {
                 if (stop.character >= Position.getLineLength(stop.line)) {
-                    stop = stop.getLeft();
+                    stop = stop.getLineEnd().getLeft();
                     this._vimState.cursorPosition = stop;
                 }
 
                 this._motion.moveTo(stop.line, stop.character);
             } else if (this.currentMode instanceof VisualMode) {
+                if (stop.character >= Position.getLineLength(stop.line)) {
+                    stop = stop.getLineEnd().getLeft();
+                    this._vimState.cursorPosition = stop;
+                }
+
                 await (this.currentMode as VisualMode).handleMotion(this._vimState.cursorStartPosition, stop);
             } else if (this.currentMode instanceof InsertMode) {
                 this._motion.moveTo(stop.line, stop.character);
