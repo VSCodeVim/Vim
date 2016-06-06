@@ -114,7 +114,7 @@ suite("Mode Normal", () => {
             'y', 'y', 'O', '<esc>', 'p'
         ]);
 
-        assertEqualLines(["one", "one"]);
+        assertEqualLines(["", "one", "one"]);
     });
 
     test("Can handle 'de'", async () => {

@@ -156,9 +156,20 @@ export class DeleteOperator extends BaseOperator {
 
         // Vim does this weird thing where it allows you to select and delete
         // the newline character, which it places 1 past the last character
-        // in the line. Doing this joins the two lines around the newline.
+        // in the line. Here we interpret a character position 1 past the end
+        // as selecting the newline character.
         if (end.character === TextEditor.getLineAt(end).text.length + 1) {
           end = end.getDown(0);
+        }
+
+        // If we do dd on the final line of the document, we expect the line
+        // to be removed. This is actually a special case because the newline
+        // character we've selected to delete is the newline on the end of the document,
+        // but we actually delete the newline on the second to last line.
+
+        // Just writing about this is making me more confused. -_-
+        if (start.line === end.line && start.line !== 0 && vimState.currentRegisterMode === RegisterMode.LineWise) {
+          start = start.getPreviousLineBegin().getLineEnd();
         }
 
         const text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
@@ -901,7 +912,8 @@ class MoveYY extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     vimState.cursorStartPosition = position.getLineBegin();
-    vimState.cursorPosition = position.getNextLineBegin();
+    vimState.cursorPosition = position.getLineEnd();
+    vimState.currentRegisterMode = RegisterMode.LineWise;
 
     return vimState;
   }
