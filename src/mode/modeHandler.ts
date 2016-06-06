@@ -340,21 +340,15 @@ export class ModeHandler implements vscode.Disposable {
 
             // Keep the cursor within bounds
 
-            if (!(this.currentMode instanceof InsertMode)) {
-                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
-                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length);
-                }
-            }
-
-            if (this.currentMode instanceof NormalMode) {
+            if (this.currentMode.name === ModeName.Normal) {
                 if (stop.character >= Position.getLineLength(stop.line)) {
                     stop = stop.getLineEnd().getLeft();
                     this._vimState.cursorPosition = stop;
                 }
             } else if (this.currentMode.name === ModeName.Visual ||
                        this.currentMode.name === ModeName.VisualLine) {
-                if (stop.character >= Position.getLineLength(stop.line)) {
-                    stop = stop.getLineEnd().getLeft();
+                if (stop.character > Position.getLineLength(stop.line)) {
+                    stop = stop.getLineEnd();
                     this._vimState.cursorPosition = stop;
                 }
 
