@@ -19,3 +19,13 @@ You're thinking about adding a feature to VSCodeVim? That's awesome! Here's a ba
 2. If you added a new feature, add at least one more test to test it.
 3. If you've fixed a bug, add at least one test to ensure the bug stays away.
 4. Submit the PR. Pour yourself a glass of champagne and feel good about making contributing to open source!
+
+### Troubleshooting 
+
+#### Visual Studio Code Slowdown
+
+If your autocomplete, your fuzzy file search, or your _everything_ is suddenly running slower, try to recall if you ever ran `npm test` instead of just running tests through Visual Studio Code? This adds a massive folder called `.vscode-test/` to your project, which Visual Studio Code will happily consume all of your CPU cycles indexing. 
+
+Long story short, you can speed up VSC by doing this:
+
+`$ rm -rf .vscode-test/`
