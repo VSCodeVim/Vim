@@ -2,9 +2,8 @@
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import {TextEditor} from './../src/textEditor';
-import {setupWorkspace, cleanUpWorkspace} from './testUtils';
-import { Register } from './../src/register/register';
+import { TextEditor } from './../src/textEditor';
+import { setupWorkspace, cleanUpWorkspace } from './testUtils';
 
 suite("text editor", () => {
     suiteSetup(setupWorkspace);
@@ -12,7 +11,7 @@ suite("text editor", () => {
     suiteTeardown(cleanUpWorkspace);
 
     test("insert 'Hello World'", async () => {
-        let expectedText = "Hello World";
+    let expectedText = "Hello World";
 
         await TextEditor.insert(expectedText);
 

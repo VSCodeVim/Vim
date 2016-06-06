@@ -1,7 +1,6 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { Register } from './register/register';
 
 export class TextEditor {
     static async insert(text: string): Promise<boolean> {
