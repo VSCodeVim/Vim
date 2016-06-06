@@ -366,4 +366,63 @@ suite("Mode Normal", () => {
         assertEqual(TextEditor.getSelection().start.character, 3, "caw is on wrong position");
         await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
     });
+
+    test("Can handle 'f'", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '^',
+            'f', 't'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 3, "f failed");
+    });
+
+    test("Can handle 'f' twice", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '^',
+            'f', 't',
+            'f', 't'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 5, "f failed");
+    });
+
+    test("Can handle 'F'", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '$',
+            'F', 't'
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 5, "F failed");
+    });
+
+    test("Can handle 'F'", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'itext text'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '$',
+            'F', 't',
+            'F', 't',
+        ]);
+
+        assertEqual(TextEditor.getSelection().start.character, 3, "F failed");
+    });
+
 });
