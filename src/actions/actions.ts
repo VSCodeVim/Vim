@@ -143,8 +143,7 @@ export class DeleteOperator extends BaseOperator {
     /**
      * Deletes from the position of start to 1 past the position of end.
      */
-    public async run(vimState: VimState,
-                     start: Position, end: Position): Promise<VimState> {
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
           end = new Position(end.line, end.character + 1);
         } else {
@@ -155,24 +154,11 @@ export class DeleteOperator extends BaseOperator {
           end = new Position(end.line, end.character + 1);
         }
 
-        // TODO: This is a hack.
-        if (end.character === TextEditor.getLineAt(end).text.length) {
+        // Vim does this weird thing where it allows you to select and delete
+        // the newline character, which it places 1 past the last character
+        // in the line. Doing this joins the two lines around the newline.
+        if (end.character === TextEditor.getLineAt(end).text.length + 1) {
           end = end.getDown(0);
-        }
-
-        // Imagine we have selected everything with an X in
-        // the following text (there is no character on the
-        // second line at all, just a block cursor):
-
-        // XXXXXXX
-        // X
-        //
-        // If we delete this range, we want to delete the entire first and
-        // second lines. Therefore we have to advance the cursor to the next
-        // line.
-
-        if (start.line !== end.line && TextEditor.getLineAt(end).text === "") {
-            end = end.getDown(0);
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
@@ -862,12 +848,7 @@ class MoveDD extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     let start = position.getLineBegin();
-    let stop  = position.getLineEnd();
-
-    if (start.line === TextEditor.getLineCount() - 1 && start.line > 0) {
-      start = position.getPreviousLineBegin().getLineEnd();
-      stop = position.getLineEnd();
-    }
+    let stop  = position.getLineEndIncludingEOL();
 
     vimState.cursorStartPosition = start;
     vimState.cursorPosition = stop;

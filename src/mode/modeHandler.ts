@@ -347,6 +347,11 @@ export class ModeHandler implements vscode.Disposable {
                 }
             } else if (this.currentMode.name === ModeName.Visual ||
                        this.currentMode.name === ModeName.VisualLine) {
+
+                // Vim does this weird thing where it allows you to select and delete
+                // the newline character, which it places 1 past the last character
+                // in the line. This is why we use > instead of >=.
+
                 if (stop.character > Position.getLineLength(stop.line)) {
                     stop = stop.getLineEnd();
                     this._vimState.cursorPosition = stop;
@@ -393,6 +398,7 @@ export class ModeHandler implements vscode.Disposable {
             } else {
                 vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
             }
+
             // Updated desired column
 
             const movement = actionState.movement, command = actionState.command;
