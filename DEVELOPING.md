@@ -24,7 +24,7 @@ You're thinking about adding a feature to VSCodeVim? That's awesome! Here's a ba
 
 #### Visual Studio Code Slowdown
 
-If your autocomplete, your fuzzy file search, or your _everything_ is suddenly running slower, try to recall if you ever ran `npm test` instead of just running tests through Visual Studio Code? This adds a massive folder called `.vscode-test/` to your project, which Visual Studio Code will happily consume all of your CPU cycles indexing. 
+If your autocomplete, your fuzzy file search, or your _everything_ is suddenly running slower, try to recall if you ever ran `npm test` instead of just running tests through Visual Studio Code. This will add a massive folder called `.vscode-test/` to your project, which Visual Studio Code will happily consume all of your CPU cycles indexing. 
 
 Long story short, you can speed up VSC by doing this:
 
