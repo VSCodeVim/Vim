@@ -141,4 +141,65 @@ suite("Mode Visual", () => {
         assertEqualLines(["wo three"]);
         assertEqual(modeHandler.currentMode.name, ModeName.Insert);
     });
+
+    suite("Vim's EOL handling is weird", () => {
+
+        test("delete through eol", async () => {
+            await modeHandler.handleMultipleKeyEvents(
+                'ione\ntwo'.split('')
+            );
+
+            await modeHandler.handleMultipleKeyEvents([
+                '<esc>',
+                '^', 'g', 'g',
+                'v', 'l', 'l', 'l',
+                'd'
+            ]);
+
+            assertEqualLines(["two"]);
+        });
+
+        test("join 2 lines by deleting through eol", async () => {
+            await modeHandler.handleMultipleKeyEvents(
+                'ione\ntwo'.split('')
+            );
+
+            await modeHandler.handleMultipleKeyEvents([
+                '<esc>',
+                'g', 'g',
+                'l', 'v', 'l', 'l',
+                'd'
+            ]);
+
+            assertEqualLines(["otwo"]);
+        });
+
+        test("d$ doesn't delete whole line", async () => {
+            await modeHandler.handleMultipleKeyEvents(
+                'ione\ntwo'.split('')
+            );
+
+            await modeHandler.handleMultipleKeyEvents([
+                '<esc>',
+                'g', 'g',
+                'd', '$'
+            ]);
+
+            assertEqualLines(["", "two"]);
+        });
+
+        test("vd$ does delete whole line", async () => {
+            await modeHandler.handleMultipleKeyEvents(
+                'ione\ntwo'.split('')
+            );
+
+            await modeHandler.handleMultipleKeyEvents([
+                '<esc>',
+                'g', 'g',
+                'v', '$', 'd'
+            ]);
+
+            assertEqualLines(["two"]);
+        });
+    });
 });

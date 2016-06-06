@@ -13,7 +13,7 @@ import {
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
-import { TextEditor } from '../../src/textEditor';
+import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 
 export enum VimCommandActions {
@@ -65,6 +65,10 @@ export class VimState {
      * The mode Vim will be in once this action finishes.
      */
     public currentMode = ModeName.Normal;
+
+    public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+
+    public registerName = '"';
 
     /**
      * This is for oddball commands that don't manipulate text in any way.
@@ -340,21 +344,20 @@ export class ModeHandler implements vscode.Disposable {
 
             // Keep the cursor within bounds
 
-            if (!(this.currentMode instanceof InsertMode)) {
-                if (stop.character >= TextEditor.getLineAt(stop).text.length) {
-                    stop = new Position(stop.line, TextEditor.getLineAt(stop).text.length);
-                }
-            }
-
-            if (this.currentMode instanceof NormalMode) {
+            if (this.currentMode.name === ModeName.Normal) {
                 if (stop.character >= Position.getLineLength(stop.line)) {
                     stop = stop.getLineEnd().getLeft();
                     this._vimState.cursorPosition = stop;
                 }
             } else if (this.currentMode.name === ModeName.Visual ||
                        this.currentMode.name === ModeName.VisualLine) {
-                if (stop.character >= Position.getLineLength(stop.line)) {
-                    stop = stop.getLineEnd().getLeft();
+
+                // Vim does this weird thing where it allows you to select and delete
+                // the newline character, which it places 1 past the last character
+                // in the line. This is why we use > instead of >=.
+
+                if (stop.character > Position.getLineLength(stop.line)) {
+                    stop = stop.getLineEnd();
                     this._vimState.cursorPosition = stop;
                 }
 
@@ -399,6 +402,7 @@ export class ModeHandler implements vscode.Disposable {
             } else {
                 vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
             }
+
             // Updated desired column
 
             const movement = actionState.movement, command = actionState.command;
@@ -447,7 +451,7 @@ export class ModeHandler implements vscode.Disposable {
 
             if (this.currentModeName === ModeName.VisualLine) {
                 start = Position.EarlierOf(start, stop).getLineBegin();
-                stop = Position.LaterOf(start, stop).getLineEnd();
+                stop  = Position.LaterOf(start, stop).getLineEnd();
             }
 
             return await actionState.operator.run(this._vimState, start, stop);

@@ -1,7 +1,7 @@
 import { VimCommandActions, VimState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
-import { Register } from './../register/register';
+import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
 import * as vscode from 'vscode';
 
@@ -143,8 +143,7 @@ export class DeleteOperator extends BaseOperator {
     /**
      * Deletes from the position of start to 1 past the position of end.
      */
-    public async run(vimState: VimState,
-                     start: Position, end: Position): Promise<VimState> {
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
           end = new Position(end.line, end.character + 1);
         } else {
@@ -155,25 +154,26 @@ export class DeleteOperator extends BaseOperator {
           end = new Position(end.line, end.character + 1);
         }
 
-        // TODO: This is a hack.
-        if (end.character === TextEditor.getLineAt(end).text.length) {
+        // Vim does this weird thing where it allows you to select and delete
+        // the newline character, which it places 1 past the last character
+        // in the line. Here we interpret a character position 1 past the end
+        // as selecting the newline character.
+        if (end.character === TextEditor.getLineAt(end).text.length + 1) {
           end = end.getDown(0);
         }
 
-        // Imagine we have selected everything with an X in
-        // the following text (there is no character on the
-        // second line at all, just a block cursor):
+        // If we do dd on the final line of the document, we expect the line
+        // to be removed. This is actually a special case because the newline
+        // character we've selected to delete is the newline on the end of the document,
+        // but we actually delete the newline on the second to last line.
 
-        // XXXXXXX
-        // X
-        //
-        // If we delete this range, we want to delete the entire first and
-        // second lines. Therefore we have to advance the cursor to the next
-        // line.
-
-        if (start.line !== end.line && TextEditor.getLineAt(end).text === "") {
-            end = end.getDown(0);
+        // Just writing about this is making me more confused. -_-
+        if (start.line === end.line && start.line !== 0 && vimState.currentRegisterMode === RegisterMode.LineWise) {
+          start = start.getPreviousLineBegin().getLineEnd();
         }
+
+        const text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+        Register.put(text, vimState);
 
         await TextEditor.delete(new vscode.Range(start, end));
 
@@ -184,11 +184,46 @@ export class DeleteOperator extends BaseOperator {
         if (start.character >= TextEditor.getLineAt(start).text.length) {
           vimState.cursorPosition = start.getLeft();
         } else {
-          vimState.cursorPosition =  start;
+          vimState.cursorPosition = start;
         }
 
         vimState.currentMode = ModeName.Normal;
 
+        return vimState;
+    }
+}
+
+@RegisterAction
+export class YankOperator extends BaseOperator {
+    public key = "y";
+    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+
+    /**
+     * Run this operator on a range.
+     */
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+        if (start.compareTo(end) <= 0) {
+          end = new Position(end.line, end.character + 1);
+        } else {
+          const tmp = start;
+          start = end;
+          end = tmp;
+
+          end = new Position(end.line, end.character + 1);
+        }
+
+        let text = TextEditor.getText(new vscode.Range(start, end));
+
+        // If we selected the newline character, add it as well.
+        if (vimState.currentMode === ModeName.Visual &&
+            end.character === TextEditor.getLineAt(end).text.length + 1) {
+          text = text + "\n";
+        }
+
+        Register.put(text, vimState);
+
+        vimState.currentMode = ModeName.Normal;
+        vimState.cursorPosition = start;
         return vimState;
     }
 }
@@ -225,34 +260,32 @@ export class PutCommand extends BaseCommand {
      * Run this operator on a range.
      */
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
-        const text = Register.get();
+        const register = Register.get(vimState);
+        const text = register.text;
+        const dest = position.getRight();
 
-        await TextEditor.insertAt(text, position.getRight());
+        if (register.registerMode === RegisterMode.CharacterWise) {
+          await TextEditor.insertAt(text, dest);
+        } else {
+          await TextEditor.insertAt("\n" + text, dest.getLineEnd());
+        }
 
-        vimState.cursorPosition = new Position(position.line, position.character + text.length);
+        // More vim weirdness: If the thing you're pasting has a newline, the cursor
+        // stays in the same place. Otherwise, it moves to the end of what you pasted.
+
+        if (register.registerMode === RegisterMode.LineWise) {
+          vimState.cursorPosition = new Position(dest.line + 1, 0);
+        } else {
+          if (text.indexOf("\n") === -1) {
+            vimState.cursorPosition = new Position(dest.line, dest.character + text.length);
+          } else {
+            vimState.cursorPosition = dest;
+          }
+        }
+
         return vimState;
     }
 }
-
-@RegisterAction
-export class YankOperator extends BaseOperator {
-    public key = "y";
-    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-
-    /**
-     * Run this operator on a range.
-     */
-    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        const text = TextEditor.getText(new vscode.Range(start, end.getRight()));
-
-        Register.put(text);
-
-        vimState.currentMode = ModeName.Normal;
-        vimState.cursorPosition = start;
-        return vimState;
-    }
-}
-
 
 @RegisterAction
 class CommandShowCommandLine extends BaseCommand {
@@ -862,15 +895,11 @@ class MoveDD extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     let start = position.getLineBegin();
-    let stop  = position.getLineEnd();
-
-    if (start.line === TextEditor.getLineCount() - 1 && start.line > 0) {
-      start = position.getPreviousLineBegin().getLineEnd();
-      stop = position.getLineEnd();
-    }
+    let stop  = position.getLineEndIncludingEOL();
 
     vimState.cursorStartPosition = start;
     vimState.cursorPosition = stop;
+    vimState.currentRegisterMode = RegisterMode.LineWise;
 
     return vimState;
   }
@@ -883,7 +912,8 @@ class MoveYY extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     vimState.cursorStartPosition = position.getLineBegin();
-    vimState.cursorPosition = position.getNextLineBegin();
+    vimState.cursorPosition = position.getLineEnd();
+    vimState.currentRegisterMode = RegisterMode.LineWise;
 
     return vimState;
   }
