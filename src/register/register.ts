@@ -1,6 +1,13 @@
 import { ModeName } from './../mode/mode';
 import { VimState } from './../mode/modeHandler';
 
+
+/**
+ * There are two different modes of copy/paste in Vim - copy by character
+ * and copy by line. Copy by line typically happens in Visual Line mode, but
+ * also shows up in some other actions that work over lines (most noteably dd,
+ * yy, and cc).
+ */
 export enum RegisterMode {
     FigureItOutFromCurrentMode,
     CharacterWise,
@@ -8,7 +15,7 @@ export enum RegisterMode {
 };
 
 export interface IRegisterContent {
-    text: string;
+    text        : string;
     registerMode: RegisterMode;
 }
 
