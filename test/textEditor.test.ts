@@ -60,15 +60,4 @@ suite("text editor", () => {
         assert.throws(() => TextEditor.readLineAt(1), RangeError);
         assert.throws(() => TextEditor.readLineAt(2), RangeError);
     });
-
-    test("delete should copy to clipboard", async () => {
-        const expectedText = "Hello World";
-        await TextEditor.insert(expectedText);
-
-        const range = vscode.window.activeTextEditor.document.lineAt(0).range;
-
-        await TextEditor.delete(range);
-        const actualText = Register.get();
-        assert.equal(actualText, expectedText);
-    });
 });

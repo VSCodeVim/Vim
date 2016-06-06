@@ -16,14 +16,7 @@ export class TextEditor {
         });
     }
 
-    static async copy(range: vscode.Range): Promise<void> {
-        const text = vscode.window.activeTextEditor.document.getText(range);
-
-        Register.put(text);
-    }
-
     static async delete(range: vscode.Range): Promise<boolean> {
-        TextEditor.copy(range);
         return vscode.window.activeTextEditor.edit(editBuilder => {
             editBuilder.delete(range);
         });

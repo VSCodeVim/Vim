@@ -66,7 +66,7 @@ suite("Mode Normal", () => {
         await assertEqualLines(["text"]);
     });
 
-    test("Can handle dd end-of-line", async () => {
+    test("Can handle dd last line", async () => {
         await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
         await modeHandler.handleMultipleKeyEvents([
             '<esc>', '^',

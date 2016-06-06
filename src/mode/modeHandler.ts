@@ -13,7 +13,7 @@ import {
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
-import { TextEditor } from '../../src/textEditor';
+import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 
 export enum VimCommandActions {
@@ -65,6 +65,10 @@ export class VimState {
      * The mode Vim will be in once this action finishes.
      */
     public currentMode = ModeName.Normal;
+
+    public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+
+    public registerName = '"';
 
     /**
      * This is for oddball commands that don't manipulate text in any way.
@@ -447,7 +451,7 @@ export class ModeHandler implements vscode.Disposable {
 
             if (this.currentModeName === ModeName.VisualLine) {
                 start = Position.EarlierOf(start, stop).getLineBegin();
-                stop = Position.LaterOf(start, stop).getLineEnd();
+                stop  = Position.LaterOf(start, stop).getLineEnd();
             }
 
             return await actionState.operator.run(this._vimState, start, stop);
