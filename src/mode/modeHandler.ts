@@ -267,7 +267,7 @@ export class ModeHandler implements vscode.Disposable {
 
         actionState.keysPressed.push(key);
 
-        let action = Actions.getRelevantAction(actionState.keysPressed.join(""), this._vimState);
+        let action = Actions.getRelevantAction(actionState.keysPressed, this._vimState);
 
         if (action === KeypressState.NoPossibleMatch) {
             if (this.currentModeName === ModeName.Insert) {
