@@ -1,6 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import {setupWorkspace, cleanUpWorkspace} from './../testUtils';
 import {ModeName} from '../../src/mode/mode';
 import {ModeHandler} from '../../src/mode/modeHandler';
@@ -31,5 +32,18 @@ suite("Mode Handler", () => {
         modeHandler.setCurrentModeByName(ModeName.Visual);
         assert.equal(modeHandler.currentMode.Name, ModeName.Visual);
         */
+    });
+
+    test("Uses correct cursor style depending on mode", async () => {
+        const modeHandler = new ModeHandler();
+
+        modeHandler.setCurrentModeByName(ModeName.Normal);
+        assert.equal(vscode.window.activeTextEditor.options.cursorStyle, vscode.TextEditorCursorStyle.Block);
+
+        modeHandler.setCurrentModeByName(ModeName.Insert);
+        assert.equal(vscode.window.activeTextEditor.options.cursorStyle, vscode.TextEditorCursorStyle.Line);
+
+        modeHandler.setCurrentModeByName(ModeName.Visual);
+        assert.equal(vscode.window.activeTextEditor.options.cursorStyle, vscode.TextEditorCursorStyle.Block);
     });
 });
