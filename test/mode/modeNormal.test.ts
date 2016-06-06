@@ -96,6 +96,17 @@ suite("Mode Normal", () => {
         assertEqualLines(["two"]);
     });
 
+
+    test("Can handle dd empty line", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\n\ntwo".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'g', 'g', 'j',
+            'd', 'd'
+        ]);
+
+        assertEqualLines(["one", "two"]);
+    });
+
     test("Can handle cc", async () => {
         await modeHandler.handleMultipleKeyEvents("ione\none two".split(""));
         await modeHandler.handleMultipleKeyEvents([
