@@ -410,4 +410,54 @@ export class Position extends vscode.Position {
 
         return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
     }
+
+
+    private findHelper(char: string, count: number, direction: number): Position {
+        // -1 = backwards, +1 = forwards
+        const line = TextEditor.getLineAt(this);
+        let index = this.character;
+
+        while (count && index !== -1) {
+            if (direction > 0) {
+                index = line.text.indexOf(char, index + direction);
+            } else {
+                index = line.text.lastIndexOf(char, index + direction);
+            }
+            count--;
+        }
+
+        if (index > -1) {
+            return new Position(this.line, index);
+        }
+
+        return null;
+    }
+
+    public tilForwards(char: string, count: number = 1): Position {
+        const position = this.findHelper(char, count, +1);
+        if (!position) { return this; }
+
+        return new Position(this.line, position.character - 1);
+    }
+
+    public tilBackwards(char: string, count: number = 1): Position {
+        const position = this.findHelper(char, count, -1);
+        if (!position) { return this; }
+
+        return new Position(this.line, position.character + 1);
+    }
+
+    public findForwards(char: string, count: number = 1): Position {
+        const position = this.findHelper(char, count, +1);
+        if (!position) { return this; }
+
+        return new Position(this.line, position.character);
+    }
+
+    public findBackwards(char: string, count: number = 1): Position {
+        const position = this.findHelper(char, count, -1);
+        if (!position) { return this; }
+
+        return position;
+    }
 }

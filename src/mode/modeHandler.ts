@@ -292,8 +292,6 @@ export class ModeHandler implements vscode.Disposable {
             }
         } else if (action === KeypressState.WaitingOnKeys) {
             return true;
-        } else {
-            actionState.keysPressed = [];
         }
 
         if (action) {
@@ -416,6 +414,8 @@ export class ModeHandler implements vscode.Disposable {
 
             this._vimState.actionState = new ActionState(this._vimState);
         }
+
+        actionState.keysPressed = [];
 
         return !!action;
     }

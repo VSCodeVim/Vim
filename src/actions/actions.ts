@@ -658,6 +658,63 @@ class MoveRight extends BaseMovement {
 }
 
 @RegisterAction
+class MoveFindForward extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["f", "<any>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    const toFind = vimState.actionState.keysPressed[1];
+
+    vimState.cursorPosition = position.findForwards(toFind);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveFindBackward extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["F", "<any>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    const toFind = vimState.actionState.keysPressed[1];
+
+    vimState.cursorPosition = position.findBackwards(toFind);
+
+    return vimState;
+  }
+}
+
+
+@RegisterAction
+class MoveTilForward extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["t", "<any>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    const toFind = vimState.actionState.keysPressed[1];
+
+    vimState.cursorPosition = position.tilForwards(toFind);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveTilBackward extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["T", "<any>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    const toFind = vimState.actionState.keysPressed[1];
+
+    vimState.cursorPosition = position.tilBackwards(toFind);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class MoveLineEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["$"];
