@@ -191,23 +191,6 @@ export class ModeHandler implements vscode.Disposable {
     private _configuration: Configuration;
     private _vimState: VimState;
 
-    // Caret Styling
-    private _caretDecoration = vscode.window.createTextEditorDecorationType(
-    {
-        dark: {
-            // used for dark colored themes
-            backgroundColor: 'rgba(224, 224, 224, 0.4)',
-            borderColor: 'rgba(240, 240, 240, 0.8)'
-        },
-        light: {
-            // used for light colored themes
-            backgroundColor: 'rgba(32, 32, 32, 0.4)',
-            borderColor: 'rgba(16, 16, 16, 0.8)'
-        },
-        borderStyle: 'solid',
-        borderWidth: '1px'
-    });
-
     private get currentModeName(): ModeName {
         return this.currentMode.name;
     }
@@ -248,6 +231,14 @@ export class ModeHandler implements vscode.Disposable {
 
             mode.isActive = (mode.name === modeName);
         }
+        // Draw block cursor.
+        // The reason we make a copy of options is because it's a
+        // getter/setter and it won't trigger it's event if we modify
+        // the object in place
+        const options = vscode.window.activeTextEditor.options;
+        options.cursorStyle = modeName === ModeName.Insert ?
+            vscode.TextEditorCursorStyle.Line : vscode.TextEditorCursorStyle.Block;
+        vscode.window.activeTextEditor.options = options;
 
         const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
@@ -377,16 +368,6 @@ export class ModeHandler implements vscode.Disposable {
                 if (start.compareTo(stop) > 0) {
                     start = start.getRight();
                 }
-            }
-
-            // Draw block cursor.
-
-            if (this.currentMode.name !== ModeName.Insert) {
-                let range = new vscode.Range(stop, stop.getRight());
-                vscode.window.activeTextEditor.revealRange(range, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
-                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
-            } else {
-                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
             }
 
             // Draw selection (or cursor)
