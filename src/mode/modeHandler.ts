@@ -87,27 +87,21 @@ export class VimState {
         this._actionState = a;
     }
 
-    public isDotActionDone(): boolean {
-        const isBareMovement =
-            (this.currentMode === ModeName.Normal && this.actionState.isOnlyAMovement());
-
-        const isFinishedOperation =
-            (this.currentMode === ModeName.Normal && this.actionState.movement !== undefined && this.actionState.operator !== undefined) ||
-            ((this.currentMode === ModeName.Visual || this.currentMode === ModeName.VisualLine) &&
-                this.actionState.movement !== undefined);
+    public isFullDotAction(): boolean {
+        const isFinishedOperation = this.actionState.operator !== undefined;
 
         const justReturnedToNormalMode =
             this.actionState.actionKeys[0] === "<esc>" ||
             this.actionState.actionKeys[0] === "<ctrl-[>";
 
-        return isBareMovement || isFinishedOperation || justReturnedToNormalMode;
+        return isFinishedOperation || justReturnedToNormalMode;
     }
 
     public shouldResetCurrentDotKeys(): boolean {
         const isBareMovement =
             (this.currentMode === ModeName.Normal && this.actionState.isOnlyAMovement());
 
-        return isBareMovement || this.isDotActionDone();
+        return isBareMovement || this.isFullDotAction();
     }
 }
 
@@ -366,7 +360,7 @@ export class ModeHandler implements vscode.Disposable {
 
             // Update dot keys
 
-            if (vimState.isDotActionDone()) {
+            if (vimState.isFullDotAction()) {
                 vimState.oldDotKeys = vimState.dotKeys;
             }
 
@@ -440,6 +434,7 @@ export class ModeHandler implements vscode.Disposable {
             case VimCommandActions.Dot:
                 const oldDotKeysCopy = vimState.oldDotKeys.slice(0);
                 vimState.actionState = new ActionState(vimState);
+                vimState.dotKeys = [];
 
                 for (let key of oldDotKeysCopy) {
                     vimState = await this.handleKeyEventHelper(key, vimState);
