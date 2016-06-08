@@ -1006,7 +1006,6 @@ class ActionDeleteLastChar extends BaseCommand {
   }
 }
 
-
 @RegisterAction
 class ActionJoin extends BaseCommand {
   modes = [ModeName.Normal];
@@ -1036,6 +1035,21 @@ class ActionJoin extends BaseCommand {
       position.getLineEnd(),
       positionToDeleteTo
     );
+  }
+}
+
+@RegisterAction
+class ActionReplaceCharacter extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["r", "<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const toReplace = vimState.actionState.actionKeys[1];
+    const state = await new DeleteOperator().run(vimState, position, position);
+
+    await TextEditor.insertAt(toReplace, position);
+
+    return state;
   }
 }
 
