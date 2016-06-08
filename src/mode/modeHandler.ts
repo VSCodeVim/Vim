@@ -9,7 +9,7 @@ import { VisualMode } from './modeVisual';
 import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions,
-    BaseOperator,
+    BaseOperator, PutCommand,
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
@@ -88,13 +88,15 @@ export class VimState {
     }
 
     public isFullDotAction(): boolean {
-        const isFinishedOperation = this.actionState.operator !== undefined;
+        const isInNormalMode = this.currentMode === ModeName.Normal;
+        const justFinishedOperation = this.actionState.operator !== undefined;
+        const justFinishedPut = this.actionState.command instanceof PutCommand;
 
         const justReturnedToNormalMode =
             this.actionState.actionKeys[0] === "<esc>" ||
             this.actionState.actionKeys[0] === "<ctrl-[>";
 
-        return isFinishedOperation || justReturnedToNormalMode;
+        return isInNormalMode && (justFinishedOperation || justReturnedToNormalMode || justFinishedPut);
     }
 
     public shouldResetCurrentDotKeys(): boolean {
@@ -433,6 +435,7 @@ export class ModeHandler implements vscode.Disposable {
             case VimCommandActions.MoveFullPageUp: await vscode.commands.executeCommand("cursorPageDown"); break;
             case VimCommandActions.Dot:
                 const oldDotKeysCopy = vimState.oldDotKeys.slice(0);
+
                 vimState.actionState = new ActionState(vimState);
                 vimState.dotKeys = [];
 
