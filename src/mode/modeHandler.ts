@@ -304,8 +304,6 @@ export class ModeHandler implements vscode.Disposable {
         actionState.actionKeys.push(key);
         vimState.dotKeys.push(key);
 
-        console.log(vimState.dotKeys.join(""));
-
         let action = Actions.getRelevantAction(actionState.actionKeys, vimState);
 
         if (action === KeypressState.NoPossibleMatch) {
