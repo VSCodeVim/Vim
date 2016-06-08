@@ -1006,6 +1006,39 @@ class ActionDeleteLastChar extends BaseCommand {
   }
 }
 
+
+@RegisterAction
+class ActionJoin extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["J"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (position.line === TextEditor.getLineCount() - 1) {
+      return vimState; // TODO: bell
+    }
+
+    // TODO(whitespace): need a better way to check for whitespace
+    const char = TextEditor.getLineAt(position.getNextLineBegin()).text[0];
+    const nextLineStartsWithWhitespace =
+      char === ' ' || char === '\t';
+
+    const positionToDeleteTo =
+      nextLineStartsWithWhitespace ?
+        position.getNextLineBegin().getFirstLineNonBlankChar().getLeft().getLeft() :
+        position.getLineEnd();
+
+    if (!nextLineStartsWithWhitespace) {
+      await TextEditor.insertAt(" ", position.getNextLineBegin());
+    }
+
+    return await new DeleteOperator().run(
+      vimState,
+      position.getLineEnd(),
+      positionToDeleteTo
+    );
+  }
+}
+
 @RegisterAction
 class MoveDD extends BaseMovement {
   modes = [ModeName.Normal];
@@ -1096,7 +1129,7 @@ class MovementAWordTextObject extends BaseMovement {
 
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
-    // TODO - this is a bad way to do this. we need some sort of global
+    // TODO(whitespace) - this is a bad way to do this. we need some sort of global
     // white space checking function.
     if (currentChar === ' ' || currentChar === '\t') {
       vimState.cursorStartPosition = position.getLastWordEnd().getRight();
@@ -1132,7 +1165,7 @@ class MovementIWordTextObject extends BaseMovement {
 
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
-    // TODO - this is a bad way to do this. we need some sort of global
+    // TODO(whitespace)  - this is a bad way to do this. we need some sort of global
     // white space checking function.
     if (currentChar === ' ' || currentChar === '\t') {
       vimState.cursorStartPosition = position.getLastWordEnd().getRight();
