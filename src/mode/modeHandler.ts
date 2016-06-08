@@ -308,7 +308,7 @@ export class ModeHandler implements vscode.Disposable {
                 selectionStart: this._vimState.cursorStartPosition,
                 selectionStop : this._vimState.cursorPosition,
                 currentMode   : this._vimState.currentMode,
-            })
+            });
 
             // Updated desired column
 

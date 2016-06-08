@@ -22,7 +22,7 @@ const containsControlKey = function(s: string): boolean {
   }
 
   return false;
-}
+};
 
 const compareKeypressSequence = function (one: string[], two: string[]): boolean {
   if (one.length !== two.length) {
