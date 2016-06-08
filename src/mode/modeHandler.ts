@@ -50,9 +50,16 @@ export class VimState {
      */
     public desiredColumn = 0;
 
-    public oldDotKeys = [];
+    /**
+     * The keystroke sequence that made up our last complete action (that can be
+     * repeated with '.').
+     */
+    public previousFullAction = [];
 
-    public dotKeys = [];
+    /**
+     * The current full action we are building up.
+     */
+    public currentFullAction = [];
 
     /**
      * The position the cursor will be when this action finishes.
@@ -302,7 +309,7 @@ export class ModeHandler implements vscode.Disposable {
         let actionState = vimState.actionState;
 
         actionState.actionKeys.push(key);
-        vimState.dotKeys.push(key);
+        vimState.currentFullAction.push(key);
 
         let action = Actions.getRelevantAction(actionState.actionKeys, vimState);
 
@@ -361,11 +368,11 @@ export class ModeHandler implements vscode.Disposable {
             // Update dot keys
 
             if (vimState.isFullDotAction()) {
-                vimState.oldDotKeys = vimState.dotKeys;
+                vimState.previousFullAction = vimState.currentFullAction;
             }
 
             if (vimState.shouldResetCurrentDotKeys()) {
-                vimState.dotKeys = [];
+                vimState.currentFullAction = [];
             }
 
             vimState.actionState = new ActionState(vimState);
@@ -432,10 +439,10 @@ export class ModeHandler implements vscode.Disposable {
             case VimCommandActions.MoveFullPageDown: await vscode.commands.executeCommand("cursorPageUp"); break;
             case VimCommandActions.MoveFullPageUp: await vscode.commands.executeCommand("cursorPageDown"); break;
             case VimCommandActions.Dot:
-                const oldDotKeysCopy = vimState.oldDotKeys.slice(0);
+                const oldDotKeysCopy = vimState.previousFullAction.slice(0);
 
                 vimState.actionState = new ActionState(vimState);
-                vimState.dotKeys = [];
+                vimState.currentFullAction = [];
 
                 for (let key of oldDotKeysCopy) {
                     vimState = await this.handleKeyEventHelper(key, vimState);
