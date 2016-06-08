@@ -27,7 +27,8 @@ export enum VimCommandActions {
     Undo,
     Redo,
     MoveFullPageDown,
-    MoveFullPageUp
+    MoveFullPageUp,
+    Dot,
 }
 
 /**
@@ -48,6 +49,10 @@ export class VimState {
      * back to the 20th column.
      */
     public desiredColumn = 0;
+
+    public oldDotKeys = [];
+
+    public dotKeys = [];
 
     /**
      * The position the cursor will be when this action finishes.
@@ -81,6 +86,22 @@ export class VimState {
         a.vimState = this;
         this._actionState = a;
     }
+
+    public isDotActionDone(): boolean {
+        const isBareMovement =
+            (this.currentMode === ModeName.Normal && this.actionState.isOnlyAMovement());
+
+        const isFinishedOperation =
+            (this.currentMode === ModeName.Normal && this.actionState.movement !== undefined && this.actionState.operator !== undefined) ||
+            ((this.currentMode === ModeName.Visual || this.currentMode === ModeName.VisualLine) &&
+                this.actionState.movement !== undefined);
+
+        const justReturnedToNormalMode =
+            this.actionState.actionKeys[0] === "<esc>" ||
+            this.actionState.actionKeys[0] === "<ctrl-[>";
+
+        return isBareMovement || isFinishedOperation || justReturnedToNormalMode;
+    }
 }
 
 /**
@@ -97,10 +118,10 @@ export class VimState {
  */
 export class ActionState {
     /**
-     * Keeps track of the most recent keys pressed. Comes in handy when parsing
+     * Keeps track of keys pressed for the next action. Comes in handy when parsing
      * multiple length movements, e.g. gg.
      */
-    private _keysPressed: string[] = [];
+    private _actionKeys: string[] = [];
 
     /**
      * The operator (e.g. d, y, >>) the user wants to run, if there is one.
@@ -120,9 +141,9 @@ export class ActionState {
 
     public readyToExecute = false;
 
-    public get keysPressed(): string[] { return this._keysPressed; }
-    public set keysPressed(val: string[]) {
-        this._keysPressed = val;
+    public get actionKeys(): string[] { return this._actionKeys; }
+    public set actionKeys(val: string[]) {
+        this._actionKeys = val;
         this.actionStateChanged();
     }
 
@@ -180,11 +201,15 @@ export class ActionState {
                this._count       === 1;
     }
 
+    public isOnlyAMovement(): boolean {
+        return this._operator    === undefined &&
+               this._command     === undefined;
+    }
+
     constructor(vimState: VimState) {
         this.vimState = vimState;
     }
 }
-
 
 interface IViewState {
     selectionStart: Position;
@@ -213,7 +238,9 @@ export class ModeHandler implements vscode.Disposable {
             new VisualLineMode(),
         ];
 
-        this.setCurrentModeByName(ModeName.Normal);
+        this._vimState.currentMode = ModeName.Normal;
+
+        this.setCurrentModeByName(this._vimState);
     }
 
     /**
@@ -223,20 +250,20 @@ export class ModeHandler implements vscode.Disposable {
         return this._modes.find(mode => mode.isActive);
     }
 
-    setCurrentModeByName(modeName: ModeName) {
+    setCurrentModeByName(vimState: VimState) {
         let activeMode: Mode;
 
-        this._vimState.currentMode = modeName;
+        this._vimState.currentMode = vimState.currentMode;
 
         // TODO actually making these into functions on modes -
         // like we used to have is a good idea.
 
         for (let mode of this._modes) {
-            if (mode.name === modeName) {
+            if (mode.name === vimState.currentMode) {
                 activeMode = mode;
             }
 
-            mode.isActive = (mode.name === modeName);
+            mode.isActive = (mode.name === vimState.currentMode);
         }
 
         // Draw block cursor.
@@ -244,12 +271,12 @@ export class ModeHandler implements vscode.Disposable {
         // getter/setter and it won't trigger it's event if we modify
         // the object in place
         const options = vscode.window.activeTextEditor.options;
-        (options as any).cursorStyle = modeName === ModeName.Insert ?
+        (options as any).cursorStyle = vimState.currentMode === ModeName.Insert ?
             (vscode as any).TextEditorCursorStyle.Line :
             (vscode as any).TextEditorCursorStyle.Block;
         vscode.window.activeTextEditor.options = options;
 
-        const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[modeName];
+        const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[vimState.currentMode];
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
     }
 
@@ -257,25 +284,34 @@ export class ModeHandler implements vscode.Disposable {
      * Along with executeState(), one of the core processing functions of VSCVim.
      */
     async handleKeyEvent(key: string): Promise<Boolean> {
+        this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+
+        return true;
+    }
+
+    async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
 
         key = this._configuration.keyboardLayout.translate(key);
 
-        let actionState = this._vimState.actionState;
+        let actionState = vimState.actionState;
 
-        actionState.keysPressed.push(key);
+        actionState.actionKeys.push(key);
+        vimState.dotKeys.push(key);
 
-        let action = Actions.getRelevantAction(actionState.keysPressed, this._vimState);
+        console.log(vimState.dotKeys.join(""));
+
+        let action = Actions.getRelevantAction(actionState.actionKeys, vimState);
 
         if (action === KeypressState.NoPossibleMatch) {
             console.log("Nothing matched!");
 
-            this._vimState.actionState = new ActionState(this._vimState);
-            return false;
+            vimState.actionState = new ActionState(vimState);
+            return vimState;
         } else if (action === KeypressState.WaitingOnKeys) {
-            return true;
+            return vimState;
         }
 
         if (action instanceof BaseMovement) {
@@ -289,25 +325,25 @@ export class ModeHandler implements vscode.Disposable {
         if (actionState.readyToExecute) {
             if (this.currentMode.name !== ModeName.Visual &&
                 this.currentMode.name !== ModeName.VisualLine) {
-                this._vimState.cursorStartPosition = this._vimState.cursorPosition;
+                vimState.cursorStartPosition = vimState.cursorPosition;
             }
 
-            this._vimState = await this.executeState();
+            vimState = await this.executeState(vimState);
 
-            if (this._vimState.commandAction !== VimCommandActions.DoNothing) {
-                await this.handleCommand(this._vimState);
+            if (vimState.commandAction !== VimCommandActions.DoNothing) {
+                vimState = await this.handleCommand(vimState);
             }
 
             // Update mode
 
-            if (this._vimState.currentMode !== this.currentModeName) {
-                this.setCurrentModeByName(this._vimState.currentMode);
+            if (vimState.currentMode !== this.currentModeName) {
+                this.setCurrentModeByName(vimState);
             }
 
-            await this.updateView({
-                selectionStart: this._vimState.cursorStartPosition,
-                selectionStop : this._vimState.cursorPosition,
-                currentMode   : this._vimState.currentMode,
+            await this.updateView(vimState, {
+                selectionStart: vimState.cursorStartPosition,
+                selectionStop : vimState.cursorPosition,
+                currentMode   : vimState.currentMode,
             });
 
             // Updated desired column
@@ -315,38 +351,44 @@ export class ModeHandler implements vscode.Disposable {
             const movement = actionState.movement, command = actionState.command;
             if ((movement && !movement.doesntChangeDesiredColumn) || command) {
                 if (movement && movement.setsDesiredColumnToEOL) {
-                    this._vimState.desiredColumn = Number.POSITIVE_INFINITY;
+                    vimState.desiredColumn = Number.POSITIVE_INFINITY;
                 } else {
-                    this._vimState.desiredColumn = this._vimState.cursorPosition.character;
+                    vimState.desiredColumn = vimState.cursorPosition.character;
                 }
             }
 
-            this._vimState.actionState = new ActionState(this._vimState);
+            // Update dot keys
+
+            if (vimState.isDotActionDone()) {
+                vimState.oldDotKeys = vimState.dotKeys;
+                vimState.dotKeys = [];
+            }
+
+            vimState.actionState = new ActionState(vimState);
         }
 
-        actionState.keysPressed = [];
+        actionState.actionKeys = [];
 
-        return !!action;
+        return vimState;
     }
 
-    private async executeState(): Promise<VimState> {
-        let start = this._vimState.cursorStartPosition;
-        let stop = this._vimState.cursorPosition;
-        let actionState = this._vimState.actionState;
-        let newState: VimState;
+    private async executeState(vimState: VimState): Promise<VimState> {
+        let start = vimState.cursorStartPosition;
+        let stop = vimState.cursorPosition;
+        let actionState = vimState.actionState;
 
         if (actionState.command) {
-            return await actionState.command.exec(stop, this._vimState);
+            return await actionState.command.exec(stop, vimState);
         }
 
         if (actionState.movement) {
-            newState = actionState.operator ?
-                await actionState.movement.execActionForOperator(stop, this._vimState) :
-                await actionState.movement.execAction           (stop, this._vimState);
+            vimState = actionState.operator ?
+                await actionState.movement.execActionForOperator(stop, vimState) :
+                await actionState.movement.execAction           (stop, vimState);
 
-            actionState = newState.actionState;
-            start       = newState.cursorStartPosition;
-            stop        = newState.cursorPosition;
+            actionState = vimState.actionState;
+            start       = vimState.cursorStartPosition;
+            stop        = vimState.cursorPosition;
         }
 
         if (actionState.operator) {
@@ -363,13 +405,13 @@ export class ModeHandler implements vscode.Disposable {
                 stop  = Position.LaterOf(start, stop).getLineEnd();
             }
 
-            return await actionState.operator.run(this._vimState, start, stop);
+            return await actionState.operator.run(vimState, start, stop);
         } else {
-            return newState;
+            return vimState;
         }
     }
 
-    private async handleCommand(vimState: VimState): Promise<void> {
+    private async handleCommand(vimState: VimState): Promise<VimState> {
         switch (vimState.commandAction) {
             case VimCommandActions.ShowCommandLine: await showCmdLine("", this); break;
             case VimCommandActions.Find: await vscode.commands.executeCommand("actions.find"); break;
@@ -381,12 +423,21 @@ export class ModeHandler implements vscode.Disposable {
             case VimCommandActions.Redo: await vscode.commands.executeCommand("redo"); break;
             case VimCommandActions.MoveFullPageDown: await vscode.commands.executeCommand("cursorPageUp"); break;
             case VimCommandActions.MoveFullPageUp: await vscode.commands.executeCommand("cursorPageDown"); break;
+            case VimCommandActions.Dot:
+                /*
+                for (let key of vimState.oldDotKeys) {
+                    vimState = await this.handleKeyEvent()
+                }
+                */
+            break;
         }
 
         vimState.commandAction = VimCommandActions.DoNothing;
+
+        return vimState;
     }
 
-    private async updateView(viewState: IViewState): Promise<void> {
+    private async updateView(vimState: VimState, viewState: IViewState): Promise<void> {
         // Update cursor position
 
         let start = viewState.selectionStart;
@@ -397,7 +448,7 @@ export class ModeHandler implements vscode.Disposable {
         if (viewState.currentMode === ModeName.Normal) {
             if (stop.character >= Position.getLineLength(stop.line)) {
                 stop = stop.getLineEnd().getLeft();
-                this._vimState.cursorPosition = stop;
+                vimState.cursorPosition = stop;
             }
         } else if (viewState.currentMode === ModeName.Visual ||
                     viewState.currentMode === ModeName.VisualLine) {
@@ -408,7 +459,7 @@ export class ModeHandler implements vscode.Disposable {
 
             if (stop.character > Position.getLineLength(stop.line)) {
                 stop = stop.getLineEnd();
-                this._vimState.cursorPosition = stop;
+                vimState.cursorPosition = stop;
             }
 
             /**

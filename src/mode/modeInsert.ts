@@ -13,6 +13,6 @@ export class InsertMode extends Mode {
         // TODO: REALLY dumb, especially since there are actually actions
         // that work in insert mode.
 
-        await TextEditor.insert(action.keysPressed[0]);
+        // await TextEditor.insert(action.keysPressed[0]);
     }
 }

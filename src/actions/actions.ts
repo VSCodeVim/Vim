@@ -175,7 +175,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   keys = ["<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await TextEditor.insert(vimState.actionState.keysPressed[0]);
+    await TextEditor.insert(vimState.actionState.actionKeys[0]);
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
@@ -355,6 +355,18 @@ class CommandFind extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.commandAction = VimCommandActions.Find;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandDot extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["."];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.Dot;
 
     return vimState;
   }
@@ -698,7 +710,7 @@ class MoveFindForward extends BaseMovement {
   keys = ["f", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    const toFind = vimState.actionState.keysPressed[1];
+    const toFind = vimState.actionState.actionKeys[1];
 
     vimState.cursorPosition = position.findForwards(toFind);
 
@@ -712,7 +724,7 @@ class MoveFindBackward extends BaseMovement {
   keys = ["F", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    const toFind = vimState.actionState.keysPressed[1];
+    const toFind = vimState.actionState.actionKeys[1];
 
     vimState.cursorPosition = position.findBackwards(toFind);
 
@@ -727,7 +739,7 @@ class MoveTilForward extends BaseMovement {
   keys = ["t", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    const toFind = vimState.actionState.keysPressed[1];
+    const toFind = vimState.actionState.actionKeys[1];
 
     vimState.cursorPosition = position.tilForwards(toFind);
 
@@ -741,7 +753,7 @@ class MoveTilBackward extends BaseMovement {
   keys = ["T", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    const toFind = vimState.actionState.keysPressed[1];
+    const toFind = vimState.actionState.actionKeys[1];
 
     vimState.cursorPosition = position.tilBackwards(toFind);
 

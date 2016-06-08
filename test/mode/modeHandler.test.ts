@@ -19,6 +19,11 @@ suite("Mode Handler", () => {
         assert.equal(modeHandler.currentMode.isActive, true);
     });
 
+    test("TODO", () => {
+        assert.equal(true, false, "FAIL!!!");
+    })
+
+    /*
     test("can set current mode", () => {
         var modeHandler = new ModeHandler();
 
@@ -27,11 +32,6 @@ suite("Mode Handler", () => {
 
         modeHandler.setCurrentModeByName(ModeName.Insert);
         assert.equal(modeHandler.currentMode.name, ModeName.Insert);
-
-        /*
-        modeHandler.setCurrentModeByName(ModeName.Visual);
-        assert.equal(modeHandler.currentMode.Name, ModeName.Visual);
-        */
     });
 
     test("Uses correct cursor style depending on mode", async () => {
@@ -46,4 +46,6 @@ suite("Mode Handler", () => {
         modeHandler.setCurrentModeByName(ModeName.Visual);
         assert.equal(vscode.window.activeTextEditor.options.cursorStyle, vscode.TextEditorCursorStyle.Block);
     });
+    */
+
 });
