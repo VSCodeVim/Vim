@@ -1049,6 +1049,8 @@ class ActionReplaceCharacter extends BaseCommand {
 
     await TextEditor.insertAt(toReplace, position);
 
+    state.cursorPosition = position;
+
     return state;
   }
 }

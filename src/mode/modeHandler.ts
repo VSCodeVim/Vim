@@ -375,7 +375,10 @@ export class ModeHandler implements vscode.Disposable {
                 vimState.currentFullAction = [];
             }
 
+            // Reset state
+
             vimState.actionState = new ActionState(vimState);
+            vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
         }
 
         actionState.actionKeys = [];
