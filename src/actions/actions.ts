@@ -5,6 +5,24 @@ import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
 import * as vscode from 'vscode';
 
+const controlKeys: string[] = [
+  "ctrl",
+  "alt",
+  "shift",
+  "esc",
+  "enter",
+  "delete"
+];
+
+const containsControlKey = function(s: string): boolean {
+  for (const controlKey of controlKeys) {
+    if (s.indexOf(controlKey) !== -1) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 const compareKeypressSequence = function (one: string[], two: string[]): boolean {
   if (one.length !== two.length) {
@@ -13,6 +31,8 @@ const compareKeypressSequence = function (one: string[], two: string[]): boolean
 
   for (let i = 0; i < one.length; i++) {
     if (one[i] === "<any>" || two[i] === "<any>") { continue; }
+    if (one[i] === "<character>" && !containsControlKey(two[i])) { continue; }
+    if (two[i] === "<character>" && !containsControlKey(one[i])) { continue; }
     if (one[i] !== two[i]) { return false; }
   }
 
@@ -148,6 +168,21 @@ export function RegisterAction(action) {
   Actions.allActions.push(new action());
 }
 
+
+@RegisterAction
+class CommandInsertInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await TextEditor.insert(vimState.actionState.keysPressed[0]);
+
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 export class DeleteOperator extends BaseOperator {
@@ -513,7 +548,7 @@ class CommandExitVisualLineMode extends BaseCommand {
 @RegisterAction
 class CommandOpenSquareBracket extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<c-[>"];
+  keys = ["<ctrl-[>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Normal;
@@ -660,7 +695,7 @@ class MoveRight extends BaseMovement {
 @RegisterAction
 class MoveFindForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["f", "<any>"];
+  keys = ["f", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     const toFind = vimState.actionState.keysPressed[1];
@@ -674,7 +709,7 @@ class MoveFindForward extends BaseMovement {
 @RegisterAction
 class MoveFindBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["F", "<any>"];
+  keys = ["F", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     const toFind = vimState.actionState.keysPressed[1];
@@ -689,7 +724,7 @@ class MoveFindBackward extends BaseMovement {
 @RegisterAction
 class MoveTilForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["t", "<any>"];
+  keys = ["t", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     const toFind = vimState.actionState.keysPressed[1];
@@ -703,7 +738,7 @@ class MoveTilForward extends BaseMovement {
 @RegisterAction
 class MoveTilBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["T", "<any>"];
+  keys = ["T", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     const toFind = vimState.actionState.keysPressed[1];

@@ -19,7 +19,7 @@ suite("Mode Normal", () => {
     teardown(cleanUpWorkspace);
 
     test("can be activated", async () => {
-        let activationKeys = ['<esc>', '<c-[>'];
+        let activationKeys = ['<esc>', '<ctrl-[>'];
 
         for (let key of activationKeys) {
             await modeHandler.handleKeyEvent('i');
