@@ -102,6 +102,13 @@ export class VimState {
 
         return isBareMovement || isFinishedOperation || justReturnedToNormalMode;
     }
+
+    public shouldResetCurrentDotKeys(): boolean {
+        const isBareMovement =
+            (this.currentMode === ModeName.Normal && this.actionState.isOnlyAMovement());
+
+        return isBareMovement || this.isDotActionDone();
+    }
 }
 
 /**
@@ -361,6 +368,9 @@ export class ModeHandler implements vscode.Disposable {
 
             if (vimState.isDotActionDone()) {
                 vimState.oldDotKeys = vimState.dotKeys;
+            }
+
+            if (vimState.shouldResetCurrentDotKeys()) {
                 vimState.dotKeys = [];
             }
 
@@ -412,7 +422,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     private async handleCommand(vimState: VimState): Promise<VimState> {
-        switch (vimState.commandAction) {
+        const command = vimState.commandAction;
+
+        vimState.commandAction = VimCommandActions.DoNothing;
+
+        switch (command) {
             case VimCommandActions.ShowCommandLine: await showCmdLine("", this); break;
             case VimCommandActions.Find: await vscode.commands.executeCommand("actions.find"); break;
             case VimCommandActions.Fold: await vscode.commands.executeCommand("editor.fold"); break;
@@ -424,15 +438,14 @@ export class ModeHandler implements vscode.Disposable {
             case VimCommandActions.MoveFullPageDown: await vscode.commands.executeCommand("cursorPageUp"); break;
             case VimCommandActions.MoveFullPageUp: await vscode.commands.executeCommand("cursorPageDown"); break;
             case VimCommandActions.Dot:
-                /*
-                for (let key of vimState.oldDotKeys) {
-                    vimState = await this.handleKeyEvent()
+                const oldDotKeysCopy = vimState.oldDotKeys.slice(0);
+                vimState.actionState = new ActionState(vimState);
+
+                for (let key of oldDotKeysCopy) {
+                    vimState = await this.handleKeyEventHelper(key, vimState);
                 }
-                */
             break;
         }
-
-        vimState.commandAction = VimCommandActions.DoNothing;
 
         return vimState;
     }
