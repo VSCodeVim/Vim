@@ -315,18 +315,19 @@ export class PutCommand extends BaseCommand {
     public keys = ["p"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
-    /**
-     * Run this operator on a range.
-     */
-    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    public async exec(position: Position, vimState: VimState, before: boolean = false): Promise<VimState> {
         const register = Register.get(vimState);
         const text = register.text;
-        const dest = position.getRight();
+        const dest = before ? position : position.getRight();
 
         if (register.registerMode === RegisterMode.CharacterWise) {
           await TextEditor.insertAt(text, dest);
         } else {
-          await TextEditor.insertAt("\n" + text, dest.getLineEnd());
+          if (before) {
+            await TextEditor.insertAt(text + "\n", dest.getLineBegin());
+          } else {
+            await TextEditor.insertAt("\n" + text, dest.getLineEnd());
+          }
         }
 
         // More vim weirdness: If the thing you're pasting has a newline, the cursor
@@ -343,6 +344,17 @@ export class PutCommand extends BaseCommand {
         }
 
         return vimState;
+    }
+}
+
+
+@RegisterAction
+export class PutBeforeCommand extends BaseCommand {
+    public keys = ["P"];
+    public modes = [ModeName.Normal];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+        return await new PutCommand().exec(position, vimState, true);
     }
 }
 
