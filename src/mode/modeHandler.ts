@@ -29,6 +29,7 @@ export enum VimCommandActions {
     MoveFullPageDown,
     MoveFullPageUp,
     Dot,
+    ScrollCursorToCenter
 }
 
 /**
@@ -398,7 +399,6 @@ export class ModeHandler implements vscode.Disposable {
 
             vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
 
-
             // Reset state
 
             vimState.actionState = new ActionState(vimState);
@@ -465,6 +465,10 @@ export class ModeHandler implements vscode.Disposable {
             case VimCommandActions.Redo: await vscode.commands.executeCommand("redo"); break;
             case VimCommandActions.MoveFullPageDown: await vscode.commands.executeCommand("cursorPageUp"); break;
             case VimCommandActions.MoveFullPageUp: await vscode.commands.executeCommand("cursorPageDown"); break;
+            case VimCommandActions.ScrollCursorToCenter:
+                vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition),
+                                                           vscode.TextEditorRevealType.InCenter);
+            break;
             case VimCommandActions.Dot:
                 const oldDotKeysCopy = vimState.previousFullAction.slice(0);
 

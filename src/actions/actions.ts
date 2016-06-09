@@ -395,6 +395,18 @@ class CommandFold extends BaseCommand {
 }
 
 @RegisterAction
+class CommandCenterScroll extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["z", "z"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.commandAction = VimCommandActions.ScrollCursorToCenter;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandUnfold extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["z", "o"];
