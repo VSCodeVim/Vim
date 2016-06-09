@@ -6,6 +6,7 @@ import { Mode, ModeName } from './mode';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
+import { SearchInProgressMode } from './modeSearchInProgress';
 import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions,
@@ -74,6 +75,13 @@ export class VimState {
      */
     public cursorStartPosition = new Position(0, 0);
 
+    public searchString = "";
+
+    /**
+     * The position of the next search, or undefined if there is no match.
+     */
+    public nextSearchMatchPosition: Position = undefined;
+
     /**
      * The mode Vim will be in once this action finishes.
      */
@@ -96,9 +104,11 @@ export class VimState {
     }
 
     public isFullDotAction(): boolean {
-        const isInNormalMode = this.currentMode === ModeName.Normal;
+        // TODO: Previous mode was not search mode.
+
+        const isInNormalMode        = this.currentMode === ModeName.Normal;
         const justFinishedOperation = this.actionState.operator !== undefined;
-        const justFinishedPut = this.actionState.command instanceof PutCommand;
+        const justFinishedPut       = this.actionState.command instanceof PutCommand;
 
         const justReturnedToNormalMode =
             this.actionState.actionKeys[0] === "<esc>" ||
@@ -234,6 +244,24 @@ export class ModeHandler implements vscode.Disposable {
     private _configuration: Configuration;
     private _vimState: VimState;
 
+    // Caret Styling
+    private _caretDecoration = vscode.window.createTextEditorDecorationType(
+    {
+        dark: {
+            // used for dark colored themes
+            backgroundColor: 'rgba(224, 224, 224, 0.4)',
+           borderColor: 'rgba(240, 240, 240, 0.8)'
+        },
+        light: {
+            // used for light colored themes
+            backgroundColor: 'rgba(32, 32, 32, 0.4)',
+            borderColor: 'rgba(16, 16, 16, 0.8)'
+        },
+        borderStyle: 'solid',
+        borderWidth: '1px'
+    });
+
+
     private get currentModeName(): ModeName {
         return this.currentMode.name;
     }
@@ -247,6 +275,7 @@ export class ModeHandler implements vscode.Disposable {
             new InsertMode(),
             new VisualMode(this),
             new VisualLineMode(),
+            new SearchInProgressMode(),
         ];
 
         this._vimState.currentMode = ModeName.Normal;
@@ -398,6 +427,19 @@ export class ModeHandler implements vscode.Disposable {
             // Scroll to position of cursor
 
             vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
+
+            // Draw search highlight
+
+            if (this.currentMode.name === ModeName.SearchInProgressMode) {
+                let range = new vscode.Range(
+                    this._vimState.nextSearchMatchPosition,
+                    this._vimState.nextSearchMatchPosition.getRight(this._vimState.searchString.length));
+
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
+            } else {
+                vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
+            }
+
 
             // Reset state
 

@@ -69,9 +69,9 @@ export class Position extends vscode.Position {
             .getLineEnd();
     }
 
-    public getRight() : Position {
+    public getRight(count: number = 1): Position {
         if (!this.isLineEnd()) {
-            return new Position(this.line, this.character + 1);
+            return new Position(this.line, this.character + count);
         }
 
         return this;

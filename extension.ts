@@ -31,6 +31,9 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
+    registerCommand(context, 'extension.vim_enter', () => handleKeyEvent("<enter>"));
+    registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
+
     registerCommand(context, 'extension.showCmdLine', () => {
         if (!modeHandler) {
             modeHandler = new ModeHandler();
@@ -58,5 +61,4 @@ function handleKeyEvent(key: string) : Promise<Boolean> {
 
 process.on('unhandledRejection', function(reason, p){
     console.log("Possibly Unhandled Rejection at: Promise ", p, " reason: ", reason);
-    // application specific logging here
 });

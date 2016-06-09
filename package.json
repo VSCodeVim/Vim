@@ -39,7 +39,9 @@
         { "command": "extension.showCmdLine", "title": "Vim: Show Command Line" }
     ],
     "keybindings": [
-        { "key": "Escape", "command": "extension.vim_esc", "when": "editorTextFocus" }
+        { "key": "Escape", "command": "extension.vim_esc", "when": "editorTextFocus" },
+        { "key": "Enter", "command": "extension.vim_enter", "when": "editorTextFocus" },
+        { "key": "Backspace", "command": "extension.vim_backspace", "when": "editorTextFocus" }
     ],
     "configuration": {
       "title": "Vim Configuration",

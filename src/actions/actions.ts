@@ -29,11 +29,16 @@ const compareKeypressSequence = function (one: string[], two: string[]): boolean
     return false;
   }
 
-  for (let i = 0; i < one.length; i++) {
-    if (one[i] === "<any>" || two[i] === "<any>") { continue; }
-    if (one[i] === "<character>" && !containsControlKey(two[i])) { continue; }
-    if (two[i] === "<character>" && !containsControlKey(one[i])) { continue; }
-    if (one[i] !== two[i]) { return false; }
+  for (let i = 0, j = 0; i < one.length; i++, j++) {
+    const left = one[i], right = two[j];
+
+    if (left  === "<any>") { continue; }
+    if (right === "<any>") { continue; }
+
+    if (left  === "<character>" && !containsControlKey(right)) { continue; }
+    if (right === "<character>" && !containsControlKey(left)) { continue; }
+
+    if (left !== right) { return false; }
   }
 
   return true;
@@ -58,7 +63,9 @@ export class BaseAction {
     if (!compareKeypressSequence(this.keys, keysPressed)) { return false; }
     // TODO - this is not exactly correct and will eventually make me rage
     // It's for cases like daw where a would otherwise by treated as append and insert.
-    if (this instanceof BaseCommand && !vimState.actionState.isInInitialState) { return false; }
+    if (this instanceof BaseCommand &&
+      !vimState.actionState.isInInitialState &&
+      !(this instanceof CommandInsertInSearchMode)) { return false; }
     if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
 
     return true;
@@ -70,7 +77,9 @@ export class BaseAction {
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) { return false; }
-    if (this instanceof BaseCommand && !vimState.actionState.isInInitialState) { return false; }
+    if (this instanceof BaseCommand &&
+      !vimState.actionState.isInInitialState &&
+      !(this instanceof CommandInsertInSearchMode)) { return false; }
     if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
 
     return true;
@@ -170,6 +179,53 @@ export function RegisterAction(action) {
 
 
 @RegisterAction
+class CommandInsertInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<any>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = vimState.actionState.actionKeys[0];
+
+    if (key === "<backspace>") {
+      vimState.searchString = vimState.searchString.slice(0, -1);
+    } else if (key === "<enter>") {
+      vimState.currentMode = ModeName.Normal;
+      vimState.cursorPosition = vimState.nextSearchMatchPosition;
+
+      return vimState;
+    } else {
+      vimState.searchString += vimState.actionState.actionKeys[0];
+    }
+
+    // console.log(vimState.searchString);
+
+    let found = false;
+
+    for (let line = position.line; line < TextEditor.getLineCount(); line++) {
+      const text = TextEditor.getLineAt(new Position(line, 0)).text;
+
+      // TODO: Do better implementation!!!
+      for (let char = (line === position.line ? position.character + 1 : 0); char < text.length; char++) {
+        const index = text.indexOf(vimState.searchString, char);
+
+        if (index > -1) {
+          found = true;
+          vimState.nextSearchMatchPosition = new Position(line, index);
+
+          break;
+        }
+      }
+    }
+
+    if (!found) {
+      vimState.nextSearchMatchPosition = undefined;
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandInsertInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
   keys = ["<character>"];
@@ -179,6 +235,21 @@ class CommandInsertInInsertMode extends BaseCommand {
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandSearchForwards extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["/"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.searchString = "";
+    vimState.nextSearchMatchPosition = undefined;
+    vimState.currentMode = ModeName.SearchInProgressMode;
+    vimState.actionState.actionKeys = [];
 
     return vimState;
   }
@@ -371,18 +442,6 @@ class CommandShowCommandLine extends BaseCommand {
 }
 
 @RegisterAction
-class CommandFind extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["/"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.Find;
-
-    return vimState;
-  }
-}
-
-@RegisterAction
 class CommandDot extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["."];
@@ -505,7 +564,7 @@ class CommandMoveFullPageUp extends BaseCommand {
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.SearchInProgressMode];
   keys = ["<esc>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
