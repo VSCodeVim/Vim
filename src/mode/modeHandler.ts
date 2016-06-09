@@ -251,6 +251,25 @@ export class ModeHandler implements vscode.Disposable {
         this._vimState.currentMode = ModeName.Normal;
 
         this.setCurrentModeByName(this._vimState);
+
+        // handle scenarios where mouse used to change current position
+        vscode.window.onDidChangeTextEditorSelection(e => {
+            let selection = e.selections[0];
+
+            if (selection) {
+                let line = selection.active.line;
+                let char = selection.active.character;
+
+                var newPosition = new Position(line, char);
+
+                if (char > newPosition.getLineEnd().character) {
+                   newPosition = new Position(newPosition.line, newPosition.getLineEnd().character);
+                }
+
+                this._vimState.cursorPosition = newPosition;
+                this._vimState.desiredColumn = newPosition.character;
+            }
+        });
     }
 
     /**
