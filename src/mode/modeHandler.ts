@@ -375,6 +375,11 @@ export class ModeHandler implements vscode.Disposable {
                 vimState.currentFullAction = [];
             }
 
+            // Scroll to position of cursor
+
+            vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
+
+
             // Reset state
 
             vimState.actionState = new ActionState(vimState);
