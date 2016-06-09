@@ -243,6 +243,16 @@ export class DeleteOperator extends BaseOperator {
 }
 
 @RegisterAction
+export class DeleteOperatorVisual extends BaseOperator {
+    public keys = ["D"];
+    public modes = [ModeName.Visual, ModeName.VisualLine];
+
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      return await new DeleteOperator().run(vimState, start, end);
+    }
+}
+
+@RegisterAction
 export class YankOperator extends BaseOperator {
     public keys = ["y"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
