@@ -489,5 +489,26 @@ suite("Mode Normal", () => {
     });
 
 
+    test("Can handle 'r'", async () => {
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't',
+            '<esc>',
+            'h',
+            'r', 's',
+        ]);
+
+        assertEqualLines(["test"]);
+    });
+
+    test("Can handle 'r' after 'dd'", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\ntwo\nthree".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'k', 'd', 'd',
+            'r', 'T'
+        ]);
+
+        assertEqualLines(["one", "Three"]);
+    });
 
 });
