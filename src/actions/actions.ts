@@ -753,6 +753,13 @@ class MoveFindForward extends BaseMovement {
 
     return vimState;
   }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
+    const state = await this.execAction(position, vimState);
+    state.cursorPosition = state.cursorPosition.getRight();
+
+    return state;
+  }
 }
 
 @RegisterAction
@@ -781,6 +788,13 @@ class MoveTilForward extends BaseMovement {
     vimState.cursorPosition = position.tilForwards(toFind);
 
     return vimState;
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
+    const state = await this.execAction(position, vimState);
+    state.cursorPosition = state.cursorPosition.getRight();
+
+    return state;
   }
 }
 
