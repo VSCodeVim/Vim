@@ -178,6 +178,22 @@ export function RegisterAction(action) {
 }
 
 
+
+
+
+// begin actions
+
+
+
+
+
+
+
+
+
+
+
+
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
@@ -328,9 +344,6 @@ export class YankOperator extends BaseOperator {
     public keys = ["y"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
-    /**
-     * Run this operator on a range.
-     */
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
           end = new Position(end.line, end.character + 1);
@@ -408,7 +421,7 @@ export class PutCommand extends BaseCommand {
           vimState.cursorPosition = new Position(dest.line + 1, 0);
         } else {
           if (text.indexOf("\n") === -1) {
-            vimState.cursorPosition = new Position(dest.line, dest.character + text.length);
+            vimState.cursorPosition = new Position(dest.line, dest.character + text.length - 1);
           } else {
             vimState.cursorPosition = dest;
           }
@@ -416,6 +429,34 @@ export class PutCommand extends BaseCommand {
 
         return vimState;
     }
+}
+
+@RegisterAction
+class IndentOperator extends BaseOperator {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [">"];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.indentLines");
+    vimState.currentMode  = ModeName.Normal;
+    vimState.cursorPosition = vimState.cursorStartPosition;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class OutdentOperator extends BaseOperator {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<"];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.outdentLines");
+    vimState.currentMode  = ModeName.Normal;
+    vimState.cursorPosition = vimState.cursorStartPosition;
+
+    return vimState;
+  }
 }
 
 
@@ -596,6 +637,7 @@ class CommandChangeToLineEnd extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const state = await new DeleteOperator().run(vimState, position, position.getLineEnd());
+    state.cursorPosition = state.cursorPosition.getRight();
     state.currentMode = ModeName.Insert;
 
     return state;
@@ -727,7 +769,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
     await vscode.commands.executeCommand("editor.action.insertLineBefore");
 
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = new Position(position.line, 0);
+    vimState.cursorPosition = new Position(position.line, TextEditor.getLineAt(position).text.length);
     return vimState;
   }
 }
@@ -741,7 +783,9 @@ class CommandInsertNewLineBefore extends BaseCommand {
     await vscode.commands.executeCommand("editor.action.insertLineAfter");
 
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = new Position(position.line + 1, 0);
+    vimState.cursorPosition = new Position(
+      position.line + 1,
+      TextEditor.getLineAt(new Position(position.line + 1, 0)).text.length);
 
     return vimState;
   }
@@ -809,6 +853,13 @@ class MoveFindForward extends BaseMovement {
 
     return vimState;
   }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
+    const state = await this.execAction(position, vimState);
+    state.cursorPosition = state.cursorPosition.getRight();
+
+    return state;
+  }
 }
 
 @RegisterAction
@@ -837,6 +888,13 @@ class MoveTilForward extends BaseMovement {
     vimState.cursorPosition = position.tilForwards(toFind);
 
     return vimState;
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
+    const state = await this.execAction(position, vimState);
+    state.cursorPosition = state.cursorPosition.getRight();
+
+    return state;
   }
 }
 
@@ -1111,15 +1169,18 @@ class ActionJoin extends BaseCommand {
 
     // TODO(whitespace): need a better way to check for whitespace
     const char = TextEditor.getLineAt(position.getNextLineBegin()).text[0];
-    const nextLineStartsWithWhitespace =
-      char === ' ' || char === '\t';
+    const lastCharCurrentLine = TextEditor.getLineAt(position).text[TextEditor.getLineAt(position).text.length - 1];
+    const startsWithWhitespace =
+      " \t".indexOf(char) !== -1;
+    const dontAddSpace =
+      (" \t()".indexOf(char) !== -1) || (" \t".indexOf(lastCharCurrentLine) !== -1);
 
     const positionToDeleteTo =
-      nextLineStartsWithWhitespace ?
+      startsWithWhitespace ?
         position.getNextLineBegin().getFirstLineNonBlankChar().getLeft().getLeft() :
         position.getLineEnd();
 
-    if (!nextLineStartsWithWhitespace) {
+    if (!dontAddSpace) {
       await TextEditor.insertAt(" ", position.getNextLineBegin());
     }
 
@@ -1147,6 +1208,11 @@ class ActionReplaceCharacter extends BaseCommand {
     return state;
   }
 }
+
+// DOUBLE MOTIONS
+// (dd yy cc << >>)
+// These work because there is a check in does/couldActionApply where
+// you can't run an operator if you already have one going (which is logical).
 
 @RegisterAction
 class MoveDD extends BaseMovement {
@@ -1187,6 +1253,40 @@ class MoveCC extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     vimState.cursorStartPosition = position.getLineBegin();
     vimState.cursorPosition = position.getLineEnd();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveIndent extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = [">"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    let start = position.getLineBegin();
+    let stop  = position.getLineEndIncludingEOL();
+
+    vimState.cursorStartPosition = start;
+    vimState.cursorPosition = stop;
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveOutdent extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["<"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    let start = position.getLineBegin();
+    let stop  = position.getLineEndIncludingEOL();
+
+    vimState.cursorStartPosition = start;
+    vimState.cursorPosition = stop;
+    vimState.currentRegisterMode = RegisterMode.LineWise;
 
     return vimState;
   }
@@ -1308,32 +1408,6 @@ class MoveToMatchingBracket extends BaseMovement {
     vimState.cursorPosition = position.getLineEnd();
 
     return vimState;
-  }
-}
-*/
-
-/*
-@RegisterAction
-class ActionIndent extends BaseAction {
-  modes = [ModeName.Normal];
-  key = [">", ">"];
-
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.indentLines");
-
-    return {};
-  }
-}
-
-@RegisterAction
-class ActionOutdent extends BaseAction {
-  modes = [ModeName.Normal];
-  key = ["<", "<"];
-
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.outdentLines");
-
-    return {};
   }
 }
 */

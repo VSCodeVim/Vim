@@ -286,6 +286,17 @@ export class ModeHandler implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(e => {
             let selection = e.selections[0];
 
+            // Programmatically triggering an edit will unfortunately ALSO trigger this
+            // function. We make sure that the vim state is actually out of state from the
+            // actual position of the cursor before correcting it.
+            if (selection.start.isEqual(this._vimState.cursorPosition) ||
+                selection.end.isEqual(this._vimState.cursorStartPosition) ||
+                selection.start.isEqual(this._vimState.cursorPosition) ||
+                selection.end.isEqual(this._vimState.cursorStartPosition)) {
+
+                return;
+            }
+
             if (selection) {
                 let line = selection.active.line;
                 let char = selection.active.character;
@@ -377,6 +388,8 @@ export class ModeHandler implements vscode.Disposable {
             actionState.operator = action;
         } else if (action instanceof BaseCommand) {
             actionState.command = action;
+        } else {
+            console.log("Weird command found!");
         }
 
         if (actionState.readyToExecute) {

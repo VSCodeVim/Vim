@@ -381,6 +381,35 @@ suite("Mode Normal", () => {
         assertEqual(TextEditor.getSelection().start.character, 3, "f failed");
     });
 
+    test("Can handle 'df'", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'iaext text'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '^',
+            'd', 'f', 't'
+        ]);
+
+        await assertEqualLines([" text"]);
+    });
+
+
+    test("Can handle 'dt'", async () => {
+        await modeHandler.handleMultipleKeyEvents(
+            'iaext text'.split('')
+        );
+
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>',
+            '^',
+            'd', 't', 't'
+        ]);
+
+        await assertEqualLines(["t text"]);
+    });
+
     test("Can handle 'f' twice", async () => {
         await modeHandler.handleMultipleKeyEvents(
             'itext text'.split('')
@@ -511,4 +540,64 @@ suite("Mode Normal", () => {
         assertEqualLines(["one", "Three"]);
     });
 
+
+    test("Can handle 'J' once", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'k',
+            'J'
+        ]);
+
+        assertEqualLines(["one two"]);
+    });
+
+    test("Can handle 'J' twice", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\ntwo\nthree".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'k', 'k',
+            'J', 'J'
+        ]);
+
+        assertEqualLines(["one two three"]);
+    });
+
+    test("Can handle 'J' with empty last line", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\ntwo\n".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'k',
+            'J'
+        ]);
+
+        assertEqualLines(["one", "two "]);
+    });
+
+    test("Can handle 'J's with multiple empty last lines", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\ntwo\n\n\n\n".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'k', 'k', 'k', 'k', 'k',
+            'J', 'J', 'J', 'J', 'J'
+        ]);
+
+        assertEqualLines(["one two "]);
+    });
+
+    test("Can handle 'J' with leading white space on next line", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione\n  two".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'k',
+            'J'
+        ]);
+
+        assertEqualLines(["one two"]);
+    });
+
+    test("Can handle 'J' with ')' first character on next line", async () => {
+        await modeHandler.handleMultipleKeyEvents("ione(\n)two".split(""));
+        await modeHandler.handleMultipleKeyEvents([
+            '<esc>', 'k',
+            'J'
+        ]);
+
+        assertEqualLines(["one()two"]);
+    });
 });
