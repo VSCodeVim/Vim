@@ -15,6 +15,9 @@ var modeHandler: ModeHandler;
 
 export function activate(context: vscode.ExtensionContext) {
     extensionContext = context;
+    modeHandler = new ModeHandler();
+
+    extensionContext.subscriptions.push(modeHandler);
 
     registerCommand(context, 'type', async (args) => {
         if (!vscode.window.activeTextEditor) {
@@ -32,10 +35,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
     registerCommand(context, 'extension.showCmdLine', () => {
-        if (!modeHandler) {
-            modeHandler = new ModeHandler();
-            extensionContext.subscriptions.push(modeHandler);
-        }
         showCmdLine("", modeHandler);
     });
 
