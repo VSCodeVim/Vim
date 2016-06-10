@@ -211,6 +211,25 @@ class CommandInsertInSearchMode extends BaseCommand {
         }
       }
     }
+
+    return undefined;
+  }
+
+  public static GetPreviousSearchMatch(startPosition: Position, searchString: string): Position {
+    for (let line = startPosition.line; line >= 0; line--) {
+      const text = TextEditor.getLineAt(new Position(line, 0)).text;
+
+      // TODO: Do better implementation!!!
+      for (let char = (line === startPosition.line ? startPosition.character - 1 : text.length - 1); char >= 0; char--) {
+        const index = text.lastIndexOf(searchString, char);
+
+        if (index > -1) {
+          return new Position(line, index);
+        }
+      }
+    }
+
+    return undefined;
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -273,12 +292,37 @@ class CommandNextSearchMatch extends BaseCommand {
       position, vimState.searchString);
 
     if (!nextPosition) {
-      //TODO(bell)
+      // TODO(bell)
 
       return vimState;
     }
 
     vimState.cursorPosition = nextPosition;
+    return vimState;
+  }
+}
+
+
+@RegisterAction
+class CommandPreviousSearchMatch extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["N"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.searchString === "") {
+      return vimState;
+    }
+
+    const prevPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
+      position, vimState.searchString);
+
+    if (!prevPosition) {
+      // TODO(bell)
+
+      return vimState;
+    }
+
+    vimState.cursorPosition = prevPosition;
     return vimState;
   }
 }
