@@ -443,7 +443,8 @@ export class ModeHandler implements vscode.Disposable {
 
             // Draw search highlight
 
-            if (this.currentMode.name === ModeName.SearchInProgressMode) {
+            if (this.currentMode.name === ModeName.SearchInProgressMode &&
+                this._vimState.nextSearchMatchPosition !== undefined) {
                 let range = new vscode.Range(
                     this._vimState.nextSearchMatchPosition,
                     this._vimState.nextSearchMatchPosition.getRight(this._vimState.searchString.length));

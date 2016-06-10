@@ -209,6 +209,12 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.cursorPosition = vimState.nextSearchMatchPosition;
 
       return vimState;
+    } else if (key === "<esc>") {
+      vimState.currentMode = ModeName.Normal;
+      vimState.searchString = "";
+      vimState.nextSearchMatchPosition = undefined;
+
+      return vimState;
     } else {
       vimState.searchString += vimState.actionState.actionKeys[0];
     }
@@ -600,7 +606,7 @@ class CommandMoveFullPageUp extends BaseCommand {
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.SearchInProgressMode];
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   keys = ["<esc>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
