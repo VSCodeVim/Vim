@@ -1150,6 +1150,11 @@ class ActionReplaceCharacter extends BaseCommand {
   }
 }
 
+// DOUBLE MOTIONS
+// (dd yy cc << >>)
+// These work because there is a check in does/couldActionApply where
+// you can't run an operator if you already have one going (which is logical).
+
 @RegisterAction
 class MoveDD extends BaseMovement {
   modes = [ModeName.Normal];
@@ -1189,6 +1194,40 @@ class MoveCC extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     vimState.cursorStartPosition = position.getLineBegin();
     vimState.cursorPosition = position.getLineEnd();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveIndent extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = [">"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    let start = position.getLineBegin();
+    let stop  = position.getLineEndIncludingEOL();
+
+    vimState.cursorStartPosition = start;
+    vimState.cursorPosition = stop;
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveOutdent extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["<"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+    let start = position.getLineBegin();
+    let stop  = position.getLineEndIncludingEOL();
+
+    vimState.cursorStartPosition = start;
+    vimState.cursorPosition = stop;
+    vimState.currentRegisterMode = RegisterMode.LineWise;
 
     return vimState;
   }
