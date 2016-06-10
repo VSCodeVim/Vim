@@ -10,7 +10,6 @@ const controlKeys: string[] = [
   "alt",
   "shift",
   "esc",
-  "enter",
   "delete"
 ];
 
@@ -248,7 +247,15 @@ class CommandInsertInInsertMode extends BaseCommand {
   keys = ["<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await TextEditor.insert(vimState.actionState.actionKeys[0]);
+    const char = vimState.actionState.actionKeys[0];
+
+    if (char === "<enter>") {
+      await TextEditor.insert("\n");
+    } else if (char === "<backspace>") {
+      await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+    } else {
+      await TextEditor.insert(char);
+    }
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
