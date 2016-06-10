@@ -285,11 +285,11 @@ class CommandInsertInSearchMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandNextSearchMatch extends BaseCommand {
-  modes = [ModeName.Normal];
+class CommandNextSearchMatch extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["n"];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.searchString === "") {
       return vimState;
     }
@@ -317,11 +317,11 @@ class CommandNextSearchMatch extends BaseCommand {
 
 
 @RegisterAction
-class CommandPreviousSearchMatch extends BaseCommand {
-  modes = [ModeName.Normal];
+class CommandPreviousSearchMatch extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["N"];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.searchString === "") {
       return vimState;
     }
