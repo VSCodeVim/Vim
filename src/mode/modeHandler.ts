@@ -359,6 +359,8 @@ export class ModeHandler implements vscode.Disposable {
             actionState.operator = action;
         } else if (action instanceof BaseCommand) {
             actionState.command = action;
+        } else {
+            console.log("Weird command found!");
         }
 
         if (actionState.readyToExecute) {

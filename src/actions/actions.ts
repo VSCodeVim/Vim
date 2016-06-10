@@ -169,6 +169,22 @@ export function RegisterAction(action) {
 }
 
 
+
+
+
+// begin actions
+
+
+
+
+
+
+
+
+
+
+
+
 @RegisterAction
 class CommandInsertInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
@@ -257,9 +273,6 @@ export class YankOperator extends BaseOperator {
     public keys = ["y"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
-    /**
-     * Run this operator on a range.
-     */
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
           end = new Position(end.line, end.character + 1);
@@ -345,6 +358,34 @@ export class PutCommand extends BaseCommand {
 
         return vimState;
     }
+}
+
+@RegisterAction
+class IndentOperator extends BaseOperator {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [">"];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.indentLines");
+    vimState.currentMode  = ModeName.Normal;
+    vimState.cursorPosition = vimState.cursorStartPosition;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class OutdentOperator extends BaseOperator {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<"];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.outdentLines");
+    vimState.currentMode  = ModeName.Normal;
+    vimState.cursorPosition = vimState.cursorStartPosition;
+
+    return vimState;
+  }
 }
 
 
@@ -1269,32 +1310,6 @@ class MoveToMatchingBracket extends BaseMovement {
     vimState.cursorPosition = position.getLineEnd();
 
     return vimState;
-  }
-}
-*/
-
-/*
-@RegisterAction
-class ActionIndent extends BaseAction {
-  modes = [ModeName.Normal];
-  key = [">", ">"];
-
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.indentLines");
-
-    return {};
-  }
-}
-
-@RegisterAction
-class ActionOutdent extends BaseAction {
-  modes = [ModeName.Normal];
-  key = ["<", "<"];
-
-  public async execAction(position: Position): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.outdentLines");
-
-    return {};
   }
 }
 */
