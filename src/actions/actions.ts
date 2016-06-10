@@ -214,9 +214,9 @@ class CommandInsertInSearchMode extends BaseCommand {
     }
 
     // console.log(vimState.searchString);
+    vimState.nextSearchMatchPosition = undefined;
 
-    let found = false;
-
+    outer:
     for (let line = position.line; line < TextEditor.getLineCount(); line++) {
       const text = TextEditor.getLineAt(new Position(line, 0)).text;
 
@@ -225,16 +225,11 @@ class CommandInsertInSearchMode extends BaseCommand {
         const index = text.indexOf(vimState.searchString, char);
 
         if (index > -1) {
-          found = true;
           vimState.nextSearchMatchPosition = new Position(line, index);
 
-          break;
+          break outer;
         }
       }
-    }
-
-    if (!found) {
-      vimState.nextSearchMatchPosition = undefined;
     }
 
     return vimState;
