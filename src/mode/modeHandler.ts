@@ -82,6 +82,8 @@ export class VimState {
      */
     public nextSearchMatchPosition: Position = undefined;
 
+    public searchCursorStartPosition: Position = undefined;
+
     /**
      * The mode Vim will be in once this action finishes.
      */

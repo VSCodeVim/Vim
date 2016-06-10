@@ -201,32 +201,41 @@ class CommandInsertInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = vimState.actionState.actionKeys[0];
 
+    // handle special keys first
     if (key === "<backspace>") {
       vimState.searchString = vimState.searchString.slice(0, -1);
     } else if (key === "<enter>") {
       vimState.currentMode = ModeName.Normal;
-      vimState.cursorPosition = vimState.nextSearchMatchPosition;
+
+      if (vimState.nextSearchMatchPosition) {
+        vimState.cursorPosition = vimState.nextSearchMatchPosition;
+      } else {
+        vimState.cursorPosition = vimState.searchCursorStartPosition;
+      }
 
       return vimState;
     } else if (key === "<esc>") {
       vimState.currentMode = ModeName.Normal;
       vimState.searchString = "";
       vimState.nextSearchMatchPosition = undefined;
+      vimState.cursorPosition = vimState.searchCursorStartPosition;
 
       return vimState;
     } else {
       vimState.searchString += vimState.actionState.actionKeys[0];
     }
 
-    // console.log(vimState.searchString);
+    // console.log(vimState.searchString); (TODO: Show somewhere!)
     vimState.nextSearchMatchPosition = undefined;
 
+    const startPosition = vimState.searchCursorStartPosition;
+
     outer:
-    for (let line = position.line; line < TextEditor.getLineCount(); line++) {
+    for (let line = startPosition.line; line < TextEditor.getLineCount(); line++) {
       const text = TextEditor.getLineAt(new Position(line, 0)).text;
 
       // TODO: Do better implementation!!!
-      for (let char = (line === position.line ? position.character + 1 : 0); char < text.length; char++) {
+      for (let char = (line === startPosition.line ? startPosition.character + 1 : 0); char < text.length; char++) {
         const index = text.indexOf(vimState.searchString, char);
 
         if (index > -1) {
@@ -235,6 +244,12 @@ class CommandInsertInSearchMode extends BaseCommand {
           break outer;
         }
       }
+    }
+
+    if (vimState.nextSearchMatchPosition) {
+      vimState.cursorPosition = vimState.nextSearchMatchPosition;
+    } else {
+      vimState.cursorPosition = vimState.searchCursorStartPosition;
     }
 
     return vimState;
@@ -271,6 +286,7 @@ class CommandSearchForwards extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.searchString = "";
+    vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
     vimState.actionState.actionKeys = [];
