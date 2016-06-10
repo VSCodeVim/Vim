@@ -198,6 +198,21 @@ class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
   keys = ["<any>"];
 
+  public static GetNextSearchMatch(startPosition: Position, searchString: string): Position {
+    for (let line = startPosition.line; line < TextEditor.getLineCount(); line++) {
+      const text = TextEditor.getLineAt(new Position(line, 0)).text;
+
+      // TODO: Do better implementation!!!
+      for (let char = (line === startPosition.line ? startPosition.character + 1 : 0); char < text.length; char++) {
+        const index = text.indexOf(searchString, char);
+
+        if (index > -1) {
+          return new Position(line, index);
+        }
+      }
+    }
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = vimState.actionState.actionKeys[0];
 
@@ -230,21 +245,9 @@ class CommandInsertInSearchMode extends BaseCommand {
 
     const startPosition = vimState.searchCursorStartPosition;
 
-    outer:
-    for (let line = startPosition.line; line < TextEditor.getLineCount(); line++) {
-      const text = TextEditor.getLineAt(new Position(line, 0)).text;
-
-      // TODO: Do better implementation!!!
-      for (let char = (line === startPosition.line ? startPosition.character + 1 : 0); char < text.length; char++) {
-        const index = text.indexOf(vimState.searchString, char);
-
-        if (index > -1) {
-          vimState.nextSearchMatchPosition = new Position(line, index);
-
-          break outer;
-        }
-      }
-    }
+    vimState.nextSearchMatchPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+      startPosition,
+      vimState.searchString);
 
     if (vimState.nextSearchMatchPosition) {
       vimState.cursorPosition = vimState.nextSearchMatchPosition;
@@ -252,6 +255,30 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.cursorPosition = vimState.searchCursorStartPosition;
     }
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandNextSearchMatch extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["n"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.searchString === "") {
+      return vimState;
+    }
+
+    const nextPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+      position, vimState.searchString);
+
+    if (!nextPosition) {
+      //TODO(bell)
+
+      return vimState;
+    }
+
+    vimState.cursorPosition = nextPosition;
     return vimState;
   }
 }
