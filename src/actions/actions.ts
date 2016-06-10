@@ -668,7 +668,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
     await vscode.commands.executeCommand("editor.action.insertLineBefore");
 
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = new Position(position.line, 0);
+    vimState.cursorPosition = new Position(position.line, TextEditor.getLineAt(position).text.length);
     return vimState;
   }
 }
@@ -682,7 +682,9 @@ class CommandInsertNewLineBefore extends BaseCommand {
     await vscode.commands.executeCommand("editor.action.insertLineAfter");
 
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = new Position(position.line + 1, 0);
+    vimState.cursorPosition = new Position(
+      position.line + 1,
+      TextEditor.getLineAt(new Position(position.line + 1, 0)).text.length);
 
     return vimState;
   }
