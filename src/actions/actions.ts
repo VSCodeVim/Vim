@@ -1052,15 +1052,18 @@ class ActionJoin extends BaseCommand {
 
     // TODO(whitespace): need a better way to check for whitespace
     const char = TextEditor.getLineAt(position.getNextLineBegin()).text[0];
-    const nextLineStartsWithWhitespace =
-      char === ' ' || char === '\t';
+    const lastCharCurrentLine = TextEditor.getLineAt(position).text[TextEditor.getLineAt(position).text.length - 1];
+    const startsWithWhitespace =
+      " \t".indexOf(char) !== -1;
+    const dontAddSpace =
+      (" \t()".indexOf(char) !== -1) || (" \t".indexOf(lastCharCurrentLine) !== -1);
 
     const positionToDeleteTo =
-      nextLineStartsWithWhitespace ?
+      startsWithWhitespace ?
         position.getNextLineBegin().getFirstLineNonBlankChar().getLeft().getLeft() :
         position.getLineEnd();
 
-    if (!nextLineStartsWithWhitespace) {
+    if (!dontAddSpace) {
       await TextEditor.insertAt(" ", position.getNextLineBegin());
     }
 
