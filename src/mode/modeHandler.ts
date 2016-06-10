@@ -85,6 +85,12 @@ export class VimState {
     public searchCursorStartPosition: Position = undefined;
 
     /**
+     * 1 === forward
+     * -1 === backward
+     */
+    public searchDirection: number = 1;
+
+    /**
      * The mode Vim will be in once this action finishes.
      */
     public currentMode = ModeName.Normal;

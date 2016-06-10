@@ -264,9 +264,15 @@ class CommandInsertInSearchMode extends BaseCommand {
 
     const startPosition = vimState.searchCursorStartPosition;
 
-    vimState.nextSearchMatchPosition = CommandInsertInSearchMode.GetNextSearchMatch(
-      startPosition,
-      vimState.searchString);
+    if (vimState.searchDirection === 1) {
+      vimState.nextSearchMatchPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+        startPosition,
+        vimState.searchString);
+    } else {
+      vimState.nextSearchMatchPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
+        startPosition,
+        vimState.searchString);
+    }
 
     if (vimState.nextSearchMatchPosition) {
       vimState.cursorPosition = vimState.nextSearchMatchPosition;
@@ -288,8 +294,15 @@ class CommandNextSearchMatch extends BaseCommand {
       return vimState;
     }
 
-    const nextPosition = CommandInsertInSearchMode.GetNextSearchMatch(
-      position, vimState.searchString);
+    let nextPosition: Position;
+
+    if (vimState.searchDirection === 1) {
+      nextPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+        position, vimState.searchString);
+    } else {
+      nextPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
+        position, vimState.searchString);
+    }
 
     if (!nextPosition) {
       // TODO(bell)
@@ -313,8 +326,15 @@ class CommandPreviousSearchMatch extends BaseCommand {
       return vimState;
     }
 
-    const prevPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
-      position, vimState.searchString);
+    let prevPosition: Position;
+
+    if (vimState.searchDirection === -1) {
+      prevPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+        position, vimState.searchString);
+    } else {
+      prevPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
+        position, vimState.searchString);
+    }
 
     if (!prevPosition) {
       // TODO(bell)
@@ -357,6 +377,25 @@ class CommandSearchForwards extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.searchString = "";
+    vimState.searchDirection = 1;
+    vimState.searchCursorStartPosition = position;
+    vimState.nextSearchMatchPosition = undefined;
+    vimState.currentMode = ModeName.SearchInProgressMode;
+    vimState.actionState.actionKeys = [];
+
+    return vimState;
+  }
+}
+
+
+@RegisterAction
+class CommandSearchBackward extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["?"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.searchString = "";
+    vimState.searchDirection = -1;
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
