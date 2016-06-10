@@ -10,7 +10,6 @@ const controlKeys: string[] = [
   "alt",
   "shift",
   "esc",
-  "enter",
   "delete"
 ];
 
@@ -29,11 +28,16 @@ const compareKeypressSequence = function (one: string[], two: string[]): boolean
     return false;
   }
 
-  for (let i = 0; i < one.length; i++) {
-    if (one[i] === "<any>" || two[i] === "<any>") { continue; }
-    if (one[i] === "<character>" && !containsControlKey(two[i])) { continue; }
-    if (two[i] === "<character>" && !containsControlKey(one[i])) { continue; }
-    if (one[i] !== two[i]) { return false; }
+  for (let i = 0, j = 0; i < one.length; i++, j++) {
+    const left = one[i], right = two[j];
+
+    if (left  === "<any>") { continue; }
+    if (right === "<any>") { continue; }
+
+    if (left  === "<character>" && !containsControlKey(right)) { continue; }
+    if (right === "<character>" && !containsControlKey(left)) { continue; }
+
+    if (left !== right) { return false; }
   }
 
   return true;
@@ -58,7 +62,9 @@ export class BaseAction {
     if (!compareKeypressSequence(this.keys, keysPressed)) { return false; }
     // TODO - this is not exactly correct and will eventually make me rage
     // It's for cases like daw where a would otherwise by treated as append and insert.
-    if (this instanceof BaseCommand && !vimState.actionState.isInInitialState) { return false; }
+    if (this instanceof BaseCommand &&
+      !vimState.actionState.isInInitialState &&
+      !(this instanceof CommandInsertInSearchMode)) { return false; }
     if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
 
     return true;
@@ -70,7 +76,9 @@ export class BaseAction {
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) { return false; }
-    if (this instanceof BaseCommand && !vimState.actionState.isInInitialState) { return false; }
+    if (this instanceof BaseCommand &&
+      !vimState.actionState.isInInitialState &&
+      !(this instanceof CommandInsertInSearchMode)) { return false; }
     if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
 
     return true;
@@ -186,15 +194,212 @@ export function RegisterAction(action) {
 
 
 @RegisterAction
+class CommandInsertInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<any>"];
+
+  public static GetNextSearchMatch(startPosition: Position, searchString: string): Position {
+    for (let line = startPosition.line; line < TextEditor.getLineCount(); line++) {
+      const text = TextEditor.getLineAt(new Position(line, 0)).text;
+
+      // TODO: Do better implementation!!!
+      for (let char = (line === startPosition.line ? startPosition.character + 1 : 0); char < text.length; char++) {
+        const index = text.indexOf(searchString, char);
+
+        if (index > -1) {
+          return new Position(line, index);
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  public static GetPreviousSearchMatch(startPosition: Position, searchString: string): Position {
+    for (let line = startPosition.line; line >= 0; line--) {
+      const text = TextEditor.getLineAt(new Position(line, 0)).text;
+
+      // TODO: Do better implementation!!!
+      for (let char = (line === startPosition.line ? startPosition.character - 1 : text.length - 1); char >= 0; char--) {
+        const index = text.lastIndexOf(searchString, char);
+
+        if (index > -1) {
+          return new Position(line, index);
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = vimState.actionState.actionKeys[0];
+
+    // handle special keys first
+    if (key === "<backspace>") {
+      vimState.searchString = vimState.searchString.slice(0, -1);
+    } else if (key === "<enter>") {
+      vimState.currentMode = ModeName.Normal;
+
+      if (vimState.nextSearchMatchPosition) {
+        vimState.cursorPosition = vimState.nextSearchMatchPosition;
+      } else {
+        vimState.cursorPosition = vimState.searchCursorStartPosition;
+      }
+
+      return vimState;
+    } else if (key === "<esc>") {
+      vimState.currentMode = ModeName.Normal;
+      vimState.searchString = "";
+      vimState.nextSearchMatchPosition = undefined;
+      vimState.cursorPosition = vimState.searchCursorStartPosition;
+
+      return vimState;
+    } else {
+      vimState.searchString += vimState.actionState.actionKeys[0];
+    }
+
+    // console.log(vimState.searchString); (TODO: Show somewhere!)
+    vimState.nextSearchMatchPosition = undefined;
+
+    const startPosition = vimState.searchCursorStartPosition;
+
+    if (vimState.searchDirection === 1) {
+      vimState.nextSearchMatchPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+        startPosition,
+        vimState.searchString);
+    } else {
+      vimState.nextSearchMatchPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
+        startPosition,
+        vimState.searchString);
+    }
+
+    if (vimState.nextSearchMatchPosition) {
+      vimState.cursorPosition = vimState.nextSearchMatchPosition;
+    } else {
+      vimState.cursorPosition = vimState.searchCursorStartPosition;
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandNextSearchMatch extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["n"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.searchString === "") {
+      return vimState;
+    }
+
+    let nextPosition: Position;
+
+    if (vimState.searchDirection === 1) {
+      nextPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+        position, vimState.searchString);
+    } else {
+      nextPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
+        position, vimState.searchString);
+    }
+
+    if (!nextPosition) {
+      // TODO(bell)
+
+      return vimState;
+    }
+
+    vimState.cursorPosition = nextPosition;
+    return vimState;
+  }
+}
+
+
+@RegisterAction
+class CommandPreviousSearchMatch extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["N"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.searchString === "") {
+      return vimState;
+    }
+
+    let prevPosition: Position;
+
+    if (vimState.searchDirection === -1) {
+      prevPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+        position, vimState.searchString);
+    } else {
+      prevPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
+        position, vimState.searchString);
+    }
+
+    if (!prevPosition) {
+      // TODO(bell)
+
+      return vimState;
+    }
+
+    vimState.cursorPosition = prevPosition;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandInsertInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
   keys = ["<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await TextEditor.insert(vimState.actionState.actionKeys[0]);
+    const char = vimState.actionState.actionKeys[0];
+
+    if (char === "<enter>") {
+      await TextEditor.insert("\n");
+    } else if (char === "<backspace>") {
+      await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+    } else {
+      await TextEditor.insert(char);
+    }
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandSearchForwards extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["/"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.searchString = "";
+    vimState.searchDirection = 1;
+    vimState.searchCursorStartPosition = position;
+    vimState.nextSearchMatchPosition = undefined;
+    vimState.currentMode = ModeName.SearchInProgressMode;
+    vimState.actionState.actionKeys = [];
+
+    return vimState;
+  }
+}
+
+
+@RegisterAction
+class CommandSearchBackward extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["?"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.searchString = "";
+    vimState.searchDirection = -1;
+    vimState.searchCursorStartPosition = position;
+    vimState.nextSearchMatchPosition = undefined;
+    vimState.currentMode = ModeName.SearchInProgressMode;
+    vimState.actionState.actionKeys = [];
 
     return vimState;
   }
@@ -406,18 +611,6 @@ class CommandShowCommandLine extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.commandAction = VimCommandActions.ShowCommandLine;
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandFind extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["/"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.Find;
 
     return vimState;
   }

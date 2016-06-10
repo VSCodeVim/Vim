@@ -5,6 +5,7 @@ export enum ModeName {
     Insert,
     Visual,
     VisualLine,
+    SearchInProgressMode,
 }
 
 export abstract class Mode {
