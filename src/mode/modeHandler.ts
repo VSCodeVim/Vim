@@ -150,89 +150,54 @@ export class ActionState {
      * Keeps track of keys pressed for the next action. Comes in handy when parsing
      * multiple length movements, e.g. gg.
      */
-    private _actionKeys: string[] = [];
+    public actionKeys: string[] = [];
 
     /**
      * The operator (e.g. d, y, >>) the user wants to run, if there is one.
      */
-    private _operator: BaseOperator = undefined;
+    public operator: BaseOperator = undefined;
 
-    private _command: BaseCommand   = undefined;
+    public command: BaseCommand   = undefined;
 
-    private _movement: BaseMovement = undefined;
+    public movement: BaseMovement = undefined;
 
     /**
      * The number of times the user wants to repeat this action.
      */
-    private _count: number = 1;
+    public count: number = 1;
 
     public vimState: VimState;
 
-    public readyToExecute = false;
-
-    public get actionKeys(): string[] { return this._actionKeys; }
-    public set actionKeys(val: string[]) {
-        this._actionKeys = val;
-        this.actionStateChanged();
-    }
-
-    public get operator(): BaseOperator { return this._operator; }
-    public set operator(op: BaseOperator) {
-        this._operator = op;
-        this.actionStateChanged();
-    }
-
-    public get command(): BaseCommand { return this._command; }
-    public set command(command: BaseCommand) {
-        this._command = command;
-        this.actionStateChanged();
-    }
-
-    public get movement(): BaseMovement { return this._movement; }
-    public set movement(movement: BaseMovement) {
-        this._movement = movement;
-        this.actionStateChanged();
-    }
-
-    public get count(): number { return this._count; }
-    public set count(count: number) {
-        this._count = count;
-        this.actionStateChanged();
-    }
-
-    /**
-     * This function is called whenever a property on ActionState is changed.
-     * It determines if the state is ready to run - that is, if the user
-     * has typed in a fully formed command.
-     */
-    private actionStateChanged(): void {
+    public readyToExecute(): boolean {
         if (this.movement) {
-            this.readyToExecute = true;
+            return true;
         }
 
-        // Visual modes do not require a motion. They ARE the motion.
+        // Visual modes do not require a motion -- they ARE the motion.
         if (this.operator && (
             this.vimState.currentMode === ModeName.Visual ||
             this.vimState.currentMode === ModeName.VisualLine)) {
 
-            this.readyToExecute = true;
+            return true;
         }
 
         if (this.command) {
-            this.readyToExecute = true;
+            return true;
         }
+
+        return false;
     }
 
     public get isInInitialState(): boolean {
-        return this._operator    === undefined &&
-               this._command     === undefined &&
-               this._movement    === undefined &&
-               this._count       === 1;
+        return this.operator    === undefined &&
+               this.command     === undefined &&
+               this.movement    === undefined &&
+               this.count       === 1;
     }
 
     public isOnlyAMovement(): boolean {
-        return this._operator    === undefined &&
-               this._command     === undefined;
+        return this.operator    === undefined &&
+               this.command     === undefined;
     }
 
     constructor(vimState: VimState) {
@@ -400,7 +365,7 @@ export class ModeHandler implements vscode.Disposable {
             console.log("Weird command found!");
         }
 
-        if (actionState.readyToExecute) {
+        if (actionState.readyToExecute()) {
             if (this.currentMode.name !== ModeName.Visual &&
                 this.currentMode.name !== ModeName.VisualLine) {
                 vimState.cursorStartPosition = vimState.cursorPosition;
@@ -463,7 +428,6 @@ export class ModeHandler implements vscode.Disposable {
             } else {
                 vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
             }
-
 
             // Reset state
 
