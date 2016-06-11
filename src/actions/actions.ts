@@ -380,7 +380,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   keys = ["<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char = vimState.actionState.actionKeys[0];
+    const char = vimState.actionState.actionKeys[vimState.actionState.actionKeys.length - 1];
 
     if (char === "<enter>") {
       await TextEditor.insert("\n");
