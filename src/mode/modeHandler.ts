@@ -426,6 +426,25 @@ export class ModeHandler implements vscode.Disposable {
             vimState.currentRegisterMode = result.registerMode;
         }
 
+        let stop = vimState.cursorPosition;
+
+        // Keep the cursor within bounds
+
+        if (vimState.currentMode === ModeName.Normal && !actionState.operator) {
+            if (stop.character >= Position.getLineLength(stop.line)) {
+                vimState.cursorPosition = stop.getLineEnd().getLeft();
+            }
+        } else {
+
+            // Vim does this weird thing where it allows you to select and delete
+            // the newline character, which it places 1 past the last character
+            // in the line. This is why we use > instead of >=.
+
+            if (stop.character > Position.getLineLength(stop.line)) {
+                vimState.cursorPosition = stop.getLineEnd();
+            }
+        }
+
         if (actionState.operator || this.currentMode.name !== ModeName.Normal) {
             actionState.motionsRun.push(movement);
         } else {
@@ -512,24 +531,8 @@ export class ModeHandler implements vscode.Disposable {
         let start = viewState.selectionStart;
         let stop  = viewState.selectionStop;
 
-        // Keep the cursor within bounds
-
-        if (viewState.currentMode === ModeName.Normal) {
-            if (stop.character >= Position.getLineLength(stop.line)) {
-                stop = stop.getLineEnd().getLeft();
-                vimState.cursorPosition = stop;
-            }
-        } else if (viewState.currentMode === ModeName.Visual ||
-                   viewState.currentMode === ModeName.VisualLine) {
-
-            // Vim does this weird thing where it allows you to select and delete
-            // the newline character, which it places 1 past the last character
-            // in the line. This is why we use > instead of >=.
-
-            if (stop.character > Position.getLineLength(stop.line)) {
-                stop = stop.getLineEnd();
-                vimState.cursorPosition = stop;
-            }
+        if (viewState.currentMode === ModeName.Visual ||
+            viewState.currentMode === ModeName.VisualLine) {
 
             /**
              * Always select the letter that we started visual mode on, no matter
