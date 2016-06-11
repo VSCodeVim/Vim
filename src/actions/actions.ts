@@ -1319,7 +1319,8 @@ class ActionReplaceCharacter extends BaseCommand {
 // (dd yy cc << >>)
 // These work because there is a check in does/couldActionApply where
 // you can't run an operator if you already have one going (which is logical).
-
+// However there is the slightly weird behavior where dy actually deletes the whole
+// line, lol.
 @RegisterAction
 class MoveDD extends BaseMovement {
   modes = [ModeName.Normal];

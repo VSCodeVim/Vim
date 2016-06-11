@@ -10,7 +10,7 @@ import { SearchInProgressMode } from './modeSearchInProgress';
 import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions,
-    BaseOperator, PutCommand, IMovement, isIMovement,
+    BaseOperator, PutCommand, isIMovement,
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
@@ -85,7 +85,7 @@ export class VimState {
     public searchCursorStartPosition: Position = undefined;
 
     /**
-     * 1 === forward
+     * 1  === forward
      * -1 === backward
      */
     public searchDirection: number = 1;
@@ -132,8 +132,8 @@ export class VimState {
 }
 
 /**
- * The ActionState class represents state relevant to the current
- * action that the user is doing. Example: Imagine that the user types:
+ * The ActionState class holds the current action that the user is
+ * doing. Example: Imagine that the user types:
  *
  * 5"qdw
  *
@@ -142,6 +142,16 @@ export class VimState {
  *   * copy into q register
  *   * delete operator
  *   * word movement
+ *
+ *
+ * Or imagine the user types:
+ *
+ * vw$}}d
+ *
+ * Then the state would be
+ *   * Visual mode action
+ *   * (a list of all the motions you ran)
+ *   * delete operator
  */
 export class ActionState {
     /**
@@ -153,7 +163,7 @@ export class ActionState {
     public motionsRun: BaseMovement[] = [];
 
     /**
-     * The operator (e.g. d, y, >>) the user wants to run, if there is one.
+     * The operator (e.g. d, y, >) the user wants to run, if there is one.
      */
     public operator: BaseOperator = undefined;
 
@@ -299,6 +309,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         // Draw block cursor.
+
         // The reason we make a copy of options is because it's a
         // getter/setter and it won't trigger it's event if we modify
         // the object in place
@@ -312,9 +323,6 @@ export class ModeHandler implements vscode.Disposable {
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
     }
 
-    /**
-     * Along with executeState(), one of the core processing functions of VSCVim.
-     */
     async handleKeyEvent(key: string): Promise<Boolean> {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
 
@@ -365,25 +373,6 @@ export class ModeHandler implements vscode.Disposable {
                 this.setCurrentModeByName(vimState);
             }
 
-            // Updated desired column
-
-            const command = actionState.command;
-
-            /*
-            TODO TODO TODO TODO TODO
-
-            const movement = actionState.movement;
-            if ((movement && !movement.doesntChangeDesiredColumn) || command) {
-                // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
-
-                if (movement && movement.setsDesiredColumnToEOL && !actionState.operator) {
-                    vimState.desiredColumn = Number.POSITIVE_INFINITY;
-                } else {
-                    vimState.desiredColumn = vimState.cursorPosition.character;
-                }
-            }
-            */
-
             // Update dot keys (TODO - should become useless, soon).
 
             if (vimState.isFullDotAction()) {
@@ -404,6 +393,21 @@ export class ModeHandler implements vscode.Disposable {
 
         if (this.currentModeName === ModeName.Normal) {
             vimState.cursorStartPosition = vimState.cursorPosition;
+        }
+
+        // Updated desired column
+
+        const command = actionState.command;
+        const movement = action instanceof BaseMovement ? action : undefined;
+
+        if ((movement && !movement.doesntChangeDesiredColumn) || command) {
+            // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
+
+            if (movement && movement.setsDesiredColumnToEOL && !actionState.operator) {
+                vimState.desiredColumn = Number.POSITIVE_INFINITY;
+            } else {
+                vimState.desiredColumn = vimState.cursorPosition.character;
+            }
         }
 
         await this.updateView(vimState, {
@@ -472,7 +476,9 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (actionState.operator) {
-            if (vimState.currentMode !== ModeName.Visual && vimState.currentMode !== ModeName.VisualLine) {
+            if (vimState.currentMode !== ModeName.Visual &&
+                vimState.currentMode !== ModeName.VisualLine &&
+                vimState.currentRegisterMode !== RegisterMode.LineWise) {
                 if (Position.EarlierOf(start, stop) === start) {
                     stop = stop.getLeft();
                 } else {
