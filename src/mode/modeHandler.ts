@@ -384,7 +384,7 @@ export class ModeHandler implements vscode.Disposable {
             }
             */
 
-            // Update dot keys
+            // Update dot keys (TODO - should become useless, soon).
 
             if (vimState.isFullDotAction()) {
                 vimState.previousFullAction = vimState.currentFullAction;
@@ -397,10 +397,10 @@ export class ModeHandler implements vscode.Disposable {
             // Reset state
 
             vimState.actionState = new ActionState(vimState);
-            vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
         }
 
         actionState.actionKeys = [];
+        vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
         await this.updateView(vimState, {
             selectionStart: vimState.cursorStartPosition,
@@ -421,9 +421,9 @@ export class ModeHandler implements vscode.Disposable {
         if (result instanceof Position) {
             vimState.cursorPosition = result;
         } else if (isIMovement(result)) {
-            vimState.cursorPosition            = result.stop;
-            vimState.searchCursorStartPosition = result.start;
-            vimState.currentRegisterMode       = result.registerMode;
+            vimState.cursorPosition      = result.stop;
+            vimState.cursorStartPosition = result.start;
+            vimState.currentRegisterMode = result.registerMode;
         }
 
         if (actionState.operator || this.currentMode.name !== ModeName.Normal) {
@@ -455,7 +455,7 @@ export class ModeHandler implements vscode.Disposable {
                 if (Position.EarlierOf(start, stop) === start) {
                     stop = stop.getLeft();
                 } else {
-                    start = start.getLeft();
+                    stop = stop.getRight();
                 }
             }
 

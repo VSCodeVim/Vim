@@ -1328,7 +1328,7 @@ class MoveDD extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
       start       : position.getLineBegin(),
-      stop        : position.getLineEnd(),
+      stop        : position.getLineEndIncludingEOL(),
       registerMode: RegisterMode.LineWise,
     };
   }
@@ -1342,7 +1342,7 @@ class MoveYY extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
       start       : position.getLineBegin(),
-      stop        : position.getLineEnd(),
+      stop        : position.getLineEndIncludingEOL(),
       registerMode: RegisterMode.LineWise,
     };
   }
