@@ -209,6 +209,17 @@ export function RegisterAction(action) {
 
 
 
+@RegisterAction
+class CommandInsertAtCursor extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["i"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Insert;
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
@@ -855,18 +866,6 @@ class CommandOpenSquareBracket extends BaseCommand {
 }
 
 // begin insert commands
-
-@RegisterAction
-class CommandInsertAtCursor extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["i"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.Insert;
-
-    return vimState;
-  }
-}
 
 @RegisterAction
 class CommandInsertAtLineBegin extends BaseCommand {

@@ -150,6 +150,8 @@ export class ActionState {
      */
     public actionKeys: string[] = [];
 
+    public motionsRun: BaseMovement[] = [];
+
     /**
      * The operator (e.g. d, y, >>) the user wants to run, if there is one.
      */
@@ -166,9 +168,9 @@ export class ActionState {
 
     public readyToExecute(): boolean {
         // Visual modes do not require a motion -- they ARE the motion.
-        if (this.operator && (
+        if (this.operator && (this.motionsRun.length > 0 || (
             this.vimState.currentMode === ModeName.Visual ||
-            this.vimState.currentMode === ModeName.VisualLine)) {
+            this.vimState.currentMode === ModeName.VisualLine))) {
 
             return true;
         }
@@ -183,6 +185,7 @@ export class ActionState {
     public get isInInitialState(): boolean {
         return this.operator    === undefined &&
                this.command     === undefined &&
+               this.motionsRun.length === 0   &&
                this.count       === 1;
     }
 
@@ -354,11 +357,6 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (actionState.readyToExecute()) {
-            if (this.currentMode.name !== ModeName.Visual &&
-                this.currentMode.name !== ModeName.VisualLine) {
-                vimState.cursorStartPosition = vimState.cursorPosition;
-            }
-
             vimState = await this.executeState(vimState);
 
             // Update mode
@@ -426,6 +424,12 @@ export class ModeHandler implements vscode.Disposable {
             vimState.cursorPosition            = result.stop;
             vimState.searchCursorStartPosition = result.start;
             vimState.currentRegisterMode       = result.registerMode;
+        }
+
+        if (actionState.operator || this.currentMode.name !== ModeName.Normal) {
+            actionState.motionsRun.push(movement);
+        } else {
+            vimState.cursorStartPosition = vimState.cursorPosition;
         }
 
         return vimState;
