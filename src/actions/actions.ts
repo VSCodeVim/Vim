@@ -43,6 +43,22 @@ const compareKeypressSequence = function (one: string[], two: string[]): boolean
   return true;
 };
 
+/**
+ * The result of a (more sophisticated) Movement.
+ */
+export interface IMovement {
+  start        : Position;
+  stop         : Position;
+
+  // It /so/ annoys me that I have to put this here.
+  registerMode?: RegisterMode;
+}
+
+export function isIMovement(o: IMovement | Position): o is IMovement {
+    return (o as IMovement).start !== undefined &&
+           (o as IMovement).stop  !== undefined;
+}
+
 export class BaseAction {
   /**
    * Modes that this action can be run in.
@@ -102,15 +118,16 @@ export abstract class BaseMovement extends BaseAction {
 
   /**
    * Run the movement.
+   *
+   * Generally returns a new Position. If necessary, it can return an IMovement instead.
    */
-  public abstract async execAction(position: Position, vimState: VimState): Promise<VimState>;
+  public abstract async execAction(position: Position, vimState: VimState): Promise<Position | IMovement>;
 
   /**
-   * Run the action in an operator context. 99% of the time, this function can be
-   * ignored, as it is exactly the same as the above function. (But pay attention
-   * to e!)
+   * Run the movement in an operator context. 99% of the time, this function can be
+   * ignored, as it is exactly the same as the above function.
    */
-  public async execActionForOperator(position: Position,  vimState: VimState): Promise<VimState> {
+  public async execActionForOperator(position: Position,  vimState: VimState): Promise<Position | IMovement> {
     return await this.execAction(position, vimState);
   }
 }
@@ -192,6 +209,17 @@ export function RegisterAction(action) {
 
 
 
+@RegisterAction
+class CommandInsertAtCursor extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["i"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Insert;
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
@@ -289,9 +317,9 @@ class CommandNextSearchMatch extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["n"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (vimState.searchString === "") {
-      return vimState;
+      return position;
     }
 
     let nextPosition: Position;
@@ -307,11 +335,10 @@ class CommandNextSearchMatch extends BaseMovement {
     if (!nextPosition) {
       // TODO(bell)
 
-      return vimState;
+      return position;
     }
 
-    vimState.cursorPosition = nextPosition;
-    return vimState;
+    return nextPosition;
   }
 }
 
@@ -321,9 +348,9 @@ class CommandPreviousSearchMatch extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["N"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (vimState.searchString === "") {
-      return vimState;
+      return position;
     }
 
     let prevPosition: Position;
@@ -339,11 +366,11 @@ class CommandPreviousSearchMatch extends BaseMovement {
     if (!prevPosition) {
       // TODO(bell)
 
-      return vimState;
+      return position;
     }
 
     vimState.cursorPosition = prevPosition;
-    return vimState;
+    return position;
   }
 }
 
@@ -841,18 +868,6 @@ class CommandOpenSquareBracket extends BaseCommand {
 // begin insert commands
 
 @RegisterAction
-class CommandInsertAtCursor extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["i"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.Insert;
-
-    return vimState;
-  }
-}
-
-@RegisterAction
 class CommandInsertAtLineBegin extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["I"];
@@ -930,10 +945,8 @@ class MoveLeft extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["h"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getLeft();
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getLeft();
   }
 }
 
@@ -943,10 +956,8 @@ class MoveUp extends BaseMovement {
   keys = ["k"];
   doesntChangeDesiredColumn = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getUp(vimState.desiredColumn);
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getUp(vimState.desiredColumn);
   }
 }
 
@@ -956,10 +967,8 @@ class MoveDown extends BaseMovement {
   keys = ["j"];
   doesntChangeDesiredColumn = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getDown(vimState.desiredColumn);
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getDown(vimState.desiredColumn);
   }
 }
 
@@ -968,10 +977,8 @@ class MoveRight extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["l"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = new Position(position.line, position.character + 1);
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return new Position(position.line, position.character + 1);
   }
 }
 
@@ -980,19 +987,15 @@ class MoveFindForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["f", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const toFind = vimState.actionState.actionKeys[1];
 
-    vimState.cursorPosition = position.findForwards(toFind);
-
-    return vimState;
+    return position.findForwards(toFind);
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
-    const state = await this.execAction(position, vimState);
-    state.cursorPosition = state.cursorPosition.getRight();
-
-    return state;
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    const pos = await this.execAction(position, vimState);
+    return pos.getRight();
   }
 }
 
@@ -1001,12 +1004,10 @@ class MoveFindBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["F", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const toFind = vimState.actionState.actionKeys[1];
 
-    vimState.cursorPosition = position.findBackwards(toFind);
-
-    return vimState;
+    return position.findBackwards(toFind);
   }
 }
 
@@ -1016,19 +1017,14 @@ class MoveTilForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["t", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const toFind = vimState.actionState.actionKeys[1];
 
-    vimState.cursorPosition = position.tilForwards(toFind);
-
-    return vimState;
+    return position.tilForwards(toFind);
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
-    const state = await this.execAction(position, vimState);
-    state.cursorPosition = state.cursorPosition.getRight();
-
-    return state;
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    return (await this.execAction(position, vimState)).getRight();
   }
 }
 
@@ -1037,12 +1033,10 @@ class MoveTilBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["T", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const toFind = vimState.actionState.actionKeys[1];
 
-    vimState.cursorPosition = position.tilBackwards(toFind);
-
-    return vimState;
+    return position.tilBackwards(toFind);
   }
 }
 
@@ -1052,10 +1046,8 @@ class MoveLineEnd extends BaseMovement {
   keys = ["$"];
   setsDesiredColumnToEOL = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getLineEnd();
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getLineEnd();
   }
 }
 
@@ -1064,9 +1056,8 @@ class MoveLineBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["0"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getLineBegin();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getLineBegin();
   }
 }
 
@@ -1075,9 +1066,8 @@ class MoveNonBlank extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["^"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getFirstLineNonBlankChar();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getFirstLineNonBlankChar();
   }
 }
 
@@ -1086,9 +1076,8 @@ class MoveNonBlankFirst extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "g"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getDocumentStart();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getDocumentStart();
   }
 }
 
@@ -1097,9 +1086,8 @@ class MoveNonBlankLast extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["G"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getDocumentEnd();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getDocumentEnd();
   }
 }
 
@@ -1108,49 +1096,44 @@ export class MoveWordBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["w"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (vimState.actionState.operator instanceof ChangeOperator) {
 
       /*
-        From the Vim manual:
+      From the Vim manual:
 
-        Special case: "cw" and "cW" are treated like "ce" and "cE" if the cursor is
-        on a non-blank.  This is because "cw" is interpreted as change-word, and a
-        word does not include the following white space.
+      Special case: "cw" and "cW" are treated like "ce" and "cE" if the cursor is
+      on a non-blank.  This is because "cw" is interpreted as change-word, and a
+      word does not include the following white space.
       */
-      vimState.cursorPosition = position.getCurrentWordEnd().getRight();
+      return position.getCurrentWordEnd().getRight();
     } else {
-      vimState.cursorPosition = position.getWordRight();
+      return position.getWordRight();
     }
-
-    return vimState;
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     const result = await this.execAction(position, vimState);
 
-      /*
-          From the Vim documentation:
+    /*
+    From the Vim documentation:
 
-          Another special case: When using the "w" motion in combination with an
-          operator and the last word moved over is at the end of a line, the end of
-          that word becomes the end of the operated text, not the first word in the
-          next line.
+    Another special case: When using the "w" motion in combination with an
+    operator and the last word moved over is at the end of a line, the end of
+    that word becomes the end of the operated text, not the first word in the
+    next line.
+    */
 
-          TODO - move this into actions.ts, add test.
-      */
+    if (result.isLineBeginning()) {
+        return result.getLeftThroughLineBreaks();
+    }
 
-      if (result.cursorPosition.isLineBeginning()) {
-          result.cursorPosition = result.cursorPosition.getLeftThroughLineBreaks();
-      }
+    if (result.isLineEnd()) {
+        return new Position(result.line, result.character + 1);
+    }
 
-      if (result.cursorPosition.isLineEnd()) {
-          result.cursorPosition = new Position(result.cursorPosition.line, result.cursorPosition.character + 1);
-      }
-
-    return vimState;
+    return result;
   }
-
 }
 
 @RegisterAction
@@ -1158,16 +1141,14 @@ class MoveFullWordBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["W"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (vimState.actionState.operator instanceof ChangeOperator) {
 
       // See note for w
-      vimState.cursorPosition = position.getCurrentBigWordEnd().getRight();
+      return position.getCurrentBigWordEnd().getRight();
     } else {
-      vimState.cursorPosition = position.getBigWordRight();
+      return position.getBigWordRight();
     }
-
-    return vimState;
   }
 }
 
@@ -1176,17 +1157,15 @@ class MoveWordEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["e"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getCurrentWordEnd();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getCurrentWordEnd();
   }
 
   public async execActionForOperator(position: Position,
-                                     vimState: VimState): Promise<VimState> {
+                                     vimState: VimState): Promise<Position> {
     let end = position.getCurrentWordEnd();
 
-    vimState.cursorPosition = new Position(end.line, end.character + 1);
-    return vimState;
+    return new Position(end.line, end.character + 1);
   }
 }
 
@@ -1195,9 +1174,8 @@ class MoveFullWordEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["E"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getCurrentBigWordEnd();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getCurrentBigWordEnd();
   }
 }
 
@@ -1206,9 +1184,8 @@ class MoveLastWordEnd  extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "e"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getLastWordEnd();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getLastWordEnd();
   }
 }
 
@@ -1217,9 +1194,8 @@ class MoveLastFullWordEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "E"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getLastBigWordEnd();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getLastBigWordEnd();
   }
 }
 
@@ -1228,9 +1204,8 @@ class MoveBeginningWord extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["b"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getWordLeft();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getWordLeft();
   }
 }
 
@@ -1239,9 +1214,8 @@ class MoveBeginningFullWord extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["B"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getBigWordLeft();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getBigWordLeft();
   }
 }
 
@@ -1250,9 +1224,8 @@ class MoveParagraphEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["}"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getCurrentParagraphEnd();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getCurrentParagraphEnd();
   }
 }
 
@@ -1261,9 +1234,8 @@ class MoveParagraphBegin extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["{"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getCurrentParagraphBeginning();
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getCurrentParagraphBeginning();
   }
 }
 
@@ -1347,21 +1319,19 @@ class ActionReplaceCharacter extends BaseCommand {
 // (dd yy cc << >>)
 // These work because there is a check in does/couldActionApply where
 // you can't run an operator if you already have one going (which is logical).
-
+// However there is the slightly weird behavior where dy actually deletes the whole
+// line, lol.
 @RegisterAction
 class MoveDD extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["d"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    let start = position.getLineBegin();
-    let stop  = position.getLineEndIncludingEOL();
-
-    vimState.cursorStartPosition = start;
-    vimState.cursorPosition = stop;
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start       : position.getLineBegin(),
+      stop        : position.getLineEndIncludingEOL(),
+      registerMode: RegisterMode.LineWise,
+    };
   }
 }
 
@@ -1370,12 +1340,12 @@ class MoveYY extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["y"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorStartPosition = position.getLineBegin();
-    vimState.cursorPosition = position.getLineEnd();
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start       : position.getLineBegin(),
+      stop        : position.getLineEndIncludingEOL(),
+      registerMode: RegisterMode.LineWise,
+    };
   }
 }
 
@@ -1384,11 +1354,11 @@ class MoveCC extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["c"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorStartPosition = position.getLineBegin();
-    vimState.cursorPosition = position.getLineEnd();
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start       : position.getLineBegin(),
+      stop        : position.getLineEnd(),
+    };
   }
 }
 
@@ -1397,15 +1367,11 @@ class MoveIndent extends BaseMovement {
   modes = [ModeName.Normal];
   keys = [">"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    let start = position.getLineBegin();
-    let stop  = position.getLineEndIncludingEOL();
-
-    vimState.cursorStartPosition = start;
-    vimState.cursorPosition = stop;
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start       : position.getLineBegin(),
+      stop        : position.getLineEnd(),
+    };
   }
 }
 
@@ -1414,15 +1380,11 @@ class MoveOutdent extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["<"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
-    let start = position.getLineBegin();
-    let stop  = position.getLineEndIncludingEOL();
-
-    vimState.cursorStartPosition = start;
-    vimState.cursorPosition = stop;
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    return vimState;
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start       : position.getLineBegin(),
+      stop        : position.getLineEnd(),
+    };
   }
 }
 
@@ -1455,19 +1417,15 @@ class MovementAWordTextObject extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["a", "w"];
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
-    const res = await this.execAction(position, vimState);
-
-    res.cursorPosition = res.cursorPosition.getRight();
-
-    return res;
-  }
-
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
       // TODO: This is kind of a bad way to do this, but text objects only work in
       // visual mode if you JUST entered visual mode
-      return new MoveWordBegin().execAction(position, vimState);
+      // TODO TODO: I just looked at this again and omg this is awful what was I smoking plz get rid of this asap
+      return {
+        start: vimState.searchCursorStartPosition,
+        stop: await new MoveWordBegin().execAction(position, vimState),
+      };
     }
 
     const currentChar = TextEditor.getLineAt(position).text[position.character];
@@ -1475,14 +1433,25 @@ class MovementAWordTextObject extends BaseMovement {
     // TODO(whitespace) - this is a bad way to do this. we need some sort of global
     // white space checking function.
     if (currentChar === ' ' || currentChar === '\t') {
-      vimState.cursorStartPosition = position.getLastWordEnd().getRight();
-      vimState.cursorPosition = position.getCurrentWordEnd();
+      return {
+        start: position.getLastWordEnd().getRight(),
+        stop: position.getCurrentWordEnd()
+      };
     } else {
-      vimState.cursorStartPosition = position.getWordLeft(true);
-      vimState.cursorPosition = position.getWordRight().getLeft();
+      return {
+        start: position.getWordLeft(true),
+        stop: position.getWordRight().getLeft()
+      };
     }
+  }
 
-    return vimState;
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const res = await this.execAction(position, vimState);
+
+    res.stop = res.stop.getRight();
+
+    return res;
   }
 }
 
@@ -1491,19 +1460,14 @@ class MovementIWordTextObject extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["i", "w"];
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<VimState> {
-    const res = await this.execAction(position, vimState);
-
-    res.cursorPosition = res.cursorPosition.getRight();
-
-    return res;
-  }
-
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
       // TODO: This is kind of a bad way to do this, but text objects only work in
       // visual mode if you JUST entered visual mode
-      return new MoveWordBegin().execAction(position, vimState);
+      return {
+        start: vimState.searchCursorStartPosition,
+        stop: await new MoveWordBegin().execAction(position, vimState),
+      };
     }
 
     const currentChar = TextEditor.getLineAt(position).text[position.character];
@@ -1511,14 +1475,24 @@ class MovementIWordTextObject extends BaseMovement {
     // TODO(whitespace)  - this is a bad way to do this. we need some sort of global
     // white space checking function.
     if (currentChar === ' ' || currentChar === '\t') {
-      vimState.cursorStartPosition = position.getLastWordEnd().getRight();
-      vimState.cursorPosition = position.getWordRight().getLeft();
+      return {
+        start: position.getLastWordEnd().getRight(),
+        stop:  position.getWordRight().getLeft()
+      };
     } else {
-      vimState.cursorStartPosition = position.getWordLeft(true);
-      vimState.cursorPosition = position.getCurrentWordEnd(true);
+      return {
+        start: position.getWordLeft(true),
+        stop: position.getCurrentWordEnd(true),
+      };
     }
+  }
 
-    return vimState;
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const res = await this.execAction(position, vimState);
+
+    res.stop = res.stop.getRight();
+
+    return res;
   }
 }
 
