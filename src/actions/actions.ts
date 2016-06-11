@@ -760,7 +760,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
   keys = ["D"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return await new DeleteOperator().run(vimState, position, position.getLineEnd());
+    return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
   }
 }
 
