@@ -428,7 +428,9 @@ export class ModeHandler implements vscode.Disposable {
 
             const movement = actionState.movement, command = actionState.command;
             if ((movement && !movement.doesntChangeDesiredColumn) || command) {
-                if (movement && movement.setsDesiredColumnToEOL) {
+                // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
+
+                if (movement && movement.setsDesiredColumnToEOL && !actionState.operator) {
                     vimState.desiredColumn = Number.POSITIVE_INFINITY;
                 } else {
                     vimState.desiredColumn = vimState.cursorPosition.character;
