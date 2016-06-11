@@ -402,6 +402,10 @@ export class ModeHandler implements vscode.Disposable {
         actionState.actionKeys = [];
         vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
+        if (this.currentModeName === ModeName.Normal) {
+            vimState.cursorStartPosition = vimState.cursorPosition;
+        }
+
         await this.updateView(vimState, {
             selectionStart: vimState.cursorStartPosition,
             selectionStop : vimState.cursorPosition,
@@ -447,8 +451,6 @@ export class ModeHandler implements vscode.Disposable {
 
         if (actionState.operator || this.currentMode.name !== ModeName.Normal) {
             actionState.motionsRun.push(movement);
-        } else {
-            vimState.cursorStartPosition = vimState.cursorPosition;
         }
 
         return vimState;
@@ -484,9 +486,9 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             return await actionState.operator.run(vimState, start, stop);
-        } else {
-            return vimState;
         }
+
+        console.log("This is bad! Execution should never get here.");
     }
 
     private async handleCommand(vimState: VimState): Promise<VimState> {
