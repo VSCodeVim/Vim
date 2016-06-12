@@ -148,6 +148,8 @@ export class ActionState {
      */
     public operator: BaseOperator = undefined;
 
+    public command: BaseCommand = undefined;
+
     /**
      * The number of times the user wants to repeat this action.
      */
@@ -324,11 +326,7 @@ export class ModeHandler implements vscode.Disposable {
         if (action instanceof BaseOperator) {
             actionState.operator = action;
         } else if (action instanceof BaseCommand) {
-            vimState = await action.exec(vimState.cursorPosition, vimState);
-
-            if (vimState.commandAction !== VimCommandActions.DoNothing) {
-                vimState = await this.handleCommand(vimState);
-            }
+            actionState.command = action;
         } else if (action instanceof BaseMovement) {
             vimState = await this.executeMovement(vimState, action);
         } else {
@@ -337,10 +335,46 @@ export class ModeHandler implements vscode.Disposable {
             return vimState;
         }
 
+        vimState = await this.runActionState(vimState, actionState);
+
+        // Updated desired column
+
+        const movement = action instanceof BaseMovement ? action : undefined;
+
+        if ((movement && !movement.doesntChangeDesiredColumn) || actionState.command) {
+            // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
+
+            if (movement && movement.setsDesiredColumnToEOL && !actionState.operator) {
+                vimState.desiredColumn = Number.POSITIVE_INFINITY;
+            } else {
+                vimState.desiredColumn = vimState.cursorPosition.character;
+            }
+        }
+
+        // Update view
+
+        await this.updateView(vimState, {
+            selectionStart: vimState.cursorStartPosition,
+            selectionStop : vimState.cursorPosition,
+            currentMode   : vimState.currentMode,
+        });
+
+        return vimState;
+    }
+
+    async runActionState(vimState: VimState, actionState: ActionState): Promise<VimState> {
         let ranRepeatableAction = false;
 
+        if (actionState.command) {
+            vimState = await actionState.command.exec(vimState.cursorPosition, vimState);
+
+            if (vimState.commandAction !== VimCommandActions.DoNothing) {
+                vimState = await this.handleCommand(vimState);
+            }
+        }
+
         if (actionState.readyToExecute()) {
-            vimState = await this.executeState(vimState);
+            vimState = await this.executeOperator(vimState);
 
             ranRepeatableAction = true;
         }
@@ -354,27 +388,6 @@ export class ModeHandler implements vscode.Disposable {
                 ranRepeatableAction = true;
             }
         }
-
-        // Updated desired column
-
-        const command = action instanceof BaseCommand ? action : undefined;
-        const movement = action instanceof BaseMovement ? action : undefined;
-
-        if ((movement && !movement.doesntChangeDesiredColumn) || command) {
-            // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
-
-            if (movement && movement.setsDesiredColumnToEOL && !actionState.operator) {
-                vimState.desiredColumn = Number.POSITIVE_INFINITY;
-            } else {
-                vimState.desiredColumn = vimState.cursorPosition.character;
-            }
-        }
-
-        await this.updateView(vimState, {
-            selectionStart: vimState.cursorStartPosition,
-            selectionStop : vimState.cursorPosition,
-            currentMode   : vimState.currentMode,
-        });
 
         if (ranRepeatableAction) {
             vimState.actionState = new ActionState(vimState);
@@ -431,7 +444,7 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
     }
 
-    private async executeState(vimState: VimState): Promise<VimState> {
+    private async executeOperator(vimState: VimState): Promise<VimState> {
         let start       = vimState.cursorStartPosition;
         let stop        = vimState.cursorPosition;
         let actionState = vimState.actionState;
