@@ -79,8 +79,8 @@ export class BaseAction {
     // TODO - this is not exactly correct and will eventually make me rage
     // It's for cases like daw where a would otherwise by treated as append and insert.
     if (this instanceof BaseCommand &&
-      !vimState.actionState.isInInitialState &&
-      !(this instanceof CommandInsertInSearchMode)) { return false; }
+        vimState.actionState.operator &&
+        !(this instanceof CommandInsertInSearchMode)) { return false; }
     if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
 
     return true;
@@ -93,8 +93,8 @@ export class BaseAction {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) { return false; }
     if (this instanceof BaseCommand &&
-      !vimState.actionState.isInInitialState &&
-      !(this instanceof CommandInsertInSearchMode)) { return false; }
+        vimState.actionState.operator &&
+        !(this instanceof CommandInsertInSearchMode)) { return false; }
     if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
 
     return true;
@@ -208,6 +208,22 @@ export function RegisterAction(action) {
 
 
 
+@RegisterAction
+class CommandEsc extends BaseCommand {
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<esc>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.currentMode !== ModeName.Visual &&
+        vimState.currentMode !== ModeName.VisualLine) {
+      vimState.cursorPosition = position.getLeft();
+    }
+
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 class CommandInsertAtCursor extends BaseCommand {
@@ -759,23 +775,6 @@ class CommandMoveFullPageUp extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.commandAction = VimCommandActions.MoveFullPageUp;
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandEsc extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<esc>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.currentMode !== ModeName.Visual &&
-        vimState.currentMode !== ModeName.VisualLine) {
-      vimState.cursorPosition = position.getLeft();
-    }
-
-    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }

@@ -162,6 +162,28 @@ export class ActionState {
                this.motionsRun.length === 0   &&
                this.count       === 1;
     }
+
+    public toString(): string {
+        let result = "";
+
+        if (this.command) {
+            result += this.command.keys.join("") + " ";
+        }
+
+        for (let i = 0; i < this.motionsRun.length; i++) {
+            result += this.motionsRun[i].keys.join("");
+        }
+
+        if (this.motionsRun.length > 0) {
+            result += " ";
+        }
+
+        if (this.operator) {
+            result += this.operator.keys.join("");
+        }
+
+        return result;
+    }
 }
 
 interface IViewState {
@@ -347,6 +369,8 @@ export class ModeHandler implements vscode.Disposable {
             selectionStop : vimState.cursorPosition,
             currentMode   : vimState.currentMode,
         });
+
+        console.log(actionState.toString());
 
         return vimState;
     }
