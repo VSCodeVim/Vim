@@ -56,7 +56,7 @@ export class VimState {
      * The keystroke sequence that made up our last complete action (that can be
      * repeated with '.').
      */
-    public previousFullAction = [];
+    public previousFullAction: ActionState = undefined;
 
     /**
      * The current full action we are building up.
@@ -104,12 +104,7 @@ export class VimState {
      */
     public commandAction = VimCommandActions.DoNothing;
 
-    private _actionState = new ActionState(this);
-    public get actionState(): ActionState { return this._actionState; }
-    public set actionState(a: ActionState) {
-        a.vimState = this;
-        this._actionState = a;
-    }
+    public actionState = new ActionState();
 }
 
 /**
@@ -155,23 +150,17 @@ export class ActionState {
      */
     public count: number = 1;
 
-    public vimState: VimState;
-
-    public readyToExecute(): boolean {
+    public readyToExecute(mode: ModeName): boolean {
         // Visual modes do not require a motion -- they ARE the motion.
         return this.operator && (this.motionsRun.length > 0 || (
-            this.vimState.currentMode === ModeName.Visual ||
-            this.vimState.currentMode === ModeName.VisualLine));
+            mode === ModeName.Visual ||
+            mode === ModeName.VisualLine));
     }
 
     public get isInInitialState(): boolean {
         return this.operator    === undefined &&
                this.motionsRun.length === 0   &&
                this.count       === 1;
-    }
-
-    constructor(vimState: VimState) {
-        this.vimState = vimState;
     }
 }
 
@@ -317,7 +306,7 @@ export class ModeHandler implements vscode.Disposable {
         if (action === KeypressState.NoPossibleMatch) {
             console.log("Nothing matched!");
 
-            vimState.actionState = new ActionState(vimState);
+            vimState.actionState = new ActionState();
             return vimState;
         } else if (action === KeypressState.WaitingOnKeys) {
             return vimState;
@@ -373,7 +362,7 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
-        if (actionState.readyToExecute()) {
+        if (actionState.readyToExecute(vimState.currentMode)) {
             vimState = await this.executeOperator(vimState);
 
             ranRepeatableAction = true;
@@ -390,7 +379,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (ranRepeatableAction) {
-            vimState.actionState = new ActionState(vimState);
+            vimState.actionState = new ActionState();
         }
 
         actionState.actionKeys = [];
@@ -492,6 +481,12 @@ export class ModeHandler implements vscode.Disposable {
                                                            vscode.TextEditorRevealType.InCenter);
             break;
             case VimCommandActions.Dot:
+
+            // TODO
+
+            /*
+                const toRun = this._vimState.actionState;
+
                 const oldDotKeysCopy = vimState.previousFullAction.slice(0);
 
                 vimState.actionState = new ActionState(vimState);
@@ -500,6 +495,7 @@ export class ModeHandler implements vscode.Disposable {
                 for (let key of oldDotKeysCopy) {
                     vimState = await this.handleKeyEventHelper(key, vimState);
                 }
+            */
             break;
         }
 
