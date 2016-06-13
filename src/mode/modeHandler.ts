@@ -9,7 +9,7 @@ import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { VisualLineMode } from './modeVisualLine';
 import {
-    BaseMovement, BaseCommand, Actions,
+    BaseMovement, BaseCommand, Actions, BaseAction,
     BaseOperator, PutCommand, isIMovement,
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
@@ -136,7 +136,7 @@ export class ActionState {
      */
     public actionKeys: string[] = [];
 
-    public motionsRun: BaseMovement[] = [];
+    public actionsRun: BaseAction[] = [];
 
     /**
      * The operator (e.g. d, y, >) the user wants to run, if there is one.
@@ -154,7 +154,7 @@ export class ActionState {
         const res = new ActionState();
 
         res.actionKeys = this.actionKeys.slice(0);
-        res.motionsRun = this.motionsRun.slice(0);
+        res.actionsRun = this.actionsRun.slice(0);
         res.operator   = this.operator;
         res.command    = this.command;
 
@@ -163,14 +163,14 @@ export class ActionState {
 
     public readyToExecute(mode: ModeName): boolean {
         // Visual modes do not require a motion -- they ARE the motion.
-        return this.operator && (this.motionsRun.length > 0 || (
+        return this.operator && (this.actionsRun.length > 0 || (
             mode === ModeName.Visual ||
             mode === ModeName.VisualLine));
     }
 
     public get isInInitialState(): boolean {
         return this.operator    === undefined &&
-               this.motionsRun.length === 0   &&
+               this.actionsRun.length === 0   &&
                this.count       === 1;
     }
 
@@ -181,11 +181,11 @@ export class ActionState {
             result += this.command.keys.join("") + " ";
         }
 
-        for (let i = 0; i < this.motionsRun.length; i++) {
-            result += this.motionsRun[i].keys.join("");
+        for (let i = 0; i < this.actionsRun.length; i++) {
+            result += this.actionsRun[i].keys.join("");
         }
 
-        if (this.motionsRun.length > 0) {
+        if (this.actionsRun.length > 0) {
             result += " ";
         }
 
@@ -431,11 +431,13 @@ export class ModeHandler implements vscode.Disposable {
     async runFullActionState(vimState: VimState, actionState: ActionState): Promise<VimState> {
         vimState.actionState = actionState;
 
-        const motions = actionState.motionsRun.slice(0);
+        const actions = actionState.actionsRun.slice(0);
 
-        for (let movement of motions) {
-            vimState = await this.executeMovement(vimState, movement);
+        /*
+        for (let action of actions) {
+            vimState = await this.executeAction(action);
         }
+        */
 
         vimState = await this.runActionState(vimState, actionState);
 
@@ -477,7 +479,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (actionState.operator || this.currentMode.name !== ModeName.Normal) {
-            actionState.motionsRun.push(movement);
+            actionState.actionsRun.push(movement);
         }
 
         return vimState;

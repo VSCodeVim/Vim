@@ -1,4 +1,4 @@
-import { VimCommandActions, VimState } from './../mode/modeHandler';
+import { VimCommandActions, VimState, ActionState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
@@ -69,6 +69,13 @@ export class BaseAction {
    * The sequence of keys you use to trigger the action.
    */
   public keys: string[];
+
+  /**
+   * A clone(!) of the actionState at the time that this action was triggered.
+   * You should use this all the time. I (TODO) will get rid of vimState.actionState
+   * someday.
+   */
+  public actionState: ActionState = undefined;
 
   /**
    * Is this action valid in the current Vim state?
@@ -177,6 +184,8 @@ export class Actions {
 
     for (const action of Actions.allActions) {
       if (action.doesActionApply(vimState, keysPressed)) {
+        action.actionState = vimState.actionState.clone();
+
         return action;
       }
 
@@ -277,7 +286,7 @@ class CommandInsertInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const key = vimState.actionState.actionKeys[0];
+    const key = this.actionState.actionKeys[0];
 
     // handle special keys first
     if (key === "<backspace>") {
@@ -300,7 +309,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       return vimState;
     } else {
-      vimState.searchString += vimState.actionState.actionKeys[0];
+      vimState.searchString += this.actionState.actionKeys[0];
     }
 
     // console.log(vimState.searchString); (TODO: Show somewhere!)
@@ -396,7 +405,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   keys = ["<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char = vimState.actionState.actionKeys[vimState.actionState.actionKeys.length - 1];
+    const char = this.actionState.actionKeys[this.actionState.actionKeys.length - 1];
 
     if (char === "<enter>") {
       await TextEditor.insert("\n");
@@ -424,7 +433,7 @@ class CommandSearchForwards extends BaseCommand {
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
-    vimState.actionState.actionKeys = [];
+    // vimState.actionState.actionKeys = []; // ???
 
     return vimState;
   }
@@ -442,7 +451,7 @@ class CommandSearchBackward extends BaseCommand {
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
-    vimState.actionState.actionKeys = [];
+    // vimState.actionState.actionKeys = []; // ???
 
     return vimState;
   }
@@ -987,7 +996,7 @@ class MoveFindForward extends BaseMovement {
   keys = ["f", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const toFind = vimState.actionState.actionKeys[1];
+    const toFind = this.actionState.actionKeys[1];
 
     return position.findForwards(toFind);
   }
@@ -1004,7 +1013,7 @@ class MoveFindBackward extends BaseMovement {
   keys = ["F", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const toFind = vimState.actionState.actionKeys[1];
+    const toFind = this.actionState.actionKeys[1];
 
     return position.findBackwards(toFind);
   }
@@ -1017,7 +1026,7 @@ class MoveTilForward extends BaseMovement {
   keys = ["t", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const toFind = vimState.actionState.actionKeys[1];
+    const toFind = this.actionState.actionKeys[1];
 
     return position.tilForwards(toFind);
   }
@@ -1033,7 +1042,7 @@ class MoveTilBackward extends BaseMovement {
   keys = ["T", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const toFind = vimState.actionState.actionKeys[1];
+    const toFind = this.actionState.actionKeys[1];
 
     return position.tilBackwards(toFind);
   }
@@ -1096,7 +1105,7 @@ export class MoveWordBegin extends BaseMovement {
   keys = ["w"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.actionState.operator instanceof ChangeOperator) {
+    if (this.actionState.operator instanceof ChangeOperator) {
 
       /*
       From the Vim manual:
@@ -1141,7 +1150,8 @@ class MoveFullWordBegin extends BaseMovement {
   keys = ["W"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.actionState.operator instanceof ChangeOperator) {
+    if (this.actionState.operator instanceof ChangeOperator) {
+      // TODO use execForOperator? Or maybe dont?
 
       // See note for w
       return position.getCurrentBigWordEnd().getRight();
@@ -1303,7 +1313,7 @@ class ActionReplaceCharacter extends BaseCommand {
   keys = ["r", "<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const toReplace = vimState.actionState.actionKeys[1];
+    const toReplace = this.actionState.actionKeys[1];
     const state = await new DeleteOperator().run(vimState, position, position);
 
     await TextEditor.insertAt(toReplace, position);
