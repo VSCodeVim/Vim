@@ -150,6 +150,17 @@ export class ActionState {
      */
     public count: number = 1;
 
+    public clone(): ActionState {
+        const res = new ActionState();
+
+        res.actionKeys = this.actionKeys.slice(0);
+        res.motionsRun = this.motionsRun.slice(0);
+        res.operator   = this.operator;
+        res.command    = this.command;
+
+        return res;
+    }
+
     public readyToExecute(mode: ModeName): boolean {
         // Visual modes do not require a motion -- they ARE the motion.
         return this.operator && (this.motionsRun.length > 0 || (
@@ -403,6 +414,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (ranRepeatableAction) {
+            vimState.previousFullAction = vimState.actionState;
             vimState.actionState = new ActionState();
         }
 
@@ -412,6 +424,20 @@ export class ModeHandler implements vscode.Disposable {
         if (this.currentModeName === ModeName.Normal) {
             vimState.cursorStartPosition = vimState.cursorPosition;
         }
+
+        return vimState;
+    }
+
+    async runFullActionState(vimState: VimState, actionState: ActionState): Promise<VimState> {
+        vimState.actionState = actionState;
+
+        const motions = actionState.motionsRun.slice(0);
+
+        for (let movement of motions) {
+            vimState = await this.executeMovement(vimState, movement);
+        }
+
+        vimState = await this.runActionState(vimState, actionState);
 
         return vimState;
     }
@@ -505,6 +531,13 @@ export class ModeHandler implements vscode.Disposable {
                                                            vscode.TextEditorRevealType.InCenter);
             break;
             case VimCommandActions.Dot:
+                console.log("Running: ", vimState.previousFullAction.toString());
+
+                const clonedAction = vimState.previousFullAction.clone();
+
+                await this.runFullActionState(vimState, vimState.previousFullAction);
+
+                vimState.previousFullAction = clonedAction;
 
             // TODO
 
@@ -572,10 +605,10 @@ export class ModeHandler implements vscode.Disposable {
         // Draw search highlight
 
         if (this.currentMode.name === ModeName.SearchInProgressMode &&
-            this._vimState.nextSearchMatchPosition !== undefined) {
+            vimState.nextSearchMatchPosition !== undefined) {
             let range = new vscode.Range(
-                this._vimState.nextSearchMatchPosition,
-                this._vimState.nextSearchMatchPosition.getRight(this._vimState.searchString.length));
+                vimState.nextSearchMatchPosition,
+                vimState.nextSearchMatchPosition.getRight(vimState.searchString.length));
 
             vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
         } else {
