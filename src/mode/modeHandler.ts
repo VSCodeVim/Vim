@@ -323,6 +323,8 @@ export class ModeHandler implements vscode.Disposable {
                         this._vimState.currentMode = ModeName.Visual;
                         this.setCurrentModeByName(this._vimState);
                     }
+                } else {
+                    this.updateView(this._vimState);
                 }
             }
         });
@@ -406,11 +408,7 @@ export class ModeHandler implements vscode.Disposable {
 
         // Update view
 
-        await this.updateView(vimState, {
-            selectionStart: vimState.cursorStartPosition,
-            selectionStop : vimState.cursorPosition,
-            currentMode   : vimState.currentMode,
-        });
+        await this.updateView(vimState);
 
         return vimState;
     }
@@ -602,13 +600,13 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // TODO: this method signature is totally nonsensical!!!!
-    private async updateView(vimState: VimState, viewState: IViewState): Promise<void> {
+    private async updateView(vimState: VimState): Promise<void> {
         // Update cursor position
 
-        let start = viewState.selectionStart;
-        let stop  = viewState.selectionStop;
+        let start = vimState.cursorStartPosition;
+        let stop  = vimState.cursorPosition;
 
-        if (viewState.currentMode === ModeName.Visual) {
+        if (vimState.currentMode === ModeName.Visual) {
 
             /**
              * Always select the letter that we started visual mode on, no matter
@@ -629,9 +627,9 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw selection (or cursor)
 
-        if (viewState.currentMode === ModeName.Visual) {
+        if (vimState.currentMode === ModeName.Visual) {
             vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
-        } else if (viewState.currentMode === ModeName.VisualLine) {
+        } else if (vimState.currentMode === ModeName.VisualLine) {
             vscode.window.activeTextEditor.selection = new vscode.Selection(
                 Position.EarlierOf(start, stop).getLineBegin(),
                 Position.LaterOf(start, stop).getLineEnd());

@@ -397,8 +397,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    vimState.cursorPosition = prevPosition;
-    return position;
+    return prevPosition;
   }
 }
 
