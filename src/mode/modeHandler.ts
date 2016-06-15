@@ -222,7 +222,7 @@ export class ModeHandler implements vscode.Disposable {
     private _vimState: VimState;
 
     // Caret Styling
-    private _caretDecoration = vscode.window.createTextEditorDecorationType(
+    private _searchDecoration = vscode.window.createTextEditorDecorationType(
     {
         dark: {
             // used for dark colored themes
@@ -238,6 +238,21 @@ export class ModeHandler implements vscode.Disposable {
         borderWidth: '1px'
     });
 
+    private _caretDecoration = vscode.window.createTextEditorDecorationType(
+    {
+        dark: {
+            // used for dark colored themes
+            backgroundColor: 'rgba(224, 224, 224, 0.4)',
+           borderColor: 'rgba(224, 224, 224, 0.4)'
+        },
+        light: {
+            // used for light colored themes
+            backgroundColor: 'rgba(32, 32, 32, 0.4)',
+            borderColor: 'rgba(32, 32, 32, 0.4)'
+        },
+        borderStyle: 'solid',
+        borderWidth: '1px'
+    });
 
     private get currentModeName(): ModeName {
         return this.currentMode.name;
@@ -335,17 +350,6 @@ export class ModeHandler implements vscode.Disposable {
 
             mode.isActive = (mode.name === vimState.currentMode);
         }
-
-        // Draw block cursor.
-
-        // The reason we make a copy of options is because it's a
-        // getter/setter and it won't trigger it's event if we modify
-        // the object in place
-        const options = vscode.window.activeTextEditor.options;
-        (options as any).cursorStyle = vimState.currentMode === ModeName.Insert ?
-            (vscode as any).TextEditorCursorStyle.Line :
-            (vscode as any).TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor.options = options;
 
         const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[vimState.currentMode];
         this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
@@ -639,18 +643,25 @@ export class ModeHandler implements vscode.Disposable {
 
         vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
 
+        let rangesToDraw: vscode.Range[] = [];
+
+        // Draw block cursor.
+
+        if (this.currentMode.name !== ModeName.Insert) {
+            rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
+        }
+
         // Draw search highlight
 
         if (this.currentMode.name === ModeName.SearchInProgressMode &&
             vimState.nextSearchMatchPosition !== undefined) {
-            let range = new vscode.Range(
-                vimState.nextSearchMatchPosition,
-                vimState.nextSearchMatchPosition.getRight(vimState.searchString.length));
 
-            vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
-        } else {
-            vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
+            rangesToDraw.push(new vscode.Range(
+                vimState.nextSearchMatchPosition,
+                vimState.nextSearchMatchPosition.getRight(vimState.searchString.length)));
         }
+
+        vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
