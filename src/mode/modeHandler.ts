@@ -150,15 +150,15 @@ export class RecordedState {
 
         if (list.length > 1) { throw "Too many operators!"; }
 
-        return list[0];
+        return list[0] as any;
     }
 
     public get command(): BaseCommand {
         const list = _.filter(this.actionsRun, a => a instanceof BaseCommand);
 
-        // TODO - just disregard <esc>
+        // TODO - disregard <esc>, then assert this is of length 1.
 
-        return list[0];
+        return list[0] as any;
     }
 
     public get hasRunAMovement(): boolean {
