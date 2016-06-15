@@ -1,4 +1,4 @@
-import { VimCommandActions, VimState, RecordedState } from './../mode/modeHandler';
+import { VimCommandActions, VimState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
