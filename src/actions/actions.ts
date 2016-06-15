@@ -370,6 +370,25 @@ class CommandNextSearchMatch extends BaseMovement {
   }
 }
 
+// TODO - bah, movements need to be more powerful.
+@RegisterAction
+class CommandStar extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["*"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const start = position.getWordLeft(true);
+    const end   = position.getCurrentWordEnd(true).getRight();
+    const currentWord = TextEditor.getText(new vscode.Range(start, end));
+
+    vimState.searchString = currentWord;
+    vimState.searchDirection = 1;
+    vimState.cursorPosition = CommandInsertInSearchMode.GetNextSearchMatch(vimState.cursorPosition, currentWord);
+
+    return position;
+  }
+}
+
 
 @RegisterAction
 class CommandPreviousSearchMatch extends BaseMovement {
@@ -440,7 +459,6 @@ export class CommandSearchForwards extends BaseCommand {
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
-    // vimState.actionState.actionKeys = []; // ???
 
     return vimState;
   }
@@ -458,7 +476,6 @@ export class CommandSearchBackwards extends BaseCommand {
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
-    // vimState.actionState.actionKeys = []; // ???
 
     return vimState;
   }
