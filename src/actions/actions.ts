@@ -70,18 +70,22 @@ export class BaseAction {
    */
   public keys: string[];
 
+  public mustBeFirstKey = false;
+
+  /**
+   * The keys pressed at the time that this action was triggered.
+   */
+  public keysPressed: string[] = [];
+
   /**
    * Is this action valid in the current Vim state?
    */
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys, keysPressed)) { return false; }
-    // TODO - this is not exactly correct and will eventually make me rage
-    // It's for cases like daw where a would otherwise by treated as append and insert.
-    if (this instanceof BaseCommand &&
-      !vimState.actionState.isInInitialState &&
-      !(this instanceof CommandInsertInSearchMode)) { return false; }
-    if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
+    if (vimState.recordedState.actionsRun.length > 0 &&
+        this.mustBeFirstKey) { return false; }
+    if (this instanceof BaseOperator && vimState.recordedState.operator) { return false; }
 
     return true;
   }
@@ -92,12 +96,15 @@ export class BaseAction {
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) { return false; }
-    if (this instanceof BaseCommand &&
-      !vimState.actionState.isInInitialState &&
-      !(this instanceof CommandInsertInSearchMode)) { return false; }
-    if (this instanceof BaseOperator && vimState.actionState.operator) { return false; }
+    if (vimState.recordedState.actionsRun.length > 0 &&
+        this.mustBeFirstKey) { return false; }
+    if (this instanceof BaseOperator && vimState.recordedState.operator) { return false; }
 
     return true;
+  }
+
+  public toString(): string {
+    return this.keys.join("");
   }
 }
 
@@ -159,7 +166,7 @@ export class Actions {
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
    */
-  public static allActions: BaseMovement[] = [];
+  public static allActions: { type: typeof BaseAction, action: BaseAction }[] = [];
 
   /**
    * Gets the action that should be triggered given a key
@@ -175,9 +182,13 @@ export class Actions {
   public static getRelevantAction(keysPressed: string[], vimState: VimState): BaseAction | KeypressState {
     let couldPotentiallyHaveMatch = false;
 
-    for (const action of Actions.allActions) {
+    for (const { type, action } of Actions.allActions) {
       if (action.doesActionApply(vimState, keysPressed)) {
-        return action;
+        const result = new type();
+
+        result.keysPressed = vimState.recordedState.actionKeys.slice(0);
+
+        return result;
       }
 
       if (action.couldActionApply(vimState, keysPressed)) {
@@ -190,7 +201,7 @@ export class Actions {
 }
 
 export function RegisterAction(action) {
-  Actions.allActions.push(new action());
+  Actions.allActions.push({ type: action, action: new action() });
 }
 
 
@@ -208,11 +219,28 @@ export function RegisterAction(action) {
 
 
 
+@RegisterAction
+class CommandEsc extends BaseCommand {
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<esc>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.currentMode !== ModeName.Visual &&
+        vimState.currentMode !== ModeName.VisualLine) {
+      vimState.cursorPosition = position.getLeft();
+    }
+
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["i"];
+  mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
@@ -261,7 +289,7 @@ class CommandInsertInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const key = vimState.actionState.actionKeys[0];
+    const key = this.keysPressed[0];
 
     // handle special keys first
     if (key === "<backspace>") {
@@ -284,7 +312,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       return vimState;
     } else {
-      vimState.searchString += vimState.actionState.actionKeys[0];
+      vimState.searchString += this.keysPressed[0];
     }
 
     // console.log(vimState.searchString); (TODO: Show somewhere!)
@@ -380,7 +408,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   keys = ["<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char = vimState.actionState.actionKeys[0];
+    const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<enter>") {
       await TextEditor.insert("\n");
@@ -395,10 +423,14 @@ class CommandInsertInInsertMode extends BaseCommand {
 
     return vimState;
   }
+
+  public toString(): string {
+    return this.keysPressed[this.keysPressed.length - 1];
+  }
 }
 
 @RegisterAction
-class CommandSearchForwards extends BaseCommand {
+export class CommandSearchForwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["/"];
 
@@ -408,7 +440,7 @@ class CommandSearchForwards extends BaseCommand {
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
-    vimState.actionState.actionKeys = [];
+    // vimState.actionState.actionKeys = []; // ???
 
     return vimState;
   }
@@ -416,7 +448,7 @@ class CommandSearchForwards extends BaseCommand {
 
 
 @RegisterAction
-class CommandSearchBackward extends BaseCommand {
+export class CommandSearchBackwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["?"];
 
@@ -426,7 +458,7 @@ class CommandSearchBackward extends BaseCommand {
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
-    vimState.actionState.actionKeys = [];
+    // vimState.actionState.actionKeys = []; // ???
 
     return vimState;
   }
@@ -765,23 +797,6 @@ class CommandMoveFullPageUp extends BaseCommand {
 }
 
 @RegisterAction
-class CommandEsc extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<esc>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.currentMode !== ModeName.Visual &&
-        vimState.currentMode !== ModeName.VisualLine) {
-      vimState.cursorPosition = position.getLeft();
-    }
-
-    vimState.currentMode = ModeName.Normal;
-
-    return vimState;
-  }
-}
-
-@RegisterAction
 class CommandDeleteToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["D"];
@@ -870,6 +885,7 @@ class CommandOpenSquareBracket extends BaseCommand {
 @RegisterAction
 class CommandInsertAtLineBegin extends BaseCommand {
   modes = [ModeName.Normal];
+  mustBeFirstKey = true;
   keys = ["I"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -883,6 +899,7 @@ class CommandInsertAtLineBegin extends BaseCommand {
 @RegisterAction
 class CommandInsertAfterCursor extends BaseCommand {
   modes = [ModeName.Normal];
+  mustBeFirstKey = true;
   keys = ["a"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -897,6 +914,7 @@ class CommandInsertAfterCursor extends BaseCommand {
 class CommandInsertAtLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["A"];
+  mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const pos = new Position(position.line,
@@ -988,7 +1006,7 @@ class MoveFindForward extends BaseMovement {
   keys = ["f", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const toFind = vimState.actionState.actionKeys[1];
+    const toFind = this.keysPressed[1];
 
     return position.findForwards(toFind);
   }
@@ -1005,7 +1023,7 @@ class MoveFindBackward extends BaseMovement {
   keys = ["F", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const toFind = vimState.actionState.actionKeys[1];
+    const toFind = this.keysPressed[1];
 
     return position.findBackwards(toFind);
   }
@@ -1018,7 +1036,7 @@ class MoveTilForward extends BaseMovement {
   keys = ["t", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const toFind = vimState.actionState.actionKeys[1];
+    const toFind = this.keysPressed[1];
 
     return position.tilForwards(toFind);
   }
@@ -1034,7 +1052,7 @@ class MoveTilBackward extends BaseMovement {
   keys = ["T", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const toFind = vimState.actionState.actionKeys[1];
+    const toFind = this.keysPressed[1];
 
     return position.tilBackwards(toFind);
   }
@@ -1097,7 +1115,7 @@ export class MoveWordBegin extends BaseMovement {
   keys = ["w"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.actionState.operator instanceof ChangeOperator) {
+    if (vimState.recordedState.operator instanceof ChangeOperator) {
 
       /*
       From the Vim manual:
@@ -1142,7 +1160,8 @@ class MoveFullWordBegin extends BaseMovement {
   keys = ["W"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.actionState.operator instanceof ChangeOperator) {
+    if (vimState.recordedState.operator instanceof ChangeOperator) {
+      // TODO use execForOperator? Or maybe dont?
 
       // See note for w
       return position.getCurrentBigWordEnd().getRight();
@@ -1304,7 +1323,7 @@ class ActionReplaceCharacter extends BaseCommand {
   keys = ["r", "<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const toReplace = vimState.actionState.actionKeys[1];
+    const toReplace = this.keysPressed[1];
     const state = await new DeleteOperator().run(vimState, position, position);
 
     await TextEditor.insertAt(toReplace, position);
