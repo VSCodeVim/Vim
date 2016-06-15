@@ -341,12 +341,12 @@ export class ModeHandler implements vscode.Disposable {
 
         key = this._configuration.keyboardLayout.translate(key);
 
-        let actionState = vimState.recordedState;
+        let recordedState = vimState.recordedState;
 
-        actionState.actionKeys.push(key);
+        recordedState.actionKeys.push(key);
         vimState.currentFullAction.push(key);
 
-        let result = Actions.getRelevantAction(actionState.actionKeys, vimState);
+        let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
         if (result === KeypressState.NoPossibleMatch) {
             console.log("Nothing matched!");
@@ -359,18 +359,18 @@ export class ModeHandler implements vscode.Disposable {
 
         let action = result as BaseAction;
 
-        actionState.actionsRun.push(action);
+        recordedState.actionsRun.push(action);
 
-        vimState = await this.runAction(vimState, actionState, action);
+        vimState = await this.runAction(vimState, recordedState, action);
 
         // Updated desired column
 
         const movement = action instanceof BaseMovement ? action : undefined;
 
-        if ((movement && !movement.doesntChangeDesiredColumn) || actionState.command) {
+        if ((movement && !movement.doesntChangeDesiredColumn) || recordedState.command) {
             // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
 
-            if (movement && movement.setsDesiredColumnToEOL && !actionState.operator) {
+            if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
                 vimState.desiredColumn = Number.POSITIVE_INFINITY;
             } else {
                 vimState.desiredColumn = vimState.cursorPosition.character;
@@ -388,7 +388,7 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
     }
 
-    async runAction(vimState: VimState, actionState: RecordedState, action: BaseAction): Promise<VimState> {
+    async runAction(vimState: VimState, recordedState: RecordedState, action: BaseAction): Promise<VimState> {
         let ranRepeatableAction = false;
         let ranAction = false;
 
@@ -419,7 +419,7 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
-        if (actionState.readyToExecute(vimState.currentMode)) {
+        if (recordedState.readyToExecute(vimState.currentMode)) {
             vimState = await this.executeOperator(vimState);
 
             vimState.recordedState.hasRunOperator = true;
@@ -428,7 +428,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         // And then we have to do it again because an operator could
-        // have changed it as well.
+        // have changed it as well. (TODO: do you even decomposition bro)
 
         if (vimState.currentMode !== this.currentModeName) {
             this.setCurrentModeByName(vimState);
@@ -448,7 +448,7 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
-        actionState.actionKeys = [];
+        recordedState.actionKeys = [];
         vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
         if (this.currentModeName === ModeName.Normal) {
@@ -458,28 +458,10 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
     }
 
-    async runFullActionState(vimState: VimState, actionState: RecordedState): Promise<VimState> {
-        const actions = actionState.actionsRun.slice(0);
-
-        actionState = new RecordedState();
-        vimState.recordedState = actionState;
-
-        let i = 0;
-
-        for (let action of actions) {
-            actionState.actionsRun = actions.slice(0, ++i);
-            vimState = await this.runAction(vimState, actionState, action);
-        }
-
-        actionState.actionsRun = actions;
-
-        return vimState;
-    }
-
     private async executeMovement(vimState: VimState, movement: BaseMovement): Promise<VimState> {
-        let actionState = vimState.recordedState;
+        let recordedState = vimState.recordedState;
 
-        const result = actionState.operator ?
+        const result = recordedState.operator ?
             await movement.execActionForOperator(vimState.cursorPosition, vimState) :
             await movement.execAction           (vimState.cursorPosition, vimState);
 
@@ -495,7 +477,7 @@ export class ModeHandler implements vscode.Disposable {
 
         // Keep the cursor within bounds
 
-        if (vimState.currentMode === ModeName.Normal && !actionState.operator) {
+        if (vimState.currentMode === ModeName.Normal && !recordedState.operator) {
             if (stop.character >= Position.getLineLength(stop.line)) {
                 vimState.cursorPosition = stop.getLineEnd().getLeft();
             }
@@ -514,11 +496,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     private async executeOperator(vimState: VimState): Promise<VimState> {
-        let start       = vimState.cursorStartPosition;
-        let stop        = vimState.cursorPosition;
-        let actionState = vimState.recordedState;
+        let start         = vimState.cursorStartPosition;
+        let stop          = vimState.cursorPosition;
+        let recordedState = vimState.recordedState;
 
-        if (actionState.operator) {
+        if (recordedState.operator) {
             if (vimState.currentMode !== ModeName.Visual &&
                 vimState.currentMode !== ModeName.VisualLine &&
                 vimState.currentRegisterMode !== RegisterMode.LineWise) {
@@ -534,7 +516,7 @@ export class ModeHandler implements vscode.Disposable {
                 stop  = Position.LaterOf(start, stop).getLineEnd();
             }
 
-            return await actionState.operator.run(vimState, start, stop);
+            return await recordedState.operator.run(vimState, start, stop);
         }
 
         console.log("This is bad! Execution should never get here.");
@@ -565,26 +547,29 @@ export class ModeHandler implements vscode.Disposable {
 
                 const clonedAction = vimState.previousFullAction.clone();
 
-                await this.runFullActionState(vimState, vimState.previousFullAction);
+                await this.rerunRecordedState(vimState, vimState.previousFullAction);
 
                 vimState.previousFullAction = clonedAction;
-
-            // TODO
-
-            /*
-                const toRun = this._vimState.actionState;
-
-                const oldDotKeysCopy = vimState.previousFullAction.slice(0);
-
-                vimState.actionState = new ActionState(vimState);
-                vimState.currentFullAction = [];
-
-                for (let key of oldDotKeysCopy) {
-                    vimState = await this.handleKeyEventHelper(key, vimState);
-                }
-            */
             break;
         }
+
+        return vimState;
+    }
+
+    async rerunRecordedState(vimState: VimState, recordedState: RecordedState): Promise<VimState> {
+        const actions = recordedState.actionsRun.slice(0);
+
+        recordedState = new RecordedState();
+        vimState.recordedState = recordedState;
+
+        let i = 0;
+
+        for (let action of actions) {
+            recordedState.actionsRun = actions.slice(0, ++i);
+            vimState = await this.runAction(vimState, recordedState, action);
+        }
+
+        recordedState.actionsRun = actions;
 
         return vimState;
     }
