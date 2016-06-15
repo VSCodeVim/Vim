@@ -263,31 +263,52 @@ export class ModeHandler implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(e => {
             let selection = e.selections[0];
 
+            // Currently not worth the pain. Revisit in the future when
+            // the block cursor is better (TODO)
+            if (this._vimState.currentMode === ModeName.VisualLine) {
+                return;
+            }
+
             // Programmatically triggering an edit will unfortunately ALSO trigger this
             // function. We make sure that the vim state is actually out of state from the
             // actual position of the cursor before correcting it.
-            if (this._vimState.currentMode === ModeName.Visual ||
-                this._vimState.currentMode == ModeName.VisualLine ||
-                selection.start.isEqual(this._vimState.cursorPosition) ||
-                selection.end.isEqual(this._vimState.cursorStartPosition) ||
-                selection.start.isEqual(this._vimState.cursorPosition) ||
-                selection.end.isEqual(this._vimState.cursorStartPosition)) {
+            if (this._vimState.currentMode === ModeName.Visual &&
+                (selection.start.isEqual(this._vimState.cursorPosition) &&
+                selection.end.isEqual(this._vimState.cursorStartPosition)) ||
+                (selection.start.isEqual(this._vimState.cursorPosition) &&
+                selection.end.isEqual(this._vimState.cursorStartPosition))) {
 
                 return;
             }
 
             if (selection) {
-                let line = selection.active.line;
-                let char = selection.active.character;
+                var newPosition = new Position(selection.active.line, selection.active.character);
 
-                var newPosition = new Position(line, char);
-
-                if (char > newPosition.getLineEnd().character) {
+                if (newPosition.character > newPosition.getLineEnd().character) {
                    newPosition = new Position(newPosition.line, newPosition.getLineEnd().character);
                 }
 
                 this._vimState.cursorPosition = newPosition;
-                this._vimState.desiredColumn = newPosition.character;
+                this._vimState.desiredColumn  = newPosition.character;
+
+                // start visual mode?
+
+                if (!selection.anchor.isEqual(selection.active)) {
+                    var selectionStart = new Position(selection.anchor.line, selection.anchor.character).getLeft();
+
+                    if (selectionStart.character > selectionStart.getLineEnd().character) {
+                        selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
+                    }
+
+                    this._vimState.cursorStartPosition = selectionStart;
+
+                    if (this._vimState.currentMode !== ModeName.Visual &&
+                        this._vimState.currentMode !== ModeName.VisualLine) {
+
+                        this._vimState.currentMode = ModeName.Visual;
+                        this.setCurrentModeByName(this._vimState);
+                    }
+                }
             }
         });
     }
@@ -583,8 +604,7 @@ export class ModeHandler implements vscode.Disposable {
         let start = viewState.selectionStart;
         let stop  = viewState.selectionStop;
 
-        if (viewState.currentMode === ModeName.Visual ||
-            viewState.currentMode === ModeName.VisualLine) {
+        if (viewState.currentMode === ModeName.Visual) {
 
             /**
              * Always select the letter that we started visual mode on, no matter
