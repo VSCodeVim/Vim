@@ -308,11 +308,16 @@ export class ModeHandler implements vscode.Disposable {
 
                 // start visual mode?
 
+                /*
                 if (!selection.anchor.isEqual(selection.active)) {
-                    var selectionStart = new Position(selection.anchor.line, selection.anchor.character).getLeft();
+                    var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
 
                     if (selectionStart.character > selectionStart.getLineEnd().character) {
                         selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
+                    }
+
+                    if (selectionStart.compareTo(newPosition) > 0) {
+                        selectionStart = selectionStart.getRight();
                     }
 
                     this._vimState.cursorStartPosition = selectionStart;
@@ -326,6 +331,8 @@ export class ModeHandler implements vscode.Disposable {
                 } else {
                     this.updateView(this._vimState);
                 }
+                */
+
             }
         });
     }
