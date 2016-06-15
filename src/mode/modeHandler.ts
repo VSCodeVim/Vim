@@ -12,6 +12,7 @@ import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions, BaseAction,
     BaseOperator, PutCommand, isIMovement,
+    CommandSearchForwards, CommandSearchBackwards,
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
@@ -160,8 +161,11 @@ export class RecordedState {
         return list[0];
     }
 
-    public get movementsRun(): BaseMovement[] {
-        return _.filter(this.actionsRun, a => a instanceof BaseMovement);
+    public get hasRunAMovement(): boolean {
+        return _.filter(this.actionsRun, a =>
+                  a instanceof BaseMovement ||
+                  a instanceof CommandSearchForwards ||
+                  a instanceof CommandSearchBackwards).length > 0;
     }
 
     /**
@@ -180,7 +184,10 @@ export class RecordedState {
 
     public readyToExecute(mode: ModeName): boolean {
         // Visual modes do not require a motion -- they ARE the motion.
-        return this.operator && !this.hasRunOperator && (this.movementsRun.length > 0 || (
+        return this.operator &&
+            !this.hasRunOperator &&
+            mode !== ModeName.SearchInProgressMode &&
+            (this.hasRunAMovement || (
             mode === ModeName.Visual ||
             mode === ModeName.VisualLine));
     }
@@ -378,8 +385,6 @@ export class ModeHandler implements vscode.Disposable {
             currentMode   : vimState.currentMode,
         });
 
-        console.log("action: ", actionState.toString());
-
         return vimState;
     }
 
@@ -403,6 +408,17 @@ export class ModeHandler implements vscode.Disposable {
             ranAction = true;
         }
 
+        // Update mode (note the ordering allows you to go into search mode,
+        // then return and have the motion immediately applied to an operator).
+
+        if (vimState.currentMode !== this.currentModeName) {
+            this.setCurrentModeByName(vimState);
+
+            if (vimState.currentMode === ModeName.Normal) {
+                ranRepeatableAction = true;
+            }
+        }
+
         if (actionState.readyToExecute(vimState.currentMode)) {
             vimState = await this.executeOperator(vimState);
 
@@ -411,7 +427,8 @@ export class ModeHandler implements vscode.Disposable {
             ranAction = true;
         }
 
-        // Update mode
+        // And then we have to do it again because an operator could
+        // have changed it as well.
 
         if (vimState.currentMode !== this.currentModeName) {
             this.setCurrentModeByName(vimState);

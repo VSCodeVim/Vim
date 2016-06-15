@@ -430,7 +430,7 @@ class CommandInsertInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchForwards extends BaseCommand {
+export class CommandSearchForwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["/"];
 
@@ -448,7 +448,7 @@ class CommandSearchForwards extends BaseCommand {
 
 
 @RegisterAction
-class CommandSearchBackward extends BaseCommand {
+export class CommandSearchBackwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["?"];
 
