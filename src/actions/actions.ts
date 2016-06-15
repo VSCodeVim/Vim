@@ -812,7 +812,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   keys = ["C"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const state = await new DeleteOperator().run(vimState, position, position.getLineEnd());
+    const state = await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
     state.cursorPosition = state.cursorPosition.getRight();
     state.currentMode = ModeName.Insert;
 
