@@ -266,7 +266,9 @@ export class ModeHandler implements vscode.Disposable {
             // Programmatically triggering an edit will unfortunately ALSO trigger this
             // function. We make sure that the vim state is actually out of state from the
             // actual position of the cursor before correcting it.
-            if (selection.start.isEqual(this._vimState.cursorPosition) ||
+            if (this._vimState.currentMode === ModeName.Visual ||
+                this._vimState.currentMode == ModeName.VisualLine ||
+                selection.start.isEqual(this._vimState.cursorPosition) ||
                 selection.end.isEqual(this._vimState.cursorStartPosition) ||
                 selection.start.isEqual(this._vimState.cursorPosition) ||
                 selection.end.isEqual(this._vimState.cursorStartPosition)) {
