@@ -265,7 +265,10 @@ export class ModeHandler implements vscode.Disposable {
         return this.currentMode.name;
     }
 
-    constructor() {
+    /**
+     * testingMode does not affect functionality, but speeds up tests drastically.
+     */
+    constructor(testingMode = true) {
         this._configuration = Configuration.fromUserFile();
 
         this._vimState = new VimState();
@@ -284,6 +287,10 @@ export class ModeHandler implements vscode.Disposable {
         // handle scenarios where mouse used to change current position
         vscode.window.onDidChangeTextEditorSelection(async (e) => {
             let selection = e.selections[0];
+
+            if (testingMode) {
+                return;
+            }
 
             // See comment about justUpdatedState.
             if (this._vimState.justUpdatedState) {
