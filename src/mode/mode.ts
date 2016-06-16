@@ -9,8 +9,10 @@ export enum ModeName {
 }
 
 export abstract class Mode {
-    private _isActive : boolean;
-    private _name : ModeName;
+    private _isActive: boolean;
+    private _name: ModeName;
+
+    public text: string;
 
     constructor(name: ModeName) {
         this._name = name;

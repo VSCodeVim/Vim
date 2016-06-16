@@ -346,8 +346,7 @@ export class ModeHandler implements vscode.Disposable {
             mode.isActive = (mode.name === vimState.currentMode);
         }
 
-        const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[vimState.currentMode];
-        this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
+        this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
     }
 
     async handleKeyEvent(key: string): Promise<Boolean> {

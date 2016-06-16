@@ -6,6 +6,8 @@ import { ModeHandler } from './modeHandler';
 export class NormalMode extends Mode {
     private _modeHandler: ModeHandler;
 
+    public text = "Normal Mode";
+
     constructor(modeHandler: ModeHandler) {
         super(ModeName.Normal);
 
