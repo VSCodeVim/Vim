@@ -313,6 +313,10 @@ export class ModeHandler implements vscode.Disposable {
 
                     this._vimState.cursorStartPosition = selectionStart;
 
+                    if (selectionStart.compareTo(newPosition) > 0) {
+                        this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
+                    }
+
                     if (this._vimState.currentMode !== ModeName.Visual &&
                         this._vimState.currentMode !== ModeName.VisualLine) {
 
