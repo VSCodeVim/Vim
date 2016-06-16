@@ -228,29 +228,12 @@ export class ModeHandler implements vscode.Disposable {
     private _configuration: Configuration;
     private _vimState: VimState;
 
-    // Caret Styling
-    private _searchDecoration = vscode.window.createTextEditorDecorationType(
-    {
-        dark: {
-            // used for dark colored themes
-            backgroundColor: 'rgba(224, 224, 224, 0.4)',
-           borderColor: 'rgba(240, 240, 240, 0.8)'
-        },
-        light: {
-            // used for light colored themes
-            backgroundColor: 'rgba(32, 32, 32, 0.4)',
-            borderColor: 'rgba(16, 16, 16, 0.8)'
-        },
-        borderStyle: 'solid',
-        borderWidth: '1px'
-    });
-
     private _caretDecoration = vscode.window.createTextEditorDecorationType(
     {
         dark: {
             // used for dark colored themes
             backgroundColor: 'rgba(224, 224, 224, 0.4)',
-           borderColor: 'rgba(224, 224, 224, 0.4)'
+            borderColor: 'rgba(224, 224, 224, 0.4)'
         },
         light: {
             // used for light colored themes

@@ -1,7 +1,6 @@
 "use strict";
 
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
