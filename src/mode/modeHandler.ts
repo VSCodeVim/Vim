@@ -282,7 +282,7 @@ export class ModeHandler implements vscode.Disposable {
         this.setCurrentModeByName(this._vimState);
 
         // handle scenarios where mouse used to change current position
-        vscode.window.onDidChangeTextEditorSelection(e => {
+        vscode.window.onDidChangeTextEditorSelection(async (e) => {
             let selection = e.selections[0];
 
             // See comment about justUpdatedState.
@@ -319,9 +319,12 @@ export class ModeHandler implements vscode.Disposable {
                         this._vimState.currentMode = ModeName.Visual;
                         this.setCurrentModeByName(this._vimState);
                     }
+                } else {
+                    this._vimState.currentMode = ModeName.Normal;
+                    this.setCurrentModeByName(this._vimState);
                 }
 
-                this.updateView(this._vimState);
+                await this.updateView(this._vimState);
             }
         });
     }
@@ -405,6 +408,8 @@ export class ModeHandler implements vscode.Disposable {
         // Update view
 
         await this.updateView(vimState);
+
+        vimState.justUpdatedState = true;
 
         return vimState;
     }
@@ -657,7 +662,9 @@ export class ModeHandler implements vscode.Disposable {
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
 
-        vimState.justUpdatedState = true;
+        if (this.currentMode.name === ModeName.Visual || this.currentMode.name === ModeName.VisualLine) {
+            this._vimState.justUpdatedState = true;
+        }
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
