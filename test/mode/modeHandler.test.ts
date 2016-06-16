@@ -27,17 +27,4 @@ suite("Mode Handler", () => {
         await modeHandler.handleKeyEvent("i");
         assert.equal(modeHandler.currentMode.name, ModeName.Insert);
     });
-
-    test("Uses correct cursor style depending on mode", async () => {
-        const modeHandler = new ModeHandler();
-
-        assert.equal((vscode.window.activeTextEditor.options as any).cursorStyle, (vscode as any).TextEditorCursorStyle.Block);
-
-        await modeHandler.handleKeyEvent("i");
-        assert.equal((vscode.window.activeTextEditor.options as any).cursorStyle, (vscode as any).TextEditorCursorStyle.Line);
-
-        await modeHandler.handleMultipleKeyEvents(["<esc>", "v"]);
-        assert.equal((vscode.window.activeTextEditor.options as any).cursorStyle, (vscode as any).TextEditorCursorStyle.Block);
-    });
-
 });
