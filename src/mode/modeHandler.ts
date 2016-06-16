@@ -107,6 +107,13 @@ export class VimState {
     public commandAction = VimCommandActions.DoNothing;
 
     public recordedState = new RecordedState();
+
+    /**
+     * Programmatically triggering an edit will unfortunately ALSO trigger our mouse update
+     * function. We use this variable to determine if the update function was triggered
+     * by us or by a mouse action.
+     */
+    public justUpdatedState = false;
 }
 
 /**
@@ -278,20 +285,9 @@ export class ModeHandler implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(e => {
             let selection = e.selections[0];
 
-            // Currently not worth the pain. Revisit in the future when
-            // the block cursor is better (TODO)
-            if (this._vimState.currentMode === ModeName.VisualLine) {
-                return;
-            }
-
-            // Programmatically triggering an edit will unfortunately ALSO trigger this
-            // function. We make sure that the vim state is actually out of state from the
-            // actual position of the cursor before correcting it.
-            if (this._vimState.currentMode === ModeName.Visual &&
-                (selection.start.isEqual(this._vimState.cursorPosition) &&
-                selection.end.isEqual(this._vimState.cursorStartPosition)) ||
-                (selection.start.isEqual(this._vimState.cursorPosition) &&
-                selection.end.isEqual(this._vimState.cursorStartPosition))) {
+            // See comment about justUpdatedState.
+            if (this._vimState.justUpdatedState) {
+                this._vimState.justUpdatedState = false;
 
                 return;
             }
@@ -308,16 +304,11 @@ export class ModeHandler implements vscode.Disposable {
 
                 // start visual mode?
 
-                /*
                 if (!selection.anchor.isEqual(selection.active)) {
                     var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
 
                     if (selectionStart.character > selectionStart.getLineEnd().character) {
                         selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
-                    }
-
-                    if (selectionStart.compareTo(newPosition) > 0) {
-                        selectionStart = selectionStart.getRight();
                     }
 
                     this._vimState.cursorStartPosition = selectionStart;
@@ -328,11 +319,9 @@ export class ModeHandler implements vscode.Disposable {
                         this._vimState.currentMode = ModeName.Visual;
                         this.setCurrentModeByName(this._vimState);
                     }
-                } else {
-                    this.updateView(this._vimState);
                 }
-                */
 
+                this.updateView(this._vimState);
             }
         });
     }
@@ -667,6 +656,8 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
+
+        vimState.justUpdatedState = true;
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
