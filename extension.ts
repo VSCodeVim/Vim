@@ -15,7 +15,7 @@ var modeHandler: ModeHandler;
 
 export function activate(context: vscode.ExtensionContext) {
     extensionContext = context;
-    modeHandler = new ModeHandler();
+    modeHandler = new ModeHandler(false);
 
     extensionContext.subscriptions.push(modeHandler);
 
