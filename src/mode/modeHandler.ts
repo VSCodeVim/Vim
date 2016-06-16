@@ -258,7 +258,7 @@ export class ModeHandler implements vscode.Disposable {
         this._modes = [
             new NormalMode(this),
             new InsertMode(),
-            new VisualMode(this),
+            new VisualMode(),
             new VisualLineMode(),
             new SearchInProgressMode(),
         ];
