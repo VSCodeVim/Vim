@@ -318,8 +318,10 @@ export class ModeHandler implements vscode.Disposable {
                         this.setCurrentModeByName(this._vimState);
                     }
                 } else {
-                    this._vimState.currentMode = ModeName.Normal;
-                    this.setCurrentModeByName(this._vimState);
+                    if (this._vimState.currentMode !== ModeName.Insert) {
+                        this._vimState.currentMode = ModeName.Normal;
+                        this.setCurrentModeByName(this._vimState);
+                    }
                 }
 
                 await this.updateView(this._vimState);
