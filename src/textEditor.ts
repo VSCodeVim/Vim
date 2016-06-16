@@ -1,12 +1,19 @@
 "use strict";
 
 import * as vscode from "vscode";
+import { ModeHandler } from './mode/modeHandler';
 
 export class TextEditor {
     static async insert(text: string): Promise<boolean> {
-        return vscode.window.activeTextEditor.edit(editBuilder => {
-            editBuilder.insert(vscode.window.activeTextEditor.selection.active, text);
-        });
+        if (ModeHandler.IsTesting) {
+            return vscode.window.activeTextEditor.edit(editBuilder => {
+                editBuilder.insert(vscode.window.activeTextEditor.selection.active, text);
+            });
+        } else {
+            await vscode.commands.executeCommand('default:type', { text });
+        }
+
+        return true;
     }
 
     static async insertAt(text: string, position: vscode.Position): Promise<boolean> {

@@ -223,6 +223,8 @@ interface IViewState {
 }
 
 export class ModeHandler implements vscode.Disposable {
+    public static IsTesting = false;
+
     private _modes: Mode[];
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
@@ -249,9 +251,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     /**
-     * testingMode does not affect functionality, but speeds up tests drastically.
+     * isTesting does not affect functionality, but speeds up tests drastically.
      */
-    constructor(testingMode = true) {
+    constructor(isTesting = true) {
+        ModeHandler.IsTesting = isTesting;
+
         this._configuration = Configuration.fromUserFile();
 
         this._vimState = new VimState();
@@ -271,7 +275,7 @@ export class ModeHandler implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(async (e) => {
             let selection = e.selections[0];
 
-            if (testingMode) {
+            if (isTesting) {
                 return;
             }
 
@@ -314,8 +318,10 @@ export class ModeHandler implements vscode.Disposable {
                         this.setCurrentModeByName(this._vimState);
                     }
                 } else {
-                    this._vimState.currentMode = ModeName.Normal;
-                    this.setCurrentModeByName(this._vimState);
+                    if (this._vimState.currentMode !== ModeName.Insert) {
+                        this._vimState.currentMode = ModeName.Normal;
+                        this.setCurrentModeByName(this._vimState);
+                    }
                 }
 
                 await this.updateView(this._vimState);
