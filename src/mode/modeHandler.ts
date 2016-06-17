@@ -99,6 +99,18 @@ export class VimState {
 
     public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
+    public effectiveRegisterMode(): RegisterMode {
+        if (this.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
+            if (this.currentMode === ModeName.VisualLine) {
+                return RegisterMode.LineWise;
+            } else {
+                return RegisterMode.CharacterWise;
+            }
+        } else {
+            return this.currentRegisterMode;
+        }
+    }
+
     public registerName = '"';
 
     /**
@@ -537,8 +549,14 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             if (this.currentModeName === ModeName.VisualLine) {
-                start = Position.EarlierOf(start, stop).getLineBegin();
-                stop  = Position.LaterOf(start, stop).getLineEnd();
+                if (Position.EarlierOf(start, stop) === stop) {
+                    [start, stop] = [stop, start];
+                }
+
+                start = start.getLineBegin();
+                stop  = stop.getLineEnd();
+
+                vimState.currentRegisterMode = RegisterMode.LineWise;
             }
 
             return await recordedState.operator.run(vimState, start, stop);
