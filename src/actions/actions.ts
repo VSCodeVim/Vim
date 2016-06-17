@@ -504,7 +504,12 @@ export class DeleteOperator extends BaseOperator {
           start = start.getPreviousLineBegin().getLineEnd();
         }
 
-        const text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+        let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+
+        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+          text = text.slice(0, -1); // slice final newline in linewise mode - linewise put will add it back.
+        }
+
         Register.put(text, vimState);
 
         await TextEditor.delete(new vscode.Range(start, end));
