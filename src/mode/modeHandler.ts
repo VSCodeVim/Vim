@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { Mode, ModeName } from './mode';
+import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
@@ -663,7 +663,20 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw block cursor.
 
-        if (this.currentMode.name !== ModeName.Insert) {
+        // Use native block cursor if possible.
+        const options = vscode.window.activeTextEditor.options;
+
+        options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
+                              this.currentMode.name       !== ModeName.Insert ?
+            vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+        vscode.window.activeTextEditor.options = options;
+
+        if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
+                   this.currentMode.name !== ModeName.Insert) {
+
+            // Fake block cursor with text decoration. Unfortunately we can't have a cursor
+            // in the middle of a selection natively, which is what we need for Visual Mode.
+
             rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
         }
 
