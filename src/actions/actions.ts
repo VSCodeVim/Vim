@@ -1522,26 +1522,38 @@ class MovementIWordTextObject extends BaseMovement {
   }
 }
 
-/*
-// Doing this correctly is very difficult.
-   https://github.com/Microsoft/vscode/issues/7177
-
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  key = ["%"];
+  keys = ["%"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  pairings = {
+    "(" : { match: ")",  direction:  1 },
+    "{" : { match: "}",  direction:  1 },
+    "[" : { match: "]",  direction:  1 },
+    ")" : { match: "(",  direction: -1 },
+    "}" : { match: "{",  direction: -1 },
+    "]" : { match: "[",  direction: -1 },
+    // "'" : { match: "'",  direction:  0 },
+    // "\"": { match: "\"", direction:  0 },
+  };
 
-    vscode.window.activeTextEditor.setDecorations
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const text = TextEditor.getLineAt(position).text;
 
-     await vscode.commands.executeCommand("editor.action.jumpToBracket");
-     await vscode.commands.executeCommand("editor.action.jumpToBracket");
+    if (!this.pairings[text[position.character]]) {
+      // go right until we find a pairable character or hit the end of line.
 
+      for (let i = position.character; i < text.length; i++) {
+        if (this.pairings[text[i]]) {
+          return new Position(position.line, i);
+        }
+      }
 
-    vimState.cursorPosition = position.getLineEnd();
+      // TODO (bell);
+      return position;
+    }
 
-    return vimState;
+    return position;
   }
 }
-*/
