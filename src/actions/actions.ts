@@ -1467,11 +1467,10 @@ class MovementAWordTextObject extends BaseMovement {
     }
   }
 
-
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     const res = await this.execAction(position, vimState);
 
-    res.stop = res.stop.getRight();
+    res.stop = (await new MoveWordBegin().execActionForOperator(position, vimState)).getRight();
 
     return res;
   }
