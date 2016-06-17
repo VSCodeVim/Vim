@@ -482,6 +482,8 @@ export class DeleteOperator extends BaseOperator {
           end = new Position(end.line, end.character + 1);
         }
 
+        const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
+
         // Vim does this weird thing where it allows you to select and delete
         // the newline character, which it places 1 past the last character
         // in the line. Here we interpret a character position 1 past the end
@@ -490,13 +492,15 @@ export class DeleteOperator extends BaseOperator {
           end = end.getDown(0);
         }
 
-        // If we do dd on the final line of the document, we expect the line
+        // If we delete linewise to the final line of the document, we expect the line
         // to be removed. This is actually a special case because the newline
         // character we've selected to delete is the newline on the end of the document,
         // but we actually delete the newline on the second to last line.
 
         // Just writing about this is making me more confused. -_-
-        if (start.line === end.line && start.line !== 0 && vimState.currentRegisterMode === RegisterMode.LineWise) {
+        if (isOnLastLine &&
+            start.line !== 0 &&
+            vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
           start = start.getPreviousLineBegin().getLineEnd();
         }
 
