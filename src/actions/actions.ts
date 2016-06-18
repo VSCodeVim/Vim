@@ -628,6 +628,8 @@ export class PutCommand extends BaseCommand {
           }
         }
 
+        vimState.currentRegisterMode = register.registerMode;
+
         return vimState;
     }
 }
@@ -667,7 +669,13 @@ export class PutBeforeCommand extends BaseCommand {
     public modes = [ModeName.Normal];
 
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
-        return await new PutCommand().exec(position, vimState, true);
+        const result = await new PutCommand().exec(position, vimState, true);
+
+        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+          result.cursorPosition = result.cursorPosition.getPreviousLineBegin();
+        }
+
+        return result;
     }
 }
 
