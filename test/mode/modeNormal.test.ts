@@ -1,19 +1,19 @@
 "use strict";
 
-import * as assert from 'assert';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
+import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
-import { TextEditor } from '../../src/textEditor';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Normal", () => {
+    let modeHandler: ModeHandler = new ModeHandler();
 
-    let modeHandler: ModeHandler;
+    let {
+        newTest,
+    } = getTestingFunctions(modeHandler);
 
     setup(async () => {
         await setupWorkspace();
-
-        modeHandler = new ModeHandler();
     });
 
     teardown(cleanUpWorkspace);
@@ -34,570 +34,370 @@ suite("Mode Normal", () => {
         assertEqual(modeHandler.currentMode.name, ModeName.Normal);
     });
 
-    test("Can handle 'x'", async () => {
-        await modeHandler.handleMultipleKeyEvents([
-            'i',
-            't', 'e', 'x', 't',
-            '<esc>',
-            '^', 'l', 'l',
-            'x',
-        ]);
-
-        assertEqualLines(["tet"]);
+    newTest({
+      title: "Can handle x",
+      start: ['te|xt'],
+      keysPressed: 'x',
+      end: ["tet"],
     });
 
-    test("Can handle 'dw'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 'w',
-            'd', 'w'
-        ]);
-
-        await assertEqualLines(["text text"]);
-        await modeHandler.handleMultipleKeyEvents(['d', 'w']);
-
-        await assertEqualLines(["text "]);
-
-        await modeHandler.handleMultipleKeyEvents(['d', 'w']);
-        await assertEqualLines(["text"]);
+    newTest({
+      title: "Can handle dw",
+      start: ['one |two three'],
+      keysPressed: 'dw',
+      end: ["one |three"],
     });
 
-    test("Can handle dd last line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', '^',
-            'd', 'd'
-        ]);
-
-        assertEqualLines(["one"]);
+    newTest({
+      title: "Can handle dw",
+      start: ['one | '],
+      keysPressed: 'dw',
+      end: ["one| "],
     });
 
-    test("Can handle dd single line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            'd', 'd'
-        ]);
-
-        assertEqualLines([""]);
+    newTest({
+      title: "Can handle dw",
+      start: ['one |two'],
+      keysPressed: 'dw',
+      end: ["one| "],
     });
 
-    test("Can handle dd", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'g', 'g',
-            'd', 'd'
-        ]);
-
-        assertEqualLines(["two"]);
+    newTest({
+      title: "Can handle dd last line",
+      start: ['one', '|two'],
+      keysPressed: 'dd',
+      end: ["|one"],
     });
 
-
-    test("Can handle dd empty line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\n\ntwo".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'g', 'g', 'j',
-            'd', 'd'
-        ]);
-
-        assertEqualLines(["one", "two"]);
+    newTest({
+      title: "Can handle dd single line",
+      start: ['|one'],
+      keysPressed: 'dd',
+      end: ["|"],
     });
 
-    test("Can handle cc", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\none two".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', '^',
-            'c', 'c', 'a', '<esc>'
-        ]);
-
-        assertEqualLines(["one", "a"]);
+    newTest({
+      title: "Can handle dd",
+      start: ['|one', 'two'],
+      keysPressed: 'dd',
+      end: ["|two"],
     });
 
-
-    test("Can handle yy", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', '^',
-            'y', 'y', 'O', '<esc>', 'p'
-        ]);
-
-        assertEqualLines(["", "one", "one"]);
+    newTest({
+      title: "Can handle dd empty line",
+      start: ['one', '|', 'two'],
+      keysPressed: 'dd',
+      end: ["one", "|two"],
     });
 
-    test("Can handle 'de'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^',
-            'd', 'e'
-        ]);
-
-        await assertEqualLines([" text"]);
-        await modeHandler.handleMultipleKeyEvents(['d', 'e']);
-        await assertEqualLines([""]);
+    newTest({
+      title: "Can handle 'cc'",
+      start: ['one', '|one two'],
+      keysPressed: 'cca<esc>',
+      end: ["one", "|a"],
     });
 
-    test("Can handle 'db'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '$',
-            'd', 'b'
-        ]);
-
-        await assertEqualLines(["text t"]);
-        await modeHandler.handleMultipleKeyEvents(['d', 'b']);
-        await assertEqualLines(["t"]);
+    newTest({
+      title: "Can handle 'yy'",
+      start: ['|one'],
+      keysPressed: 'yyO<esc>p',
+      end: ["", "|one", "one"],
     });
 
-    test("Can handle 'dl' at end of line", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'iblah'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '$',
-            'd', 'l',
-            'd', 'l',
-            'd', 'l',
-        ]);
-
-        await assertEqualLines(["b"]);
+    newTest({
+      title: "Can handle 'de'",
+      start: ['text tex|t'],
+      keysPressed: '^de',
+      end: ['| text'],
     });
 
-    test("Can handle 'D'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^',
-            'l', 'l',
-            'D'
-        ]);
-
-        await assertEqualLines(["te"]);
-        await modeHandler.handleKeyEvent('D');
-        await assertEqualLines(["t"]);
+    newTest({
+      title: "Can handle 'de' then 'de' again",
+      start: ['text tex|t'],
+      keysPressed: '^dede',
+      end: ['|'],
     });
 
-    test("Can handle 'ge'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents(['<esc>', '$', 'g', 'e']);
-
-        assertEqual(TextEditor.getSelection().start.character, 3, "ge failed");
+    newTest({
+      title: "Can handle 'db'",
+      start: ['text tex|t'],
+      keysPressed: '$db',
+      end: ['text |t'],
     });
 
-    test("Can handle 'gg'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext\ntext\ntext'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents(['<esc>', '$', 'j', 'k', 'j', 'g', 'g']);
-
-        assertEqual(TextEditor.getSelection().start.character, 0, "gg failed");
-        assertEqual(TextEditor.getSelection().start.line, 0, "gg failed");
+    newTest({
+      title: "Can handle 'db then 'db' again",
+      start: ['text tex|t'],
+      keysPressed: '$dbdb',
+      end: ['|t'],
     });
 
-    test("Can handle x at end of line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione two".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', '^',
-            'l', 'l',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'
-        ]);
-
-        assertEqualLines([""]);
+    newTest({
+      title: "Can handle 'dl' at end of line",
+      start: ['bla|h'],
+      keysPressed: '$dldldl',
+      end: ['|b'],
     });
 
-    test("Can handle 'C'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents(['<esc>', '^', 'l', 'l', 'C']);
-
-        await assertEqualLines(["te"]);
-        await assert.equal(modeHandler.currentMode.name === ModeName.Insert, true, "didn't enter insert mode");
+    newTest({
+      title: "Can handle 'D'",
+      start: ['tex|t'],
+      keysPressed: '^llD',
+      end: ['t|e'],
     });
 
-    test("Can handle 'cw'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 'l', 'l', 'l', 'l', 'l', 'l', 'l',
-            'c', 'w'
-        ]);
-
-        await assertEqualLines(["text te text"]);
-        await assert.equal(modeHandler.currentMode.name === ModeName.Insert, true, "didn't enter insert mode");
+    newTest({
+      title: "Can handle 'DD'",
+      start: ['tex|t'],
+      keysPressed: '^llDD',
+      end: ['|t'],
     });
 
-    test("Can handle 's'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 's', 'k',
-        ]);
-
-        await assertEqualLines(["kext"]);
-        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    newTest({
+      title: "Can handle 'ge'",
+      start: ['text tex|t'],
+      keysPressed: '$ge',
+      end: ['tex|t text'],
     });
 
-    test("Retain same column when moving up/down", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text\ntext\ntext text'.split('')
-        );
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            'k', 'k'
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 8, "same column failed");
+    newTest({
+      title: "Can handle 'gg'",
+      start: ['text', 'text', 'tex|t'],
+      keysPressed: '$jkjgg',
+      end: ['|text', 'text', 'text'],
     });
 
-    test("$ always keeps cursor on EOL", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text\ntext\ntext text'.split('')
-        );
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            'g', 'g',
-            '$',
-            'j', 'j'
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 8, "$ column thing failed :()");
+    newTest({
+      title: "Can handle x at end of line",
+      start: ['one tw|o'],
+      keysPressed: '^llxxxxxxxxx',
+      end: ['|'],
     });
 
-    test("Can handle 'ciw'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 'l', 'l', 'l', 'l', 'l', 'l', 'l',
-            'c', 'i', 'w'
-        ]);
-
-        await assertEqualLines(["text  text"]);
-        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    newTest({
+      title: "Can handle 'C'",
+      start: ['tex|t'],
+      keysPressed: '^llC',
+      end: ['te|'],
+      endMode: ModeName.Insert
     });
 
-    test("Can handle 'ciw' on blanks", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext   text text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 'l', 'l', 'l', 'l', 'l',
-            'c', 'i', 'w'
-        ]);
-
-        await assertEqualLines(["texttext text"]);
-        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    newTest({
+      title: "Can handle 'cw'",
+      start: ['text text tex|t'],
+      keysPressed: '^lllllllcw',
+      end: ['text te| text'],
+      endMode: ModeName.Insert
     });
 
-    test("Can handle 'caw'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 'l', 'l', 'l', 'l', 'l', 'l',
-            'c', 'a', 'w'
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 5, "caw is on wrong position");
-        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    newTest({
+      title: "Can handle 's'",
+      start: ['tex|t'],
+      keysPressed: '^sk',
+      end: ['k|ext'],
+      endMode: ModeName.Insert
     });
 
-    test("Can handle 'caw' on first letter", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text text'.split('')
-        );
+    newTest({
+      title: "Retain same column when moving up/down",
+      start: ['text text', 'text', 'text tex|t'],
+      keysPressed: 'kk',
+      end: ['text tex|t', 'text', 'text text'],
+});
 
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 'l', 'l', 'l', 'l', 'l',
-            'c', 'a', 'w'
-        ]);
+    newTest({
+      title: "$ always keeps cursor on EOL",
+      start: ['text text', 'text', 'text tex|t'],
+      keysPressed: 'gg$jj',
+      end: ['text text', 'text', 'text tex|t'],
+});
 
-        assertEqual(TextEditor.getSelection().start.character, 5, "caw is on wrong position");
-        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    newTest({
+      title: "Can handle 'ciw'",
+      start: ['text text tex|t'],
+      keysPressed: '^lllllllciw',
+      end: ['text | text'],
+      endMode: ModeName.Insert
     });
 
-    test("Can handle 'caw' on blanks", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext   text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 'l', 'l', 'l', 'l', 'l',
-            'c', 'a', 'w'
-        ]);
-
-        await assertEqualLines(["text"]);
-        assertEqual(TextEditor.getSelection().start.character, 3, "caw is on wrong position");
-        await assert.equal(modeHandler.currentMode.name, ModeName.Insert, "didn't enter insert mode");
+    newTest({
+      title: "Can handle 'ciw' on blanks",
+      start: ['text   text tex|t'],
+      keysPressed: '^lllllciw',
+      end: ['text|text text'],
+      endMode: ModeName.Insert
     });
 
-    test("Can handle 'f'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^',
-            'f', 't'
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 3, "f failed");
+    newTest({
+      title: "Can handle 'caw'",
+      start: ['text text tex|t'],
+      keysPressed: '^llllllcaw',
+      end: ['text |text'],
+      endMode: ModeName.Insert
     });
 
-    test("Can handle 'df'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'iaext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^',
-            'd', 'f', 't'
-        ]);
-
-        await assertEqualLines([" text"]);
+    newTest({
+      title: "Can handle 'caw' on first letter",
+      start: ['text text tex|t'],
+      keysPressed: '^lllllcaw',
+      end: ['text |text'],
+      endMode: ModeName.Insert
     });
 
-
-    test("Can handle 'dt'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'iaext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^',
-            'd', 't', 't'
-        ]);
-
-        await assertEqualLines(["t text"]);
+    newTest({
+      title: "Can handle 'caw' on blanks",
+      start: ['text   tex|t'],
+      keysPressed: '^lllllcaw',
+      end: ['text|'],
+      endMode: ModeName.Insert
     });
 
-    test("Can handle 'f' twice", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^',
-            'f', 't',
-            'f', 't'
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 5, "f failed");
+    newTest({
+      title: "Can handle 'caw' on blanks",
+      start: ['text |   text text'],
+      keysPressed: 'caw',
+      end: ['text| text'],
+      endMode: ModeName.Insert
     });
 
-    test("Can handle 'F'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '$',
-            'F', 't'
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 5, "F failed");
+    newTest({
+      title: "Can handle 'f'",
+      start: ['text tex|t'],
+      keysPressed: '^ft',
+      end: ['tex|t text']
     });
 
-    test("Can handle 'F' twice", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '$',
-            'F', 't',
-            'F', 't',
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 3, "F failed");
+    newTest({
+      title: "Can handle 'df'",
+      start: ['aext tex|t'],
+      keysPressed: '^dft',
+      end: ['| text']
     });
 
-
-
-
-    test("Can handle 't'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^',
-            't', 't'
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 2, "f failed");
+    newTest({
+      title: "Can handle 'dt'",
+      start: ['aext tex|t'],
+      keysPressed: '^dtt',
+      end: ['|t text']
     });
 
-    test("Can handle 't' twice", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^',
-            't', 't',
-            't', 't'
-        ]);
-
-        // it does nothing the second time lawl
-        assertEqual(TextEditor.getSelection().start.character, 2, "f failed");
+    newTest({
+      title: "Can handle 'f' twice",
+      start: ['text tex|t'],
+      keysPressed: '^ftft',
+      end: ['text |text']
     });
 
-    test("Can handle 'T'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '$',
-            'T', 't'
-        ]);
-
-        assertEqual(TextEditor.getSelection().start.character, 6, "F failed");
+    newTest({
+      title: "Can handle 'F'",
+      start: ['text tex|t'],
+      keysPressed: '$Ft',
+      end: ['text |text']
     });
 
-    test("Can handle 'T' twice", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '$',
-            'T', 't',
-            'T', 't',
-        ]);
-
-        // it also does nothing the second time lawl lawl
-        assertEqual(TextEditor.getSelection().start.character, 6, "F failed");
+    newTest({
+      title: "Can handle 'F' twice",
+      start: ['text tex|t'],
+      keysPressed: '$FtFt',
+      end: ['tex|t text']
     });
 
-
-    test("Can handle 'r'", async () => {
-        await modeHandler.handleMultipleKeyEvents([
-            'i',
-            't', 'e', 'x', 't',
-            '<esc>',
-            'h',
-            'r', 's',
-        ]);
-
-        assertEqualLines(["test"]);
+    newTest({
+      title: "Can handle 't'",
+      start: ['text tex|t'],
+      keysPressed: '^tt',
+      end: ['te|xt text']
     });
 
-    test("Can handle 'r' after 'dd'", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo\nthree".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'k', 'd', 'd',
-            'r', 'T'
-        ]);
-
-        assertEqualLines(["one", "Three"]);
+    newTest({
+      title: "Can handle 't' twice",
+      start: ['text tex|t'],
+      keysPressed: '^tttt',
+      end: ['te|xt text']
     });
 
-
-    test("Can handle 'J' once", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'k',
-            'J'
-        ]);
-
-        assertEqualLines(["one two"]);
+    newTest({
+      title: "Can handle 'T'",
+      start: ['text tex|t'],
+      keysPressed: '$Tt',
+      end: ['text t|ext']
     });
 
-    test("Can handle 'J' twice", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo\nthree".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'k', 'k',
-            'J', 'J'
-        ]);
-
-        assertEqualLines(["one two three"]);
+    newTest({
+      title: "Can handle 'T' twice",
+      start: ['text tex|t'],
+      keysPressed: '$TtTt',
+      end: ['text t|ext']
     });
 
-    test("Can handle 'J' with empty last line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo\n".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'k',
-            'J'
-        ]);
-
-        assertEqualLines(["one", "two "]);
+    newTest({
+      title: "Can handle 'r'",
+      start: ['tex|t'],
+      keysPressed: 'hrs',
+      end: ['te|st']
     });
 
-    test("Can handle 'J's with multiple empty last lines", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo\n\n\n\n".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'k', 'k', 'k', 'k', 'k',
-            'J', 'J', 'J', 'J', 'J'
-        ]);
-
-        assertEqualLines(["one two "]);
+    newTest({
+      title: "Can handle 'r' after 'dd'",
+      start: ['one', 'two', 'thre|e'],
+      keysPressed: 'kddrT',
+      end: ['one', '|Three']
     });
 
-    test("Can handle 'J' with leading white space on next line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\n  two".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'k',
-            'J'
-        ]);
-
-        assertEqualLines(["one two"]);
+    newTest({
+      title: "Can handle 'J' once",
+      start: ['one', 'tw|o'],
+      keysPressed: 'kJ',
+      end: ['one| two']
     });
 
-    test("Can handle 'J' with ')' first character on next line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione(\n)two".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'k',
-            'J'
-        ]);
-
-        assertEqualLines(["one()two"]);
+    newTest({
+      title: "Can handle 'J' twice",
+      start: ['one', 'two', 'thre|e'],
+      keysPressed: 'kkJJ',
+      end: ['one two| three']
     });
+
+    newTest({
+      title: "Can handle 'J' with empty last line",
+      start: ['one', 'two', '|'],
+      keysPressed: 'kJ',
+      end: ['one', 'two| ']
+    });
+
+    newTest({
+      title: "Can handle 'J's with multiple empty last lines",
+      start: ['one', 'two', '', '', '', '|'],
+      keysPressed: 'kkkkkJJJJJ',
+      end: ['one two| ']
+    });
+
+    newTest({
+      title: "Can handle 'J' with leading white space on next line",
+      start: ['on|e', ' two'],
+      keysPressed: 'kJ',
+      end: ['one| two']
+    });
+
+    newTest({
+      title: "Can handle 'J' with ')' first character on next line",
+      start: ['one(', ')tw|o'],
+      keysPressed: 'kJ',
+      end: ['one(|)two']
+    });
+
+    newTest({
+      title: "Can handle 'P' after 'yy'",
+      start: ['one', 'tw|o'],
+      keysPressed: 'yyP',
+      end: ['one', '|two', 'two']
+    });
+
+    newTest({
+      title: "Can handle 'p' after 'yy'",
+      start: ['one', 'tw|o'],
+      keysPressed: 'yyp',
+      end: ['one', 'two', '|two']
+    });
+
 });

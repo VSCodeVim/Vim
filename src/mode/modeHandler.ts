@@ -63,7 +63,7 @@ export class VimState {
     /**
      * The current full action we are building up.
      */
-    public currentFullAction = [];
+    public currentFullAction: string[] = [];
 
     /**
      * The position the cursor will be when this action finishes.
@@ -283,7 +283,14 @@ export class ModeHandler implements vscode.Disposable {
 
         this.setCurrentModeByName(this._vimState);
 
-        // handle scenarios where mouse used to change current position
+        // Sometimes, Visual Studio Code will start the cursor in a position which
+        // is not (0, 0) - e.g., if you previously edited the file and left the cursor
+        // somewhere else when you closed it. This will set our cursor's position to the position
+        // that VSC set it to.
+        this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+        // Handle scenarios where mouse used to change current position.
         vscode.window.onDidChangeTextEditorSelection(async (e) => {
             let selection = e.selections[0];
 
@@ -305,7 +312,9 @@ export class ModeHandler implements vscode.Disposable {
                    newPosition = new Position(newPosition.line, newPosition.getLineEnd().character);
                 }
 
-                this._vimState.cursorPosition = newPosition;
+                this._vimState.cursorPosition      = newPosition;
+                this._vimState.cursorStartPosition = newPosition;
+
                 this._vimState.desiredColumn  = newPosition.character;
 
                 // start visual mode?

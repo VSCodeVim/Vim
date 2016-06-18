@@ -200,7 +200,7 @@ export class Actions {
   }
 }
 
-export function RegisterAction(action) {
+export function RegisterAction(action: typeof BaseAction): void {
   Actions.allActions.push({ type: action, action: new action() });
 }
 
@@ -524,6 +524,10 @@ export class DeleteOperator extends BaseOperator {
           vimState.cursorPosition = start;
         }
 
+        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+          vimState.cursorPosition = vimState.cursorPosition.getLineBegin();
+        }
+
         vimState.currentMode = ModeName.Normal;
 
         return vimState;
@@ -588,8 +592,16 @@ export class ChangeOperator extends BaseOperator {
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+        const isEndOfLine = end.character === TextEditor.getLineAt(end).text.length - 1;
         const state = await new DeleteOperator().run(vimState, start, end);
         state.currentMode = ModeName.Insert;
+
+        // If we delete to EOL, the block cursor would end on the final character,
+        // which means the insert cursor would be one to the left of the end of
+        // the line.
+        if (isEndOfLine) {
+          state.cursorPosition = state.cursorPosition.getRight();
+        }
 
         return state;
     }
@@ -627,6 +639,8 @@ export class PutCommand extends BaseCommand {
             vimState.cursorPosition = dest;
           }
         }
+
+        vimState.currentRegisterMode = register.registerMode;
 
         return vimState;
     }
@@ -667,7 +681,13 @@ export class PutBeforeCommand extends BaseCommand {
     public modes = [ModeName.Normal];
 
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
-        return await new PutCommand().exec(position, vimState, true);
+        const result = await new PutCommand().exec(position, vimState, true);
+
+        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+          result.cursorPosition = result.cursorPosition.getPreviousLineBegin();
+        }
+
+        return result;
     }
 }
 
@@ -820,11 +840,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   keys = ["C"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const state = await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
-    state.cursorPosition = state.cursorPosition.getRight();
-    state.currentMode = ModeName.Insert;
-
-    return state;
+    return new ChangeOperator().run(vimState, position, position.getLineEnd().getLeft());
   }
 }
 
@@ -1301,7 +1317,8 @@ class ActionJoin extends BaseCommand {
     }
 
     // TODO(whitespace): need a better way to check for whitespace
-    const char = TextEditor.getLineAt(position.getNextLineBegin()).text[0];
+    const char     = TextEditor.getLineAt(position.getNextLineBegin()).text[0];
+    const nextChar = TextEditor.getLineAt(position.getNextLineBegin()).text[1];
     const lastCharCurrentLine = TextEditor.getLineAt(position).text[TextEditor.getLineAt(position).text.length - 1];
     const startsWithWhitespace =
       " \t".indexOf(char) !== -1;
@@ -1309,8 +1326,8 @@ class ActionJoin extends BaseCommand {
       (" \t()".indexOf(char) !== -1) || (" \t".indexOf(lastCharCurrentLine) !== -1);
 
     const positionToDeleteTo =
-      startsWithWhitespace ?
-        position.getNextLineBegin().getFirstLineNonBlankChar().getLeft().getLeft() :
+      startsWithWhitespace && " \t".indexOf(nextChar) !== -1 ?
+        position.getNextLineBegin().getFirstLineNonBlankChar() :
         position.getLineEnd();
 
     if (!dontAddSpace) {
@@ -1473,9 +1490,21 @@ class MovementAWordTextObject extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const line = TextEditor.getLineAt(position).text;
+    const currentChar = line[position.character];
     const res = await this.execAction(position, vimState);
+    const wordEnd = await new MoveWordBegin().execActionForOperator(position, vimState);
 
-    res.stop = (await new MoveWordBegin().execActionForOperator(position, vimState)).getRight();
+    // TODO(whitespace)
+    if (currentChar !== ' ' && currentChar !== '\t') {
+      res.stop = wordEnd.getRight();
+    } else {
+      res.stop = wordEnd;
+    }
+
+    if (res.stop.character === line.length + 1) {
+      res.start = (await new MoveLastWordEnd().execAction(res.start, vimState)).getRight();
+    }
 
     return res;
   }
