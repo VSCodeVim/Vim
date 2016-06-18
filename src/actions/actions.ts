@@ -524,6 +524,10 @@ export class DeleteOperator extends BaseOperator {
           vimState.cursorPosition = start;
         }
 
+        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+          vimState.cursorPosition = vimState.cursorPosition.getLineBegin();
+        }
+
         vimState.currentMode = ModeName.Normal;
 
         return vimState;

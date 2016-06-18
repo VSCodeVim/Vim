@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
+import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
@@ -34,98 +34,74 @@ suite("Mode Normal", () => {
         assertEqual(modeHandler.currentMode.name, ModeName.Normal);
     });
 
-    test("Can handle 'x'", async () => {
-        await modeHandler.handleMultipleKeyEvents([
-            'i',
-            't', 'e', 'x', 't',
-            '<esc>',
-            '^', 'l', 'l',
-            'x',
-        ]);
-
-        assertEqualLines(["tet"]);
+    newTest({
+      title: "Can handle x",
+      start: ['te|xt'],
+      keysPressed: 'x',
+      end: ["tet"],
     });
 
-    test("Can handle 'dw'", async () => {
-        await modeHandler.handleMultipleKeyEvents(
-            'itext text text'.split('')
-        );
-
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            '^', 'w',
-            'd', 'w'
-        ]);
-
-        await assertEqualLines(["text text"]);
-        await modeHandler.handleMultipleKeyEvents(['d', 'w']);
-
-        await assertEqualLines(["text "]);
-
-        await modeHandler.handleMultipleKeyEvents(['d', 'w']);
-        await assertEqualLines(["text"]);
+    newTest({
+      title: "Can handle dw",
+      start: ['one |two three'],
+      keysPressed: 'dw',
+      end: ["one |three"],
     });
 
-    test("Can handle dd last line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', '^',
-            'd', 'd'
-        ]);
-
-        assertEqualLines(["one"]);
+    newTest({
+      title: "Can handle dw",
+      start: ['one | '],
+      keysPressed: 'dw',
+      end: ["one| "],
     });
 
-    test("Can handle dd single line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>',
-            'd', 'd'
-        ]);
-
-        assertEqualLines([""]);
+    newTest({
+      title: "Can handle dw",
+      start: ['one |two'],
+      keysPressed: 'dw',
+      end: ["one| "],
     });
 
-    test("Can handle dd", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\ntwo".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'g', 'g',
-            'd', 'd'
-        ]);
-
-        assertEqualLines(["two"]);
+    newTest({
+      title: "Can handle dd last line",
+      start: ['one', '|two'],
+      keysPressed: 'dd',
+      end: ["|one"],
     });
 
-
-    test("Can handle dd empty line", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\n\ntwo".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', 'g', 'g', 'j',
-            'd', 'd'
-        ]);
-
-        assertEqualLines(["one", "two"]);
+    newTest({
+      title: "Can handle dd single line",
+      start: ['|one'],
+      keysPressed: 'dd',
+      end: ["|"],
     });
 
-    test("Can handle cc", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione\none two".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', '^',
-            'c', 'c', 'a', '<esc>'
-        ]);
-
-        assertEqualLines(["one", "a"]);
+    newTest({
+      title: "Can handle dd",
+      start: ['|one', 'two'],
+      keysPressed: 'dd',
+      end: ["|two"],
     });
 
+    newTest({
+      title: "Can handle dd empty line",
+      start: ['one', '|', 'two'],
+      keysPressed: 'dd',
+      end: ["one", "|two"],
+    });
 
-    test("Can handle yy", async () => {
-        await modeHandler.handleMultipleKeyEvents("ione".split(""));
-        await modeHandler.handleMultipleKeyEvents([
-            '<esc>', '^',
-            'y', 'y', 'O', '<esc>', 'p'
-        ]);
+    newTest({
+      title: "Can handle 'cc'",
+      start: ['one', '|one two'],
+      keysPressed: 'cca<esc>',
+      end: ["one", "|a"],
+    });
 
-        assertEqualLines(["", "one", "one"]);
+    newTest({
+      title: "Can handle 'yy'",
+      start: ['|one'],
+      keysPressed: 'yyO<esc>p',
+      end: ["", "|one", "one"],
     });
 
     newTest({

@@ -142,6 +142,36 @@ class TestObjectHelper {
     }
 }
 
+/**
+ * Tokenize a string like "abc<esc>d<c-c>" into ["a", "b", "c", "<esc>", "d", "<c-c>"]
+ */
+function tokenizeKeySequence(sequence: string): string[] {
+    let isBracketedKey = false;
+    let key = "";
+    let result = [];
+
+    for (const char of sequence) {
+        key += char;
+
+        if (char === '<') {
+            isBracketedKey = true;
+        }
+
+        if (char === '>') {
+            isBracketedKey = false;
+        }
+
+        if (isBracketedKey) {
+            continue;
+        }
+
+        result.push(key);
+        key = "";
+    }
+
+    return result;
+}
+
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
     let helper = new TestObjectHelper(testObj);
 
@@ -158,7 +188,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
     await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
 
     // assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(testObj.keysPressed.split(''));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
 
     // Check valid test object input
     assert(helper.isValid, "Missing '|' in test object.");
