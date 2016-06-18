@@ -4,3 +4,4 @@ typings
 *.sw?
 .vscode-test
 .DS_Store
+*.vsix

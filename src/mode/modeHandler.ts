@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { Mode, ModeName } from './mode';
+import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
@@ -98,6 +98,18 @@ export class VimState {
     public currentMode = ModeName.Normal;
 
     public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+
+    public effectiveRegisterMode(): RegisterMode {
+        if (this.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
+            if (this.currentMode === ModeName.VisualLine) {
+                return RegisterMode.LineWise;
+            } else {
+                return RegisterMode.CharacterWise;
+            }
+        } else {
+            return this.currentRegisterMode;
+        }
+    }
 
     public registerName = '"';
 
@@ -537,8 +549,14 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             if (this.currentModeName === ModeName.VisualLine) {
-                start = Position.EarlierOf(start, stop).getLineBegin();
-                stop  = Position.LaterOf(start, stop).getLineEnd();
+                if (Position.EarlierOf(start, stop) === stop) {
+                    [start, stop] = [stop, start];
+                }
+
+                start = start.getLineBegin();
+                stop  = stop.getLineEnd();
+
+                vimState.currentRegisterMode = RegisterMode.LineWise;
             }
 
             return await recordedState.operator.run(vimState, start, stop);
@@ -645,7 +663,20 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw block cursor.
 
-        if (this.currentMode.name !== ModeName.Insert) {
+        // Use native block cursor if possible.
+        const options = vscode.window.activeTextEditor.options;
+
+        options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
+                              this.currentMode.name       !== ModeName.Insert ?
+            vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+        vscode.window.activeTextEditor.options = options;
+
+        if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
+                   this.currentMode.name !== ModeName.Insert) {
+
+            // Fake block cursor with text decoration. Unfortunately we can't have a cursor
+            // in the middle of a selection natively, which is what we need for Visual Mode.
+
             rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
         }
 

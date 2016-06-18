@@ -11,13 +11,15 @@ import {showCmdLine} from './src/cmd_line/main';
 import {ModeHandler} from "./src/mode/modeHandler";
 
 var extensionContext: vscode.ExtensionContext;
+
+/**
+ * Note: We can't initialize modeHandler here, or even inside activate(), because some people
+ * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
+ */
 var modeHandler: ModeHandler;
 
 export function activate(context: vscode.ExtensionContext) {
     extensionContext = context;
-    modeHandler = new ModeHandler(false);
-
-    extensionContext.subscriptions.push(modeHandler);
 
     registerCommand(context, 'type', async (args) => {
         if (!vscode.window.activeTextEditor) {
@@ -38,6 +40,11 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
 
     registerCommand(context, 'extension.showCmdLine', () => {
+        if (!modeHandler) {
+            modeHandler = new ModeHandler(false);
+            extensionContext.subscriptions.push(modeHandler);
+        }
+
         showCmdLine("", modeHandler);
     });
 
@@ -49,9 +56,9 @@ function registerCommand(context: vscode.ExtensionContext, command: string, call
     context.subscriptions.push(disposable);
 }
 
-function handleKeyEvent(key: string) : Promise<Boolean> {
+function handleKeyEvent(key: string): Promise<Boolean> {
     if (!modeHandler) {
-        modeHandler = new ModeHandler();
+        modeHandler = new ModeHandler(false);
         extensionContext.subscriptions.push(modeHandler);
     }
 
