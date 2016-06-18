@@ -8,10 +8,10 @@ import { assertEqualLines } from './testUtils';
 export function getTestingFunctions(modeHandler: ModeHandler) {
     let testWithObject = testIt.bind(null, modeHandler);
 
-    const newTest = (title: string, testObj: ITestObject): void => {
+    const newTest = (testObj: ITestObject): void => {
         let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
 
-        test(title, async () => testWithObject(testObj)
+        test(testObj.title, async () => testWithObject(testObj)
             .catch(reason => {
                 reason.stack = niceStack;
                 throw reason;
@@ -19,11 +19,11 @@ export function getTestingFunctions(modeHandler: ModeHandler) {
         );
     };
 
-    const newTestOnly = (title: string, testObj: ITestObject): void => {
+    const newTestOnly = (testObj: ITestObject): void => {
         console.log("!!! Running single test !!!");
         let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
 
-        test.only(title, async () => testWithObject(testObj)
+        test.only(testObj.title, async () => testWithObject(testObj)
             .catch(reason => {
                 reason.stack = niceStack;
                 throw reason;
@@ -38,6 +38,7 @@ export function getTestingFunctions(modeHandler: ModeHandler) {
 }
 
 interface ITestObject {
+    title: string;
     start: string[];
     keysPressed: string;
     end: string[];
