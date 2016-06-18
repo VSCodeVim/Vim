@@ -1556,22 +1556,25 @@ class MoveToMatchingBracket extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["%"];
 
-  pairings = {
-    "(" : { match: ")",  direction:  1 },
-    "{" : { match: "}",  direction:  1 },
-    "[" : { match: "]",  direction:  1 },
-    ")" : { match: "(",  direction: -1 },
-    "}" : { match: "{",  direction: -1 },
-    "]" : { match: "[",  direction: -1 },
+  pairings: { [key: string]: { match: string, nextMatchIsForward: boolean }} = {
+    "(" : { match: ")",  nextMatchIsForward: true  },
+    "{" : { match: "}",  nextMatchIsForward: true  },
+    "[" : { match: "]",  nextMatchIsForward: true  },
+    ")" : { match: "(",  nextMatchIsForward: false },
+    "}" : { match: "{",  nextMatchIsForward: false },
+    "]" : { match: "[",  nextMatchIsForward: false },
     // "'" : { match: "'",  direction:  0 },
     // "\"": { match: "\"", direction:  0 },
   };
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const text = TextEditor.getLineAt(position).text;
+    const charToMatch = text[position.character];
+    const toFind = this.pairings[charToMatch];
 
-    if (!this.pairings[text[position.character]]) {
-      // go right until we find a pairable character or hit the end of line.
+    if (!toFind) {
+      // If we're not on a match, go right until we find a
+      // pairable character or hit the end of line.
 
       for (let i = position.character; i < text.length; i++) {
         if (this.pairings[text[i]]) {
@@ -1583,6 +1586,40 @@ class MoveToMatchingBracket extends BaseMovement {
       return position;
     }
 
+    let stackHeight = 0;
+    let matchedPosition: Position = undefined;
+
+    for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
+      if (char === charToMatch) {
+        stackHeight++;
+      }
+
+      if (char === this.pairings[charToMatch].match) {
+        stackHeight--;
+      }
+
+      if (stackHeight === 0) {
+        matchedPosition = pos;
+
+        break;
+      }
+    }
+
+    if (matchedPosition) {
+      return matchedPosition;
+    }
+
+    // TODO(bell)
     return position;
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    const result = await this.execAction(position, vimState);
+
+    if (position.compareTo(result) > 0) {
+      return result.getLeft();
+    } else {
+      return result.getRight();
+    }
   }
 }
