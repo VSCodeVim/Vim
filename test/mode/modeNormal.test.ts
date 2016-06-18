@@ -8,17 +8,14 @@ import { getTestingFunctions } from '../testSimplifier';
 suite("Mode Normal", () => {
     let modeHandler: ModeHandler;
 
-    let newTest, newTestOnly;
+    let {
+        newTest,
+    } = getTestingFunctions(new ModeHandler());
 
     setup(async () => {
         await setupWorkspace();
 
         modeHandler = new ModeHandler();
-
-        let result = getTestingFunctions(modeHandler);
-
-        newTest     = result.newTest;
-        newTestOnly = result.newTestOnly;
     });
 
     teardown(cleanUpWorkspace);
