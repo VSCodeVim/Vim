@@ -14,17 +14,11 @@ suite("Mode Normal", () => {
 
     setup(async () => {
         await setupWorkspace();
-
-        modeHandler = new ModeHandler();
-
-        let result = getTestingFunctions(modeHandler);
-        newTest = result.newTest;
     });
 
     teardown(cleanUpWorkspace);
 
     test("can be activated", async () => {
-        console.log('begin');
         let activationKeys = ['<esc>', '<ctrl-[>'];
 
         for (let key of activationKeys) {

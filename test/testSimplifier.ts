@@ -145,6 +145,8 @@ class TestObjectHelper {
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
     let helper = new TestObjectHelper(testObj);
 
+    await modeHandler.handleKeyEvent('<esc>');
+
     // start:
     //
     await modeHandler.handleMultipleKeyEvents(helper.asVimInputText());
