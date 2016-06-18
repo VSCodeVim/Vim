@@ -63,7 +63,7 @@ export class VimState {
     /**
      * The current full action we are building up.
      */
-    public currentFullAction = [];
+    public currentFullAction: string[] = [];
 
     /**
      * The position the cursor will be when this action finishes.

@@ -200,7 +200,7 @@ export class Actions {
   }
 }
 
-export function RegisterAction(action) {
+export function RegisterAction(action: typeof BaseAction): void {
   Actions.allActions.push({ type: action, action: new action() });
 }
 

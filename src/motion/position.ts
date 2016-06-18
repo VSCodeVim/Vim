@@ -295,7 +295,7 @@ export class Position extends vscode.Position {
 
     private makeWordRegex(characterSet: string) : RegExp {
         let escaped = characterSet && _.escapeRegExp(characterSet);
-        let segments = [];
+        let segments: string[] = [];
         segments.push(`([^\\s${escaped}]+)`);
         segments.push(`[${escaped}]+`);
         segments.push(`$^`);

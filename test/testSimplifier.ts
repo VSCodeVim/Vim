@@ -12,7 +12,7 @@ export function getTestingFunctions(modeHandler: ModeHandler) {
         let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
 
         test(testObj.title, async () => testWithObject(testObj)
-            .catch(reason => {
+            .catch((reason: Error) => {
                 reason.stack = niceStack;
                 throw reason;
             })
@@ -24,7 +24,7 @@ export function getTestingFunctions(modeHandler: ModeHandler) {
         let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
 
         test.only(testObj.title, async () => testWithObject(testObj)
-            .catch(reason => {
+            .catch((reason: Error) => {
                 reason.stack = niceStack;
                 throw reason;
             })
@@ -148,7 +148,7 @@ class TestObjectHelper {
 function tokenizeKeySequence(sequence: string): string[] {
     let isBracketedKey = false;
     let key = "";
-    let result = [];
+    let result: string[] = [];
 
     for (const char of sequence) {
         key += char;
