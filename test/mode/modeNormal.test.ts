@@ -373,6 +373,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle A and backspace",
+      start: ['|text text'],
+      keysPressed: 'A<backspace><esc>',
+      end: ['text te|x']
+    });
+
+    newTest({
       title: "Can handle 'r'",
       start: ['tex|t'],
       keysPressed: 'hrs',

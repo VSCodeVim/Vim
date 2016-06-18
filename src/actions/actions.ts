@@ -941,11 +941,8 @@ class CommandInsertAtLineEnd extends BaseCommand {
   mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const pos = new Position(position.line,
-                position.getLineEnd().character + 1);
-
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = pos;
+    vimState.cursorPosition = position.getLineEnd();
 
     return vimState;
   }
