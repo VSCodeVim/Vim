@@ -1,47 +1,27 @@
 "use strict";
 
-import * as assert from 'assert';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines,assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
-import { TextEditor } from '../../src/textEditor';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Position } from '../../src/motion/position';
-import { TestObject, testIt } from '../testSimplifier';
-
+import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Normal", () => {
-
     let modeHandler: ModeHandler;
-    let testWithObject: (t: TestObject) => Promise<void>
-    
+
+    let newTest, newTestOnly;
+
     setup(async () => {
         await setupWorkspace();
 
         modeHandler = new ModeHandler();
-        testWithObject = testIt.bind(null, modeHandler);
+
+        let result = getTestingFunctions(modeHandler);
+
+        newTest     = result.newTest;
+        newTestOnly = result.newTestOnly;
     });
 
     teardown(cleanUpWorkspace);
-    
-    function newTest(title: string, testObj: TestObject) {
-        let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
-        test(title, async () => testWithObject(testObj)
-            .catch(reason => {
-                reason.stack = niceStack;
-                throw reason;
-            })
-        );
-    }
-    function newTestOnly(title: string, testObj: TestObject) {
-        console.log("!!! Running single test !!!");
-        let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
-        test.only(title, async () => testWithObject(testObj)
-            .catch(reason => {
-                reason.stack = niceStack;
-                throw reason;
-            })
-        );
-    }
 
     test("can be activated", async () => {
         let activationKeys = ['<esc>', '<ctrl-[>'];
@@ -191,7 +171,7 @@ suite("Mode Normal", () => {
             end: ['|b'],
         }
     );
-    
+
     newTest("Can handle 'D'",
         {
             start: ['tex|t'],
@@ -199,7 +179,7 @@ suite("Mode Normal", () => {
             end: ['t|e'],
         }
     );
-    
+
     newTest("Can handle 'DD'",
         {
             start: ['tex|t'],
@@ -215,14 +195,14 @@ suite("Mode Normal", () => {
             end: ['tex|t text'],
         }
     );
-    
+
     newTest("Can handle 'gg'",
         {
             start: ['text', 'text', 'tex|t'],
             keysPressed: '$jkjgg',
             end: ['|text', 'text', 'text'],
         }
-    );    
+    );
 
     newTest("Can handle x at end of line",
         {
@@ -231,7 +211,7 @@ suite("Mode Normal", () => {
             end: ['|'],
         }
     );
-    
+
     newTest("Can handle 'C'",
         {
             start: ['tex|t'],
@@ -240,7 +220,7 @@ suite("Mode Normal", () => {
             endMode: ModeName.Insert
         }
     );
-    
+
     newTest("Can handle 'cw'",
         {
             start: ['text text tex|t'],
@@ -248,7 +228,7 @@ suite("Mode Normal", () => {
             end: ['text te| text'],
             endMode: ModeName.Insert
         }
-    );    
+    );
 
     newTest("Can handle 's'",
         {
@@ -258,7 +238,7 @@ suite("Mode Normal", () => {
             endMode: ModeName.Insert
         }
     );
-    
+
     newTest("Retain same column when moving up/down",
         {
             start: ['text text', 'text', 'text tex|t'],
@@ -274,7 +254,7 @@ suite("Mode Normal", () => {
             end: ['text text', 'text', 'text tex|t'],
         }
     );
-    
+
     newTest("Can handle 'ciw'",
         {
             start: ['text text tex|t'],
@@ -470,7 +450,7 @@ suite("Mode Normal", () => {
             keysPressed: 'yyP',
             end: ['one', '|two', 'two']
         }
-    );   
+    );
 
     newTest("Can handle 'p' after 'yy'",
         {
@@ -479,5 +459,5 @@ suite("Mode Normal", () => {
             end: ['one', 'two', '|two']
         }
     );
-    
+
 });

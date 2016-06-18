@@ -1,31 +1,66 @@
 import * as assert from 'assert';
-import { ModeName } from '../src/mode/mode'
+import { ModeName } from '../src/mode/mode';
 import { Position } from '../src/motion/position';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
 
+export function getTestingFunctions(modeHandler: ModeHandler) {
+    let testWithObject = testIt.bind(null, modeHandler);
 
-interface TestObject {
-    start: string[],
-    keysPressed: string,
-    end: string[],
-    endMode?: ModeName
+    const newTest = function newTest(title: string, testObj: ITestObject): void {
+        let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
+
+        test(title, async () => testWithObject(testObj)
+            .catch(reason => {
+                reason.stack = niceStack;
+                throw reason;
+            })
+        );
+    };
+
+    const newTestOnly = function newTestOnly(title: string, testObj: ITestObject): void {
+        console.log("!!! Running single test !!!");
+        let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
+
+        test.only(title, async () => testWithObject(testObj)
+            .catch(reason => {
+                reason.stack = niceStack;
+                throw reason;
+            })
+        );
+    };
+
+    return {
+        newTest,
+        newTestOnly,
+    };
+}
+
+interface ITestObject {
+    start: string[];
+    keysPressed: string;
+    end: string[];
+    endMode?: ModeName;
 }
 
 class TestObjectHelper {
     startPosition = new Position(0, 0);
     endPosition = new Position(0, 0);
+
     private _isValid = false;
-    
-    constructor(private _testObject: TestObject) {
+    private _testObject: ITestObject;
+
+    constructor(_testObject: ITestObject) {
+        this._testObject = _testObject;
+
         this._parse(_testObject);
     }
 
     public get isValid(): boolean {
         return this._isValid;
     }
-    
+
     private _setStartCursorPosition(lines: string[]): boolean {
         let result = this._getCursorPosition(lines);
         this.startPosition = result.position;
@@ -37,7 +72,7 @@ class TestObjectHelper {
         this.endPosition = result.position;
         return result.success;
     }
-    
+
     private _getCursorPosition(lines: string[]): { success: boolean; position: Position} {
         let ret = { success: false, position: new Position(0, 0) };
         for (let i = 0; i < lines.length; i++) {
@@ -51,7 +86,7 @@ class TestObjectHelper {
         return ret;
     }
 
-    private _parse(t: TestObject): void {
+    private _parse(t: ITestObject): void {
         if (!this._setStartCursorPosition(t.start)) {
             this._isValid = false;
             return;
@@ -75,11 +110,12 @@ class TestObjectHelper {
         return ret;
     }
 
-    /** Returns a sequence of Vim movement characters 'hjkl' as a string array
-     * which will move the cursor to the start position given in the test. */
+    /**
+     * Returns a sequence of Vim movement characters 'hjkl' as a string array
+     * which will move the cursor to the start position given in the test.
+     */
     public getKeyPressesToMoveToStartPosition(): string[] {
         let ret = '';
-        let h = 0, j = 0, k = 0, l = 0;
         let linesToMove = this.startPosition.line - (this._testObject.start.length - 1);
 
         let cursorPosAfterEsc =
@@ -91,48 +127,46 @@ class TestObjectHelper {
 
         if (linesToMove > 0) {
             ret += Array(linesToMove + 1).join('j');
-        }   
-        else if (linesToMove < 0) {
+        } else if (linesToMove < 0) {
             ret += Array(Math.abs(linesToMove) + 1).join('k');
         }
 
         if (charactersToMove > 0) {
             ret += Array(charactersToMove + 1).join('l');
-        }
-        else if (charactersToMove < 0) {
+        } else if (charactersToMove < 0) {
             ret += Array(Math.abs(charactersToMove) + 1).join('h');
         }
-        //console.log("ret is " + ret);
+
         return ret.split('');
     }
 }
 
-async function testIt(modeHandler: ModeHandler, testObj: TestObject): Promise<void> {
+async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
     let helper = new TestObjectHelper(testObj);
 
     // start:
     //
     await modeHandler.handleMultipleKeyEvents(helper.asVimInputText());
-    
+
     // keysPressed:
     //
     await modeHandler.handleKeyEvent('<esc>');
     // move cursor to start position using 'hjkl'
     await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
 
-    // assumes key presses are single characters for now    
+    // assumes key presses are single characters for now
     await modeHandler.handleMultipleKeyEvents(testObj.keysPressed.split(''));
-        
+
     // Check valid test object input
     assert(helper.isValid, "Missing '|' in test object.");
-    
+
     // Check final cursor position
     //
     let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
     let expectedPosition = helper.endPosition;
     assert.equal(actualPosition.line, expectedPosition.line, "Cursor LINE position is wrong.");
     assert.equal(actualPosition.character, expectedPosition.character, "Cursor CHARACTER position is wrong.");
-    
+
     // end: check given end output is correct
     //
     assertEqualLines(helper.asVimOutputText());
@@ -141,9 +175,9 @@ async function testIt(modeHandler: ModeHandler, testObj: TestObject): Promise<vo
     if (typeof testObj.endMode !== 'undefined') {
         let actualMode = ModeName[modeHandler.currentMode.name].toUpperCase();
         let expectedMode = ModeName[testObj.endMode].toUpperCase();
-        assert.equal(actualMode, expectedMode, "Didn't enter correct mode.");    
+        assert.equal(actualMode, expectedMode, "Didn't enter correct mode.");
     }
 }
 
 
-export { TestObject, testIt }
+export { ITestObject, testIt }
