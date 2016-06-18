@@ -1551,26 +1551,87 @@ class MovementIWordTextObject extends BaseMovement {
   }
 }
 
-/*
-// Doing this correctly is very difficult.
-   https://github.com/Microsoft/vscode/issues/7177
-
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  key = ["%"];
+  keys = ["%"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<VimState> {
+  pairings: { [key: string]: { match: string, nextMatchIsForward: boolean }} = {
+    "(" : { match: ")",  nextMatchIsForward: true  },
+    "{" : { match: "}",  nextMatchIsForward: true  },
+    "[" : { match: "]",  nextMatchIsForward: true  },
+    ")" : { match: "(",  nextMatchIsForward: false },
+    "}" : { match: "{",  nextMatchIsForward: false },
+    "]" : { match: "[",  nextMatchIsForward: false },
+    // "'" : { match: "'",  direction:  0 },
+    // "\"": { match: "\"", direction:  0 },
+  };
 
-    vscode.window.activeTextEditor.setDecorations
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const text = TextEditor.getLineAt(position).text;
+    const charToMatch = text[position.character];
+    const toFind = this.pairings[charToMatch];
 
-     await vscode.commands.executeCommand("editor.action.jumpToBracket");
-     await vscode.commands.executeCommand("editor.action.jumpToBracket");
+    if (!toFind) {
+      // If we're not on a match, go right until we find a
+      // pairable character or hit the end of line.
 
+      for (let i = position.character; i < text.length; i++) {
+        if (this.pairings[text[i]]) {
+          return new Position(position.line, i);
+        }
+      }
 
-    vimState.cursorPosition = position.getLineEnd();
+      // TODO (bell);
+      return position;
+    }
 
-    return vimState;
+    /**
+     * We do a fairly basic implementation that only tracks the state of the type of
+     * character you're over and its pair (e.g. "[" and "]"). This is similar to
+     * what Vim does.
+     *
+     * It can't handle strings very well - something like "|( ')' )" where | is the
+     * cursor will cause it to go to the ) in the quotes, even though it should skip over it.
+     *
+     * PRs welcomed! (TODO)
+     * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
+     */
+
+    let stackHeight = 0;
+    let matchedPosition: Position = undefined;
+
+    for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
+      if (char === charToMatch) {
+        stackHeight++;
+      }
+
+      if (char === this.pairings[charToMatch].match) {
+        stackHeight--;
+      }
+
+      if (stackHeight === 0) {
+        matchedPosition = pos;
+
+        break;
+      }
+    }
+
+    if (matchedPosition) {
+      return matchedPosition;
+    }
+
+    // TODO(bell)
+    return position;
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    const result = await this.execAction(position, vimState);
+
+    if (position.compareTo(result) > 0) {
+      return result.getLeft();
+    } else {
+      return result.getRight();
+    }
   }
 }
-*/

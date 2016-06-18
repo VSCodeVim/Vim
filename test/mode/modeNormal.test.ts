@@ -38,7 +38,49 @@ suite("Mode Normal", () => {
       title: "Can handle x",
       start: ['te|xt'],
       keysPressed: 'x',
-      end: ["tet"],
+      end: ["te|t"],
+    });
+
+    newTest({
+      title: "Can handle %",
+      start: ['|((( )))'],
+      keysPressed: '%',
+      end: ["((( ))|)"],
+    });
+
+    newTest({
+      title: "Can handle %",
+      start: ['((( ))|)'],
+      keysPressed: '%',
+      end: ["|((( )))"],
+    });
+
+    newTest({
+      title: "Can handle %",
+      start: ['|[(( ))]'],
+      keysPressed: '%',
+      end: ["[(( ))|]"],
+    });
+
+    newTest({
+      title: "Can handle %",
+      start: ['|[(( }}} ))]'],
+      keysPressed: '%',
+      end: ["[(( }}} ))|]"],
+    });
+
+    newTest({
+      title: "Can handle %",
+      start: ['|[(( }}} ))]'],
+      keysPressed: '%',
+      end: ["[(( }}} ))|]"],
+    });
+
+    newTest({
+      title: "Can handle %",
+      start: ['[(( }}} ))|]'],
+      keysPressed: '%',
+      end: ["|[(( }}} ))]"],
     });
 
     newTest({
@@ -203,14 +245,14 @@ suite("Mode Normal", () => {
       start: ['text text', 'text', 'text tex|t'],
       keysPressed: 'kk',
       end: ['text tex|t', 'text', 'text text'],
-});
+    });
 
     newTest({
       title: "$ always keeps cursor on EOL",
       start: ['text text', 'text', 'text tex|t'],
       keysPressed: 'gg$jj',
       end: ['text text', 'text', 'text tex|t'],
-});
+    });
 
     newTest({
       title: "Can handle 'ciw'",
