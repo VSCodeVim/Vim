@@ -588,8 +588,16 @@ export class ChangeOperator extends BaseOperator {
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+        const isEndOfLine = end.character === TextEditor.getLineAt(end).text.length - 1;
         const state = await new DeleteOperator().run(vimState, start, end);
         state.currentMode = ModeName.Insert;
+
+        // If we delete to EOL, the block cursor would end on the final character,
+        // which means the insert cursor would be one to the left of the end of
+        // the line.
+        if (isEndOfLine) {
+          state.cursorPosition = state.cursorPosition.getRight();
+        }
 
         return state;
     }
@@ -828,11 +836,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   keys = ["C"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const state = await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
-    state.cursorPosition = state.cursorPosition.getRight();
-    state.currentMode = ModeName.Insert;
-
-    return state;
+    return new ChangeOperator().run(vimState, position, position.getLineEnd().getLeft());
   }
 }
 
@@ -1482,15 +1486,20 @@ class MovementAWordTextObject extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
+    const line = TextEditor.getLineAt(position).text;
+    const currentChar = line[position.character];
     const res = await this.execAction(position, vimState);
     const wordEnd = await new MoveWordBegin().execActionForOperator(position, vimState);
 
-    // TODO: whitespace
+    // TODO(whitespace)
     if (currentChar !== ' ' && currentChar !== '\t') {
       res.stop = wordEnd.getRight();
     } else {
       res.stop = wordEnd;
+    }
+
+    if (res.stop.character === line.length + 1) {
+      res.start = (await new MoveLastWordEnd().execAction(res.start, vimState)).getRight();
     }
 
     return res;
