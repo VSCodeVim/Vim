@@ -1301,7 +1301,8 @@ class ActionJoin extends BaseCommand {
     }
 
     // TODO(whitespace): need a better way to check for whitespace
-    const char = TextEditor.getLineAt(position.getNextLineBegin()).text[0];
+    const char     = TextEditor.getLineAt(position.getNextLineBegin()).text[0];
+    const nextChar = TextEditor.getLineAt(position.getNextLineBegin()).text[1];
     const lastCharCurrentLine = TextEditor.getLineAt(position).text[TextEditor.getLineAt(position).text.length - 1];
     const startsWithWhitespace =
       " \t".indexOf(char) !== -1;
@@ -1309,8 +1310,8 @@ class ActionJoin extends BaseCommand {
       (" \t()".indexOf(char) !== -1) || (" \t".indexOf(lastCharCurrentLine) !== -1);
 
     const positionToDeleteTo =
-      startsWithWhitespace ?
-        position.getNextLineBegin().getFirstLineNonBlankChar().getLeft().getLeft() :
+      startsWithWhitespace && " \t".indexOf(nextChar) !== -1 ?
+        position.getNextLineBegin().getFirstLineNonBlankChar() :
         position.getLineEnd();
 
     if (!dontAddSpace) {
@@ -1473,9 +1474,16 @@ class MovementAWordTextObject extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const currentChar = TextEditor.getLineAt(position).text[position.character];
     const res = await this.execAction(position, vimState);
+    const wordEnd = await new MoveWordBegin().execActionForOperator(position, vimState);
 
-    res.stop = (await new MoveWordBegin().execActionForOperator(position, vimState)).getRight();
+    // TODO: whitespace
+    if (currentChar !== ' ' && currentChar !== '\t') {
+      res.stop = wordEnd.getRight();
+    } else {
+      res.stop = wordEnd;
+    }
 
     return res;
   }

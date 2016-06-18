@@ -277,6 +277,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'caw' on blanks",
+      start: ['text |   text text'],
+      keysPressed: 'caw',
+      end: ['text| text'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'f'",
       start: ['text tex|t'],
       keysPressed: '^ft',
@@ -390,7 +398,7 @@ suite("Mode Normal", () => {
 
     newTest({
       title: "Can handle 'J' with leading white space on next line",
-      start: ['one', ' tw|o'],
+      start: ['on|e', ' two'],
       keysPressed: 'kJ',
       end: ['one| two']
     });
