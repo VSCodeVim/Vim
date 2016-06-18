@@ -1,4 +1,3 @@
-import { ModeName } from './../mode/mode';
 import { VimState } from './../mode/modeHandler';
 
 /**
