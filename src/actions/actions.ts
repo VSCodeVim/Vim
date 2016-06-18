@@ -1586,6 +1586,18 @@ class MoveToMatchingBracket extends BaseMovement {
       return position;
     }
 
+    /**
+     * We do a fairly basic implementation that only tracks the state of the type of
+     * character you're over and its pair (e.g. "[" and "]"). This is similar to
+     * what Vim does.
+     *
+     * It can't handle strings very well - something like "|( ')' )" where | is the
+     * cursor will cause it to go to the ) in the quotes, even though it should skip over it.
+     *
+     * PRs welcomed! (TODO)
+     * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
+     */
+
     let stackHeight = 0;
     let matchedPosition: Position = undefined;
 
