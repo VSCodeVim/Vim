@@ -353,7 +353,7 @@ export class ModeHandler implements vscode.Disposable {
                     }
                 }
 
-                await this.updateView(this._vimState);
+                await this.updateView(this._vimState, false);
             }
         });
     }
@@ -641,8 +641,7 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
     }
 
-    // TODO: this method signature is totally nonsensical!!!!
-    private async updateView(vimState: VimState): Promise<void> {
+    private async updateView(vimState: VimState, drawSelection = true): Promise<void> {
         // Update cursor position
 
         let start = vimState.cursorStartPosition;
@@ -669,14 +668,16 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw selection (or cursor)
 
-        if (vimState.currentMode === ModeName.Visual) {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
-        } else if (vimState.currentMode === ModeName.VisualLine) {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(
-                Position.EarlierOf(start, stop).getLineBegin(),
-                Position.LaterOf(start, stop).getLineEnd());
-        } else {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
+        if (drawSelection) {
+            if (vimState.currentMode === ModeName.Visual) {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
+            } else if (vimState.currentMode === ModeName.VisualLine) {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(
+                    Position.EarlierOf(start, stop).getLineBegin(),
+                    Position.LaterOf(start, stop).getLineEnd());
+            } else {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
+            }
         }
 
         // Scroll to position of cursor
