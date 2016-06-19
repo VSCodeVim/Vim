@@ -13,17 +13,21 @@ const controlKeys: string[] = [
   "delete"
 ];
 
-const containsControlKey = function(s: string): boolean {
-  for (const controlKey of controlKeys) {
-    if (s.indexOf(controlKey) !== -1) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
 const compareKeypressSequence = function (one: string[], two: string[]): boolean {
+  const containsControlKey = (s: string): boolean => {
+    for (const controlKey of controlKeys) {
+      if (s.indexOf(controlKey) !== -1) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const isSingleNumber = (s: string): boolean => {
+    return s.length === 1 && "1234567890".indexOf(s) > -1;
+  };
+
   if (one.length !== two.length) {
     return false;
   }
@@ -33,6 +37,9 @@ const compareKeypressSequence = function (one: string[], two: string[]): boolean
 
     if (left  === "<any>") { continue; }
     if (right === "<any>") { continue; }
+
+    if (left  === "<number>" && isSingleNumber(right)) { continue; }
+    if (right === "<number>" && isSingleNumber(left) ) { continue; }
 
     if (left  === "<character>" && !containsControlKey(right)) { continue; }
     if (right === "<character>" && !containsControlKey(left)) { continue; }
@@ -143,6 +150,8 @@ export abstract class BaseMovement extends BaseAction {
  * A command is something like <esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
+  isCompleteAction = true;
+
   /**
    * Run the command.
    */
@@ -218,6 +227,23 @@ export function RegisterAction(action: typeof BaseAction): void {
 
 
 
+
+@RegisterAction
+class CommandNumber extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<number>"];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const number = parseInt(this.keysPressed[0], 10);
+
+    vimState.recordedState.count = vimState.recordedState.count * 10 + number;
+
+    console.log(vimState.recordedState.count);
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
