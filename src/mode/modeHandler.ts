@@ -301,9 +301,11 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             // See comment about justUpdatedState.
-            if (this._vimState.justUpdatedState) {
-                this._vimState.justUpdatedState = false;
+            if (this._vimState.justUpdatedState && (
+                this._vimState.currentMode === ModeName.Visual ||
+                this._vimState.currentMode === ModeName.VisualLine)) {
 
+                this._vimState.justUpdatedState = false;
                 return;
             }
 

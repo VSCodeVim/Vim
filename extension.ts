@@ -36,7 +36,6 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
-    registerCommand(context, 'extension.vim_enter', () => handleKeyEvent("<enter>"));
     registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
 
     registerCommand(context, 'extension.showCmdLine', () => {
@@ -56,7 +55,7 @@ function registerCommand(context: vscode.ExtensionContext, command: string, call
     context.subscriptions.push(disposable);
 }
 
-function handleKeyEvent(key: string): Promise<Boolean> {
+async function handleKeyEvent(key: string): Promise<Boolean> {
     if (!modeHandler) {
         modeHandler = new ModeHandler(false);
         extensionContext.subscriptions.push(modeHandler);

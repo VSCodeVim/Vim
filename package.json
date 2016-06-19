@@ -48,11 +48,6 @@
                 "when": "editorTextFocus"
             },
             {
-                "key": "Enter",
-                "command": "extension.vim_enter",
-                "when": "editorTextFocus"
-            },
-            {
                 "key": "Backspace",
                 "command": "extension.vim_backspace",
                 "when": "editorTextFocus"

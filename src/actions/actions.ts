@@ -294,7 +294,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     // handle special keys first
     if (key === "<backspace>") {
       vimState.searchString = vimState.searchString.slice(0, -1);
-    } else if (key === "<enter>") {
+    } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
 
       if (vimState.nextSearchMatchPosition) {
@@ -408,10 +408,9 @@ class CommandInsertInInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
+    // console.log("insert!");
 
-    if (char === "<enter>") {
-      await TextEditor.insert("\n");
-    } else if (char === "<backspace>") {
+    if (char === "<backspace>") {
       await TextEditor.delete(new vscode.Range(position, position.getLeft()));
     } else {
       await TextEditor.insert(char);
