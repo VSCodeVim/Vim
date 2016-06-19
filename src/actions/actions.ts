@@ -131,18 +131,44 @@ export abstract class BaseMovement extends BaseAction {
   public setsDesiredColumnToEOL = false;
 
   /**
-   * Run the movement.
+   * Run the movement a single time.
    *
    * Generally returns a new Position. If necessary, it can return an IMovement instead.
    */
   public abstract async execAction(position: Position, vimState: VimState): Promise<Position | IMovement>;
 
   /**
-   * Run the movement in an operator context. 99% of the time, this function can be
-   * ignored, as it is exactly the same as the above function.
+   * Run the movement in an operator context a single time.
+   *
+   * Some movements operate over different ranges when used for operators.
    */
   public async execActionForOperator(position: Position,  vimState: VimState): Promise<Position | IMovement> {
     return await this.execAction(position, vimState);
+  }
+
+  /**
+   * Run a movement count times.
+   */
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+      let recordedState = vimState.recordedState;
+      let result: Position | IMovement;
+
+      for (let i = 0; i < (vimState.recordedState.count || 1); i++) {
+          const lastIteration = i === (vimState.recordedState.count || 1) - 1;
+          const temporaryResult = (recordedState.operator && lastIteration) ?
+              await this.execActionForOperator(position, vimState) :
+              await this.execAction           (position, vimState);
+
+          result = temporaryResult;
+
+          if (result instanceof Position) {
+            position = result;
+          } else if (isIMovement(result)) {
+            position = result.stop;
+          }
+      }
+
+      return result;
   }
 }
 

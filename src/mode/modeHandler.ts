@@ -517,6 +517,8 @@ export class ModeHandler implements vscode.Disposable {
     private async executeMovement(vimState: VimState, movement: BaseMovement): Promise<VimState> {
         let recordedState = vimState.recordedState;
 
+        await movement.execActionWithCount(vimState.cursorPosition, vimState, recordedState.count);
+
         for (let i = 0; i < (vimState.recordedState.count || 1); i++) {
             const lastIteration = i === (vimState.recordedState.count || 1) - 1;
             const result = (recordedState.operator && lastIteration) ?
