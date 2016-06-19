@@ -449,4 +449,38 @@ suite("Mode Normal", () => {
       end: ['one', 'two', '|two']
     });
 
+    newTest({
+      title: "Can run a basic search",
+      start: ['|one two three'],
+      keysPressed: '/thr\n',
+      end: ['one two |three'],
+    });
+
+    newTest({
+      title: "Can run a basic search",
+      start: ['|one two three'],
+      keysPressed: '/thr\n',
+      end: ['one two |three'],
+    });
+
+    newTest({
+      title: "Can run a basic search",
+      start: ['|one two two two'],
+      keysPressed: '/two\nn',
+      end: ['one two |two two'],
+    });
+
+    newTest({
+      title: "Can run a basic search",
+      start: ['one two thre|e'],
+      keysPressed: '?two\n',
+      end: ['one |two three'],
+    });
+
+    newTest({
+      title: "Can run a basic search",
+      start: ['one two two thre|e'],
+      keysPressed: '?two\nn',
+      end: ['one |two two three'],
+    });
 });

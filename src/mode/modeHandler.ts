@@ -300,6 +300,10 @@ export class ModeHandler implements vscode.Disposable {
                 return;
             }
 
+            if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
+                return;
+            }
+
             // See comment about justUpdatedState.
             if (this._vimState.justUpdatedState && (
                 this._vimState.currentMode === ModeName.Visual ||
