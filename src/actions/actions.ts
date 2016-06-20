@@ -135,7 +135,9 @@ export abstract class BaseMovement extends BaseAction {
    *
    * Generally returns a new Position. If necessary, it can return an IMovement instead.
    */
-  public abstract async execAction(position: Position, vimState: VimState): Promise<Position | IMovement>;
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    throw new Error("Not implemented!");
+   }
 
   /**
    * Run the movement in an operator context a single time.
@@ -1176,8 +1178,12 @@ class MoveNonBlankLast extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["G"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getDocumentEnd();
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+    if (count === 1) {
+      return position.getDocumentEnd();
+    }
+
+    return new Position(count, 0);
   }
 }
 
