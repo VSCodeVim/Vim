@@ -155,8 +155,8 @@ export abstract class BaseMovement extends BaseAction {
       let recordedState = vimState.recordedState;
       let result: Position | IMovement;
 
-      for (let i = 0; i < (vimState.recordedState.count || 1); i++) {
-          const lastIteration = i === (vimState.recordedState.count || 1) - 1;
+      for (let i = 0; i < count; i++) {
+          const lastIteration = (i === count - 1);
           const temporaryResult = (recordedState.operator && lastIteration) ?
               await this.execActionForOperator(position, vimState) :
               await this.execAction           (position, vimState);
@@ -1079,15 +1079,15 @@ class MoveFindForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["f", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
     const toFind = this.keysPressed[1];
+    let result = position.findForwards(toFind, count);
 
-    return position.findForwards(toFind);
-  }
+    if (vimState.recordedState.operator) {
+      result = result.getRight();
+    }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    const pos = await this.execAction(position, vimState);
-    return pos.getRight();
+    return result;
   }
 }
 
@@ -1096,10 +1096,15 @@ class MoveFindBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["F", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
     const toFind = this.keysPressed[1];
+    let result = position.findBackwards(toFind, count);
 
-    return position.findBackwards(toFind);
+    if (vimState.recordedState.operator) {
+      result = result.getLeft();
+    }
+
+    return result;
   }
 }
 
@@ -1109,14 +1114,15 @@ class MoveTilForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["t", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
     const toFind = this.keysPressed[1];
+    let result = position.tilForwards(toFind, count);
 
-    return position.tilForwards(toFind);
-  }
+    if (vimState.recordedState.operator) {
+      result = result.getRight();
+    }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    return (await this.execAction(position, vimState)).getRight();
+    return result;
   }
 }
 
@@ -1125,10 +1131,15 @@ class MoveTilBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["T", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
     const toFind = this.keysPressed[1];
+    let result = position.tilBackwards(toFind, count);
 
-    return position.tilBackwards(toFind);
+    if (vimState.recordedState.operator) {
+      result = result.getLeft();
+    }
+
+    return result;
   }
 }
 
