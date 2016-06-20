@@ -370,9 +370,6 @@ export class ModeHandler implements vscode.Disposable {
 
         this._vimState.currentMode = vimState.currentMode;
 
-        // TODO actually making these into functions on modes -
-        // like we used to have is a good idea.
-
         for (let mode of this._modes) {
             if (mode.name === vimState.currentMode) {
                 activeMode = mode;
@@ -453,7 +450,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (action instanceof BaseCommand) {
-            vimState = await action.exec(vimState.cursorPosition, vimState);
+            vimState = await action.execCount(vimState.cursorPosition, vimState);
 
             if (vimState.commandAction !== VimCommandActions.DoNothing) {
                 vimState = await this.handleCommand(vimState);

@@ -483,4 +483,18 @@ suite("Mode Normal", () => {
       keysPressed: '?two\nn',
       end: ['one |two two three'],
     });
+
+    newTest({
+      title: "Can repeat w",
+      start: ['|one two three four'],
+      keysPressed: '2w',
+      end: ['one two |three four']
+    });
+
+    newTest({
+      title: "Can repeat p",
+      start: ['|one'],
+      keysPressed: 'yy2p',
+      end: ['one', '|one', 'one']
+    });
 });

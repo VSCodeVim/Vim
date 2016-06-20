@@ -178,12 +178,34 @@ export abstract class BaseMovement extends BaseAction {
  * A command is something like <esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
+  /**
+   * If isCompleteAction is true, then triggering this command is a complete action.
+   * Otherwise, it's not.
+   */
   isCompleteAction = true;
 
   /**
-   * Run the command.
+   * Can this command be repeated with a number prefix? E.g. 5p can; 5zz can't.
+   */
+  canBeRepeated = false;
+
+  /**
+   * Run the command a single time.
    */
   public abstract async exec(position: Position, vimState: VimState): Promise<VimState>;
+
+  /**
+   * Run the command the number of times VimState wants us to.
+   */
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBeRepeated ? vimState.recordedState.count || 1 : 1;
+
+    for (let i = 0; i < timesToRepeat; i++) {
+      vimState = await this.exec(position, vimState);
+    }
+
+    return vimState;
+  }
 }
 
 export class BaseOperator extends BaseAction {
@@ -660,8 +682,9 @@ export class ChangeOperator extends BaseOperator {
 
 @RegisterAction
 export class PutCommand extends BaseCommand {
-    public keys = ["p"];
-    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+    keys = ["p"];
+    modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+    canBeRepeated = true;
 
     public async exec(position: Position, vimState: VimState, before: boolean = false): Promise<VimState> {
         const register = Register.get(vimState);
@@ -694,6 +717,16 @@ export class PutCommand extends BaseCommand {
         vimState.currentRegisterMode = register.registerMode;
 
         return vimState;
+    }
+
+    public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+      const result = await super.execCount(position, vimState);
+
+      if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+        result.cursorPosition = new Position(position.line + 1, 0);
+      }
+
+      return result;
     }
 }
 
@@ -1349,6 +1382,7 @@ class MoveParagraphBegin extends BaseMovement {
 class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["x"];
+  canBeRepeated = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const state = await new DeleteOperator().run(vimState, position, position);
