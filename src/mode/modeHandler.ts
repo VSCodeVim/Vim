@@ -90,7 +90,7 @@ export class VimState {
      * 1  === forward
      * -1 === backward
      */
-    public searchDirection: number = 1;
+    public searchDirection = 1;
 
     /**
      * The mode Vim will be in once this action finishes.
@@ -190,7 +190,7 @@ export class RecordedState {
     /**
      * The number of times the user wants to repeat this action.
      */
-    public count: number = 1;
+    public count: number = 0;
 
     public clone(): RecordedState {
         const res = new RecordedState();
@@ -353,7 +353,7 @@ export class ModeHandler implements vscode.Disposable {
                     }
                 }
 
-                await this.updateView(this._vimState);
+                await this.updateView(this._vimState, false);
             }
         });
     }
@@ -459,7 +459,9 @@ export class ModeHandler implements vscode.Disposable {
                 vimState = await this.handleCommand(vimState);
             }
 
-            ranAction = true;
+            if (action.isCompleteAction) {
+                ranAction = true;
+            }
         }
 
         // Update mode (note the ordering allows you to go into search mode,
@@ -515,9 +517,13 @@ export class ModeHandler implements vscode.Disposable {
     private async executeMovement(vimState: VimState, movement: BaseMovement): Promise<VimState> {
         let recordedState = vimState.recordedState;
 
-        const result = recordedState.operator ?
-            await movement.execActionForOperator(vimState.cursorPosition, vimState) :
-            await movement.execAction           (vimState.cursorPosition, vimState);
+        if (recordedState.count < 1) {
+            recordedState.count = 1;
+        } else if (recordedState.count > 99999) {
+            recordedState.count = 99999;
+        }
+
+        const result = await movement.execActionWithCount(vimState.cursorPosition, vimState, recordedState.count);
 
         if (result instanceof Position) {
             vimState.cursorPosition = result;
@@ -526,6 +532,8 @@ export class ModeHandler implements vscode.Disposable {
             vimState.cursorStartPosition = result.start;
             vimState.currentRegisterMode = result.registerMode;
         }
+
+        vimState.recordedState.count = 0;
 
         let stop = vimState.cursorPosition;
 
@@ -634,8 +642,7 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
     }
 
-    // TODO: this method signature is totally nonsensical!!!!
-    private async updateView(vimState: VimState): Promise<void> {
+    private async updateView(vimState: VimState, drawSelection = true): Promise<void> {
         // Update cursor position
 
         let start = vimState.cursorStartPosition;
@@ -662,14 +669,16 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw selection (or cursor)
 
-        if (vimState.currentMode === ModeName.Visual) {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
-        } else if (vimState.currentMode === ModeName.VisualLine) {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(
-                Position.EarlierOf(start, stop).getLineBegin(),
-                Position.LaterOf(start, stop).getLineEnd());
-        } else {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
+        if (drawSelection) {
+            if (vimState.currentMode === ModeName.Visual) {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
+            } else if (vimState.currentMode === ModeName.VisualLine) {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(
+                    Position.EarlierOf(start, stop).getLineBegin(),
+                    Position.LaterOf(start, stop).getLineEnd());
+            } else {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
+            }
         }
 
         // Scroll to position of cursor

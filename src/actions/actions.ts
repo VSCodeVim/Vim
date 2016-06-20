@@ -13,17 +13,21 @@ const controlKeys: string[] = [
   "delete"
 ];
 
-const containsControlKey = function(s: string): boolean {
-  for (const controlKey of controlKeys) {
-    if (s.indexOf(controlKey) !== -1) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
 const compareKeypressSequence = function (one: string[], two: string[]): boolean {
+  const containsControlKey = (s: string): boolean => {
+    for (const controlKey of controlKeys) {
+      if (s.indexOf(controlKey) !== -1) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const isSingleNumber = (s: string): boolean => {
+    return s.length === 1 && "1234567890".indexOf(s) > -1;
+  };
+
   if (one.length !== two.length) {
     return false;
   }
@@ -33,6 +37,9 @@ const compareKeypressSequence = function (one: string[], two: string[]): boolean
 
     if (left  === "<any>") { continue; }
     if (right === "<any>") { continue; }
+
+    if (left  === "<number>" && isSingleNumber(right)) { continue; }
+    if (right === "<number>" && isSingleNumber(left) ) { continue; }
 
     if (left  === "<character>" && !containsControlKey(right)) { continue; }
     if (right === "<character>" && !containsControlKey(left)) { continue; }
@@ -124,18 +131,46 @@ export abstract class BaseMovement extends BaseAction {
   public setsDesiredColumnToEOL = false;
 
   /**
-   * Run the movement.
+   * Run the movement a single time.
    *
    * Generally returns a new Position. If necessary, it can return an IMovement instead.
    */
-  public abstract async execAction(position: Position, vimState: VimState): Promise<Position | IMovement>;
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    throw new Error("Not implemented!");
+   }
 
   /**
-   * Run the movement in an operator context. 99% of the time, this function can be
-   * ignored, as it is exactly the same as the above function.
+   * Run the movement in an operator context a single time.
+   *
+   * Some movements operate over different ranges when used for operators.
    */
   public async execActionForOperator(position: Position,  vimState: VimState): Promise<Position | IMovement> {
     return await this.execAction(position, vimState);
+  }
+
+  /**
+   * Run a movement count times.
+   */
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+      let recordedState = vimState.recordedState;
+      let result: Position | IMovement;
+
+      for (let i = 0; i < count; i++) {
+          const lastIteration = (i === count - 1);
+          const temporaryResult = (recordedState.operator && lastIteration) ?
+              await this.execActionForOperator(position, vimState) :
+              await this.execAction           (position, vimState);
+
+          result = temporaryResult;
+
+          if (result instanceof Position) {
+            position = result;
+          } else if (isIMovement(result)) {
+            position = result.stop;
+          }
+      }
+
+      return result;
   }
 }
 
@@ -143,6 +178,8 @@ export abstract class BaseMovement extends BaseAction {
  * A command is something like <esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
+  isCompleteAction = true;
+
   /**
    * Run the command.
    */
@@ -218,6 +255,21 @@ export function RegisterAction(action: typeof BaseAction): void {
 
 
 
+
+@RegisterAction
+class CommandNumber extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<number>"];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const number = parseInt(this.keysPressed[0], 10);
+
+    vimState.recordedState.count = vimState.recordedState.count * 10 + number;
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
@@ -1025,15 +1077,15 @@ class MoveFindForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["f", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
     const toFind = this.keysPressed[1];
+    let result = position.findForwards(toFind, count);
 
-    return position.findForwards(toFind);
-  }
+    if (vimState.recordedState.operator) {
+      result = result.getRight();
+    }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    const pos = await this.execAction(position, vimState);
-    return pos.getRight();
+    return result;
   }
 }
 
@@ -1042,10 +1094,15 @@ class MoveFindBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["F", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
     const toFind = this.keysPressed[1];
+    let result = position.findBackwards(toFind, count);
 
-    return position.findBackwards(toFind);
+    if (vimState.recordedState.operator) {
+      result = result.getLeft();
+    }
+
+    return result;
   }
 }
 
@@ -1055,14 +1112,15 @@ class MoveTilForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["t", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
     const toFind = this.keysPressed[1];
+    let result = position.tilForwards(toFind, count);
 
-    return position.tilForwards(toFind);
-  }
+    if (vimState.recordedState.operator) {
+      result = result.getRight();
+    }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    return (await this.execAction(position, vimState)).getRight();
+    return result;
   }
 }
 
@@ -1071,10 +1129,15 @@ class MoveTilBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["T", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
     const toFind = this.keysPressed[1];
+    let result = position.tilBackwards(toFind, count);
 
-    return position.tilBackwards(toFind);
+    if (vimState.recordedState.operator) {
+      result = result.getLeft();
+    }
+
+    return result;
   }
 }
 
@@ -1124,8 +1187,12 @@ class MoveNonBlankLast extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["G"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getDocumentEnd();
+  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+    if (count === 1) {
+      return position.getDocumentEnd();
+    }
+
+    return new Position(count, 0);
   }
 }
 
