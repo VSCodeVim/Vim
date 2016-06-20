@@ -11,7 +11,7 @@ import { SearchInProgressMode } from './modeSearchInProgress';
 import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions, BaseAction,
-    BaseOperator, isIMovement, IMovement,
+    BaseOperator, isIMovement,
     CommandSearchForwards, CommandSearchBackwards,
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
