@@ -1206,6 +1206,16 @@ class MoveNonBlank extends BaseMovement {
 }
 
 @RegisterAction
+class MoveNextLineNonBlank extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["\n"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getDown(0).getFirstLineNonBlankChar();
+  }
+}
+
+@RegisterAction
 class MoveNonBlankFirst extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "g"];
