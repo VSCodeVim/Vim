@@ -267,8 +267,6 @@ class CommandNumber extends BaseCommand {
 
     vimState.recordedState.count = vimState.recordedState.count * 10 + number;
 
-    console.log(vimState.recordedState.count);
-
     return vimState;
   }
 }
