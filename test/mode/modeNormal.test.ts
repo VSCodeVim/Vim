@@ -248,6 +248,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle <enter>",
+      start: ['text te|xt', 'text'],
+      keysPressed: '\n',
+      end: ['text text', '|text']
+    });
+
+    newTest({
       title: "$ always keeps cursor on EOL",
       start: ['text text', 'text', 'text tex|t'],
       keysPressed: 'gg$jj',
@@ -498,4 +505,31 @@ suite("Mode Normal", () => {
       end: ['one one one', 'two', 'thre|e'],
     });
 
+    newTest({
+      title: "Can repeat w",
+      start: ['|one two three four'],
+      keysPressed: '2w',
+      end: ['one two |three four']
+    });
+
+    newTest({
+      title: "Can repeat p",
+      start: ['|one'],
+      keysPressed: 'yy2p',
+      end: ['one', '|one', 'one']
+    });
+
+    newTest({
+      title: "Can handle '~'",
+      start: ['|text'],
+      keysPressed: '~',
+      end: ['T|ext']
+    });
+
+    newTest({
+      title: "Can repeat '~'",
+      start: ['|text'],
+      keysPressed: '4~',
+      end: ['TEX|T']
+    });
 });
