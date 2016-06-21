@@ -532,4 +532,32 @@ suite("Mode Normal", () => {
       keysPressed: '4~',
       end: ['TEX|T']
     });
+
+    newTest({
+      title: "Can handle G ",
+      start: ['|one', 'two', 'three'],
+      keysPressed: 'G',
+      end: ['one', 'two', '|three']
+    });
+
+    newTest({
+      title: "Can handle G with number prefix",
+      start: ['|one', 'two', 'three'],
+      keysPressed: '2G',
+      end: ['one', '|two', 'three']
+    });
+
+    newTest({
+      title: "Can handle gg",
+      start: ['one', '|two', 'three'],
+      keysPressed: 'gg',
+      end: ['|one', 'two', 'three']
+    });
+
+    newTest({
+      title: "Can handle gg with number prefix",
+      start: ['|one', 'two', 'three'],
+      keysPressed: '2gg',
+      end: ['one', '|two', 'three']
+    });
 });

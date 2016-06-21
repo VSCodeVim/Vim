@@ -150,10 +150,18 @@ export abstract class BaseMovement extends BaseAction {
 
   /**
    * Run a movement count times.
+   *
+   * count: the number prefix the user entered, or 0 if they didn't enter one.
    */
-  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
       let recordedState = vimState.recordedState;
       let result: Position | IMovement;
+
+      if (count < 1) {
+          count = 1;
+      } else if (count > 99999) {
+          count = 99999;
+      }
 
       for (let i = 0; i < count; i++) {
           const lastIteration = (i === count - 1);
@@ -1110,7 +1118,8 @@ class MoveFindForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["f", "<character>"];
 
-  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    count = count || 1;
     const toFind = this.keysPressed[1];
     let result = position.findForwards(toFind, count);
 
@@ -1127,7 +1136,8 @@ class MoveFindBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["F", "<character>"];
 
-  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    count = count || 1;
     const toFind = this.keysPressed[1];
     let result = position.findBackwards(toFind, count);
 
@@ -1145,7 +1155,8 @@ class MoveTilForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["t", "<character>"];
 
-  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    count = count || 1;
     const toFind = this.keysPressed[1];
     let result = position.tilForwards(toFind, count);
 
@@ -1162,7 +1173,8 @@ class MoveTilBackward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["T", "<character>"];
 
-  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    count = count || 1;
     const toFind = this.keysPressed[1];
     let result = position.tilBackwards(toFind, count);
 
@@ -1220,8 +1232,12 @@ class MoveNonBlankFirst extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "g"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getDocumentStart();
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    if (count === 0) {
+      return position.getDocumentStart();
+    }
+
+    return new Position(count - 1, 0);
   }
 }
 
@@ -1230,12 +1246,12 @@ class MoveNonBlankLast extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["G"];
 
-  public async execActionWithCount(position: Position, vimState: VimState, count = 1): Promise<Position | IMovement> {
-    if (count === 1) {
-      return position.getDocumentEnd();
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    if (count === 0) {
+      return new Position(TextEditor.getLineCount() - 1, 0);
     }
 
-    return new Position(count, 0);
+    return new Position(count - 1, 0);
   }
 }
 

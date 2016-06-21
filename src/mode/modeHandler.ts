@@ -512,12 +512,6 @@ export class ModeHandler implements vscode.Disposable {
     private async executeMovement(vimState: VimState, movement: BaseMovement): Promise<VimState> {
         let recordedState = vimState.recordedState;
 
-        if (recordedState.count < 1) {
-            recordedState.count = 1;
-        } else if (recordedState.count > 99999) {
-            recordedState.count = 99999;
-        }
-
         const result = await movement.execActionWithCount(vimState.cursorPosition, vimState, recordedState.count);
 
         if (result instanceof Position) {
