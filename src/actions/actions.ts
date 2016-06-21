@@ -479,6 +479,7 @@ class CommandStar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["*"];
   isMotion = true;
+  canBeRepeated = true;
 
   public static GetWordAtPosition(position: Position): string {
     const start = position.getWordLeft(true);
@@ -520,6 +521,7 @@ class CommandHash extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["#"];
   isMotion = true;
+  canBeRepeated = true;
 
   public static GetWordAtPosition(position: Position): string {
     const start = position.getWordLeft(true);
