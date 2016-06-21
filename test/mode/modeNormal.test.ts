@@ -248,6 +248,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle <enter>",
+      start: ['text te|xt', 'text'],
+      keysPressed: '\n',
+      end: ['text text', '|text']
+    });
+
+    newTest({
       title: "$ always keeps cursor on EOL",
       start: ['text text', 'text', 'text tex|t'],
       keysPressed: 'gg$jj',
