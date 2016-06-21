@@ -480,17 +480,74 @@ class CommandStar extends BaseCommand {
   keys = ["*"];
   isMotion = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public static GetWordAtPosition(position: Position): string {
     const start = position.getWordLeft(true);
     const end   = position.getCurrentWordEnd(true).getRight();
-    const currentWord = TextEditor.getText(new vscode.Range(start, end));
+
+    return TextEditor.getText(new vscode.Range(start, end));
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const currentWord = CommandStar.GetWordAtPosition(position);
 
     vimState.searchString = currentWord;
     vimState.searchDirection = 1;
-    const result = CommandInsertInSearchMode.GetNextSearchMatch(vimState.cursorPosition, currentWord);
 
-    if (result !== undefined) {
+    let result: Position;
+
+    while (true) {
+      result = CommandInsertInSearchMode.GetNextSearchMatch(vimState.cursorPosition, currentWord);
+
+      if (result === undefined) {
+        break;
+      }
+
       vimState.cursorPosition = result;
+
+      if (CommandStar.GetWordAtPosition(result) === currentWord) {
+        break;
+      }
+    }
+
+    return vimState;
+  }
+}
+
+// TODO - merge both * and # implementations, use regex in GetNextSearchMatch
+// rather than this approach
+@RegisterAction
+class CommandHash extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["#"];
+  isMotion = true;
+
+  public static GetWordAtPosition(position: Position): string {
+    const start = position.getWordLeft(true);
+    const end   = position.getCurrentWordEnd(true).getRight();
+
+    return TextEditor.getText(new vscode.Range(start, end));
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const currentWord = CommandStar.GetWordAtPosition(position);
+
+    vimState.searchString = currentWord;
+    vimState.searchDirection = -1;
+
+    let result: Position;
+
+    while (true) {
+      result = CommandInsertInSearchMode.GetPreviousSearchMatch(vimState.cursorPosition, currentWord);
+
+      if (result === undefined) {
+        break;
+      }
+
+      vimState.cursorPosition = result;
+
+      if (CommandStar.GetWordAtPosition(result) === currentWord) {
+        break;
+      }
     }
 
     return vimState;

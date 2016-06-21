@@ -255,4 +255,40 @@ suite("Motions in Normal Mode", () => {
       keysPressed: '10l',
       end: ['blah blah |blah']
     });
+
+    newTest({
+      title: "Can handle *",
+      start: ['|blah duh blah duh blah'],
+      keysPressed: '*',
+      end: ['blah duh |blah duh blah']
+    });
+
+    newTest({
+      title: "Can handle tricky *",
+      start: ['|blah blahblah duh blah'],
+      keysPressed: '*',
+      end: ['blah blahblah duh |blah']
+    });
+
+    newTest({
+      title: "Can handle **",
+      start: ['|blah duh blah duh blah'],
+      keysPressed: '**',
+      end: ['blah duh blah duh |blah']
+    });
+
+    newTest({
+      title: "Can handle #",
+      start: ['blah duh |blah duh blah'],
+      keysPressed: '#',
+      end: ['|blah duh blah duh blah']
+    });
+
+    newTest({
+      title: "Can handle ##",
+      start: ['blah duh blah duh |blah'],
+      keysPressed: '##',
+      end: ['|blah duh blah duh blah']
+    });
+
 });
