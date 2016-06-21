@@ -68,6 +68,12 @@ export function isIMovement(o: IMovement | Position): o is IMovement {
 
 export class BaseAction {
   /**
+   * Can this action be paired with an operator (is it like w in dw)? All
+   * BaseMovements can be, and some more sophisticated commands also can be.
+   */
+  isMotion = false;
+
+  /**
    * Modes that this action can be run in.
    */
   public modes: ModeName[];
@@ -119,6 +125,8 @@ export class BaseAction {
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
  */
 export abstract class BaseMovement extends BaseAction {
+  isMotion = true;
+
   /**
    * Whether we should change desiredColumn in VimState.
    */
@@ -466,6 +474,87 @@ class CommandNextSearchMatch extends BaseMovement {
   }
 }
 
+@RegisterAction
+class CommandStar extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["*"];
+  isMotion = true;
+  canBeRepeated = true;
+
+  public static GetWordAtPosition(position: Position): string {
+    const start = position.getWordLeft(true);
+    const end   = position.getCurrentWordEnd(true).getRight();
+
+    return TextEditor.getText(new vscode.Range(start, end));
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const currentWord = CommandStar.GetWordAtPosition(position);
+
+    vimState.searchString = currentWord;
+    vimState.searchDirection = 1;
+
+    let result: Position;
+
+    while (true) {
+      result = CommandInsertInSearchMode.GetNextSearchMatch(vimState.cursorPosition, currentWord);
+
+      if (result === undefined) {
+        break;
+      }
+
+      vimState.cursorPosition = result;
+
+      if (CommandStar.GetWordAtPosition(result) === currentWord) {
+        break;
+      }
+    }
+
+    return vimState;
+  }
+}
+
+// TODO - merge both * and # implementations, use regex in GetNextSearchMatch
+// rather than this approach
+@RegisterAction
+class CommandHash extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["#"];
+  isMotion = true;
+  canBeRepeated = true;
+
+  public static GetWordAtPosition(position: Position): string {
+    const start = position.getWordLeft(true);
+    const end   = position.getCurrentWordEnd(true).getRight();
+
+    return TextEditor.getText(new vscode.Range(start, end));
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const currentWord = CommandStar.GetWordAtPosition(position);
+
+    vimState.searchString = currentWord;
+    vimState.searchDirection = -1;
+
+    let result: Position;
+
+    while (true) {
+      result = CommandInsertInSearchMode.GetPreviousSearchMatch(vimState.cursorPosition, currentWord);
+
+      if (result === undefined) {
+        break;
+      }
+
+      vimState.cursorPosition = result;
+
+      if (CommandStar.GetWordAtPosition(result) === currentWord) {
+        break;
+      }
+    }
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 class CommandPreviousSearchMatch extends BaseMovement {
@@ -527,6 +616,7 @@ class CommandInsertInInsertMode extends BaseCommand {
 export class CommandSearchForwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["/"];
+  isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.searchString = "";
@@ -534,7 +624,6 @@ export class CommandSearchForwards extends BaseCommand {
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
-    // vimState.actionState.actionKeys = []; // ???
 
     return vimState;
   }
@@ -545,6 +634,7 @@ export class CommandSearchForwards extends BaseCommand {
 export class CommandSearchBackwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["?"];
+  isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.searchString = "";
@@ -552,7 +642,6 @@ export class CommandSearchBackwards extends BaseCommand {
     vimState.searchCursorStartPosition = position;
     vimState.nextSearchMatchPosition = undefined;
     vimState.currentMode = ModeName.SearchInProgressMode;
-    // vimState.actionState.actionKeys = []; // ???
 
     return vimState;
   }
