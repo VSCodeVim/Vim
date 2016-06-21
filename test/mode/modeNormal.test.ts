@@ -36,52 +36,10 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle x",
-      start: ['te|xt'],
-      keysPressed: 'x',
-      end: ["te|t"],
-    });
-
-    newTest({
       title: "Can handle %",
       start: ['|((( )))'],
       keysPressed: '%',
       end: ["((( ))|)"],
-    });
-
-    newTest({
-      title: "Can handle %",
-      start: ['((( ))|)'],
-      keysPressed: '%',
-      end: ["|((( )))"],
-    });
-
-    newTest({
-      title: "Can handle %",
-      start: ['|[(( ))]'],
-      keysPressed: '%',
-      end: ["[(( ))|]"],
-    });
-
-    newTest({
-      title: "Can handle %",
-      start: ['|[(( }}} ))]'],
-      keysPressed: '%',
-      end: ["[(( }}} ))|]"],
-    });
-
-    newTest({
-      title: "Can handle %",
-      start: ['|[(( }}} ))]'],
-      keysPressed: '%',
-      end: ["[(( }}} ))|]"],
-    });
-
-    newTest({
-      title: "Can handle %",
-      start: ['[(( }}} ))|]'],
-      keysPressed: '%',
-      end: ["|[(( }}} ))]"],
     });
 
     newTest({
@@ -134,20 +92,6 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle 'cc'",
-      start: ['one', '|one two'],
-      keysPressed: 'cca<esc>',
-      end: ["one", "|a"],
-    });
-
-    newTest({
-      title: "Can handle 'yy'",
-      start: ['|one'],
-      keysPressed: 'yyO<esc>p',
-      end: ["", "|one", "one"],
-    });
-
-    newTest({
       title: "Can handle 'de'",
       start: ['text tex|t'],
       keysPressed: '^de',
@@ -183,49 +127,6 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle 'D'",
-      start: ['tex|t'],
-      keysPressed: '^llD',
-      end: ['t|e'],
-    });
-
-    newTest({
-      title: "Can handle 'DD'",
-      start: ['tex|t'],
-      keysPressed: '^llDD',
-      end: ['|t'],
-    });
-
-    newTest({
-      title: "Can handle 'ge'",
-      start: ['text tex|t'],
-      keysPressed: '$ge',
-      end: ['tex|t text'],
-    });
-
-    newTest({
-      title: "Can handle 'gg'",
-      start: ['text', 'text', 'tex|t'],
-      keysPressed: '$jkjgg',
-      end: ['|text', 'text', 'text'],
-    });
-
-    newTest({
-      title: "Can handle x at end of line",
-      start: ['one tw|o'],
-      keysPressed: '^llxxxxxxxxx',
-      end: ['|'],
-    });
-
-    newTest({
-      title: "Can handle 'C'",
-      start: ['tex|t'],
-      keysPressed: '^llC',
-      end: ['te|'],
-      endMode: ModeName.Insert
-    });
-
-    newTest({
       title: "Can handle 'cw'",
       start: ['text text tex|t'],
       keysPressed: '^lllllllcw',
@@ -239,27 +140,6 @@ suite("Mode Normal", () => {
       keysPressed: '^sk',
       end: ['k|ext'],
       endMode: ModeName.Insert
-    });
-
-    newTest({
-      title: "Retain same column when moving up/down",
-      start: ['text text', 'text', 'text tex|t'],
-      keysPressed: 'kk',
-      end: ['text tex|t', 'text', 'text text'],
-    });
-
-    newTest({
-      title: "Can handle <enter>",
-      start: ['text te|xt', 'text'],
-      keysPressed: '\n',
-      end: ['text text', '|text']
-    });
-
-    newTest({
-      title: "$ always keeps cursor on EOL",
-      start: ['text text', 'text', 'text tex|t'],
-      keysPressed: 'gg$jj',
-      end: ['text text', 'text', 'text tex|t'],
     });
 
     newTest({
@@ -311,13 +191,6 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle 'f'",
-      start: ['text tex|t'],
-      keysPressed: '^ft',
-      end: ['tex|t text']
-    });
-
-    newTest({
       title: "Can handle 'df'",
       start: ['aext tex|t'],
       keysPressed: '^dft',
@@ -332,115 +205,10 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle 'f' twice",
-      start: ['text tex|t'],
-      keysPressed: '^ftft',
-      end: ['text |text']
-    });
-
-    newTest({
-      title: "Can handle 'F'",
-      start: ['text tex|t'],
-      keysPressed: '$Ft',
-      end: ['text |text']
-    });
-
-    newTest({
-      title: "Can handle 'F' twice",
-      start: ['text tex|t'],
-      keysPressed: '$FtFt',
-      end: ['tex|t text']
-    });
-
-    newTest({
-      title: "Can handle 't'",
-      start: ['text tex|t'],
-      keysPressed: '^tt',
-      end: ['te|xt text']
-    });
-
-    newTest({
-      title: "Can handle 't' twice",
-      start: ['text tex|t'],
-      keysPressed: '^tttt',
-      end: ['te|xt text']
-    });
-
-    newTest({
-      title: "Can handle 'T'",
-      start: ['text tex|t'],
-      keysPressed: '$Tt',
-      end: ['text t|ext']
-    });
-
-    newTest({
-      title: "Can handle 'T' twice",
-      start: ['text tex|t'],
-      keysPressed: '$TtTt',
-      end: ['text t|ext']
-    });
-
-    newTest({
       title: "Can handle A and backspace",
       start: ['|text text'],
       keysPressed: 'A<backspace><esc>',
       end: ['text te|x']
-    });
-
-    newTest({
-      title: "Can handle 'r'",
-      start: ['tex|t'],
-      keysPressed: 'hrs',
-      end: ['te|st']
-    });
-
-    newTest({
-      title: "Can handle 'r' after 'dd'",
-      start: ['one', 'two', 'thre|e'],
-      keysPressed: 'kddrT',
-      end: ['one', '|Three']
-    });
-
-    newTest({
-      title: "Can handle 'J' once",
-      start: ['one', 'tw|o'],
-      keysPressed: 'kJ',
-      end: ['one| two']
-    });
-
-    newTest({
-      title: "Can handle 'J' twice",
-      start: ['one', 'two', 'thre|e'],
-      keysPressed: 'kkJJ',
-      end: ['one two| three']
-    });
-
-    newTest({
-      title: "Can handle 'J' with empty last line",
-      start: ['one', 'two', '|'],
-      keysPressed: 'kJ',
-      end: ['one', 'two| ']
-    });
-
-    newTest({
-      title: "Can handle 'J's with multiple empty last lines",
-      start: ['one', 'two', '', '', '', '|'],
-      keysPressed: 'kkkkkJJJJJ',
-      end: ['one two| ']
-    });
-
-    newTest({
-      title: "Can handle 'J' with leading white space on next line",
-      start: ['on|e', ' two'],
-      keysPressed: 'kJ',
-      end: ['one| two']
-    });
-
-    newTest({
-      title: "Can handle 'J' with ')' first character on next line",
-      start: ['one(', ')tw|o'],
-      keysPressed: 'kJ',
-      end: ['one(|)two']
     });
 
     newTest({
@@ -458,55 +226,6 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can run a basic search",
-      start: ['|one two three'],
-      keysPressed: '/thr\n',
-      end: ['one two |three'],
-    });
-
-    newTest({
-      title: "Can run a basic search",
-      start: ['|one two three'],
-      keysPressed: '/thr\n',
-      end: ['one two |three'],
-    });
-
-    newTest({
-      title: "Can run a basic search",
-      start: ['|one two two two'],
-      keysPressed: '/two\nn',
-      end: ['one two |two two'],
-    });
-
-    newTest({
-      title: "Can run a basic search",
-      start: ['one two thre|e'],
-      keysPressed: '?two\n',
-      end: ['one |two three'],
-    });
-
-    newTest({
-      title: "Can run a basic search",
-      start: ['one two two thre|e'],
-      keysPressed: '?two\nn',
-      end: ['one |two two three'],
-    });
-
-    newTest({
-      title: "maintains column position correctly",
-      start: ['|one one one', 'two', 'three'],
-      keysPressed: 'lllljj',
-      end: ['one one one', 'two', 'thre|e'],
-    });
-
-    newTest({
-      title: "maintains column position correctly with $",
-      start: ['|one one one', 'two', 'three'],
-      keysPressed: '$jj',
-      end: ['one one one', 'two', 'thre|e'],
-    });
-
-    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',
@@ -519,75 +238,4 @@ suite("Mode Normal", () => {
       keysPressed: 'yy2p',
       end: ['one', '|one', 'one']
     });
-
-    newTest({
-      title: "Can handle '~'",
-      start: ['|text'],
-      keysPressed: '~',
-      end: ['T|ext']
-    });
-
-    newTest({
-      title: "Can repeat '~'",
-      start: ['|text'],
-      keysPressed: '4~',
-      end: ['TEX|T']
-    });
-
-    newTest({
-      title: "Can handle G ",
-      start: ['|one', 'two', 'three'],
-      keysPressed: 'G',
-      end: ['one', 'two', '|three']
-    });
-
-    newTest({
-      title: "Can handle G with number prefix",
-      start: ['|one', 'two', 'three'],
-      keysPressed: '2G',
-      end: ['one', '|two', 'three']
-    });
-
-    newTest({
-      title: "Can handle gg",
-      start: ['one', '|two', 'three'],
-      keysPressed: 'gg',
-      end: ['|one', 'two', 'three']
-    });
-
-    newTest({
-      title: "Can handle gg with number prefix",
-      start: ['|one', 'two', 'three'],
-      keysPressed: '2gg',
-      end: ['one', '|two', 'three']
-    });
-
-    newTest({
-      title: "Can handle dot with A",
-      start: ['|one', 'two', 'three'],
-      keysPressed: 'A!<esc>j.j.',
-      end: ['one!', 'two!', 'three|!']
-    });
-
-    newTest({
-      title: "Can handle dot with I",
-      start: ['on|e', 'two', 'three'],
-      keysPressed: 'I!<esc>j.j.',
-      end: ['!one', '!two', '|!three']
-    });
-
-    newTest({
-      title: "Can handle 0",
-      start: ['blah blah bla|h'],
-      keysPressed: '0',
-      end: ['|blah blah blah']
-    });
-
-    newTest({
-      title: "Can handle 0 as part of a repeat",
-      start: ['|blah blah blah'],
-      keysPressed: '10l',
-      end: ['blah blah |blah']
-    });
-
 });
