@@ -2,9 +2,14 @@
 
 import * as vscode from "vscode";
 import { ModeHandler } from './mode/modeHandler';
+import { Position } from './motion/position';
 
 export class TextEditor {
-    static async insert(text: string): Promise<boolean> {
+    static async insert(text: string, at: Position = undefined): Promise<boolean> {
+        if (at) {
+            vscode.window.activeTextEditor.selection = new vscode.Selection(at, at);
+        }
+
         if (ModeHandler.IsTesting) {
             return vscode.window.activeTextEditor.edit(editBuilder => {
                 editBuilder.insert(vscode.window.activeTextEditor.selection.active, text);

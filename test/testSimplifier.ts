@@ -197,6 +197,15 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
     //
     let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
     let expectedPosition = helper.endPosition;
+
+    /*
+    if (actualPosition.line      !== expectedPosition.line ||
+        actualPosition.character !== expectedPosition.character) {
+
+        debugger;
+    }
+    */
+
     assert.equal(actualPosition.line, expectedPosition.line, "Cursor LINE position is wrong.");
     assert.equal(actualPosition.character, expectedPosition.character, "Cursor CHARACTER position is wrong.");
 

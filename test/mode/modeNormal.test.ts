@@ -10,6 +10,7 @@ suite("Mode Normal", () => {
 
     let {
         newTest,
+        newTestOnly
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
@@ -559,5 +560,19 @@ suite("Mode Normal", () => {
       start: ['|one', 'two', 'three'],
       keysPressed: '2gg',
       end: ['one', '|two', 'three']
+    });
+
+    newTest({
+      title: "Can handle dot with A",
+      start: ['|one', 'two', 'three'],
+      keysPressed: 'A!<esc>j.j.',
+      end: ['one!', 'two!', 'three|!']
+    });
+
+    newTest({
+      title: "Can handle dot with I",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: 'I!<esc>j.j.',
+      end: ['!one', '!two', '|!three']
     });
 });
