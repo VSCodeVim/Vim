@@ -181,10 +181,7 @@ export class RecordedState {
     }
 
     public get hasRunAMovement(): boolean {
-        return _.filter(this.actionsRun, a =>
-                  a instanceof BaseMovement ||
-                  a instanceof CommandSearchForwards ||
-                  a instanceof CommandSearchBackwards).length > 0;
+        return _.filter(this.actionsRun, a => a.isMotion).length > 0;
     }
 
     /**

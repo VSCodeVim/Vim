@@ -68,6 +68,12 @@ export function isIMovement(o: IMovement | Position): o is IMovement {
 
 export class BaseAction {
   /**
+   * Can this action be paired with an operator (is it like w in dw)? All
+   * BaseMovements can be, and some more sophisticated commands also can be.
+   */
+  isMotion = false;
+
+  /**
    * Modes that this action can be run in.
    */
   public modes: ModeName[];
@@ -119,6 +125,8 @@ export class BaseAction {
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
  */
 export abstract class BaseMovement extends BaseAction {
+  isMotion = true;
+
   /**
    * Whether we should change desiredColumn in VimState.
    */
@@ -466,25 +474,28 @@ class CommandNextSearchMatch extends BaseMovement {
   }
 }
 
-// TODO - bah, movements need to be more powerful.
 @RegisterAction
-class CommandStar extends BaseMovement {
+class CommandStar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["*"];
+  isMotion = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const start = position.getWordLeft(true);
     const end   = position.getCurrentWordEnd(true).getRight();
     const currentWord = TextEditor.getText(new vscode.Range(start, end));
 
     vimState.searchString = currentWord;
     vimState.searchDirection = 1;
-    vimState.cursorPosition = CommandInsertInSearchMode.GetNextSearchMatch(vimState.cursorPosition, currentWord);
+    const result = CommandInsertInSearchMode.GetNextSearchMatch(vimState.cursorPosition, currentWord);
 
-    return position;
+    if (result !== undefined) {
+      vimState.cursorPosition = result;
+    }
+
+    return vimState;
   }
 }
-
 
 @RegisterAction
 class CommandPreviousSearchMatch extends BaseMovement {
@@ -546,6 +557,7 @@ class CommandInsertInInsertMode extends BaseCommand {
 export class CommandSearchForwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["/"];
+  isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.searchString = "";
@@ -563,6 +575,7 @@ export class CommandSearchForwards extends BaseCommand {
 export class CommandSearchBackwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["?"];
+  isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.searchString = "";
