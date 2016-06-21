@@ -504,4 +504,18 @@ suite("Mode Normal", () => {
       keysPressed: 'yy2p',
       end: ['one', '|one', 'one']
     });
+
+    newTest({
+      title: "Can handle '~'",
+      start: ['|text'],
+      keysPressed: '~',
+      end: ['T|ext']
+    });
+
+    newTest({
+      title: "Can repeat '~'",
+      start: ['|text'],
+      keysPressed: '4~',
+      end: ['TEX|T']
+    });
 });

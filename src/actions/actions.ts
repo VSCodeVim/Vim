@@ -1742,3 +1742,27 @@ class MoveToMatchingBracket extends BaseMovement {
     }
   }
 }
+
+@RegisterAction
+class ToggleCaseAndMoveForward extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["~"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const range = new vscode.Range(position, position.getRight());
+    const char = TextEditor.getText(range);
+
+    // Try lower-case
+    let toggled = char.toLocaleLowerCase();
+    if (toggled === char) {
+      // Try upper-case
+      toggled = char.toLocaleUpperCase();
+    }
+
+    if (toggled !== char) {
+      await TextEditor.replace(range, toggled);
+    }
+
+    return position.getRight();
+  }
+}
