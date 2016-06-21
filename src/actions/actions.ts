@@ -1463,29 +1463,32 @@ class ActionJoin extends BaseCommand {
       return vimState; // TODO: bell
     }
 
+    let lineOne = TextEditor.getLineAt(position).text;
+    let lineTwo = TextEditor.getLineAt(position.getNextLineBegin()).text;
+
+    lineTwo = lineTwo.substring(position.getNextLineBegin().getFirstLineNonBlankChar().character);
+
     // TODO(whitespace): need a better way to check for whitespace
-    const char     = TextEditor.getLineAt(position.getNextLineBegin()).text[0];
-    const nextChar = TextEditor.getLineAt(position.getNextLineBegin()).text[1];
-    const lastCharCurrentLine = TextEditor.getLineAt(position).text[TextEditor.getLineAt(position).text.length - 1];
-    const startsWithWhitespace =
-      " \t".indexOf(char) !== -1;
-    const dontAddSpace =
-      (" \t()".indexOf(char) !== -1) || (" \t".indexOf(lastCharCurrentLine) !== -1);
+    let oneEndsWithWhitespace = lineOne.length > 0 && " \t".indexOf(lineOne[lineOne.length - 1]) > -1;
+    let isParenthesisPair = (lineOne[lineOne.length - 1] === '(' && lineTwo[0] === ')');
 
-    const positionToDeleteTo =
-      startsWithWhitespace && " \t".indexOf(nextChar) !== -1 ?
-        position.getNextLineBegin().getFirstLineNonBlankChar() :
-        position.getLineEnd();
+    const addSpace = !oneEndsWithWhitespace && !isParenthesisPair;
 
-    if (!dontAddSpace) {
-      await TextEditor.insertAt(" ", position.getNextLineBegin());
-    }
+    let resultLine = lineOne + (addSpace ? " " : "") + lineTwo;
 
-    return await new DeleteOperator().run(
+    let newState = await new DeleteOperator().run(
       vimState,
-      position.getLineEnd(),
-      positionToDeleteTo
+      position.getLineBegin(),
+      lineTwo.length > 0 ?
+        position.getNextLineBegin().getLineEnd().getLeft() :
+        position.getLineEnd()
     );
+
+    await TextEditor.insert(resultLine, position);
+
+    newState.cursorPosition = new Position(position.line, lineOne.length + (addSpace ? 1 : 0) + (isParenthesisPair ? 1 : 0) - 1);
+
+    return newState;
   }
 }
 

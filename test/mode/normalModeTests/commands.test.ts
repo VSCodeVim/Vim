@@ -119,6 +119,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'J' with TWO indented lines",
+      start: ['   on|e', '    two'],
+      keysPressed: 'kJ',
+      end: ['   one| two']
+    });
+
+    newTest({
       title: "Can handle 'J' with ')' first character on next line",
       start: ['one(', ')tw|o'],
       keysPressed: 'kJ',
