@@ -23,10 +23,10 @@ async function createRandomFile(contents: string): Promise<vscode.Uri> {
 }
 
 export function assertEqualLines(expectedLines: string[]) {
-    assert.equal(TextEditor.getLineCount(), expectedLines.length);
+    assert.equal(TextEditor.getLineCount(), expectedLines.length, "Line count does not match.");
 
     for (let i = 0; i < expectedLines.length; i++) {
-        assert.equal(TextEditor.readLineAt(i), expectedLines[i]);
+        assert.equal(TextEditor.readLineAt(i), expectedLines[i], `Line ${i} is different.`);
     }
 }
 

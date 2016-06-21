@@ -33,6 +33,42 @@ export class Position extends vscode.Position {
     }
 
     /**
+     * Iterates over every position in the document starting at start, returning
+     * at every position the current line text, character text, and a position object.
+     */
+    public static *IterateDocument(start: Position, forward = true): Iterable<{ line: string, char: string, pos: Position }> {
+      let lineIndex: number, charIndex: number;
+
+      if (forward) {
+        for (lineIndex = start.line; lineIndex < TextEditor.getLineCount(); lineIndex++) {
+            charIndex = lineIndex === start.line ? start.character : 0;
+            const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+
+            for (; charIndex < line.length; charIndex++) {
+                yield {
+                    line: line,
+                    char: line[charIndex],
+                    pos: new Position(lineIndex, charIndex)
+                };
+            }
+        }
+      } else {
+        for (lineIndex = start.line; lineIndex >= 0; lineIndex--) {
+            const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+            charIndex = lineIndex === start.line ? start.character : line.length - 1;
+
+            for (; charIndex >= 0; charIndex--) {
+                yield {
+                    line: line,
+                    char: line[charIndex],
+                    pos: new Position(lineIndex, charIndex)
+                };
+            }
+        }
+      }
+    }
+
+    /**
      * Returns which of the 2 provided Positions comes later in the document.
      */
     public static LaterOf(p1: Position, p2: Position): Position {
@@ -295,7 +331,7 @@ export class Position extends vscode.Position {
 
     private makeWordRegex(characterSet: string) : RegExp {
         let escaped = characterSet && _.escapeRegExp(characterSet);
-        let segments = [];
+        let segments: string[] = [];
         segments.push(`([^\\s${escaped}]+)`);
         segments.push(`[${escaped}]+`);
         segments.push(`$^`);

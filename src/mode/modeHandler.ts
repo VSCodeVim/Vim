@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { Mode, ModeName } from './mode';
+import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
@@ -63,7 +63,7 @@ export class VimState {
     /**
      * The current full action we are building up.
      */
-    public currentFullAction = [];
+    public currentFullAction: string[] = [];
 
     /**
      * The position the cursor will be when this action finishes.
@@ -90,7 +90,7 @@ export class VimState {
      * 1  === forward
      * -1 === backward
      */
-    public searchDirection: number = 1;
+    public searchDirection = 1;
 
     /**
      * The mode Vim will be in once this action finishes.
@@ -98,6 +98,18 @@ export class VimState {
     public currentMode = ModeName.Normal;
 
     public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+
+    public effectiveRegisterMode(): RegisterMode {
+        if (this.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
+            if (this.currentMode === ModeName.VisualLine) {
+                return RegisterMode.LineWise;
+            } else {
+                return RegisterMode.CharacterWise;
+            }
+        } else {
+            return this.currentRegisterMode;
+        }
+    }
 
     public registerName = '"';
 
@@ -107,6 +119,13 @@ export class VimState {
     public commandAction = VimCommandActions.DoNothing;
 
     public recordedState = new RecordedState();
+
+    /**
+     * Programmatically triggering an edit will unfortunately ALSO trigger our mouse update
+     * function. We use this variable to determine if the update function was triggered
+     * by us or by a mouse action.
+     */
+    public justUpdatedState = false;
 }
 
 /**
@@ -171,7 +190,7 @@ export class RecordedState {
     /**
      * The number of times the user wants to repeat this action.
      */
-    public count: number = 1;
+    public count: number = 0;
 
     public clone(): RecordedState {
         const res = new RecordedState();
@@ -216,41 +235,46 @@ interface IViewState {
 }
 
 export class ModeHandler implements vscode.Disposable {
+    public static IsTesting = false;
+
     private _modes: Mode[];
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
     private _vimState: VimState;
 
-    // Caret Styling
     private _caretDecoration = vscode.window.createTextEditorDecorationType(
     {
         dark: {
             // used for dark colored themes
             backgroundColor: 'rgba(224, 224, 224, 0.4)',
-           borderColor: 'rgba(240, 240, 240, 0.8)'
+            borderColor: 'rgba(224, 224, 224, 0.4)'
         },
         light: {
             // used for light colored themes
             backgroundColor: 'rgba(32, 32, 32, 0.4)',
-            borderColor: 'rgba(16, 16, 16, 0.8)'
+            borderColor: 'rgba(32, 32, 32, 0.4)'
         },
         borderStyle: 'solid',
         borderWidth: '1px'
     });
 
-
     private get currentModeName(): ModeName {
         return this.currentMode.name;
     }
 
-    constructor() {
+    /**
+     * isTesting does not affect functionality, but speeds up tests drastically.
+     */
+    constructor(isTesting = true) {
+        ModeHandler.IsTesting = isTesting;
+
         this._configuration = Configuration.fromUserFile();
 
         this._vimState = new VimState();
         this._modes = [
             new NormalMode(this),
             new InsertMode(),
-            new VisualMode(this),
+            new VisualMode(),
             new VisualLineMode(),
             new SearchInProgressMode(),
         ];
@@ -259,33 +283,75 @@ export class ModeHandler implements vscode.Disposable {
 
         this.setCurrentModeByName(this._vimState);
 
-        // handle scenarios where mouse used to change current position
-        vscode.window.onDidChangeTextEditorSelection(e => {
+        // Sometimes, Visual Studio Code will start the cursor in a position which
+        // is not (0, 0) - e.g., if you previously edited the file and left the cursor
+        // somewhere else when you closed it. This will set our cursor's position to the position
+        // that VSC set it to.
+        if (vscode.window.activeTextEditor) {
+            this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+            this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        }
+
+        // Handle scenarios where mouse used to change current position.
+        vscode.window.onDidChangeTextEditorSelection(async (e) => {
             let selection = e.selections[0];
 
-            // Programmatically triggering an edit will unfortunately ALSO trigger this
-            // function. We make sure that the vim state is actually out of state from the
-            // actual position of the cursor before correcting it.
-            if (selection.start.isEqual(this._vimState.cursorPosition) ||
-                selection.end.isEqual(this._vimState.cursorStartPosition) ||
-                selection.start.isEqual(this._vimState.cursorPosition) ||
-                selection.end.isEqual(this._vimState.cursorStartPosition)) {
+            if (isTesting) {
+                return;
+            }
 
+            if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
+                return;
+            }
+
+            // See comment about justUpdatedState.
+            if (this._vimState.justUpdatedState) {
+
+                this._vimState.justUpdatedState = false;
                 return;
             }
 
             if (selection) {
-                let line = selection.active.line;
-                let char = selection.active.character;
+                var newPosition = new Position(selection.active.line, selection.active.character);
 
-                var newPosition = new Position(line, char);
-
-                if (char > newPosition.getLineEnd().character) {
+                if (newPosition.character > newPosition.getLineEnd().character) {
                    newPosition = new Position(newPosition.line, newPosition.getLineEnd().character);
                 }
 
-                this._vimState.cursorPosition = newPosition;
-                this._vimState.desiredColumn = newPosition.character;
+                this._vimState.cursorPosition      = newPosition;
+                this._vimState.cursorStartPosition = newPosition;
+
+                this._vimState.desiredColumn       = newPosition.character;
+
+                // start visual mode?
+
+                if (!selection.anchor.isEqual(selection.active)) {
+                    var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
+
+                    if (selectionStart.character > selectionStart.getLineEnd().character) {
+                        selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
+                    }
+
+                    this._vimState.cursorStartPosition = selectionStart;
+
+                    if (selectionStart.compareTo(newPosition) > 0) {
+                        this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
+                    }
+
+                    if (this._vimState.currentMode !== ModeName.Visual &&
+                        this._vimState.currentMode !== ModeName.VisualLine) {
+
+                        this._vimState.currentMode = ModeName.Visual;
+                        this.setCurrentModeByName(this._vimState);
+                    }
+                } else {
+                    if (this._vimState.currentMode !== ModeName.Insert) {
+                        this._vimState.currentMode = ModeName.Normal;
+                        this.setCurrentModeByName(this._vimState);
+                    }
+                }
+
+                await this.updateView(this._vimState, false);
             }
         });
     }
@@ -302,9 +368,6 @@ export class ModeHandler implements vscode.Disposable {
 
         this._vimState.currentMode = vimState.currentMode;
 
-        // TODO actually making these into functions on modes -
-        // like we used to have is a good idea.
-
         for (let mode of this._modes) {
             if (mode.name === vimState.currentMode) {
                 activeMode = mode;
@@ -313,19 +376,7 @@ export class ModeHandler implements vscode.Disposable {
             mode.isActive = (mode.name === vimState.currentMode);
         }
 
-        // Draw block cursor.
-
-        // The reason we make a copy of options is because it's a
-        // getter/setter and it won't trigger it's event if we modify
-        // the object in place
-        const options = vscode.window.activeTextEditor.options;
-        (options as any).cursorStyle = vimState.currentMode === ModeName.Insert ?
-            (vscode as any).TextEditorCursorStyle.Line :
-            (vscode as any).TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor.options = options;
-
-        const statusBarText = (this.currentMode.name === ModeName.Normal) ? '' : ModeName[vimState.currentMode];
-        this.setupStatusBarItem(statusBarText ? `-- ${statusBarText.toUpperCase()} --` : '');
+        this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
     }
 
     async handleKeyEvent(key: string): Promise<Boolean> {
@@ -379,11 +430,9 @@ export class ModeHandler implements vscode.Disposable {
 
         // Update view
 
-        await this.updateView(vimState, {
-            selectionStart: vimState.cursorStartPosition,
-            selectionStop : vimState.cursorPosition,
-            currentMode   : vimState.currentMode,
-        });
+        await this.updateView(vimState);
+
+        vimState.justUpdatedState = true;
 
         return vimState;
     }
@@ -399,13 +448,15 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (action instanceof BaseCommand) {
-            vimState = await action.exec(vimState.cursorPosition, vimState);
+            vimState = await action.execCount(vimState.cursorPosition, vimState);
 
             if (vimState.commandAction !== VimCommandActions.DoNothing) {
                 vimState = await this.handleCommand(vimState);
             }
 
-            ranAction = true;
+            if (action.isCompleteAction) {
+                ranAction = true;
+            }
         }
 
         // Update mode (note the ordering allows you to go into search mode,
@@ -461,9 +512,7 @@ export class ModeHandler implements vscode.Disposable {
     private async executeMovement(vimState: VimState, movement: BaseMovement): Promise<VimState> {
         let recordedState = vimState.recordedState;
 
-        const result = recordedState.operator ?
-            await movement.execActionForOperator(vimState.cursorPosition, vimState) :
-            await movement.execAction           (vimState.cursorPosition, vimState);
+        const result = await movement.execActionWithCount(vimState.cursorPosition, vimState, recordedState.count);
 
         if (result instanceof Position) {
             vimState.cursorPosition = result;
@@ -472,6 +521,8 @@ export class ModeHandler implements vscode.Disposable {
             vimState.cursorStartPosition = result.start;
             vimState.currentRegisterMode = result.registerMode;
         }
+
+        vimState.recordedState.count = 0;
 
         let stop = vimState.cursorPosition;
 
@@ -512,8 +563,14 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             if (this.currentModeName === ModeName.VisualLine) {
-                start = Position.EarlierOf(start, stop).getLineBegin();
-                stop  = Position.LaterOf(start, stop).getLineEnd();
+                if (Position.EarlierOf(start, stop) === stop) {
+                    [start, stop] = [stop, start];
+                }
+
+                start = start.getLineBegin();
+                stop  = stop.getLineEnd();
+
+                vimState.currentRegisterMode = RegisterMode.LineWise;
             }
 
             return await recordedState.operator.run(vimState, start, stop);
@@ -543,8 +600,6 @@ export class ModeHandler implements vscode.Disposable {
                                                            vscode.TextEditorRevealType.InCenter);
             break;
             case VimCommandActions.Dot:
-                console.log("Running: ", vimState.previousFullAction.toString());
-
                 const clonedAction = vimState.previousFullAction.clone();
 
                 await this.rerunRecordedState(vimState, vimState.previousFullAction);
@@ -574,15 +629,13 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
     }
 
-    // TODO: this method signature is totally nonsensical!!!!
-    private async updateView(vimState: VimState, viewState: IViewState): Promise<void> {
+    private async updateView(vimState: VimState, drawSelection = true): Promise<void> {
         // Update cursor position
 
-        let start = viewState.selectionStart;
-        let stop  = viewState.selectionStop;
+        let start = vimState.cursorStartPosition;
+        let stop  = vimState.cursorPosition;
 
-        if (viewState.currentMode === ModeName.Visual ||
-            viewState.currentMode === ModeName.VisualLine) {
+        if (vimState.currentMode === ModeName.Visual) {
 
             /**
              * Always select the letter that we started visual mode on, no matter
@@ -603,31 +656,57 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw selection (or cursor)
 
-        if (viewState.currentMode === ModeName.Visual) {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
-        } else if (viewState.currentMode === ModeName.VisualLine) {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(
-                Position.EarlierOf(start, stop).getLineBegin(),
-                Position.LaterOf(start, stop).getLineEnd());
-        } else {
-            vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
+        if (drawSelection) {
+            if (vimState.currentMode === ModeName.Visual) {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
+            } else if (vimState.currentMode === ModeName.VisualLine) {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(
+                    Position.EarlierOf(start, stop).getLineBegin(),
+                    Position.LaterOf(start, stop).getLineEnd());
+            } else {
+                vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
+            }
         }
 
         // Scroll to position of cursor
 
         vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
 
+        let rangesToDraw: vscode.Range[] = [];
+
+        // Draw block cursor.
+
+        // Use native block cursor if possible.
+        const options = vscode.window.activeTextEditor.options;
+
+        options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
+                              this.currentMode.name       !== ModeName.Insert ?
+            vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+        vscode.window.activeTextEditor.options = options;
+
+        if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
+                   this.currentMode.name !== ModeName.Insert) {
+
+            // Fake block cursor with text decoration. Unfortunately we can't have a cursor
+            // in the middle of a selection natively, which is what we need for Visual Mode.
+
+            rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
+        }
+
         // Draw search highlight
 
         if (this.currentMode.name === ModeName.SearchInProgressMode &&
             vimState.nextSearchMatchPosition !== undefined) {
-            let range = new vscode.Range(
-                vimState.nextSearchMatchPosition,
-                vimState.nextSearchMatchPosition.getRight(vimState.searchString.length));
 
-            vscode.window.activeTextEditor.setDecorations(this._caretDecoration, [range]);
-        } else {
-            vscode.window.activeTextEditor.setDecorations(this._caretDecoration, []);
+            rangesToDraw.push(new vscode.Range(
+                vimState.nextSearchMatchPosition,
+                vimState.nextSearchMatchPosition.getRight(vimState.searchString.length)));
+        }
+
+        vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
+
+        if (this.currentMode.name === ModeName.Visual || this.currentMode.name === ModeName.VisualLine) {
+            this._vimState.justUpdatedState = true;
         }
     }
 
