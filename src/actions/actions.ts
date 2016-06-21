@@ -299,6 +299,20 @@ class CommandNumber extends BaseCommand {
 
     return vimState;
   }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const isZero = keysPressed[0] === "0";
+
+    return super.doesActionApply(vimState, keysPressed) &&
+      ((isZero && vimState.recordedState.count > 0) || !isZero);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const isZero = keysPressed[0] === "0";
+
+    return super.couldActionApply(vimState, keysPressed) &&
+      ((isZero && vimState.recordedState.count > 0) || !isZero);
+  }
 }
 
 @RegisterAction
@@ -1204,6 +1218,16 @@ class MoveLineBegin extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLineBegin();
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      vimState.recordedState.count === 0;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.couldActionApply(vimState, keysPressed) &&
+      vimState.recordedState.count === 0;
   }
 }
 

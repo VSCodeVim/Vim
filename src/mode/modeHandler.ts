@@ -600,8 +600,6 @@ export class ModeHandler implements vscode.Disposable {
                                                            vscode.TextEditorRevealType.InCenter);
             break;
             case VimCommandActions.Dot:
-                console.log("Running: ", vimState.previousFullAction.toString());
-
                 const clonedAction = vimState.previousFullAction.clone();
 
                 await this.rerunRecordedState(vimState, vimState.previousFullAction);

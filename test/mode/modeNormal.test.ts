@@ -575,4 +575,19 @@ suite("Mode Normal", () => {
       keysPressed: 'I!<esc>j.j.',
       end: ['!one', '!two', '|!three']
     });
+
+    newTest({
+      title: "Can handle 0",
+      start: ['blah blah bla|h'],
+      keysPressed: '0',
+      end: ['|blah blah blah']
+    });
+
+    newTest({
+      title: "Can handle 0 as part of a repeat",
+      start: ['|blah blah blah'],
+      keysPressed: '10l',
+      end: ['blah blah |blah']
+    });
+
 });
