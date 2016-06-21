@@ -305,9 +305,7 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             // See comment about justUpdatedState.
-            if (this._vimState.justUpdatedState && (
-                this._vimState.currentMode === ModeName.Visual ||
-                this._vimState.currentMode === ModeName.VisualLine)) {
+            if (this._vimState.justUpdatedState) {
 
                 this._vimState.justUpdatedState = false;
                 return;
@@ -323,7 +321,7 @@ export class ModeHandler implements vscode.Disposable {
                 this._vimState.cursorPosition      = newPosition;
                 this._vimState.cursorStartPosition = newPosition;
 
-                this._vimState.desiredColumn  = newPosition.character;
+                this._vimState.desiredColumn       = newPosition.character;
 
                 // start visual mode?
 

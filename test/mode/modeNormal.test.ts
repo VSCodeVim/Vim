@@ -483,4 +483,19 @@ suite("Mode Normal", () => {
       keysPressed: '?two\nn',
       end: ['one |two two three'],
     });
+
+    newTest({
+      title: "maintains column position correctly",
+      start: ['|one one one', 'two', 'three'],
+      keysPressed: 'lllljj',
+      end: ['one one one', 'two', 'thre|e'],
+    });
+
+    newTest({
+      title: "maintains column position correctly with $",
+      start: ['|one one one', 'two', 'three'],
+      keysPressed: '$jj',
+      end: ['one one one', 'two', 'thre|e'],
+    });
+
 });
