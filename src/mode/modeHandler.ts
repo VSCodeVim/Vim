@@ -292,12 +292,12 @@ export class ModeHandler implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(async (e) => {
             let selection = e.selections[0];
 
-            // See comment about whatILastSetTheSelectionTo.
-            if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
+            if (isTesting) {
                 return;
             }
 
-            if (isTesting) {
+            // See comment about whatILastSetTheSelectionTo.
+            if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
                 return;
             }
 
@@ -308,8 +308,8 @@ export class ModeHandler implements vscode.Disposable {
             if (selection) {
                 var newPosition = new Position(selection.active.line, selection.active.character);
 
-                if (newPosition.character > newPosition.getLineEnd().character) {
-                   newPosition = new Position(newPosition.line, newPosition.getLineEnd().character);
+                if (newPosition.character >= newPosition.getLineEnd().character) {
+                   newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
                 }
 
                 this._vimState.cursorPosition      = newPosition;
@@ -345,7 +345,7 @@ export class ModeHandler implements vscode.Disposable {
                     }
                 }
 
-                await this.updateView(this._vimState, false);
+                await this.updateView(this._vimState, this._vimState.currentMode === ModeName.Normal);
             }
         });
     }

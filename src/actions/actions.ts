@@ -849,8 +849,9 @@ class IndentOperator extends BaseOperator {
     vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
 
     await vscode.commands.executeCommand("editor.action.indentLines");
-    vimState.currentMode  = ModeName.Normal;
-    vimState.cursorPosition = vimState.cursorStartPosition;
+
+    vimState.currentMode     = ModeName.Normal;
+    vimState.cursorPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
   }
