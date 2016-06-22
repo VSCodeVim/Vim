@@ -25,6 +25,20 @@ suite("Dot Operator", () => {
     });
 
     newTest({
+      title: "Can repeat 'x'",
+      start: ['|text'],
+      keysPressed: 'x.',
+      end: ['|xt']
+    });
+
+    newTest({
+      title: "Can repeat 'J'",
+      start: ['|one', 'two', 'three'],
+      keysPressed: 'J.',
+      end: ['one two| three']
+    });
+
+    newTest({
       title: "Can handle dot with A",
       start: ['|one', 'two', 'three'],
       keysPressed: 'A!<esc>j.j.',

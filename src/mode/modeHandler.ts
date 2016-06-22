@@ -309,7 +309,7 @@ export class ModeHandler implements vscode.Disposable {
                 var newPosition = new Position(selection.active.line, selection.active.character);
 
                 if (newPosition.character >= newPosition.getLineEnd().character) {
-                   newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
+                   newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character, 0));
                 }
 
                 this._vimState.cursorPosition      = newPosition;
@@ -448,6 +448,10 @@ export class ModeHandler implements vscode.Disposable {
 
             if (action.isCompleteAction) {
                 ranAction = true;
+            }
+
+            if (action.canBeRepeatedWithDot) {
+                ranRepeatableAction = true;
             }
         }
 

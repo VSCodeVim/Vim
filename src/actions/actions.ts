@@ -195,15 +195,20 @@ export abstract class BaseMovement extends BaseAction {
  */
 export abstract class BaseCommand extends BaseAction {
   /**
-   * If isCompleteAction is true, then triggering this command is a complete action.
-   * Otherwise, it's not.
+   * If isCompleteAction is true, then triggering this command is a complete action -
+   * that means that we'll go and try to run it.
    */
   isCompleteAction = true;
 
   /**
    * Can this command be repeated with a number prefix? E.g. 5p can; 5zz can't.
    */
-  canBeRepeated = false;
+  canBePrefixedWithCount = false;
+
+  /**
+   * Can this command be repeated with .?
+   */
+  canBeRepeatedWithDot = false;
 
   /**
    * Run the command a single time.
@@ -214,7 +219,7 @@ export abstract class BaseCommand extends BaseAction {
    * Run the command the number of times VimState wants us to.
    */
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.canBeRepeated ? vimState.recordedState.count || 1 : 1;
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
 
     for (let i = 0; i < timesToRepeat; i++) {
       vimState = await this.exec(position, vimState);
@@ -479,7 +484,7 @@ class CommandStar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["*"];
   isMotion = true;
-  canBeRepeated = true;
+  canBePrefixedWithCount = true;
 
   public static GetWordAtPosition(position: Position): string {
     const start = position.getWordLeft(true);
@@ -521,7 +526,7 @@ class CommandHash extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["#"];
   isMotion = true;
-  canBeRepeated = true;
+  canBePrefixedWithCount = true;
 
   public static GetWordAtPosition(position: Position): string {
     const start = position.getWordLeft(true);
@@ -794,7 +799,8 @@ export class ChangeOperator extends BaseOperator {
 export class PutCommand extends BaseCommand {
     keys = ["p"];
     modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-    canBeRepeated = true;
+    canBePrefixedWithCount = true;
+    canBeRepeatedWithDot = true;
 
     public async exec(position: Position, vimState: VimState, before: boolean = false): Promise<VimState> {
         const register = Register.get(vimState);
@@ -1525,7 +1531,8 @@ class MoveParagraphBegin extends BaseMovement {
 class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["x"];
-  canBeRepeated = true;
+  canBePrefixedWithCount = true;
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const state = await new DeleteOperator().run(vimState, position, position);
@@ -1540,8 +1547,13 @@ class ActionDeleteChar extends BaseCommand {
 class ActionDeleteLastChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["X"];
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (position.character === 0) {
+      return vimState;
+    }
+
     return await new DeleteOperator().run(vimState, position.getLeft(), position.getLeft());
   }
 }
@@ -1550,6 +1562,7 @@ class ActionDeleteLastChar extends BaseCommand {
 class ActionJoin extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["J"];
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (position.line === TextEditor.getLineCount() - 1) {
@@ -1589,6 +1602,7 @@ class ActionJoin extends BaseCommand {
 class ActionReplaceCharacter extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["r", "<character>"];
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toReplace = this.keysPressed[1];
