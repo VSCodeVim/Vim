@@ -124,7 +124,7 @@ export class VimState {
      * function. We use this variable to determine if the update function was triggered
      * by us or by a mouse action.
      */
-    public justUpdatedState = false;
+    public whatILastSetTheSelectionTo: vscode.Selection;
 }
 
 /**
@@ -292,18 +292,16 @@ export class ModeHandler implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(async (e) => {
             let selection = e.selections[0];
 
+            // See comment about whatILastSetTheSelectionTo.
+            if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
+                return;
+            }
+
             if (isTesting) {
                 return;
             }
 
             if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
-                return;
-            }
-
-            // See comment about justUpdatedState.
-            if (this._vimState.justUpdatedState) {
-
-                this._vimState.justUpdatedState = false;
                 return;
             }
 
@@ -427,8 +425,6 @@ export class ModeHandler implements vscode.Disposable {
         // Update view
 
         await this.updateView(vimState);
-
-        vimState.justUpdatedState = true;
 
         return vimState;
     }
@@ -653,15 +649,20 @@ export class ModeHandler implements vscode.Disposable {
         // Draw selection (or cursor)
 
         if (drawSelection) {
+            let selection: vscode.Selection;
+
             if (vimState.currentMode === ModeName.Visual) {
-                vscode.window.activeTextEditor.selection = new vscode.Selection(start, stop);
+                selection = new vscode.Selection(start, stop);
             } else if (vimState.currentMode === ModeName.VisualLine) {
-                vscode.window.activeTextEditor.selection = new vscode.Selection(
+                selection = new vscode.Selection(
                     Position.EarlierOf(start, stop).getLineBegin(),
                     Position.LaterOf(start, stop).getLineEnd());
             } else {
-                vscode.window.activeTextEditor.selection = new vscode.Selection(stop, stop);
+                selection = new vscode.Selection(stop, stop);
             }
+
+            this._vimState.whatILastSetTheSelectionTo = selection;
+            vscode.window.activeTextEditor.selection = selection;
         }
 
         // Scroll to position of cursor
@@ -700,10 +701,6 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
-
-        if (this.currentMode.name === ModeName.Visual || this.currentMode.name === ModeName.VisualLine) {
-            this._vimState.justUpdatedState = true;
-        }
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {

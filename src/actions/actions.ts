@@ -593,7 +593,6 @@ class CommandInsertInInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
-    // console.log("insert!");
 
     if (char === "<backspace>") {
       await TextEditor.delete(new vscode.Range(position, position.getLeft()));
