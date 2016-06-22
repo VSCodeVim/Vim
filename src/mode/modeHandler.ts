@@ -345,7 +345,7 @@ export class ModeHandler implements vscode.Disposable {
                     }
                 }
 
-                await this.updateView(this._vimState, this._vimState.currentMode === ModeName.Normal);
+                await this.updateView(this._vimState, false);
             }
         });
     }
