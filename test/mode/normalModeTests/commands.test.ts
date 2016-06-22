@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../../testUtils';
+import { setupWorkspace, cleanUpWorkspace } from './../../testUtils';
 import { ModeName } from '../../../src/mode/mode';
 import { ModeHandler } from '../../../src/mode/modeHandler';
 import { getTestingFunctions } from '../../testSimplifier';
@@ -9,8 +9,7 @@ suite("Mode Normal", () => {
     let modeHandler: ModeHandler = new ModeHandler();
 
     let {
-        newTest,
-        newTestOnly
+        newTest
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {

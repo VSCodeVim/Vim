@@ -12,7 +12,6 @@ import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions, BaseAction,
     BaseOperator, isIMovement,
-    CommandSearchForwards, CommandSearchBackwards,
     KeypressState } from './../actions/actions';
 import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';

@@ -847,6 +847,8 @@ class IndentOperator extends BaseOperator {
   keys = [">"];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
+
     await vscode.commands.executeCommand("editor.action.indentLines");
     vimState.currentMode  = ModeName.Normal;
     vimState.cursorPosition = vimState.cursorStartPosition;
@@ -861,6 +863,8 @@ class OutdentOperator extends BaseOperator {
   keys = ["<"];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
+
     await vscode.commands.executeCommand("editor.action.outdentLines");
     vimState.currentMode  = ModeName.Normal;
     vimState.cursorPosition = vimState.cursorStartPosition;
