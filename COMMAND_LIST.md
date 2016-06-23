@@ -10,11 +10,11 @@
 
 Status | Command | Description
 ---|--------|------------
-:white_check_mark:   |:1234:  h	| 	left (also: CTRL-H, <BS>, or <Left> key)
-:white_check_mark:   |:1234:  l	| 	right (also: <Space> or <Right> key)
-:white_check_mark:   |   0		| to first character in the line (also: <Home> key)
+:white_check_mark:   |:1234:  h	| 	left (also: CTRL-H, BS, or Left key)
+:white_check_mark:   |:1234:  l	| 	right (also: Space or Right key)
+:white_check_mark:   |   0		| to first character in the line (also: Home key)
 :white_check_mark:   |   ^		| to first non-blank character in the line
-:white_check_mark:   |:1234:  $	| to the last character in the line (N-1 lines lower) (also: <End> key)
+:white_check_mark:   |:1234:  $	| to the last character in the line (N-1 lines lower) (also: End key)
    |   g0		| to first character in screen line (differs from "0" when lines wrap)
    |   g^		| to first non-blank character in screen line (differs from "^" when lines wrap)
    |:1234:  g$    	| to last character in screen line (differs from "$" when lines wrap)
@@ -31,10 +31,10 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------
-:white_check_mark:   | :1234:  k		| up N lines (also: CTRL-P and <Up>)
-:white_check_mark:   | :1234:  j		| up N lidown N lines (also: CTRL-J, CTRL-N, <NL>, and <Down>)
+:white_check_mark:   | :1234:  k		| up N lines (also: CTRL-P and Up)
+:white_check_mark:   | :1234:  j		| up N lidown N lines (also: CTRL-J, CTRL-N, NL, and Down)
    | :1234:  -		| up N liup N lines, on the first non-blank character
-   | :1234:  +		| up N lidown N lines, on the first non-blank character (also: CTRL-M and <CR>)
+   | :1234:  +		| up N lidown N lines, on the first non-blank character (also: CTRL-M and CR)
    | :1234:  _		| up N lidown N-1 lines, on the first non-blank character
 :white_check_mark:   | :1234:  G		| up N ligoto line N (default: last line), on the first non-blank character
 :white_check_mark:   | :1234:  gg		| up N ligoto line N (default: first line), on the first non-blank character
@@ -101,7 +101,7 @@ Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:    | :1234:  a	| append text after the cursor (N times)
 :white_check_mark:    | :1234:  A	| append text at the end of the line (N times)
-:white_check_mark:    | :1234:  i	| insert text before the cursor (N times) (also: <Insert>)
+:white_check_mark:    | :1234:  i	| insert text before the cursor (N times) (also: Insert)
 :white_check_mark:    | :1234:  I	| insert text before the first non-blank in the line (N times)
     | :1234:  gI	| insert text in column 1 (N times)
 :white_check_mark:    | :1234:  o	| open a new line below the current line, append text (N times)
@@ -120,8 +120,8 @@ leaving Insert mode:
 
 Status | Command | Description
 ---|--------|------------------------------
-:white_check_mark:   | <Esc>		 | end Insert mode, back to Normal mode
-   | CTRL-C		 | like <Esc>, but do not use an abbreviation
+:white_check_mark:   | Esc		 | end Insert mode, back to Normal mode
+   | CTRL-C		 | like Esc, but do not use an abbreviation
    | CTRL-O {command}    | execute {command} and return to Insert mode
 
 moving around:
@@ -131,8 +131,8 @@ Status | Command | Description
 :white_check_mark:   | cursor keys	| move cursor left/right/up/down
 :white_check_mark:   | shift-left/right   | one word left/right
 :white_check_mark:   | shift-up/down	| one screenful backward/forward
-:white_check_mark:   | <End>		| cursor after last character in the line
-:white_check_mark:   | <Home>		| cursor to first character in the line
+:white_check_mark:   | End		| cursor after last character in the line
+:white_check_mark:   | Home		| cursor to first character in the line
 
 ## Special inserts
 
@@ -146,13 +146,13 @@ Status | Command | Description
 Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:    | :1234:  x		| delete N characters under and after the cursor
-    | :1234:  <Del>	| delete N characters under and after the cursor
+    | :1234:  Del	| delete N characters under and after the cursor
 :white_check_mark:    | :1234:  X		| delete N characters before the cursor
 :white_check_mark:    | :1234:  d{motion}	| delete the text that is moved over with {motion}
 :white_check_mark:    |    {visual}d	| delete the highlighted text
 :white_check_mark:    | :1234:  dd	| 	delete N lines
 :white_check_mark:    | :1234:  D		| delete to the end of the line (and N-1 more lines)
-:white_check_mark:    | :1234:  J		| join N-1 lines (delete <EOL>s)
+:white_check_mark:    | :1234:  J		| join N-1 lines (delete EOLs)
     |    {visual}J	| join the highlighted lines
     | :1234:  gJ	| 	like "J", but without inserting spaces
     |    {visual}gJ	| like "{visual}J", but without inserting spaces
@@ -247,7 +247,7 @@ Status | Command | Description
     | :1234:  ib	| Select "inner block" (from "[(" to "])")
     | :1234:  aB	| Select "a Block" (from "[{" to "]}")
     | :1234:  iB	| Select "inner Block" (from "[{" to "]}")
-    | :1234:  a>	| Select "a <> block"
+    | :1234:  a>	| Select "a &lt;&gt; block"
     | :1234:  i>	| Select "inner <> block"
     | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
     | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
@@ -321,7 +321,7 @@ Status | Command | Description
 Status | Command | Description
 ---|--------|------------------------------
     | CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
-    | <NL> or <CR> or CTRL-M or CTRL-J |  begin new line
+:warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line
     | CTRL-E		                 |  insert the character from below the cursor
     | CTRL-Y		                 |  insert the character from above the cursor
     | CTRL-A		                 |  insert previously inserted text
@@ -330,8 +330,8 @@ Status | Command | Description
     | CTRL-N		                 |  insert next match of identifier before the cursor
     | CTRL-P		                 |  insert previous match of identifier before the cursor
     | CTRL-X ...	                 |  complete the word before the cursor in various ways
-    | <BS> or CTRL-H	                 |  delete the character before the cursor
-    | <Del>		                 |  delete the character under the cursor
+    | BS or CTRL-H	                 |  delete the character before the cursor
+:white_check_mark:    | Del		                 |  delete the character under the cursor
     | CTRL-W		                 |  delete word before the cursor
     | CTRL-U		                 |  delete all entered characters in the current line
     | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
@@ -351,6 +351,6 @@ Status | Command | Description
     | :1234:  CTRL-Y	| window N lines upwards (default: 1)
     | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
     | :1234:  CTRL-B	| window N pages Backwards (upwards)
-    |    z<CR> or zt	| redraw, current line at top of window
+    |    z CR or zt	| redraw, current line at top of window
 :warning: |    z.	 or zz	| redraw, current line at center of window
     |    z-	 or zb	| redraw, current line at bottom of window
