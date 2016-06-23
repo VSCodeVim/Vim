@@ -5,12 +5,12 @@ import { ModeHandler } from './mode/modeHandler';
 import { Position } from './motion/position';
 
 export class TextEditor {
-    static async insert(text: string, at: Position = undefined): Promise<boolean> {
+    static async insert(text: string, at: Position = undefined, letVSCodeHandleKeystrokes = true): Promise<boolean> {
         if (at) {
             vscode.window.activeTextEditor.selection = new vscode.Selection(at, at);
         }
 
-        if (ModeHandler.IsTesting) {
+        if (ModeHandler.IsTesting || !letVSCodeHandleKeystrokes) {
             return vscode.window.activeTextEditor.edit(editBuilder => {
                 editBuilder.insert(vscode.window.activeTextEditor.selection.active, text);
             });
