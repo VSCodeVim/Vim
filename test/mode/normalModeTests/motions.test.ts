@@ -290,7 +290,6 @@ suite("Motions in Normal Mode", () => {
       end: ['|blah duh blah duh blah']
     });
 
-    /*
     newTest({
       title: "Can handle |",
       start: ['blah duh blah duh |blah'],
@@ -302,8 +301,7 @@ suite("Motions in Normal Mode", () => {
       title: "Can handle <number> |",
       start: ['blah duh blah duh |blah'],
       keysPressed: '3|',
-      end: ['|blah duh blah duh blah']
+      end: ['bl|ah duh blah duh blah']
     });
-    */
 
 });

@@ -1236,6 +1236,16 @@ class MoveRight extends BaseMovement {
 }
 
 @RegisterAction
+class MoveToColumn extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["|"];
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    return new Position(position.line, Math.max(0, count - 1));
+  }
+}
+
+@RegisterAction
 class MoveFindForward extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["f", "<character>"];
