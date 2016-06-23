@@ -207,10 +207,8 @@ Status | Command | Description
     |    gU{motion}     | make the text that is moved over with {motion} uppercase
     |    {visual}g?     | perform rot13 encoding on highlighted text
     |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
-
     | :1234:  CTRL-A	| add N to the number at or after the cursor
     | :1234:  CTRL-X	| subtract N from the number at or after the cursor
-
 :white_check_mark:    | :1234:  <{motion}	| move the lines that are moved over with {motion} one shiftwidth left
 :white_check_mark:    | :1234:  <<	|	move N lines one shiftwidth left
 :white_check_mark:    | :1234:  >{motion}	|  move the lines that are moved over with {motion} one shiftwidth right
