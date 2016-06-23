@@ -32,6 +32,8 @@ Check out our [release notes](https://github.com/VSCodeVim/Vim/releases) for mor
 
 See [here](https://github.com/VSCodeVim/Vim/blob/master/DEVELOPING.md) for how to run a development environment and make contributions.
 
+[Check the full list of commands](https://github.com/VSCodeVim/Vim/blob/master/COMMAND_LIST.md) if you're having trouble thinking of things to add! :wink:
+
 This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors). *Thank you!* :heart: 
 
 ## License
