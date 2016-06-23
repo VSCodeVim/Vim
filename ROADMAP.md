@@ -20,6 +20,7 @@ Status | Command
 :white_check_mark: | Visual Line Mode
 :white_check_mark: | Number Prefixes
 :white_check_mark: | . Operator
+:warning: | Searching with / and ?
  | Marks
 :warning: | Text Objects
  | Correct Undo/Redo 
