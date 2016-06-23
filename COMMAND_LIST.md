@@ -1,10 +1,12 @@
 ## Key
 
-:1234: - command accepts numeric prefix
-
 :white_check_mark: - command done
 
 :warning: - command partially implemented
+
+:x: - command impossible with current VSCode API
+
+:1234: - command accepts numeric prefix
 
 ## Left-right motions
 
@@ -15,11 +17,11 @@ Status | Command | Description
 :white_check_mark:   |   0		| to first character in the line (also: Home key)
 :white_check_mark:   |   ^		| to first non-blank character in the line
 :white_check_mark:   |:1234:  $	| to the last character in the line (N-1 lines lower) (also: End key)
-   |   g0		| to first character in screen line (differs from "0" when lines wrap)
-   |   g^		| to first non-blank character in screen line (differs from "^" when lines wrap)
-   |:1234:  g$    	| to last character in screen line (differs from "$" when lines wrap)
-   |   gm		| to middle of the screen line
-   |:1234:  \|	| to column N (default: 1)
+:x:   |   g0		| to first character in screen line (differs from "0" when lines wrap)
+:x:   |   g^		| to first non-blank character in screen line (differs from "^" when lines wrap)
+:x:   |:1234:  g$    	| to last character in screen line (differs from "$" when lines wrap)
+:x:   |   gm		| to middle of the screen line
+:white_check_mark:   |:1234:  \|	| to column N (default: 1)
 :white_check_mark:   |:1234:  f{char}	| to the Nth occurrence of {char} to the right
 :white_check_mark:   |:1234:  F{char}	| to the Nth occurrence of {char} to the left
 :white_check_mark:   |:1234:  t{char}	| till before the Nth occurrence of {char} to the right
@@ -33,9 +35,9 @@ Status | Command | Description
 ---|--------|------------
 :white_check_mark:   | :1234:  k		| up N lines (also: CTRL-P and Up)
 :white_check_mark:   | :1234:  j		| up N lidown N lines (also: CTRL-J, CTRL-N, NL, and Down)
-   | :1234:  -		| up N liup N lines, on the first non-blank character
-   | :1234:  +		| up N lidown N lines, on the first non-blank character (also: CTRL-M and CR)
-   | :1234:  _		| up N lidown N-1 lines, on the first non-blank character
+   | :1234:  -		| up N lines, on the first non-blank character
+   | :1234:  +		| down N lines, on the first non-blank character (also: CTRL-M and CR)
+   | :1234:  _		| down N-1 lines, on the first non-blank character
 :white_check_mark:   | :1234:  G		| up N ligoto line N (default: last line), on the first non-blank character
 :white_check_mark:   | :1234:  gg		| up N ligoto line N (default: first line), on the first non-blank character
 :white_check_mark:   | :1234:  %		| up N ligoto line N percentage down in the file; N must be given, otherwise it is the |%| command
