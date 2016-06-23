@@ -137,4 +137,12 @@ suite("Mode Normal", () => {
       keysPressed: '~',
       end: ['T|ext']
     });
+
+    newTest({
+      title: "Can backspace in insert mode",
+      start: ['one', '|'],
+      keysPressed: 'i<backspace><esc>',
+      end: ['on|e']
+    });
+
 });

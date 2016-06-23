@@ -600,7 +600,16 @@ class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<backspace>") {
-      await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+      if (position.character === 0) {
+        if (position.line > 0) {
+          await TextEditor.delete(new vscode.Range(
+            position.getPreviousLineBegin().getLineEnd(),
+            position.getLineBegin()
+          ));
+        }
+      } else {
+        await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+      }
     } else {
       await TextEditor.insert(char, vimState.cursorPosition);
     }
