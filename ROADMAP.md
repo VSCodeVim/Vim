@@ -23,8 +23,8 @@ Status | Command
 :warning: | Searching with / and ?
  | Marks
 :warning: | Text Objects
- | Correct Undo/Redo 
  | Command Remapping
+ | Correct Undo/Redo 
  | Visual Block Mode
  | Macros
 
@@ -105,9 +105,9 @@ Status | Command | Description
 Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:    |   %		        | find the next brace, bracket, comment, or "#if"/ "#else"/"#endif" in this line and go to its match
-    |:1234:  H		        | go to the Nth line in the window, on the first non-blank
-    |        M		        | go to the middle line in the window, on the first non-blank
-    |:1234:  L		        | go to the Nth line from the bottom, on the first non-blank
+ :x:   |:1234:  H		        | go to the Nth line in the window, on the first non-blank
+  :x:  |        M		        | go to the middle line in the window, on the first non-blank
+  :x:  |:1234:  L		        | go to the Nth line from the bottom, on the first non-blank
     |:1234:  go			| go to Nth byte in the buffer
     |:[range]go[to] [off]	| go to [off] byte in the buffer
 
@@ -115,10 +115,10 @@ These only work when 'wrap' is off:
 
 Status | Command | Description
 ---|--------|------------------------------
-    | :1234:  zh	|	scroll screen N characters to the right
-    | :1234:  zl	|	scroll screen N characters to the left
-    | :1234:  zH	|	scroll screen half a screenwidth to the right
-    | :1234:  zL	|	scroll screen half a screenwidth to the left
+  :x:  | :1234:  zh	|	scroll screen N characters to the right
+ :x:   | :1234:  zl	|	scroll screen N characters to the left
+  :x:  | :1234:  zH	|	scroll screen half a screenwidth to the right
+:x:   | :1234:  zL	|	scroll screen half a screenwidth to the left
 
 ## Inserting text
 
@@ -190,10 +190,10 @@ Status | Command | Description
    | "{char}	        | use register {char} for the next delete, yank, or put
    | :reg		| show the contents of all registers
    | :reg {arg}	        | show the contents of registers mentioned in {arg}
-:white_check_mark:   | :1234:  y{motion}	| yank the text moved over with {motion} into a register
+:warning:   | :1234:  y{motion}	| yank the text moved over with {motion} into a register
 :white_check_mark:   |    {visual}y	| yank the highlighted text into a register
-:white_check_mark:   | :1234:  yy		| yank N lines into a register
-:white_check_mark:   | :1234:  Y		| yank N lines into a register
+:warning:   | :1234:  yy		| yank N lines into a register
+:warning:   | :1234:  Y		| yank N lines into a register
 :white_check_mark:   | :1234:  p		| put a register after the cursor position (N times)
 :white_check_mark:   | :1234:  P		| put a register before the cursor position (N times)
    | :1234:  ]p		| like p, but adjust indent to current line
@@ -215,15 +215,15 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:white_check_mark:    | :1234:  c{motion}	| change the text that is moved over with {motion}
+:warning:    | :1234:  c{motion}	| change the text that is moved over with {motion}
 :white_check_mark:    |    {visual}c	| change the highlighted text
-:white_check_mark:    | :1234:  cc	| 	change N lines
+:warning:    | :1234:  cc	| 	change N lines
     | :1234:  S		| change N lines
 :warning:    | :1234:  C		| change to the end of the line (and N-1 more lines)
     | :1234:  s		| change N characters
     |    {visual}c	| in Visual block mode: Change each of the selected lines with the entered text
     |    {visual}C	| in Visual block mode: Change each of the selected lines until end-of-line with the entered text
-:white_check_mark:    | :1234:  ~		| switch case for N characters and advance cursor
+:warning:    | :1234:  ~		| switch case for N characters and advance cursor
     |    {visual}~	| switch case for highlighted text
     |    {visual}u	| make highlighted text lowercase
     |    {visual}U	| make highlighted text uppercase
@@ -370,12 +370,12 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-    | :1234:  CTRL-E	| window N lines downwards (default: 1)
-    | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
-    | :1234:  CTRL-F	| window N pages Forwards (downwards)
-    | :1234:  CTRL-Y	| window N lines upwards (default: 1)
-    | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
-    | :1234:  CTRL-B	| window N pages Backwards (upwards)
-    |    z CR or zt	| redraw, current line at top of window
+:x:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
+  :x:  | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
+:x:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
+  :x:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
+ :x:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
+:x:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
+:x:    |    z CR or zt	| redraw, current line at top of window
 :warning: |    z.	 or zz	| redraw, current line at center of window
-    |    z-	 or zb	| redraw, current line at bottom of window
+:x:    |    z-	 or zb	| redraw, current line at bottom of window
