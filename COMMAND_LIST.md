@@ -8,6 +8,28 @@
 
 :1234: - command accepts numeric prefix
 
+## Roadmap
+
+These are the big Vim features, put generally in the order in which we plan to implement them. 
+
+Status | Command 
+---|--------
+:white_check_mark: | Normal Mode
+:white_check_mark: | Insert Mode
+:white_check_mark: | Visual Mode
+:white_check_mark: | Visual Line Mode
+:white_check_mark: | Number Prefixes
+:white_check_mark: | . Operator
+ | Marks
+:warning: | Text Objects
+ | Correct Undo/Redo 
+ | Command Remapping
+ | Visual Block Mode
+ | Macros
+
+
+Now follows an exhaustive list of every known Vim command that we could find. 
+
 ## Left-right motions
 
 Status | Command | Description
