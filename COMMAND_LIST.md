@@ -1,3 +1,11 @@
+## Key
+
+:1234: - command accepts numeric prefix
+
+:white_check_mark: - command done
+
+:warning: - command partially implemented
+
 ## Left-right motions
 
 Status | Command | Description
