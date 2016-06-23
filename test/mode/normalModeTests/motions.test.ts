@@ -304,4 +304,60 @@ suite("Motions in Normal Mode", () => {
       end: ['bl|ah duh blah duh blah']
     });
 
+    newTest({
+      title: "Can handle +",
+      start: ['|blah', 'duh'],
+      keysPressed: '+',
+      end: ['blah', '|duh']
+    });
+
+    newTest({
+      title: "Can handle + indent",
+      start: ['|blah', '   duh'],
+      keysPressed: '+',
+      end: ['blah', '   |duh']
+    });
+
+    newTest({
+      title: "Can handle + with count prefix",
+      start: ['|blah', 'duh', 'dur', 'hur'],
+      keysPressed: '2+',
+      end: ['blah', 'duh', '|dur', 'hur']
+    });
+
+
+    newTest({
+      title: "Can handle -",
+      start: ['blah', '|duh'],
+      keysPressed: '-',
+      end: ['|blah', 'duh']
+    });
+
+    newTest({
+      title: "Can handle - indent",
+      start: ['   blah', '|duh'],
+      keysPressed: '-',
+      end: ['   |blah', 'duh']
+    });
+
+    newTest({
+      title: "Can handle - with count prefix",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: '2-',
+      end: ['|blah', 'duh', 'dur', 'hur']
+    });
+
+    newTest({
+      title: "Can handle _",
+      start: ['blah', '|duh'],
+      keysPressed: '_',
+      end: ['blah', '|duh']
+    });
+
+    newTest({
+      title: "Can handle _ with count prefix",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: '2_',
+      end: ['blah', '|duh', 'dur', 'hur']
+    });
 });

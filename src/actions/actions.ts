@@ -1236,6 +1236,39 @@ class MoveRight extends BaseMovement {
 }
 
 @RegisterAction
+class MoveDownNonBlank extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["+"];
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    return new Position(Math.min(position.line + Math.max(count, 1), TextEditor.getLineCount() - 1), 0)
+               .getFirstLineNonBlankChar();
+  }
+}
+
+@RegisterAction
+class MoveUpNonBlank extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["-"];
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    return new Position(Math.max(position.line - Math.max(count, 1), 0), 0)
+               .getFirstLineNonBlankChar();
+  }
+}
+
+@RegisterAction
+class MoveUpUnderscore extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["_"];
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    return new Position(Math.max(position.line - Math.max(count - 1, 0), 0), 0)
+               .getFirstLineNonBlankChar();
+  }
+}
+
+@RegisterAction
 class MoveToColumn extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["|"];
