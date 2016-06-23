@@ -19,7 +19,7 @@ Status | Command | Description
    |   g^		| to first non-blank character in screen line (differs from "^" when lines wrap)
    |:1234:  g$    	| to last character in screen line (differs from "$" when lines wrap)
    |   gm		| to middle of the screen line
-   |:1234:  \|	| to column N (default: 1)
+:white_check_mark:   |:1234:  \|	| to column N (default: 1)
 :white_check_mark:   |:1234:  f{char}	| to the Nth occurrence of {char} to the right
 :white_check_mark:   |:1234:  F{char}	| to the Nth occurrence of {char} to the left
 :white_check_mark:   |:1234:  t{char}	| till before the Nth occurrence of {char} to the right
