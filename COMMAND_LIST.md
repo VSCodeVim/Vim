@@ -35,9 +35,9 @@ Status | Command | Description
 ---|--------|------------
 :white_check_mark:   | :1234:  k		| up N lines (also: CTRL-P and Up)
 :white_check_mark:   | :1234:  j		| up N lidown N lines (also: CTRL-J, CTRL-N, NL, and Down)
-   | :1234:  -		| up N lines, on the first non-blank character
-   | :1234:  +		| down N lines, on the first non-blank character (also: CTRL-M and CR)
-   | :1234:  _		| down N-1 lines, on the first non-blank character
+:white_check_mark:   | :1234:  -		| up N lines, on the first non-blank character
+:white_check_mark:   | :1234:  +		| down N lines, on the first non-blank character (also: CTRL-M and CR)
+:white_check_mark:   | :1234:  _		| down N-1 lines, on the first non-blank character
 :white_check_mark:   | :1234:  G		| up N ligoto line N (default: last line), on the first non-blank character
 :white_check_mark:   | :1234:  gg		| up N ligoto line N (default: first line), on the first non-blank character
 :white_check_mark:   | :1234:  %		| up N ligoto line N percentage down in the file; N must be given, otherwise it is the |%| command
