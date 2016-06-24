@@ -251,7 +251,7 @@ suite("Mode Normal", () => {
       keysPressed: '3yyp',
       end: ['one', '|one', 'two', 'three', 'two', 'three']
     });
-    
+
     newTest({
       title: "Can repeat w",
       start: ['|one two three four'],

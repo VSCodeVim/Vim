@@ -1686,6 +1686,42 @@ class ActionJoin extends BaseCommand {
 }
 
 @RegisterAction
+class ActionJoinNoWhitespace extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "J"];
+  canBeRepeatedWithDot = true;
+
+  // gJ is essentially J without the edge cases. ;-)
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (position.line === TextEditor.getLineCount() - 1) {
+      return vimState; // TODO: bell
+    }
+
+    let lineOne = TextEditor.getLineAt(position).text;
+    let lineTwo = TextEditor.getLineAt(position.getNextLineBegin()).text;
+
+    lineTwo = lineTwo.substring(position.getNextLineBegin().getFirstLineNonBlankChar().character);
+
+    let resultLine = lineOne + lineTwo;
+
+    let newState = await new DeleteOperator().run(
+      vimState,
+      position.getLineBegin(),
+      lineTwo.length > 0 ?
+        position.getNextLineBegin().getLineEnd().getLeft() :
+        position.getLineEnd()
+    );
+
+    await TextEditor.insert(resultLine, position);
+
+    newState.cursorPosition = new Position(position.line, lineOne.length);
+
+    return newState;
+  }
+}
+
+@RegisterAction
 class ActionReplaceCharacter extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["r", "<character>"];

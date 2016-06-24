@@ -132,6 +132,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'gJ' once",
+      start: ['|one', 'two'],
+      keysPressed: 'kgJ',
+      end: ['one|two']
+    });
+
+    newTest({
+      title: "Can handle 'gJ' once and ALL WHITESPACE IS ELIMINATED",
+      start: ['|one', '  two'],
+      keysPressed: 'kgJ',
+      end: ['one|two']
+    });
+
+    newTest({
       title: "Can handle '~'",
       start: ['|text'],
       keysPressed: '~',
