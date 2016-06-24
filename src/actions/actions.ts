@@ -661,6 +661,18 @@ export class CommandSearchBackwards extends BaseCommand {
 }
 
 @RegisterAction
+class CommandFormatCode extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["="];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.format");
+    vimState.currentMode = ModeName.Normal;
+    return vimState;
+  }
+}
+
+@RegisterAction
 export class DeleteOperator extends BaseOperator {
     public keys = ["d"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
