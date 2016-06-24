@@ -229,17 +229,6 @@ export class BaseOperator extends BaseAction {
      * Run this operator on a range, returning the new location of the cursor.
      */
     run(vimState: VimState, start: Position, stop: Position): Promise<VimState> { return; }
-
-    public transformRange(start: Position, end: Position): [Position, Position] {
-      if (start.compareTo(end) <= 0) {
-        end = new Position(end.line, end.character + 1);
-      } else {
-        [start, end] = [end, start];
-        end = new Position(end.line, end.character + 1);
-      }
-
-      return [start, end];
-    }
 }
 
 export enum KeypressState {
@@ -667,7 +656,8 @@ export class DeleteOperator extends BaseOperator {
      * Deletes from the position of start to 1 past the position of end.
      */
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        [start, end] = this.transformRange(start, end);
+        end = new Position(end.line, end.character + 1);
+
         const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
 
         // Vim does this weird thing where it allows you to select and delete
@@ -776,12 +766,15 @@ export class DeleteOperatorXVisual extends BaseOperator {
 export class UpperCaseOperator extends BaseOperator {
     public keys = ["U"];
     public modes = [ModeName.Visual, ModeName.VisualLine];
-    
+
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      [start, end] = this.transformRange(start, end);
+      end = new Position(end.line, end.character + 1);
+
       let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
-      await TextEditor.replace(new vscode.Range(start, end), text.toUpperCase());        
+
+      await TextEditor.replace(new vscode.Range(start, end), text.toUpperCase());
       vimState.currentMode = ModeName.Normal;
+
       return vimState;
     }
 }
