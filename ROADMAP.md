@@ -170,9 +170,9 @@ Status | Command | Description
 :white_check_mark:    |    {visual}d	| delete the highlighted text
 :white_check_mark:    | :1234:  dd	| 	delete N lines
 :white_check_mark:    | :1234:  D		| delete to the end of the line (and N-1 more lines)
-:white_check_mark:    | :1234:  J		| join N-1 lines (delete EOLs)
+:warning:    | :1234:  J		| join N-1 lines (delete EOLs)
     |    {visual}J	| join the highlighted lines
-    | :1234:  gJ	| 	like "J", but without inserting spaces
+ :warning:   | :1234:  gJ	| 	like "J", but without inserting spaces
     |    {visual}gJ	| like "{visual}J", but without inserting spaces
     | :[range]d [x]	| delete [range] lines [into register x]
 
