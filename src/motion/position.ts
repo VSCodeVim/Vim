@@ -142,6 +142,28 @@ export class Position extends vscode.Position {
     }
 
     /**
+     * Get the position *count* lines down from this position, but not lower
+     * than the end of the document.
+     */
+    public getDownByCount(count = 0): Position {
+        return new Position(
+            Math.min(TextEditor.getLineCount() - 1, this.line + count),
+            this.character
+        );
+    }
+
+    /**
+     * Get the position *count* lines up from this position, but not lower
+     * than the end of the document.
+     */
+    public getUpByCount(count = 0): Position {
+        return new Position(
+            Math.max(0, this.line - count),
+            this.character
+        );
+    }
+
+    /**
      * Inclusive is true if we consider the current position a valid result, false otherwise.
      */
     public getWordLeft(inclusive: boolean = false): Position {

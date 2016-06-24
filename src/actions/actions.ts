@@ -1262,8 +1262,8 @@ class MoveDownNonBlank extends BaseMovement {
   keys = ["+"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    return new Position(Math.min(position.line + Math.max(count, 1), TextEditor.getLineCount() - 1), 0)
-               .getFirstLineNonBlankChar();
+    return position.getDownByCount(Math.max(count, 1))
+             .getFirstLineNonBlankChar();
   }
 }
 
@@ -1273,8 +1273,8 @@ class MoveUpNonBlank extends BaseMovement {
   keys = ["-"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    return new Position(Math.max(position.line - Math.max(count, 1), 0), 0)
-               .getFirstLineNonBlankChar();
+    return position.getUpByCount(Math.max(count, 1))
+             .getFirstLineNonBlankChar();
   }
 }
 
@@ -1284,8 +1284,8 @@ class MoveUpUnderscore extends BaseMovement {
   keys = ["_"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    return new Position(Math.max(position.line - Math.max(count - 1, 0), 0), 0)
-               .getFirstLineNonBlankChar();
+    return position.getUpByCount(Math.max(count - 1, 0))
+             .getFirstLineNonBlankChar();
   }
 }
 
@@ -1700,11 +1700,11 @@ class MoveDD extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["d"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     return {
-      start       : position.getLineBegin(),
-      stop        : position.getLineEndIncludingEOL(),
-      registerMode: RegisterMode.LineWise,
+      start        : position.getLineBegin(),
+      stop         : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
+      registerMode : RegisterMode.LineWise
     };
   }
 }

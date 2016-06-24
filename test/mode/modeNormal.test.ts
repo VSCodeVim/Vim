@@ -84,6 +84,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 3dd",
+      start: ['|one', 'two', 'three', 'four', 'five'],
+      keysPressed: '3dd',
+      end: ["|four", "five"],
+    });
+
+    newTest({
+      title: "Can handle 3dd off end of document",
+      start: ['one', 'two', 'three', '|four', 'five'],
+      keysPressed: '3dd',
+      end: ["one", "two", "|three"],
+    });
+
+    newTest({
       title: "Can handle dd empty line",
       start: ['one', '|', 'two'],
       keysPressed: 'dd',
