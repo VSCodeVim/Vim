@@ -1714,10 +1714,10 @@ class MoveYY extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["y"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
     return {
       start       : position.getLineBegin(),
-      stop        : position.getLineEndIncludingEOL(),
+      stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
       registerMode: RegisterMode.LineWise,
     };
   }
