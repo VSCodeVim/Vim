@@ -558,11 +558,11 @@ export class ModeHandler implements vscode.Disposable {
                 }
             }
 
-            if (this.currentModeName === ModeName.VisualLine) {
-                if (Position.EarlierOf(start, stop) === stop) {
-                    [start, stop] = [stop, start];
-                }
+            if (start.compareTo(stop) > 0) {
+                [start, stop] = [stop, start];
+            }
 
+            if (this.currentModeName === ModeName.VisualLine) {
                 start = start.getLineBegin();
                 stop  = stop.getLineEnd();
 

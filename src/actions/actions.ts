@@ -669,15 +669,7 @@ export class DeleteOperator extends BaseOperator {
      * Deletes from the position of start to 1 past the position of end.
      */
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        if (start.compareTo(end) <= 0) {
-          end = new Position(end.line, end.character + 1);
-        } else {
-          const tmp = start;
-          start = end;
-          end = tmp;
-
-          end = new Position(end.line, end.character + 1);
-        }
+        end = new Position(end.line, end.character + 1);
 
         const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
 
@@ -780,6 +772,23 @@ export class DeleteOperatorXVisual extends BaseOperator {
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
       return await new DeleteOperator().run(vimState, start, end);
+    }
+}
+
+@RegisterAction
+export class UpperCaseOperator extends BaseOperator {
+    public keys = ["U"];
+    public modes = [ModeName.Visual, ModeName.VisualLine];
+
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      end = new Position(end.line, end.character + 1);
+
+      let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+
+      await TextEditor.replace(new vscode.Range(start, end), text.toUpperCase());
+      vimState.currentMode = ModeName.Normal;
+
+      return vimState;
     }
 }
 
