@@ -74,7 +74,7 @@ suite("Mode Visual", () => {
         assertEqualLines(["One two three"]);
 
         assertEqual(modeHandler.currentMode.name, ModeName.Normal);
-    })
+    });
 
     test("Can handle x across a selection", async () => {
         await modeHandler.handleMultipleKeyEvents("ione two three".split(""));

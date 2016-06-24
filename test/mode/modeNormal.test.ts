@@ -239,6 +239,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'P' after 'Nyy'",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: '3yyP',
+      end: ['|one', 'two', 'three', 'one', 'two', 'three']
+    });
+
+    newTest({
+      title: "Can handle 'p' after 'Nyy'",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: '3yyp',
+      end: ['one', '|one', 'two', 'three', 'two', 'three']
+    });
+    
+    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',

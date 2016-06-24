@@ -64,8 +64,8 @@ Status | Command | Description
 :white_check_mark:   | :1234:  G		| goto line N (default: last line), on the first non-blank character
 :white_check_mark:   | :1234:  gg		| goto line N (default: first line), on the first non-blank character
 :white_check_mark:   | :1234:  %		| goto line N percentage down in the file; N must be given, otherwise it is the |%| command
-   | :1234:  gk		| up N screen lines (differs from "k" when line wraps)
-   | :1234:  gj		| own N screen lines (differs from "j" when line wraps)
+:x:   | :1234:  gk		| up N screen lines (differs from "k" when line wraps)
+:x:   | :1234:  gj		| own N screen lines (differs from "j" when line wraps)
 
 ## Text object motions
 
@@ -158,13 +158,6 @@ Status | Command | Description
 :white_check_mark:   | shift-up/down	| one screenful backward/forward
 :white_check_mark:   | End		| cursor after last character in the line
 :white_check_mark:   | Home		| cursor to first character in the line
-
-## Special inserts
-
-Status | Command | Description
----|--------|------------------------------
-   | :r [file]	    | insert the contents of [file] below the cursor
-   | :r! {command}  | insert the standard output of {command} below the cursor
 
 ## Deleting text
 
@@ -330,7 +323,7 @@ Status | Command | Description
 ---|--------|------------------------------
    | :1234:  !{motion}{command}<CR> | filter the lines that are moved over through {command}
    | :1234:  !!{command}<CR>        | filter N lines through {command}
-   |    {visual}!{command}<CR>     |  filter the highlighted lines through {command}
+   |    {visual}!{command}<CR>      |  filter the highlighted lines through {command}
    | :[range]! {command}<CR>      | filter [range] lines through {command}
    | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
    | :1234:  ==	                 |    filter N lines through 'equalprg'
@@ -379,3 +372,11 @@ Status | Command | Description
 :x:    |    z CR or zt	| redraw, current line at top of window
 :warning: |    z.	 or zz	| redraw, current line at center of window
 :x:    |    z-	 or zb	| redraw, current line at bottom of window
+
+
+## Special inserts
+
+Status | Command | Description
+---|--------|------------------------------
+   | :r [file]	    | insert the contents of [file] below the cursor
+   | :r! {command}  | insert the standard output of {command} below the cursor
