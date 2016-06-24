@@ -1650,6 +1650,7 @@ class ActionJoin extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["J"];
   canBeRepeatedWithDot = true;
+  canBePrefixedWithCount = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (position.line === TextEditor.getLineCount() - 1) {
@@ -1690,6 +1691,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["g", "J"];
   canBeRepeatedWithDot = true;
+  canBePrefixedWithCount = true;
 
   // gJ is essentially J without the edge cases. ;-)
 
