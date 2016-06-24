@@ -128,7 +128,7 @@ Status | Command | Description
 :white_check_mark:    | :1234:  A	| append text at the end of the line (N times)
 :white_check_mark:    | :1234:  i	| insert text before the cursor (N times) (also: Insert)
 :white_check_mark:    | :1234:  I	| insert text before the first non-blank in the line (N times)
-    | :1234:  gI	| insert text in column 1 (N times)
+:white_check_mark:    | :1234:  gI	| insert text in column 1 (N times)
 :white_check_mark:    | :1234:  o	| open a new line below the current line, append text (N times)
 :white_check_mark:    | :1234:  O	| open a new line above the current line, append text (N times)
 
@@ -170,9 +170,9 @@ Status | Command | Description
 :white_check_mark:    |    {visual}d	| delete the highlighted text
 :white_check_mark:    | :1234:  dd	| 	delete N lines
 :white_check_mark:    | :1234:  D		| delete to the end of the line (and N-1 more lines)
-:white_check_mark:    | :1234:  J		| join N-1 lines (delete EOLs)
+:warning:    | :1234:  J		| join N-1 lines (delete EOLs)
     |    {visual}J	| join the highlighted lines
-    | :1234:  gJ	| 	like "J", but without inserting spaces
+ :warning:   | :1234:  gJ	| 	like "J", but without inserting spaces
     |    {visual}gJ	| like "{visual}J", but without inserting spaces
     | :[range]d [x]	| delete [range] lines [into register x]
 
@@ -183,9 +183,9 @@ Status | Command | Description
    | "{char}	        | use register {char} for the next delete, yank, or put
    | :reg		| show the contents of all registers
    | :reg {arg}	        | show the contents of registers mentioned in {arg}
-:warning:   | :1234:  y{motion}	| yank the text moved over with {motion} into a register
+:white_check_mark:   | :1234:  y{motion}	| yank the text moved over with {motion} into a register
 :white_check_mark:   |    {visual}y	| yank the highlighted text into a register
-:warning:   | :1234:  yy		| yank N lines into a register
+:white_check_mark:   | :1234:  yy		| yank N lines into a register
 :warning:   | :1234:  Y		| yank N lines into a register
 :white_check_mark:   | :1234:  p		| put a register after the cursor position (N times)
 :white_check_mark:   | :1234:  P		| put a register before the cursor position (N times)
