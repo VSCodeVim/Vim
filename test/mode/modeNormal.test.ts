@@ -251,4 +251,18 @@ suite("Mode Normal", () => {
       keysPressed: 'yy2p',
       end: ['one', '|one', 'one']
     });
+
+    newTest({
+      title: "I works correctly",
+      start: ['|    one'],
+      keysPressed: 'Itest <esc>',
+      end: ['    test| one']
+    });
+
+    newTest({
+      title: "gI works correctly",
+      start: ['|    one'],
+      keysPressed: 'gItest<esc>',
+      end: ['tes|t    one']
+    });
 });

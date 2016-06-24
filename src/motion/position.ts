@@ -339,6 +339,9 @@ export class Position extends vscode.Position {
         return TextEditor.readLineAt(line).match(/^\s*/)[0].length;
     }
 
+    /**
+     * The position of the first character on this line which is not whitespace.
+     */
     public getFirstLineNonBlankChar(): Position {
         return new Position(this.line, Position.getFirstNonBlankCharAtLine(this.line));
     }

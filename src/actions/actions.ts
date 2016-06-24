@@ -1142,10 +1142,24 @@ class CommandOpenSquareBracket extends BaseCommand {
 // begin insert commands
 
 @RegisterAction
-class CommandInsertAtLineBegin extends BaseCommand {
+class CommandInsertAtFirstCharacter extends BaseCommand {
   modes = [ModeName.Normal];
   mustBeFirstKey = true;
   keys = ["I"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Insert;
+    vimState.cursorPosition = position.getFirstLineNonBlankChar();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandInsertAtLineBegin extends BaseCommand {
+  modes = [ModeName.Normal];
+  mustBeFirstKey = true;
+  keys = ["g", "I"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
