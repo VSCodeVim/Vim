@@ -76,20 +76,7 @@ export class VimState {
      */
     public cursorStartPosition = new Position(0, 0);
 
-    public searchString = "";
-
-    /**
-     * The position of the next search, or undefined if there is no match.
-     */
-    public nextSearchMatchPosition: Position = undefined;
-
-    public searchCursorStartPosition: Position = undefined;
-
-    /**
-     * 1  === forward
-     * -1 === backward
-     */
-    public searchDirection = 1;
+    public searchState: SearchState = undefined;
 
     /**
      * The mode Vim will be in once this action finishes.
@@ -125,6 +112,29 @@ export class VimState {
      * by us or by a mouse action.
      */
     public whatILastSetTheSelectionTo: vscode.Selection;
+}
+
+export class SearchState {
+    public searchString = "";
+
+    /**
+     * The position of the next search, or undefined if there is no match.
+     */
+    public nextSearchMatchPosition: Position = undefined;
+
+    public searchCursorStartPosition: Position = undefined;
+
+    /**
+     * 1  === forward
+     * -1 === backward
+     */
+    public searchDirection = 1;
+
+    constructor(direction: number, startPosition: Position, searchString = "") {
+        this.searchDirection = direction;
+        this.searchCursorStartPosition = startPosition;
+        this.searchString = searchString;
+    }
 }
 
 /**
@@ -696,12 +706,14 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw search highlight
 
+        const searchState = vimState.searchState;
+
         if (this.currentMode.name === ModeName.SearchInProgressMode &&
-            vimState.nextSearchMatchPosition !== undefined) {
+            searchState.nextSearchMatchPosition !== undefined) {
 
             rangesToDraw.push(new vscode.Range(
-                vimState.nextSearchMatchPosition,
-                vimState.nextSearchMatchPosition.getRight(vimState.searchString.length)));
+                searchState.nextSearchMatchPosition,
+                searchState.nextSearchMatchPosition.getRight(searchState.searchString.length)));
         }
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);

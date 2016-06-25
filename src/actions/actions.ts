@@ -1,4 +1,4 @@
-import { VimCommandActions, VimState } from './../mode/modeHandler';
+import { VimCommandActions, VimState, SearchState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
@@ -400,49 +400,49 @@ class CommandInsertInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
 
+    const searchState = vimState.searchState;
+
     // handle special keys first
     if (key === "<backspace>") {
-      vimState.searchString = vimState.searchString.slice(0, -1);
+      searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
 
-      if (vimState.nextSearchMatchPosition) {
-        vimState.cursorPosition = vimState.nextSearchMatchPosition;
+      if (searchState.nextSearchMatchPosition) {
+        vimState.cursorPosition = searchState.nextSearchMatchPosition;
       } else {
-        vimState.cursorPosition = vimState.searchCursorStartPosition;
+        vimState.cursorPosition = searchState.searchCursorStartPosition;
       }
 
       return vimState;
     } else if (key === "<esc>") {
       vimState.currentMode = ModeName.Normal;
-      vimState.searchString = "";
-      vimState.nextSearchMatchPosition = undefined;
-      vimState.cursorPosition = vimState.searchCursorStartPosition;
+      vimState.searchState = undefined;
 
       return vimState;
     } else {
-      vimState.searchString += this.keysPressed[0];
+      searchState.searchString += this.keysPressed[0];
     }
 
     // console.log(vimState.searchString); (TODO: Show somewhere!)
-    vimState.nextSearchMatchPosition = undefined;
+    searchState.nextSearchMatchPosition = undefined;
 
-    const startPosition = vimState.searchCursorStartPosition;
+    const startPosition = searchState.searchCursorStartPosition;
 
-    if (vimState.searchDirection === 1) {
-      vimState.nextSearchMatchPosition = CommandInsertInSearchMode.GetNextSearchMatch(
+    if (searchState.searchDirection === 1) {
+      searchState.nextSearchMatchPosition = CommandInsertInSearchMode.GetNextSearchMatch(
         startPosition,
-        vimState.searchString);
+        searchState.searchString);
     } else {
-      vimState.nextSearchMatchPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
+      searchState.nextSearchMatchPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
         startPosition,
-        vimState.searchString);
+        searchState.searchString);
     }
 
-    if (vimState.nextSearchMatchPosition) {
-      vimState.cursorPosition = vimState.nextSearchMatchPosition;
+    if (searchState.nextSearchMatchPosition) {
+      vimState.cursorPosition = searchState.nextSearchMatchPosition;
     } else {
-      vimState.cursorPosition = vimState.searchCursorStartPosition;
+      vimState.cursorPosition = searchState.searchCursorStartPosition;
     }
 
     return vimState;
@@ -455,18 +455,20 @@ class CommandNextSearchMatch extends BaseMovement {
   keys = ["n"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.searchString === "") {
+    const searchState = vimState.searchState;
+
+    if (searchState.searchString === "") {
       return position;
     }
 
     let nextPosition: Position;
 
-    if (vimState.searchDirection === 1) {
+    if (searchState.searchDirection === 1) {
       nextPosition = CommandInsertInSearchMode.GetNextSearchMatch(
-        position, vimState.searchString);
+        position, searchState.searchString);
     } else {
       nextPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
-        position, vimState.searchString);
+        position, searchState.searchString);
     }
 
     if (!nextPosition) {
@@ -496,8 +498,7 @@ class CommandStar extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const currentWord = CommandStar.GetWordAtPosition(position);
 
-    vimState.searchString = currentWord;
-    vimState.searchDirection = 1;
+    vimState.searchState = new SearchState(+1, vimState.cursorPosition, currentWord);
 
     let result: Position;
 
@@ -538,8 +539,7 @@ class CommandHash extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const currentWord = CommandStar.GetWordAtPosition(position);
 
-    vimState.searchString = currentWord;
-    vimState.searchDirection = -1;
+    vimState.searchState = new SearchState(-1, vimState.cursorPosition, currentWord);
 
     let result: Position;
 
@@ -567,18 +567,20 @@ class CommandPreviousSearchMatch extends BaseMovement {
   keys = ["N"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.searchString === "") {
+    const searchState = vimState.searchState;
+
+    if (searchState.searchString === "") {
       return position;
     }
 
     let prevPosition: Position;
 
-    if (vimState.searchDirection === -1) {
+    if (searchState.searchDirection === -1) {
       prevPosition = CommandInsertInSearchMode.GetNextSearchMatch(
-        position, vimState.searchString);
+        position, searchState.searchString);
     } else {
       prevPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
-        position, vimState.searchString);
+        position, searchState.searchString);
     }
 
     if (!prevPosition) {
@@ -632,10 +634,7 @@ export class CommandSearchForwards extends BaseCommand {
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.searchString = "";
-    vimState.searchDirection = 1;
-    vimState.searchCursorStartPosition = position;
-    vimState.nextSearchMatchPosition = undefined;
+    vimState.searchState = new SearchState(+1, vimState.cursorPosition);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     return vimState;
@@ -650,10 +649,7 @@ export class CommandSearchBackwards extends BaseCommand {
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.searchString = "";
-    vimState.searchDirection = -1;
-    vimState.searchCursorStartPosition = position;
-    vimState.nextSearchMatchPosition = undefined;
+    vimState.searchState = new SearchState(-1, vimState.cursorPosition);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     return vimState;
@@ -1849,7 +1845,7 @@ class MovementAWordTextObject extends BaseMovement {
       // visual mode if you JUST entered visual mode
       // TODO TODO: I just looked at this again and omg this is awful what was I smoking plz get rid of this asap
       return {
-        start: vimState.searchCursorStartPosition,
+        start: vimState.cursorStartPosition,
         stop: await new MoveWordBegin().execAction(position, vimState),
       };
     }
@@ -1902,7 +1898,7 @@ class MovementIWordTextObject extends BaseMovement {
       // TODO: This is kind of a bad way to do this, but text objects only work in
       // visual mode if you JUST entered visual mode
       return {
-        start: vimState.searchCursorStartPosition,
+        start: vimState.cursorStartPosition,
         stop: await new MoveWordBegin().execAction(position, vimState),
       };
     }
