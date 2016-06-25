@@ -8,7 +8,7 @@ import * as util from "../../util";
 import * as error from "../../error";
 import {ModeHandler} from "../../mode/modeHandler";
 
-// 
+//
 // Implements :writequit
 // http://vimdoc.sourceforge.net/htmldoc/editing.html#write-quit
 //
@@ -28,14 +28,14 @@ export interface IWriteQuitCommandArguments extends node.ICommandArgs {
 
 export class WriteQuitCommand extends node.CommandBase {
     protected _arguments : IWriteQuitCommandArguments;
-    
+
     constructor(args : IWriteQuitCommandArguments) {
         super();
         this._name = "writequit";
         this._shortName = "wq";
         this._arguments = args;
     }
-    
+
     get arguments() : IWriteQuitCommandArguments {
         return this._arguments;
     }
@@ -97,7 +97,7 @@ export class WriteQuitCommand extends node.CommandBase {
         // if (this.activeTextEditor.document.isDirty && !this.arguments.bang) { // is 'bang' the '!'?
         //     throw error.VimError.fromCode(error.ErrorCode.E37); // TODO Check that this is the right error code
         // }
-        
+
         // Closes the active text editor
         vscode.commands.executeCommand('workbench.action.closeActiveEditor'); // This is the close command
     }

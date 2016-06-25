@@ -23,10 +23,10 @@ async function createRandomFile(contents: string): Promise<vscode.Uri> {
 }
 
 export function assertEqualLines(expectedLines: string[]) {
-    assert.equal(TextEditor.getLineCount(), expectedLines.length);
+    assert.equal(TextEditor.getLineCount(), expectedLines.length, "Line count does not match.");
 
     for (let i = 0; i < expectedLines.length; i++) {
-        assert.equal(TextEditor.readLineAt(i), expectedLines[i]);
+        assert.equal(TextEditor.readLineAt(i), expectedLines[i], `Line ${i} is different.`);
     }
 }
 
@@ -45,6 +45,7 @@ export async function setupWorkspace(): Promise<any> {
     const doc    = await vscode.workspace.openTextDocument(file);
 
     await vscode.window.showTextDocument(doc);
+    setTextEditorOptions(2, true);
 
     assert.ok(vscode.window.activeTextEditor);
 }
@@ -78,4 +79,11 @@ export async function cleanUpWorkspace(): Promise<any> {
         assert.equal(vscode.window.visibleTextEditors.length, 0);
         assert(!vscode.window.activeTextEditor);
     });
+}
+
+export function setTextEditorOptions(tabSize: number | string, insertSpaces: boolean | string): void {
+    vscode.window.activeTextEditor.options = {
+        tabSize,
+        insertSpaces
+    };
 }

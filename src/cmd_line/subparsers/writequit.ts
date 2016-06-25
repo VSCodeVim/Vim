@@ -4,7 +4,7 @@ import {WriteQuitCommand, IWriteQuitCommandArguments} from '../commands/writequi
 import {Scanner} from '../scanner';
 
 export function parseWriteQuitCommandArgs(args : string) : WriteQuitCommand {
-    if(!args) {
+    if (!args) {
         return new WriteQuitCommand({});
     }
     var scannedArgs : IWriteQuitCommandArguments = {};

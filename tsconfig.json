@@ -3,6 +3,7 @@
     "module": "commonjs",
     "target": "es6",
     "outDir": "out",
+    "noImplicitAny": true,
     "noLib": true,
     "sourceMap": true,
     "experimentalDecorators": true

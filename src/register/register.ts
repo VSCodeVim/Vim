@@ -1,6 +1,4 @@
-import { ModeName } from './../mode/mode';
 import { VimState } from './../mode/modeHandler';
-
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -37,21 +35,9 @@ export class Register {
             throw new Error(`Invalid register ${register}`);
         }
 
-        let registerMode: RegisterMode;
-
-        if (vimState.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
-            if (vimState.currentMode === ModeName.VisualLine) {
-                registerMode = RegisterMode.LineWise;
-            } else {
-                registerMode = RegisterMode.CharacterWise;
-            }
-        } else {
-            registerMode = vimState.currentRegisterMode;
-        }
-
         Register.registers[register] = {
             text        : content,
-            registerMode: registerMode,
+            registerMode: vimState.effectiveRegisterMode(),
         };
     }
 

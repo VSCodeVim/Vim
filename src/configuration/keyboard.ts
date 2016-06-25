@@ -43,7 +43,7 @@ export interface IKeyMapper {
 
 class KeyMapperEsEsQwerty implements IKeyMapper {
     private _name = 'es-ES (QWERTY)';
-    private _mappings = {
+    private _mappings: { [key: string]: string } = {
         '>': ':',
         '<': ';',
         '`': '<',
@@ -66,7 +66,7 @@ class KeyMapperEsEsQwerty implements IKeyMapper {
 
 class KeyMapperDeDeQwertz implements IKeyMapper {
     private _name = 'de-DE (QWERTZ)';
-    private _mappings = {
+    private _mappings: {[key: string]: string } = {
         '>': ':',
         '\\': '<',
         '<': ';',
@@ -85,7 +85,7 @@ class KeyMapperDeDeQwertz implements IKeyMapper {
 
 class KeyMapperDaDKQwerty implements IKeyMapper {
     private _name = 'da-DK (QWERTY)';
-    private _mappings = {
+    private _mappings: { [key: string]: string } = {
         '>': ':',
         '\\': '<',
         '<': ';',
@@ -104,7 +104,7 @@ class KeyMapperDaDKQwerty implements IKeyMapper {
 
 class KeyMapperSvSEQwerty implements IKeyMapper {
     private _name = "sv-SE (QWERTY)";
-    private _mappings = {
+    private _mappings: { [key: string]: string } = {
         'oem_102': '<',
         'shift+oem_102': '>',
         '>': ':',

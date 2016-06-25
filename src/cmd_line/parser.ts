@@ -49,7 +49,7 @@ function parseCommand(state : ParserState, commandLine : node.CommandLine) : IPa
         var tok = state.next();
         switch (tok.type) {
             case token.TokenType.CommandName:
-                var commandParser = commandParsers[tok.content];
+                var commandParser = (commandParsers as any)[tok.content];
                 if (!commandParser) {
                     throw new Error("Not implemented or not a valid command");
                 }

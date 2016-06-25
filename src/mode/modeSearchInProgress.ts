@@ -3,11 +3,11 @@
 import { ModeName, Mode } from './mode';
 import { VSCodeVimCursorType } from './mode';
 
-export class InsertMode extends Mode {
-    public text = "Insert Mode";
+export class SearchInProgressMode extends Mode {
+    public text = "Search In Progress";
     public cursorType = VSCodeVimCursorType.Native;
 
      constructor() {
-        super(ModeName.Insert);
+        super(ModeName.SearchInProgressMode);
     }
 }

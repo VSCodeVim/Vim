@@ -11,6 +11,11 @@ import {showCmdLine} from './src/cmd_line/main';
 import {ModeHandler} from "./src/mode/modeHandler";
 
 var extensionContext: vscode.ExtensionContext;
+
+/**
+ * Note: We can't initialize modeHandler here, or even inside activate(), because some people
+ * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
+ */
 var modeHandler: ModeHandler;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -31,11 +36,14 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
+    registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
+
     registerCommand(context, 'extension.showCmdLine', () => {
         if (!modeHandler) {
-            modeHandler = new ModeHandler();
+            modeHandler = new ModeHandler(false);
             extensionContext.subscriptions.push(modeHandler);
         }
+
         showCmdLine("", modeHandler);
     });
 
@@ -47,16 +55,11 @@ function registerCommand(context: vscode.ExtensionContext, command: string, call
     context.subscriptions.push(disposable);
 }
 
-function handleKeyEvent(key: string) : Promise<Boolean> {
+async function handleKeyEvent(key: string): Promise<Boolean> {
     if (!modeHandler) {
-        modeHandler = new ModeHandler();
+        modeHandler = new ModeHandler(false);
         extensionContext.subscriptions.push(modeHandler);
     }
 
     return modeHandler.handleKeyEvent(key);
 }
-
-process.on('unhandledRejection', function(reason, p){
-    console.log("Possibly Unhandled Rejection at: Promise ", p, " reason: ", reason);
-    // application specific logging here
-});

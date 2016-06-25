@@ -1,12 +1,30 @@
 "use strict";
 
 import * as vscode from "vscode";
+import { ModeHandler } from './mode/modeHandler';
+import { Position } from './motion/position';
 
 export class TextEditor {
-    static async insert(text: string): Promise<boolean> {
-        return vscode.window.activeTextEditor.edit(editBuilder => {
-            editBuilder.insert(vscode.window.activeTextEditor.selection.active, text);
-        });
+    static async insert(text: string, at: Position = undefined, letVSCodeHandleKeystrokes: boolean = undefined): Promise<boolean> {
+        // If we insert "blah(" with default:type, VSCode will insert the closing ).
+        // We *probably* don't want that to happen if we're inserting a lot of text.
+        if (letVSCodeHandleKeystrokes === undefined) {
+            letVSCodeHandleKeystrokes = text.length === 1;
+        }
+
+        if (at) {
+            vscode.window.activeTextEditor.selection = new vscode.Selection(at, at);
+        }
+
+        if (ModeHandler.IsTesting || !letVSCodeHandleKeystrokes) {
+            return vscode.window.activeTextEditor.edit(editBuilder => {
+                editBuilder.insert(vscode.window.activeTextEditor.selection.active, text);
+            });
+        } else {
+            await vscode.commands.executeCommand('default:type', { text });
+        }
+
+        return true;
     }
 
     static async insertAt(text: string, position: vscode.Position): Promise<boolean> {
