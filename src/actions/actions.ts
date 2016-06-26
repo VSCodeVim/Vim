@@ -1155,6 +1155,16 @@ class MoveRight extends BaseMovement {
 }
 
 @RegisterAction
+class MoveRightWithSpace extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [" "];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getRightThroughLineBreaks();
+  }
+}
+
+@RegisterAction
 class MoveDownNonBlank extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["+"];

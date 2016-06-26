@@ -105,6 +105,19 @@ export class Position extends vscode.Position {
             .getLineEnd();
     }
 
+    public getRightThroughLineBreaks(): Position {
+        if (this.isAtDocumentEnd()) {
+            // TODO(bell)
+            return this;
+        }
+
+        if (this.getRight().isLineEnd()) {
+            return this.getDown(0);
+        }
+
+        return this.getRight();
+    }
+
     public getRight(count: number = 1): Position {
         if (!this.isLineEnd()) {
             return new Position(this.line, this.character + count);
@@ -301,7 +314,7 @@ export class Position extends vscode.Position {
         return new Position(line, char);
     }
 
-    public isValid() : boolean {
+    public isValid(): boolean {
         // line
         let lineCount = TextEditor.getLineCount();
         if (this.line > lineCount) {
@@ -320,7 +333,7 @@ export class Position extends vscode.Position {
     /**
      * Is this position at the beginning of the line?
      */
-    public isLineBeginning() : boolean {
+    public isLineBeginning(): boolean {
         return this.character === 0;
     }
 

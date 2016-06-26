@@ -279,4 +279,18 @@ suite("Mode Normal", () => {
       keysPressed: 'gItest<esc>',
       end: ['tes|t    one']
     });
+
+    newTest({
+      title: "Can handle space",
+      start: ['|abc', 'def'],
+      keysPressed: '  ',
+      end: ['ab|c', 'def']
+    });
+
+    newTest({
+      title: "Can handle space",
+      start: ['|abc', 'def'],
+      keysPressed: '    ',
+      end: ['abc', 'd|ef']
+    });
 });
