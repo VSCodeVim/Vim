@@ -19,20 +19,10 @@ import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 
-export enum VimCommandActions {
-    DoNothing,
+export enum VimSpecialCommands {
+    Nothing,
     ShowCommandLine,
-    Find,
-    Fold,
-    Unfold,
-    FoldAll,
-    UnfoldAll,
-    Undo,
-    Redo,
-    MoveFullPageDown,
-    MoveFullPageUp,
-    Dot,
-    ScrollCursorToCenter
+    Dot
 }
 
 /**
@@ -103,7 +93,7 @@ export class VimState {
     /**
      * This is for oddball commands that don't manipulate text in any way.
      */
-    public commandAction = VimCommandActions.DoNothing;
+    public commandAction = VimSpecialCommands.Nothing;
 
     public recordedState = new RecordedState();
 
@@ -129,13 +119,13 @@ export class SearchState {
     public set searchString(search: string){
         this._searchString = search;
 
-        if (this._searchString.length > 0) {
-            this._recalculateSearchRanges();
-        }
+        this._recalculateSearchRanges();
     }
 
     private _recalculateSearchRanges(): void {
         const search = this.searchString;
+
+        if (search === "") { return; }
 
         // Calculate and store all matching ranges
         this.matchRanges = [];
@@ -152,8 +142,6 @@ export class SearchState {
                 ));
             }
         }
-
-        console.log('ranges length ', this.matchRanges.length);
     }
 
     /**
@@ -162,6 +150,8 @@ export class SearchState {
      * Pass in -1 as direction to reverse the direction we search.
      */
     public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean} {
+        this._recalculateSearchRanges();
+
         if (this.matchRanges.length === 0) {
             // TODO(bell)
             return { pos: startPosition, match: false };
@@ -524,8 +514,8 @@ export class ModeHandler implements vscode.Disposable {
         if (action instanceof BaseCommand) {
             vimState = await action.execCount(vimState.cursorPosition, vimState);
 
-            if (vimState.commandAction !== VimCommandActions.DoNothing) {
-                vimState = await this.handleCommand(vimState);
+            if (vimState.commandAction !== VimSpecialCommands.Nothing) {
+                await this.handleCommand(vimState);
             }
 
             if (action.isCompleteAction) {
@@ -660,24 +650,13 @@ export class ModeHandler implements vscode.Disposable {
     private async handleCommand(vimState: VimState): Promise<VimState> {
         const command = vimState.commandAction;
 
-        vimState.commandAction = VimCommandActions.DoNothing;
+        vimState.commandAction = VimSpecialCommands.Nothing;
 
         switch (command) {
-            case VimCommandActions.ShowCommandLine: await showCmdLine("", this); break;
-            case VimCommandActions.Find: await vscode.commands.executeCommand("actions.find"); break;
-            case VimCommandActions.Fold: await vscode.commands.executeCommand("editor.fold"); break;
-            case VimCommandActions.Unfold: await vscode.commands.executeCommand("editor.unfold"); break;
-            case VimCommandActions.FoldAll: await vscode.commands.executeCommand("editor.foldAll"); break;
-            case VimCommandActions.UnfoldAll: await vscode.commands.executeCommand("editor.unfoldAll"); break;
-            case VimCommandActions.Undo: await vscode.commands.executeCommand("undo"); break;
-            case VimCommandActions.Redo: await vscode.commands.executeCommand("redo"); break;
-            case VimCommandActions.MoveFullPageDown: await vscode.commands.executeCommand("cursorPageUp"); break;
-            case VimCommandActions.MoveFullPageUp: await vscode.commands.executeCommand("cursorPageDown"); break;
-            case VimCommandActions.ScrollCursorToCenter:
-                vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition),
-                                                           vscode.TextEditorRevealType.InCenter);
+            case VimSpecialCommands.ShowCommandLine:
+                await showCmdLine("", this);
             break;
-            case VimCommandActions.Dot:
+            case VimSpecialCommands.Dot:
                 const clonedAction = vimState.previousFullAction.clone();
 
                 await this.rerunRecordedState(vimState, vimState.previousFullAction);
@@ -801,7 +780,7 @@ export class ModeHandler implements vscode.Disposable {
         }
     }
 
-    setupStatusBarItem(text : string) : void {
+    setupStatusBarItem(text: string): void {
         if (!this._statusBarItem) {
             this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }

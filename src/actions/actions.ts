@@ -1,4 +1,5 @@
-import { VimCommandActions, VimState, SearchState } from './../mode/modeHandler';
+import { VimSpecialCommands, VimState, SearchState } from './../mode/modeHandler';
+import { showCmdLine } from '../../src/cmd_line/main';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
@@ -436,8 +437,6 @@ class CommandStar extends BaseCommand {
   }
 }
 
-// TODO - merge both * and # implementations, use regex in GetNextSearchMatch
-// rather than this approach
 @RegisterAction
 class CommandHash extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
@@ -816,7 +815,7 @@ class CommandShowCommandLine extends BaseCommand {
   keys = [":"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.ShowCommandLine;
+    vimState.commandAction = VimSpecialCommands.ShowCommandLine;
 
     return vimState;
   }
@@ -828,7 +827,7 @@ class CommandDot extends BaseCommand {
   keys = ["."];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.Dot;
+    vimState.commandAction = VimSpecialCommands.Dot;
 
     return vimState;
   }
@@ -840,7 +839,7 @@ class CommandFold extends BaseCommand {
   keys = ["z", "c"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.Fold;
+    await vscode.commands.executeCommand("editor.fold")
 
     return vimState;
   }
@@ -852,7 +851,10 @@ class CommandCenterScroll extends BaseCommand {
   keys = ["z", "z"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.ScrollCursorToCenter;
+    vscode.window.activeTextEditor.revealRange(
+      new vscode.Range(vimState.cursorPosition,
+                       vimState.cursorPosition),
+      vscode.TextEditorRevealType.InCenter);
 
     return vimState;
   }
@@ -864,7 +866,7 @@ class CommandUnfold extends BaseCommand {
   keys = ["z", "o"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.Unfold;
+    await vscode.commands.executeCommand("editor.unfold");
 
     return vimState;
   }
@@ -876,7 +878,7 @@ class CommandFoldAll extends BaseCommand {
   keys = ["z", "C"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.FoldAll;
+    await vscode.commands.executeCommand("editor.foldAll");
 
     return vimState;
   }
@@ -888,7 +890,7 @@ class CommandUnfoldAll extends BaseCommand {
   keys = ["z", "O"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.UnfoldAll;
+    await vscode.commands.executeCommand("editor.unfoldAll");
 
     return vimState;
   }
@@ -900,7 +902,7 @@ class CommandUndo extends BaseCommand {
   keys = ["u"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.Undo;
+    await vscode.commands.executeCommand("undo");
 
     return vimState;
   }
@@ -912,7 +914,7 @@ class CommandRedo extends BaseCommand {
   keys = ["ctrl+r"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.Redo;
+    await vscode.commands.executeCommand("redo");
 
     return vimState;
   }
@@ -924,7 +926,7 @@ class CommandMoveFullPageDown extends BaseCommand {
   keys = ["ctrl+f"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.MoveFullPageDown;
+    await vscode.commands.executeCommand("cursorPageUp");
 
     return vimState;
   }
@@ -937,7 +939,7 @@ class CommandMoveFullPageUp extends BaseCommand {
   keys = ["ctrl+b"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimCommandActions.MoveFullPageUp;
+    await vscode.commands.executeCommand("cursorPageDown");
 
     return vimState;
   }
