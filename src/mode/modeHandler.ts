@@ -8,6 +8,7 @@ import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
+import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions, BaseAction,
@@ -115,7 +116,38 @@ export class VimState {
 }
 
 export class SearchState {
-    public searchString = "";
+    /**
+     * Every range in the document that matches the search string.
+     */
+    public matchRanges: vscode.Range[] = [];
+
+    private _searchString = "";
+    public get searchString(): string {
+        return this._searchString;
+    }
+
+    public set searchString(search: string){
+        this._searchString = search;
+
+        if (this._searchString.length === 0) {
+            return;
+        }
+
+        this.matchRanges = [];
+
+        for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
+            const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+
+            let i = line.indexOf(search);
+
+            for (; i !== -1; i = line.indexOf(search, i + 1)) {
+                this.matchRanges.push(new vscode.Range(
+                    new Position(lineIdx, i),
+                    new Position(lineIdx, i + search.length)
+                ));
+            }
+        }
+    }
 
     /**
      * The position of the next search, or undefined if there is no match.
@@ -710,6 +742,8 @@ export class ModeHandler implements vscode.Disposable {
 
         if (this.currentMode.name === ModeName.SearchInProgressMode &&
             searchState.nextSearchMatchPosition !== undefined) {
+
+            rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
 
             rangesToDraw.push(new vscode.Range(
                 searchState.nextSearchMatchPosition,
