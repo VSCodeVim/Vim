@@ -103,6 +103,12 @@ export class VimState {
      * by us or by a mouse action.
      */
     public whatILastSetTheSelectionTo: vscode.Selection;
+
+    public settings = new VimSettings();
+}
+
+export class VimSettings {
+    useSolidBlockCursor = false;
 }
 
 export class SearchState {
@@ -360,6 +366,8 @@ export class ModeHandler implements vscode.Disposable {
             this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
         }
 
+        this.loadSettings();
+
         // Handle scenarios where mouse used to change current position.
         vscode.window.onDidChangeTextEditorSelection(async (e) => {
             let selection = e.selections[0];
@@ -420,6 +428,11 @@ export class ModeHandler implements vscode.Disposable {
                 await this.updateView(this._vimState, false);
             }
         });
+    }
+
+    private loadSettings(): void {
+        this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
+            .get("useSolidBlockCursor", false);
     }
 
     /**
@@ -738,13 +751,23 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw block cursor.
 
-        // Use native block cursor if possible.
-        const options = vscode.window.activeTextEditor.options;
+        if (vimState.settings.useSolidBlockCursor) {
+            if (this.currentMode.name !== ModeName.Insert) {
+                rangesToDraw.push(new vscode.Range(
+                    vimState.cursorPosition,
+                    vimState.cursorPosition.getRight()
+                ));
+            }
+        } else {
+            // Use native block cursor if possible.
 
-        options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-                              this.currentMode.name       !== ModeName.Insert ?
-            vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
-        vscode.window.activeTextEditor.options = options;
+            const options = vscode.window.activeTextEditor.options;
+
+            options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
+                                  this.currentMode.name       !== ModeName.Insert ?
+                vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+            vscode.window.activeTextEditor.options = options;
+        }
 
         if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
                    this.currentMode.name !== ModeName.Insert) {

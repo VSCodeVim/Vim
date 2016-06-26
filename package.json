@@ -70,6 +70,10 @@
                     "type": "object",
                     "description": "Keybinding overrides to use for insert mode."
                 },
+                "vim.useSolidBlockCursor": {
+                    "type": "boolean",
+                    "description": "Use a non blinking block cursor."
+                },
                 "vim.visualModeKeyBindings": {
                     "type": "object",
                     "description": "Keybinding overrides to use for visual mode."
