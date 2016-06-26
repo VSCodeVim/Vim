@@ -129,10 +129,15 @@ export class SearchState {
     public set searchString(search: string){
         this._searchString = search;
 
-        if (this._searchString.length === 0) {
-            return;
+        if (this._searchString.length > 0) {
+            this._recalculateSearchRanges();
         }
+    }
 
+    private _recalculateSearchRanges(): void {
+        const search = this.searchString;
+
+        // Calculate and store all matching ranges
         this.matchRanges = [];
 
         for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
@@ -140,7 +145,7 @@ export class SearchState {
 
             let i = line.indexOf(search);
 
-            for (; i !== -1; i = line.indexOf(search, i + 1)) {
+            for (; i !== -1; i = line.indexOf(search, i + search.length)) {
                 this.matchRanges.push(new vscode.Range(
                     new Position(lineIdx, i),
                     new Position(lineIdx, i + search.length)
@@ -151,8 +156,38 @@ export class SearchState {
 
     /**
      * The position of the next search, or undefined if there is no match.
+     *
+     * Pass in -1 as direction to reverse the direction we search.
      */
-    public nextSearchMatchPosition: Position = undefined;
+    public getNextSearchMatchPosition(startPosition: Position, direction = 1): Position {
+        if (this.matchRanges.length === 0) {
+            // TODO(bell)
+            return startPosition;
+        }
+
+        const effectiveDirection = direction * this.searchDirection;
+
+        if (effectiveDirection === 1) {
+            for (let matchRange of this.matchRanges) {
+                if (matchRange.start.compareTo(startPosition) > 0) {
+                    return Position.FromVSCodePosition(matchRange.start);
+                }
+            }
+
+            // Wrap around
+            // TODO(bell)
+            return Position.FromVSCodePosition(this.matchRanges[0].start);
+        } else {
+            for (let matchRange of this.matchRanges.slice(0).reverse()) {
+                if (matchRange.start.compareTo(startPosition) < 0) {
+                    return Position.FromVSCodePosition(matchRange.start);
+                }
+            }
+
+            // TODO(bell)
+            return Position.FromVSCodePosition(this.matchRanges[this.matchRanges.length - 1].start);
+        }
+    }
 
     public searchCursorStartPosition: Position = undefined;
 
@@ -740,14 +775,14 @@ export class ModeHandler implements vscode.Disposable {
 
         const searchState = vimState.searchState;
 
-        if (this.currentMode.name === ModeName.SearchInProgressMode &&
-            searchState.nextSearchMatchPosition !== undefined) {
-
+        if (this.currentMode.name === ModeName.SearchInProgressMode) {
             rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
 
+            const nextSearchMatch = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+
             rangesToDraw.push(new vscode.Range(
-                searchState.nextSearchMatchPosition,
-                searchState.nextSearchMatchPosition.getRight(searchState.searchString.length)));
+                nextSearchMatch,
+                nextSearchMatch.getRight(searchState.searchString.length)));
         }
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);

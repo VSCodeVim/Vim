@@ -363,40 +363,6 @@ class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
   keys = ["<any>"];
 
-  public static GetNextSearchMatch(startPosition: Position, searchString: string): Position {
-    for (let line = startPosition.line; line < TextEditor.getLineCount(); line++) {
-      const text = TextEditor.getLineAt(new Position(line, 0)).text;
-
-      // TODO: Do better implementation!!!
-      for (let char = (line === startPosition.line ? startPosition.character + 1 : 0); char < text.length; char++) {
-        const index = text.indexOf(searchString, char);
-
-        if (index > -1) {
-          return new Position(line, index);
-        }
-      }
-    }
-
-    return undefined;
-  }
-
-  public static GetPreviousSearchMatch(startPosition: Position, searchString: string): Position {
-    for (let line = startPosition.line; line >= 0; line--) {
-      const text = TextEditor.getLineAt(new Position(line, 0)).text;
-
-      // TODO: Do better implementation!!!
-      for (let char = (line === startPosition.line ? startPosition.character - 1 : text.length - 1); char >= 0; char--) {
-        const index = text.lastIndexOf(searchString, char);
-
-        if (index > -1) {
-          return new Position(line, index);
-        }
-      }
-    }
-
-    return undefined;
-  }
-
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
 
@@ -407,12 +373,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
-
-      if (searchState.nextSearchMatchPosition) {
-        vimState.cursorPosition = searchState.nextSearchMatchPosition;
-      } else {
-        vimState.cursorPosition = searchState.searchCursorStartPosition;
-      }
+      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition);
 
       return vimState;
     } else if (key === "<esc>") {
@@ -425,25 +386,8 @@ class CommandInsertInSearchMode extends BaseCommand {
     }
 
     // console.log(vimState.searchString); (TODO: Show somewhere!)
-    searchState.nextSearchMatchPosition = undefined;
 
-    const startPosition = searchState.searchCursorStartPosition;
-
-    if (searchState.searchDirection === 1) {
-      searchState.nextSearchMatchPosition = CommandInsertInSearchMode.GetNextSearchMatch(
-        startPosition,
-        searchState.searchString);
-    } else {
-      searchState.nextSearchMatchPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
-        startPosition,
-        searchState.searchString);
-    }
-
-    if (searchState.nextSearchMatchPosition) {
-      vimState.cursorPosition = searchState.nextSearchMatchPosition;
-    } else {
-      vimState.cursorPosition = searchState.searchCursorStartPosition;
-    }
+    vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition);
 
     return vimState;
   }
@@ -461,23 +405,7 @@ class CommandNextSearchMatch extends BaseMovement {
       return position;
     }
 
-    let nextPosition: Position;
-
-    if (searchState.searchDirection === 1) {
-      nextPosition = CommandInsertInSearchMode.GetNextSearchMatch(
-        position, searchState.searchString);
-    } else {
-      nextPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
-        position, searchState.searchString);
-    }
-
-    if (!nextPosition) {
-      // TODO(bell)
-
-      return position;
-    }
-
-    return nextPosition;
+    return vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition);
   }
 }
 
@@ -500,21 +428,9 @@ class CommandStar extends BaseCommand {
 
     vimState.searchState = new SearchState(+1, vimState.cursorPosition, currentWord);
 
-    let result: Position;
-
-    while (true) {
-      result = CommandInsertInSearchMode.GetNextSearchMatch(vimState.cursorPosition, currentWord);
-
-      if (result === undefined) {
-        break;
-      }
-
-      vimState.cursorPosition = result;
-
-      if (CommandStar.GetWordAtPosition(result) === currentWord) {
-        break;
-      }
-    }
+    do {
+      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+    } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
 
     return vimState;
   }
@@ -541,21 +457,9 @@ class CommandHash extends BaseCommand {
 
     vimState.searchState = new SearchState(-1, vimState.cursorPosition, currentWord);
 
-    let result: Position;
-
-    while (true) {
-      result = CommandInsertInSearchMode.GetPreviousSearchMatch(vimState.cursorPosition, currentWord);
-
-      if (result === undefined) {
-        break;
-      }
-
-      vimState.cursorPosition = result;
-
-      if (CommandStar.GetWordAtPosition(result) === currentWord) {
-        break;
-      }
-    }
+    do {
+      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+    } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
 
     return vimState;
   }
@@ -573,23 +477,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    let prevPosition: Position;
-
-    if (searchState.searchDirection === -1) {
-      prevPosition = CommandInsertInSearchMode.GetNextSearchMatch(
-        position, searchState.searchString);
-    } else {
-      prevPosition = CommandInsertInSearchMode.GetPreviousSearchMatch(
-        position, searchState.searchString);
-    }
-
-    if (!prevPosition) {
-      // TODO(bell)
-
-      return position;
-    }
-
-    return prevPosition;
+    return searchState.getNextSearchMatchPosition(vimState.cursorPosition, -1);
   }
 }
 
