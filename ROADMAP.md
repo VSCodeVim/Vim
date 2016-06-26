@@ -67,7 +67,7 @@ Status | Command | Description
 :x:   | :1234:  gk		| up N screen lines (differs from "k" when line wraps)
 :x:   | :1234:  gj		| own N screen lines (differs from "j" when line wraps)
 
-## Text object motions
+## Word motions
 
 Status | Command | Description
 ---|--------|------------
@@ -79,6 +79,11 @@ Status | Command | Description
 :white_check_mark:   | :1234:  B		| N blank-separated |WORD|s backward
 :white_check_mark:   | :1234:  ge		| N words backward to the end of the Nth word
 :white_check_mark:   | :1234:  gE		| N words backward to the end of the Nth blank-separated |WORD|
+
+## Text object motions
+
+Status | Command | Description
+---|--------|------------
    | :1234:  )		| N sentences forward
    | :1234:  (		| N sentences backward
 :white_check_mark:   | :1234:  }		| N paragraphs forward
