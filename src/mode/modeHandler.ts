@@ -8,6 +8,7 @@ import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
+import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import {
     BaseMovement, BaseCommand, Actions, BaseAction,
@@ -76,20 +77,7 @@ export class VimState {
      */
     public cursorStartPosition = new Position(0, 0);
 
-    public searchString = "";
-
-    /**
-     * The position of the next search, or undefined if there is no match.
-     */
-    public nextSearchMatchPosition: Position = undefined;
-
-    public searchCursorStartPosition: Position = undefined;
-
-    /**
-     * 1  === forward
-     * -1 === backward
-     */
-    public searchDirection = 1;
+    public searchState: SearchState = undefined;
 
     /**
      * The mode Vim will be in once this action finishes.
@@ -125,6 +113,95 @@ export class VimState {
      * by us or by a mouse action.
      */
     public whatILastSetTheSelectionTo: vscode.Selection;
+}
+
+export class SearchState {
+    /**
+     * Every range in the document that matches the search string.
+     */
+    public matchRanges: vscode.Range[] = [];
+
+    private _searchString = "";
+    public get searchString(): string {
+        return this._searchString;
+    }
+
+    public set searchString(search: string){
+        this._searchString = search;
+
+        if (this._searchString.length > 0) {
+            this._recalculateSearchRanges();
+        }
+    }
+
+    private _recalculateSearchRanges(): void {
+        const search = this.searchString;
+
+        // Calculate and store all matching ranges
+        this.matchRanges = [];
+
+        for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
+            const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+
+            let i = line.indexOf(search);
+
+            for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+                this.matchRanges.push(new vscode.Range(
+                    new Position(lineIdx, i),
+                    new Position(lineIdx, i + search.length)
+                ));
+            }
+        }
+    }
+
+    /**
+     * The position of the next search, or undefined if there is no match.
+     *
+     * Pass in -1 as direction to reverse the direction we search.
+     */
+    public getNextSearchMatchPosition(startPosition: Position, direction = 1): Position {
+        if (this.matchRanges.length === 0) {
+            // TODO(bell)
+            return startPosition;
+        }
+
+        const effectiveDirection = direction * this.searchDirection;
+
+        if (effectiveDirection === 1) {
+            for (let matchRange of this.matchRanges) {
+                if (matchRange.start.compareTo(startPosition) > 0) {
+                    return Position.FromVSCodePosition(matchRange.start);
+                }
+            }
+
+            // Wrap around
+            // TODO(bell)
+            return Position.FromVSCodePosition(this.matchRanges[0].start);
+        } else {
+            for (let matchRange of this.matchRanges.slice(0).reverse()) {
+                if (matchRange.start.compareTo(startPosition) < 0) {
+                    return Position.FromVSCodePosition(matchRange.start);
+                }
+            }
+
+            // TODO(bell)
+            return Position.FromVSCodePosition(this.matchRanges[this.matchRanges.length - 1].start);
+        }
+    }
+
+    public searchCursorStartPosition: Position = undefined;
+
+    /**
+     * 1  === forward
+     * -1 === backward
+     */
+    public searchDirection = 1;
+
+    constructor(direction: number, startPosition: Position, searchString = "") {
+        this.searchDirection = direction;
+        this.searchCursorStartPosition = startPosition;
+        this.searchString = searchString;
+    }
 }
 
 /**
@@ -696,12 +773,16 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw search highlight
 
-        if (this.currentMode.name === ModeName.SearchInProgressMode &&
-            vimState.nextSearchMatchPosition !== undefined) {
+        const searchState = vimState.searchState;
+
+        if (this.currentMode.name === ModeName.SearchInProgressMode) {
+            rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
+
+            const nextSearchMatch = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
 
             rangesToDraw.push(new vscode.Range(
-                vimState.nextSearchMatchPosition,
-                vimState.nextSearchMatchPosition.getRight(vimState.searchString.length)));
+                nextSearchMatch,
+                nextSearchMatch.getRight(searchState.searchString.length)));
         }
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
