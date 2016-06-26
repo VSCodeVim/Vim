@@ -152,6 +152,8 @@ export class SearchState {
                 ));
             }
         }
+
+        console.log('ranges length ', this.matchRanges.length);
     }
 
     /**
@@ -159,10 +161,10 @@ export class SearchState {
      *
      * Pass in -1 as direction to reverse the direction we search.
      */
-    public getNextSearchMatchPosition(startPosition: Position, direction = 1): Position {
+    public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean} {
         if (this.matchRanges.length === 0) {
             // TODO(bell)
-            return startPosition;
+            return { pos: startPosition, match: false };
         }
 
         const effectiveDirection = direction * this.searchDirection;
@@ -170,22 +172,25 @@ export class SearchState {
         if (effectiveDirection === 1) {
             for (let matchRange of this.matchRanges) {
                 if (matchRange.start.compareTo(startPosition) > 0) {
-                    return Position.FromVSCodePosition(matchRange.start);
+                    return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
                 }
             }
 
             // Wrap around
             // TODO(bell)
-            return Position.FromVSCodePosition(this.matchRanges[0].start);
+            return { pos: Position.FromVSCodePosition(this.matchRanges[0].start), match: true };
         } else {
             for (let matchRange of this.matchRanges.slice(0).reverse()) {
                 if (matchRange.start.compareTo(startPosition) < 0) {
-                    return Position.FromVSCodePosition(matchRange.start);
+                    return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
                 }
             }
 
             // TODO(bell)
-            return Position.FromVSCodePosition(this.matchRanges[this.matchRanges.length - 1].start);
+            return {
+                pos: Position.FromVSCodePosition(this.matchRanges[this.matchRanges.length - 1].start),
+                match: true
+            };
         }
     }
 
@@ -778,11 +783,13 @@ export class ModeHandler implements vscode.Disposable {
         if (this.currentMode.name === ModeName.SearchInProgressMode) {
             rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
 
-            const nextSearchMatch = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+            const { pos, match } =  searchState.getNextSearchMatchPosition(vimState.cursorPosition);
 
-            rangesToDraw.push(new vscode.Range(
-                nextSearchMatch,
-                nextSearchMatch.getRight(searchState.searchString.length)));
+            if (match) {
+                rangesToDraw.push(new vscode.Range(
+                    pos,
+                    pos.getRight(searchState.searchString.length)));
+            }
         }
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
