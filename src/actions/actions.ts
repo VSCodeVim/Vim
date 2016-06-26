@@ -1,5 +1,4 @@
 import { VimSpecialCommands, VimState, SearchState } from './../mode/modeHandler';
-import { showCmdLine } from '../../src/cmd_line/main';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
@@ -839,7 +838,7 @@ class CommandFold extends BaseCommand {
   keys = ["z", "c"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.fold")
+    await vscode.commands.executeCommand("editor.fold");
 
     return vimState;
   }
