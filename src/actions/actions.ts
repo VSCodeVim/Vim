@@ -1717,10 +1717,11 @@ class MoveCC extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["c"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
     return {
       start       : position.getLineBegin(),
-      stop        : position.getLineEnd(),
+      stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
+      registerMode: RegisterMode.CharacterWise
     };
   }
 }
