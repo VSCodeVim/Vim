@@ -17,7 +17,7 @@ export class Position extends vscode.Position {
 
         this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
         this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
-        this._sentenceEndRegex = /[\.!\?]{1}[ \n\t]+/g;
+        this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
     }
 
     public static FromVSCodePosition(pos: vscode.Position): Position {
@@ -503,7 +503,7 @@ export class Position extends vscode.Position {
                           (index >= this.character &&  inclusive)) || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
-                return new Position(currentLine, newCharacter).getRight();
+                return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
             }
         }
 

@@ -370,7 +370,8 @@ suite("sentence motion", () => {
         "",
         "Next line is just whitespace",
         "   ",
-        "Wow!"
+        "Wow!",
+        "Another sentence inside one paragraph."
     ];
 
     suiteSetup(() => {
@@ -381,7 +382,7 @@ suite("sentence motion", () => {
 
     suiteTeardown(cleanUpWorkspace);
 
-    suite("next sentence", () => {
+    suite("sentence forward", () => {
         test("next concrete sentence", () => {
             let motion = new Position(0, 0).getNextSentenceBegin();
             assert.equal(motion.line, 0);
@@ -402,8 +403,8 @@ suite("sentence motion", () => {
 
         test("next sentence when paragraph contains a line of whilte spaces", () => {
             let motion = new Position(6, 2).getNextSentenceBegin();
-            assert.equal(motion.line, 8);
-            assert.equal(motion.character, 4);
+            assert.equal(motion.line, 9);
+            assert.equal(motion.character, 0);
         });
     });
 });
