@@ -341,7 +341,7 @@ class CommandEsc extends BaseCommand {
     }
 
     vimState.currentMode = ModeName.Normal;
-    HistoryTracker.addHistoryStep();
+    HistoryTracker.addStep();
 
     return vimState;
   }
@@ -615,7 +615,7 @@ export class DeleteOperator extends BaseOperator {
 
         vimState.currentMode = ModeName.Normal;
 
-        HistoryTracker.addHistoryStep();
+        HistoryTracker.addStep();
 
         return vimState;
     }
@@ -747,7 +747,7 @@ export class PutCommand extends BaseCommand {
         }
 
         vimState.currentRegisterMode = register.registerMode;
-        HistoryTracker.addHistoryStep();
+        HistoryTracker.addStep();
 
         return vimState;
     }

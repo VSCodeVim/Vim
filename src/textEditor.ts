@@ -8,7 +8,7 @@ export class TextEditor {
     // TODO: Refactor args
 
     static async insert(text: string, at: Position = undefined,
-                        letVSCodeHandleKeystrokes: boolean = undefined, addToHistory = true): Promise<boolean> {
+                        letVSCodeHandleKeystrokes: boolean = undefined): Promise<boolean> {
         // If we insert "blah(" with default:type, VSCode will insert the closing ).
         // We *probably* don't want that to happen if we're inserting a lot of text.
         if (letVSCodeHandleKeystrokes === undefined) {

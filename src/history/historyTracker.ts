@@ -15,6 +15,33 @@ export class DocumentChange {
         this.text  = text;
         this.isAdd = isAdd;
     }
+
+    /**
+     * Run this change.
+     */
+    public async do(undo = false): Promise<Position> {
+        const rangeStart = this.start;
+
+        if ((this.isAdd && !undo) || (!this.isAdd && undo)) {
+            await TextEditor.insertAt(
+                this.text,
+                rangeStart
+            );
+        } else {
+            const rangeStop = rangeStart.advancePositionByText(this.text);
+
+            await TextEditor.delete(new vscode.Range(
+                rangeStart,
+                rangeStop
+            ), false);
+        }
+
+        if ((this.isAdd && !undo) || (!this.isAdd && undo)) {
+            return this.start;
+        } else {
+            return this.start.advancePositionByText(this.text);
+        }
+    }
 }
 
 class HistoryStep {
@@ -33,12 +60,12 @@ class HistoryTrackerClass {
     }
 
     constructor() {
-        this.addHistoryStep();
+        this.addStep();
 
         this.oldText = TextEditor.getAllText();
     }
 
-    addHistoryChange(): void {
+    addChange(): void {
         const newText = TextEditor.getAllText();
         const diffs = jsdiff.diffChars(this.oldText, newText);
 
@@ -60,12 +87,10 @@ class HistoryTrackerClass {
             }
         }
 
-        // this.mostRecentHistoryStep.changes.push(change);
-
         this.oldText = newText;
     }
 
-    addHistoryStep(): void {
+    addStep(): void {
         if (this.historySteps.length === 0 ||
             this.mostRecentHistoryStep.changes.length > 0) {
 
@@ -78,35 +103,14 @@ class HistoryTrackerClass {
             return;
         }
 
-        const step = this.historySteps.pop();
+        let position: Position;
+        let step = this.historySteps.pop();
 
         for (const change of step.changes.slice(0).reverse()) {
-            const rangeStart = change.start;
-
-            // Undo a change
-
-            if (change.isAdd) {
-                const rangeStop = rangeStart.advancePositionByText(change.text);
-
-                await TextEditor.delete(new vscode.Range(
-                    rangeStart,
-                    rangeStop
-                ), false);
-            } else {
-                await TextEditor.insertAt(
-                    change.text,
-                    rangeStart
-                );
-            }
+            position = await change.do(true);
         }
 
-        const firstChange = step.changes[0];
-
-        if (firstChange.isAdd) {
-            return firstChange.start.advancePositionByText(firstChange.text);
-        } else {
-            return firstChange.start;
-        }
+        return position;
     }
 }
 
