@@ -47,6 +47,10 @@ export function activate(context: vscode.ExtensionContext) {
         showCmdLine("", modeHandler);
     });
 
+    'rfb'.split('').forEach(key=> {
+        registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
+    });
+
     context.subscriptions.push(modeHandler);
 }
 

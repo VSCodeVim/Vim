@@ -51,6 +51,21 @@
                 "key": "Backspace",
                 "command": "extension.vim_backspace",
                 "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+r",
+                "command": "extension.vim_ctrl+r",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+f",
+                "command": "extension.vim_ctrl+f",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+b",
+                "command": "extension.vim_ctrl+b",
+                "when": "editorTextFocus"
             }
         ],
         "configuration": {
