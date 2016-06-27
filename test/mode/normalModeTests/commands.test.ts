@@ -36,7 +36,7 @@ suite("Mode Normal", () => {
       title: "Can handle 'Ncc'",
       start: ['one', '|one two', 'three four', 'five'],
       keysPressed: '2cca<esc>',
-      end: ["one","|a", "five"]
+      end: ["one", "|a", "five"]
     });
 
     newTest({
