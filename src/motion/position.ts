@@ -10,12 +10,14 @@ export class Position extends vscode.Position {
 
     private _nonWordCharRegex : RegExp;
     private _nonBigWordCharRegex : RegExp;
+    private _sentenceEndRegex: RegExp;
 
     constructor(line: number, character: number) {
         super(line, character);
 
         this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
         this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
+        this._sentenceEndRegex = /[\.!\?]{1}[ \n\t]+/g;
     }
 
     public static FromVSCodePosition(pos: vscode.Position): Position {
@@ -258,6 +260,11 @@ export class Position extends vscode.Position {
       return pos.getLineBegin();
     }
 
+
+    public getNextSentenceBegin(): Position {
+        return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
+    }
+
     /**
      * Get the beginning of the current line.
      */
@@ -483,6 +490,39 @@ export class Position extends vscode.Position {
         }
 
         return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
+    }
+
+
+    private getNextSentenceBeginWithRegex(regex: RegExp, inclusive: boolean): Position {
+        // A paragraph and section boundary is also a sentence boundary.
+        let paragraphEnd = this.getCurrentParagraphEnd();
+        for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
+            let endPositions = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+            let newCharacter = _.find(endPositions,
+                index => ((index >  this.character && !inclusive)  ||
+                          (index >= this.character &&  inclusive)) || currentLine !== this.line);
+
+            if (newCharacter !== undefined) {
+                return new Position(currentLine, newCharacter).getRight();
+            }
+        }
+
+        // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
+        // Find the first non-whitepsace character.
+        if (TextEditor.getLineAt(new vscode.Position(this.line, 0)).text) {
+            return paragraphEnd;
+        } else {
+            for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
+                let nonWhitePositions = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, /\S/g);
+                let newCharacter = _.find(nonWhitePositions,
+                    index => ((index >  this.character && !inclusive)  ||
+                          (index >= this.character &&  inclusive)) || currentLine !== this.line);
+
+                if (newCharacter !== undefined) {
+                    return new Position(currentLine, newCharacter);
+                }
+            }
+        }
     }
 
 
