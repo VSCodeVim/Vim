@@ -306,6 +306,21 @@ export class Position extends vscode.Position {
         return new Position(0, 0);
     }
 
+    /**
+     * Get the position that the cursor would be at if you
+     * pasted *text* at the current position.
+     */
+    public advancePositionByText(text: string): Position {
+        const numberOfLinesSpanned = (text.match(/\n/g) || []).length;
+
+        return new Position(
+            this.line + numberOfLinesSpanned,
+            numberOfLinesSpanned === 0 ?
+                this.character + text.length :
+                text.length - (text.lastIndexOf('\n') + 1)
+        );
+    }
+
     public getDocumentEnd() : Position {
         let lineCount = TextEditor.getLineCount();
         let line = lineCount > 0 ? lineCount - 1 : 0;

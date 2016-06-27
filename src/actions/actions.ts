@@ -615,6 +615,8 @@ export class DeleteOperator extends BaseOperator {
 
         vimState.currentMode = ModeName.Normal;
 
+        HistoryTracker.addHistoryStep();
+
         return vimState;
     }
 }
@@ -745,6 +747,7 @@ export class PutCommand extends BaseCommand {
         }
 
         vimState.currentRegisterMode = register.registerMode;
+        HistoryTracker.addHistoryStep();
 
         return vimState;
     }
@@ -906,6 +909,7 @@ class CommandUndo extends BaseCommand {
     const newPosition = await HistoryTracker.revertHistoryStep();
 
     vimState.cursorPosition = newPosition;
+    vimState.alteredHistory = true;
     return vimState;
   }
 }
@@ -918,6 +922,7 @@ class CommandRedo extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("redo");
 
+    vimState.alteredHistory = true;
     return vimState;
   }
 }

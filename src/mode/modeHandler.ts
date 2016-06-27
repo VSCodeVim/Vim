@@ -51,6 +51,8 @@ export class VimState {
      */
     public previousFullAction: RecordedState = undefined;
 
+    public alteredHistory = false;
+
     /**
      * The current full action we are building up.
      */
@@ -462,7 +464,11 @@ export class ModeHandler implements vscode.Disposable {
     async handleKeyEvent(key: string): Promise<Boolean> {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
 
-        HistoryTracker.addHistoryChange();
+        if (this._vimState.alteredHistory) {
+            this._vimState.alteredHistory = false;
+        } else {
+            HistoryTracker.addHistoryChange();
+        }
 
         return true;
     }

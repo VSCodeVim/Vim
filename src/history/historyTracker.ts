@@ -40,7 +40,6 @@ class HistoryTrackerClass {
 
     addHistoryChange(): void {
         const newText = TextEditor.getAllText();
-
         const diffs = jsdiff.diffChars(this.oldText, newText);
 
         let currentPosition = new Position(0, 0);
@@ -50,19 +49,15 @@ class HistoryTrackerClass {
                 this.mostRecentHistoryStep.changes.push(
                     new DocumentChange(currentPosition, diff.value, true)
                 );
-                console.log("Add at ", currentPosition.line, currentPosition.character);
             } else if (diff.removed) {
-                console.log("Remove at ", currentPosition.line, currentPosition.character);
+                this.mostRecentHistoryStep.changes.push(
+                    new DocumentChange(currentPosition, diff.value, false)
+                );
             }
 
-            const numberOfLinesSpanned = (diff.value.match(/\n/g) || []).length;
-
-            currentPosition = new Position(
-                currentPosition.line + numberOfLinesSpanned,
-                numberOfLinesSpanned === 0 ?
-                    currentPosition.character + diff.value.length :
-                    diff.value.length - (diff.value.lastIndexOf('\n') + 1)
-            );
+            if (!diff.removed) {
+                currentPosition = currentPosition.advancePositionByText(diff.value);
+            }
         }
 
         // this.mostRecentHistoryStep.changes.push(change);
@@ -86,18 +81,22 @@ class HistoryTrackerClass {
         const step = this.historySteps.pop();
 
         for (const change of step.changes.slice(0).reverse()) {
+            const rangeStart = change.start;
+
+            // Undo a change
+
             if (change.isAdd) {
-                const rangeStart = change.start;
-                const rangeStop = new Position(
-                    rangeStart.line,
-                    rangeStart.character + change.text.length);
+                const rangeStop = rangeStart.advancePositionByText(change.text);
 
                 await TextEditor.delete(new vscode.Range(
                     rangeStart,
                     rangeStop
                 ), false);
             } else {
-                console.log("TODO...");
+                await TextEditor.insertAt(
+                    change.text,
+                    rangeStart
+                );
             }
         }
 
