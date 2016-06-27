@@ -37,6 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
     registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
+    registerCommand(context, 'extension.vim_switchWindow', () => handleKeyEvent("ctrl+w"));
 
     registerCommand(context, 'extension.showCmdLine', () => {
         if (!modeHandler) {

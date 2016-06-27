@@ -66,6 +66,11 @@
                 "key": "ctrl+b",
                 "command": "extension.vim_ctrl+b",
                 "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+w",
+                "command": "extension.vim_switchWindow",
+                "when": "editorTextFocus"
             }
         ],
         "configuration": {
