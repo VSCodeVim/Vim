@@ -920,7 +920,7 @@ class CommandRedo extends BaseCommand {
   keys = ["ctrl+r"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("redo");
+    // await vscode.commands.executeCommand("redo");
 
     vimState.alteredHistory = true;
     return vimState;

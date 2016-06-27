@@ -100,7 +100,13 @@ class HistoryTrackerClass {
             }
         }
 
-        return step.changes[0].start;
+        const firstChange = step.changes[0];
+
+        if (firstChange.isAdd) {
+            return firstChange.start.advancePositionByText(firstChange.text);
+        } else {
+            return firstChange.start;
+        }
     }
 }
 
