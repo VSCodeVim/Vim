@@ -407,6 +407,33 @@ suite("sentence motion", () => {
             assert.equal(motion.character, 0);
         });
     });
+
+
+    suite("sentence backward", () => {
+        test("current sentence begin", () => {
+            let motion = new Position(0, 37).getPreviousSentenceBegin();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 35);
+        });
+
+        test("current sentence begin with no concrete sentense inside", () => {
+            let motion = new Position(3, 0).getPreviousSentenceBegin();
+            assert.equal(motion.line, 2);
+            assert.equal(motion.character, 0);
+        });
+
+        test("current sentence begin when it's not the same as current paragraph begin", () => {
+            let motion = new Position(2, 0).getPreviousSentenceBegin();
+            assert.equal(motion.line, 1);
+            assert.equal(motion.character, 0);
+        });
+
+        test("current sentence begin when previous line ends with a concrete sentence", () => {
+            let motion = new Position(9, 5).getPreviousSentenceBegin();
+            assert.equal(motion.line, 9);
+            assert.equal(motion.character, 0);
+        });
+    });
 });
 
 suite("paragraph motion", () => {

@@ -260,6 +260,9 @@ export class Position extends vscode.Position {
       return pos.getLineBegin();
     }
 
+    public getPreviousSentenceBegin(): Position {
+        return this.getPreviousSentenceBeginWithRegex(this._sentenceEndRegex, false);
+    }
 
     public getNextSentenceBegin(): Position {
         return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
@@ -490,6 +493,28 @@ export class Position extends vscode.Position {
         }
 
         return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
+    }
+
+
+    private getPreviousSentenceBeginWithRegex(regex: RegExp, inclusive: boolean): Position {
+        let paragraphBegin = this.getCurrentParagraphBeginning();
+        for (let currentLine = this.line; currentLine >= paragraphBegin.line; currentLine--) {
+            let endPositions = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+            let newCharacter = _.find(endPositions.reverse(),
+                index => ((index <  this.character && !inclusive)  ||
+                          (index <= this.character &&  inclusive)) || currentLine !== this.line)
+
+            if (newCharacter !== undefined) {
+                return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
+            }
+        }
+
+        if ((paragraphBegin.line + 1 === this.line || paragraphBegin.line === this.line) && this.character === 0) {
+            return paragraphBegin;
+        }
+        else {
+            return new Position(paragraphBegin.line + 1, 0);
+        }
     }
 
 
