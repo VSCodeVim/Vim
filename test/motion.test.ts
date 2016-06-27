@@ -416,6 +416,12 @@ suite("sentence motion", () => {
             assert.equal(motion.character, 35);
         });
 
+        test("sentence forward when cursor is at the beginning of the second sentence", () => {
+            let motion = new Position(0, 35).getPreviousSentenceBegin();
+            assert.equal(motion.line, 0);
+            assert.equal(motion.character, 0);
+        })
+
         test("current sentence begin with no concrete sentense inside", () => {
             let motion = new Position(3, 0).getPreviousSentenceBegin();
             assert.equal(motion.line, 2);
