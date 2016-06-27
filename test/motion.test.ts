@@ -420,7 +420,7 @@ suite("sentence motion", () => {
             let motion = new Position(0, 35).getPreviousSentenceBegin();
             assert.equal(motion.line, 0);
             assert.equal(motion.character, 0);
-        })
+        });
 
         test("current sentence begin with no concrete sentense inside", () => {
             let motion = new Position(3, 0).getPreviousSentenceBegin();

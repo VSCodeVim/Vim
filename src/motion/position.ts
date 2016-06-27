@@ -501,8 +501,10 @@ export class Position extends vscode.Position {
         for (let currentLine = this.line; currentLine >= paragraphBegin.line; currentLine--) {
             let endPositions = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
             let newCharacter = _.find(endPositions.reverse(),
-                index => ((index <  this.character && !inclusive && new Position(currentLine, index).getRightThroughLineBreaks().compareTo(this)) ||
-                          (index <= this.character &&  inclusive)) || currentLine !== this.line)
+                index => ((index <  this.character && !inclusive
+                           && new Position(currentLine, index).getRightThroughLineBreaks().compareTo(this))
+                           || (index <= this.character && inclusive)
+                         ) || currentLine !== this.line);
 
             if (newCharacter !== undefined) {
                 return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
@@ -511,8 +513,7 @@ export class Position extends vscode.Position {
 
         if ((paragraphBegin.line + 1 === this.line || paragraphBegin.line === this.line)) {
             return paragraphBegin;
-        }
-        else {
+        } else {
             return new Position(paragraphBegin.line + 1, 0);
         }
     }
