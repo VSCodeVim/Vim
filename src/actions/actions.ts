@@ -675,12 +675,31 @@ export class UpperCaseOperator extends BaseOperator {
     public modes = [ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      end = new Position(end.line, end.character + 1);
+      const range = new vscode.Range(start, new Position(end.line, end.character + 1));
+      let text = vscode.window.activeTextEditor.document.getText(range);
 
-      let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+      await TextEditor.replace(range, text.toUpperCase());
 
-      await TextEditor.replace(new vscode.Range(start, end), text.toUpperCase());
       vimState.currentMode = ModeName.Normal;
+      vimState.cursorPosition = start;
+
+      return vimState;
+    }
+}
+
+@RegisterAction
+export class LowerCaseOperator extends BaseOperator {
+    public keys = ["u"];
+    public modes = [ModeName.Visual, ModeName.VisualLine];
+
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      const range = new vscode.Range(start, new Position(end.line, end.character + 1));
+      let text = vscode.window.activeTextEditor.document.getText(range);
+
+      await TextEditor.replace(range, text.toLowerCase());
+
+      vimState.currentMode = ModeName.Normal;
+      vimState.cursorPosition = start;
 
       return vimState;
     }
