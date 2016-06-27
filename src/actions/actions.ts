@@ -1512,6 +1512,26 @@ class MoveBeginningFullWord extends BaseMovement {
 }
 
 @RegisterAction
+class MovePreviousSentenceBegin extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["("];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getPreviousSentenceBegin();
+  }
+}
+
+@RegisterAction
+class MoveNextSentenceBegin extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [")"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getNextSentenceBegin();
+  }
+}
+
+@RegisterAction
 class MoveParagraphEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["}"];

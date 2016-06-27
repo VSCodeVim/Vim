@@ -79,8 +79,8 @@ Status | Command | Description
 :white_check_mark:   | :1234:  B		| N blank-separated |WORD|s backward
 :white_check_mark:   | :1234:  ge		| N words backward to the end of the Nth word
 :white_check_mark:   | :1234:  gE		| N words backward to the end of the Nth blank-separated |WORD|
-   | :1234:  )		| N sentences forward
-   | :1234:  (		| N sentences backward
+:white_check_mark:   | :1234:  )		| N sentences forward
+:white_check_mark:   | :1234:  (		| N sentences backward
 :white_check_mark:   | :1234:  }		| N paragraphs forward
 :white_check_mark:   | :1234:  {		| N paragraphs backward
    | :1234:  ]]		| N sections forward, at start of section
