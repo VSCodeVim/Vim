@@ -3,6 +3,7 @@ import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
+import { HistoryTracker } from './../history/historyTracker';
 import * as vscode from 'vscode';
 
 const controlKeys: string[] = [
@@ -340,6 +341,7 @@ class CommandEsc extends BaseCommand {
     }
 
     vimState.currentMode = ModeName.Normal;
+    HistoryTracker.addHistoryStep();
 
     return vimState;
   }
@@ -901,8 +903,9 @@ class CommandUndo extends BaseCommand {
   keys = ["u"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("undo");
+    const newPosition = await HistoryTracker.revertHistoryStep();
 
+    vimState.cursorPosition = newPosition;
     return vimState;
   }
 }

@@ -10,6 +10,7 @@ import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
+import { HistoryTracker } from './../history/historyTracker';
 import {
     BaseMovement, BaseCommand, Actions, BaseAction,
     BaseOperator, isIMovement,
@@ -460,6 +461,8 @@ export class ModeHandler implements vscode.Disposable {
 
     async handleKeyEvent(key: string): Promise<Boolean> {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+
+        HistoryTracker.addHistoryChange();
 
         return true;
     }
