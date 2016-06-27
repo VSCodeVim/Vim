@@ -958,9 +958,15 @@ class CommandDeleteToLineEnd extends BaseCommand {
 class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["C"];
+  canBePrefixedWithCount = true; 
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return new ChangeOperator().run(vimState, position, position.getLineEnd().getLeft());
+  }
+  
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    return new ChangeOperator().run(vimState, position, position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft());
   }
 }
 
