@@ -14,6 +14,7 @@ import * as vscode from "vscode";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
+import { VimState } from './../mode/modeHandler';
 
 import jsdiff = require('diff');
 
@@ -31,7 +32,7 @@ export class DocumentChange {
     /**
      * Run this change.
      */
-    public async do(undo = false): Promise<Position> {
+    public async do(undo = false): Promise<void> {
         const rangeStart = this.start;
 
         if ((this.isAdd && !undo) || (!this.isAdd && undo)) {
@@ -47,22 +48,24 @@ export class DocumentChange {
                 rangeStop
             ), false);
         }
-
-        if ((this.isAdd && !undo) || (!this.isAdd && undo)) {
-            return this.start;
-        } else {
-            return this.start.advancePositionByText(this.text);
-        }
     }
 
-    public async undo(): Promise<Position> {
+    public async undo(): Promise<void> {
         return this.do(true);
     }
 }
 
 class HistoryStep {
-    changes: DocumentChange[] = [];
-    isFinished: boolean = false;
+    changes        : DocumentChange[] = [];
+    isFinished     : boolean          = false;
+    cursorStart    : Position         = new Position(0, 0);
+    cursorEnd      : Position         = undefined;
+
+    constructor(position: Position = undefined) {
+        if (position !== undefined) {
+            this.cursorStart = position;
+        }
+    }
 }
 
 export class HistoryTracker {
@@ -96,19 +99,19 @@ export class HistoryTracker {
      * Determines what changed by diffing the document against what it
      * used to look like.
      */
-    addChange(): void {
+    addChange(vimState: VimState): void {
         // Determine if we should add a new Step.
 
         if (this.currentHistoryStepIndex === -1 || (
                 this.currentHistoryStepIndex === this.historySteps.length - 1 &&
                 this.currentHistoryStep.isFinished)) {
 
-            this.historySteps.push(new HistoryStep());
+            this.historySteps.push(new HistoryStep(vimState.cursorPosition));
             this.currentHistoryStepIndex++;
         } else if (this.currentHistoryStepIndex !== this.historySteps.length - 1) {
             this.historySteps = this.historySteps.slice(0, this.currentHistoryStepIndex + 1);
 
-            this.historySteps.push(new HistoryStep());
+            this.historySteps.push(new HistoryStep(vimState.cursorPosition));
             this.currentHistoryStepIndex++;
         }
 
@@ -133,6 +136,7 @@ export class HistoryTracker {
             }
         }
 
+        this.currentHistoryStep.cursorEnd = vimState.cursorPosition;
         this.oldText = newText;
     }
 
@@ -166,16 +170,15 @@ export class HistoryTracker {
             return undefined;
         }
 
-        let position: Position;
         let step = this.currentHistoryStep;
 
         for (const change of step.changes.slice(0).reverse()) {
-            position = await change.undo();
+            await change.undo();
         }
 
         this.currentHistoryStepIndex--;
 
-        return position;
+        return step.cursorStart;
     }
 
     /**
@@ -188,14 +191,13 @@ export class HistoryTracker {
 
         this.currentHistoryStepIndex++;
 
-        let position: Position;
         let step = this.currentHistoryStep;
 
         for (const change of step.changes) {
-            position = await change.do();
+            await change.do();
         }
 
-        return position;
+        return step.cursorEnd;
     }
 
     toString(): string {
