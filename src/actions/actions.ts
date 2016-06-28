@@ -75,6 +75,11 @@ export class BaseAction {
   isMotion = false;
 
   /**
+   * Can this command be repeated with a number prefix? E.g. 5p can; 5zz can't.
+   */
+  canBePrefixedWithCount = false;
+
+  /**
    * Modes that this action can be run in.
    */
   public modes: ModeName[];
@@ -127,6 +132,8 @@ export class BaseAction {
  */
 export abstract class BaseMovement extends BaseAction {
   isMotion = true;
+
+  canBePrefixedWithCount = false;
 
   /**
    * Whether we should change desiredColumn in VimState.
@@ -201,15 +208,9 @@ export abstract class BaseCommand extends BaseAction {
    */
   isCompleteAction = true;
 
-  /**
-   * Can this command be repeated with a number prefix? E.g. 5p can; 5zz can't.
-   */
   canBePrefixedWithCount = false;
 
-  /**
-   * Can this command be repeated with .?
-   */
-  canBeRepeatedWithDot = false;
+  canBeRepeatedWithDot = true;
 
   /**
    * Run the command a single time.
@@ -341,7 +342,6 @@ class CommandEsc extends BaseCommand {
     }
 
     vimState.currentMode = ModeName.Normal;
-    HistoryTracker.finishCurrentStep();
 
     return vimState;
   }
@@ -615,8 +615,6 @@ export class DeleteOperator extends BaseOperator {
 
         vimState.currentMode = ModeName.Normal;
 
-        HistoryTracker.finishCurrentStep();
-
         return vimState;
     }
 }
@@ -635,6 +633,7 @@ export class DeleteOperatorVisual extends BaseOperator {
 export class YankOperator extends BaseOperator {
     public keys = ["y"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+    canBePrefixedWithCount = true;
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
@@ -747,8 +746,6 @@ export class PutCommand extends BaseCommand {
         }
 
         vimState.currentRegisterMode = register.registerMode;
-        HistoryTracker.finishCurrentStep();
-
         return vimState;
     }
 

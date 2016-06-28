@@ -585,6 +585,7 @@ export class ModeHandler implements vscode.Disposable {
         if (vimState.currentMode === ModeName.Normal) {
             if (ranRepeatableAction) {
                 vimState.previousFullAction = vimState.recordedState;
+                HistoryTracker.finishCurrentStep();
             }
 
             if (ranAction) {
