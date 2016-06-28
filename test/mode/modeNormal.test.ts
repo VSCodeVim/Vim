@@ -309,6 +309,27 @@ suite("Mode Normal", () => {
       end: ['ab|c']
     });
 
+    newTestOnly({
+      title: "Undo cursor",
+      start: ['|'],
+      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>uuu',
+      end: ['|']
+    });
+
+    newTestOnly({
+      title: "Undo cursor 2",
+      start: ['|'],
+      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>uu',
+      end: ['|abc']
+    });
+
+    newTestOnly({
+      title: "Undo cursor 3",
+      start: ['|'],
+      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>u',
+      end: ['|defabc']
+    });
+
     newTest({
       title: "Undo with movement first",
       start: ['|'],

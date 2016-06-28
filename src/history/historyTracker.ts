@@ -128,14 +128,14 @@ export class HistoryTracker {
                     new DocumentChange(currentPosition, diff.value, true)
                 );
                 if (this.currentHistoryStep.cursorStart === undefined) {
-                    this.currentHistoryStep.cursorStart = currentPosition;
+                    this.currentHistoryStep.cursorStart = vimState.cursorPositionJustBeforeAnythingHappened;
                 }
             } else if (diff.removed) {
                 this.currentHistoryStep.changes.push(
                     new DocumentChange(currentPosition, diff.value, false)
                 );
                 if (this.currentHistoryStep.cursorStart === undefined) {
-                    this.currentHistoryStep.cursorStart = currentPosition;
+                    this.currentHistoryStep.cursorStart = vimState.cursorPositionJustBeforeAnythingHappened;
                 }
             }
 

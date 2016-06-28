@@ -70,6 +70,8 @@ export class VimState {
      */
     public cursorStartPosition = new Position(0, 0);
 
+    public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
+
     public searchState: SearchState = undefined;
 
     /**
@@ -465,6 +467,8 @@ export class ModeHandler implements vscode.Disposable {
 
     async handleKeyEvent(key: string): Promise<Boolean> {
         if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
+
+        this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
 
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
 
