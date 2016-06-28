@@ -128,9 +128,12 @@ class HistoryTrackerClass {
         this.currentHistoryStep.isFinished = true;
     }
 
+    /**
+     * Returns undefined on failure.
+     */
     async goBackHistoryStep(): Promise<Position> {
         if (this.currentHistoryStepIndex === -1) {
-            return;
+            return undefined;
         }
 
         let position: Position;
@@ -145,15 +148,18 @@ class HistoryTrackerClass {
         return position;
     }
 
+    /**
+     * Returns undefined on failure.
+     */
     async goForwardHistoryStep(): Promise<Position> {
         if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
             return undefined;
         }
 
+        this.currentHistoryStepIndex++;
+
         let position: Position;
         let step = this.currentHistoryStep;
-
-        this.currentHistoryStepIndex++;
 
         for (const change of step.changes) {
             position = await change.do();
@@ -168,7 +174,8 @@ class HistoryTrackerClass {
         for (let i = 0; i < this.historySteps.length; i++) {
             const step = this.historySteps[i];
 
-            result += step.changes.map(x => x.text).join(",");
+            result += step.changes.map(x => x.text).join("");
+            if (this.currentHistoryStepIndex === i) { result += "+"; }
             if (step.isFinished) { result += "✓"; }
             result += "| ";
         }

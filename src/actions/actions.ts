@@ -908,7 +908,9 @@ class CommandUndo extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPosition = await HistoryTracker.goBackHistoryStep();
 
-    vimState.cursorPosition = newPosition;
+    if (newPosition !== undefined) {
+      vimState.cursorPosition = newPosition;
+    }
     vimState.alteredHistory = true;
     return vimState;
   }
@@ -922,7 +924,9 @@ class CommandRedo extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPosition = await HistoryTracker.goForwardHistoryStep();
 
-    vimState.cursorPosition = newPosition;
+    if (newPosition !== undefined) {
+      vimState.cursorPosition = newPosition;
+    }
     vimState.alteredHistory = true;
     return vimState;
   }
