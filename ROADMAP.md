@@ -380,3 +380,19 @@ Status | Command | Description
 ---|--------|------------------------------
    | :r [file]	    | insert the contents of [file] below the cursor
    | :r! {command}  | insert the standard output of {command} below the cursor
+
+
+## Tabs 
+
+Status | Command | Description
+---|--------|------------------------------
+:warning:   | :1234: :tabe[dit]    | Open a new tab page with an empty window, after the current tab page
+:warning:   | :1234: :tabnew    | Open a new tab page with an empty window, after the current tab page
+:warning:   | :tabc[lose][!] :1234: | Close current tab page.
+:warning:   | :tabo[nly][!] | Close all other tab pages.
+:white_check_mark:   | :tabn[ext] :1234:	    | Go to tab page {count}.  The first tab page has number one.
+:white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
+:white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
+:white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
+:x:   | :tabls	 | List the tab pages and the windows they contain.
+:x:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
