@@ -14,13 +14,23 @@ export const commandParsers = {
 
     tabn: tabCmd.parseTabNCommandArgs,
     tabnext: tabCmd.parseTabNCommandArgs,
+
     tabp: tabCmd.parseTabPCommandArgs,
     tabprevious: tabCmd.parseTabPCommandArgs,
+
     tabfirst: tabCmd.parseTabFirstCommandArgs,
     tabfir: tabCmd.parseTabFirstCommandArgs,
+
     tablast: tabCmd.parseTabLastCommandArgs,
     tabl: tabCmd.parseTabLastCommandArgs,
+
     tabe: tabCmd.parseTabNewCommandArgs,
     tabedit: tabCmd.parseTabNewCommandArgs,
-    tabnew: tabCmd.parseTabNewCommandArgs
+    tabnew: tabCmd.parseTabNewCommandArgs,
+
+    tabclose: tabCmd.parseTabCloseCommandArgs,
+    tabc: tabCmd.parseTabCloseCommandArgs,
+
+    tabo: tabCmd.parseTabOnlyCommandArgs,
+    tabonly: tabCmd.parseTabOnlyCommandArgs
 };

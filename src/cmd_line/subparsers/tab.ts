@@ -64,3 +64,15 @@ export function parseTabNewCommandArgs(args: string) : node.TabCommand {
         tab: node.Tab.New
     });
 }
+
+export function parseTabCloseCommandArgs(args: string) : node.TabCommand {
+    return new node.TabCommand({
+        tab: node.Tab.Close
+    });
+}
+
+export function parseTabOnlyCommandArgs(args: string) : node.TabCommand {
+    return new node.TabCommand({
+        tab: node.Tab.Only
+    });
+}

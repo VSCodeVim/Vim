@@ -8,7 +8,9 @@ export enum Tab {
     Previous,
     First,
     Last,
-    New
+    New,
+    Close,
+    Only
 }
 
 export interface ITabCommandArguments extends node.ICommandArgs {
@@ -60,6 +62,12 @@ export class TabCommand extends node.CommandBase {
                 break;
             case Tab.New:
                 this.executeCommandWithCount(this._arguments.count, "workbench.action.files.newUntitledFile");
+                break;
+            case Tab.Close:
+                this.executeCommandWithCount(this._arguments.count, "workbench.action.closeActiveEditor");
+                break;
+            case Tab.Only:
+                this.executeCommandWithCount(this._arguments.count, "workbench.action.closeOtherEditors");
                 break;
 
             default:
