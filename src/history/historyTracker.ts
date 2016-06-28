@@ -58,8 +58,7 @@ export class DocumentChange {
 class HistoryStep {
     changes        : DocumentChange[] = [];
     isFinished     : boolean          = false;
-    cursorStart    : Position         = new Position(0, 0);
-    cursorEnd      : Position         = undefined;
+    cursorStart    : Position         = undefined;
 
     constructor(position: Position = undefined) {
         if (position !== undefined) {
@@ -110,12 +109,12 @@ export class HistoryTracker {
                 this.currentHistoryStepIndex === this.historySteps.length - 1 &&
                 this.currentHistoryStep.isFinished)) {
 
-            this.historySteps.push(new HistoryStep(vimState.cursorPosition));
+            this.historySteps.push(new HistoryStep());
             this.currentHistoryStepIndex++;
         } else if (this.currentHistoryStepIndex !== this.historySteps.length - 1) {
             this.historySteps = this.historySteps.slice(0, this.currentHistoryStepIndex + 1);
 
-            this.historySteps.push(new HistoryStep(vimState.cursorPosition));
+            this.historySteps.push(new HistoryStep());
             this.currentHistoryStepIndex++;
         }
 
@@ -128,10 +127,16 @@ export class HistoryTracker {
                 this.currentHistoryStep.changes.push(
                     new DocumentChange(currentPosition, diff.value, true)
                 );
+                if (this.currentHistoryStep.cursorStart === undefined) {
+                    this.currentHistoryStep.cursorStart = currentPosition;
+                }
             } else if (diff.removed) {
                 this.currentHistoryStep.changes.push(
                     new DocumentChange(currentPosition, diff.value, false)
                 );
+                if (this.currentHistoryStep.cursorStart === undefined) {
+                    this.currentHistoryStep.cursorStart = currentPosition;
+                }
             }
 
             if (!diff.removed) {
@@ -139,7 +144,6 @@ export class HistoryTracker {
             }
         }
 
-        this.currentHistoryStep.cursorEnd = vimState.cursorPosition;
         this.oldText = newText;
     }
 

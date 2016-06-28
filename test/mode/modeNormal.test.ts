@@ -295,15 +295,15 @@ suite("Mode Normal", () => {
       end: ['abc', 'd|ef']
     });
 
-    newTestOnly({
-      title: "Undo",
+    newTest({
+      title: "Undo 1",
       start: ['|'],
       keysPressed: 'iabc<esc>adef<esc>uu',
       end: ['|']
     });
 
-    newTest({
-      title: "Undo",
+    newTestOnly({
+      title: "Undo 2",
       start: ['|'],
       keysPressed: 'iabc<esc>adef<esc>u',
       end: ['ab|c']
@@ -330,7 +330,7 @@ suite("Mode Normal", () => {
       end: ['abc|def']
     });
 
-    newTestOnly({
+    newTest({
       title: "Redo",
       start: ['|'],
       keysPressed: 'iabc<esc>adef<esc>uuhlhl<c-r><c-r>',
