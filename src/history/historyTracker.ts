@@ -42,30 +42,56 @@ export class DocumentChange {
             return this.start.advancePositionByText(this.text);
         }
     }
+
+    public async undo(): Promise<Position> {
+        return this.do(true);
+    }
 }
 
 class HistoryStep {
     changes: DocumentChange[] = [];
+    isFinished: boolean = false;
 }
 
 class HistoryTrackerClass {
     public static instance: HistoryTrackerClass = new HistoryTrackerClass();
 
-    private historySteps: HistoryStep[] = [];
+    private historySteps: HistoryStep[] = [new HistoryStep()];
+
+    private currentHistoryStepIndex = 0;
 
     private oldText: string;
 
-    private get mostRecentHistoryStep(): HistoryStep {
-        return this.historySteps[this.historySteps.length - 1];
+    private get currentHistoryStep(): HistoryStep {
+        if (this.currentHistoryStepIndex === -1) {
+            console.log("Tried to modify history at index -1");
+
+            throw new Error();
+        }
+
+        return this.historySteps[this.currentHistoryStepIndex];
     }
 
     constructor() {
-        this.addStep();
+        this.finishCurrentStep();
 
         this.oldText = TextEditor.getAllText();
     }
 
     addChange(): void {
+        if (this.currentHistoryStepIndex === -1 || (
+                this.currentHistoryStepIndex === this.historySteps.length - 1 &&
+                this.currentHistoryStep.isFinished)) {
+
+            this.historySteps.push(new HistoryStep());
+            this.currentHistoryStepIndex++;
+        } else if (this.currentHistoryStepIndex !== this.historySteps.length - 1) {
+            this.historySteps = this.historySteps.slice(0, this.currentHistoryStepIndex + 1);
+
+            this.historySteps.push(new HistoryStep());
+            this.currentHistoryStepIndex++;
+        }
+
         const newText = TextEditor.getAllText();
         const diffs = jsdiff.diffChars(this.oldText, newText);
 
@@ -73,11 +99,11 @@ class HistoryTrackerClass {
 
         for (const diff of diffs) {
             if (diff.added) {
-                this.mostRecentHistoryStep.changes.push(
+                this.currentHistoryStep.changes.push(
                     new DocumentChange(currentPosition, diff.value, true)
                 );
             } else if (diff.removed) {
-                this.mostRecentHistoryStep.changes.push(
+                this.currentHistoryStep.changes.push(
                     new DocumentChange(currentPosition, diff.value, false)
                 );
             }
@@ -90,27 +116,64 @@ class HistoryTrackerClass {
         this.oldText = newText;
     }
 
-    addStep(): void {
-        if (this.historySteps.length === 0 ||
-            this.mostRecentHistoryStep.changes.length > 0) {
-
-            this.historySteps.push(new HistoryStep());
-        }
+    ignoreChange(): void {
+        this.oldText = TextEditor.getAllText();
     }
 
-    async revertHistoryStep(): Promise<Position> {
-        if (this.historySteps.length === 0) {
+    finishCurrentStep(): void {
+        if (this.currentHistoryStep.changes.length === 0) {
+            return;
+        }
+
+        this.currentHistoryStep.isFinished = true;
+    }
+
+    async goBackHistoryStep(): Promise<Position> {
+        if (this.currentHistoryStepIndex === -1) {
             return;
         }
 
         let position: Position;
-        let step = this.historySteps.pop();
+        let step = this.currentHistoryStep;
 
         for (const change of step.changes.slice(0).reverse()) {
-            position = await change.do(true);
+            position = await change.undo();
+        }
+
+        this.currentHistoryStepIndex--;
+
+        return position;
+    }
+
+    async goForwardHistoryStep(): Promise<Position> {
+        if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
+            return undefined;
+        }
+
+        let position: Position;
+        let step = this.currentHistoryStep;
+
+        this.currentHistoryStepIndex++;
+
+        for (const change of step.changes) {
+            position = await change.do();
         }
 
         return position;
+    }
+
+    toString(): string {
+        let result = "";
+
+        for (let i = 0; i < this.historySteps.length; i++) {
+            const step = this.historySteps[i];
+
+            result += step.changes.map(x => x.text).join(",");
+            if (step.isFinished) { result += "✓"; }
+            result += "| ";
+        }
+
+        return result;
     }
 }
 
