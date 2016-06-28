@@ -221,7 +221,7 @@ export class HistoryTracker {
         for (let i = 0; i < this.historySteps.length; i++) {
             const step = this.historySteps[i];
 
-            result += step.changes.map(x => x.text).join("");
+            result += step.changes.map(x => x.text.replace(/\n/g, "")).join("");
             if (this.currentHistoryStepIndex === i) { result += "+"; }
             if (step.isFinished) { result += "✓"; }
             result += "| ";

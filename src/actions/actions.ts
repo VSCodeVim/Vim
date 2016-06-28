@@ -229,7 +229,7 @@ export abstract class BaseCommand extends BaseAction {
 }
 
 export class BaseOperator extends BaseAction {
-    canBeRepeatedWithDot = false;
+    canBeRepeatedWithDot = true;
 
     /**
      * Run this operator on a range, returning the new location of the cursor.

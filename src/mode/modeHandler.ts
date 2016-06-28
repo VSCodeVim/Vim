@@ -53,6 +53,8 @@ export class VimState {
 
     public alteredHistory = false;
 
+    public ranRepeatableAction = false;
+
     /**
      * The current full action we are building up.
      */
@@ -479,6 +481,12 @@ export class ModeHandler implements vscode.Disposable {
             HistoryTracker.instance.addChange(this._vimState);
         }
 
+        if (this._vimState.ranRepeatableAction) {
+            HistoryTracker.instance.finishCurrentStep();
+        }
+
+        console.log(HistoryTracker.instance.toString());
+
         return true;
     }
 
@@ -533,7 +541,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     async runAction(vimState: VimState, recordedState: RecordedState, action: BaseAction): Promise<VimState> {
-        let ranRepeatableAction = false;
+        vimState.ranRepeatableAction = false;
+
         let ranAction = false;
 
         if (action instanceof BaseMovement) {
@@ -554,7 +563,7 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             if (action.canBeRepeatedWithDot) {
-                ranRepeatableAction = true;
+                vimState.ranRepeatableAction = true;
             }
         }
 
@@ -565,7 +574,7 @@ export class ModeHandler implements vscode.Disposable {
             this.setCurrentModeByName(vimState);
 
             if (vimState.currentMode === ModeName.Normal) {
-                ranRepeatableAction = true;
+                vimState.ranRepeatableAction = true;
             }
         }
 
@@ -573,7 +582,7 @@ export class ModeHandler implements vscode.Disposable {
             vimState = await this.executeOperator(vimState);
 
             vimState.recordedState.hasRunOperator = true;
-            ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
+            vimState.ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
             ranAction = true;
         }
 
@@ -584,14 +593,13 @@ export class ModeHandler implements vscode.Disposable {
             this.setCurrentModeByName(vimState);
 
             if (vimState.currentMode === ModeName.Normal) {
-                ranRepeatableAction = true;
+                vimState.ranRepeatableAction = true;
             }
         }
 
         if (vimState.currentMode === ModeName.Normal) {
-            if (ranRepeatableAction) {
+            if (vimState.ranRepeatableAction) {
                 vimState.previousFullAction = vimState.recordedState;
-                HistoryTracker.instance.finishCurrentStep();
             }
 
             if (ranAction) {
