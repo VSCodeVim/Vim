@@ -53,8 +53,8 @@ class HistoryStep {
     isFinished: boolean = false;
 }
 
-class HistoryTrackerClass {
-    public static instance: HistoryTrackerClass = new HistoryTrackerClass();
+export class HistoryTracker {
+    public static instance: HistoryTracker;
 
     private historySteps: HistoryStep[] = [new HistoryStep()];
 
@@ -183,5 +183,3 @@ class HistoryTrackerClass {
         return result;
     }
 }
-
-export const HistoryTracker = HistoryTrackerClass.instance;
