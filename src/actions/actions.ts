@@ -213,7 +213,9 @@ export abstract class BaseCommand extends BaseAction {
   /**
    * Run the command a single time.
    */
-  public abstract async exec(position: Position, vimState: VimState): Promise<VimState>;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    throw new Error("Not implemented!");
+  }
 
   /**
    * Run the command the number of times VimState wants us to.
@@ -977,9 +979,11 @@ class CommandDeleteToLineEnd extends BaseCommand {
 class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["C"];
+  canBePrefixedWithCount = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return new ChangeOperator().run(vimState, position, position.getLineEnd().getLeft());
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    return new ChangeOperator().run(vimState, position, position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft());
   }
 }
 

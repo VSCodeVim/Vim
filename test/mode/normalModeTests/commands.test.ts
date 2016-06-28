@@ -76,6 +76,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'NC'",
+      start: ['tex|t', 'one', 'two'],
+      keysPressed: '^ll2C',
+      end: ['te|', 'two'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'r'",
       start: ['tex|t'],
       keysPressed: 'hrs',
