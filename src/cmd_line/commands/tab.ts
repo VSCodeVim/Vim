@@ -17,7 +17,7 @@ export interface ITabCommandArguments extends node.ICommandArgs {
 
 //
 //  Implements tab
-//  http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
+//  http://vimdoc.sourceforge.net/htmldoc/tabpage.html
 //
 export class TabCommand extends node.CommandBase {
     protected _arguments : ITabCommandArguments;
