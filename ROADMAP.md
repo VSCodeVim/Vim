@@ -386,7 +386,7 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:warning:   | :tabn[ext] :1234:	    | Go to tab page {count}.  The first tab page has number one.
-:warning:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
+:x:   | :tabn[ext] :1234:	    | Go to tab page {count}.  The first tab page has number one.
+:x:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
 :x:   | :tabfir[st]	 | Go to the first tab page.
 :x:   | :tabl[ast]	 | Go to the last tab page.

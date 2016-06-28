@@ -2,7 +2,6 @@
 
 import * as vscode from "vscode";
 import * as node from "../node";
-import * as error from '../../error';
 
 export enum Tab {
     Next,
@@ -13,7 +12,7 @@ export enum Tab {
 
 export interface ITabCommandArguments extends node.ICommandArgs {
     tab: Tab;
-    range?: node.LineRange;
+    count?: number;
 }
 
 //
@@ -34,21 +33,31 @@ export class TabCommand extends node.CommandBase {
         return this._arguments;
     }
 
+    private executeCommandWithCount(count: number, command: string) {
+        if (!count) {
+            count = 1;
+        }
+
+        for (let i = 0; i < count; i++) {
+            vscode.commands.executeCommand(command);
+        }
+    }
+
     execute() : void {
         switch (this._arguments.tab) {
             case Tab.Next:
-                vscode.commands.executeCommand("workbench.action.nextEditor");
+                this.executeCommandWithCount(this._arguments.count, "workbench.action.nextEditor");
                 break;
             case Tab.Previous:
-                vscode.commands.executeCommand("workbench.action.previousEditor");
+                this.executeCommandWithCount(this._arguments.count, "workbench.action.previousEditor");
                 break;
             case Tab.First:
-                vscode.commands.executeCommand("workbench.action.openEditorAtIndex1");
+                this.executeCommandWithCount(this._arguments.count, "workbench.action.openEditorAtIndex1");
                 break;
             case Tab.Last:
-                vscode.commands.executeCommand("workbench.action.openLastEditorInGroup");
+                this.executeCommandWithCount(this._arguments.count, "workbench.action.openLastEditorInGroup");
                 break;
-        
+
             default:
                 break;
         }
