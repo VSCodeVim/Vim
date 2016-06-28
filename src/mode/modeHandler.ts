@@ -278,7 +278,7 @@ export class RecordedState {
         return res;
     }
 
-    public readyToExecute(mode: ModeName): boolean {
+    public operatorReadyToExecute(mode: ModeName): boolean {
         // Visual modes do not require a motion -- they ARE the motion.
         return this.operator &&
             !this.hasRunOperator &&
@@ -565,11 +565,11 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
-        if (recordedState.readyToExecute(vimState.currentMode)) {
+        if (recordedState.operatorReadyToExecute(vimState.currentMode)) {
             vimState = await this.executeOperator(vimState);
 
             vimState.recordedState.hasRunOperator = true;
-            ranRepeatableAction = true;
+            ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
             ranAction = true;
         }
 

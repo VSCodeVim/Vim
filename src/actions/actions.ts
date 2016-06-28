@@ -74,10 +74,7 @@ export class BaseAction {
    */
   isMotion = false;
 
-  /**
-   * Can this command be repeated with a number prefix? E.g. 5p can; 5zz can't.
-   */
-  canBePrefixedWithCount = false;
+  canBeRepeatedWithDot = false;
 
   /**
    * Modes that this action can be run in.
@@ -210,7 +207,7 @@ export abstract class BaseCommand extends BaseAction {
 
   canBePrefixedWithCount = false;
 
-  canBeRepeatedWithDot = true;
+  canBeRepeatedWithDot = false;
 
   /**
    * Run the command a single time.
@@ -232,6 +229,8 @@ export abstract class BaseCommand extends BaseAction {
 }
 
 export class BaseOperator extends BaseAction {
+    canBeRepeatedWithDot = false;
+
     /**
      * Run this operator on a range, returning the new location of the cursor.
      */
@@ -633,7 +632,7 @@ export class DeleteOperatorVisual extends BaseOperator {
 export class YankOperator extends BaseOperator {
     public keys = ["y"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-    canBePrefixedWithCount = true;
+    canBeRepeatedWithDot = false;
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
