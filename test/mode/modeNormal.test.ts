@@ -302,28 +302,28 @@ suite("Mode Normal", () => {
       end: ['|']
     });
 
-    newTestOnly({
+    newTest({
       title: "Undo 2",
       start: ['|'],
       keysPressed: 'iabc<esc>adef<esc>u',
       end: ['ab|c']
     });
 
-    newTestOnly({
+    newTest({
       title: "Undo cursor",
       start: ['|'],
       keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>uuu',
       end: ['|']
     });
 
-    newTestOnly({
+    newTest({
       title: "Undo cursor 2",
       start: ['|'],
       keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>uu',
       end: ['|abc']
     });
 
-    newTestOnly({
+    newTest({
       title: "Undo cursor 3",
       start: ['|'],
       keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>u',

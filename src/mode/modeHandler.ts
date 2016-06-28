@@ -485,7 +485,7 @@ export class ModeHandler implements vscode.Disposable {
             HistoryTracker.instance.finishCurrentStep();
         }
 
-        console.log(HistoryTracker.instance.toString());
+        // console.log(HistoryTracker.instance.toString());
 
         return true;
     }

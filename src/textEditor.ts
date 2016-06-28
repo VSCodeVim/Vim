@@ -36,7 +36,7 @@ export class TextEditor {
         });
     }
 
-    static async delete(range: vscode.Range, addToHistory = true): Promise<boolean> {
+    static async delete(range: vscode.Range): Promise<boolean> {
         return vscode.window.activeTextEditor.edit(editBuilder => {
             editBuilder.delete(range);
         });
