@@ -13,7 +13,11 @@ export const commandParsers = {
     q: parseQuitCommandArgs,
 
     tabn: tabCmd.parseTabNCommandArgs,
+    tabnext: tabCmd.parseTabNCommandArgs,
     tabp: tabCmd.parseTabPCommandArgs,
+    tabprevious: tabCmd.parseTabPCommandArgs,
+    tabfirst: tabCmd.parseTabFirstCommandArgs,
     tabfir: tabCmd.parseTabFirstCommandArgs,
+    tablast: tabCmd.parseTabLastCommandArgs,
     tabl: tabCmd.parseTabLastCommandArgs
 };
