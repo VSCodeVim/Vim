@@ -19,5 +19,8 @@ export const commandParsers = {
     tabfirst: tabCmd.parseTabFirstCommandArgs,
     tabfir: tabCmd.parseTabFirstCommandArgs,
     tablast: tabCmd.parseTabLastCommandArgs,
-    tabl: tabCmd.parseTabLastCommandArgs
+    tabl: tabCmd.parseTabLastCommandArgs,
+    tabe: tabCmd.parseTabNewCommandArgs,
+    tabedit: tabCmd.parseTabNewCommandArgs,
+    tabnew: tabCmd.parseTabNewCommandArgs
 };

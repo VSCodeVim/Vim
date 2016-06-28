@@ -54,3 +54,13 @@ export function parseTabLastCommandArgs(args : string) : node.TabCommand {
         tab: node.Tab.Last
     });
 }
+
+export function parseTabNewCommandArgs(args: string) : node.TabCommand {
+    // New Tab command should support `count`
+    // And the new created Tab's position depends on `count`
+    // For now VS Code only allows open tab next to current Tab
+    // So `count == 0` is not possible. But we can workaround this once we can move tabs through API.
+    return new node.TabCommand({
+        tab: node.Tab.New
+    });
+}

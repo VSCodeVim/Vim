@@ -386,6 +386,8 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
+:warning:   | :1234: :tabe[dit]    | Open a new tab page with an empty window, after the current tab page
+:warning:   | :1234: :tabnew    | Open a new tab page with an empty window, after the current tab page
 :white_check_mark:   | :tabn[ext] :1234:	    | Go to tab page {count}.  The first tab page has number one.
 :white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
