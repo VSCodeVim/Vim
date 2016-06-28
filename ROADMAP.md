@@ -394,3 +394,5 @@ Status | Command | Description
 :white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
+:x:   | :tabls	 | List the tab pages and the windows they contain.
+:x:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
