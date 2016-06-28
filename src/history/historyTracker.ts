@@ -100,6 +100,10 @@ export class HistoryTracker {
      * used to look like.
      */
     addChange(vimState: VimState): void {
+        const newText = TextEditor.getAllText();
+
+        if (newText === this.oldText) { return; }
+
         // Determine if we should add a new Step.
 
         if (this.currentHistoryStepIndex === -1 || (
@@ -115,7 +119,6 @@ export class HistoryTracker {
             this.currentHistoryStepIndex++;
         }
 
-        const newText = TextEditor.getAllText();
         const diffs = jsdiff.diffChars(this.oldText, newText);
 
         let currentPosition = new Position(0, 0);
@@ -170,6 +173,14 @@ export class HistoryTracker {
             return undefined;
         }
 
+        if (this.currentHistoryStep.changes.length === 0) {
+            this.currentHistoryStepIndex--;
+        }
+
+        if (this.currentHistoryStepIndex === -1) {
+            return undefined;
+        }
+
         let step = this.currentHistoryStep;
 
         for (const change of step.changes.slice(0).reverse()) {
@@ -197,7 +208,7 @@ export class HistoryTracker {
             await change.do();
         }
 
-        return step.cursorEnd;
+        return step.cursorStart;
     }
 
     toString(): string {

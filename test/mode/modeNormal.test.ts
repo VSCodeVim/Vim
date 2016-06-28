@@ -9,7 +9,8 @@ suite("Mode Normal", () => {
     let modeHandler: ModeHandler = new ModeHandler();
 
     let {
-        newTest
+        newTest,
+        newTestOnly
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
@@ -293,4 +294,47 @@ suite("Mode Normal", () => {
       keysPressed: '    ',
       end: ['abc', 'd|ef']
     });
+
+    newTestOnly({
+      title: "Undo",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>uu',
+      end: ['|']
+    });
+
+    newTest({
+      title: "Undo",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>u',
+      end: ['ab|c']
+    });
+
+    newTest({
+      title: "Undo with movement first",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>hlhlu',
+      end: ['ab|c']
+    });
+
+    newTest({
+      title: "Redo",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>uu<c-r>',
+      end: ['|abc']
+    });
+
+    newTest({
+      title: "Redo",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>uu<c-r><c-r>',
+      end: ['abc|def']
+    });
+
+    newTestOnly({
+      title: "Redo",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>uuhlhl<c-r><c-r>',
+      end: ['abc|def']
+    });
+
 });

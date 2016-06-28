@@ -464,6 +464,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     async handleKeyEvent(key: string): Promise<Boolean> {
+        if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
+
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
 
         if (this._vimState.alteredHistory) {
@@ -473,7 +475,7 @@ export class ModeHandler implements vscode.Disposable {
             HistoryTracker.instance.addChange(this._vimState);
         }
 
-        // console.log(HistoryTracker.toString());
+        console.log(HistoryTracker.instance.toString());
 
         return true;
     }
