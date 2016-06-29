@@ -629,7 +629,8 @@ export class ModeHandler implements vscode.Disposable {
         const currentLineLength = TextEditor.getLineAt(vimState.cursorPosition).text.length;
 
         if (vimState.currentMode === ModeName.Normal &&
-            vimState.cursorPosition.character >= currentLineLength) {
+            vimState.cursorPosition.character >= currentLineLength &&
+            currentLineLength > 0) {
             vimState.cursorPosition = new Position(
                 vimState.cursorPosition.line,
                 currentLineLength - 1
