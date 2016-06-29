@@ -476,7 +476,13 @@ export class ModeHandler implements vscode.Disposable {
 
         this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
 
-        this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+        try {
+            this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+        } catch (e) {
+            console.log('error.stack');
+            console.log(e);
+            console.log(e.stack);
+        }
 
         if (this._vimState.alteredHistory) {
             this._vimState.alteredHistory = false;
@@ -543,6 +549,7 @@ export class ModeHandler implements vscode.Disposable {
 
         return vimState;
     }
+
     async runAction(vimState: VimState, recordedState: RecordedState, action: BaseAction): Promise<VimState> {
         recordedState.ranRepeatableAction = false;
         let ranAction = false;
