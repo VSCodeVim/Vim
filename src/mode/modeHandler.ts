@@ -564,7 +564,7 @@ export class ModeHandler implements vscode.Disposable {
             vimState = await action.execCount(vimState.cursorPosition, vimState);
 
             if (vimState.commandAction !== VimSpecialCommands.Nothing) {
-                await this.handleCommand(vimState);
+                await this.executeCommand(vimState);
             }
 
             if (action.isCompleteAction) {
@@ -622,6 +622,18 @@ export class ModeHandler implements vscode.Disposable {
 
         if (this.currentModeName === ModeName.Normal) {
             vimState.cursorStartPosition = vimState.cursorPosition;
+        }
+
+        // Ensure cursor is within bounds
+
+        const currentLineLength = TextEditor.getLineAt(vimState.cursorPosition).text.length;
+
+        if (vimState.currentMode === ModeName.Normal &&
+            vimState.cursorPosition.character >= currentLineLength) {
+            vimState.cursorPosition = new Position(
+                vimState.cursorPosition.line,
+                currentLineLength - 1
+            );
         }
 
         return vimState;
@@ -697,7 +709,7 @@ export class ModeHandler implements vscode.Disposable {
         console.log("This is bad! Execution should never get here.");
     }
 
-    private async handleCommand(vimState: VimState): Promise<VimState> {
+    private async executeCommand(vimState: VimState): Promise<VimState> {
         const command = vimState.commandAction;
 
         vimState.commandAction = VimSpecialCommands.Nothing;

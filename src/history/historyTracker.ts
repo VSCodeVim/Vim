@@ -46,7 +46,7 @@ export class DocumentChange {
             await TextEditor.delete(new vscode.Range(
                 rangeStart,
                 rangeStop
-            ), false);
+            ));
         }
     }
 
@@ -56,9 +56,9 @@ export class DocumentChange {
 }
 
 class HistoryStep {
-    changes        : DocumentChange[] = [];
-    isFinished     : boolean          = false;
-    cursorStart    : Position         = undefined;
+    changes     : DocumentChange[] = [];
+    isFinished  : boolean          = false;
+    cursorStart : Position         = undefined;
 
     constructor(position: Position = undefined) {
         if (position !== undefined) {
