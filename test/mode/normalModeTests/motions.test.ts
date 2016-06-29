@@ -116,6 +116,62 @@ suite("Motions in Normal Mode", () => {
     });
 
     newTest({
+      title: "Can handle [{",
+      start: ['{(|)}'],
+      keysPressed: '[{',
+      end: ['|{()}']
+    });
+
+    newTest({
+      title: "Can handle nested [{",
+      start: ['{{(|)}'],
+      keysPressed: '[{',
+      end: ['{|{()}']
+    });
+
+    newTest({
+      title: "Can handle <number>[{",
+      start: ['{{(|)}'],
+      keysPressed: '2[{',
+      end: ['|{{()}']
+    });
+
+    newTest({
+      title: "Can handle [{ and character under cursor exclusive",
+      start: ['{|{()}'],
+      keysPressed: '[{',
+      end: ['|{{()}']
+    });
+
+    newTest({
+      title: "Can handle [}",
+      start: ['{(|)}'],
+      keysPressed: '[}',
+      end: ['{()|}']
+    });
+
+    newTest({
+      title: "Can handle nested [}",
+      start: ['{{(|)}}'],
+      keysPressed: '[}',
+      end: ['{{()|}}']
+    });
+
+    newTest({
+      title: "Can handle <number>[}",
+      start: ['{{(|)}}'],
+      keysPressed: '2[}',
+      end: ['{{()}|}']
+    });
+
+    newTest({
+      title: "Can handle [} and character under cursor exclusive",
+      start: ['{{()|}}'],
+      keysPressed: '[}',
+      end: ['{{()}|}']
+    });
+
+    newTest({
       title: "Can handle 'ge'",
       start: ['text tex|t'],
       keysPressed: '$ge',
