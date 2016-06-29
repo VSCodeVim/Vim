@@ -87,12 +87,12 @@ Status | Command | Description
    | :1234:  [[		| N sections backward, at start of section
    | :1234:  ][		| N sections forward, at end of section
    | :1234:  []		| N sections backward, at end of section
-   | :1234:  [(		| N times back to unclosed '('
-   | :1234:  [{		| N times back to unclosed '{'
+:white_check_mark:   | :1234:  [(		| N times back to unclosed '('
+:white_check_mark:   | :1234:  [{		| N times back to unclosed '{'
    | :1234:  [m		| N times back to start of method (for Java)
    | :1234:  [M		| N times back to end of method (for Java)
-   | :1234:  ])		| N times forward to unclosed ')'
-   | :1234:  ]}		| N times forward to unclosed '}'
+:white_check_mark:   | :1234:  ])		| N times forward to unclosed ')'
+:white_check_mark:   | :1234:  ]}		| N times forward to unclosed '}'
    | :1234:  ]m		| N times forward to start of method (for Java)
    | :1234:  ]M		| N times forward to end of method (for Java)
    | :1234:  [#		| N times back to unclosed "#if" or "#else"
