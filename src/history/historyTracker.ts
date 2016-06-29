@@ -36,10 +36,7 @@ export class DocumentChange {
         const rangeStart = this.start;
 
         if ((this.isAdd && !undo) || (!this.isAdd && undo)) {
-            await TextEditor.insertAt(
-                this.text,
-                rangeStart
-            );
+            await TextEditor.insert(this.text, rangeStart, false);
         } else {
             const rangeStop = rangeStart.advancePositionByText(this.text);
 
