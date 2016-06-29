@@ -3,6 +3,7 @@
 import {parseQuitCommandArgs} from './subparsers/quit';
 import {parseWriteCommandArgs} from './subparsers/write';
 import * as tabCmd from './subparsers/tab';
+import * as fileCmd from './subparsers/file';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -32,5 +33,7 @@ export const commandParsers = {
     tabc: tabCmd.parseTabCloseCommandArgs,
 
     tabo: tabCmd.parseTabOnlyCommandArgs,
-    tabonly: tabCmd.parseTabOnlyCommandArgs
+    tabonly: tabCmd.parseTabOnlyCommandArgs,
+
+    e: fileCmd.parseEditFileCommandArgs
 };
