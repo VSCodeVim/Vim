@@ -1910,6 +1910,46 @@ class MoveToMatchingBracket extends BaseMovement {
     // "\"": { match: "\"", direction:  0 },
   };
 
+  nextBracket(position: Position, charToMatch: string, toFind: { match: string, nextMatchIsForward: boolean }, closed: boolean = true) {
+      /**
+       * We do a fairly basic implementation that only tracks the state of the type of
+       * character you're over and its pair (e.g. "[" and "]"). This is similar to
+       * what Vim does.
+       *
+       * It can't handle strings very well - something like "|( ')' )" where | is the
+       * cursor will cause it to go to the ) in the quotes, even though it should skip over it.
+       *
+       * PRs welcomed! (TODO)
+       * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
+       */
+
+      let stackHeight = closed ? 0 : 1;
+      let matchedPosition: Position = undefined;
+
+      for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
+        if (char === charToMatch) {
+          stackHeight++;
+        }
+
+        if (char === this.pairings[charToMatch].match) {
+          stackHeight--;
+        }
+
+        if (stackHeight === 0) {
+          matchedPosition = pos;
+
+          break;
+        }
+      }
+
+      if (matchedPosition) {
+        return matchedPosition;
+      }
+
+      // TODO(bell)
+      return position;
+  }
+
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const text = TextEditor.getLineAt(position).text;
     const charToMatch = text[position.character];
@@ -1929,44 +1969,8 @@ class MoveToMatchingBracket extends BaseMovement {
       return position;
     }
 
-    /**
-     * We do a fairly basic implementation that only tracks the state of the type of
-     * character you're over and its pair (e.g. "[" and "]"). This is similar to
-     * what Vim does.
-     *
-     * It can't handle strings very well - something like "|( ')' )" where | is the
-     * cursor will cause it to go to the ) in the quotes, even though it should skip over it.
-     *
-     * PRs welcomed! (TODO)
-     * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
-     */
-
-    let stackHeight = 0;
-    let matchedPosition: Position = undefined;
-
-    for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
-      if (char === charToMatch) {
-        stackHeight++;
-      }
-
-      if (char === this.pairings[charToMatch].match) {
-        stackHeight--;
-      }
-
-      if (stackHeight === 0) {
-        matchedPosition = pos;
-
-        break;
-      }
-    }
-
-    if (matchedPosition) {
-      return matchedPosition;
-    }
-
-    // TODO(bell)
-    return position;
-  }
+    return this.nextBracket(position, charToMatch, toFind, true);
+}
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     const result = await this.execAction(position, vimState);
@@ -1976,6 +1980,46 @@ class MoveToMatchingBracket extends BaseMovement {
     } else {
       return result.getRight();
     }
+  }
+}
+
+@RegisterAction
+class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
+  keys = ["[", "("];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const charToMatch = ")";
+    return this.nextBracket(position.getLeftThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+  }
+}
+
+@RegisterAction
+class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
+  keys = ["[", ")"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const charToMatch = "(";
+    return this.nextBracket(position.getRightThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+  }
+}
+
+@RegisterAction
+class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
+  keys = ["[", "{"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const charToMatch = "}";
+    return this.nextBracket(position.getLeftThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+  }
+}
+
+@RegisterAction
+class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
+  keys = ["[", "}"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const charToMatch = "{";
+    return this.nextBracket(position.getRightThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
   }
 }
 
