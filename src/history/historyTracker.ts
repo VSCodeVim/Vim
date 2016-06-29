@@ -118,6 +118,14 @@ export class HistoryTracker {
             this.currentHistoryStepIndex++;
         }
 
+        // TODO: This is actually pretty stupid! Since we already have the cursorPosition,
+        // and most diffs are just +/- a few characters, we can just do a direct comparison rather
+        // than using jsdiff.
+
+        // The difficulty is with a few rare commands like :%s/one/two/g that make
+        // multiple changes in different places simultaneously. For those, we could require
+        // them to call addChange manually, I guess...
+
         const diffs = jsdiff.diffChars(this.oldText, newText);
 
         let currentPosition = new Position(0, 0);
