@@ -902,7 +902,7 @@ class CommandUndo extends BaseCommand {
   keys = ["u"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const newPosition = await HistoryTracker.instance.goBackHistoryStep();
+    const newPosition = await HistoryTracker.tracker.goBackHistoryStep();
 
     if (newPosition !== undefined) {
       vimState.cursorPosition = newPosition;
@@ -918,7 +918,7 @@ class CommandRedo extends BaseCommand {
   keys = ["ctrl+r"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const newPosition = await HistoryTracker.instance.goForwardHistoryStep();
+    const newPosition = await HistoryTracker.tracker.goForwardHistoryStep();
 
     if (newPosition !== undefined) {
       vimState.cursorPosition = newPosition;

@@ -486,16 +486,16 @@ export class ModeHandler implements vscode.Disposable {
 
         if (this._vimState.alteredHistory) {
             this._vimState.alteredHistory = false;
-            HistoryTracker.instance.ignoreChange();
+            HistoryTracker.tracker.ignoreChange();
         } else {
-            HistoryTracker.instance.addChange(this._vimState);
+            HistoryTracker.tracker.addChange(this._vimState);
         }
 
         if (this._vimState.recordedState.ranRepeatableAction) {
-            HistoryTracker.instance.finishCurrentStep();
+            HistoryTracker.tracker.finishCurrentStep();
         }
 
-        // console.log(HistoryTracker.instance.toString());
+        console.log(HistoryTracker.instance.toString());
 
         return true;
     }
@@ -609,7 +609,7 @@ export class ModeHandler implements vscode.Disposable {
         if (vimState.currentMode === ModeName.Normal) {
             if (recordedState.ranRepeatableAction) {
                 vimState.previousFullAction = vimState.recordedState;
-                HistoryTracker.instance.finishCurrentStep();
+                HistoryTracker.tracker.finishCurrentStep();
             }
 
             if (ranAction) {

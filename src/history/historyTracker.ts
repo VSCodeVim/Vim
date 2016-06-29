@@ -64,9 +64,7 @@ class HistoryStep {
     }
 }
 
-export class HistoryTracker {
-    public static instance: HistoryTracker;
-
+class HistoryTrackerSingleFile {
     private historySteps: HistoryStep[] = [new HistoryStep()];
 
     private currentHistoryStepIndex = 0;
@@ -226,12 +224,37 @@ export class HistoryTracker {
         for (let i = 0; i < this.historySteps.length; i++) {
             const step = this.historySteps[i];
 
-            result += step.changes.map(x => x.text.replace(/\n/g, "")).join("");
+            result += step.changes.map(x => x.text.replace(/\n/g, "\\n")).join("");
             if (this.currentHistoryStepIndex === i) { result += "+"; }
             if (step.isFinished) { result += "✓"; }
             result += "| ";
         }
 
         return result;
+    }
+}
+
+export class HistoryTracker {
+    public static tracker: HistoryTrackerSingleFile;
+    public static instance: HistoryTracker;
+
+    trackers: { [key: string]: HistoryTrackerSingleFile } = {};
+
+    constructor() {
+        const tracker = new HistoryTrackerSingleFile();
+
+        this.trackers = {};
+        this.trackers[vscode.window.activeTextEditor.document.fileName] = tracker;
+        HistoryTracker.tracker = tracker;
+
+        vscode.window.onDidChangeActiveTextEditor(e => {
+            const filename = e.document.fileName;
+
+            if (!this.trackers[filename]) {
+                this.trackers[filename] = new HistoryTrackerSingleFile();
+            }
+
+            HistoryTracker.tracker = this.trackers[filename];
+        });
     }
 }
