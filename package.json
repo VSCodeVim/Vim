@@ -1,126 +1,127 @@
 {
-    "name": "vim",
-    "displayName": "Vim",
-    "description": "Vim emulation for Visual Studio Code",
-    "icon": "images/icon.png",
-    "version": "0.0.28",
-    "publisher": "vscodevim",
-    "galleryBanner": {
-        "color": "#a5c9a2",
-        "theme": "light"
-    },
-    "license": "MIT",
-    "keywords": [
-        "vim",
-        "vi",
-        "vscodevim",
-        "vsc-vim"
+  "name": "vim",
+  "displayName": "Vim",
+  "description": "Vim emulation for Visual Studio Code",
+  "icon": "images/icon.png",
+  "version": "0.0.28",
+  "publisher": "vscodevim",
+  "galleryBanner": {
+    "color": "#a5c9a2",
+    "theme": "light"
+  },
+  "license": "MIT",
+  "keywords": [
+    "vim",
+    "vi",
+    "vscodevim",
+    "vsc-vim"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VSCodeVim/Vim.git"
+  },
+  "homepage": "https://github.com/VSCodeVim/Vim",
+  "bugs": {
+    "url": "https://github.com/VSCodeVim/Vim/issues"
+  },
+  "engines": {
+    "vscode": "^1.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.showCmdLine",
+        "title": "Vim: Show Command Line"
+      }
     ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/VSCodeVim/Vim.git"
-    },
-    "homepage": "https://github.com/VSCodeVim/Vim",
-    "bugs": {
-        "url": "https://github.com/VSCodeVim/Vim/issues"
-    },
-    "engines": {
-        "vscode": "^1.0.0"
-    },
-    "categories": [
-        "Other"
+    "keybindings": [
+      {
+        "key": "Escape",
+        "command": "extension.vim_esc",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "Backspace",
+        "command": "extension.vim_backspace",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+r",
+        "command": "extension.vim_ctrl+r",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+f",
+        "command": "extension.vim_ctrl+f",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+b",
+        "command": "extension.vim_ctrl+b",
+        "when": "editorTextFocus"
+      }
     ],
-    "activationEvents": [
-        "*"
-    ],
-    "main": "./out/extension",
-    "contributes": {
-        "commands": [
-            {
-                "command": "extension.showCmdLine",
-                "title": "Vim: Show Command Line"
-            }
-        ],
-        "keybindings": [
-            {
-                "key": "Escape",
-                "command": "extension.vim_esc",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "Backspace",
-                "command": "extension.vim_backspace",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "ctrl+r",
-                "command": "extension.vim_ctrl+r",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "ctrl+f",
-                "command": "extension.vim_ctrl+f",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "ctrl+b",
-                "command": "extension.vim_ctrl+b",
-                "when": "editorTextFocus"
-            }
-        ],
-        "configuration": {
-            "title": "Vim Configuration",
-            "type": "object",
-            "properties": {
-                "vim.keyboardLayout": {
-                    "default": "en-US (QWERTY)",
-                    "type": "string",
-                    "description": "Keyboard layout to use to translated key presses."
-                },
-                "vim.normalModeKeyBindings": {
-                    "type": "object",
-                    "description": "Keybinding overrides to use for normal mode."
-                },
-                "vim.insertModeKeyBindings": {
-                    "type": "object",
-                    "description": "Keybinding overrides to use for insert mode."
-                },
-                "vim.useSolidBlockCursor": {
-                    "type": "boolean",
-                    "description": "Use a non blinking block cursor."
-                },
-                "vim.visualModeKeyBindings": {
-                    "type": "object",
-                    "description": "Keybinding overrides to use for visual mode."
-                }
-            }
+    "configuration": {
+      "title": "Vim Configuration",
+      "type": "object",
+      "properties": {
+        "vim.keyboardLayout": {
+          "default": "en-US (QWERTY)",
+          "type": "string",
+          "description": "Keyboard layout to use to translated key presses."
+        },
+        "vim.normalModeKeyBindings": {
+          "type": "object",
+          "description": "Keybinding overrides to use for normal mode."
+        },
+        "vim.insertModeKeyBindings": {
+          "type": "object",
+          "description": "Keybinding overrides to use for insert mode."
+        },
+        "vim.useSolidBlockCursor": {
+          "type": "boolean",
+          "description": "Use a non blinking block cursor."
+        },
+        "vim.visualModeKeyBindings": {
+          "type": "object",
+          "description": "Keybinding overrides to use for visual mode."
         }
-    },
-    "scripts": {
-        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-        "test": "node ./node_modules/vscode/bin/test",
-        "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
-    },
-    "dependencies": {
-        "lodash": "^4.12.0"
-    },
-    "devDependencies": {
-        "gulp": "^3.9.1",
-        "gulp-bump": "^2.1.0",
-        "gulp-filter": "^4.0.0",
-        "gulp-git": "^1.7.1",
-        "gulp-mocha": "^2.2.0",
-        "gulp-shell": "^0.5.2",
-        "gulp-soften": "^0.0.1",
-        "gulp-tag-version": "^1.3.0",
-        "gulp-trimlines": "^1.0.0",
-        "gulp-tslint": "^5.0.0",
-        "gulp-typescript": "^2.13.4",
-        "gulp-typings": "^2.0.0",
-        "tslint": "^3.10.2",
-        "typescript": "^1.8.10",
-        "typings": "^1.0.4",
-        "vscode": "^0.11.13"
+      }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+    "test": "node ./node_modules/vscode/bin/test",
+    "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
+  },
+  "dependencies": {
+    "diff": "^2.2.3",
+    "lodash": "^4.12.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-bump": "^2.1.0",
+    "gulp-filter": "^4.0.0",
+    "gulp-git": "^1.7.1",
+    "gulp-mocha": "^2.2.0",
+    "gulp-shell": "^0.5.2",
+    "gulp-soften": "^0.0.1",
+    "gulp-tag-version": "^1.3.0",
+    "gulp-trimlines": "^1.0.0",
+    "gulp-tslint": "^5.0.0",
+    "gulp-typescript": "^2.13.4",
+    "gulp-typings": "^2.0.0",
+    "tslint": "^3.10.2",
+    "typescript": "^1.8.10",
+    "typings": "^1.0.4",
+    "vscode": "^0.11.13"
+  }
 }
