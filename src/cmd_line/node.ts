@@ -93,8 +93,12 @@ export class CommandLine {
             return;
         }
 
-        // TODO: calc range
-        this.command.execute(modeHandler);
+        if (this.range.isEmpty) {
+            this.command.execute(modeHandler);
+        } else {
+            this.command.executeWithRange(modeHandler, this.range);
+        }
+
     }
 }
 
@@ -125,4 +129,8 @@ export abstract class CommandBase {
     protected _arguments : ICommandArgs;
 
     abstract execute(modeHandler : ModeHandler) : void;
+
+    executeWithRange(modeHandler : ModeHandler, range: LineRange) : void {
+        throw new Error("Not implemented!");
+    }
 }

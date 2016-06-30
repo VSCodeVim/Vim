@@ -37,38 +37,6 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
     }
 }
 
-/**
- * The flags that you can use for the substitute commands:
- * [&] Must be the first one: Keep the flags from the previous substitute command.
- * [c] Confirm each substitution.
- * [e] When the search pattern fails, do not issue an error message and, in
- *     particular, continue in maps as if no error occurred.
- * [g] Replace all occurrences in the line.  Without this argument, replacement
- *     occurs only for the first occurrence in each line.
- * [i] Ignore case for the pattern.
- * [I] Don't ignore case for the pattern.
- * [n] Report the number of matches, do not actually substitute.
- * [p] Print the line containing the last substitute.
- * [#] Like [p] and prepend the line number.
- * [l] Like [p] but print the text like |:list|.
- * [r] When the search pattern is empty, use the previously used search pattern
- *     instead of the search pattern from the last substitute or ":global".
- */
-enum SubstituteFlags {
-    None = 0,
-    KeepPreviousFlags = 0x1,
-    ConfirmEach = 0x2,
-    SuppressError = 0x4,
-    ReplaceAll = 0x8,
-    IgnoreCase = 0x10,
-    NoIgnoreCase = 0x20,
-    PrintCount = 0x40,
-    PrintLastMatchedLine = 0x80,
-    PrintLastMatchedLineWithNumber = 0x100,
-    PrintLastMatchedLineWithList = 0x200,
-    UsePreviousPattern = 0x400
-}
-
 function parseSubstituteFlags(scanner: Scanner): number {
     let flags: number = 0;
     let index = 0;
@@ -81,44 +49,44 @@ function parseSubstituteFlags(scanner: Scanner): number {
         switch (c) {
             case "&":
                 if (index === 0) {
-                    flags = flags | SubstituteFlags.KeepPreviousFlags
+                    flags = flags | node.SubstituteFlags.KeepPreviousFlags
                 } else {
                     // Raise Error
-                    return SubstituteFlags.None
+                    return node.SubstituteFlags.None
                 }
                 break;
             case "c":
-                flags = flags | SubstituteFlags.ConfirmEach;
+                flags = flags | node.SubstituteFlags.ConfirmEach;
                 break;
             case "e":
-                flags = flags | SubstituteFlags.SuppressError;
+                flags = flags | node.SubstituteFlags.SuppressError;
                 break;
             case "g":
-                flags = flags | SubstituteFlags.ReplaceAll;
+                flags = flags | node.SubstituteFlags.ReplaceAll;
                 break;
             case "i":
-                flags = flags | SubstituteFlags.IgnoreCase;
+                flags = flags | node.SubstituteFlags.IgnoreCase;
                 break;
             case "I":
-                flags = flags | SubstituteFlags.NoIgnoreCase;
+                flags = flags | node.SubstituteFlags.NoIgnoreCase;
                 break;
             case "n":
-                flags = flags | SubstituteFlags.PrintCount;
+                flags = flags | node.SubstituteFlags.PrintCount;
                 break;
             case "p":
-                flags = flags | SubstituteFlags.PrintLastMatchedLine;
+                flags = flags | node.SubstituteFlags.PrintLastMatchedLine;
                 break;
             case "#":
-                flags = flags | SubstituteFlags.PrintLastMatchedLineWithNumber;
+                flags = flags | node.SubstituteFlags.PrintLastMatchedLineWithNumber;
                 break;
             case "l":
-                flags = flags | SubstituteFlags.PrintLastMatchedLineWithList;
+                flags = flags | node.SubstituteFlags.PrintLastMatchedLineWithList;
                 break;
             case "r":
-                flags = flags | SubstituteFlags.UsePreviousPattern;
+                flags = flags | node.SubstituteFlags.UsePreviousPattern;
                 break;
             default:
-                return SubstituteFlags.None;
+                return node.SubstituteFlags.None;
         }
         
         index++;
@@ -161,10 +129,20 @@ export function parseSearchCommandArgs(args : string) : node.SearchCommand {
             let flags = parseSubstituteFlags(scanner);
             scanner.skipWhiteSpace();
             let count = parseCount(scanner);
-
+            return new node.SearchCommand({
+                pattern: searchPattern,
+                replace: replaceString,
+                flags: flags,
+                count: count
+            });
+            
         } else {
-            // replacePattern keeps empty
-            // substitueFlag as None
+            return new node.SearchCommand({
+                pattern: searchPattern,
+                replace: "",
+                flags: node.SubstituteFlags.None,
+                count: 0
+            });
         }
     } else {
 
