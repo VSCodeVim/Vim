@@ -56,10 +56,14 @@ class HistoryStep {
     isFinished  : boolean          = false;
     cursorStart : Position         = undefined;
 
-    constructor(position: Position = undefined) {
-        if (position !== undefined) {
-            this.cursorStart = position;
-        }
+    constructor(init: {
+        changes?: DocumentChange[],
+        isFinished?: boolean,
+        cursorStart?: Position
+    }) {
+        this.changes = init.changes = [];
+        this.isFinished = init.isFinished || false;
+        this.cursorStart = init.cursorStart || undefined;
     }
 }
 
@@ -81,11 +85,11 @@ class HistoryTrackerSingleFile {
     }
 
     constructor() {
-        this.historySteps.push({
+        this.historySteps.push(new HistoryStep({
             changes    : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
             isFinished : true,
             cursorStart: new Position(0, 0)
-        });
+        }));
 
         this.oldText = TextEditor.getAllText();
 
@@ -110,12 +114,12 @@ class HistoryTrackerSingleFile {
         if (this.currentHistoryStepIndex === this.historySteps.length - 1 &&
             this.currentHistoryStep.isFinished) {
 
-            this.historySteps.push(new HistoryStep());
+            this.historySteps.push(new HistoryStep({}));
             this.currentHistoryStepIndex++;
         } else if (this.currentHistoryStepIndex !== this.historySteps.length - 1) {
             this.historySteps = this.historySteps.slice(0, this.currentHistoryStepIndex + 1);
 
-            this.historySteps.push(new HistoryStep());
+            this.historySteps.push(new HistoryStep({}));
             this.currentHistoryStepIndex++;
         }
 
@@ -132,20 +136,32 @@ class HistoryTrackerSingleFile {
         let currentPosition = new Position(0, 0);
 
         for (const diff of diffs) {
+            let change: DocumentChange;
+            let lastChange = this.currentHistoryStep.changes.length > 1 &&
+              this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 2];
+
             if (diff.added) {
-                this.currentHistoryStep.changes.push(
-                    new DocumentChange(currentPosition, diff.value, true)
-                );
-                if (this.currentHistoryStep.cursorStart === undefined) {
-                    this.currentHistoryStep.cursorStart = cursorPosition;
-                }
+                change = new DocumentChange(currentPosition, diff.value, true);
             } else if (diff.removed) {
-                this.currentHistoryStep.changes.push(
-                    new DocumentChange(currentPosition, diff.value, false)
-                );
-                if (this.currentHistoryStep.cursorStart === undefined) {
-                    this.currentHistoryStep.cursorStart = cursorPosition;
+                change = new DocumentChange(currentPosition, diff.value, false);
+            }
+
+            // attempt to merge with last change
+            let couldMerge = false;
+
+            if (lastChange) {
+                if (diff.added && lastChange.start.getRight().advancePositionByText(lastChange.text).isEqual(currentPosition)) {
+                    lastChange.text += change.text;
+                    couldMerge = true;
                 }
+            }
+
+            if (!couldMerge && change) {
+                this.currentHistoryStep.changes.push(change);
+            }
+
+            if (change && this.currentHistoryStep.cursorStart === undefined) {
+                this.currentHistoryStep.cursorStart = cursorPosition;
             }
 
             if (!diff.removed) {
