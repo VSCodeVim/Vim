@@ -205,28 +205,31 @@ class HistoryTrackerSingleFile {
         }
 
         this.MY_CRAPPY_LOCK = true;
+        let step: HistoryStep;
 
-        if (this.currentHistoryStepIndex === 0) {
-            return undefined;
-        }
+        try {
+            if (this.currentHistoryStepIndex === 0) {
+                return undefined;
+            }
 
-        if (this.currentHistoryStep.changes.length === 0) {
+            if (this.currentHistoryStep.changes.length === 0) {
+                this.currentHistoryStepIndex--;
+            }
+
+            if (this.currentHistoryStepIndex === 0) {
+                return undefined;
+            }
+
+            step = this.currentHistoryStep;
+
+            for (const change of step.changes.slice(0).reverse()) {
+                await change.undo();
+            }
+
             this.currentHistoryStepIndex--;
+        } finally {
+            this.MY_CRAPPY_LOCK = false;
         }
-
-        if (this.currentHistoryStepIndex === 0) {
-            return undefined;
-        }
-
-        let step = this.currentHistoryStep;
-
-        for (const change of step.changes.slice(0).reverse()) {
-            await change.undo();
-        }
-
-        this.currentHistoryStepIndex--;
-
-        this.MY_CRAPPY_LOCK = false;
 
         return step && step.cursorStart;
     }
@@ -240,20 +243,23 @@ class HistoryTrackerSingleFile {
         }
 
         this.MY_CRAPPY_LOCK = true;
+        let step: HistoryStep;
 
-        if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
-            return undefined;
+        try {
+            if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
+                return undefined;
+            }
+
+            this.currentHistoryStepIndex++;
+
+            step = this.currentHistoryStep;
+
+            for (const change of step.changes) {
+                await change.do();
+            }
+        } finally {
+            this.MY_CRAPPY_LOCK = false;
         }
-
-        this.currentHistoryStepIndex++;
-
-        let step = this.currentHistoryStep;
-
-        for (const change of step.changes) {
-            await change.do();
-        }
-
-        this.MY_CRAPPY_LOCK = false;
 
         return step.cursorStart;
     }
