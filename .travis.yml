@@ -18,7 +18,7 @@ node_js:
   - "4.2"
 
 env:
-  - GITHUB_TOKEN=1b17d62d38a4846efa7ea4de4b773b581787b0f1 
+  - GITHUB_TOKEN=1b17d62d38a4846efa7ea4de4b773b581787b0f1
 
 before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
@@ -26,8 +26,9 @@ before_install:
       sh -e /etc/init.d/xvfb start;
       sleep 3;
     fi
-    
+
 install:
+  - typings install
   - npm install
   - npm run vscode:prepublish
 

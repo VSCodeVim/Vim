@@ -583,7 +583,7 @@ export class ModeHandler implements vscode.Disposable {
         // have changed it as well. (TODO: do you even decomposition bro)
 
         if (vimState.currentMode !== this.currentModeName) {
-            this.setCurrentModeByName(vimState)
+            this.setCurrentModeByName(vimState);
 
             if (vimState.currentMode === ModeName.Normal) {
                 ranRepeatableAction = true;
