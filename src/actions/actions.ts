@@ -212,7 +212,9 @@ export abstract class BaseCommand extends BaseAction {
   /**
    * Run the command a single time.
    */
-  public abstract async exec(position: Position, vimState: VimState): Promise<VimState>;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    throw new Error("Not implemented!");
+  }
 
   /**
    * Run the command the number of times VimState wants us to.
@@ -677,12 +679,31 @@ export class UpperCaseOperator extends BaseOperator {
     public modes = [ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      end = new Position(end.line, end.character + 1);
+      const range = new vscode.Range(start, new Position(end.line, end.character + 1));
+      let text = vscode.window.activeTextEditor.document.getText(range);
 
-      let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+      await TextEditor.replace(range, text.toUpperCase());
 
-      await TextEditor.replace(new vscode.Range(start, end), text.toUpperCase());
       vimState.currentMode = ModeName.Normal;
+      vimState.cursorPosition = start;
+
+      return vimState;
+    }
+}
+
+@RegisterAction
+export class LowerCaseOperator extends BaseOperator {
+    public keys = ["u"];
+    public modes = [ModeName.Visual, ModeName.VisualLine];
+
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      const range = new vscode.Range(start, new Position(end.line, end.character + 1));
+      let text = vscode.window.activeTextEditor.document.getText(range);
+
+      await TextEditor.replace(range, text.toLowerCase());
+
+      vimState.currentMode = ModeName.Normal;
+      vimState.cursorPosition = start;
 
       return vimState;
     }
@@ -967,9 +988,11 @@ class CommandDeleteToLineEnd extends BaseCommand {
 class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["C"];
+  canBePrefixedWithCount = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return new ChangeOperator().run(vimState, position, position.getLineEnd().getLeft());
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    return new ChangeOperator().run(vimState, position, position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft());
   }
 }
 
@@ -1171,6 +1194,28 @@ class MoveRightWithSpace extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getRightThroughLineBreaks();
+  }
+}
+
+@RegisterAction
+class MoveToRightPane  extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["ctrl+w", "l"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("workbench.action.focusNextGroup");
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveToLeftPane  extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["ctrl+w", "h"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("workbench.action.focusPreviousGroup");
+    return vimState;
   }
 }
 
@@ -1499,6 +1544,26 @@ class MoveBeginningFullWord extends BaseMovement {
 }
 
 @RegisterAction
+class MovePreviousSentenceBegin extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["("];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getPreviousSentenceBegin();
+  }
+}
+
+@RegisterAction
+class MoveNextSentenceBegin extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [")"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getNextSentenceBegin();
+  }
+}
+
+@RegisterAction
 class MoveParagraphEnd extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["}"];
@@ -1684,10 +1749,11 @@ class MoveCC extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["c"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
     return {
       start       : position.getLineBegin(),
-      stop        : position.getLineEnd(),
+      stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
+      registerMode: RegisterMode.CharacterWise
     };
   }
 }
@@ -1853,6 +1919,46 @@ class MoveToMatchingBracket extends BaseMovement {
     // "\"": { match: "\"", direction:  0 },
   };
 
+  nextBracket(position: Position, charToMatch: string, toFind: { match: string, nextMatchIsForward: boolean }, closed: boolean = true) {
+      /**
+       * We do a fairly basic implementation that only tracks the state of the type of
+       * character you're over and its pair (e.g. "[" and "]"). This is similar to
+       * what Vim does.
+       *
+       * It can't handle strings very well - something like "|( ')' )" where | is the
+       * cursor will cause it to go to the ) in the quotes, even though it should skip over it.
+       *
+       * PRs welcomed! (TODO)
+       * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
+       */
+
+      let stackHeight = closed ? 0 : 1;
+      let matchedPosition: Position = undefined;
+
+      for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
+        if (char === charToMatch) {
+          stackHeight++;
+        }
+
+        if (char === this.pairings[charToMatch].match) {
+          stackHeight--;
+        }
+
+        if (stackHeight === 0) {
+          matchedPosition = pos;
+
+          break;
+        }
+      }
+
+      if (matchedPosition) {
+        return matchedPosition;
+      }
+
+      // TODO(bell)
+      return position;
+  }
+
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const text = TextEditor.getLineAt(position).text;
     const charToMatch = text[position.character];
@@ -1872,44 +1978,8 @@ class MoveToMatchingBracket extends BaseMovement {
       return position;
     }
 
-    /**
-     * We do a fairly basic implementation that only tracks the state of the type of
-     * character you're over and its pair (e.g. "[" and "]"). This is similar to
-     * what Vim does.
-     *
-     * It can't handle strings very well - something like "|( ')' )" where | is the
-     * cursor will cause it to go to the ) in the quotes, even though it should skip over it.
-     *
-     * PRs welcomed! (TODO)
-     * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
-     */
-
-    let stackHeight = 0;
-    let matchedPosition: Position = undefined;
-
-    for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
-      if (char === charToMatch) {
-        stackHeight++;
-      }
-
-      if (char === this.pairings[charToMatch].match) {
-        stackHeight--;
-      }
-
-      if (stackHeight === 0) {
-        matchedPosition = pos;
-
-        break;
-      }
-    }
-
-    if (matchedPosition) {
-      return matchedPosition;
-    }
-
-    // TODO(bell)
-    return position;
-  }
+    return this.nextBracket(position, charToMatch, toFind, true);
+}
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     const result = await this.execAction(position, vimState);
@@ -1919,6 +1989,46 @@ class MoveToMatchingBracket extends BaseMovement {
     } else {
       return result.getRight();
     }
+  }
+}
+
+@RegisterAction
+class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
+  keys = ["[", "("];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const charToMatch = ")";
+    return this.nextBracket(position.getLeftThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+  }
+}
+
+@RegisterAction
+class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
+  keys = ["[", ")"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const charToMatch = "(";
+    return this.nextBracket(position.getRightThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+  }
+}
+
+@RegisterAction
+class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
+  keys = ["[", "{"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const charToMatch = "}";
+    return this.nextBracket(position.getLeftThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+  }
+}
+
+@RegisterAction
+class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
+  keys = ["[", "}"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const charToMatch = "{";
+    return this.nextBracket(position.getRightThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
   }
 }
 

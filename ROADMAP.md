@@ -4,6 +4,8 @@
 
 :warning: - command partially implemented
 
+:question: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
+
 :x: - command impossible with current VSCode API
 
 :1234: - command accepts numeric prefix
@@ -79,24 +81,24 @@ Status | Command | Description
 :white_check_mark:   | :1234:  B		| N blank-separated |WORD|s backward
 :white_check_mark:   | :1234:  ge		| N words backward to the end of the Nth word
 :white_check_mark:   | :1234:  gE		| N words backward to the end of the Nth blank-separated |WORD|
-   | :1234:  )		| N sentences forward
-   | :1234:  (		| N sentences backward
+:white_check_mark:   | :1234:  )		| N sentences forward
+:white_check_mark:   | :1234:  (		| N sentences backward
 :white_check_mark:   | :1234:  }		| N paragraphs forward
 :white_check_mark:   | :1234:  {		| N paragraphs backward
    | :1234:  ]]		| N sections forward, at start of section
    | :1234:  [[		| N sections backward, at start of section
    | :1234:  ][		| N sections forward, at end of section
    | :1234:  []		| N sections backward, at end of section
-   | :1234:  [(		| N times back to unclosed '('
-   | :1234:  [{		| N times back to unclosed '{'
-   | :1234:  [m		| N times back to start of method (for Java)
-   | :1234:  [M		| N times back to end of method (for Java)
-   | :1234:  ])		| N times forward to unclosed ')'
-   | :1234:  ]}		| N times forward to unclosed '}'
-   | :1234:  ]m		| N times forward to start of method (for Java)
-   | :1234:  ]M		| N times forward to end of method (for Java)
-   | :1234:  [#		| N times back to unclosed "#if" or "#else"
-   | :1234:  ]#		| N times forward to unclosed "#else" or "#endif"
+:white_check_mark:   | :1234:  [(		| N times back to unclosed '('
+:white_check_mark:   | :1234:  [{		| N times back to unclosed '{'
+:question:   | :1234:  [m		| N times back to start of method (for Java)
+:question:   | :1234:  [M		| N times back to end of method (for Java)
+:white_check_mark:   | :1234:  ])		| N times forward to unclosed ')'
+:white_check_mark:   | :1234:  ]}		| N times forward to unclosed '}'
+:question:   | :1234:  ]m		| N times forward to start of method (for Java)
+:question:   | :1234:  ]M		| N times forward to end of method (for Java)
+:question:   | :1234:  [#		| N times back to unclosed "#if" or "#else"
+:question:   | :1234:  ]#		| N times forward to unclosed "#else" or "#endif"
    | :1234:  [*		| N times back to start of comment "/*"
    | :1234:  ]*		| N times forward to end of comment "*/"
 
@@ -147,7 +149,7 @@ Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:   | Esc		 | end Insert mode, back to Normal mode
    | CTRL-C		 | like Esc, but do not use an abbreviation
-   | CTRL-O {command}    | execute {command} and return to Insert mode
+:question:   | CTRL-O {command}    | execute {command} and return to Insert mode
 
 moving around:
 
@@ -202,7 +204,7 @@ Status | Command | Description
     | :1234:  gr{char}	| replace N characters without affecting layout
     | :1234:  R		| enter Replace mode (repeat the entered text N times)
     | :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
-    | |v_b_r|	     | {visual}r{char} in Visual block mode: Replace each char of the selected text with {char}
+    |  {visual}r{char} | in Visual block mode: Replace each char of the selected text with {char}
 
 (change = delete text and enter Insert mode)
 
@@ -223,8 +225,8 @@ Status | Command | Description
     |    g~{motion}     | switch case for the text that is moved over with {motion}
     |    gu{motion}     | make the text that is moved over with {motion} lowercase
     |    gU{motion}     | make the text that is moved over with {motion} uppercase
-    |    {visual}g?     | perform rot13 encoding on highlighted text
-    |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
+:question:    |    {visual}g?     | perform rot13 encoding on highlighted text
+:question:    |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
     | :1234:  CTRL-A	| add N to the number at or after the cursor
     | :1234:  CTRL-X	| subtract N from the number at or after the cursor
 :white_check_mark:    | :1234:  <{motion}	| move the lines that are moved over with {motion} one shiftwidth left
@@ -290,10 +292,10 @@ Status | Command | Description
    | :@@		 | repeat previous :@{a-z}
    | :[range]g[lobal]/{pattern}/[cmd]  | execute Ex command [cmd] (default: ":p") on the lines within [range] where {pattern} matches
    | :[range]g[lobal]!/{pattern}/[cmd]  | execute Ex command [cmd] (default: ":p") on the lines within [range] where {pattern} does NOT match
-   | :so[urce] {file}  | read Ex commands from {file}
-   | :so[urce]! {file}  | read Vim commands from {file}
-   | :sl[eep] [sec]  | don't do anything for [sec] seconds
-   | :1234:  gs	 | goto Sleep for N seconds
+:question:   | :so[urce] {file}  | read Ex commands from {file}
+:question:   | :so[urce]! {file}  | read Vim commands from {file}
+:question:   | :sl[eep] [sec]  | don't do anything for [sec] seconds
+:question:   | :1234:  gs	 | goto Sleep for N seconds
    
 
 ## Marks and motions
@@ -325,13 +327,13 @@ Status | Command | Description
    | :1234:  !!{command}<CR>        | filter N lines through {command}
    |    {visual}!{command}<CR>      |  filter the highlighted lines through {command}
    | :[range]! {command}<CR>      | filter [range] lines through {command}
-   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
+:white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
    | :1234:  ==	                 |    filter N lines through 'equalprg'
-   |    {visual}=                | filter the highlighted lines through 'equalprg'
+_white_check_mark   |    {visual}=                | filter the highlighted lines through 'equalprg'
    | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement
    | :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
    |    &		| Repeat previous ":s" on current line without options
-   | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
+ :question:  | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
 
 
 ## Special keys in Insert mode
@@ -380,3 +382,19 @@ Status | Command | Description
 ---|--------|------------------------------
    | :r [file]	    | insert the contents of [file] below the cursor
    | :r! {command}  | insert the standard output of {command} below the cursor
+
+
+## Tabs 
+
+Status | Command | Description
+---|--------|------------------------------
+:warning:   | :1234: :tabe[dit]    | Open a new tab page with an empty window, after the current tab page
+:warning:   | :1234: :tabnew    | Open a new tab page with an empty window, after the current tab page
+:warning:   | :tabc[lose][!] :1234: | Close current tab page.
+:warning:   | :tabo[nly][!] | Close all other tab pages.
+:white_check_mark:   | :tabn[ext] :1234:	    | Go to tab page {count}.  The first tab page has number one.
+:white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
+:white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
+:white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
+:x:   | :tabls	 | List the tab pages and the windows they contain.
+:x:   | :tabm[ove] [N] | Move the current tab page to after tab page N.

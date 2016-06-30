@@ -361,4 +361,17 @@ suite("Mode Normal", () => {
       end: ['abc|def']
     });
 
+    newTest({
+      title: "Can handle u",
+      start: ['|ABC DEF'],
+      keysPressed: 'vwu',
+      end: ['|abc dEF']
+    });
+
+    newTest({
+      title: "Can handle u over line breaks",
+      start: ['|ABC', 'DEF'],
+      keysPressed: 'vG$u',
+      end: ['|abc', 'def']
+    });
 });
