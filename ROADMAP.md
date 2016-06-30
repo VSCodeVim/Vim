@@ -4,7 +4,7 @@
 
 :warning: - command partially implemented
 
-:question: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
+:arrow_down: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
 
 :x: - command impossible with current VSCode API
 
@@ -23,10 +23,10 @@ Status | Command
 :white_check_mark: | Number Prefixes
 :white_check_mark: | . Operator
 :warning: | Searching with / and ?
+:white_check_mark: | Correct Undo/Redo 
+ | Command Remapping
  | Marks
 :warning: | Text Objects
- | Command Remapping
- | Correct Undo/Redo 
  | Visual Block Mode
  | Macros
 
@@ -91,14 +91,14 @@ Status | Command | Description
    | :1234:  []		| N sections backward, at end of section
 :white_check_mark:   | :1234:  [(		| N times back to unclosed '('
 :white_check_mark:   | :1234:  [{		| N times back to unclosed '{'
-:question:   | :1234:  [m		| N times back to start of method (for Java)
-:question:   | :1234:  [M		| N times back to end of method (for Java)
+:arrow_down:   | :1234:  [m		| N times back to start of method (for Java)
+:arrow_down:   | :1234:  [M		| N times back to end of method (for Java)
 :white_check_mark:   | :1234:  ])		| N times forward to unclosed ')'
 :white_check_mark:   | :1234:  ]}		| N times forward to unclosed '}'
-:question:   | :1234:  ]m		| N times forward to start of method (for Java)
-:question:   | :1234:  ]M		| N times forward to end of method (for Java)
-:question:   | :1234:  [#		| N times back to unclosed "#if" or "#else"
-:question:   | :1234:  ]#		| N times forward to unclosed "#else" or "#endif"
+:arrow_down:   | :1234:  ]m		| N times forward to start of method (for Java)
+:arrow_down:   | :1234:  ]M		| N times forward to end of method (for Java)
+:arrow_down:   | :1234:  [#		| N times back to unclosed "#if" or "#else"
+:arrow_down:   | :1234:  ]#		| N times forward to unclosed "#else" or "#endif"
    | :1234:  [*		| N times back to start of comment "/*"
    | :1234:  ]*		| N times forward to end of comment "*/"
 
@@ -149,7 +149,7 @@ Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:   | Esc		 | end Insert mode, back to Normal mode
    | CTRL-C		 | like Esc, but do not use an abbreviation
-:question:   | CTRL-O {command}    | execute {command} and return to Insert mode
+:arrow_down:   | CTRL-O {command}    | execute {command} and return to Insert mode
 
 moving around:
 
@@ -225,8 +225,8 @@ Status | Command | Description
     |    g~{motion}     | switch case for the text that is moved over with {motion}
     |    gu{motion}     | make the text that is moved over with {motion} lowercase
     |    gU{motion}     | make the text that is moved over with {motion} uppercase
-:question:    |    {visual}g?     | perform rot13 encoding on highlighted text
-:question:    |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
+:arrow_down:    |    {visual}g?     | perform rot13 encoding on highlighted text
+:arrow_down:    |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
     | :1234:  CTRL-A	| add N to the number at or after the cursor
     | :1234:  CTRL-X	| subtract N from the number at or after the cursor
 :white_check_mark:    | :1234:  <{motion}	| move the lines that are moved over with {motion} one shiftwidth left
@@ -292,10 +292,10 @@ Status | Command | Description
    | :@@		 | repeat previous :@{a-z}
    | :[range]g[lobal]/{pattern}/[cmd]  | execute Ex command [cmd] (default: ":p") on the lines within [range] where {pattern} matches
    | :[range]g[lobal]!/{pattern}/[cmd]  | execute Ex command [cmd] (default: ":p") on the lines within [range] where {pattern} does NOT match
-:question:   | :so[urce] {file}  | read Ex commands from {file}
-:question:   | :so[urce]! {file}  | read Vim commands from {file}
-:question:   | :sl[eep] [sec]  | don't do anything for [sec] seconds
-:question:   | :1234:  gs	 | goto Sleep for N seconds
+:arrow_down:   | :so[urce] {file}  | read Ex commands from {file}
+:arrow_down:   | :so[urce]! {file}  | read Vim commands from {file}
+:arrow_down:   | :sl[eep] [sec]  | don't do anything for [sec] seconds
+:arrow_down:   | :1234:  gs	 | goto Sleep for N seconds
    
 
 ## Marks and motions
@@ -333,7 +333,7 @@ _white_check_mark   |    {visual}=                | filter the highlighted lines
    | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement
    | :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
    |    &		| Repeat previous ":s" on current line without options
- :question:  | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
+ :arrow_down:  | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
 
 
 ## Special keys in Insert mode
