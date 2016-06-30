@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Extension.ts is a lightweight wrapper around ModeHandler. It converts key
@@ -7,16 +7,26 @@
  */
 
 import * as vscode from 'vscode';
-import {showCmdLine} from './src/cmd_line/main';
-import {ModeHandler} from "./src/mode/modeHandler";
+import { showCmdLine } from './src/cmd_line/main';
+import { ModeHandler } from './src/mode/modeHandler';
+import { TaskQueue } from './src/taskQueue';
 
-var extensionContext: vscode.ExtensionContext;
+let extensionContext: vscode.ExtensionContext;
 
 /**
  * Note: We can't initialize modeHandler here, or even inside activate(), because some people
  * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
  */
-var modeHandler: ModeHandler;
+let modeHandler: ModeHandler;
+
+let taskQueue: TaskQueue;
+
+function setup() {
+    modeHandler = new ModeHandler(false);
+    taskQueue = new TaskQueue();
+
+    extensionContext.subscriptions.push(modeHandler);
+}
 
 export function activate(context: vscode.ExtensionContext) {
     extensionContext = context;
@@ -41,18 +51,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     registerCommand(context, 'extension.showCmdLine', () => {
         if (!modeHandler) {
-            modeHandler = new ModeHandler(false);
-            extensionContext.subscriptions.push(modeHandler);
+            setup();
         }
 
         showCmdLine("", modeHandler);
     });
 
-    'rfb'.split('').forEach(key=> {
+    'rfb'.split('').forEach(key => {
         registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
     });
-
-    context.subscriptions.push(modeHandler);
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
@@ -62,9 +69,17 @@ function registerCommand(context: vscode.ExtensionContext, command: string, call
 
 async function handleKeyEvent(key: string): Promise<Boolean> {
     if (!modeHandler) {
-        modeHandler = new ModeHandler(false);
-        extensionContext.subscriptions.push(modeHandler);
+        setup();
     }
 
-    return modeHandler.handleKeyEvent(key);
+    taskQueue.enqueueTask({
+        promise   : async () => { await modeHandler.handleKeyEvent(key); },
+        isRunning : false
+    });
+
+    return true;
 }
+
+process.on('unhandledRejection', function(reason: any, p: any) {
+    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+});
