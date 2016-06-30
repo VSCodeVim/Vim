@@ -74,6 +74,8 @@ class HistoryTrackerSingleFile {
 
     private oldText: string;
 
+    private MY_CRAPPY_LOCK = false;
+
     private get currentHistoryStep(): HistoryStep {
         if (this.currentHistoryStepIndex === -1) {
             console.log("Tried to modify history at index -1");
@@ -198,6 +200,12 @@ class HistoryTrackerSingleFile {
      * Returns undefined on failure.
      */
     async goBackHistoryStep(): Promise<Position> {
+        while (this.MY_CRAPPY_LOCK) {
+            await new Promise(r => setTimeout(r, 100));
+        }
+
+        this.MY_CRAPPY_LOCK = true;
+
         if (this.currentHistoryStepIndex === 0) {
             return undefined;
         }
@@ -218,13 +226,21 @@ class HistoryTrackerSingleFile {
 
         this.currentHistoryStepIndex--;
 
-        return step.cursorStart;
+        this.MY_CRAPPY_LOCK = false;
+
+        return step && step.cursorStart;
     }
 
     /**
      * Returns undefined on failure.
      */
     async goForwardHistoryStep(): Promise<Position> {
+        while (this.MY_CRAPPY_LOCK) {
+            await new Promise(r => setTimeout(r, 100));
+        }
+
+        this.MY_CRAPPY_LOCK = true;
+
         if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
             return undefined;
         }
@@ -236,6 +252,8 @@ class HistoryTrackerSingleFile {
         for (const change of step.changes) {
             await change.do();
         }
+
+        this.MY_CRAPPY_LOCK = false;
 
         return step.cursorStart;
     }
