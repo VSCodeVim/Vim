@@ -5,7 +5,7 @@ import {parseWriteCommandArgs} from './subparsers/write';
 import {parseWriteQuitCommandArgs} from './subparsers/writequit';
 import * as tabCmd from './subparsers/tab';
 import * as fileCmd from './subparsers/file';
-import {parseSearchCommandArgs} from './subparsers/search';
+import {parseSubstituteCommandArgs} from './subparsers/substitute';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -42,5 +42,5 @@ export const commandParsers = {
 
     e: fileCmd.parseEditFileCommandArgs,
     
-    s: parseSearchCommandArgs
+    s: parseSubstituteCommandArgs
 };

@@ -1,6 +1,6 @@
 "use strict";
 
-import * as node from "../commands/search";
+import * as node from "../commands/substitute";
 import {Scanner} from '../scanner';
 
 function isValidDelimiter(char: string): boolean {
@@ -116,7 +116,7 @@ function parseCount(scanner: Scanner): number {
  * For each line in [range] replace a match of {pattern} with {string}.
  * {string} can be a literal string, or something special; see |sub-replace-special|.
  */
-export function parseSearchCommandArgs(args : string) : node.SearchCommand {
+export function parseSubstituteCommandArgs(args : string) : node.SubstituteCommand {
     let delimiter = args[0];
 
     if (isValidDelimiter(delimiter)) {
@@ -129,7 +129,7 @@ export function parseSearchCommandArgs(args : string) : node.SearchCommand {
             let flags = parseSubstituteFlags(scanner);
             scanner.skipWhiteSpace();
             let count = parseCount(scanner);
-            return new node.SearchCommand({
+            return new node.SubstituteCommand({
                 pattern: searchPattern,
                 replace: replaceString,
                 flags: flags,
@@ -137,7 +137,7 @@ export function parseSearchCommandArgs(args : string) : node.SearchCommand {
             });
             
         } else {
-            return new node.SearchCommand({
+            return new node.SubstituteCommand({
                 pattern: searchPattern,
                 replace: "",
                 flags: node.SubstituteFlags.None,

@@ -5,7 +5,7 @@ import * as node from "../node";
 import { ModeHandler } from "../../mode/modeHandler";
 import { TextEditor } from "../../textEditor";
 
-export interface ISearchCommandArguments extends node.ICommandArgs {
+export interface ISubstituteCommandArguments extends node.ICommandArgs {
     pattern?: string,
     replace?: string,
     flags?: number,
@@ -44,17 +44,17 @@ export enum SubstituteFlags {
     UsePreviousPattern = 0x400
 }
 
-export class SearchCommand extends node.CommandBase {
-    protected _arguments : ISearchCommandArguments;
+export class SubstituteCommand extends node.CommandBase {
+    protected _arguments : ISubstituteCommandArguments;
 
-    constructor(args : ISearchCommandArguments) {
+    constructor(args : ISubstituteCommandArguments) {
         super();
         this._name = 'search';
         this._shortName = 's';
         this._arguments = args;
     }
 
-    get arguments() : ISearchCommandArguments {
+    get arguments() : ISubstituteCommandArguments {
         return this._arguments;
     }
 
