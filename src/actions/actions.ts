@@ -3,6 +3,7 @@ import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
+import { HistoryTracker } from './../history/historyTracker';
 import * as vscode from 'vscode';
 
 const controlKeys: string[] = [
@@ -73,6 +74,8 @@ export class BaseAction {
    */
   isMotion = false;
 
+  canBeRepeatedWithDot = false;
+
   /**
    * Modes that this action can be run in.
    */
@@ -126,6 +129,8 @@ export class BaseAction {
  */
 export abstract class BaseMovement extends BaseAction {
   isMotion = true;
+
+  canBePrefixedWithCount = false;
 
   /**
    * Whether we should change desiredColumn in VimState.
@@ -200,14 +205,8 @@ export abstract class BaseCommand extends BaseAction {
    */
   isCompleteAction = true;
 
-  /**
-   * Can this command be repeated with a number prefix? E.g. 5p can; 5zz can't.
-   */
   canBePrefixedWithCount = false;
 
-  /**
-   * Can this command be repeated with .?
-   */
   canBeRepeatedWithDot = false;
 
   /**
@@ -232,6 +231,8 @@ export abstract class BaseCommand extends BaseAction {
 }
 
 export class BaseOperator extends BaseAction {
+    canBeRepeatedWithDot = true;
+
     /**
      * Run this operator on a range, returning the new location of the cursor.
      */
@@ -633,6 +634,7 @@ export class DeleteOperatorVisual extends BaseOperator {
 export class YankOperator extends BaseOperator {
     public keys = ["y"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+    canBeRepeatedWithDot = false;
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         if (start.compareTo(end) <= 0) {
@@ -764,7 +766,6 @@ export class PutCommand extends BaseCommand {
         }
 
         vimState.currentRegisterMode = register.registerMode;
-
         return vimState;
     }
 
@@ -922,8 +923,12 @@ class CommandUndo extends BaseCommand {
   keys = ["u"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("undo");
+    const newPosition = await HistoryTracker.tracker.goBackHistoryStep();
 
+    if (newPosition !== undefined) {
+      vimState.cursorPosition = newPosition;
+    }
+    vimState.alteredHistory = true;
     return vimState;
   }
 }
@@ -934,8 +939,12 @@ class CommandRedo extends BaseCommand {
   keys = ["ctrl+r"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("redo");
+    const newPosition = await HistoryTracker.tracker.goForwardHistoryStep();
 
+    if (newPosition !== undefined) {
+      vimState.cursorPosition = newPosition;
+    }
+    vimState.alteredHistory = true;
     return vimState;
   }
 }

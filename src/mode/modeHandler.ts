@@ -10,6 +10,7 @@ import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
+import { HistoryTracker } from './../history/historyTracker';
 import {
     BaseMovement, BaseCommand, Actions, BaseAction,
     BaseOperator, isIMovement,
@@ -50,6 +51,8 @@ export class VimState {
      */
     public previousFullAction: RecordedState = undefined;
 
+    public alteredHistory = false;
+
     /**
      * The current full action we are building up.
      */
@@ -66,6 +69,8 @@ export class VimState {
      * actually starts e.g. if you use the "aw" text motion in the middle of a word.
      */
     public cursorStartPosition = new Position(0, 0);
+
+    public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
 
     public searchState: SearchState = undefined;
 
@@ -269,13 +274,16 @@ export class RecordedState {
     public clone(): RecordedState {
         const res = new RecordedState();
 
-        res.actionKeys = this.actionKeys.slice(0);
-        res.actionsRun = this.actionsRun.slice(0);
+        // TODO: Actual clone.
+
+        res.actionKeys          = this.actionKeys.slice(0);
+        res.actionsRun          = this.actionsRun.slice(0);
+        res.hasRunOperator      = this.hasRunOperator;
 
         return res;
     }
 
-    public readyToExecute(mode: ModeName): boolean {
+    public operatorReadyToExecute(mode: ModeName): boolean {
         // Visual modes do not require a motion -- they ARE the motion.
         return this.operator &&
             !this.hasRunOperator &&
@@ -341,6 +349,8 @@ export class ModeHandler implements vscode.Disposable {
      */
     constructor(isTesting = true) {
         ModeHandler.IsTesting = isTesting;
+
+        HistoryTracker.instance = new HistoryTracker();
 
         this._configuration = Configuration.fromUserFile();
 
@@ -459,7 +469,17 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     async handleKeyEvent(key: string): Promise<Boolean> {
-        this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+        if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
+
+        this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
+
+        try {
+            this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+        } catch (e) {
+            console.log('error.stack');
+            console.log(e);
+            console.log(e.stack);
+        }
 
         return true;
     }
@@ -528,7 +548,7 @@ export class ModeHandler implements vscode.Disposable {
             vimState = await action.execCount(vimState.cursorPosition, vimState);
 
             if (vimState.commandAction !== VimSpecialCommands.Nothing) {
-                await this.handleCommand(vimState);
+                await this.executeCommand(vimState);
             }
 
             if (action.isCompleteAction) {
@@ -551,11 +571,11 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
-        if (recordedState.readyToExecute(vimState.currentMode)) {
+        if (recordedState.operatorReadyToExecute(vimState.currentMode)) {
             vimState = await this.executeOperator(vimState);
 
             vimState.recordedState.hasRunOperator = true;
-            ranRepeatableAction = true;
+            ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
             ranAction = true;
         }
 
@@ -563,12 +583,14 @@ export class ModeHandler implements vscode.Disposable {
         // have changed it as well. (TODO: do you even decomposition bro)
 
         if (vimState.currentMode !== this.currentModeName) {
-            this.setCurrentModeByName(vimState);
+            this.setCurrentModeByName(vimState)
 
             if (vimState.currentMode === ModeName.Normal) {
                 ranRepeatableAction = true;
             }
         }
+
+        // Record down previous action and flush temporary state
 
         if (vimState.currentMode === ModeName.Normal) {
             if (ranRepeatableAction) {
@@ -580,11 +602,43 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
+        // track undo history
+        if (this._vimState.alteredHistory) {
+            this._vimState.alteredHistory = false;
+            HistoryTracker.tracker.ignoreChange();
+        } else {
+            HistoryTracker.tracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
+        }
+
+        if (ranRepeatableAction) {
+            HistoryTracker.tracker.finishCurrentStep();
+        }
+
+        console.log(HistoryTracker.tracker.toString());
+
+
         recordedState.actionKeys = [];
         vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
         if (this.currentModeName === ModeName.Normal) {
             vimState.cursorStartPosition = vimState.cursorPosition;
+        }
+
+        // Ensure cursor is within bounds
+
+        if (vimState.cursorPosition.line >= TextEditor.getLineCount()) {
+            vimState.cursorPosition = vimState.cursorPosition.getDocumentEnd();
+        }
+
+        const currentLineLength = TextEditor.getLineAt(vimState.cursorPosition).text.length;
+
+        if (vimState.currentMode === ModeName.Normal &&
+            vimState.cursorPosition.character >= currentLineLength &&
+            currentLineLength > 0) {
+            vimState.cursorPosition = new Position(
+                vimState.cursorPosition.line,
+                currentLineLength - 1
+            );
         }
 
         return vimState;
@@ -660,7 +714,7 @@ export class ModeHandler implements vscode.Disposable {
         console.log("This is bad! Execution should never get here.");
     }
 
-    private async handleCommand(vimState: VimState): Promise<VimState> {
+    private async executeCommand(vimState: VimState): Promise<VimState> {
         const command = vimState.commandAction;
 
         vimState.commandAction = VimSpecialCommands.Nothing;

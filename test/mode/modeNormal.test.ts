@@ -2,6 +2,7 @@
 
 import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
+import { HistoryTracker } from '../../src/history/historyTracker';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 
@@ -9,11 +10,14 @@ suite("Mode Normal", () => {
     let modeHandler: ModeHandler = new ModeHandler();
 
     let {
-        newTest
+        newTest,
+        newTestOnly
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
         await setupWorkspace();
+
+        HistoryTracker.instance = new HistoryTracker();
     });
 
     teardown(cleanUpWorkspace);
@@ -292,6 +296,69 @@ suite("Mode Normal", () => {
       start: ['|abc', 'def'],
       keysPressed: '    ',
       end: ['abc', 'd|ef']
+    });
+
+    newTest({
+      title: "Undo 1",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>uu',
+      end: ['|']
+    });
+
+    newTest({
+      title: "Undo 2",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>u',
+      end: ['ab|c']
+    });
+
+    newTest({
+      title: "Undo cursor",
+      start: ['|'],
+      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>uuu',
+      end: ['|']
+    });
+
+    newTest({
+      title: "Undo cursor 2",
+      start: ['|'],
+      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>uu',
+      end: ['|abc']
+    });
+
+    newTest({
+      title: "Undo cursor 3",
+      start: ['|'],
+      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>u',
+      end: ['|defabc']
+    });
+
+    newTest({
+      title: "Undo with movement first",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>hlhlu',
+      end: ['ab|c']
+    });
+
+    newTest({
+      title: "Redo",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>uu<c-r>',
+      end: ['|abc']
+    });
+
+    newTest({
+      title: "Redo",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>uu<c-r><c-r>',
+      end: ['abc|def']
+    });
+
+    newTest({
+      title: "Redo",
+      start: ['|'],
+      keysPressed: 'iabc<esc>adef<esc>uuhlhl<c-r><c-r>',
+      end: ['abc|def']
     });
 
     newTest({

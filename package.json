@@ -108,6 +108,7 @@
         "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
     },
     "dependencies": {
+        "diff": "^2.2.3",
         "lodash": "^4.12.0"
     },
     "devDependencies": {
