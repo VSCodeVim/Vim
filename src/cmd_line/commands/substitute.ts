@@ -1,3 +1,4 @@
+/* tslint:disable:no-bitwise */
 "use strict";
 
 import * as vscode from "vscode";
@@ -6,10 +7,10 @@ import { ModeHandler } from "../../mode/modeHandler";
 import { TextEditor } from "../../textEditor";
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
-    pattern?: string,
-    replace?: string,
-    flags?: number,
-    count?: number
+    pattern?: string;
+    replace?: string;
+    flags?: number;
+    count?: number;
 }
 
 /**
@@ -59,6 +60,7 @@ export class SubstituteCommand extends node.CommandBase {
     }
 
     execute() : void {
+        throw new Error("not implemented");
     }
 
     async executeWithRange(modeHandler : ModeHandler, range: node.LineRange) {
@@ -71,7 +73,7 @@ export class SubstituteCommand extends node.CommandBase {
         }
 
         // TODO: Global Setting.
-        // TODO: There are differencies between Vim Regex and JS Regex. 
+        // TODO: There are differencies between Vim Regex and JS Regex.
 
         let jsRegexFlags = "";
         let flags = this._arguments.flags;

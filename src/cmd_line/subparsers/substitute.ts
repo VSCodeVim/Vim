@@ -1,3 +1,4 @@
+/* tslint:disable:no-bitwise */
 "use strict";
 
 import * as node from "../commands/substitute";
@@ -7,7 +8,7 @@ function isValidDelimiter(char: string): boolean {
     return !! (/^[^\w\s\\|"]{1}$/g.exec(char));
 }
 
-function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [string, boolean]{
+function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [string, boolean] {
     if (scanner.isAtEof) {
         return [pattern, false];
     } else {
@@ -17,9 +18,7 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
             // TODO skip delimiter
             return [pattern, true];
         } else if (currentChar === "\\") {
-            if (scanner.isAtEof) {
-
-            } else {
+            if (!scanner.isAtEof) {
                 let currentChar = scanner.next();
 
                 if (currentChar !== delimiter) {
@@ -40,7 +39,7 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
 function parseSubstituteFlags(scanner: Scanner): number {
     let flags: number = 0;
     let index = 0;
-    while(true) {
+    while (true) {
         if (scanner.isAtEof) {
             break;
         }
@@ -49,10 +48,10 @@ function parseSubstituteFlags(scanner: Scanner): number {
         switch (c) {
             case "&":
                 if (index === 0) {
-                    flags = flags | node.SubstituteFlags.KeepPreviousFlags
+                    flags = flags | node.SubstituteFlags.KeepPreviousFlags;
                 } else {
                     // Raise Error
-                    return node.SubstituteFlags.None
+                    return node.SubstituteFlags.None;
                 }
                 break;
             case "c":
@@ -88,7 +87,7 @@ function parseSubstituteFlags(scanner: Scanner): number {
             default:
                 return node.SubstituteFlags.None;
         }
-        
+
         index++;
     }
 
@@ -98,7 +97,7 @@ function parseSubstituteFlags(scanner: Scanner): number {
 function parseCount(scanner: Scanner): number {
     let countStr = "";
 
-    while(true) {
+    while (true) {
         if (scanner.isAtEof) {
             break;
         }
@@ -106,9 +105,9 @@ function parseCount(scanner: Scanner): number {
     }
 
     let count = Number.parseInt(countStr);
-    
+
     // TODO: If count is not valid number, raise error
-    return Number.isInteger(count) ? count : -1; 
+    return Number.isInteger(count) ? count : -1;
 }
 /**
  * Substitute
@@ -124,7 +123,7 @@ export function parseSubstituteCommandArgs(args : string) : node.SubstituteComma
         let [searchPattern, searchDelimiter] = parsePattern("", scanner, delimiter);
 
         if (searchDelimiter) {
-            let [replaceString, replaceDelimiter] = parsePattern("", scanner, delimiter);
+            let replaceString = parsePattern("", scanner, delimiter)[0];
             scanner.skipWhiteSpace();
             let flags = parseSubstituteFlags(scanner);
             scanner.skipWhiteSpace();
@@ -135,7 +134,7 @@ export function parseSubstituteCommandArgs(args : string) : node.SubstituteComma
                 flags: flags,
                 count: count
             });
-            
+
         } else {
             return new node.SubstituteCommand({
                 pattern: searchPattern,
@@ -144,9 +143,7 @@ export function parseSubstituteCommandArgs(args : string) : node.SubstituteComma
                 count: 0
             });
         }
-    } else {
-
     }
 
-    return new node.SearchCommand({});
+    return new node.SubstituteCommand({});
 }
