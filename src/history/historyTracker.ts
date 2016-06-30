@@ -14,7 +14,6 @@ import * as vscode from "vscode";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
-import { VimState } from './../mode/modeHandler';
 
 import jsdiff = require('diff');
 
@@ -65,7 +64,7 @@ class HistoryStep {
 }
 
 class HistoryTrackerSingleFile {
-    private historySteps: HistoryStep[] = [new HistoryStep()];
+    private historySteps: HistoryStep[] = [];
 
     private currentHistoryStepIndex = 0;
 
@@ -82,6 +81,14 @@ class HistoryTrackerSingleFile {
     }
 
     constructor() {
+        this.historySteps.push({
+            changes    : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
+            isFinished : true,
+            cursorStart: new Position(0, 0)
+        });
+
+        this.oldText = TextEditor.getAllText();
+
         this.finishCurrentStep();
 
         this.oldText = TextEditor.getAllText();
@@ -93,16 +100,15 @@ class HistoryTrackerSingleFile {
      * Determines what changed by diffing the document against what it
      * used to look like.
      */
-    addChange(vimState: VimState): void {
+    addChange(cursorPosition = new Position(0, 0)): void {
         const newText = TextEditor.getAllText();
 
         if (newText === this.oldText) { return; }
 
         // Determine if we should add a new Step.
 
-        if (this.currentHistoryStepIndex === -1 || (
-                this.currentHistoryStepIndex === this.historySteps.length - 1 &&
-                this.currentHistoryStep.isFinished)) {
+        if (this.currentHistoryStepIndex === this.historySteps.length - 1 &&
+            this.currentHistoryStep.isFinished) {
 
             this.historySteps.push(new HistoryStep());
             this.currentHistoryStepIndex++;
@@ -131,14 +137,14 @@ class HistoryTrackerSingleFile {
                     new DocumentChange(currentPosition, diff.value, true)
                 );
                 if (this.currentHistoryStep.cursorStart === undefined) {
-                    this.currentHistoryStep.cursorStart = vimState.cursorPositionJustBeforeAnythingHappened;
+                    this.currentHistoryStep.cursorStart = cursorPosition;
                 }
             } else if (diff.removed) {
                 this.currentHistoryStep.changes.push(
                     new DocumentChange(currentPosition, diff.value, false)
                 );
                 if (this.currentHistoryStep.cursorStart === undefined) {
-                    this.currentHistoryStep.cursorStart = vimState.cursorPositionJustBeforeAnythingHappened;
+                    this.currentHistoryStep.cursorStart = cursorPosition;
                 }
             }
 
@@ -176,7 +182,7 @@ class HistoryTrackerSingleFile {
      * Returns undefined on failure.
      */
     async goBackHistoryStep(): Promise<Position> {
-        if (this.currentHistoryStepIndex === -1) {
+        if (this.currentHistoryStepIndex === 0) {
             return undefined;
         }
 
@@ -184,7 +190,7 @@ class HistoryTrackerSingleFile {
             this.currentHistoryStepIndex--;
         }
 
-        if (this.currentHistoryStepIndex === -1) {
+        if (this.currentHistoryStepIndex === 0) {
             return undefined;
         }
 

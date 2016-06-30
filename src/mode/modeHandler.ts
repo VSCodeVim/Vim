@@ -488,14 +488,14 @@ export class ModeHandler implements vscode.Disposable {
             this._vimState.alteredHistory = false;
             HistoryTracker.tracker.ignoreChange();
         } else {
-            HistoryTracker.tracker.addChange(this._vimState);
+            HistoryTracker.tracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
         }
 
         if (this._vimState.recordedState.ranRepeatableAction) {
             HistoryTracker.tracker.finishCurrentStep();
         }
 
-        console.log(HistoryTracker.instance.toString());
+        console.log(HistoryTracker.tracker.toString());
 
         return true;
     }
