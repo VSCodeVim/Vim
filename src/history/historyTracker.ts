@@ -270,6 +270,10 @@ export class HistoryTracker {
         HistoryTracker.tracker = tracker;
 
         vscode.window.onDidChangeActiveTextEditor(e => {
+            if (!e) {
+                return; // happens when you close the last document. (hardly matters!)
+            }
+
             const filename = e.document.fileName;
 
             if (!this.trackers[filename]) {

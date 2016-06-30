@@ -243,8 +243,6 @@ export class RecordedState {
 
     public hasRunOperator = false;
 
-    public ranRepeatableAction = false;
-
     /**
      * The operator (e.g. d, y, >) the user wants to run, if there is one.
      */
@@ -281,7 +279,6 @@ export class RecordedState {
         res.actionKeys          = this.actionKeys.slice(0);
         res.actionsRun          = this.actionsRun.slice(0);
         res.hasRunOperator      = this.hasRunOperator;
-        res.ranRepeatableAction = this.ranRepeatableAction;
 
         return res;
     }
@@ -484,19 +481,6 @@ export class ModeHandler implements vscode.Disposable {
             console.log(e.stack);
         }
 
-        if (this._vimState.alteredHistory) {
-            this._vimState.alteredHistory = false;
-            HistoryTracker.tracker.ignoreChange();
-        } else {
-            HistoryTracker.tracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
-        }
-
-        if (this._vimState.recordedState.ranRepeatableAction) {
-            HistoryTracker.tracker.finishCurrentStep();
-        }
-
-        console.log(HistoryTracker.tracker.toString());
-
         return true;
     }
 
@@ -551,7 +535,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     async runAction(vimState: VimState, recordedState: RecordedState, action: BaseAction): Promise<VimState> {
-        recordedState.ranRepeatableAction = false;
+        let ranRepeatableAction = false;
         let ranAction = false;
 
         if (action instanceof BaseMovement) {
@@ -572,7 +556,7 @@ export class ModeHandler implements vscode.Disposable {
             }
 
             if (action.canBeRepeatedWithDot) {
-                recordedState.ranRepeatableAction = true;
+                ranRepeatableAction = true;
             }
         }
 
@@ -583,7 +567,7 @@ export class ModeHandler implements vscode.Disposable {
             this.setCurrentModeByName(vimState);
 
             if (vimState.currentMode === ModeName.Normal) {
-                recordedState.ranRepeatableAction = true;
+                ranRepeatableAction = true;
             }
         }
 
@@ -591,7 +575,7 @@ export class ModeHandler implements vscode.Disposable {
             vimState = await this.executeOperator(vimState);
 
             vimState.recordedState.hasRunOperator = true;
-            recordedState.ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
+            ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
             ranAction = true;
         }
 
@@ -602,20 +586,36 @@ export class ModeHandler implements vscode.Disposable {
             this.setCurrentModeByName(vimState);
 
             if (vimState.currentMode === ModeName.Normal) {
-                recordedState.ranRepeatableAction = true;
+                ranRepeatableAction = true;
             }
         }
 
+        // Record down previous action and flush temporary state
+
         if (vimState.currentMode === ModeName.Normal) {
-            if (recordedState.ranRepeatableAction) {
+            if (ranRepeatableAction) {
                 vimState.previousFullAction = vimState.recordedState;
-                HistoryTracker.tracker.finishCurrentStep();
             }
 
             if (ranAction) {
                 vimState.recordedState = new RecordedState();
             }
         }
+
+        // track undo history
+        if (this._vimState.alteredHistory) {
+            this._vimState.alteredHistory = false;
+            HistoryTracker.tracker.ignoreChange();
+        } else {
+            HistoryTracker.tracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
+        }
+
+        if (ranRepeatableAction) {
+            HistoryTracker.tracker.finishCurrentStep();
+        }
+
+        console.log(HistoryTracker.tracker.toString());
+
 
         recordedState.actionKeys = [];
         vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
