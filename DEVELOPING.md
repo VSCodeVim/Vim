@@ -6,6 +6,8 @@ You're thinking about adding a feature to VSCodeVim? That's awesome! Here's a ba
 2. `cd Vim`
 3. Install the dependencies: `npm install`
 4. You probably want to install Typescript globally: `npm install typescript -g`
+5. You'll also need to install typings: `npm install typings -g`
+6. And then download the typings for the few libraries we use: `typings install`
 
 ### Developing
 
