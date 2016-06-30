@@ -74,8 +74,6 @@ class HistoryTrackerSingleFile {
 
     private oldText: string;
 
-    private MY_CRAPPY_LOCK = false;
-
     private get currentHistoryStep(): HistoryStep {
         if (this.currentHistoryStepIndex === -1) {
             console.log("Tried to modify history at index -1");
@@ -200,36 +198,27 @@ class HistoryTrackerSingleFile {
      * Returns undefined on failure.
      */
     async goBackHistoryStep(): Promise<Position> {
-        while (this.MY_CRAPPY_LOCK) {
-            await new Promise(r => setTimeout(r, 100));
-        }
-
-        this.MY_CRAPPY_LOCK = true;
         let step: HistoryStep;
 
-        try {
-            if (this.currentHistoryStepIndex === 0) {
-                return undefined;
-            }
-
-            if (this.currentHistoryStep.changes.length === 0) {
-                this.currentHistoryStepIndex--;
-            }
-
-            if (this.currentHistoryStepIndex === 0) {
-                return undefined;
-            }
-
-            step = this.currentHistoryStep;
-
-            for (const change of step.changes.slice(0).reverse()) {
-                await change.undo();
-            }
-
-            this.currentHistoryStepIndex--;
-        } finally {
-            this.MY_CRAPPY_LOCK = false;
+        if (this.currentHistoryStepIndex === 0) {
+            return undefined;
         }
+
+        if (this.currentHistoryStep.changes.length === 0) {
+            this.currentHistoryStepIndex--;
+        }
+
+        if (this.currentHistoryStepIndex === 0) {
+            return undefined;
+        }
+
+        step = this.currentHistoryStep;
+
+        for (const change of step.changes.slice(0).reverse()) {
+            await change.undo();
+        }
+
+        this.currentHistoryStepIndex--;
 
         return step && step.cursorStart;
     }
@@ -238,27 +227,18 @@ class HistoryTrackerSingleFile {
      * Returns undefined on failure.
      */
     async goForwardHistoryStep(): Promise<Position> {
-        while (this.MY_CRAPPY_LOCK) {
-            await new Promise(r => setTimeout(r, 100));
-        }
-
-        this.MY_CRAPPY_LOCK = true;
         let step: HistoryStep;
 
-        try {
-            if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
-                return undefined;
-            }
+        if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
+            return undefined;
+        }
 
-            this.currentHistoryStepIndex++;
+        this.currentHistoryStepIndex++;
 
-            step = this.currentHistoryStep;
+        step = this.currentHistoryStep;
 
-            for (const change of step.changes) {
-                await change.do();
-            }
-        } finally {
-            this.MY_CRAPPY_LOCK = false;
+        for (const change of step.changes) {
+            await change.do();
         }
 
         return step.cursorStart;
