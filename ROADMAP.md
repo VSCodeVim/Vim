@@ -23,10 +23,10 @@ Status | Command
 :white_check_mark: | Number Prefixes
 :white_check_mark: | . Operator
 :warning: | Searching with / and ?
+:white_check_mark: | Correct Undo/Redo 
+ | Command Remapping
  | Marks
 :warning: | Text Objects
- | Command Remapping
- | Correct Undo/Redo 
  | Visual Block Mode
  | Macros
 
