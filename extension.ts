@@ -60,6 +60,10 @@ export function activate(context: vscode.ExtensionContext) {
     'rfb'.split('').forEach(key => {
         registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
     });
+
+    ['left', 'right', 'up', 'down'].forEach(key => {
+        registerCommand(context, `extension.vim_${key}`, () => handleKeyEvent(`<${key}>`));
+    })
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {

@@ -71,6 +71,26 @@
                 "key": "ctrl+w",
                 "command": "extension.vim_switchWindow",
                 "when": "editorTextFocus"
+            },
+            {
+                "key": "left",
+                "command": "extension.vim_left",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "right",
+                "command": "extension.vim_right",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "up",
+                "command": "extension.vim_up",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "down",
+                "command": "extension.vim_down",
+                "when": "editorTextFocus"
             }
         ],
         "configuration": {
