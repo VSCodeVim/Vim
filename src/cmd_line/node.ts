@@ -87,16 +87,16 @@ export class CommandLine {
         return ":" + this.range.toString() + " " + this.command.toString();
     }
 
-    execute(document : vscode.TextEditor, modeHandler : ModeHandler) : void {
+    async execute(document : vscode.TextEditor, modeHandler : ModeHandler) : Promise<void> {
         if (!this.command) {
             this.range.execute(document);
             return;
         }
 
         if (this.range.isEmpty) {
-            this.command.execute(modeHandler);
+            await this.command.execute(modeHandler);
         } else {
-            this.command.executeWithRange(modeHandler, this.range);
+            await this.command.executeWithRange(modeHandler, this.range);
         }
 
     }
