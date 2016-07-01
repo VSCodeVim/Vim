@@ -3,6 +3,7 @@
 
 import * as vscode from "vscode";
 import * as node from "../node";
+import * as token from '../token';
 import { ModeHandler } from "../../mode/modeHandler";
 import { TextEditor } from "../../textEditor";
 
@@ -64,8 +65,16 @@ export class SubstituteCommand extends node.CommandBase {
     }
 
     async executeWithRange(modeHandler : ModeHandler, range: node.LineRange) {
-        let startLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.left);
-        let endLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.right);
+        let startLine: vscode.Position;
+        let endLine: vscode.Position;
+
+        if (range.left[0].type === token.TokenType.Percent) {
+            startLine = new vscode.Position(0, 0);
+            endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
+        } else {
+            startLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.left);
+            endLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.right);
+        }
 
         if (this._arguments.count && this._arguments.count >= 0) {
             startLine = endLine;
@@ -87,10 +96,13 @@ export class SubstituteCommand extends node.CommandBase {
         }
 
         var regex = new RegExp(this._arguments.pattern, jsRegexFlags);
-        for (let currentLine = startLine.line; currentLine <= endLine.line; currentLine++) {
+        for (let currentLine = startLine.line; currentLine <= endLine.line && currentLine < TextEditor.getLineCount(); currentLine++) {
             let originalContent = TextEditor.readLineAt(currentLine);
             let content = originalContent.replace(regex, this._arguments.replace);
-            await TextEditor.replace(new vscode.Range(currentLine, 0, currentLine, originalContent.length), content);
+            
+            if (originalContent !== content) {
+                await TextEditor.replace(new vscode.Range(currentLine, 0, currentLine, originalContent.length), content);
+            }
         }
     }
 }
