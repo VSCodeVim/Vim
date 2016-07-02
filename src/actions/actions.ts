@@ -2110,31 +2110,27 @@ class MovementAWordTextObject extends BaseMovement {
   keys = ["a", "w"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      // TODO: This is kind of a bad way to do this, but text objects only work in
-      // visual mode if you JUST entered visual mode
-      // TODO TODO: I just looked at this again and omg this is awful what was I smoking plz get rid of this asap
-      return {
-        start: vimState.cursorStartPosition,
-        stop: await new MoveWordBegin().execAction(position, vimState),
-      };
-    }
+    let start: Position;
+    let stop: Position;
 
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
-    // TODO(whitespace) - this is a bad way to do this. we need some sort of global
-    // white space checking function.
-    if (currentChar === ' ' || currentChar === '\t') {
-      return {
-        start: position.getLastWordEnd().getRight(),
-        stop: position.getCurrentWordEnd()
-      };
+    if (/\s/.test(currentChar)) {
+        start = position.getLastWordEnd().getRight();
+        stop = position.getCurrentWordEnd();
     } else {
-      return {
-        start: position.getWordLeft(true),
-        stop: position.getWordRight().getLeft()
-      };
+        start = position.getWordLeft(true);
+        stop = position.getWordRight().getLeft();
     }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+        start = vimState.cursorStartPosition;
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
