@@ -472,4 +472,32 @@ suite("Motions in Normal Mode", () => {
       keysPressed: '2_',
       end: ['blah', '|duh', 'dur', 'hur']
     });
+
+    newTest({
+      title: "Can handle <up> key",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: '<up>',
+      end: ['blah', '|duh', 'dur', 'hur']
+    });
+
+    newTest({
+      title: "Can handle <down> key",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: '<down>',
+      end: ['blah', 'duh', 'dur', '|hur']
+    });
+
+    newTest({
+      title: "Can handle <left> key",
+      start: ['blah', 'duh', 'd|ur', 'hur'],
+      keysPressed: '<left>',
+      end: ['blah', 'duh', '|dur', 'hur']
+    });
+
+    newTest({
+      title: "Can handle <right> key",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: '<right>',
+      end: ['blah', 'duh', 'd|ur', 'hur']
+    });
 });
