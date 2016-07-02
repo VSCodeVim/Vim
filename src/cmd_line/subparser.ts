@@ -6,8 +6,8 @@ import {parseWriteQuitCommandArgs} from './subparsers/writequit';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
-    w: parseWriteCommandArgs,
-    write: parseWriteCommandArgs,
+    'w': parseWriteCommandArgs,
+    'write': parseWriteCommandArgs,
 
     'quit': parseQuitCommandArgs,
     'q': parseQuitCommandArgs,
