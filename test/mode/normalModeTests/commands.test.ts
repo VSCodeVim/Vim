@@ -27,9 +27,16 @@ suite("Mode Normal", () => {
 
     newTest({
       title: "Can handle 'cc'",
-      start: ['one', '|one two'],
+      start: ['one', '|one two', 'three'],
       keysPressed: 'cca<esc>',
-      end: ["one", "|a"],
+      end: ["one", "|a", "three"],
+    });
+
+    newTest({
+      title: "Can handle 'Ncc'",
+      start: ['one', '|one two', 'three four', 'five'],
+      keysPressed: '2cca<esc>',
+      end: ["one", "|a", "five"]
     });
 
     newTest({
@@ -65,6 +72,14 @@ suite("Mode Normal", () => {
       start: ['tex|t'],
       keysPressed: '^llC',
       end: ['te|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'NC'",
+      start: ['tex|t', 'one', 'two'],
+      keysPressed: '^ll2C',
+      end: ['te|', 'two'],
       endMode: ModeName.Insert
     });
 

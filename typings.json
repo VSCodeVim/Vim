@@ -1,6 +1,7 @@
 {
   "name": "vim",
   "dependencies": {
+    "diff": "registry:npm/diff#2.0.0+20160211003958",
     "lodash": "registry:npm/lodash#4.0.0+20160416211519"
   }
 }

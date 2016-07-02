@@ -1,10 +1,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import * as fs from 'fs';
-import * as path from 'path';
 import * as node from "../node";
-import * as util from "../../util";
 import * as error from "../../error";
 import {ModeHandler} from "../../mode/modeHandler";
 

@@ -51,6 +51,46 @@
                 "key": "Backspace",
                 "command": "extension.vim_backspace",
                 "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+r",
+                "command": "extension.vim_ctrl+r",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+f",
+                "command": "extension.vim_ctrl+f",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+b",
+                "command": "extension.vim_ctrl+b",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+w",
+                "command": "extension.vim_switchWindow",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "left",
+                "command": "extension.vim_left",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "right",
+                "command": "extension.vim_right",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "up",
+                "command": "extension.vim_up",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "down",
+                "command": "extension.vim_down",
+                "when": "editorTextFocus"
             }
         ],
         "configuration": {
@@ -70,6 +110,10 @@
                     "type": "object",
                     "description": "Keybinding overrides to use for insert mode."
                 },
+                "vim.useSolidBlockCursor": {
+                    "type": "boolean",
+                    "description": "Use a non blinking block cursor."
+                },
                 "vim.visualModeKeyBindings": {
                     "type": "object",
                     "description": "Keybinding overrides to use for visual mode."
@@ -84,6 +128,7 @@
         "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
     },
     "dependencies": {
+        "diff": "^2.2.3",
         "lodash": "^4.12.0"
     },
     "devDependencies": {

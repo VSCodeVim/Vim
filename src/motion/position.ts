@@ -10,12 +10,14 @@ export class Position extends vscode.Position {
 
     private _nonWordCharRegex : RegExp;
     private _nonBigWordCharRegex : RegExp;
+    private _sentenceEndRegex: RegExp;
 
     constructor(line: number, character: number) {
         super(line, character);
 
         this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
         this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
+        this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
     }
 
     public static FromVSCodePosition(pos: vscode.Position): Position {
@@ -103,6 +105,19 @@ export class Position extends vscode.Position {
 
         return new Position(this.line - 1, 0)
             .getLineEnd();
+    }
+
+    public getRightThroughLineBreaks(): Position {
+        if (this.isAtDocumentEnd()) {
+            // TODO(bell)
+            return this;
+        }
+
+        if (this.getRight().isLineEnd()) {
+            return this.getDown(0);
+        }
+
+        return this.getRight();
     }
 
     public getRight(count: number = 1): Position {
@@ -245,6 +260,14 @@ export class Position extends vscode.Position {
       return pos.getLineBegin();
     }
 
+    public getPreviousSentenceBegin(): Position {
+        return this.getPreviousSentenceBeginWithRegex(this._sentenceEndRegex, false);
+    }
+
+    public getNextSentenceBegin(): Position {
+        return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
+    }
+
     /**
      * Get the beginning of the current line.
      */
@@ -293,6 +316,21 @@ export class Position extends vscode.Position {
         return new Position(0, 0);
     }
 
+    /**
+     * Get the position that the cursor would be at if you
+     * pasted *text* at the current position.
+     */
+    public advancePositionByText(text: string): Position {
+        const numberOfLinesSpanned = (text.match(/\n/g) || []).length;
+
+        return new Position(
+            this.line + numberOfLinesSpanned,
+            numberOfLinesSpanned === 0 ?
+                this.character + text.length :
+                text.length - (text.lastIndexOf('\n') + 1)
+        );
+    }
+
     public getDocumentEnd() : Position {
         let lineCount = TextEditor.getLineCount();
         let line = lineCount > 0 ? lineCount - 1 : 0;
@@ -301,7 +339,7 @@ export class Position extends vscode.Position {
         return new Position(line, char);
     }
 
-    public isValid() : boolean {
+    public isValid(): boolean {
         // line
         let lineCount = TextEditor.getLineCount();
         if (this.line > lineCount) {
@@ -320,7 +358,7 @@ export class Position extends vscode.Position {
     /**
      * Is this position at the beginning of the line?
      */
-    public isLineBeginning() : boolean {
+    public isLineBeginning(): boolean {
         return this.character === 0;
     }
 
@@ -470,6 +508,62 @@ export class Position extends vscode.Position {
         }
 
         return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
+    }
+
+
+    private getPreviousSentenceBeginWithRegex(regex: RegExp, inclusive: boolean): Position {
+        let paragraphBegin = this.getCurrentParagraphBeginning();
+        for (let currentLine = this.line; currentLine >= paragraphBegin.line; currentLine--) {
+            let endPositions = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+            let newCharacter = _.find(endPositions.reverse(),
+                index => ((index <  this.character && !inclusive
+                           && new Position(currentLine, index).getRightThroughLineBreaks().compareTo(this))
+                           || (index <= this.character && inclusive)
+                         ) || currentLine !== this.line);
+
+            if (newCharacter !== undefined) {
+                return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
+            }
+        }
+
+        if ((paragraphBegin.line + 1 === this.line || paragraphBegin.line === this.line)) {
+            return paragraphBegin;
+        } else {
+            return new Position(paragraphBegin.line + 1, 0);
+        }
+    }
+
+
+    private getNextSentenceBeginWithRegex(regex: RegExp, inclusive: boolean): Position {
+        // A paragraph and section boundary is also a sentence boundary.
+        let paragraphEnd = this.getCurrentParagraphEnd();
+        for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
+            let endPositions = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+            let newCharacter = _.find(endPositions,
+                index => ((index >  this.character && !inclusive)  ||
+                          (index >= this.character &&  inclusive)) || currentLine !== this.line);
+
+            if (newCharacter !== undefined) {
+                return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
+            }
+        }
+
+        // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
+        // Find the first non-whitepsace character.
+        if (TextEditor.getLineAt(new vscode.Position(this.line, 0)).text) {
+            return paragraphEnd;
+        } else {
+            for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
+                let nonWhitePositions = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, /\S/g);
+                let newCharacter = _.find(nonWhitePositions,
+                    index => ((index >  this.character && !inclusive)  ||
+                          (index >= this.character &&  inclusive)) || currentLine !== this.line);
+
+                if (newCharacter !== undefined) {
+                    return new Position(currentLine, newCharacter);
+                }
+            }
+        }
     }
 
 

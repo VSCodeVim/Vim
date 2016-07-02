@@ -175,6 +175,9 @@ function tokenizeKeySequence(sequence: string): string[] {
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
     let helper = new TestObjectHelper(testObj);
 
+    // Don't try this at home, kids.
+    (modeHandler as any)._vimState.cursorPosition = new Position(0, 0);
+
     await modeHandler.handleKeyEvent('<esc>');
 
     // start:

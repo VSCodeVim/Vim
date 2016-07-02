@@ -5,7 +5,10 @@ import { ModeHandler } from './mode/modeHandler';
 import { Position } from './motion/position';
 
 export class TextEditor {
-    static async insert(text: string, at: Position = undefined, letVSCodeHandleKeystrokes: boolean = undefined): Promise<boolean> {
+    // TODO: Refactor args
+
+    static async insert(text: string, at: Position = undefined,
+                        letVSCodeHandleKeystrokes: boolean = undefined): Promise<boolean> {
         // If we insert "blah(" with default:type, VSCode will insert the closing ).
         // We *probably* don't want that to happen if we're inserting a lot of text.
         if (letVSCodeHandleKeystrokes === undefined) {
@@ -59,7 +62,7 @@ export class TextEditor {
         });
     }
 
-    static readFile(): string {
+    static getAllText(): string {
         return vscode.window.activeTextEditor.document.getText();
     }
 

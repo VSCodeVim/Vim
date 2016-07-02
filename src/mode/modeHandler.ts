@@ -8,7 +8,9 @@ import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
+import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
+import { HistoryTracker } from './../history/historyTracker';
 import {
     BaseMovement, BaseCommand, Actions, BaseAction,
     BaseOperator, isIMovement,
@@ -18,20 +20,10 @@ import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 
-export enum VimCommandActions {
-    DoNothing,
+export enum VimSpecialCommands {
+    Nothing,
     ShowCommandLine,
-    Find,
-    Fold,
-    Unfold,
-    FoldAll,
-    UnfoldAll,
-    Undo,
-    Redo,
-    MoveFullPageDown,
-    MoveFullPageUp,
-    Dot,
-    ScrollCursorToCenter
+    Dot
 }
 
 /**
@@ -59,6 +51,8 @@ export class VimState {
      */
     public previousFullAction: RecordedState = undefined;
 
+    public alteredHistory = false;
+
     /**
      * The current full action we are building up.
      */
@@ -76,20 +70,9 @@ export class VimState {
      */
     public cursorStartPosition = new Position(0, 0);
 
-    public searchString = "";
+    public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
 
-    /**
-     * The position of the next search, or undefined if there is no match.
-     */
-    public nextSearchMatchPosition: Position = undefined;
-
-    public searchCursorStartPosition: Position = undefined;
-
-    /**
-     * 1  === forward
-     * -1 === backward
-     */
-    public searchDirection = 1;
+    public searchState: SearchState = undefined;
 
     /**
      * The mode Vim will be in once this action finishes.
@@ -115,7 +98,7 @@ export class VimState {
     /**
      * This is for oddball commands that don't manipulate text in any way.
      */
-    public commandAction = VimCommandActions.DoNothing;
+    public commandAction = VimSpecialCommands.Nothing;
 
     public recordedState = new RecordedState();
 
@@ -125,6 +108,106 @@ export class VimState {
      * by us or by a mouse action.
      */
     public whatILastSetTheSelectionTo: vscode.Selection;
+
+    public settings = new VimSettings();
+}
+
+export class VimSettings {
+    useSolidBlockCursor = false;
+}
+
+export class SearchState {
+    /**
+     * Every range in the document that matches the search string.
+     */
+    public matchRanges: vscode.Range[] = [];
+
+    private _searchString = "";
+    public get searchString(): string {
+        return this._searchString;
+    }
+
+    public set searchString(search: string){
+        this._searchString = search;
+
+        this._recalculateSearchRanges();
+    }
+
+    private _recalculateSearchRanges(): void {
+        const search = this.searchString;
+
+        if (search === "") { return; }
+
+        // Calculate and store all matching ranges
+        this.matchRanges = [];
+
+        for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
+            const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+
+            let i = line.indexOf(search);
+
+            for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+                this.matchRanges.push(new vscode.Range(
+                    new Position(lineIdx, i),
+                    new Position(lineIdx, i + search.length)
+                ));
+            }
+        }
+    }
+
+    /**
+     * The position of the next search, or undefined if there is no match.
+     *
+     * Pass in -1 as direction to reverse the direction we search.
+     */
+    public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean} {
+        this._recalculateSearchRanges();
+
+        if (this.matchRanges.length === 0) {
+            // TODO(bell)
+            return { pos: startPosition, match: false };
+        }
+
+        const effectiveDirection = direction * this.searchDirection;
+
+        if (effectiveDirection === 1) {
+            for (let matchRange of this.matchRanges) {
+                if (matchRange.start.compareTo(startPosition) > 0) {
+                    return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
+                }
+            }
+
+            // Wrap around
+            // TODO(bell)
+            return { pos: Position.FromVSCodePosition(this.matchRanges[0].start), match: true };
+        } else {
+            for (let matchRange of this.matchRanges.slice(0).reverse()) {
+                if (matchRange.start.compareTo(startPosition) < 0) {
+                    return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
+                }
+            }
+
+            // TODO(bell)
+            return {
+                pos: Position.FromVSCodePosition(this.matchRanges[this.matchRanges.length - 1].start),
+                match: true
+            };
+        }
+    }
+
+    public searchCursorStartPosition: Position = undefined;
+
+    /**
+     * 1  === forward
+     * -1 === backward
+     */
+    public searchDirection = 1;
+
+    constructor(direction: number, startPosition: Position, searchString = "") {
+        this.searchDirection = direction;
+        this.searchCursorStartPosition = startPosition;
+        this.searchString = searchString;
+    }
 }
 
 /**
@@ -191,13 +274,16 @@ export class RecordedState {
     public clone(): RecordedState {
         const res = new RecordedState();
 
-        res.actionKeys = this.actionKeys.slice(0);
-        res.actionsRun = this.actionsRun.slice(0);
+        // TODO: Actual clone.
+
+        res.actionKeys          = this.actionKeys.slice(0);
+        res.actionsRun          = this.actionsRun.slice(0);
+        res.hasRunOperator      = this.hasRunOperator;
 
         return res;
     }
 
-    public readyToExecute(mode: ModeName): boolean {
+    public operatorReadyToExecute(mode: ModeName): boolean {
         // Visual modes do not require a motion -- they ARE the motion.
         return this.operator &&
             !this.hasRunOperator &&
@@ -264,6 +350,8 @@ export class ModeHandler implements vscode.Disposable {
     constructor(isTesting = true) {
         ModeHandler.IsTesting = isTesting;
 
+        HistoryTracker.instance = new HistoryTracker();
+
         this._configuration = Configuration.fromUserFile();
 
         this._vimState = new VimState();
@@ -287,6 +375,8 @@ export class ModeHandler implements vscode.Disposable {
             this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
             this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
         }
+
+        this.loadSettings();
 
         // Handle scenarios where mouse used to change current position.
         vscode.window.onDidChangeTextEditorSelection(async (e) => {
@@ -350,6 +440,11 @@ export class ModeHandler implements vscode.Disposable {
         });
     }
 
+    private loadSettings(): void {
+        this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
+            .get("useSolidBlockCursor", false);
+    }
+
     /**
      * The active mode.
      */
@@ -374,7 +469,17 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     async handleKeyEvent(key: string): Promise<Boolean> {
-        this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+        if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
+
+        this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
+
+        try {
+            this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+        } catch (e) {
+            console.log('error.stack');
+            console.log(e);
+            console.log(e.stack);
+        }
 
         return true;
     }
@@ -442,8 +547,8 @@ export class ModeHandler implements vscode.Disposable {
         if (action instanceof BaseCommand) {
             vimState = await action.execCount(vimState.cursorPosition, vimState);
 
-            if (vimState.commandAction !== VimCommandActions.DoNothing) {
-                vimState = await this.handleCommand(vimState);
+            if (vimState.commandAction !== VimSpecialCommands.Nothing) {
+                await this.executeCommand(vimState);
             }
 
             if (action.isCompleteAction) {
@@ -466,11 +571,11 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
-        if (recordedState.readyToExecute(vimState.currentMode)) {
+        if (recordedState.operatorReadyToExecute(vimState.currentMode)) {
             vimState = await this.executeOperator(vimState);
 
             vimState.recordedState.hasRunOperator = true;
-            ranRepeatableAction = true;
+            ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
             ranAction = true;
         }
 
@@ -485,6 +590,8 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
+        // Record down previous action and flush temporary state
+
         if (vimState.currentMode === ModeName.Normal) {
             if (ranRepeatableAction) {
                 vimState.previousFullAction = vimState.recordedState;
@@ -495,11 +602,43 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
+        // track undo history
+        if (this._vimState.alteredHistory) {
+            this._vimState.alteredHistory = false;
+            HistoryTracker.tracker.ignoreChange();
+        } else {
+            HistoryTracker.tracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
+        }
+
+        if (ranRepeatableAction) {
+            HistoryTracker.tracker.finishCurrentStep();
+        }
+
+        console.log(HistoryTracker.tracker.toString());
+
+
         recordedState.actionKeys = [];
         vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
         if (this.currentModeName === ModeName.Normal) {
             vimState.cursorStartPosition = vimState.cursorPosition;
+        }
+
+        // Ensure cursor is within bounds
+
+        if (vimState.cursorPosition.line >= TextEditor.getLineCount()) {
+            vimState.cursorPosition = vimState.cursorPosition.getDocumentEnd();
+        }
+
+        const currentLineLength = TextEditor.getLineAt(vimState.cursorPosition).text.length;
+
+        if (vimState.currentMode === ModeName.Normal &&
+            vimState.cursorPosition.character >= currentLineLength &&
+            currentLineLength > 0) {
+            vimState.cursorPosition = new Position(
+                vimState.cursorPosition.line,
+                currentLineLength - 1
+            );
         }
 
         return vimState;
@@ -575,27 +714,16 @@ export class ModeHandler implements vscode.Disposable {
         console.log("This is bad! Execution should never get here.");
     }
 
-    private async handleCommand(vimState: VimState): Promise<VimState> {
+    private async executeCommand(vimState: VimState): Promise<VimState> {
         const command = vimState.commandAction;
 
-        vimState.commandAction = VimCommandActions.DoNothing;
+        vimState.commandAction = VimSpecialCommands.Nothing;
 
         switch (command) {
-            case VimCommandActions.ShowCommandLine: await showCmdLine("", this); break;
-            case VimCommandActions.Find: await vscode.commands.executeCommand("actions.find"); break;
-            case VimCommandActions.Fold: await vscode.commands.executeCommand("editor.fold"); break;
-            case VimCommandActions.Unfold: await vscode.commands.executeCommand("editor.unfold"); break;
-            case VimCommandActions.FoldAll: await vscode.commands.executeCommand("editor.foldAll"); break;
-            case VimCommandActions.UnfoldAll: await vscode.commands.executeCommand("editor.unfoldAll"); break;
-            case VimCommandActions.Undo: await vscode.commands.executeCommand("undo"); break;
-            case VimCommandActions.Redo: await vscode.commands.executeCommand("redo"); break;
-            case VimCommandActions.MoveFullPageDown: await vscode.commands.executeCommand("cursorPageUp"); break;
-            case VimCommandActions.MoveFullPageUp: await vscode.commands.executeCommand("cursorPageDown"); break;
-            case VimCommandActions.ScrollCursorToCenter:
-                vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition),
-                                                           vscode.TextEditorRevealType.InCenter);
+            case VimSpecialCommands.ShowCommandLine:
+                await showCmdLine("", this);
             break;
-            case VimCommandActions.Dot:
+            case VimSpecialCommands.Dot:
                 const clonedAction = vimState.previousFullAction.clone();
 
                 await this.rerunRecordedState(vimState, vimState.previousFullAction);
@@ -677,13 +805,23 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw block cursor.
 
-        // Use native block cursor if possible.
-        const options = vscode.window.activeTextEditor.options;
+        if (vimState.settings.useSolidBlockCursor) {
+            if (this.currentMode.name !== ModeName.Insert) {
+                rangesToDraw.push(new vscode.Range(
+                    vimState.cursorPosition,
+                    vimState.cursorPosition.getRight()
+                ));
+            }
+        } else {
+            // Use native block cursor if possible.
 
-        options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-                              this.currentMode.name       !== ModeName.Insert ?
-            vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
-        vscode.window.activeTextEditor.options = options;
+            const options = vscode.window.activeTextEditor.options;
+
+            options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
+                                  this.currentMode.name       !== ModeName.Insert ?
+                vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+            vscode.window.activeTextEditor.options = options;
+        }
 
         if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
                    this.currentMode.name !== ModeName.Insert) {
@@ -696,12 +834,18 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw search highlight
 
-        if (this.currentMode.name === ModeName.SearchInProgressMode &&
-            vimState.nextSearchMatchPosition !== undefined) {
+        const searchState = vimState.searchState;
 
-            rangesToDraw.push(new vscode.Range(
-                vimState.nextSearchMatchPosition,
-                vimState.nextSearchMatchPosition.getRight(vimState.searchString.length)));
+        if (this.currentMode.name === ModeName.SearchInProgressMode) {
+            rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
+
+            const { pos, match } =  searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+
+            if (match) {
+                rangesToDraw.push(new vscode.Range(
+                    pos,
+                    pos.getRight(searchState.searchString.length)));
+            }
         }
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
@@ -713,7 +857,7 @@ export class ModeHandler implements vscode.Disposable {
         }
     }
 
-    setupStatusBarItem(text : string) : void {
+    setupStatusBarItem(text: string): void {
         if (!this._statusBarItem) {
             this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
