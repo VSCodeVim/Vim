@@ -1218,11 +1218,12 @@ class MoveRightWithSpace extends BaseMovement {
 }
 
 @RegisterAction
-class MoveToRightPane  extends BaseCommand {
+class MoveToRightPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["ctrl+w", "l"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.focusChanged = true;
     await vscode.commands.executeCommand("workbench.action.focusNextGroup");
     return vimState;
   }
@@ -1234,6 +1235,7 @@ class MoveToLeftPane  extends BaseCommand {
   keys = ["ctrl+w", "h"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.focusChanged = true;
     await vscode.commands.executeCommand("workbench.action.focusPreviousGroup");
     return vimState;
   }

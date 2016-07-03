@@ -17,15 +17,41 @@ let extensionContext: vscode.ExtensionContext;
  * Note: We can't initialize modeHandler here, or even inside activate(), because some people
  * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
  */
-let modeHandler: ModeHandler;
+let modeHandlerToFilename: { [key: string]: ModeHandler } = {};
+let previousActiveFilename: string = undefined;
 
-let taskQueue: TaskQueue;
+let taskQueue = new TaskQueue();
 
-function setup() {
-    modeHandler = new ModeHandler(false);
-    taskQueue = new TaskQueue();
+function activeFileName(): string {
+    return vscode.window.activeTextEditor.document.fileName;
+}
 
-    extensionContext.subscriptions.push(modeHandler);
+export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
+    const oldHandler = modeHandlerToFilename[previousActiveFilename];
+
+    if (!modeHandlerToFilename[activeFileName()]) {
+        const newModeHandler = new ModeHandler(false, activeFileName());
+
+        modeHandlerToFilename[activeFileName()] = newModeHandler;
+        extensionContext.subscriptions.push(newModeHandler);
+
+        console.log('make new mode handler for ', activeFileName());
+    }
+
+    const handler = modeHandlerToFilename[activeFileName()];
+
+    if (previousActiveFilename !== activeFileName()) {
+        previousActiveFilename = activeFileName();
+
+        await handler.updateView(handler.vimState);
+    }
+
+    if (oldHandler.vimState.focusChanged) {
+        oldHandler.vimState.focusChanged = false;
+        handler.vimState.focusChanged = true;
+    }
+
+    return handler;
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -36,13 +62,12 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        var isHandled = await handleKeyEvent(args.text);
+        const mh = await getAndUpdateModeHandler();
 
-        if (!isHandled) {
-            vscode.commands.executeCommand('default:type', {
-                text: args.text
-            });
-        }
+        taskQueue.enqueueTask({
+            promise   : async () => { await mh.handleKeyEvent(args.text); },
+            isRunning : false
+        });
     });
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
@@ -50,11 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(context, 'extension.vim_switchWindow', () => handleKeyEvent("ctrl+w"));
 
     registerCommand(context, 'extension.showCmdLine', () => {
-        if (!modeHandler) {
-            setup();
-        }
-
-        showCmdLine("", modeHandler);
+        showCmdLine("", modeHandlerToFilename[activeFileName()]);
     });
 
     'rfb'.split('').forEach(key => {
@@ -63,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     ['left', 'right', 'up', 'down'].forEach(key => {
         registerCommand(context, `extension.vim_${key}`, () => handleKeyEvent(`<${key}>`));
-    })
+    });
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
@@ -71,17 +92,13 @@ function registerCommand(context: vscode.ExtensionContext, command: string, call
     context.subscriptions.push(disposable);
 }
 
-async function handleKeyEvent(key: string): Promise<Boolean> {
-    if (!modeHandler) {
-        setup();
-    }
+async function handleKeyEvent(key: string): Promise<void> {
+    const mh = await getAndUpdateModeHandler();
 
     taskQueue.enqueueTask({
-        promise   : async () => { await modeHandler.handleKeyEvent(key); },
+        promise   : async () => { await mh.handleKeyEvent(key); },
         isRunning : false
     });
-
-    return true;
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {

@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
+import { getAndUpdateModeHandler } from './../../extension';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
@@ -53,6 +54,8 @@ export class VimState {
 
     public alteredHistory = false;
 
+    public focusChanged = false;
+
     /**
      * The current full action we are building up.
      */
@@ -61,7 +64,12 @@ export class VimState {
     /**
      * The position the cursor will be when this action finishes.
      */
-    public cursorPosition = new Position(0, 0);
+    // public cursorPosition = new Position(0, 0);
+    private _cursorPosition = new Position(0, 0);
+    public get cursorPosition(): Position { return this._cursorPosition; }
+    public set cursorPosition(v: Position) {
+        this._cursorPosition = v;
+    }
 
     /**
      * The effective starting position of the movement, used along with cursorPosition to determine
@@ -324,6 +332,15 @@ export class ModeHandler implements vscode.Disposable {
     private _configuration: Configuration;
     private _vimState: VimState;
 
+    public get vimState(): VimState {
+        return this._vimState;
+    }
+
+    /**
+     * Filename associated with this ModeHandler. Only used for debugging.
+     */
+    public filename: string;
+
     private _caretDecoration = vscode.window.createTextEditorDecorationType(
     {
         dark: {
@@ -345,13 +362,15 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     /**
-     * isTesting does not affect functionality, but speeds up tests drastically.
+     * isTesting speeds up tests drastically by turning off our checks for
+     * mouse events.
      */
-    constructor(isTesting = true) {
+    constructor(isTesting = true, filename = "") {
         ModeHandler.IsTesting = isTesting;
 
         HistoryTracker.instance = new HistoryTracker();
 
+        this.filename = filename;
         this._configuration = Configuration.fromUserFile();
 
         this._vimState = new VimState();
@@ -383,6 +402,15 @@ export class ModeHandler implements vscode.Disposable {
             let selection = e.selections[0];
 
             if (isTesting) {
+                return;
+            }
+
+            if (e.textEditor.document.fileName !== this.filename) {
+                return;
+            }
+
+            if (this._vimState.focusChanged) {
+                this._vimState.focusChanged = false;
                 return;
             }
 
@@ -479,6 +507,10 @@ export class ModeHandler implements vscode.Disposable {
             console.log('error.stack');
             console.log(e);
             console.log(e.stack);
+        }
+
+        if (this._vimState.focusChanged) {
+            await getAndUpdateModeHandler();
         }
 
         return true;
@@ -753,7 +785,7 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
     }
 
-    private async updateView(vimState: VimState, drawSelection = true): Promise<void> {
+    public async updateView(vimState: VimState, drawSelection = true): Promise<void> {
         // Update cursor position
 
         let start = vimState.cursorStartPosition;
