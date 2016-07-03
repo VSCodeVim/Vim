@@ -623,16 +623,17 @@ export class ModeHandler implements vscode.Disposable {
             }
         }
 
+        ranRepeatableAction = ranRepeatableAction && vimState.currentMode === ModeName.Normal;
+        ranAction           = ranAction           && vimState.currentMode === ModeName.Normal;
+
         // Record down previous action and flush temporary state
 
-        if (vimState.currentMode === ModeName.Normal) {
-            if (ranRepeatableAction) {
-                vimState.previousFullAction = vimState.recordedState;
-            }
+        if (ranRepeatableAction) {
+            vimState.previousFullAction = vimState.recordedState;
+        }
 
-            if (ranAction) {
-                vimState.recordedState = new RecordedState();
-            }
+        if (ranAction) {
+            vimState.recordedState = new RecordedState();
         }
 
         // track undo history
@@ -648,8 +649,7 @@ export class ModeHandler implements vscode.Disposable {
             vimState.historyTracker.finishCurrentStep();
         }
 
-        // console.log(HistoryTracker.tracker.toString());
-
+        console.log(vimState.historyTracker.toString());
 
         recordedState.actionKeys = [];
         vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
