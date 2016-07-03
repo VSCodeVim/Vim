@@ -67,7 +67,7 @@ class HistoryStep {
     }
 }
 
-class HistoryTrackerSingleFile {
+export class HistoryTracker {
     private historySteps: HistoryStep[] = [];
 
     private currentHistoryStepIndex = 0;
@@ -257,34 +257,5 @@ class HistoryTrackerSingleFile {
         }
 
         return result;
-    }
-}
-
-export class HistoryTracker {
-    public static tracker: HistoryTrackerSingleFile;
-    public static instance: HistoryTracker;
-
-    trackers: { [key: string]: HistoryTrackerSingleFile } = {};
-
-    constructor() {
-        const tracker = new HistoryTrackerSingleFile();
-
-        this.trackers = {};
-        this.trackers[vscode.window.activeTextEditor.document.fileName] = tracker;
-        HistoryTracker.tracker = tracker;
-
-        vscode.window.onDidChangeActiveTextEditor(e => {
-            if (!e) {
-                return; // happens when you close the last document. (hardly matters!)
-            }
-
-            const filename = e.document.fileName;
-
-            if (!this.trackers[filename]) {
-                this.trackers[filename] = new HistoryTrackerSingleFile();
-            }
-
-            HistoryTracker.tracker = this.trackers[filename];
-        });
     }
 }

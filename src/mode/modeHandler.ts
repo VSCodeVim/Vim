@@ -46,6 +46,8 @@ export class VimState {
      */
     public desiredColumn = 0;
 
+    public historyTracker: HistoryTracker;
+
     /**
      * The keystroke sequence that made up our last complete action (that can be
      * repeated with '.').
@@ -368,8 +370,6 @@ export class ModeHandler implements vscode.Disposable {
     constructor(isTesting = true, filename = "") {
         ModeHandler.IsTesting = isTesting;
 
-        HistoryTracker.instance = new HistoryTracker();
-
         this.filename = filename;
         this._configuration = Configuration.fromUserFile();
 
@@ -381,6 +381,7 @@ export class ModeHandler implements vscode.Disposable {
             new VisualLineMode(),
             new SearchInProgressMode(),
         ];
+        this.vimState.historyTracker = new HistoryTracker();
 
         this._vimState.currentMode = ModeName.Normal;
 
@@ -635,18 +636,19 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         // track undo history
+
         if (this._vimState.alteredHistory) {
             this._vimState.alteredHistory = false;
-            HistoryTracker.tracker.ignoreChange();
+            vimState.historyTracker.ignoreChange();
         } else {
-            HistoryTracker.tracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
+            vimState.historyTracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
         }
 
         if (ranRepeatableAction) {
-            HistoryTracker.tracker.finishCurrentStep();
+            vimState.historyTracker.finishCurrentStep();
         }
 
-        console.log(HistoryTracker.tracker.toString());
+        // console.log(HistoryTracker.tracker.toString());
 
 
         recordedState.actionKeys = [];

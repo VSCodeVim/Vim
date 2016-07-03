@@ -3,7 +3,6 @@ import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
-import { HistoryTracker } from './../history/historyTracker';
 import * as vscode from 'vscode';
 
 const controlKeys: string[] = [
@@ -923,7 +922,7 @@ class CommandUndo extends BaseCommand {
   keys = ["u"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const newPosition = await HistoryTracker.tracker.goBackHistoryStep();
+    const newPosition = await vimState.historyTracker.goBackHistoryStep();
 
     if (newPosition !== undefined) {
       vimState.cursorPosition = newPosition;
@@ -939,7 +938,7 @@ class CommandRedo extends BaseCommand {
   keys = ["ctrl+r"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const newPosition = await HistoryTracker.tracker.goForwardHistoryStep();
+    const newPosition = await vimState.historyTracker.goForwardHistoryStep();
 
     if (newPosition !== undefined) {
       vimState.cursorPosition = newPosition;
