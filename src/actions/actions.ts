@@ -1156,6 +1156,11 @@ class MoveLeft extends BaseMovement {
 }
 
 @RegisterAction
+class MoveLeftArrow extends MoveLeft {
+  keys = ["<left>"];
+}
+
+@RegisterAction
 class MoveUp extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["k"];
@@ -1164,6 +1169,11 @@ class MoveUp extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getUp(vimState.desiredColumn);
   }
+}
+
+@RegisterAction
+class MoveUpArrow extends MoveUp {
+  keys = ["<up>"];
 }
 
 @RegisterAction
@@ -1178,6 +1188,11 @@ class MoveDown extends BaseMovement {
 }
 
 @RegisterAction
+class MoveDownArrow extends MoveDown {
+  keys = ["<down>"];
+}
+
+@RegisterAction
 class MoveRight extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["l"];
@@ -1185,6 +1200,11 @@ class MoveRight extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return new Position(position.line, position.character + 1);
   }
+}
+
+@RegisterAction
+class MoveRightArrow extends MoveRight {
+  keys = ["<right>"];
 }
 
 @RegisterAction

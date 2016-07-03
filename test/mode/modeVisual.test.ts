@@ -5,9 +5,14 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { TextEditor } from '../../src/textEditor';
+import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Visual", () => {
-    let modeHandler: ModeHandler;
+    let modeHandler: ModeHandler = new ModeHandler();
+
+    let {
+        newTest
+    } = getTestingFunctions(modeHandler);
 
     setup(async () => {
         await setupWorkspace();
@@ -200,6 +205,36 @@ suite("Mode Visual", () => {
             ]);
 
             assertEqualLines(["two"]);
+        });
+    });
+
+    suite("Arrow keys work perfectly in Visual Mode", () => {
+        newTest({
+            title: "Can handle <up> key",
+            start: ['blah', 'duh', '|dur', 'hur'],
+            keysPressed: 'v<up>x',
+            end: ['blah', '|ur', 'hur']
+        });
+
+        newTest({
+            title: "Can handle <down> key",
+            start: ['blah', 'duh', '|dur', 'hur'],
+            keysPressed: 'v<down>x',
+            end: ['blah', 'duh', '|ur']
+        });
+
+        newTest({
+            title: "Can handle <left> key",
+            start: ['blah', 'duh', 'd|ur', 'hur'],
+            keysPressed: 'v<left>x',
+            end: ['blah', 'duh', '|r', 'hur']
+        });
+
+        newTest({
+            title: "Can handle <right> key",
+            start: ['blah', 'duh', '|dur', 'hur'],
+            keysPressed: 'v<right>x',
+            end: ['blah', 'duh', '|r', 'hur']
         });
     });
 });
