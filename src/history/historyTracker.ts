@@ -137,8 +137,8 @@ export class HistoryTracker {
 
         for (const diff of diffs) {
             let change: DocumentChange;
-            let lastChange = this.currentHistoryStep.changes.length > 1 &&
-              this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 2];
+            // let lastChange = this.currentHistoryStep.changes.length > 1 &&
+            //   this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 2];
 
             if (diff.added) {
                 change = new DocumentChange(currentPosition, diff.value, true);

@@ -2,7 +2,6 @@
 
 import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
-import { HistoryTracker } from '../../src/history/historyTracker';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 
@@ -16,8 +15,6 @@ suite("Mode Normal", () => {
 
     setup(async () => {
         await setupWorkspace();
-
-        HistoryTracker.instance = new HistoryTracker();
     });
 
     teardown(cleanUpWorkspace);
