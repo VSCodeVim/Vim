@@ -149,7 +149,7 @@ class HistoryTrackerSingleFile {
             // attempt to merge with last change
             let couldMerge = false;
 
-            if (lastChange) {
+            if (lastChange && lastChange.start.getDocumentEnd().compareTo(lastChange.start) > 0) {
                 if (diff.added && lastChange.start.getRight().advancePositionByText(lastChange.text).isEqual(currentPosition)) {
                     lastChange.text += change.text;
                     couldMerge = true;
