@@ -149,12 +149,21 @@ export class HistoryTracker {
             // attempt to merge with last change
             let couldMerge = false;
 
+            /*
+
+            // TODO: This doesn't work in like 1% of cases. Can't figure out why!
+
+            // If you mash on your keyboard and backspace for like 2 minutes and then undo
+            // you might see it happen.
+
             if (lastChange && lastChange.start.getDocumentEnd().compareTo(lastChange.start) > 0) {
                 if (diff.added && lastChange.start.getRight().advancePositionByText(lastChange.text).isEqual(currentPosition)) {
                     lastChange.text += change.text;
                     couldMerge = true;
                 }
             }
+
+            */
 
             if (!couldMerge && change) {
                 this.currentHistoryStep.changes.push(change);
