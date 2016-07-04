@@ -316,6 +316,94 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'daw' on word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'daw',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'daw',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'daw',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3aw',
+      end: ['|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five  six'],
+      keysPressed: 'd2aw',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix and across lines, containing words end with `.`",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd2aw',
+      end: ['one   two   three,   |.  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on big word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'daW',
+      end: ['one   two|   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'daW',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'daW',
+      end: ['one   two   |four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3aW',
+      end: ['|four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd2aWd',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'df'",
       start: ['aext tex|t'],
       keysPressed: '^dft',
