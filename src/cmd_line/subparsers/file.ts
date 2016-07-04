@@ -11,12 +11,21 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
     var scanner = new Scanner(args);
     scanner.skipWhiteSpace();
 
-    if (scanner.isAtEof) {
-        return new node.FileCommand({});
+    let name = "";
+    while (true) {
+        if (scanner.isAtEof) {
+            break;
+        }
+        let c = scanner.next();
+
+        if (/\s/.test(c)) {
+            break;
+        } else {
+            name += c;
+        }
     }
 
-    let c = scanner.next();
     return new node.FileCommand({
-        name: c
+        name: name
     });
 }

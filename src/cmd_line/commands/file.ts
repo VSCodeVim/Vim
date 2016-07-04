@@ -1,6 +1,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import * as path from "path";
 import * as node from "../node";
 
 export interface IFileCommandArguments extends node.ICommandArgs {
@@ -22,11 +23,10 @@ export class FileCommand extends node.CommandBase {
         return this._arguments;
     }
 
-    execute() : void {
-        if (process.platform === 'darwin') {
-            vscode.commands.executeCommand("workbench.action.files.openFileFolder");
-        } else {
-            vscode.commands.executeCommand("workbench.actiow.files.openFile");
-        }
+    execute(): void {
+        let oriPath = vscode.window.activeTextEditor.document.uri.path;
+        let newPath = path.join(path.dirname(oriPath), this._arguments.name);
+        let folder = vscode.Uri.file(newPath);
+        vscode.commands.executeCommand("vscode.openFolder", folder);
     }
 }
