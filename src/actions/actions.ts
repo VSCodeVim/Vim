@@ -2108,6 +2108,7 @@ class ActionChangeChar extends BaseCommand {
 class MovementAWordTextObject extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["a", "w"];
+  canBePrefixedWithCount = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -2119,7 +2120,7 @@ class MovementAWordTextObject extends BaseMovement {
         start = position.getLastWordEnd().getRight();
         stop = position.getCurrentWordEnd();
     } else {
-        stop = position.getWordRight().getLeft();
+        stop = position.getWordRight().getLeftThroughLineBreaks();
 
         if (stop.isEqual(position.getCurrentWordEnd())) {
           start = position.getLastWordEnd().getRight();
@@ -2136,6 +2137,41 @@ class MovementAWordTextObject extends BaseMovement {
       start: start,
       stop: stop
     };
+  }
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+      let recordedState = vimState.recordedState;
+      let result: IMovement = {
+        start: undefined,
+        stop: undefined
+      };
+
+      if (count < 1) {
+          count = 1;
+      } else if (count > 99999) {
+          count = 99999;
+      }
+
+      for (let i = 0; i < count; i++) {
+          const firstIteration = (i === 0);
+          const lastIteration = (i === count - 1);
+          const temporaryResult = (recordedState.operator && lastIteration) ?
+              await this.execActionForOperator(position, vimState) :
+              await this.execAction           (position, vimState);
+
+          if (firstIteration) {
+            result.start = temporaryResult.start;           
+          }
+
+          // Result is always a Movement.
+          if (lastIteration) {
+            result.stop = temporaryResult.stop;
+          } else {
+            position = temporaryResult.stop.getRightThroughLineBreaks();
+          }
+      }
+
+      return result;
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
