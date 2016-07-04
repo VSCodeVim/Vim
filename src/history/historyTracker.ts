@@ -11,6 +11,7 @@
  */
 
 import * as vscode from "vscode";
+import * as _ from "lodash";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
@@ -46,32 +47,68 @@ export class DocumentChange {
         }
     }
 
+    /**
+     * Run this change in reverse.
+     */
     public async undo(): Promise<void> {
         return this.do(true);
     }
 }
 
+interface IMark {
+    name: string;
+    position: Position;
+    isUppercaseMark: boolean;
+}
+
 class HistoryStep {
-    changes     : DocumentChange[] = [];
-    isFinished  : boolean          = false;
-    cursorStart : Position         = undefined;
+    /**
+     * The insertions and deletions that occured in this history step.
+     */
+    changes: DocumentChange[] = [];
+
+    /**
+     * Whether the user is still inserting or deleting for this history step.
+     */
+    isFinished: boolean = false;
+
+    /**
+     * The cursor position at the start of this history step.
+     */
+    cursorStart: Position = undefined;
+
+    /**
+     * The position of every mark at the start of this history step.
+     */
+    marks: IMark[] = [];
 
     constructor(init: {
         changes?: DocumentChange[],
         isFinished?: boolean,
-        cursorStart?: Position
+        cursorStart?: Position,
+        marks?: IMark[]
     }) {
-        this.changes = init.changes = [];
-        this.isFinished = init.isFinished || false;
+        this.changes     = init.changes = [];
+        this.isFinished  = init.isFinished || false;
         this.cursorStart = init.cursorStart || undefined;
+        this.marks       = init.marks || [];
     }
 }
 
 export class HistoryTracker {
+    /**
+     * The entire Undo/Redo stack.
+     */
     private historySteps: HistoryStep[] = [];
 
+    /**
+     * Our index in the Undo/Redo stack.
+     */
     private currentHistoryStepIndex = 0;
 
+    /**
+     * The text of the document the last time we diffed against it.
+     */
     private oldText: string;
 
     private get currentHistoryStep(): HistoryStep {
@@ -85,17 +122,145 @@ export class HistoryTracker {
     }
 
     constructor() {
+        /**
+         * We add an initial, unrevertable step, which inserts the entire document.
+         */
         this.historySteps.push(new HistoryStep({
             changes    : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
             isFinished : true,
             cursorStart: new Position(0, 0)
         }));
 
-        this.oldText = TextEditor.getAllText();
-
         this.finishCurrentStep();
 
         this.oldText = TextEditor.getAllText();
+    }
+
+    private _addNewHistoryStep(): void {
+        this.historySteps.push(new HistoryStep({
+            marks: this.currentHistoryStep.marks
+        }));
+
+        this.currentHistoryStepIndex++;
+    }
+
+    /**
+     * Marks refer to relative locations in the document, rather than absolute ones.
+     *
+     * This big gnarly method updates our marks such that they continue to mark
+     * the same character when the user does a document edit that would move the
+     * text that was marked.
+     */
+    private updateAndReturnMarks(): IMark[] {
+        const previousMarks = this.currentHistoryStep.marks;
+        let newMarks: IMark[] = [];
+
+        // clone old marks into new marks
+        for (const mark of previousMarks) {
+            newMarks.push({
+                name            : mark.name,
+                position        : mark.position,
+                isUppercaseMark : mark.isUppercaseMark
+            });
+        }
+
+        for (const change of this.currentHistoryStep.changes) {
+            for (const newMark of newMarks) {
+                // Run through each character added/deleted, and see if it could have
+                // affected the position of this mark.
+
+                let pos: Position = change.start;
+
+                if (change.isAdd) {
+                    // (Yes, I could merge these together, but that would obfusciate the logic.)
+
+                    for (const ch of change.text) {
+
+                        // Update mark
+
+                        if (pos.compareTo(newMark.position) <= 0) {
+                            if (ch === "\n") {
+                                newMark.position = new Position(newMark.position.line + 1, newMark.position.character);
+                            } else if (ch !== "\n" && pos.line === newMark.position.line) {
+                                newMark.position = new Position(newMark.position.line, newMark.position.character + 1);
+                            }
+                        }
+
+                        // Advance position
+
+                        if (ch === "\n") {
+                            pos = new Position(pos.line + 1, 0);
+                        } else {
+                            pos = new Position(pos.line, pos.character + 1);
+                        }
+                    }
+                } else {
+                    for (const ch of change.text) {
+
+                        // Update mark
+
+                        if (pos.compareTo(newMark.position) < 0) {
+                            if (ch === "\n") {
+                                newMark.position = new Position(newMark.position.line - 1, newMark.position.character);
+                            } else if (pos.line === newMark.position.line) {
+                                newMark.position = new Position(newMark.position.line, newMark.position.character - 1);
+                            }
+                        }
+
+                        // De-advance position
+                        // (What's the opposite of advance? Retreat position?)
+
+                        if (ch === "\n") {
+                            // The 99999 is a bit of a hack here. It's very difficult and
+                            // completely unnecessary to get the correct position, so we
+                            // just fake it.
+                            pos = new Position(Math.max(pos.line - 1, 0), 99999);
+                        } else {
+                            pos = new Position(pos.line, Math.max(pos.character - 1, 0));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Ensure the position of every mark is within the range of the document.
+
+        for (const mark of newMarks) {
+            if (mark.position.compareTo(mark.position.getDocumentEnd()) > 0) {
+                mark.position = mark.position.getDocumentEnd();
+            }
+        }
+
+        return newMarks;
+    }
+
+    /**
+     * Adds a mark.
+     */
+    addMark(position: Position, markName: string): void {
+        const newMark: IMark = {
+            position,
+            name: markName,
+            isUppercaseMark: markName === markName.toUpperCase()
+        };
+        const previousIndex = _.findIndex(this.currentHistoryStep.marks, mark => mark.name === markName);
+
+        if (previousIndex !== -1) {
+            this.currentHistoryStep.marks[previousIndex] = newMark;
+        } else {
+            this.currentHistoryStep.marks.push(newMark);
+        }
+    }
+
+    /**
+     * Retrieves a mark.
+     */
+    getMark(markName: string): IMark {
+        return _.find(this.currentHistoryStep.marks, mark => mark.name === markName);
+    }
+
+    getMarks(): IMark[] {
+        return this.currentHistoryStep.marks;
     }
 
     /**
@@ -114,13 +279,11 @@ export class HistoryTracker {
         if (this.currentHistoryStepIndex === this.historySteps.length - 1 &&
             this.currentHistoryStep.isFinished) {
 
-            this.historySteps.push(new HistoryStep({}));
-            this.currentHistoryStepIndex++;
+            this._addNewHistoryStep();
         } else if (this.currentHistoryStepIndex !== this.historySteps.length - 1) {
             this.historySteps = this.historySteps.slice(0, this.currentHistoryStepIndex + 1);
 
-            this.historySteps.push(new HistoryStep({}));
-            this.currentHistoryStepIndex++;
+            this._addNewHistoryStep();
         }
 
         // TODO: This is actually pretty stupid! Since we already have the cursorPosition,
@@ -201,10 +364,13 @@ export class HistoryTracker {
         }
 
         this.currentHistoryStep.isFinished = true;
+
+        this.currentHistoryStep.marks = this.updateAndReturnMarks();
     }
 
     /**
-     * Returns undefined on failure.
+     * Essentially Undo or ctrl+z. Returns undefined if there's no more steps
+     * back to go.
      */
     async goBackHistoryStep(): Promise<Position> {
         let step: HistoryStep;
@@ -233,7 +399,8 @@ export class HistoryTracker {
     }
 
     /**
-     * Returns undefined on failure.
+     * Essentially Redo or ctrl+y. Returns undefined if there's no more steps
+     * forward to go.
      */
     async goForwardHistoryStep(): Promise<Position> {
         let step: HistoryStep;
@@ -253,6 +420,10 @@ export class HistoryTracker {
         return step.cursorStart;
     }
 
+    /**
+     * Handy for debugging the undo/redo stack. + means our current position, check
+     * means active.
+     */
     toString(): string {
         let result = "";
 
