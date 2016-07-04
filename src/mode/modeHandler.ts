@@ -5,6 +5,7 @@ import * as _ from 'lodash';
 
 import { getAndUpdateModeHandler } from './../../extension';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
+import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
@@ -333,6 +334,8 @@ export class ModeHandler implements vscode.Disposable {
     private _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
     private _vimState: VimState;
+    private _insertModeRemapper: InsertModeRemapper;
+    private _otherModesRemapper: OtherModesRemapper;
 
     public get vimState(): VimState {
         return this._vimState;
@@ -374,6 +377,8 @@ export class ModeHandler implements vscode.Disposable {
         this._configuration = Configuration.fromUserFile();
 
         this._vimState = new VimState();
+        this._insertModeRemapper = new InsertModeRemapper();
+        this._otherModesRemapper = new OtherModesRemapper();
         this._modes = [
             new NormalMode(this),
             new InsertMode(),
@@ -500,10 +505,23 @@ export class ModeHandler implements vscode.Disposable {
     async handleKeyEvent(key: string): Promise<Boolean> {
         if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
 
+        // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
+        // We'll try to mitigate this problem until it's fixed upstream.
+        // https://github.com/Microsoft/vscode/issues/713
+
+        key = this._configuration.keyboardLayout.translate(key);
+
         this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
 
         try {
-            this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+            let handled = false;
+
+            handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
+            handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
+
+            if (!handled) {
+                this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+            }
         } catch (e) {
             console.log('error.stack');
             console.log(e);
@@ -518,12 +536,6 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
-        // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
-        // We'll try to mitigate this problem until it's fixed upstream.
-        // https://github.com/Microsoft/vscode/issues/713
-
-        key = this._configuration.keyboardLayout.translate(key);
-
         let recordedState = vimState.recordedState;
 
         recordedState.actionKeys.push(key);
