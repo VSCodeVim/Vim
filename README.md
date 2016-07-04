@@ -2,11 +2,11 @@
 
 # Vim
 
-VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code. 
+VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code.
 
-**Please direct any questions about missing/incomplete features to [our Github Issues page](https://github.com/VSCodeVim/Vim/issues).** We'll do our best to get back to you quickly! We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
+Please do **[report your issues on GitHub](https://github.com/VSCodeVim/Vim/issues)**. We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
 
-If you want to talk with us directly, drop by our Slack channel above! We hang out there and are pretty friendly :smiley:
+We're also super friendly people if you want to drop by and talk to us on our [Slack channel](https://vscodevim-slackin.azurewebsites.net)!
 
 ![Screenshot](images/screen.png)
 
@@ -21,21 +21,13 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 
 * vim.keyboardLayout: 
     * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`, `da-DK (QWERTY)`
-    
-## Project Status
-
-Check out our [release notes](https://github.com/VSCodeVim/Vim/releases) for more notes.
-
-[Check the Roadmap](https://github.com/VSCodeVim/Vim/blob/master/ROADMAP.md) for our future plans.
 
 ## Contributing
 
-See [here](https://github.com/VSCodeVim/Vim/blob/master/.github/CONTRIBUTING.md) for how to run a development environment and make contributions.
+This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP).
 
-[Check the full list of commands](https://github.com/VSCodeVim/Vim/blob/master/ROADMAP.md) if you're having trouble thinking of things to add! :wink:
-
-This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors). *Thank you!* :heart: 
+For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE.txt)
+MIT, please see [License](LICENSE) for more information.
