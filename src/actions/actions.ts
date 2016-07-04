@@ -2119,8 +2119,13 @@ class MovementAWordTextObject extends BaseMovement {
         start = position.getLastWordEnd().getRight();
         stop = position.getCurrentWordEnd();
     } else {
-        start = position.getWordLeft(true);
         stop = position.getWordRight().getLeft();
+
+        if (stop.isEqual(position.getCurrentWordEnd())) {
+          start = position.getLastWordEnd().getRight();
+        } else {
+          start = position.getWordLeft(true);
+    }
     }
 
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
