@@ -107,7 +107,7 @@
                     "description": "Keybinding overrides to use for normal mode."
                 },
                 "vim.insertModeKeyBindings": {
-                    "type": "object",
+                    "type": "array",
                     "description": "Keybinding overrides to use for insert mode."
                 },
                 "vim.useSolidBlockCursor": {

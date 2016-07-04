@@ -345,6 +345,21 @@ export class HistoryTracker {
     }
 
     /**
+     * Both undoes and completely removes the last n changes applied.
+     */
+    async undoAndRemoveChanges(n: number): Promise<void> {
+        if (this.currentHistoryStep.changes.length < n) {
+            console.log("Something bad happened in removeChange");
+
+            return;
+        }
+
+        for (let i = 0; i < n; i++) {
+            this.currentHistoryStep.changes.pop().undo();
+        }
+    }
+
+    /**
      * Tells the HistoryTracker that although the document has changed, we should simply
      * ignore that change. Most often used when the change was itself triggered by
      * the HistoryTracker.
