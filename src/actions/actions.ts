@@ -2126,7 +2126,7 @@ class MovementAWordTextObject extends BaseMovement {
           start = position.getLastWordEnd().getRight();
         } else {
           start = position.getWordLeft(true);
-    }
+        }
     }
 
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
@@ -2192,6 +2192,35 @@ class MovementAWordTextObject extends BaseMovement {
     }
 
     return res;
+  }
+}
+
+@RegisterAction
+class MovementABigWordTextObject extends MovementAWordTextObject {
+  keys = ["a", "W"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    let stop: Position;
+
+    const currentChar = TextEditor.getLineAt(position).text[position.character];
+
+    if (/\s/.test(currentChar)) {
+        start = position.getLastBigWordEnd().getRight();
+        stop = position.getCurrentBigWordEnd();
+    } else {
+        start = position.getBigWordLeft();
+        stop = position.getBigWordRight().getLeft();
+    }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+        start = vimState.cursorStartPosition;
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
   }
 }
 
