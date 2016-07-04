@@ -798,7 +798,7 @@ export class PutCommand extends BaseCommand {
           vimState.cursorPosition = new Position(dest.line + 1, 0);
         } else {
           if (text.indexOf("\n") === -1) {
-            vimState.cursorPosition = new Position(dest.line, dest.character + text.length - 1);
+            vimState.cursorPosition = new Position(dest.line, Math.max(dest.character + text.length - 1, 0));
           } else {
             vimState.cursorPosition = dest;
           }

@@ -22,7 +22,9 @@ export class Register {
         '"'
     ];
 
-    private static registers: { [key: string]: IRegisterContent } = {};
+    private static registers: { [key: string]: IRegisterContent } = {
+        '"': { text: "", registerMode: RegisterMode.CharacterWise }
+    };
 
     /**
      * Puts content in a register. If none is specified, uses the default

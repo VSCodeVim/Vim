@@ -122,13 +122,14 @@ export class HistoryTracker {
     }
 
     constructor() {
+        /**
+         * We add an initial, unrevertable step, which inserts the entire document.
+         */
         this.historySteps.push(new HistoryStep({
             changes    : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
             isFinished : true,
             cursorStart: new Position(0, 0)
         }));
-
-        this.oldText = TextEditor.getAllText();
 
         this.finishCurrentStep();
 
