@@ -77,6 +77,6 @@ export class InsertModeRemapper extends Remapper {
 
 export class OtherModesRemapper extends Remapper {
     constructor() {
-        super("normalModeKeyBindings", false);
+        super("otherModesKeyBindings", false);
     }
 }

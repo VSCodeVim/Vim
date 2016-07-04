@@ -102,7 +102,7 @@
                     "type": "string",
                     "description": "Keyboard layout to use to translated key presses."
                 },
-                "vim.normalModeKeyBindings": {
+                "vim.otherModesKeyBindings": {
                     "type": "object",
                     "description": "Keybinding overrides to use for normal mode."
                 },
