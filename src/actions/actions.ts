@@ -10,7 +10,11 @@ const controlKeys: string[] = [
   "alt",
   "shift",
   "esc",
-  "delete"
+  "delete",
+  "left",
+  "right",
+  "up",
+  "down"
 ];
 
 const compareKeypressSequence = function (one: string[], two: string[]): boolean {
@@ -1156,6 +1160,7 @@ class MoveLeft extends BaseMovement {
 
 @RegisterAction
 class MoveLeftArrow extends MoveLeft {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["<left>"];
 }
 
@@ -1172,6 +1177,7 @@ class MoveUp extends BaseMovement {
 
 @RegisterAction
 class MoveUpArrow extends MoveUp {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["<up>"];
 }
 
@@ -1188,6 +1194,7 @@ class MoveDown extends BaseMovement {
 
 @RegisterAction
 class MoveDownArrow extends MoveDown {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["<down>"];
 }
 
@@ -1203,6 +1210,7 @@ class MoveRight extends BaseMovement {
 
 @RegisterAction
 class MoveRightArrow extends MoveRight {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["<right>"];
 }
 
