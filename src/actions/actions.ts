@@ -2173,23 +2173,12 @@ class MovementAWordTextObject extends BaseMovement {
 
       return result;
   }
-
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const line = TextEditor.getLineAt(position).text;
-    const currentChar = line[position.character];
     const res = await this.execAction(position, vimState);
-    const wordEnd = await new MoveWordBegin().execActionForOperator(position, vimState);
-
-    // TODO(whitespace)
-    if (currentChar !== ' ' && currentChar !== '\t') {
-      res.stop = wordEnd.getRight();
-    } else {
-      res.stop = wordEnd;
-    }
-
-    if (res.stop.character === line.length + 1) {
-      res.start = (await new MoveLastWordEnd().execAction(res.start, vimState)).getRight();
-    }
+    // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
+    // In normal mode, the character on the stop position will be the first character after the operator executed
+    // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
+    res.stop = new Position(res.stop.line, res.stop.character + 1);
 
     return res;
   }
