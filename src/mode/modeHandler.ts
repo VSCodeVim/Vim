@@ -649,7 +649,7 @@ export class ModeHandler implements vscode.Disposable {
             vimState.historyTracker.finishCurrentStep();
         }
 
-        console.log(vimState.historyTracker.toString());
+        // console.log(vimState.historyTracker.toString());
 
         recordedState.actionKeys = [];
         vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
@@ -858,12 +858,16 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
-                   this.currentMode.name !== ModeName.Insert) {
+            this.currentMode.name !== ModeName.Insert) {
 
             // Fake block cursor with text decoration. Unfortunately we can't have a cursor
             // in the middle of a selection natively, which is what we need for Visual Mode.
 
             rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
+        }
+
+        for (const mark of this.vimState.historyTracker.getMarks()) {
+            rangesToDraw.push(new vscode.Range(mark.position, mark.position.getRight()));
         }
 
         // Draw search highlight

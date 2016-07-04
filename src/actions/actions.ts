@@ -709,6 +709,46 @@ export class LowerCaseOperator extends BaseOperator {
 }
 
 @RegisterAction
+export class MarkCommand extends BaseCommand {
+  keys = ["m", "<character>"];
+  modes = [ModeName.Normal];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const markName = this.keysPressed[1];
+
+    vimState.historyTracker.addMark(position, markName);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+export class MarkMovementBOL extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["'", "<character>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const markName = this.keysPressed[1];
+    const mark = vimState.historyTracker.getMark(markName);
+
+    return mark.position.getFirstLineNonBlankChar();
+  }
+}
+
+@RegisterAction
+export class MarkMovement extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["`", "<character>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    const markName = this.keysPressed[1];
+    const mark = vimState.historyTracker.getMark(markName);
+
+    return mark.position;
+  }
+}
+
+@RegisterAction
 export class ChangeOperator extends BaseOperator {
     public keys = ["c"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];

@@ -5,6 +5,11 @@ export interface IEnqueuedTask {
     isRunning: boolean;
 }
 
+/**
+ * TaskQueue
+ *
+ * Enqueue promises here. They will be run sequentially.
+ */
 export class TaskQueue {
     private _tasks: IEnqueuedTask[] = [];
 
