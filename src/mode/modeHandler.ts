@@ -866,9 +866,16 @@ export class ModeHandler implements vscode.Disposable {
             rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
         }
 
+        // Draw marks
+        // I should re-enable this with a config setting at some point
+
+        /*
+
         for (const mark of this.vimState.historyTracker.getMarks()) {
             rangesToDraw.push(new vscode.Range(mark.position, mark.position.getRight()));
         }
+
+        */
 
         // Draw search highlight
 

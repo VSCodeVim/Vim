@@ -46,7 +46,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
         await handler.updateView(handler.vimState);
     }
 
-    if (oldHandler.vimState.focusChanged) {
+    if (oldHandler && oldHandler.vimState.focusChanged) {
         oldHandler.vimState.focusChanged = false;
         handler.vimState.focusChanged = true;
     }
