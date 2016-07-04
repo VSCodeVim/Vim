@@ -9,12 +9,14 @@ interface IVimErrors {
 export enum ErrorCode {
     E37 = 37,
     E32 = 32,
+    E208 = 208,
     E488 = 488
 }
 
 const errors : IVimErrors = {
     32: "No file name",
     37: "No write since last change (add ! to override)",
+    208: "Error writing to file",
     488: "Trailing characters"
 };
 

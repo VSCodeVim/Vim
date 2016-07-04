@@ -51,7 +51,7 @@ function parseCommand(state : ParserState, commandLine : node.CommandLine) : IPa
             case token.TokenType.CommandName:
                 var commandParser = (commandParsers as any)[tok.content];
                 if (!commandParser) {
-                    throw new Error("not implemented or not a valid command");
+                    throw new Error("Not implemented or not a valid command");
                 }
                 // TODO: Pass the args, but keep in mind there could be multiple
                 // commands, not just one.
@@ -60,7 +60,7 @@ function parseCommand(state : ParserState, commandLine : node.CommandLine) : IPa
                 commandLine.command = commandParser(args);
                 return null;
             default:
-                throw new Error("not implemented");
+                throw new Error("Not implemented");
         }
     }
     if (!state.isAtEof) {
