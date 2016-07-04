@@ -27,25 +27,25 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 * How can I bind `jj` to `<esc>`?
 
 1. Open the Command palette (cmd-p on OSX, probably ctrl-shift-p on Windows), and add the following:
-
-```
-   "vim.insertModeKeyBindings": [
-        {
-            "before": ["j", "j"],
-            "after": ["<esc>"]
-        }
-   ]
-```
+   
+   ```
+      "vim.insertModeKeyBindings": [
+           {
+               "before": ["j", "j"],
+               "after": ["<esc>"]
+           }
+      ]
+   ```
 
 2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<esc>`, do the following as well:
 
-```
-   "vim.otherModesKeyBindings": [
-        {
-            "before": ["j", "j"],
-            "after": ["<esc>"]
-        }
-   ]
+   ```
+      "vim.otherModesKeyBindings": [
+           {
+               "before": ["j", "j"],
+               "after": ["<esc>"]
+           }
+      ]
 ```
 
 3. Restart VSCode!
