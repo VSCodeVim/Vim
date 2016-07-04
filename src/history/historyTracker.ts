@@ -176,9 +176,9 @@ export class HistoryTracker {
 
                     for (const ch of change.text) {
 
-                        // update mark
+                        // Update mark
 
-                        if (pos.compareTo(newMark.position) < 0) {
+                        if (pos.compareTo(newMark.position) <= 0) {
                             if (ch === "\n") {
                                 newMark.position = new Position(newMark.position.line + 1, newMark.position.character);
                             } else if (ch !== "\n" && pos.line === newMark.position.line) {
@@ -186,7 +186,7 @@ export class HistoryTracker {
                             }
                         }
 
-                        // advance position
+                        // Advance position
 
                         if (ch === "\n") {
                             pos = new Position(pos.line + 1, 0);
@@ -197,7 +197,7 @@ export class HistoryTracker {
                 } else {
                     for (const ch of change.text) {
 
-                        // update mark
+                        // Update mark
 
                         if (pos.compareTo(newMark.position) < 0) {
                             if (ch === "\n") {
@@ -207,10 +207,14 @@ export class HistoryTracker {
                             }
                         }
 
-                        // de-advance position
+                        // De-advance position
+                        // (What's the opposite of advance? Retreat position?)
 
                         if (ch === "\n") {
-                            pos = new Position(Math.max(pos.line - 1, 0), 999);
+                            // The 99999 is a bit of a hack here. It's very difficult and
+                            // completely unnecessary to get the correct position, so we
+                            // just fake it.
+                            pos = new Position(Math.max(pos.line - 1, 0), 99999);
                         } else {
                             pos = new Position(pos.line, Math.max(pos.character - 1, 0));
                         }
@@ -220,6 +224,12 @@ export class HistoryTracker {
         }
 
         // Ensure the position of every mark is within the range of the document.
+
+        for (const mark of newMarks) {
+            if (mark.position.compareTo(mark.position.getDocumentEnd()) > 0) {
+                mark.position = mark.position.getDocumentEnd();
+            }
+        }
 
         return newMarks;
     }

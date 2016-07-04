@@ -529,7 +529,6 @@ export class CommandSearchForwards extends BaseCommand {
   }
 }
 
-
 @RegisterAction
 export class CommandSearchBackwards extends BaseCommand {
   modes = [ModeName.Normal];
