@@ -22,6 +22,34 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 * vim.keyboardLayout: 
     * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`, `da-DK (QWERTY)`
 
+## F.A.Q.
+
+* How can I bind `jj` to `<esc>`?
+
+1. Open the Command palette (cmd-p on OSX, probably ctrl-shift-p on Windows), and add the following:
+
+```
+   "vim.insertModeKeyBindings": [
+        {
+            "before": ["j", "j"],
+            "after": ["<esc>"]
+        }
+   ]
+```
+
+2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<esc>`, do the following as well:
+
+```
+   "vim.otherModesKeyBindings": [
+        {
+            "before": ["j", "j"],
+            "after": ["<esc>"]
+        }
+   ]
+```
+
+3. Restart VSCode!
+
 ## Contributing
 
 This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP).
