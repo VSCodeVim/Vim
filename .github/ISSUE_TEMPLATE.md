@@ -1,9 +1,9 @@
-Do you need help or have a question? Please come chat in Slack: https://vscodevim-slackin.azurewebsites.net/ 👫. 
-Found a bug? Please fill out the sections below... thank you 👍
+Do you need help or have a question? Ask us on Slack (https://vscodevim-slackin.azurewebsites.net/) 👫. 
+Found a bug? Please fill out the sections below 👍.
 
 ### Issue Summary
 
-A summary of the issue and the browser/OS environment in which it occurs. 
+A summary of the issue -- what blew up? what major feature are we missing? 
 
 ### Steps to Reproduce
 
