@@ -2160,7 +2160,7 @@ class MovementAWordTextObject extends BaseMovement {
               await this.execAction           (position, vimState);
 
           if (firstIteration) {
-            result.start = temporaryResult.start;           
+            result.start = temporaryResult.start;
           }
 
           // Result is always a Movement.
