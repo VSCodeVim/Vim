@@ -2131,6 +2131,15 @@ class MovementAWordTextObject extends BaseMovement {
 
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
         start = vimState.cursorStartPosition;
+
+        if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+          // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+          if (/\s/.test(currentChar)) {
+            stop = position.getWordLeft(true);
+          } else {
+            stop = position.getLastWordEnd().getRight();
+          }
+        }
     }
 
     return {
@@ -2205,6 +2214,15 @@ class MovementABigWordTextObject extends MovementAWordTextObject {
 
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
         start = vimState.cursorStartPosition;
+
+        if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+          // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+          if (/\s/.test(currentChar)) {
+            stop = position.getBigWordLeft();
+          } else {
+            stop = position.getLastBigWordEnd().getRight();
+          }
+        }
     }
 
     return {
@@ -2220,28 +2238,35 @@ class MovementIWordTextObject extends MovementAWordTextObject {
   keys = ["i", "w"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      // TODO: This is kind of a bad way to do this, but text objects only work in
-      // visual mode if you JUST entered visual mode
-      return {
-        start: vimState.cursorStartPosition,
-        stop: await new MoveWordBegin().execAction(position, vimState),
-      };
-    }
-
+    let start: Position;
+    let stop: Position;
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      return {
-        start: position.getLastWordEnd().getRight(),
-        stop:  position.getWordRight().getLeft()
-      };
+        start = position.getLastWordEnd().getRight();
+        stop = position.getWordRight().getLeft();
     } else {
-      return {
-        start: position.getWordLeft(true),
-        stop: position.getCurrentWordEnd(true),
-      };
+        start = position.getWordLeft(true);
+        stop = position.getCurrentWordEnd(true);
     }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      start = vimState.cursorStartPosition;
+
+      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+        if (/\s/.test(currentChar)) {
+          stop = position.getLastWordEnd().getRight();
+        } else {
+          stop = position.getWordLeft(true);
+        }
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
   }
 }
 
@@ -2251,28 +2276,35 @@ class MovementIBigWordTextObject extends MovementAWordTextObject {
   keys = ["i", "W"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      // TODO: This is kind of a bad way to do this, but text objects only work in
-      // visual mode if you JUST entered visual mode
-      return {
-        start: vimState.cursorStartPosition,
-        stop: await new MoveWordBegin().execAction(position, vimState),
-      };
-    }
-
+    let start: Position;
+    let stop: Position;
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-      return {
-        start: position.getLastBigWordEnd().getRight(),
-        stop:  position.getBigWordRight().getLeft()
-      };
+        start = position.getLastBigWordEnd().getRight();
+        stop = position.getBigWordRight().getLeft();
     } else {
-      return {
-        start: position.getBigWordLeft(),
-        stop: position.getCurrentBigWordEnd(true),
-      };
+        start = position.getBigWordLeft();
+        stop = position.getCurrentBigWordEnd(true);
     }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      start = vimState.cursorStartPosition;
+
+      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+        if (/\s/.test(currentChar)) {
+          stop = position.getLastBigWordEnd().getRight();
+        } else {
+          stop = position.getBigWordLeft();
+        }
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
   }
 }
 
