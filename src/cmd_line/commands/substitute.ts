@@ -99,7 +99,7 @@ export class SubstituteCommand extends node.CommandBase {
         for (let currentLine = startLine.line; currentLine <= endLine.line && currentLine < TextEditor.getLineCount(); currentLine++) {
             let originalContent = TextEditor.readLineAt(currentLine);
             let content = originalContent.replace(regex, this._arguments.replace);
-            
+
             if (originalContent !== content) {
                 await TextEditor.replace(new vscode.Range(currentLine, 0, currentLine, originalContent.length), content);
             }

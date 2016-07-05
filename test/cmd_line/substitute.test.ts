@@ -1,10 +1,7 @@
 "use strict";
 
-import * as assert from 'assert';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
-import { TextEditor } from '../../src/textEditor';
+import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from './../testUtils';
 import { runCmdLine } from '../../src/cmd_line/main';
 
 suite("Basic substitute", () => {

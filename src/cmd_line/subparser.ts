@@ -41,6 +41,6 @@ export const commandParsers = {
     tabonly: tabCmd.parseTabOnlyCommandArgs,
 
     e: fileCmd.parseEditFileCommandArgs,
-    
+
     s: parseSubstituteCommandArgs
 };
