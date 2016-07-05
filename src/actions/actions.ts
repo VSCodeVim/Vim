@@ -2173,6 +2173,7 @@ class MovementAWordTextObject extends BaseMovement {
 
       return result;
   }
+
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     const res = await this.execAction(position, vimState);
     // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
@@ -2214,7 +2215,7 @@ class MovementABigWordTextObject extends MovementAWordTextObject {
 }
 
 @RegisterAction
-class MovementIWordTextObject extends BaseMovement {
+class MovementIWordTextObject extends MovementAWordTextObject {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["i", "w"];
 
@@ -2230,9 +2231,7 @@ class MovementIWordTextObject extends BaseMovement {
 
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
-    // TODO(whitespace)  - this is a bad way to do this. we need some sort of global
-    // white space checking function.
-    if (currentChar === ' ' || currentChar === '\t') {
+    if (/\s/.test(currentChar)) {
       return {
         start: position.getLastWordEnd().getRight(),
         stop:  position.getWordRight().getLeft()
@@ -2244,13 +2243,36 @@ class MovementIWordTextObject extends BaseMovement {
       };
     }
   }
+}
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState);
+@RegisterAction
+class MovementIBigWordTextObject extends MovementAWordTextObject {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["i", "W"];
 
-    res.stop = res.stop.getRight();
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      // TODO: This is kind of a bad way to do this, but text objects only work in
+      // visual mode if you JUST entered visual mode
+      return {
+        start: vimState.cursorStartPosition,
+        stop: await new MoveWordBegin().execAction(position, vimState),
+      };
+    }
 
-    return res;
+    const currentChar = TextEditor.getLineAt(position).text[position.character];
+
+    if (/\s/.test(currentChar)) {
+      return {
+        start: position.getLastBigWordEnd().getRight(),
+        stop:  position.getBigWordRight().getLeft()
+      };
+    } else {
+      return {
+        start: position.getBigWordLeft(),
+        stop: position.getCurrentBigWordEnd(true),
+      };
+    }
   }
 }
 
