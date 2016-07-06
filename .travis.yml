@@ -28,7 +28,6 @@ before_install:
     fi
 
 install:
-  - typings install
   - npm install
   - npm run vscode:prepublish
 
