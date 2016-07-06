@@ -24,8 +24,8 @@ Status | Command
 :white_check_mark: | . Operator
 :warning: | Searching with / and ?
 :white_check_mark: | Correct Undo/Redo 
- | Command Remapping
- | Marks
+:warning: | Command Remapping
+:warning:  | Marks
 :warning: | Text Objects
  | Visual Block Mode
  | Macros
