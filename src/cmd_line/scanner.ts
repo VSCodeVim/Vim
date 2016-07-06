@@ -22,6 +22,36 @@ export class Scanner {
         return c;
     }
 
+    // Returns the next word in the input, or EOF.
+    nextWord() : string {
+        this.skipWhiteSpace();
+        if (this.isAtEof) {
+            this.pos = this.input.length;
+            return Scanner.EOF;
+        }
+
+        let result = "";
+
+        while (!this.isAtEof) {
+            var c = this.next();
+            if (c !== Scanner.EOF && c !== ' ' && c !== '\t') {
+                result += c;
+                continue;
+            } else {
+                break;
+            }
+        }
+
+        if (c !== Scanner.EOF) {
+            this.backup();
+        }
+
+        this.pos += result.length;
+
+        this.ignore();
+        return result;
+    }
+
     // Returns whether we've reached EOF.
     get isAtEof() : boolean {
         return this.pos >= this.input.length;
