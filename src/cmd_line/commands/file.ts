@@ -24,9 +24,12 @@ export class FileCommand extends node.CommandBase {
     }
 
     execute(): void {
-        let oriPath = vscode.window.activeTextEditor.document.uri.path;
-        let newPath = path.join(path.dirname(oriPath), this._arguments.name);
-        let folder = vscode.Uri.file(newPath);
-        vscode.commands.executeCommand("vscode.openFolder", folder);
+        let currentFilePath = vscode.window.activeTextEditor.document.uri.path;
+        let newFilePath = path.join(path.dirname(currentFilePath), this._arguments.name);
+
+        if (newFilePath !== currentFilePath) {
+            let folder = vscode.Uri.file(newFilePath);
+            vscode.commands.executeCommand("vscode.open", folder);
+        }
     }
 }
