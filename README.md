@@ -16,7 +16,7 @@ We're also super friendly people if you want to drop by and talk to us on our [S
 * Most typical commands, including command combinations like `c3w`, `daw`, `2dd`, etc. (Check the [roadmap](ROADMAP) for details.)
 * Command remapping (jj to esc)
 * Repeating actions with `.`
-* Incremental search with `/` that works like Vim (doesn't just open the search box!)
+* Incremental search with `/` and `?` that works like Vim (doesn't just open the search box!)
 * Correct undo/redo state
 * Marks
 
