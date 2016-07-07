@@ -20,6 +20,10 @@ We're also super friendly people if you want to drop by and talk to us on our [S
 * Correct undo/redo state
 * Marks
 
+## Roadmap
+
+See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for an idea of what we plan to implement next.
+
 ## Install
 
 1. Within Visual Studio Code, open the command palette (`Ctrl-Shift-P` / `Cmd-Shift-P`)
