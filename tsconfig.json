@@ -9,6 +9,10 @@
     "experimentalDecorators": true
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".vscode-test"
+  ],
+  "files": [
+    "node_modules/typescript/lib/lib.es6.d.ts"
   ]
 }
