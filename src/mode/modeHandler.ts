@@ -649,12 +649,17 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         // track undo history
+        if (!this.vimState.focusChanged) {
+            // important to ensure that focus didn't change, otherwise
+            // we'll grab the text of the incorrect active window and assume the
+            // whole document changed!
 
-        if (this._vimState.alteredHistory) {
-            this._vimState.alteredHistory = false;
-            vimState.historyTracker.ignoreChange();
-        } else {
-            vimState.historyTracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
+            if (this._vimState.alteredHistory) {
+                this._vimState.alteredHistory = false;
+                vimState.historyTracker.ignoreChange();
+            } else {
+                vimState.historyTracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
+            }
         }
 
         if (ranRepeatableAction) {
