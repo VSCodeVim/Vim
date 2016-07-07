@@ -44,6 +44,7 @@ suite("command line scanner", () => {
     });
 
     test("can ignore", () => {
+
         var state = new Scanner("dog cat");
         state.next();
         state.next();
@@ -84,6 +85,29 @@ suite("command line scanner", () => {
         state.ignore();
         state.skipWhiteSpace();
         assert.equal(state.next(), Scanner.EOF);
+    });
+
+    test("nextWord() return EOF at EOF", () => {
+        var state = new Scanner("");
+        assert.equal(state.nextWord(), Scanner.EOF);
+        assert.equal(state.nextWord(), Scanner.EOF);
+        assert.equal(state.nextWord(), Scanner.EOF);
+    });
+
+    test("nextWord() return word before trailing spaces", () => {
+        var state = new Scanner("dog   cat");
+        assert.equal(state.nextWord(), "dog");
+    });
+
+    test("nextWord() can skip whitespaces and return word ", () => {
+        var state = new Scanner("   dog   cat");
+        assert.equal(state.nextWord(), "dog");
+    });
+
+    test("nextWord() return word before EOF", () => {
+        var state = new Scanner("dog   cat");
+        state.nextWord();
+        assert.equal(state.nextWord(), "cat");
     });
 
     test("can expect one of a set", () => {

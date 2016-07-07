@@ -9,14 +9,9 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
     }
 
     var scanner = new Scanner(args);
-    scanner.skipWhiteSpace();
+    let name = scanner.nextWord();
 
-    if (scanner.isAtEof) {
-        return new node.FileCommand({});
-    }
-
-    let c = scanner.next();
     return new node.FileCommand({
-        name: c
+        name: name
     });
 }
