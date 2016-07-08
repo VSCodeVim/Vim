@@ -779,14 +779,27 @@ export class PutCommand extends BaseCommand {
     canBePrefixedWithCount = true;
     canBeRepeatedWithDot = true;
 
-    public async exec(position: Position, vimState: VimState, before: boolean = false): Promise<VimState> {
+    public async exec(position: Position, vimState: VimState, before: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
         const register = Register.get(vimState);
-        const text = register.text;
         const dest = before ? position : position.getRight();
+        let text = register.text;
 
         if (register.registerMode === RegisterMode.CharacterWise) {
           await TextEditor.insertAt(text, dest);
         } else {
+          if (adjustIndent) {
+            // Adjust indent to current line
+            let indentationWidth = TextEditor.getLeftIndentation(TextEditor.getLineAt(position).text);
+            let firstLineIdentationWidth = TextEditor.getLeftIndentation(text.split('\n')[0]);
+
+            text = text.split('\n').map(line => {
+              let currentIdentationWidth = TextEditor.getLeftIndentation(line);
+              let newIndentationWidth = currentIdentationWidth - firstLineIdentationWidth + indentationWidth;
+
+              return TextEditor.adjustIndentation(line, newIndentationWidth);
+            }).join('\n');
+          }
+
           if (before) {
             await TextEditor.insertAt(text + "\n", dest.getLineBegin());
           } else {
@@ -809,6 +822,60 @@ export class PutCommand extends BaseCommand {
 
         vimState.currentRegisterMode = register.registerMode;
         return vimState;
+    }
+
+    public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+      const result = await super.execCount(position, vimState);
+
+      if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+        result.cursorPosition = new Position(position.line + 1, 0).getFirstLineNonBlankChar();
+      }
+
+      return result;
+    }
+}
+
+@RegisterAction
+export class GPutCommand extends BaseCommand {
+  keys = ["g", "p"];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  canBePrefixedWithCount = true;
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const result = await new PutCommand().exec(position, vimState);
+    return result;
+      }
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    const register = Register.get(vimState);
+    const addedLinesCount = register.text.split('\n').length;
+    const result = await super.execCount(position, vimState);
+
+    if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+      let lastAddedLine = new Position(position.line + addedLinesCount, 0);
+
+      if (TextEditor.isLastLine(lastAddedLine)) {
+        result.cursorPosition = lastAddedLine.getLineBegin();
+      } else {
+        result.cursorPosition = lastAddedLine.getLineEnd().getRightThroughLineBreaks();
+      }
+    }
+
+      return result;
+    }
+}
+
+@RegisterAction
+export class PutWithIndentCommand extends BaseCommand {
+    keys = ["]", "p"];
+    modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+    canBePrefixedWithCount = true;
+    canBeRepeatedWithDot = true;
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      const result = await new PutCommand().exec(position, vimState, false, true);
+      return result;
     }
 
     public async execCount(position: Position, vimState: VimState): Promise<VimState> {
@@ -869,6 +936,40 @@ export class PutBeforeCommand extends BaseCommand {
         }
 
         return result;
+    }
+}
+
+@RegisterAction
+export class GPutBeforeCommand extends BaseCommand {
+  keys = ["g", "P"];
+  modes = [ModeName.Normal];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const result = await new PutCommand().exec(position, vimState, true);
+    const register = Register.get(vimState);
+    const addedLinesCount = register.text.split('\n').length;
+
+    if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+      result.cursorPosition = new Position(position.line + addedLinesCount, 0);
+    }
+
+    return result;
+  }
+}
+
+@RegisterAction
+export class PutBeforeWithIndentCommand extends BaseCommand {
+    keys = ["[", "p"];
+    modes = [ModeName.Normal];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      const result = await new PutCommand().exec(position, vimState, true, true);
+
+      if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+        result.cursorPosition = result.cursorPosition.getPreviousLineBegin().getFirstLineNonBlankChar();
+      }
+
+      return result;
     }
 }
 

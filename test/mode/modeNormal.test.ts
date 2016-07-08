@@ -261,6 +261,98 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'gp' after 'yy'",
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'yygp',
+      end: ['one', 'two', 'two', '|three']
+    });
+
+    newTest({
+      title: "Can handle 'gp' after 'Nyy'",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: '2yyjgp',
+      end: ['one', 'two', 'one', 'two', '|three']
+    });
+
+    newTest({
+      title: "Can handle 'gp' after 'Nyy' if cursor is on the last line",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: '2yyjjgp',
+      end: ['one', 'two', 'three', 'one', '|two']
+    });
+
+    newTest({
+      title: "Can handle 'gP' after 'yy'",
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'yygP',
+      end: ['one', 'two', '|two', 'three']
+    });
+
+    newTest({
+      title: "Can handle 'gP' after 'Nyy'",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: '2yygP',
+      end: ['one', 'two', '|one', 'two', 'three']
+    });
+
+    newTest({
+      title: "Can handle ']p' after yy",
+      start: ['  |one', '   two'],
+      keysPressed: 'yyj]p',
+      end: ['  one', '   two', '   |one']
+    });
+
+    newTest({
+      title: "Can handle ']p' after 'Nyy'",
+      start: [' |one', '  two', '  three'],
+      keysPressed: '2yyjj]p',
+      end: [' one', '  two', '  three', '  |one', '   two']
+    });
+
+    newTest({
+      title: "Can handle ']p' after 'Nyy' and indent with tabs first",
+      start: [' |one', '  two', '   three'],
+      keysPressed: '2yyjj]p',
+      end: [' one', '  two', '   three', '   |one', '\ttwo']
+    });
+
+    newTest({
+      title: "Can handle ']p' after 'Nyy' and decrease indents if possible",
+      start: ['    |one', ' two', ' three'],
+      keysPressed: '2yyjj]p',
+      end: ['    one', ' two', ' three', ' |one', 'two']
+    });
+
+    newTest({
+      title: "Can handle '[p' after yy",
+      start: ['   two', '  |one'],
+      keysPressed: 'yyk[p',
+      end: ['   |one', '   two', '  one']
+    });
+
+    newTest({
+      title: "Can handle '[p' after 'Nyy'",
+      start: ['  three', '|one', ' two'],
+      keysPressed: '2yyk[p',
+      end: ['  |one', '   two', '  three', 'one', ' two']
+    });
+
+    newTest({
+      title: "Can handle '[p' after 'Nyy' and indent with tabs first",
+      start: ['   three', '| one', '  two'],
+      keysPressed: '2yyk[p',
+      end: ['   |one', '\ttwo', '   three', ' one', '  two']
+    });
+
+    newTest({
+      title: "Can handle '[p' after 'Nyy' and decrease indents if possible",
+      start: [' three', '    |one', ' two'],
+      keysPressed: '2yyk[p',
+      end: [' |one', 'two', ' three', '    one', ' two']
+    });
+
+
+    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',
