@@ -32,8 +32,9 @@ When submitting a PR, ensure:
 2. Fork and clone the repository
 3. `cd Vim`
 4. Install the dependencies:
+
 	```bash
-	$ npm install -g gulp typescript
+	$ npm install -g gulp-cli typescript
 	$ npm install
 	```
 5. Open the folder in VS Code
