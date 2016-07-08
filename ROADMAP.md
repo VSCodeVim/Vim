@@ -29,6 +29,7 @@ Status | Command
 :warning: | Text Objects
  | Visual Block Mode
  | Macros
+:warning: | Buffer/Window/Tab 
 
 
 Now follows an exhaustive list of every known Vim command that we could find. 
@@ -382,6 +383,18 @@ Status | Command | Description
 ---|--------|------------------------------
    | :r [file]	    | insert the contents of [file] below the cursor
    | :r! {command}  | insert the standard output of {command} below the cursor
+
+
+## Window
+
+Status | Command | Description
+---|--------|------------------------------
+:warning:   | :e[dit] {file}  | Edit {file}. We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
+:warning:   | <ctrl-w> hl  | Switching between windows. As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
+:x:   | :sp {file}  | Split current window in two. VS Code doesn't support split Window horizontally.
+   | :vsp {file}  | Split vertically current window in two.
+:x:   | :new | Create a new window horizontally and start editing an empty file in it.
+   | :vne[w] | Create a new window vertically and start editing an empty file in it.
 
 
 ## Tabs 
