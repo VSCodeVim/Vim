@@ -331,7 +331,7 @@ export class ModeHandler implements vscode.Disposable {
     public static IsTesting = false;
 
     private _modes: Mode[];
-    private _statusBarItem: vscode.StatusBarItem;
+    private static _statusBarItem: vscode.StatusBarItem;
     private _configuration: Configuration;
     private _vimState: VimState;
     private _insertModeRemapper: InsertModeRemapper;
@@ -498,8 +498,6 @@ export class ModeHandler implements vscode.Disposable {
 
             mode.isActive = (mode.name === vimState.currentMode);
         }
-
-        this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
     }
 
     async handleKeyEvent(key: string): Promise<Boolean> {
@@ -911,6 +909,8 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
+
+        this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
@@ -920,16 +920,14 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     setupStatusBarItem(text: string): void {
-        if (!this._statusBarItem) {
-            this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+        if (!ModeHandler._statusBarItem) {
+            ModeHandler._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         }
 
-        this._statusBarItem.text = text || '';
-        this._statusBarItem.show();
+        ModeHandler._statusBarItem.text = text || '';
+        ModeHandler._statusBarItem.show();
     }
 
     dispose() {
-        this._statusBarItem.hide();
-        this._statusBarItem.dispose();
     }
 }
