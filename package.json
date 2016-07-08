@@ -75,22 +75,22 @@
             {
                 "key": "left",
                 "command": "extension.vim_left",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
             },
             {
                 "key": "right",
                 "command": "extension.vim_right",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
             },
             {
                 "key": "up",
                 "command": "extension.vim_up",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
             },
             {
                 "key": "down",
                 "command": "extension.vim_down",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
             }
         ],
         "configuration": {
