@@ -254,6 +254,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'p' after 'yy' with correct cursor position",
+      start: ['|  one', 'two'],
+      keysPressed: 'yyjp',
+      end: ['  one', 'two', '  |one']
+    });
+
+    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',

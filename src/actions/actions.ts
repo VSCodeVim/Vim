@@ -815,7 +815,7 @@ export class PutCommand extends BaseCommand {
       const result = await super.execCount(position, vimState);
 
       if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
-        result.cursorPosition = new Position(position.line + 1, 0);
+        result.cursorPosition = new Position(position.line + 1, 0).getFirstLineNonBlankChar();
       }
 
       return result;
