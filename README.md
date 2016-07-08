@@ -13,12 +13,16 @@ We're also super friendly people if you want to drop by and talk to us on our [S
 ## Features We Support 
 
 * All basic modes
-* Most typical commands, including command combinations like `c3w`, `daw`, `2dd`, etc. (Check the [roadmap](ROADMAP) for details.)
+* Most typical commands, including command combinations like `c3w`, `daw`, `2dd`, etc. (Check the [roadmap](ROADMAP.md) for details.)
+* Command remapping (jj to esc)
 * Repeating actions with `.`
-* Incremental search with `/` that works like Vim (doesn't just open the search box!)
+* Incremental search with `/` and `?` that works like Vim (doesn't just open the search box!)
 * Correct undo/redo state
 * Marks
-* Command remapping
+
+## Roadmap
+
+See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for an idea of what we plan to implement next.
 
 ## Install
 
@@ -62,7 +66,7 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 
 ## Contributing
 
-This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP).
+This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP.md).
 
 For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
 
