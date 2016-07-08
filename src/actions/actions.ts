@@ -997,8 +997,7 @@ class CommandMoveFullPageDown extends BaseCommand {
   keys = ["ctrl+f"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("cursorPageUp");
-
+    await vscode.commands.executeCommand("cursorPageDown");
     return vimState;
   }
 }
@@ -1010,8 +1009,7 @@ class CommandMoveFullPageUp extends BaseCommand {
   keys = ["ctrl+b"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("cursorPageDown");
-
+    await vscode.commands.executeCommand("cursorPageUp");
     return vimState;
   }
 }

@@ -930,5 +930,6 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     dispose() {
+        // do nothing
     }
 }
