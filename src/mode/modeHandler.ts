@@ -736,6 +736,10 @@ export class ModeHandler implements vscode.Disposable {
         let recordedState = vimState.recordedState;
 
         if (recordedState.operator) {
+            if (start.compareTo(stop) > 0) {
+                [start, stop] = [stop, start];
+            }
+
             if (vimState.currentMode !== ModeName.Visual &&
                 vimState.currentMode !== ModeName.VisualLine &&
                 vimState.currentRegisterMode !== RegisterMode.LineWise) {
@@ -744,10 +748,6 @@ export class ModeHandler implements vscode.Disposable {
                 } else {
                     stop = stop.getRight();
                 }
-            }
-
-            if (start.compareTo(stop) > 0) {
-                [start, stop] = [stop, start];
             }
 
             if (this.currentModeName === ModeName.VisualLine) {
