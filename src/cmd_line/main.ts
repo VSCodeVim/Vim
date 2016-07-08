@@ -23,7 +23,7 @@ export async function showCmdLine(initialText: string, modeHandler : ModeHandler
     }
 }
 
-function runCmdLine(command : string, modeHandler : ModeHandler) : Promise<{}> {
+export async function runCmdLine(command : string, modeHandler : ModeHandler) : Promise<{}> {
     if (!command || command.length === 0) {
         return;
     }
@@ -34,7 +34,7 @@ function runCmdLine(command : string, modeHandler : ModeHandler) : Promise<{}> {
             return;
         }
 
-        cmd.execute(vscode.window.activeTextEditor, modeHandler);
+        await cmd.execute(vscode.window.activeTextEditor, modeHandler);
     } catch (e) {
         modeHandler.setupStatusBarItem(e.toString());
     }

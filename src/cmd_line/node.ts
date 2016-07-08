@@ -87,14 +87,18 @@ export class CommandLine {
         return ":" + this.range.toString() + " " + this.command.toString();
     }
 
-    execute(document : vscode.TextEditor, modeHandler : ModeHandler) : void {
+    async execute(document : vscode.TextEditor, modeHandler : ModeHandler) : Promise<void> {
         if (!this.command) {
             this.range.execute(document);
             return;
         }
 
-        // TODO: calc range
-        this.command.execute(modeHandler);
+        if (this.range.isEmpty) {
+            await this.command.execute(modeHandler);
+        } else {
+            await this.command.executeWithRange(modeHandler, this.range);
+        }
+
     }
 }
 
@@ -125,4 +129,8 @@ export abstract class CommandBase {
     protected _arguments : ICommandArgs;
 
     abstract execute(modeHandler : ModeHandler) : void;
+
+    executeWithRange(modeHandler : ModeHandler, range: LineRange) : void {
+        throw new Error("Not implemented!");
+    }
 }
