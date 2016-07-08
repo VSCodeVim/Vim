@@ -1002,7 +1002,6 @@ class CommandMoveFullPageDown extends BaseCommand {
   }
 }
 
-
 @RegisterAction
 class CommandMoveFullPageUp extends BaseCommand {
   modes = [ModeName.Normal];
