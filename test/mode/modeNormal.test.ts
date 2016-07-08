@@ -121,16 +121,16 @@ suite("Mode Normal", () => {
 
     newTest({
       title: "Can handle 'db'",
-      start: ['text tex|t'],
+      start: ['One tw|o'],
       keysPressed: '$db',
-      end: ['text |t'],
+      end: ['One |o'],
     });
 
     newTest({
       title: "Can handle 'db then 'db' again",
-      start: ['text tex|t'],
+      start: ['One tw|o'],
       keysPressed: '$dbdb',
-      end: ['|t'],
+      end: ['|o'],
     });
 
     newTest({
