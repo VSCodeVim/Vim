@@ -911,6 +911,7 @@ export class ModeHandler implements vscode.Disposable {
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
 
         this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
+        vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
