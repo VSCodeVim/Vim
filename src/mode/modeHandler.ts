@@ -910,7 +910,12 @@ export class ModeHandler implements vscode.Disposable {
 
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
 
-        this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
+        if (this.currentMode.name === ModeName.SearchInProgressMode) {
+            this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState.searchString }`);
+        } else {
+            this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
+        }
+
         vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
     }
 
