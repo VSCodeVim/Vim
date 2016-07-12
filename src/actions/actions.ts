@@ -1014,6 +1014,26 @@ class CommandMoveFullPageUp extends BaseCommand {
 }
 
 @RegisterAction
+class MCommandMoveHalfPageDown extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+d"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return new Position(Math.min(TextEditor.getLineCount() - 1, position.line + vimState.settings.scroll), position.character);
+  }
+}
+
+@RegisterAction
+class MCommandMoveHalfPageUp extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+u"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return new Position(Math.max(0, position.line - vimState.settings.scroll), position.character);
+  }
+}
+
+@RegisterAction
 class CommandDeleteToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["D"];

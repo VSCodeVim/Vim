@@ -125,6 +125,7 @@ export class VimState {
 
 export class VimSettings {
     useSolidBlockCursor = false;
+    scroll = 20;
 }
 
 export class SearchState {
@@ -477,6 +478,7 @@ export class ModeHandler implements vscode.Disposable {
     private loadSettings(): void {
         this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
             .get("useSolidBlockCursor", false);
+        this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
     }
 
     /**

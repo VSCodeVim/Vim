@@ -367,10 +367,10 @@ Status | Command | Description
 Status | Command | Description
 ---|--------|------------------------------
 :x:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
-  :x:  | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
+:warning:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
 :x:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
   :x:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
- :x:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
+:warning:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
 :x:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
 :x:    |    z CR or zt	| redraw, current line at top of window
 :warning: |    z.	 or zz	| redraw, current line at center of window
