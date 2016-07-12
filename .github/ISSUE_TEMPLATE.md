@@ -1,16 +1,13 @@
 Do you need help or have a question? Ask us on [Slack](https://vscodevim-slackin.azurewebsites.net/) 👫.
 Found a bug? Please fill out the sections below 👍.
 
-### Issue Summary
+### What did you do?
 
-*[A summary of the issue -- what blew up? what major feature are we missing? ]*
+Put the exact key strokes you pressed to reproduce the issue, if possible.
 
-### Steps to Reproduce
+### What did you expect to happen?
 
-*[Any other info e.g. Why do you consider this to be a bug? What did you expect to happen instead?]*
-
-1. *This is the first step*
-2. *This is the second step, etc.*
+### What happened instead?
 
 ### Technical details:
 
