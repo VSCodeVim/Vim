@@ -18,7 +18,7 @@ let extensionContext: vscode.ExtensionContext;
  * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
  */
 let modeHandlerToFilename: { [key: string]: ModeHandler } = {};
-let previousActiveFilename: string = undefined;
+let previousActiveFilename: string | undefined = undefined;
 
 let taskQueue = new TaskQueue();
 
@@ -27,7 +27,7 @@ function activeFileName(): string {
 }
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-    const oldHandler = modeHandlerToFilename[previousActiveFilename];
+    const oldHandler = previousActiveFilename ? modeHandlerToFilename[previousActiveFilename] : undefined;
 
     if (!modeHandlerToFilename[activeFileName()]) {
         const newModeHandler = new ModeHandler(false, activeFileName());

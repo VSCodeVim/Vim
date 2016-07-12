@@ -65,17 +65,17 @@ class HistoryStep {
     /**
      * The insertions and deletions that occured in this history step.
      */
-    changes: DocumentChange[] = [];
+    changes: DocumentChange[];
 
     /**
      * Whether the user is still inserting or deleting for this history step.
      */
-    isFinished: boolean = false;
+    isFinished: boolean;
 
     /**
      * The cursor position at the start of this history step.
      */
-    cursorStart: Position = undefined;
+    cursorStart: Position | undefined;
 
     /**
      * The position of every mark at the start of this history step.
@@ -85,7 +85,7 @@ class HistoryStep {
     constructor(init: {
         changes?: DocumentChange[],
         isFinished?: boolean,
-        cursorStart?: Position,
+        cursorStart?: Position | undefined,
         marks?: IMark[]
     }) {
         this.changes     = init.changes = [];
@@ -156,7 +156,9 @@ export class HistoryTracker {
         let newMarks: IMark[] = [];
 
         // clone old marks into new marks
-        for (const mark of previousMarks) {
+        for (const _mark of previousMarks) {
+            const mark = _mark!;
+
             newMarks.push({
                 name            : mark.name,
                 position        : mark.position,
@@ -164,8 +166,12 @@ export class HistoryTracker {
             });
         }
 
-        for (const change of this.currentHistoryStep.changes) {
-            for (const newMark of newMarks) {
+        for (const _change of this.currentHistoryStep.changes) {
+            const change = _change!;
+
+            for (const _newMark of newMarks) {
+                const newMark = _newMark!;
+
                 // Run through each character added/deleted, and see if it could have
                 // affected the position of this mark.
 
@@ -225,7 +231,9 @@ export class HistoryTracker {
 
         // Ensure the position of every mark is within the range of the document.
 
-        for (const mark of newMarks) {
+        for (const _mark of newMarks) {
+            const mark = _mark!;
+
             if (mark.position.compareTo(mark.position.getDocumentEnd()) > 0) {
                 mark.position = mark.position.getDocumentEnd();
             }
@@ -298,42 +306,20 @@ export class HistoryTracker {
 
         let currentPosition = new Position(0, 0);
 
-        for (const diff of diffs) {
+        for (const _diff of diffs) {
+            const diff = _diff!;
             let change: DocumentChange;
             // let lastChange = this.currentHistoryStep.changes.length > 1 &&
             //   this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 2];
 
-            if (diff.added) {
-                change = new DocumentChange(currentPosition, diff.value, true);
-            } else if (diff.removed) {
-                change = new DocumentChange(currentPosition, diff.value, false);
-            }
+            if (diff.added || diff.removed) {
+                change = new DocumentChange(currentPosition, diff.value, !!diff.added);
 
-            // attempt to merge with last change
-            let couldMerge = false;
-
-            /*
-
-            // TODO: This doesn't work in like 1% of cases. Can't figure out why!
-
-            // If you mash on your keyboard and backspace for like 2 minutes and then undo
-            // you might see it happen.
-
-            if (lastChange && lastChange.start.getDocumentEnd().compareTo(lastChange.start) > 0) {
-                if (diff.added && lastChange.start.getRight().advancePositionByText(lastChange.text).isEqual(currentPosition)) {
-                    lastChange.text += change.text;
-                    couldMerge = true;
-                }
-            }
-
-            */
-
-            if (!couldMerge && change) {
                 this.currentHistoryStep.changes.push(change);
-            }
 
-            if (change && this.currentHistoryStep.cursorStart === undefined) {
-                this.currentHistoryStep.cursorStart = cursorPosition;
+                if (change && this.currentHistoryStep.cursorStart === undefined) {
+                    this.currentHistoryStep.cursorStart = cursorPosition;
+                }
             }
 
             if (!diff.removed) {
@@ -387,7 +373,7 @@ export class HistoryTracker {
      * Essentially Undo or ctrl+z. Returns undefined if there's no more steps
      * back to go.
      */
-    async goBackHistoryStep(): Promise<Position> {
+    async goBackHistoryStep(): Promise<Position | undefined> {
         let step: HistoryStep;
 
         if (this.currentHistoryStepIndex === 0) {
@@ -405,7 +391,7 @@ export class HistoryTracker {
         step = this.currentHistoryStep;
 
         for (const change of step.changes.slice(0).reverse()) {
-            await change.undo();
+            await change!.undo();
         }
 
         this.currentHistoryStepIndex--;
@@ -417,7 +403,7 @@ export class HistoryTracker {
      * Essentially Redo or ctrl+y. Returns undefined if there's no more steps
      * forward to go.
      */
-    async goForwardHistoryStep(): Promise<Position> {
+    async goForwardHistoryStep(): Promise<Position | undefined> {
         let step: HistoryStep;
 
         if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
@@ -429,7 +415,7 @@ export class HistoryTracker {
         step = this.currentHistoryStep;
 
         for (const change of step.changes) {
-            await change.do();
+            await change!.do();
         }
 
         return step.cursorStart;

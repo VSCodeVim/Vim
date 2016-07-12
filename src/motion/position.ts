@@ -568,10 +568,12 @@ export class Position extends vscode.Position {
                 }
             }
         }
+
+        throw new Error("This should never happen...");
     }
 
 
-    private findHelper(char: string, count: number, direction: number): Position {
+    private findHelper(char: string, count: number, direction: number): Position | undefined {
         // -1 = backwards, +1 = forwards
         const line = TextEditor.getLineAt(this);
         let index = this.character;
@@ -589,7 +591,7 @@ export class Position extends vscode.Position {
             return new Position(this.line, index);
         }
 
-        return null;
+        return undefined;
     }
 
     public tilForwards(char: string, count: number = 1): Position {

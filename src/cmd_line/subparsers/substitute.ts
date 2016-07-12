@@ -145,5 +145,9 @@ export function parseSubstituteCommandArgs(args : string) : node.SubstituteComma
         }
     }
 
-    return new node.SubstituteCommand({});
+    // TODO(rebornix): Can this ever happen?
+    return new node.SubstituteCommand({
+        pattern: "",
+        replace: ""
+    });
 }

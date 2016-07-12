@@ -53,7 +53,7 @@ export class VimState {
      * The keystroke sequence that made up our last complete action (that can be
      * repeated with '.').
      */
-    public previousFullAction: RecordedState = undefined;
+    public previousFullAction: RecordedState | undefined = undefined;
 
     public alteredHistory = false;
 
@@ -83,7 +83,7 @@ export class VimState {
 
     public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
 
-    public searchState: SearchState = undefined;
+    public searchState: SearchState | undefined = undefined;
 
     /**
      * The mode Vim will be in once this action finishes.
@@ -139,6 +139,15 @@ export class SearchState {
         return this._searchString;
     }
 
+    public searchCursorStartPosition: Position;
+
+    /**
+     * 1  === forward
+     * -1 === backward
+     */
+    public searchDirection = 1;
+
+
     public set searchString(search: string){
         this._searchString = search;
 
@@ -183,7 +192,9 @@ export class SearchState {
         const effectiveDirection = direction * this.searchDirection;
 
         if (effectiveDirection === 1) {
-            for (let matchRange of this.matchRanges) {
+            for (let _matchRange of this.matchRanges) {
+                const matchRange = _matchRange!;
+
                 if (matchRange.start.compareTo(startPosition) > 0) {
                     return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
                 }
@@ -193,7 +204,9 @@ export class SearchState {
             // TODO(bell)
             return { pos: Position.FromVSCodePosition(this.matchRanges[0].start), match: true };
         } else {
-            for (let matchRange of this.matchRanges.slice(0).reverse()) {
+            for (let _matchRange of this.matchRanges.slice(0).reverse()) {
+                const matchRange = _matchRange!;
+
                 if (matchRange.start.compareTo(startPosition) < 0) {
                     return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
                 }
@@ -206,14 +219,6 @@ export class SearchState {
             };
         }
     }
-
-    public searchCursorStartPosition: Position = undefined;
-
-    /**
-     * 1  === forward
-     * -1 === backward
-     */
-    public searchDirection = 1;
 
     constructor(direction: number, startPosition: Position, searchString = "") {
         this.searchDirection = direction;
@@ -315,7 +320,7 @@ export class RecordedState {
         let res = "";
 
         for (const action of this.actionsRun) {
-            res += action.toString();
+            res += action!.toString();
         }
 
         return res;
@@ -493,7 +498,9 @@ export class ModeHandler implements vscode.Disposable {
 
         this._vimState.currentMode = vimState.currentMode;
 
-        for (let mode of this._modes) {
+        for (let _mode of this._modes) {
+            const mode = _mode!;
+
             if (mode.name === vimState.currentMode) {
                 activeMode = mode;
             }
@@ -705,7 +712,10 @@ export class ModeHandler implements vscode.Disposable {
         } else if (isIMovement(result)) {
             vimState.cursorPosition      = result.stop;
             vimState.cursorStartPosition = result.start;
-            vimState.currentRegisterMode = result.registerMode;
+
+            if (result.registerMode) {
+                vimState.currentRegisterMode = result.registerMode;
+            }
         }
 
         vimState.recordedState.count = 0;
@@ -737,32 +747,32 @@ export class ModeHandler implements vscode.Disposable {
         let stop          = vimState.cursorPosition;
         let recordedState = vimState.recordedState;
 
-        if (recordedState.operator) {
-            if (start.compareTo(stop) > 0) {
-                [start, stop] = [stop, start];
-            }
-
-            if (vimState.currentMode !== ModeName.Visual &&
-                vimState.currentMode !== ModeName.VisualLine &&
-                vimState.currentRegisterMode !== RegisterMode.LineWise) {
-                if (Position.EarlierOf(start, stop) === start) {
-                    stop = stop.getLeft();
-                } else {
-                    stop = stop.getRight();
-                }
-            }
-
-            if (this.currentModeName === ModeName.VisualLine) {
-                start = start.getLineBegin();
-                stop  = stop.getLineEnd();
-
-                vimState.currentRegisterMode = RegisterMode.LineWise;
-            }
-
-            return await recordedState.operator.run(vimState, start, stop);
+        if (!recordedState.operator) {
+            throw new Error("what in god's name");
         }
 
-        console.log("This is bad! Execution should never get here.");
+        if (start.compareTo(stop) > 0) {
+            [start, stop] = [stop, start];
+        }
+
+        if (vimState.currentMode !== ModeName.Visual &&
+            vimState.currentMode !== ModeName.VisualLine &&
+            vimState.currentRegisterMode !== RegisterMode.LineWise) {
+            if (Position.EarlierOf(start, stop) === start) {
+                stop = stop.getLeft();
+            } else {
+                stop = stop.getRight();
+            }
+        }
+
+        if (this.currentModeName === ModeName.VisualLine) {
+            start = start.getLineBegin();
+            stop  = stop.getLineEnd();
+
+            vimState.currentRegisterMode = RegisterMode.LineWise;
+        }
+
+        return await recordedState.operator.run(vimState, start, stop);
     }
 
     private async executeCommand(vimState: VimState): Promise<VimState> {
@@ -775,6 +785,10 @@ export class ModeHandler implements vscode.Disposable {
                 await showCmdLine("", this);
             break;
             case VimSpecialCommands.Dot:
+                if (!vimState.previousFullAction) {
+                    return vimState; // TODO(bell)
+                }
+
                 const clonedAction = vimState.previousFullAction.clone();
 
                 await this.rerunRecordedState(vimState, vimState.previousFullAction);
@@ -794,7 +808,9 @@ export class ModeHandler implements vscode.Disposable {
 
         let i = 0;
 
-        for (let action of actions) {
+        for (let _action of actions) {
+            const action = _action!;
+
             recordedState.actionsRun = actions.slice(0, ++i);
             vimState = await this.runAction(vimState, recordedState, action);
         }
@@ -896,9 +912,9 @@ export class ModeHandler implements vscode.Disposable {
 
         // Draw search highlight
 
-        const searchState = vimState.searchState;
-
         if (this.currentMode.name === ModeName.SearchInProgressMode) {
+            const searchState = vimState.searchState!;
+
             rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
 
             const { pos, match } =  searchState.getNextSearchMatchPosition(vimState.cursorPosition);
@@ -913,7 +929,7 @@ export class ModeHandler implements vscode.Disposable {
         vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
 
         if (this.currentMode.name === ModeName.SearchInProgressMode) {
-            this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState.searchString }`);
+            this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
         } else {
             this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
         }
@@ -923,7 +939,7 @@ export class ModeHandler implements vscode.Disposable {
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
         for (const key of keys) {
-            await this.handleKeyEvent(key);
+            await this.handleKeyEvent(key!);
         }
     }
 

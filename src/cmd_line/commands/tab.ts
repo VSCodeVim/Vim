@@ -15,7 +15,7 @@ export enum Tab {
 
 export interface ITabCommandArguments extends node.ICommandArgs {
     tab: Tab;
-    count?: number;
+    count: number;
 }
 
 //
@@ -37,10 +37,6 @@ export class TabCommand extends node.CommandBase {
     }
 
     private executeCommandWithCount(count: number, command: string) {
-        if (!count) {
-            count = 1;
-        }
-
         for (let i = 0; i < count; i++) {
             vscode.commands.executeCommand(command);
         }

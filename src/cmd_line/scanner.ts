@@ -23,7 +23,7 @@ export class Scanner {
     }
 
     // Returns the next word in the input, or EOF.
-    nextWord() : string {
+    nextWord(): string {
         this.skipWhiteSpace();
         if (this.isAtEof) {
             this.pos = this.input.length;
@@ -31,18 +31,19 @@ export class Scanner {
         }
 
         let result = "";
+        let c: string | undefined = undefined;
 
         while (!this.isAtEof) {
-            var c = this.next();
-            if (c !== Scanner.EOF && c !== ' ' && c !== '\t') {
-                result += c;
-                continue;
-            } else {
+            c = this.next();
+
+            if (!(c !== Scanner.EOF && c !== ' ' && c !== '\t')) {
                 break;
             }
+
+            result += c;
         }
 
-        if (c !== Scanner.EOF) {
+        if (c && c !== Scanner.EOF) {
             this.backup();
         }
 
@@ -109,13 +110,16 @@ export class Scanner {
         if (this.isAtEof) {
             return;
         }
+        let c: string | null = null;
+
         while (!this.isAtEof) {
-            var c = this.next();
+            c = this.next();
             if (c === " " || c === "\t") {
                 continue;
             }
             break;
         }
+
         if (c !== Scanner.EOF && c !== ' ' && c !== '\t') {
             this.backup();
         }

@@ -19,7 +19,9 @@ suite("Mode Insert", () => {
     test("can be activated", async () => {
         let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A'];
 
-        for (let key of activationKeys) {
+        for (let _key of activationKeys) {
+            const key = _key!;
+
             await modeHandler.handleKeyEvent(key);
             assertEqual(modeHandler.currentMode.name, ModeName.Insert);
 

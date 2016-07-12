@@ -8,8 +8,8 @@ import { ModeHandler } from "../../mode/modeHandler";
 import { TextEditor } from "../../textEditor";
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
-    pattern?: string;
-    replace?: string;
+    pattern: string;
+    replace: string;
     flags?: number;
     count?: number;
 }

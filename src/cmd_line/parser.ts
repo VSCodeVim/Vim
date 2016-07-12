@@ -6,12 +6,12 @@ import * as lexer from './lexer';
 import {commandParsers} from './subparser';
 
 interface IParseFunction {
-    (state : ParserState, command : node.CommandLine) : IParseFunction;
+    (state : ParserState, command : node.CommandLine): IParseFunction | null;
 }
 
 export function parse(input : string) : node.CommandLine {
     var cmd = new node.CommandLine();
-    var f : IParseFunction = parseLineRange;
+    var f: IParseFunction | null = parseLineRange;
     let state : ParserState = new ParserState(input);
     while (f) {
         f = f(state, cmd);
@@ -19,7 +19,7 @@ export function parse(input : string) : node.CommandLine {
     return cmd;
 }
 
-function parseLineRange(state : ParserState, commandLine : node.CommandLine) : IParseFunction {
+function parseLineRange(state: ParserState, commandLine: node.CommandLine): IParseFunction | null {
     while (true) {
         let tok = state.next();
         switch (tok.type) {
@@ -44,7 +44,7 @@ function parseLineRange(state : ParserState, commandLine : node.CommandLine) : I
     }
 }
 
-function parseCommand(state : ParserState, commandLine : node.CommandLine) : IParseFunction {
+function parseCommand(state: ParserState, commandLine: node.CommandLine): IParseFunction | null {
     while (!state.isAtEof) {
         var tok = state.next();
         switch (tok.type) {
@@ -63,6 +63,7 @@ function parseCommand(state : ParserState, commandLine : node.CommandLine) : IPa
                 throw new Error("Not implemented");
         }
     }
+
     if (!state.isAtEof) {
         state.backup();
         return parseCommand;
