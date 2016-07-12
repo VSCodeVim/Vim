@@ -1512,8 +1512,8 @@ export class MoveWordBegin extends BaseMovement {
     next line.
     */
 
-    if (result.isLineBeginning()) {
-        return result.getLeftThroughLineBreaks();
+    if (result.line > position.line + 1 || (result.line === position.line + 1 && result.isFirstWordOfLine())) {
+      return position.getLineEnd();
     }
 
     if (result.isLineEnd()) {

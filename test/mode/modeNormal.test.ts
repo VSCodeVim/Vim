@@ -64,6 +64,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle dw across lines",
+      start: ['one |two', '  three'],
+      keysPressed: 'dw',
+      end: ["one| ", "  three"]
+    });
+
+    newTest({
+      title: "Can handle dw across lines",
+      start: ['one |two', '', 'three'],
+      keysPressed: 'dw',
+      end: ["one| ", "", "three"]
+    });
+
+    newTest({
       title: "Can handle dd last line",
       start: ['one', '|two'],
       keysPressed: 'dd',
