@@ -369,6 +369,10 @@ export class Position extends vscode.Position {
         return this.character >= Position.getLineLength(this.line);
     }
 
+    public isFirstWordOfLine(): boolean {
+        return Position.getFirstNonBlankCharAtLine(this.line) === this.character;
+    }
+
     public isAtDocumentEnd(): boolean {
         return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
     }
