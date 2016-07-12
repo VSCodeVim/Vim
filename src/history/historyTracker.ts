@@ -156,9 +156,7 @@ export class HistoryTracker {
         let newMarks: IMark[] = [];
 
         // clone old marks into new marks
-        for (const _mark of previousMarks) {
-            const mark = _mark!;
-
+        for (const mark of previousMarks) {
             newMarks.push({
                 name            : mark.name,
                 position        : mark.position,
@@ -166,12 +164,8 @@ export class HistoryTracker {
             });
         }
 
-        for (const _change of this.currentHistoryStep.changes) {
-            const change = _change!;
-
-            for (const _newMark of newMarks) {
-                const newMark = _newMark!;
-
+        for (const change of this.currentHistoryStep.changes) {
+            for (const newMark of newMarks) {
                 // Run through each character added/deleted, and see if it could have
                 // affected the position of this mark.
 
@@ -231,9 +225,7 @@ export class HistoryTracker {
 
         // Ensure the position of every mark is within the range of the document.
 
-        for (const _mark of newMarks) {
-            const mark = _mark!;
-
+        for (const mark of newMarks) {
             if (mark.position.compareTo(mark.position.getDocumentEnd()) > 0) {
                 mark.position = mark.position.getDocumentEnd();
             }
@@ -306,8 +298,7 @@ export class HistoryTracker {
 
         let currentPosition = new Position(0, 0);
 
-        for (const _diff of diffs) {
-            const diff = _diff!;
+        for (const diff of diffs) {
             let change: DocumentChange;
             // let lastChange = this.currentHistoryStep.changes.length > 1 &&
             //   this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 2];

@@ -119,7 +119,7 @@
                 "vim.insertModeKeyBindings": {
                     "type": "array",
                     "description": "Keybinding overrides to use for insert mode."
-                },   
+                },
                 "vim.useSolidBlockCursor": {
                     "type": "boolean",
                     "description": "Use a non blinking block cursor."
