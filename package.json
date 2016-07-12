@@ -145,7 +145,7 @@
         "gulp-typescript": "^2.13.4",
         "gulp-typings": "^2.0.0",
         "tslint": "^3.10.2",
-        "typescript": "^1.8.10",
+        "typescript": "2.0.0",
         "typings": "^1.0.4",
         "vscode": "^0.11.13"
     }

@@ -9,7 +9,8 @@ export function getTestingFunctions(modeHandler: ModeHandler) {
     let testWithObject = testIt.bind(null, modeHandler);
 
     const newTest = (testObj: ITestObject): void => {
-        let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
+        const stack = (new Error()).stack;
+        let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
         test(testObj.title, async () => testWithObject(testObj)
             .catch((reason: Error) => {
@@ -21,7 +22,9 @@ export function getTestingFunctions(modeHandler: ModeHandler) {
 
     const newTestOnly = (testObj: ITestObject): void => {
         console.log("!!! Running single test !!!");
-        let niceStack = (new Error).stack.split('\n').splice(2, 1).join('\n');
+
+        const stack = (new Error()).stack;
+        let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
         test.only(testObj.title, async () => testWithObject(testObj)
             .catch((reason: Error) => {

@@ -3,14 +3,14 @@
 import * as vscode from "vscode";
 
 export class KeyboardLayout {
-    private _mapper : IKeyMapper;
+    private _mapper: IKeyMapper | undefined;
     private _defaultKeyboardLayout = 'en-US (QWERTY)';
 
-    constructor(mapper? : IKeyMapper) {
+    constructor(mapper?: IKeyMapper) {
         this._mapper = mapper;
     }
 
-    get name() : string {
+    get name(): string {
         return this._mapper ? this._mapper.name : this._defaultKeyboardLayout;
     }
 

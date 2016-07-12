@@ -20,7 +20,7 @@ const controlKeys: string[] = [
 const compareKeypressSequence = function (one: string[], two: string[]): boolean {
   const containsControlKey = (s: string): boolean => {
     for (const controlKey of controlKeys) {
-      if (s.indexOf(controlKey) !== -1) {
+      if (s.indexOf(controlKey!) !== -1) {
         return true;
       }
     }
@@ -171,7 +171,7 @@ export abstract class BaseMovement extends BaseAction {
    */
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
       let recordedState = vimState.recordedState;
-      let result: Position | IMovement;
+      let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
 
       if (count < 1) {
           count = 1;
@@ -239,7 +239,9 @@ export class BaseOperator extends BaseAction {
     /**
      * Run this operator on a range, returning the new location of the cursor.
      */
-    run(vimState: VimState, start: Position, stop: Position): Promise<VimState> { return; }
+    run(vimState: VimState, start: Position, stop: Position): Promise<VimState> {
+      throw new Error("You need to override this!");
+    }
 }
 
 export enum KeypressState {
@@ -268,7 +270,9 @@ export class Actions {
   public static getRelevantAction(keysPressed: string[], vimState: VimState): BaseAction | KeypressState {
     let couldPotentiallyHaveMatch = false;
 
-    for (const { type, action } of Actions.allActions) {
+    for (const thing of Actions.allActions) {
+      const { type, action } = thing!;
+
       if (action.doesActionApply(vimState, keysPressed)) {
         const result = new type();
 
@@ -371,15 +375,14 @@ class CommandInsertInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
-
-    const searchState = vimState.searchState;
+    const searchState = vimState.searchState!;
 
     // handle special keys first
     if (key === "<backspace>") {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
-      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
+      vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
 
       return vimState;
     } else if (key === "<esc>") {
@@ -407,11 +410,11 @@ class CommandNextSearchMatch extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const searchState = vimState.searchState;
 
-    if (searchState.searchString === "") {
+    if (!searchState || searchState.searchString === "") {
       return position;
     }
 
-    return vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
+    return searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
   }
 }
 
@@ -477,7 +480,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const searchState = vimState.searchState;
 
-    if (searchState.searchString === "") {
+    if (!searchState || searchState.searchString === "") {
       return position;
     }
 
@@ -1998,7 +2001,7 @@ class MoveToMatchingBracket extends BaseMovement {
        */
 
       let stackHeight = closed ? 0 : 1;
-      let matchedPosition: Position = undefined;
+      let matchedPosition: Position | undefined = undefined;
 
       for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
         if (char === charToMatch) {

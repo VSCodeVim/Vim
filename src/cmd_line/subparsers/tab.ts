@@ -45,13 +45,15 @@ export function parseTabPCommandArgs(args : string) : node.TabCommand {
 
 export function parseTabFirstCommandArgs(args : string) : node.TabCommand {
     return new node.TabCommand({
-        tab: node.Tab.First
+        tab: node.Tab.First,
+        count: 1
     });
 }
 
 export function parseTabLastCommandArgs(args : string) : node.TabCommand {
     return new node.TabCommand({
-        tab: node.Tab.Last
+        tab: node.Tab.Last,
+        count: 1
     });
 }
 
@@ -61,18 +63,21 @@ export function parseTabNewCommandArgs(args: string) : node.TabCommand {
     // For now VS Code only allows open tab next to current Tab
     // So `count == 0` is not possible. But we can workaround this once we can move tabs through API.
     return new node.TabCommand({
-        tab: node.Tab.New
+        tab: node.Tab.New,
+        count: 1
     });
 }
 
 export function parseTabCloseCommandArgs(args: string) : node.TabCommand {
     return new node.TabCommand({
-        tab: node.Tab.Close
+        tab: node.Tab.Close,
+        count: 1
     });
 }
 
 export function parseTabOnlyCommandArgs(args: string) : node.TabCommand {
     return new node.TabCommand({
-        tab: node.Tab.Only
+        tab: node.Tab.Only,
+        count: 1
     });
 }

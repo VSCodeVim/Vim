@@ -60,7 +60,7 @@ export async function cleanUpWorkspace(): Promise<any> {
         // TODO: the visibleTextEditors variable doesn't seem to be
         // up to date after a onDidChangeActiveTextEditor event, not
         // even using a setTimeout 0... so we MUST poll :(
-        const interval = setInterval(() => {
+        let interval = setInterval(() => {
             if (vscode.window.visibleTextEditors.length > 0) {
                 return;
             }
@@ -70,7 +70,7 @@ export async function cleanUpWorkspace(): Promise<any> {
         }, 10);
 
         vscode.commands.executeCommand('workbench.action.closeAllEditors')
-            .then(null, err => {
+            .then(() => null, (err: any) => {
                 clearInterval(interval);
                 e(err);
             });

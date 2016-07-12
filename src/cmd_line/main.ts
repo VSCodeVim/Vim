@@ -5,7 +5,7 @@ import * as parser from "./parser";
 import {ModeHandler} from "../mode/modeHandler";
 
 // Shows the vim command line.
-export async function showCmdLine(initialText: string, modeHandler : ModeHandler): Promise<{}> {
+export async function showCmdLine(initialText: string, modeHandler : ModeHandler): Promise<undefined> {
     if (!vscode.window.activeTextEditor) {
         console.log("No active document.");
         return;
@@ -23,7 +23,7 @@ export async function showCmdLine(initialText: string, modeHandler : ModeHandler
     }
 }
 
-export async function runCmdLine(command : string, modeHandler : ModeHandler) : Promise<{}> {
+export async function runCmdLine(command : string, modeHandler : ModeHandler) : Promise<undefined> {
     if (!command || command.length === 0) {
         return;
     }
