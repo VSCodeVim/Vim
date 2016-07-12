@@ -68,6 +68,16 @@
                 "when": "editorTextFocus"
             },
             {
+                "key": "ctrl+u",
+                "command": "extension.vim_ctrl+u",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+d",
+                "command": "extension.vim_ctrl+d",
+                "when": "editorTextFocus"
+            },
+            {
                 "key": "ctrl+w",
                 "command": "extension.vim_switchWindow",
                 "when": "editorTextFocus"
@@ -109,7 +119,7 @@
                 "vim.insertModeKeyBindings": {
                     "type": "array",
                     "description": "Keybinding overrides to use for insert mode."
-                },
+                },   
                 "vim.useSolidBlockCursor": {
                     "type": "boolean",
                     "description": "Use a non blinking block cursor."
@@ -117,6 +127,10 @@
                 "vim.visualModeKeyBindings": {
                     "type": "object",
                     "description": "Keybinding overrides to use for visual mode."
+                },
+                "vim.scroll": {
+                    "type": "number",
+                    "description": "Number of lines to scroll with CTRL-U and CTRL-D commands."
                 }
             }
         }
