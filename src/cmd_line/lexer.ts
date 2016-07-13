@@ -28,7 +28,7 @@ function emitToken(type: TokenType, state: Scanner): Token | null {
 
 module LexerFunctions {
     // Starts lexing a Vim command line and delegates on other lexer functions as needed.
-    export function lexRange(state: Scanner, tokens: Token[]): ILexFunction {
+    export function lexRange(state: Scanner, tokens: Token[]): ILexFunction | null {
         while (true) {
             if (state.isAtEof) {
                 break;

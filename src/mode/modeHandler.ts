@@ -211,9 +211,7 @@ export class SearchState {
         const effectiveDirection = direction * this.searchDirection;
 
         if (effectiveDirection === 1) {
-            for (let _matchRange of this.matchRanges) {
-                const matchRange = _matchRange!;
-
+            for (let matchRange of this.matchRanges) {
                 if (matchRange.start.compareTo(startPosition) > 0) {
                     return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
                 }
@@ -223,9 +221,7 @@ export class SearchState {
             // TODO(bell)
             return { pos: Position.FromVSCodePosition(this.matchRanges[0].start), match: true };
         } else {
-            for (let _matchRange of this.matchRanges.slice(0).reverse()) {
-                const matchRange = _matchRange!;
-
+            for (let matchRange of this.matchRanges.slice(0).reverse()) {
                 if (matchRange.start.compareTo(startPosition) < 0) {
                     return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
                 }
@@ -519,9 +515,7 @@ export class ModeHandler implements vscode.Disposable {
 
         this._vimState.currentMode = vimState.currentMode;
 
-        for (let _mode of this._modes) {
-            const mode = _mode!;
-
+        for (let mode of this._modes) {
             if (mode.name === vimState.currentMode) {
                 activeMode = mode;
             }
@@ -829,9 +823,7 @@ export class ModeHandler implements vscode.Disposable {
 
         let i = 0;
 
-        for (let _action of actions) {
-            const action = _action!;
-
+        for (let action of actions) {
             recordedState.actionsRun = actions.slice(0, ++i);
             vimState = await this.runAction(vimState, recordedState, action);
         }

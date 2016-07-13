@@ -1,6 +1,5 @@
 out
 node_modules
-typings
 *.sw?
 .vscode-test
 .DS_Store
