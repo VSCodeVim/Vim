@@ -789,14 +789,14 @@ export class PutCommand extends BaseCommand {
         } else {
           if (adjustIndent) {
             // Adjust indent to current line
-            let indentationWidth = TextEditor.getLeftIndentation(TextEditor.getLineAt(position).text);
-            let firstLineIdentationWidth = TextEditor.getLeftIndentation(text.split('\n')[0]);
+            let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(position).text);
+            let firstLineIdentationWidth = TextEditor.getIndentationLevel(text.split('\n')[0]);
 
             text = text.split('\n').map(line => {
-              let currentIdentationWidth = TextEditor.getLeftIndentation(line);
+              let currentIdentationWidth = TextEditor.getIndentationLevel(line);
               let newIndentationWidth = currentIdentationWidth - firstLineIdentationWidth + indentationWidth;
 
-              return TextEditor.adjustIndentation(line, newIndentationWidth);
+              return TextEditor.setIndentationLevel(line, newIndentationWidth);
             }).join('\n');
           }
 

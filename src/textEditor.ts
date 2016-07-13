@@ -108,13 +108,13 @@ export class TextEditor {
         return position.line === (vscode.window.activeTextEditor.document.lineCount - 1);
     }
 
-    static getLeftIndentation(line: string): number {
+    static getIndentationLevel(line: string): number {
         let tabSize = vscode.workspace.getConfiguration("editor").get<number>("tabSize");
         let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
         let visibleColumn: number = 0;
 
         if (firstNonWhiteSpace >= 0) {
-            line.substring(0, firstNonWhiteSpace).split("").forEach(char => {
+            for (const char of line.substring(0, firstNonWhiteSpace)) {
                 switch (char) {
                     case '\t':
                         visibleColumn += tabSize;
@@ -125,7 +125,7 @@ export class TextEditor {
                     default:
                         break;
                 }
-            });
+            }
         } else {
             return -1;
         }
@@ -133,7 +133,7 @@ export class TextEditor {
         return visibleColumn;
     }
 
-    static adjustIndentation(line: string, screenCharacters: number): string {
+    static setIndentationLevel(line: string, screenCharacters: number): string {
         let tabSize = vscode.workspace.getConfiguration("editor").get<number>("tabSize");
         let insertTabAsSpaces = vscode.workspace.getConfiguration("editor").get<boolean>("insertSpaces");
 
