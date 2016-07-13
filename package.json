@@ -131,6 +131,14 @@
                 "vim.scroll": {
                     "type": "number",
                     "description": "Number of lines to scroll with CTRL-U and CTRL-D commands."
+                },
+                "vim.ignorecase": {
+                    "type": "boolean",
+                    "description": "Ignore case in search patterns."
+                },
+                "vim.smartcase": {
+                    "type": "boolean",
+                    "description": "Override the 'ignorecase' option if the search pattern contains uppercase characters."
                 }
             }
         }

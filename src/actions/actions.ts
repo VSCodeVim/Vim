@@ -379,10 +379,10 @@ class CommandInsertInSearchMode extends BaseCommand {
 
     // handle special keys first
     if (key === "<backspace>") {
-      searchState.searchString = searchState.searchString.slice(0, -1);
+      searchState.updateSearchString(searchState.searchString.slice(0, -1), vimState.settings);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
-      vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
+      vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition, vimState.settings).pos;
 
       return vimState;
     } else if (key === "<esc>") {
@@ -391,12 +391,12 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       return vimState;
     } else {
-      searchState.searchString += this.keysPressed[0];
+      searchState.updateSearchString(searchState.searchString + this.keysPressed[0], vimState.settings);
     }
 
     // console.log(vimState.searchString); (TODO: Show somewhere!)
 
-    vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
+    vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition, vimState.settings).pos;
 
     return vimState;
   }
@@ -414,7 +414,7 @@ class CommandNextSearchMatch extends BaseMovement {
       return position;
     }
 
-    return searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
+    return searchState.getNextSearchMatchPosition(vimState.cursorPosition, vimState.settings).pos;
   }
 }
 
@@ -438,7 +438,7 @@ class CommandStar extends BaseCommand {
     vimState.searchState = new SearchState(+1, vimState.cursorPosition, currentWord);
 
     do {
-      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
+      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition, vimState.settings).pos;
     } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
 
     return vimState;
@@ -465,7 +465,7 @@ class CommandHash extends BaseCommand {
     vimState.searchState = new SearchState(-1, vimState.cursorPosition, currentWord);
 
     do {
-      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
+      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition, vimState.settings).pos;
     } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
 
     return vimState;
@@ -484,7 +484,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
       return position;
     }
 
-    return searchState.getNextSearchMatchPosition(vimState.cursorPosition, -1).pos;
+    return searchState.getNextSearchMatchPosition(vimState.cursorPosition, vimState.settings, -1).pos;
   }
 }
 
