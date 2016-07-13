@@ -126,6 +126,8 @@ export class VimState {
 export class VimSettings {
     useSolidBlockCursor = false;
     scroll = 20;
+    ignorecase = true;
+    smartcase = true;
 }
 
 export class SearchState {
@@ -147,14 +149,14 @@ export class SearchState {
      */
     public searchDirection = 1;
 
+    public vimSettings: VimSettings;
 
-    public set searchString(search: string){
+    public updateSearchString(search: string, vimSettings: VimSettings) {
         this._searchString = search;
-
-        this._recalculateSearchRanges();
+        this._recalculateSearchRanges(vimSettings);
     }
 
-    private _recalculateSearchRanges(): void {
+    private _recalculateSearchRanges(vimSettings: VimSettings): void {
         const search = this.searchString;
 
         if (search === "") { return; }
@@ -162,16 +164,33 @@ export class SearchState {
         // Calculate and store all matching ranges
         this.matchRanges = [];
 
+        /* Decide whether the search is case sensitive.
+         * If ignorecase is false, the search is case sensitive.
+         * If ignorecase is true, the search should be case insenstive.
+         * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
+         */
+        let ignorecase = vimSettings.ignorecase;
+
+        if (ignorecase && vimSettings.smartcase && /[A-Z]/.test(search)) {
+            ignorecase = false;
+        }
+
+        const regex = new RegExp(search.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&"), ignorecase ? 'gi' : 'g');
+
         for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
             const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+            let result = regex.exec(line);
 
-            let i = line.indexOf(search);
-
-            for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+            while (result) {
                 this.matchRanges.push(new vscode.Range(
-                    new Position(lineIdx, i),
-                    new Position(lineIdx, i + search.length)
+                    new Position(lineIdx, result.index),
+                    new Position(lineIdx, result.index + search.length)
                 ));
+
+                // Handles the case where an empty string match causes lastIndex not to advance,
+                // which gets us in an infinite loop.
+                if (result.index === regex.lastIndex) { regex.lastIndex++; }
+                result = regex.exec(line);
             }
         }
     }
@@ -181,8 +200,8 @@ export class SearchState {
      *
      * Pass in -1 as direction to reverse the direction we search.
      */
-    public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean} {
-        this._recalculateSearchRanges();
+    public getNextSearchMatchPosition(startPosition: Position, vimSettings: VimSettings, direction = 1): { pos: Position, match: boolean} {
+        this._recalculateSearchRanges(vimSettings);
 
         if (this.matchRanges.length === 0) {
             // TODO(bell)
@@ -223,7 +242,7 @@ export class SearchState {
     constructor(direction: number, startPosition: Position, searchString = "") {
         this.searchDirection = direction;
         this.searchCursorStartPosition = startPosition;
-        this.searchString = searchString;
+        this._searchString = searchString;
     }
 }
 
@@ -484,6 +503,8 @@ export class ModeHandler implements vscode.Disposable {
         this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
             .get("useSolidBlockCursor", false);
         this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
+        this._vimState.settings.ignorecase = vscode.workspace.getConfiguration("vim").get("ignorecase", true) || true;
+        this._vimState.settings.smartcase = vscode.workspace.getConfiguration("vim").get("smartcase", true) || true;
     }
 
     /**
@@ -917,7 +938,7 @@ export class ModeHandler implements vscode.Disposable {
 
             rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
 
-            const { pos, match } =  searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+            const { pos, match } =  searchState.getNextSearchMatchPosition(vimState.cursorPosition, vimState.settings);
 
             if (match) {
                 rangesToDraw.push(new vscode.Range(
