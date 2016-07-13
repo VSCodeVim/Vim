@@ -392,4 +392,18 @@ suite("Mode Normal", () => {
       keysPressed: "vwshi <esc>",
       end: ["hi| ef ghi"]
     });
+
+    newTest({
+      title: "can handle p with selection",
+      start: ["|abc def ghi"],
+      keysPressed: "vwywvwp",
+      end: ["abc abc |dhi"]
+    });
+
+    newTest({
+      title: "can handle P with selection",
+      start: ["|abc def ghi"],
+      keysPressed: "vwywvwP",
+      end: ["abc abc |dhi"]
+    });
 });

@@ -570,7 +570,7 @@ export class DeleteOperator extends BaseOperator {
     /**
      * Deletes from the position of start to 1 past the position of end.
      */
-    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
         end = new Position(end.line, end.character + 1);
 
         const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
@@ -601,7 +601,9 @@ export class DeleteOperator extends BaseOperator {
           text = text.slice(0, -1); // slice final newline in linewise mode - linewise put will add it back.
         }
 
-        Register.put(text, vimState);
+        if (yank) {
+          Register.put(text, vimState);
+        }
 
         await TextEditor.delete(new vscode.Range(start, end));
 
@@ -789,7 +791,7 @@ export class ChangeOperator extends BaseOperator {
 @RegisterAction
 export class PutCommand extends BaseCommand {
     keys = ["p"];
-    modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+    modes = [ModeName.Normal];
     canBePrefixedWithCount = true;
     canBeRepeatedWithDot = true;
 
@@ -834,6 +836,27 @@ export class PutCommand extends BaseCommand {
 
       return result;
     }
+}
+
+@RegisterAction
+export class PutCommandVisual extends BaseCommand {
+  keys = ["p"];
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  canBePrefixedWithCount = true;
+  canBePrefixedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState, before: boolean = false): Promise<VimState> {
+    const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, false);
+
+    return await new PutCommand().exec(result.cursorPosition, result, true);
+  }
+
+  // TODO - execWithCount
+}
+
+@RegisterAction
+export class PutCommandVisualCapitalP extends PutCommandVisual {
+  keys = ["P"];
 }
 
 @RegisterAction
