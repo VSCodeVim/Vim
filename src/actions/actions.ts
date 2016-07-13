@@ -679,6 +679,17 @@ export class DeleteOperatorXVisual extends BaseOperator {
 }
 
 @RegisterAction
+export class ChangeOperatorSVisual extends BaseOperator {
+    public keys = ["s"];
+    public modes = [ModeName.Visual, ModeName.VisualLine];
+
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      return await new ChangeOperator().run(vimState, start, end);
+    }
+}
+
+
+@RegisterAction
 export class UpperCaseOperator extends BaseOperator {
     public keys = ["U"];
     public modes = [ModeName.Visual, ModeName.VisualLine];

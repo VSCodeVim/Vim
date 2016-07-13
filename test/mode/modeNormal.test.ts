@@ -385,4 +385,11 @@ suite("Mode Normal", () => {
       keysPressed: 'vG$u',
       end: ['|abc', 'def']
     });
+
+    newTest({
+      title: "can handle s in visual mode",
+      start: ["|abc def ghi"],
+      keysPressed: "vwshi <esc>",
+      end: ["hi| ef ghi"]
+    });
 });
