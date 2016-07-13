@@ -580,6 +580,11 @@ export class DeleteOperator extends BaseOperator {
      * Deletes from the position of start to 1 past the position of end.
      */
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
+        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+          start = start.getLineBegin();
+          end   = end.getLineEnd();
+        }
+
         end = new Position(end.line, end.character + 1);
 
         const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
@@ -1537,11 +1542,19 @@ class MoveNonBlankLast extends BaseMovement {
   keys = ["G"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    let stop: Position;
+
     if (count === 0) {
-      return new Position(TextEditor.getLineCount() - 1, 0);
+      stop = new Position(TextEditor.getLineCount() - 1, 0);
+    } else {
+      stop = new Position(count - 1, 0);
     }
 
-    return new Position(count - 1, 0);
+    return {
+      start: vimState.cursorStartPosition,
+      stop: stop,
+      registerMode: RegisterMode.LineWise
+    };
   }
 }
 

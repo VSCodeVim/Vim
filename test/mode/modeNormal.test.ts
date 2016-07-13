@@ -413,4 +413,11 @@ suite("Mode Normal", () => {
       keysPressed: "A<backspace><backspace><esc>0.",
       end: ["112|2"]
     });
+
+    newTest({
+      title: "can delete linewise with d2G",
+      start: ["|one", "two" , "three"],
+      keysPressed: "d2G",
+      end: ["|three"]
+    });
 });
