@@ -494,6 +494,8 @@ class CommandInsertInInsertMode extends BaseCommand {
   keys = ["<character>"];
 
   // TODO - I am sure this can be improved.
+  // The hard case is . where we have to track cursor pos since we don't
+  // update the view
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
@@ -517,13 +519,8 @@ class CommandInsertInInsertMode extends BaseCommand {
     } else {
       await TextEditor.insert(char, vimState.cursorPosition);
 
-      if (char !== "\n") {
-        vimState.cursorPosition      = position.getRight();
-        vimState.cursorStartPosition = position.getRight();
-      } else {
-        vimState.cursorPosition      = position.getNextLineBegin();
-        vimState.cursorStartPosition = position.getNextLineBegin();
-      }
+      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
 
     return vimState;
