@@ -493,6 +493,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
   keys = ["<character>"];
 
+  // TODO - I am sure this can be improved.
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
@@ -503,16 +504,27 @@ class CommandInsertInInsertMode extends BaseCommand {
             position.getPreviousLineBegin().getLineEnd(),
             position.getLineBegin()
           ));
+
+          vimState.cursorPosition      = position.getPreviousLineBegin().getLineEnd();
+          vimState.cursorStartPosition = position.getPreviousLineBegin().getLineEnd();
         }
       } else {
         await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+
+        vimState.cursorPosition      = position.getLeft();
+        vimState.cursorStartPosition = position.getLeft();
       }
     } else {
       await TextEditor.insert(char, vimState.cursorPosition);
-    }
 
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      if (char !== "\n") {
+        vimState.cursorPosition      = position.getRight();
+        vimState.cursorStartPosition = position.getRight();
+      } else {
+        vimState.cursorPosition      = position.getNextLineBegin();
+        vimState.cursorStartPosition = position.getNextLineBegin();
+      }
+    }
 
     return vimState;
   }

@@ -406,4 +406,11 @@ suite("Mode Normal", () => {
       keysPressed: "vwywvwP",
       end: ["abc abc |dhi"]
     });
+
+    newTest({
+      title: "can repeat backspace twice",
+      start: ["|11223344"],
+      keysPressed: "A<backspace><backspace><esc>0.",
+      end: ["112|2"]
+    });
 });
