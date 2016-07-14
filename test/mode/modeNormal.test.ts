@@ -268,6 +268,105 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'p' after 'yy' with correct cursor position",
+      start: ['|  one', 'two'],
+      keysPressed: 'yyjp',
+      end: ['  one', 'two', '  |one']
+    });
+
+    newTest({
+      title: "Can handle 'gp' after 'yy'",
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'yygp',
+      end: ['one', 'two', 'two', '|three']
+    });
+
+    newTest({
+      title: "Can handle 'gp' after 'Nyy'",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: '2yyjgp',
+      end: ['one', 'two', 'one', 'two', '|three']
+    });
+
+    newTest({
+      title: "Can handle 'gp' after 'Nyy' if cursor is on the last line",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: '2yyjjgp',
+      end: ['one', 'two', 'three', 'one', '|two']
+    });
+
+    newTest({
+      title: "Can handle 'gP' after 'yy'",
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'yygP',
+      end: ['one', 'two', '|two', 'three']
+    });
+
+    newTest({
+      title: "Can handle 'gP' after 'Nyy'",
+      start: ['on|e', 'two', 'three'],
+      keysPressed: '2yygP',
+      end: ['one', 'two', '|one', 'two', 'three']
+    });
+
+    newTest({
+      title: "Can handle ']p' after yy",
+      start: ['  |one', '   two'],
+      keysPressed: 'yyj]p',
+      end: ['  one', '   two', '   |one']
+    });
+
+    newTest({
+      title: "Can handle ']p' after 'Nyy'",
+      start: [' |one', '  two', '  three'],
+      keysPressed: '2yyjj]p',
+      end: [' one', '  two', '  three', '  |one', '   two']
+    });
+
+    newTest({
+      title: "Can handle ']p' after 'Nyy' and indent with tabs first",
+      start: [' |one', '  two', '   three'],
+      keysPressed: '2yyjj]p',
+      end: [' one', '  two', '   three', '   |one', '\ttwo']
+    });
+
+    newTest({
+      title: "Can handle ']p' after 'Nyy' and decrease indents if possible",
+      start: ['    |one', ' two', ' three'],
+      keysPressed: '2yyjj]p',
+      end: ['    one', ' two', ' three', ' |one', 'two']
+    });
+
+    newTest({
+      title: "Can handle '[p' after yy",
+      start: ['   two', '  |one'],
+      keysPressed: 'yyk[p',
+      end: ['   |one', '   two', '  one']
+    });
+
+    newTest({
+      title: "Can handle '[p' after 'Nyy'",
+      start: ['  three', '|one', ' two'],
+      keysPressed: '2yyk[p',
+      end: ['  |one', '   two', '  three', 'one', ' two']
+    });
+
+    newTest({
+      title: "Can handle '[p' after 'Nyy' and indent with tabs first",
+      start: ['   three', '| one', '  two'],
+      keysPressed: '2yyk[p',
+      end: ['   |one', '\ttwo', '   three', ' one', '  two']
+    });
+
+    newTest({
+      title: "Can handle '[p' after 'Nyy' and decrease indents if possible",
+      start: [' three', '    |one', ' two'],
+      keysPressed: '2yyk[p',
+      end: [' |one', 'two', ' three', '    one', ' two']
+    });
+
+
+    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',
@@ -384,5 +483,61 @@ suite("Mode Normal", () => {
       start: ['|ABC', 'DEF'],
       keysPressed: 'vG$u',
       end: ['|abc', 'def']
+    });
+
+    newTest({
+      title: "can handle s in visual mode",
+      start: ["|abc def ghi"],
+      keysPressed: "vwshi <esc>",
+      end: ["hi| ef ghi"]
+    });
+
+    newTest({
+      title: "can handle p with selection",
+      start: ["|abc def ghi"],
+      keysPressed: "vwywvwp",
+      end: ["abc abc |dhi"]
+    });
+
+    newTest({
+      title: "can handle P with selection",
+      start: ["|abc def ghi"],
+      keysPressed: "vwywvwP",
+      end: ["abc abc |dhi"]
+    });
+
+    newTest({
+      title: "can repeat backspace twice",
+      start: ["|11223344"],
+      keysPressed: "A<backspace><backspace><esc>0.",
+      end: ["112|2"]
+    });
+
+    newTest({
+      title: "can delete linewise with d2G",
+      start: ["|one", "two" , "three"],
+      keysPressed: "d2G",
+      end: ["|three"]
+    });
+
+    newTest({
+      title: "can dE correctly",
+      start: ["|one two three"],
+      keysPressed: "dE",
+      end: ["| two three"]
+    });
+
+    newTest({
+      title: "can dE correctly",
+      start: ["|one((( two three"],
+      keysPressed: "dE",
+      end: ["| two three"]
+    });
+
+    newTest({
+      title: "can dE correctly",
+      start: ["one two |three"],
+      keysPressed: "dE",
+      end: ["one two| "]
     });
 });

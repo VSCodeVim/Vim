@@ -4,7 +4,7 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code.
 
-Please do **[report your issues on GitHub](https://github.com/VSCodeVim/Vim/issues)**. We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
+Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
 
 We're also super friendly people if you want to drop by and talk to us on our [Slack channel](https://vscodevim-slackin.azurewebsites.net)!
 
@@ -38,6 +38,12 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 
 ## F.A.Q.
 
+* `j`, `k` and others don't repeat when I hold them down.
+
+On OSX, the fix is to run this in the terminal:
+
+`defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
+
 * How can I bind `jj` to `<esc>`?
 
 1. Open the Command palette (cmd-p on OSX, probably ctrl-shift-p on Windows), and add the following:
@@ -61,6 +67,12 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
            }
       ]
 ```
+
+* How can I enable `ctrl-c` as an alternative to `<esc>`?
+
+Put the following in your `settings.json`:
+
+```    "vim.useCtrlKeys": true```
 
 3. Restart VSCode!
 
