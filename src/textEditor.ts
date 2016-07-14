@@ -134,8 +134,8 @@ export class TextEditor {
     }
 
     static setIndentationLevel(line: string, screenCharacters: number): string {
-        let tabSize = vscode.workspace.getConfiguration("editor").get<number>("tabSize");
-        let insertTabAsSpaces = vscode.workspace.getConfiguration("editor").get<boolean>("insertSpaces");
+        let tabSize = <number> vscode.window.activeTextEditor.options.tabSize;
+        let insertTabAsSpaces = <boolean> vscode.window.activeTextEditor.options.insertSpaces;
 
         if (screenCharacters < 0) {
             screenCharacters = 0;
