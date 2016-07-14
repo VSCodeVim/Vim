@@ -29,13 +29,6 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 1. Within Visual Studio Code, open the command palette (`Ctrl-Shift-P` / `Cmd-Shift-P`)
 2. Select `Install Extension` and search for 'vim' *or* run `ext install vim`
 
-## Configure
-
-Adjust configurations through user settings (File -> Preferences -> User Settings).
-
-* vim.keyboardLayout: 
-    * Supported Values: `en-US (QWERTY)` (default), `es-ES (QWERTY)`, `de-DE (QWERTZ)`, `da-DK (QWERTY)`
-
 ## F.A.Q.
 
 * `j`, `k` and others don't repeat when I hold them down.

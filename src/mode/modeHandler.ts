@@ -512,8 +512,6 @@ export class ModeHandler implements vscode.Disposable {
         // We'll try to mitigate this problem until it's fixed upstream.
         // https://github.com/Microsoft/vscode/issues/713
 
-        key = this._configuration.keyboardLayout.translate(key);
-
         this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
 
         try {
