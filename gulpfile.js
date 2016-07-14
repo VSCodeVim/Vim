@@ -69,6 +69,6 @@ gulp.task('compile', shell.task([
   'node ./node_modules/vscode/bin/compile -p ./',
 ]));
 
-gulp.task('init', ['typings', 'typings-vscode-definitions']);
+gulp.task('init', ['typings']);
 gulp.task('default', ['tslint', 'compile']);
 gulp.task('release', ['default', 'patch']);
