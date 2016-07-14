@@ -83,24 +83,29 @@
                 "when": "editorTextFocus"
             },
             {
+                "key": "ctrl+c",
+                "command": "extension.vim_ctrl+c",
+                "when": "editorTextFocus && vim.useCtrlKeys"
+            },
+            {
                 "key": "left",
                 "command": "extension.vim_left",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+                "when": "editorTextFocus && vim.mode !== 'Insert Mode'"
             },
             {
                 "key": "right",
                 "command": "extension.vim_right",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+                "when": "editorTextFocus && vim.mode !== 'Insert Mode'"
             },
             {
                 "key": "up",
                 "command": "extension.vim_up",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+                "when": "editorTextFocus && vim.mode !== 'Insert Mode'"
             },
             {
                 "key": "down",
                 "command": "extension.vim_down",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+                "when": "editorTextFocus && vim.mode !== 'Insert Mode'"
             }
         ],
         "configuration": {
@@ -115,6 +120,10 @@
                 "vim.otherModesKeyBindings": {
                     "type": "array",
                     "description": "Keybinding overrides to use for normal mode."
+                },
+                "vim.useCtrlKeys": {
+                    "type": "boolean",
+                    "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c"
                 },
                 "vim.insertModeKeyBindings": {
                     "type": "array",

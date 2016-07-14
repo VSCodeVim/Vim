@@ -125,7 +125,8 @@ export class VimState {
 
 export class VimSettings {
     useSolidBlockCursor = false;
-    scroll = 20;
+    scroll              = 20;
+    useCtrlKeys         = false;
 }
 
 export class SearchState {
@@ -480,6 +481,7 @@ export class ModeHandler implements vscode.Disposable {
         this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
             .get("useSolidBlockCursor", false);
         this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
+        this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
     }
 
     /**
@@ -930,6 +932,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
+        vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', this.vimState.settings.useCtrlKeys);
     }
 
     async handleMultipleKeyEvents(keys: string[]): Promise<void> {
