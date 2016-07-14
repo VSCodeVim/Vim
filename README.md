@@ -68,6 +68,12 @@ On OSX, the fix is to run this in the terminal:
       ]
 ```
 
+* How can I enable `ctrl-c` as an alternative to `<esc>`?
+
+Put the following in your `settings.json`:
+
+```    "vim.useCtrlKeys": true```
+
 3. Restart VSCode!
 
 ## Contributing
