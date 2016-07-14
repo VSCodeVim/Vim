@@ -179,7 +179,7 @@ export abstract class BaseMovement extends BaseAction {
    */
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
       let recordedState = vimState.recordedState;
-      let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+      let result: Position | IMovement = new Position(0, 0);  // bogus init to satisfy typechecker
 
       if (count < 1) {
           count = 1;
@@ -188,17 +188,25 @@ export abstract class BaseMovement extends BaseAction {
       }
 
       for (let i = 0; i < count; i++) {
+          const firstIteration = (i === 0);
           const lastIteration = (i === count - 1);
           const temporaryResult = (recordedState.operator && lastIteration) ?
               await this.execActionForOperator(position, vimState) :
               await this.execAction           (position, vimState);
 
-          result = temporaryResult;
+          if (temporaryResult instanceof Position) {
+            result = temporaryResult;
+            position = temporaryResult;
+          } else if (isIMovement(temporaryResult)) {
+            if (firstIteration) {
+              (result as IMovement).start = temporaryResult.start;
+            }
 
-          if (result instanceof Position) {
-            position = result;
-          } else if (isIMovement(result)) {
-            position = result.stop;
+            if (lastIteration) {
+              (result as IMovement).stop = temporaryResult.stop;
+            } else {
+              position = temporaryResult.stop.getRightThroughLineBreaks();
+            }
           }
       }
 
@@ -2146,41 +2154,6 @@ class MovementAWordTextObject extends BaseMovement {
       start: start,
       stop: stop
     };
-  }
-
-  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-      let recordedState = vimState.recordedState;
-      let result: IMovement = {
-        start: undefined,
-        stop: undefined
-      };
-
-      if (count < 1) {
-          count = 1;
-      } else if (count > 99999) {
-          count = 99999;
-      }
-
-      for (let i = 0; i < count; i++) {
-          const firstIteration = (i === 0);
-          const lastIteration = (i === count - 1);
-          const temporaryResult = (recordedState.operator && lastIteration) ?
-              await this.execActionForOperator(position, vimState) :
-              await this.execAction           (position, vimState);
-
-          if (firstIteration) {
-            result.start = temporaryResult.start;
-          }
-
-          // Result is always a Movement.
-          if (lastIteration) {
-            result.stop = temporaryResult.stop;
-          } else {
-            position = temporaryResult.stop.getRightThroughLineBreaks();
-          }
-      }
-
-      return result;
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
