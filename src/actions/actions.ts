@@ -1106,18 +1106,6 @@ class CommandExitVisualLineMode extends BaseCommand {
   }
 }
 
-@RegisterAction
-class CommandOpenSquareBracket extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<ctrl-[>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.Normal;
-
-    return vimState;
-  }
-}
-
 // begin insert commands
 
 @RegisterAction
