@@ -59,7 +59,7 @@
             },
             {
                 "key": "ctrl+f",
-                "command": "extension.vim_ctrl+f",
+                "command": "extension.vim_ctrl+f && vim.useCtrlKeys",
                 "when": "editorTextFocus"
             },
             {
