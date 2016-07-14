@@ -1730,8 +1730,7 @@ class MoveWordEnd extends BaseMovement {
     return position.getCurrentWordEnd();
   }
 
-  public async execActionForOperator(position: Position,
-                                     vimState: VimState): Promise<Position> {
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     let end = position.getCurrentWordEnd();
 
     return new Position(end.line, end.character + 1);
@@ -1745,6 +1744,10 @@ class MoveFullWordEnd extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCurrentBigWordEnd();
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    return position.getCurrentBigWordEnd().getRight();
   }
 }
 

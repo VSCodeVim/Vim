@@ -519,4 +519,25 @@ suite("Mode Normal", () => {
       keysPressed: "d2G",
       end: ["|three"]
     });
+
+    newTest({
+      title: "can dE correctly",
+      start: ["|one two three"],
+      keysPressed: "dE",
+      end: ["| two three"]
+    });
+
+    newTest({
+      title: "can dE correctly",
+      start: ["|one((( two three"],
+      keysPressed: "dE",
+      end: ["| two three"]
+    });
+
+    newTest({
+      title: "can dE correctly",
+      start: ["one two |three"],
+      keysPressed: "dE",
+      end: ["one two| "]
+    });
 });
