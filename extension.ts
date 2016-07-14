@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
+import { Position } from './src/motion/position';
 
 let extensionContext: vscode.ExtensionContext;
 
@@ -62,13 +63,33 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const mh = await getAndUpdateModeHandler();
-
         taskQueue.enqueueTask({
-            promise   : async () => { await mh.handleKeyEvent(args.text); },
+            promise: async () => {
+                const mh = await getAndUpdateModeHandler();
+                await mh.handleKeyEvent(args.text);
+            },
             isRunning : false
         });
     });
+
+    registerCommand(context, 'replacePreviousChar', async (args) => {
+        if (!vscode.window.activeTextEditor) {
+            return;
+        }
+
+        taskQueue.enqueueTask({
+            promise: async () => {
+                const mh = await getAndUpdateModeHandler();
+                await vscode.commands.executeCommand('default:replacePreviousChar', {
+                    text: args.text,
+                    replaceCharCnt: args.replaceCharCnt
+                });
+                mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+                mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+            },
+            isRunning : false
+        });
+   });
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
     registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
