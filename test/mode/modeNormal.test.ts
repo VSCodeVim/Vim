@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
+import { setupWorkspace, setTextEditorOptions, cleanUpWorkspace, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
@@ -15,6 +15,7 @@ suite("Mode Normal", () => {
 
     setup(async () => {
         await setupWorkspace();
+        setTextEditorOptions(4, false);
     });
 
     teardown(cleanUpWorkspace);
