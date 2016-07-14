@@ -537,6 +537,9 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
+        // Catch any text change not triggered by us (example: tab completion).
+        vimState.historyTracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
+
         let recordedState = vimState.recordedState;
 
         recordedState.actionKeys.push(key);
