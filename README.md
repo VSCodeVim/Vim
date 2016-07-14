@@ -38,6 +38,12 @@ Adjust configurations through user settings (File -> Preferences -> User Setting
 
 ## F.A.Q.
 
+* `j`, `k` and others don't repeat when I hold them down.
+
+On OSX, the fix is to run this in the terminal:
+
+`defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
+
 * How can I bind `jj` to `<esc>`?
 
 1. Open the Command palette (cmd-p on OSX, probably ctrl-shift-p on Windows), and add the following:
