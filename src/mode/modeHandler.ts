@@ -507,7 +507,6 @@ export class ModeHandler implements vscode.Disposable {
 
     async handleKeyEvent(key: string): Promise<Boolean> {
         if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
-        if (key === "<ctrl-[>") { key = "<esc>"; } // TODO - temporary hack because package.json maps ctrl+[ to the escape command
 
         // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
         // We'll try to mitigate this problem until it's fixed upstream.
