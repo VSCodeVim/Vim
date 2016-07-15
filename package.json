@@ -48,11 +48,6 @@
                 "when": "editorTextFocus"
             },
             {
-                "key": "ctrl+[",
-                "command": "extension.vim_esc",
-                "when": "editorTextFocus"
-            },
-            {
                 "key": "Backspace",
                 "command": "extension.vim_backspace",
                 "when": "editorTextFocus"
@@ -80,6 +75,11 @@
             {
                 "key": "ctrl+d",
                 "command": "extension.vim_ctrl+d",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+[",
+                "command": "extension.vim_ctrl+[",
                 "when": "editorTextFocus"
             },
             {

@@ -356,6 +356,11 @@ class CommandEsc extends BaseCommand {
 }
 
 @RegisterAction
+class CommandControlOpenBracket extends CommandEsc {
+  keys = ["ctrl+["]
+}
+
+@RegisterAction
 class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["i"];
