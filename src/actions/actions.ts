@@ -356,6 +356,10 @@ class CommandEsc extends BaseCommand {
 }
 
 @RegisterAction
+class CommandCtrlOpenBracket extends CommandEsc {
+  keys = ["ctrl+["]
+}
+
 class CommandCtrlC extends CommandEsc {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   keys = ["ctrl+c"];
@@ -1253,18 +1257,6 @@ class CommandVisualLineMode extends BaseCommand {
 class CommandExitVisualLineMode extends BaseCommand {
   modes = [ModeName.VisualLine];
   keys = ["V"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.Normal;
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandOpenSquareBracket extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<ctrl-[>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Normal;

@@ -99,7 +99,7 @@ export function activate(context: vscode.ExtensionContext) {
         showCmdLine("", modeHandlerToFilename[activeFileName()]);
     });
 
-    'rfbduc'.split('').forEach(key => {
+    'rfbduc['.split('').forEach(key => {
         registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
     });
 
