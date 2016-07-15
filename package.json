@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#a5c9a2",
@@ -59,13 +59,13 @@
             },
             {
                 "key": "ctrl+f",
-                "command": "extension.vim_ctrl+f",
+                "command": "extension.vim_ctrl+f && vim.useCtrlKeys",
                 "when": "editorTextFocus"
             },
             {
                 "key": "ctrl+b",
                 "command": "extension.vim_ctrl+b",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
             },
             {
                 "key": "ctrl+u",
@@ -86,6 +86,11 @@
                 "key": "ctrl+w",
                 "command": "extension.vim_switchWindow",
                 "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+c",
+                "command": "extension.vim_ctrl+c",
+                "when": "editorTextFocus && vim.useCtrlKeys"
             },
             {
                 "key": "left",
@@ -118,8 +123,12 @@
                     "description": "Keyboard layout to use to translated key presses."
                 },
                 "vim.otherModesKeyBindings": {
-                    "type": "object",
+                    "type": "array",
                     "description": "Keybinding overrides to use for normal mode."
+                },
+                "vim.useCtrlKeys": {
+                    "type": "boolean",
+                    "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c"
                 },
                 "vim.insertModeKeyBindings": {
                     "type": "array",
