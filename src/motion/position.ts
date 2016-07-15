@@ -621,4 +621,19 @@ export class Position extends vscode.Position {
 
     return position;
   }
+
+  public lastIndexOf(char: string, currentLineOnly: boolean = false): Position {
+    for (const current of Position.IterateDocument(this, false)) {
+     if (currentLineOnly && this.line !== current.pos.line) {
+        // We've advanced past the current line and the caller doesn't want us to
+        return this;
+      }
+
+      if (current.char === char) {
+        return current.pos;
+      }
+    }
+
+    return this;
+  }
 }

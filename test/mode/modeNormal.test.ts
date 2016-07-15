@@ -220,6 +220,54 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' on first parentheses",
+      start: ['print(|"hello")'],
+      keysPressed: 'ci(',
+      end: ['print(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci(' with nested parentheses",
+      start: ['call|(() => 5)'],
+      keysPressed: 'ci(',
+      end: ['call(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' inside a string",
+      start: ['"hel|lo" world'],
+      keysPressed: 'ci"',
+      end: ['"|" world'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle \"ci'\" inside a string",
+      start: ['\'on|e\' two'],
+      keysPressed: 'ci\'',
+      end: ['\'|\' two'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca(' spanning multiple lines",
+      start: ['call(', '  |arg1)'],
+      keysPressed: 'ca(',
+      end: ['call|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci{' spanning multiple lines",
+      start: ['one {', '|', '}'],
+      keysPressed: 'ci{',
+      end: ['one {|}'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'df'",
       start: ['aext tex|t'],
       keysPressed: '^dft',
