@@ -25,7 +25,7 @@ export function parseEditNewFileInNewWindowCommandArgs(args: string): node.FileC
 
 export function parseEditFileInNewWindowCommandArgs(args: string): node.FileCommand {
     let name = "";
-    
+
     if (args) {
         let scanner = new Scanner(args);
         name = scanner.nextWord();
