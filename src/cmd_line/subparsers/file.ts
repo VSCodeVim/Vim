@@ -8,7 +8,7 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
         return new node.FileCommand({});
     }
 
-    var scanner = new Scanner(args);
+    let scanner = new Scanner(args);
     let name = scanner.nextWord();
 
     return new node.FileCommand({
@@ -25,8 +25,9 @@ export function parseEditNewFileInNewWindowCommandArgs(args: string): node.FileC
 
 export function parseEditFileInNewWindowCommandArgs(args: string): node.FileCommand {
     let name = "";
+    
     if (args) {
-        var scanner = new Scanner(args);
+        let scanner = new Scanner(args);
         name = scanner.nextWord();
     }
 

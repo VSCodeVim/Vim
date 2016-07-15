@@ -29,14 +29,21 @@ export class FileCommand extends node.CommandBase {
         return this._arguments;
     }
 
-    getViewColumn(sideBySide: boolean) : vscode.ViewColumn {
+    getActiveViewColumn(): vscode.ViewColumn {
         const active = vscode.window.activeTextEditor;
+
         if (!active) {
             return vscode.ViewColumn.One;
         }
 
-        if (!sideBySide) {
-            return active.viewColumn;
+        return active.viewColumn;
+    }
+
+    getViewColumnToRight() : vscode.ViewColumn {
+        const active = vscode.window.activeTextEditor;
+
+        if (!active) {
+            return vscode.ViewColumn.One;
         }
 
         switch (active.viewColumn) {
@@ -49,18 +56,16 @@ export class FileCommand extends node.CommandBase {
         return active.viewColumn;
     }
 
-    execute(): void {
+    async execute(): Promise<void> {
         if (!this._arguments.name) {
             // Open an empty file
             if (this._arguments.position === FilePosition.CurrentWindow) {
-                vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
+                await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
+            } else {
+                await vscode.commands.executeCommand("workbench.action.splitEditor");
+                await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
+                await vscode.commands.executeCommand("workbench.action.closeOtherEditors");
             }
-
-            vscode.commands.executeCommand("workbench.action.splitEditor").then(() => {
-                vscode.commands.executeCommand("workbench.action.files.newUntitledFile").then(() => {
-                    vscode.commands.executeCommand("workbench.action.closeOtherEditors");
-                });
-            });
 
             return;
         }
@@ -70,7 +75,8 @@ export class FileCommand extends node.CommandBase {
 
         if (newFilePath !== currentFilePath) {
             let folder = vscode.Uri.file(newFilePath);
-            vscode.commands.executeCommand("vscode.open", folder, this.getViewColumn(this._arguments.position === FilePosition.NewWindow));
+            await vscode.commands.executeCommand("vscode.open", folder,
+                this._arguments.position === FilePosition.NewWindow ? this.getViewColumnToRight() : this.getActiveViewColumn());
         }
     }
 }
