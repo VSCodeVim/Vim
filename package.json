@@ -84,7 +84,7 @@
             },
             {
                 "key": "ctrl+w",
-                "command": "extension.vim_switchWindow",
+                "command": "extension.vim_ctrl+w",
                 "when": "editorTextFocus"
             },
             {
