@@ -538,10 +538,20 @@ class CommandInsertInInsertMode extends BaseCommand {
           vimState.cursorStartPosition = position.getPreviousLineBegin().getLineEnd();
         }
       } else {
-        await TextEditor.delete(new vscode.Range(position, position.getLeft()));
+        let leftPosition = position.getLeft();
 
-        vimState.cursorPosition      = position.getLeft();
-        vimState.cursorStartPosition = position.getLeft();
+        if (position.getFirstLineNonBlankChar().character >= position.character) {
+          let tabStop = vscode.workspace.getConfiguration("editor").get("useTabStops", true);
+
+          if (tabStop) {
+            leftPosition = position.getLeftTabStop();
+          }
+        }
+
+        await TextEditor.delete(new vscode.Range(position, leftPosition));
+
+        vimState.cursorPosition      = leftPosition;
+        vimState.cursorStartPosition = leftPosition;
       }
     } else {
       await TextEditor.insert(char, vimState.cursorPosition);
