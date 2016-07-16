@@ -360,6 +360,7 @@ class CommandCtrlOpenBracket extends CommandEsc {
   keys = ["ctrl+["];
 }
 
+@RegisterAction
 class CommandCtrlC extends CommandEsc {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   keys = ["ctrl+c"];
