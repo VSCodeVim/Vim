@@ -13,12 +13,13 @@ export class PairMatcher {
     "}" : { match: "{",  nextMatchIsForward: false, matchesWithPercentageMotion: true },
     "]" : { match: "[",  nextMatchIsForward: false, matchesWithPercentageMotion: true },
     // These characters can't be used for "%"-based matching, but are still
-    "'" : { match: "'",  nextMatchIsForward: true },
-    "\"": { match: "\"", nextMatchIsForward: true },
+    // useful for text objects.
+    // "'" : { match: "'",  nextMatchIsForward: true },
+    // "\"": { match: "\"", nextMatchIsForward: true },
     "<" : { match: ">",  nextMatchIsForward: true },
   };
 
-  static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true, currentLineOnly: boolean = false): Position {
+  static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true): Position {
     /**
      * We do a fairly basic implementation that only tracks the state of the type of
      * character you're over and its pair (e.g. "[" and "]"). This is similar to
@@ -36,10 +37,7 @@ export class PairMatcher {
     let matchedPosition: Position | undefined = undefined;
 
     for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
-      if (currentLineOnly && position.line < pos.line) {
-        break;
-      }
-      if (char === charToMatch && charToMatch !== toFind.match) {
+      if (char === charToMatch) {
         stackHeight++;
       }
 

@@ -2208,16 +2208,15 @@ abstract class MoveInsideCharacter extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   protected charToMatch: string;
   protected includeSurrounding = false;
-  protected lineMatchOnly = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const text = TextEditor.getLineAt(position).text;
 
     // First, search backwards for the opening character of the sequence
-    let startPos = position.lastIndexOf(this.charToMatch, this.lineMatchOnly);
+    let startPos = position.lastIndexOf(this.charToMatch);
     const startPlusOne = new Position(startPos.line, startPos.character + 1);
 
-    let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false, this.lineMatchOnly);
+    let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
 
     // Poor man's check for whether we found an opening character
     if (startPos === position && text[position.character] !== this.charToMatch) {
@@ -2320,36 +2319,6 @@ class MoveAClosingCaret extends MoveInsideCharacter {
   keys = ["a", ">"];
   charToMatch = "<";
   includeSurrounding = true;
-}
-
-@RegisterAction
-class MoveIDoubleQuote extends MoveInsideCharacter {
-  keys = ["i", "\""];
-  charToMatch = "\"";
-  lineMatchOnly = true;
-}
-
-@RegisterAction
-class MoveISingleQuote extends MoveInsideCharacter {
-  keys = ["i", "'"];
-  charToMatch = "'";
-  lineMatchOnly = true;
-}
-
-@RegisterAction
-class MoveADoubleQuote extends MoveInsideCharacter {
-  keys = ["a", "\""];
-  charToMatch = "\"";
-  includeSurrounding = true;
-  lineMatchOnly = true;
-}
-
-@RegisterAction
-class MoveASingleQuote extends MoveInsideCharacter {
-  keys = ["a", "'"];
-  charToMatch = "'";
-  includeSurrounding = true;
-  lineMatchOnly = true;
 }
 
 @RegisterAction

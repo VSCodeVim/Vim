@@ -236,22 +236,6 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle 'ci\"' inside a string",
-      start: ['"hel|lo" world'],
-      keysPressed: 'ci"',
-      end: ['"|" world'],
-      endMode: ModeName.Insert
-    });
-
-    newTest({
-      title: "Can handle \"ci'\" inside a string",
-      start: ['\'on|e\' two'],
-      keysPressed: 'ci\'',
-      end: ['\'|\' two'],
-      endMode: ModeName.Insert
-    });
-
-    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
