@@ -5,52 +5,52 @@ import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from './../testUti
 import { runCmdLine } from '../../src/cmd_line/main';
 
 suite("Basic substitute", () => {
-    let modeHandler: ModeHandler;
+  let modeHandler: ModeHandler;
 
-    setup(async () => {
-        await setupWorkspace();
-        modeHandler = new ModeHandler();
-    });
+  setup(async () => {
+    await setupWorkspace();
+    modeHandler = new ModeHandler();
+  });
 
-    teardown(cleanUpWorkspace);
+  teardown(cleanUpWorkspace);
 
-    test("Replace single word once", async () => {
-        await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>']);
-        await runCmdLine("%s/a/d", modeHandler);
+  test("Replace single word once", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>']);
+    await runCmdLine("%s/a/d", modeHandler);
 
-        assertEqualLines([
-            "dba"
-        ]);
-    });
+    assertEqualLines([
+      "dba"
+    ]);
+  });
 
-    test("Replace with `g` flag", async () => {
-        await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>']);
-        await runCmdLine("%s/a/d/g", modeHandler);
+  test("Replace with `g` flag", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>']);
+    await runCmdLine("%s/a/d/g", modeHandler);
 
-        assertEqualLines([
-            "dbd"
-        ]);
-    });
+    assertEqualLines([
+      "dbd"
+    ]);
+  });
 
-    test("Replace multiple lines", async () => {
-        await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>', 'o', 'a', 'b']);
-        await runCmdLine("%s/a/d/g", modeHandler);
+  test("Replace multiple lines", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>', 'o', 'a', 'b']);
+    await runCmdLine("%s/a/d/g", modeHandler);
 
-        assertEqualLines([
-            "dbd",
-            "db"
-        ]);
-    });
+    assertEqualLines([
+      "dbd",
+      "db"
+    ]);
+  });
 
-    test("Replace across specific lines", async () => {
-        await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>', 'o', 'a', 'b']);
-        await runCmdLine("1,1s/a/d/g", modeHandler);
+  test("Replace across specific lines", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>', 'o', 'a', 'b']);
+    await runCmdLine("1,1s/a/d/g", modeHandler);
 
-        assertEqualLines([
-            "dbd",
-            "ab"
-        ]);
-    });
+    assertEqualLines([
+      "dbd",
+      "ab"
+    ]);
+  });
 
 
 });

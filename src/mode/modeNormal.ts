@@ -5,14 +5,14 @@ import { ModeHandler } from './modeHandler';
 import { VSCodeVimCursorType } from './mode';
 
 export class NormalMode extends Mode {
-    private _modeHandler: ModeHandler;
+  private _modeHandler: ModeHandler;
 
-    public text = "Normal Mode";
-    public cursorType = VSCodeVimCursorType.Native;
+  public text = "Normal Mode";
+  public cursorType = VSCodeVimCursorType.Native;
 
-    constructor(modeHandler: ModeHandler) {
-        super(ModeName.Normal);
+  constructor(modeHandler: ModeHandler) {
+    super(ModeName.Normal);
 
-        this._modeHandler = modeHandler;
-    }
+    this._modeHandler = modeHandler;
+  }
 }

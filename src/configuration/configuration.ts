@@ -4,15 +4,15 @@ import { CommandKeyMap } from './commandKeyMap';
 
 export class Configuration {
 
-    commandKeyMap : CommandKeyMap;
+  commandKeyMap : CommandKeyMap;
 
-    constructor(keyMap : CommandKeyMap) {
-        this.commandKeyMap = keyMap;
-    }
+  constructor(keyMap : CommandKeyMap) {
+    this.commandKeyMap = keyMap;
+  }
 
-    static fromUserFile() {
-        return new Configuration(
-            CommandKeyMap.fromUserConfiguration()
-        );
-    }
+  static fromUserFile() {
+    return new Configuration(
+      CommandKeyMap.fromUserConfiguration()
+    );
+  }
 }

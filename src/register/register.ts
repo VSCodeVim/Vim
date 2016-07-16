@@ -7,53 +7,53 @@ import { VimState } from './../mode/modeHandler';
  * yy).
  */
 export enum RegisterMode {
-    FigureItOutFromCurrentMode,
-    CharacterWise,
-    LineWise,
+  FigureItOutFromCurrentMode,
+  CharacterWise,
+  LineWise,
 };
 
 export interface IRegisterContent {
-    text        : string;
-    registerMode: RegisterMode;
+  text    : string;
+  registerMode: RegisterMode;
 }
 
 export class Register {
-    private static validRegisters = [
-        '"'
-    ];
+  private static validRegisters = [
+    '"'
+  ];
 
-    private static registers: { [key: string]: IRegisterContent } = {
-        '"': { text: "", registerMode: RegisterMode.CharacterWise }
+  private static registers: { [key: string]: IRegisterContent } = {
+    '"': { text: "", registerMode: RegisterMode.CharacterWise }
+  };
+
+  /**
+   * Puts content in a register. If none is specified, uses the default
+   * register ".
+   */
+  public static put(content: string, vimState: VimState): void {
+    const register = vimState.registerName;
+
+    if (Register.validRegisters.indexOf(register) === -1) {
+      throw new Error(`Invalid register ${register}`);
+    }
+
+    Register.registers[register] = {
+      text    : content,
+      registerMode: vimState.effectiveRegisterMode(),
     };
+  }
 
-    /**
-     * Puts content in a register. If none is specified, uses the default
-     * register ".
-     */
-    public static put(content: string, vimState: VimState): void {
-        const register = vimState.registerName;
+  /**
+   * Gets content from a register. If none is specified, uses the default
+   * register ".
+   */
+  public static get(vimState: VimState): IRegisterContent {
+    const register = vimState.registerName;
 
-        if (Register.validRegisters.indexOf(register) === -1) {
-            throw new Error(`Invalid register ${register}`);
-        }
-
-        Register.registers[register] = {
-            text        : content,
-            registerMode: vimState.effectiveRegisterMode(),
-        };
+    if (Register.validRegisters.indexOf(register) === -1) {
+      throw new Error(`Invalid register ${register}`);
     }
 
-    /**
-     * Gets content from a register. If none is specified, uses the default
-     * register ".
-     */
-    public static get(vimState: VimState): IRegisterContent {
-        const register = vimState.registerName;
-
-        if (Register.validRegisters.indexOf(register) === -1) {
-            throw new Error(`Invalid register ${register}`);
-        }
-
-        return Register.registers[register];
-    }
+    return Register.registers[register];
+  }
 }
