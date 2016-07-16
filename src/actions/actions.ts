@@ -3,6 +3,7 @@ import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
+import { PairMatcher } from './../matching/matcher';
 import * as vscode from 'vscode';
 
 const controlKeys: string[] = [
@@ -2170,68 +2171,17 @@ class MoveToMatchingBracket extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["%"];
 
-  pairings: { [key: string]: { match: string, nextMatchIsForward: boolean }} = {
-    "(" : { match: ")",  nextMatchIsForward: true  },
-    "{" : { match: "}",  nextMatchIsForward: true  },
-    "[" : { match: "]",  nextMatchIsForward: true  },
-    ")" : { match: "(",  nextMatchIsForward: false },
-    "}" : { match: "{",  nextMatchIsForward: false },
-    "]" : { match: "[",  nextMatchIsForward: false },
-    // "'" : { match: "'",  direction:  0 },
-    // "\"": { match: "\"", direction:  0 },
-  };
-
-  nextBracket(position: Position, charToMatch: string, toFind: { match: string, nextMatchIsForward: boolean }, closed: boolean = true) {
-      /**
-       * We do a fairly basic implementation that only tracks the state of the type of
-       * character you're over and its pair (e.g. "[" and "]"). This is similar to
-       * what Vim does.
-       *
-       * It can't handle strings very well - something like "|( ')' )" where | is the
-       * cursor will cause it to go to the ) in the quotes, even though it should skip over it.
-       *
-       * PRs welcomed! (TODO)
-       * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
-       */
-
-      let stackHeight = closed ? 0 : 1;
-      let matchedPosition: Position | undefined = undefined;
-
-      for (const { char, pos } of Position.IterateDocument(position, toFind.nextMatchIsForward)) {
-        if (char === charToMatch) {
-          stackHeight++;
-        }
-
-        if (char === this.pairings[charToMatch].match) {
-          stackHeight--;
-        }
-
-        if (stackHeight === 0) {
-          matchedPosition = pos;
-
-          break;
-        }
-      }
-
-      if (matchedPosition) {
-        return matchedPosition;
-      }
-
-      // TODO(bell)
-      return position;
-  }
-
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const text = TextEditor.getLineAt(position).text;
     const charToMatch = text[position.character];
-    const toFind = this.pairings[charToMatch];
+    const toFind = PairMatcher.pairings[charToMatch];
 
-    if (!toFind) {
+    if (!toFind || !toFind.matchesWithPercentageMotion) {
       // If we're not on a match, go right until we find a
       // pairable character or hit the end of line.
 
       for (let i = position.character; i < text.length; i++) {
-        if (this.pairings[text[i]]) {
+        if (PairMatcher.pairings[text[i]]) {
           return new Position(position.line, i);
         }
       }
@@ -2240,8 +2190,8 @@ class MoveToMatchingBracket extends BaseMovement {
       return position;
     }
 
-    return this.nextBracket(position, charToMatch, toFind, true);
-}
+    return PairMatcher.nextPairedChar(position, charToMatch, true);
+  }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     const result = await this.execAction(position, vimState);
@@ -2254,13 +2204,130 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
+abstract class MoveInsideCharacter extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  protected charToMatch: string;
+  protected includeSurrounding = false;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const text = TextEditor.getLineAt(position).text;
+
+    // First, search backwards for the opening character of the sequence
+    let startPos = position.lastIndexOf(this.charToMatch);
+    const startPlusOne = new Position(startPos.line, startPos.character + 1);
+
+    let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
+
+    // Poor man's check for whether we found an opening character
+    if (startPos === position && text[position.character] !== this.charToMatch) {
+      return position;
+    }
+    // Make sure the start position is inside the selection
+    if (startPos.isAfter(position) || endPos.isBefore(position)) {
+      return position;
+    }
+
+    if (this.includeSurrounding) {
+      endPos = new Position(endPos.line, endPos.character + 1);
+    } else {
+      startPos = startPlusOne;
+    }
+    // If the closing character is the first on the line, don't swallow it.
+    if (endPos.character === 0) {
+      endPos = endPos.getLeftThroughLineBreaks();
+    }
+    return {
+      start : startPos,
+      stop  : endPos,
+    };
+  }
+}
+
+@RegisterAction
+class MoveIParentheses extends MoveInsideCharacter {
+  keys = ["i", "("];
+  charToMatch = "(";
+}
+
+@RegisterAction
+class MoveIClosingParentheses extends MoveInsideCharacter {
+  keys = ["i", ")"];
+  charToMatch = "(";
+}
+
+@RegisterAction
+class MoveAParentheses extends MoveInsideCharacter {
+  keys = ["a", "("];
+  charToMatch = "(";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveAClosingParentheses extends MoveInsideCharacter {
+  keys = ["a", ")"];
+  charToMatch = "(";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveICurlyBrace extends MoveInsideCharacter {
+  keys = ["i", "{"];
+  charToMatch = "{";
+}
+
+@RegisterAction
+class MoveIClosingCurlyBrace extends MoveInsideCharacter {
+  keys = ["i", "}"];
+  charToMatch = "{";
+}
+
+@RegisterAction
+class MoveACurlyBrace extends MoveInsideCharacter {
+  keys = ["a", "{"];
+  charToMatch = "{";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveAClosingCurlyBrace extends MoveInsideCharacter {
+  keys = ["a", "}"];
+  charToMatch = "{";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveICaret extends MoveInsideCharacter {
+  keys = ["i", "<"];
+  charToMatch = "<";
+}
+
+@RegisterAction
+class MoveIClosingCaret extends MoveInsideCharacter {
+  keys = ["i", ">"];
+  charToMatch = "<";
+}
+
+@RegisterAction
+class MoveACaret extends MoveInsideCharacter {
+  keys = ["a", "<"];
+  charToMatch = "<";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveAClosingCaret extends MoveInsideCharacter {
+  keys = ["a", ">"];
+  charToMatch = "<";
+  includeSurrounding = true;
+}
+
 @RegisterAction
 class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
   keys = ["[", "("];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const charToMatch = ")";
-    return this.nextBracket(position.getLeftThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+    return PairMatcher.nextPairedChar(position.getLeftThroughLineBreaks(), charToMatch, false);
   }
 }
 
@@ -2270,7 +2337,7 @@ class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const charToMatch = "(";
-    return this.nextBracket(position.getRightThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+    return PairMatcher.nextPairedChar(position.getRightThroughLineBreaks(), charToMatch, false);
   }
 }
 
@@ -2280,7 +2347,7 @@ class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const charToMatch = "}";
-    return this.nextBracket(position.getLeftThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+    return PairMatcher.nextPairedChar(position.getLeftThroughLineBreaks(), charToMatch, false);
   }
 }
 
@@ -2290,7 +2357,7 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const charToMatch = "{";
-    return this.nextBracket(position.getRightThroughLineBreaks(), charToMatch, this.pairings[charToMatch], false);
+    return PairMatcher.nextPairedChar(position.getRightThroughLineBreaks(), charToMatch, false);
   }
 }
 

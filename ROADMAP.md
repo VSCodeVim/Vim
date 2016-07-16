@@ -268,8 +268,8 @@ Status | Command | Description
     | :1234:  ib	| Select "inner block" (from "[(" to "])")
     | :1234:  aB	| Select "a Block" (from "[{" to "]}")
     | :1234:  iB	| Select "inner Block" (from "[{" to "]}")
-    | :1234:  a>	| Select "a &lt;&gt; block"
-    | :1234:  i>	| Select "inner <> block"
+:warning:    | :1234:  a>	| Select "a &lt;&gt; block"
+:warning:    | :1234:  i>	| Select "inner <> block"
     | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
     | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
     | :1234:  a'	| Select "a single quoted string"
