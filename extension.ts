@@ -93,13 +93,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
     registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
-    registerCommand(context, 'extension.vim_switchWindow', () => handleKeyEvent("ctrl+w"));
 
     registerCommand(context, 'extension.showCmdLine', () => {
         showCmdLine("", modeHandlerToFilename[activeFileName()]);
     });
 
-    'rfbduc['.split('').forEach(key => {
+    'rfbducw['.split('').forEach(key => {
         registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
     });
 
