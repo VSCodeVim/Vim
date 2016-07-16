@@ -60,8 +60,7 @@ gulp.task('tslint', ['fix-whitespace'], function() {
     return gulp.src([paths.src_ts, paths.tests_ts])
         .pipe(tslint())
         .pipe(tslint.report('prose', {
-          summarizeFailureOutput: true,
-          emitError: false
+          summarizeFailureOutput: true
         }));
 });
 
