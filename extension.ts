@@ -24,103 +24,103 @@ let previousActiveFilename: string | undefined = undefined;
 let taskQueue = new TaskQueue();
 
 function activeFileName(): string {
-    return vscode.window.activeTextEditor.document.fileName;
+  return vscode.window.activeTextEditor.document.fileName;
 }
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-    const oldHandler = previousActiveFilename ? modeHandlerToFilename[previousActiveFilename] : undefined;
+  const oldHandler = previousActiveFilename ? modeHandlerToFilename[previousActiveFilename] : undefined;
 
-    if (!modeHandlerToFilename[activeFileName()]) {
-        const newModeHandler = new ModeHandler(false, activeFileName());
+  if (!modeHandlerToFilename[activeFileName()]) {
+    const newModeHandler = new ModeHandler(false, activeFileName());
 
-        modeHandlerToFilename[activeFileName()] = newModeHandler;
-        extensionContext.subscriptions.push(newModeHandler);
+    modeHandlerToFilename[activeFileName()] = newModeHandler;
+    extensionContext.subscriptions.push(newModeHandler);
 
-        console.log('make new mode handler for ', activeFileName());
-    }
+    console.log('make new mode handler for ', activeFileName());
+  }
 
-    const handler = modeHandlerToFilename[activeFileName()];
+  const handler = modeHandlerToFilename[activeFileName()];
 
-    if (previousActiveFilename !== activeFileName()) {
-        previousActiveFilename = activeFileName();
+  if (previousActiveFilename !== activeFileName()) {
+    previousActiveFilename = activeFileName();
 
-        await handler.updateView(handler.vimState);
-    }
+    await handler.updateView(handler.vimState);
+  }
 
-    if (oldHandler && oldHandler.vimState.focusChanged) {
-        oldHandler.vimState.focusChanged = false;
-        handler.vimState.focusChanged = true;
-    }
+  if (oldHandler && oldHandler.vimState.focusChanged) {
+    oldHandler.vimState.focusChanged = false;
+    handler.vimState.focusChanged = true;
+  }
 
-    return handler;
+  return handler;
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    extensionContext = context;
+  extensionContext = context;
 
-    registerCommand(context, 'type', async (args) => {
-        if (!vscode.window.activeTextEditor) {
-            return;
-        }
+  registerCommand(context, 'type', async (args) => {
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
 
-        taskQueue.enqueueTask({
-            promise: async () => {
-                const mh = await getAndUpdateModeHandler();
-                await mh.handleKeyEvent(args.text);
-            },
-            isRunning : false
-        });
+    taskQueue.enqueueTask({
+      promise: async () => {
+        const mh = await getAndUpdateModeHandler();
+        await mh.handleKeyEvent(args.text);
+      },
+      isRunning : false
     });
+  });
 
-    registerCommand(context, 'replacePreviousChar', async (args) => {
-        if (!vscode.window.activeTextEditor) {
-            return;
-        }
+  registerCommand(context, 'replacePreviousChar', async (args) => {
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
 
-        taskQueue.enqueueTask({
-            promise: async () => {
-                const mh = await getAndUpdateModeHandler();
-                await vscode.commands.executeCommand('default:replacePreviousChar', {
-                    text: args.text,
-                    replaceCharCnt: args.replaceCharCnt
-                });
-                mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-                mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-            },
-            isRunning : false
+    taskQueue.enqueueTask({
+      promise: async () => {
+        const mh = await getAndUpdateModeHandler();
+        await vscode.commands.executeCommand('default:replacePreviousChar', {
+          text: args.text,
+          replaceCharCnt: args.replaceCharCnt
         });
+        mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      },
+      isRunning : false
+    });
    });
 
-    registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
-    registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
+  registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
+  registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
 
-    registerCommand(context, 'extension.showCmdLine', () => {
-        showCmdLine("", modeHandlerToFilename[activeFileName()]);
-    });
+  registerCommand(context, 'extension.showCmdLine', () => {
+    showCmdLine("", modeHandlerToFilename[activeFileName()]);
+  });
 
-    'rfbducw['.split('').forEach(key => {
-        registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
-    });
+  'rfbducw['.split('').forEach(key => {
+    registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
+  });
 
-    ['left', 'right', 'up', 'down'].forEach(key => {
-        registerCommand(context, `extension.vim_${key}`, () => handleKeyEvent(`<${key}>`));
-    });
+  ['left', 'right', 'up', 'down'].forEach(key => {
+    registerCommand(context, `extension.vim_${key}`, () => handleKeyEvent(`<${key}>`));
+  });
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
-    let disposable = vscode.commands.registerCommand(command, callback);
-    context.subscriptions.push(disposable);
+  let disposable = vscode.commands.registerCommand(command, callback);
+  context.subscriptions.push(disposable);
 }
 
 async function handleKeyEvent(key: string): Promise<void> {
-    const mh = await getAndUpdateModeHandler();
+  const mh = await getAndUpdateModeHandler();
 
-    taskQueue.enqueueTask({
-        promise   : async () => { await mh.handleKeyEvent(key); },
-        isRunning : false
-    });
+  taskQueue.enqueueTask({
+    promise   : async () => { await mh.handleKeyEvent(key); },
+    isRunning : false
+  });
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
-    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+  console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
 });

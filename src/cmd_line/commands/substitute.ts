@@ -8,10 +8,10 @@ import { ModeHandler } from "../../mode/modeHandler";
 import { TextEditor } from "../../textEditor";
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
-    pattern: string;
-    replace: string;
-    flags?: number;
-    count?: number;
+  pattern: string;
+  replace: string;
+  flags?: number;
+  count?: number;
 }
 
 /**
@@ -32,77 +32,77 @@ export interface ISubstituteCommandArguments extends node.ICommandArgs {
  *     instead of the search pattern from the last substitute or ":global".
  */
 export enum SubstituteFlags {
-    None = 0,
-    KeepPreviousFlags = 0x1,
-    ConfirmEach = 0x2,
-    SuppressError = 0x4,
-    ReplaceAll = 0x8,
-    IgnoreCase = 0x10,
-    NoIgnoreCase = 0x20,
-    PrintCount = 0x40,
-    PrintLastMatchedLine = 0x80,
-    PrintLastMatchedLineWithNumber = 0x100,
-    PrintLastMatchedLineWithList = 0x200,
-    UsePreviousPattern = 0x400
+  None = 0,
+  KeepPreviousFlags = 0x1,
+  ConfirmEach = 0x2,
+  SuppressError = 0x4,
+  ReplaceAll = 0x8,
+  IgnoreCase = 0x10,
+  NoIgnoreCase = 0x20,
+  PrintCount = 0x40,
+  PrintLastMatchedLine = 0x80,
+  PrintLastMatchedLineWithNumber = 0x100,
+  PrintLastMatchedLineWithList = 0x200,
+  UsePreviousPattern = 0x400
 }
 
 export class SubstituteCommand extends node.CommandBase {
-    protected _arguments : ISubstituteCommandArguments;
+  protected _arguments : ISubstituteCommandArguments;
 
-    constructor(args : ISubstituteCommandArguments) {
-        super();
-        this._name = 'search';
-        this._shortName = 's';
-        this._arguments = args;
+  constructor(args : ISubstituteCommandArguments) {
+    super();
+    this._name = 'search';
+    this._shortName = 's';
+    this._arguments = args;
+  }
+
+  get arguments() : ISubstituteCommandArguments {
+    return this._arguments;
+  }
+
+  execute() : void {
+    throw new Error("not implemented");
+  }
+
+  async executeWithRange(modeHandler : ModeHandler, range: node.LineRange) {
+    let startLine: vscode.Position;
+    let endLine: vscode.Position;
+
+    if (range.left[0].type === token.TokenType.Percent) {
+      startLine = new vscode.Position(0, 0);
+      endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
+    } else {
+      startLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.left);
+      endLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.right);
     }
 
-    get arguments() : ISubstituteCommandArguments {
-        return this._arguments;
+    if (this._arguments.count && this._arguments.count >= 0) {
+      startLine = endLine;
+      endLine = new vscode.Position(endLine.line + this._arguments.count - 1, 0);
     }
 
-    execute() : void {
-        throw new Error("not implemented");
+    // TODO: Global Setting.
+    // TODO: There are differencies between Vim Regex and JS Regex.
+
+    let jsRegexFlags = "";
+    let flags = this._arguments.flags;
+
+    if (flags & SubstituteFlags.ReplaceAll) {
+      jsRegexFlags += "g";
     }
 
-    async executeWithRange(modeHandler : ModeHandler, range: node.LineRange) {
-        let startLine: vscode.Position;
-        let endLine: vscode.Position;
-
-        if (range.left[0].type === token.TokenType.Percent) {
-            startLine = new vscode.Position(0, 0);
-            endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
-        } else {
-            startLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.left);
-            endLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.right);
-        }
-
-        if (this._arguments.count && this._arguments.count >= 0) {
-            startLine = endLine;
-            endLine = new vscode.Position(endLine.line + this._arguments.count - 1, 0);
-        }
-
-        // TODO: Global Setting.
-        // TODO: There are differencies between Vim Regex and JS Regex.
-
-        let jsRegexFlags = "";
-        let flags = this._arguments.flags;
-
-        if (flags & SubstituteFlags.ReplaceAll) {
-            jsRegexFlags += "g";
-        }
-
-        if (flags & SubstituteFlags.IgnoreCase) {
-            jsRegexFlags += "i";
-        }
-
-        var regex = new RegExp(this._arguments.pattern, jsRegexFlags);
-        for (let currentLine = startLine.line; currentLine <= endLine.line && currentLine < TextEditor.getLineCount(); currentLine++) {
-            let originalContent = TextEditor.readLineAt(currentLine);
-            let content = originalContent.replace(regex, this._arguments.replace);
-
-            if (originalContent !== content) {
-                await TextEditor.replace(new vscode.Range(currentLine, 0, currentLine, originalContent.length), content);
-            }
-        }
+    if (flags & SubstituteFlags.IgnoreCase) {
+      jsRegexFlags += "i";
     }
+
+    var regex = new RegExp(this._arguments.pattern, jsRegexFlags);
+    for (let currentLine = startLine.line; currentLine <= endLine.line && currentLine < TextEditor.getLineCount(); currentLine++) {
+      let originalContent = TextEditor.readLineAt(currentLine);
+      let content = originalContent.replace(regex, this._arguments.replace);
+
+      if (originalContent !== content) {
+        await TextEditor.replace(new vscode.Range(currentLine, 0, currentLine, originalContent.length), content);
+      }
+    }
+  }
 }

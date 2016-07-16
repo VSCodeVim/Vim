@@ -9,41 +9,41 @@ import {parseSubstituteCommandArgs} from './subparsers/substitute';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
-    w: parseWriteCommandArgs,
-    write: parseWriteCommandArgs,
+  w: parseWriteCommandArgs,
+  write: parseWriteCommandArgs,
 
-    quit: parseQuitCommandArgs,
-    q: parseQuitCommandArgs,
+  quit: parseQuitCommandArgs,
+  q: parseQuitCommandArgs,
 
-    wq: parseWriteQuitCommandArgs,
-    writequit: parseWriteQuitCommandArgs,
+  wq: parseWriteQuitCommandArgs,
+  writequit: parseWriteQuitCommandArgs,
 
-    tabn: tabCmd.parseTabNCommandArgs,
-    tabnext: tabCmd.parseTabNCommandArgs,
+  tabn: tabCmd.parseTabNCommandArgs,
+  tabnext: tabCmd.parseTabNCommandArgs,
 
-    tabp: tabCmd.parseTabPCommandArgs,
-    tabprevious: tabCmd.parseTabPCommandArgs,
+  tabp: tabCmd.parseTabPCommandArgs,
+  tabprevious: tabCmd.parseTabPCommandArgs,
 
-    tabfirst: tabCmd.parseTabFirstCommandArgs,
-    tabfir: tabCmd.parseTabFirstCommandArgs,
+  tabfirst: tabCmd.parseTabFirstCommandArgs,
+  tabfir: tabCmd.parseTabFirstCommandArgs,
 
-    tablast: tabCmd.parseTabLastCommandArgs,
-    tabl: tabCmd.parseTabLastCommandArgs,
+  tablast: tabCmd.parseTabLastCommandArgs,
+  tabl: tabCmd.parseTabLastCommandArgs,
 
-    tabe: tabCmd.parseTabNewCommandArgs,
-    tabedit: tabCmd.parseTabNewCommandArgs,
-    tabnew: tabCmd.parseTabNewCommandArgs,
+  tabe: tabCmd.parseTabNewCommandArgs,
+  tabedit: tabCmd.parseTabNewCommandArgs,
+  tabnew: tabCmd.parseTabNewCommandArgs,
 
-    tabclose: tabCmd.parseTabCloseCommandArgs,
-    tabc: tabCmd.parseTabCloseCommandArgs,
+  tabclose: tabCmd.parseTabCloseCommandArgs,
+  tabc: tabCmd.parseTabCloseCommandArgs,
 
-    tabo: tabCmd.parseTabOnlyCommandArgs,
-    tabonly: tabCmd.parseTabOnlyCommandArgs,
+  tabo: tabCmd.parseTabOnlyCommandArgs,
+  tabonly: tabCmd.parseTabOnlyCommandArgs,
 
-    e: fileCmd.parseEditFileCommandArgs,
+  e: fileCmd.parseEditFileCommandArgs,
 
-    s: parseSubstituteCommandArgs,
-    vsp: fileCmd.parseEditFileInNewWindowCommandArgs,
-    vne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
-    vnew: fileCmd.parseEditNewFileInNewWindowCommandArgs
+  s: parseSubstituteCommandArgs,
+  vsp: fileCmd.parseEditFileInNewWindowCommandArgs,
+  vne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
+  vnew: fileCmd.parseEditNewFileInNewWindowCommandArgs
 };
