@@ -361,6 +361,21 @@ class CommandCtrlOpenBracket extends CommandEsc {
 }
 
 @RegisterAction
+class CommandCtrlW extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+w"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const wordBegin = position.getWordLeft();
+    await TextEditor.delete(new vscode.Range(wordBegin, position));
+
+    vimState.cursorPosition = wordBegin;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandCtrlC extends CommandEsc {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   keys = ["ctrl+c"];

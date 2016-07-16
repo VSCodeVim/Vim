@@ -116,4 +116,14 @@ suite("Mode Insert", () => {
 
         assertEqualLines(["text!"]);
     });
+
+    test("Can handle 'ctrl+w'", async () => {
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't', ' ', 't', 'e', 'x', 't',
+            'ctrl+w',
+        ]);
+
+        assertEqualLines(["text "]);
+    });
 });

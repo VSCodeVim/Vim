@@ -353,7 +353,7 @@ Status | Command | Description
     | CTRL-X ...	                 |  complete the word before the cursor in various ways
     | BS or CTRL-H	                 |  delete the character before the cursor
 :white_check_mark:    | Del		                 |  delete the character under the cursor
-    | CTRL-W		                 |  delete word before the cursor
+:white_check_mark:    | CTRL-W		                 |  delete word before the cursor
     | CTRL-U		                 |  delete all entered characters in the current line
     | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
     | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
