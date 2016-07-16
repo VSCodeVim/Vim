@@ -357,7 +357,7 @@ class CommandEsc extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlOpenBracket extends CommandEsc {
-  keys = ["ctrl+["]
+  keys = ["ctrl+["];
 }
 
 class CommandCtrlC extends CommandEsc {
