@@ -55,7 +55,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   return handler;
 }
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
 
   registerCommand(context, 'type', async (args) => {
@@ -68,7 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
         const mh = await getAndUpdateModeHandler();
         await mh.handleKeyEvent(args.text);
       },
-      isRunning : false
+      isRunning: false
     });
   });
 
@@ -87,9 +87,9 @@ export function activate(context: vscode.ExtensionContext) {
         mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
         mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
       },
-      isRunning : false
+      isRunning: false
     });
-   });
+  });
 
   registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
   registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
@@ -105,6 +105,12 @@ export function activate(context: vscode.ExtensionContext) {
   ['left', 'right', 'up', 'down'].forEach(key => {
     registerCommand(context, `extension.vim_${key}`, () => handleKeyEvent(`<${key}>`));
   });
+
+  // Initialize mode handler for current active Text Editor at startup.
+  if (vscode.window.activeTextEditor) {
+    let mh = await getAndUpdateModeHandler()
+    mh.updateView(mh.vimState, false);
+  }
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
