@@ -330,7 +330,7 @@ Status | Command | Description
    | :[range]! {command}<CR>      | filter [range] lines through {command}
 :white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
    | :1234:  ==	                 |    filter N lines through 'equalprg'
-_white_check_mark   |    {visual}=                | filter the highlighted lines through 'equalprg'
+:white_check_mark:  |    {visual}=                | filter the highlighted lines through 'equalprg'
    | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement
    | :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
    |    &		| Repeat previous ":s" on current line without options
