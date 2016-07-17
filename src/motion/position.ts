@@ -42,31 +42,48 @@ export class Position extends vscode.Position {
     let lineIndex: number, charIndex: number;
 
     if (forward) {
-    for (lineIndex = start.line; lineIndex < TextEditor.getLineCount(); lineIndex++) {
-      charIndex = lineIndex === start.line ? start.character : 0;
-      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+      for (lineIndex = start.line; lineIndex < TextEditor.getLineCount(); lineIndex++) {
+        charIndex = lineIndex === start.line ? start.character : 0;
+        const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
 
-      for (; charIndex < line.length; charIndex++) {
-        yield {
-          line: line,
-          char: line[charIndex],
-          pos: new Position(lineIndex, charIndex)
-        };
+        for (; charIndex < line.length; charIndex++) {
+          yield {
+            line: line,
+            char: line[charIndex],
+            pos: new Position(lineIndex, charIndex)
+          };
+        }
       }
-    }
     } else {
-    for (lineIndex = start.line; lineIndex >= 0; lineIndex--) {
-      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
-      charIndex = lineIndex === start.line ? start.character : line.length - 1;
+      for (lineIndex = start.line; lineIndex >= 0; lineIndex--) {
+        const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+        charIndex = lineIndex === start.line ? start.character : line.length - 1;
 
-      for (; charIndex >= 0; charIndex--) {
+        for (; charIndex >= 0; charIndex--) {
+          yield {
+            line: line,
+            char: line[charIndex],
+            pos: new Position(lineIndex, charIndex)
+          };
+        }
+      }
+    }
+  }
+
+  /**
+   * Iterate over every position in the block defined by the two positions passed in.
+   */
+  public static *IterateBlock(topLeft: Position, bottomRight: Position): Iterable<{ line: string, char: string, pos: Position }> {
+    for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
+      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+
+      for (let charIndex = topLeft.character; charIndex < bottomRight.character; charIndex++) {
         yield {
           line: line,
           char: line[charIndex],
-          pos: new Position(lineIndex, charIndex)
+          pos : new Position(lineIndex, charIndex)
         };
       }
-    }
     }
   }
 

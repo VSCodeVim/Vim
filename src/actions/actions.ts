@@ -1,5 +1,6 @@
 import { VimSpecialCommands, VimState, SearchState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
+import { VisualBlockMode } from './../mode/modeVisualBlock';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
@@ -2014,6 +2015,29 @@ class ActionReplaceCharacter extends BaseCommand {
     state.cursorPosition = position;
 
     return state;
+  }
+}
+
+@RegisterAction
+class ActionReplaceCharacterVisualBlock extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ["r", "<character>"];
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const topLeft     = VisualBlockMode.getTopLeftPosition    (vimState.cursorStartPosition, vimState.cursorPosition);
+    const bottomRight = VisualBlockMode.getBottomRightPosition(vimState.cursorStartPosition, vimState.cursorPosition);
+    const toReplace   = this.keysPressed[1];
+
+    for (const { pos } of Position.IterateBlock(topLeft, bottomRight)) {
+      console.log(pos.line, pos.character);
+
+      vimState = await new DeleteOperator().run(vimState, pos, pos);
+      await TextEditor.insertAt(toReplace, pos);
+    }
+
+    vimState.cursorPosition = position;
+    return vimState;
   }
 }
 
