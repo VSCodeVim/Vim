@@ -198,6 +198,13 @@ export abstract class BaseMovement extends BaseAction {
             result = temporaryResult;
             position = temporaryResult;
           } else if (isIMovement(temporaryResult)) {
+            if (result instanceof Position) {
+              result = {
+                start : new Position(0, 0),
+                stop : new Position(0, 0)
+              };
+            }
+
             if (firstIteration) {
               (result as IMovement).start = temporaryResult.start;
             }

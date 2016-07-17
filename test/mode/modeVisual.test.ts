@@ -329,7 +329,7 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
   });
-  
+
   suite("handles aW in visual mode", () => {
     newTest({
       title: "Can handle 'vaWd' on big word with cursor inside spaces",
