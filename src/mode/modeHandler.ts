@@ -8,6 +8,7 @@ import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
+import { VisualBlockMode } from './modeVisualBlock';
 import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
@@ -90,6 +91,10 @@ export class VimState {
    */
   public currentMode = ModeName.Normal;
 
+  public getModeObject(modeHandler: ModeHandler): Mode {
+    return modeHandler.modeList.find(mode => mode.isActive);
+  }
+
   public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
   public effectiveRegisterMode(): RegisterMode {
@@ -125,8 +130,8 @@ export class VimState {
 
 export class VimSettings {
   useSolidBlockCursor = false;
-  scroll        = 20;
-  useCtrlKeys     = false;
+  scroll              = 20;
+  useCtrlKeys         = false;
 }
 
 export class SearchState {
@@ -369,6 +374,10 @@ export class ModeHandler implements vscode.Disposable {
     return this.currentMode.name;
   }
 
+  public get modeList(): Mode[] {
+    return this._modes;
+  }
+
   /**
    * isTesting speeds up tests drastically by turning off our checks for
    * mouse events.
@@ -386,6 +395,7 @@ export class ModeHandler implements vscode.Disposable {
       new NormalMode(this),
       new InsertMode(),
       new VisualMode(),
+      new VisualBlockMode(),
       new VisualLineMode(),
       new SearchInProgressMode(),
     ];
@@ -415,6 +425,12 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (e.textEditor.document.fileName !== this.filename) {
+        return;
+      }
+
+      if (this.currentModeName === ModeName.VisualBlock) {
+        // Not worth it until we get a better API for this stuff.
+
         return;
       }
 
@@ -459,9 +475,7 @@ export class ModeHandler implements vscode.Disposable {
             this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
           }
 
-          if (this._vimState.currentMode !== ModeName.Visual &&
-            this._vimState.currentMode !== ModeName.VisualLine) {
-
+          if (!this._vimState.getModeObject(this).isVisualMode) {
             this._vimState.currentMode = ModeName.Visual;
             this.setCurrentModeByName(this._vimState);
           }
@@ -710,7 +724,7 @@ export class ModeHandler implements vscode.Disposable {
       if (result.failed) {
         vimState.recordedState = new RecordedState();
       }
-      
+
       vimState.cursorPosition    = result.stop;
       vimState.cursorStartPosition = result.start;
 
@@ -756,8 +770,7 @@ export class ModeHandler implements vscode.Disposable {
       [start, stop] = [stop, start];
     }
 
-    if (vimState.currentMode         !== ModeName.Visual &&
-        vimState.currentMode         !== ModeName.VisualLine &&
+    if (!this._vimState.getModeObject(this).isVisualMode &&
         vimState.currentRegisterMode !== RegisterMode.LineWise) {
 
       if (Position.EarlierOf(start, stop) === start) {
@@ -848,20 +861,33 @@ export class ModeHandler implements vscode.Disposable {
     // Draw selection (or cursor)
 
     if (drawSelection) {
-      let selection: vscode.Selection;
+      let selections: vscode.Selection[];
 
       if (vimState.currentMode === ModeName.Visual) {
-        selection = new vscode.Selection(start, stop);
+        selections = [ new vscode.Selection(start, stop) ];
       } else if (vimState.currentMode === ModeName.VisualLine) {
-        selection = new vscode.Selection(
+        selections = [ new vscode.Selection(
           Position.EarlierOf(start, stop).getLineBegin(),
-          Position.LaterOf(start, stop).getLineEnd());
+          Position.LaterOf(start, stop).getLineEnd()
+        ) ];
+      } else if (vimState.currentMode === ModeName.VisualBlock) {
+        const topLeft     = VisualBlockMode.getTopLeftPosition(start, stop);
+        const bottomRight = VisualBlockMode.getBottomRightPosition(start, stop);
+
+        selections = [];
+
+        for (let line = topLeft.line; line <= bottomRight.line; line++) {
+          selections.push(new vscode.Selection(
+            new Position(line, topLeft.character),
+            new Position(line, bottomRight.character + 1)
+          ));
+        }
       } else {
-        selection = new vscode.Selection(stop, stop);
+        selections = [ new vscode.Selection(stop, stop) ];
       }
 
-      this._vimState.whatILastSetTheSelectionTo = selection;
-      vscode.window.activeTextEditor.selection = selection;
+      this._vimState.whatILastSetTheSelectionTo = selections[0];
+      vscode.window.activeTextEditor.selections = selections;
     }
 
     // Scroll to position of cursor

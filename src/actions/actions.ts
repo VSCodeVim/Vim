@@ -348,7 +348,7 @@ class CommandNumber extends BaseCommand {
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<esc>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -385,7 +385,6 @@ class CommandCtrlW extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlC extends CommandEsc {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   keys = ["ctrl+c"];
 }
 
@@ -1276,6 +1275,18 @@ class CommandVisualMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandVisualBlockMode extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+v"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.VisualBlock;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandVisualLineMode extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["V"];
@@ -1390,7 +1401,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
 
 @RegisterAction
 class MoveLeft extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["h"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1400,13 +1411,13 @@ class MoveLeft extends BaseMovement {
 
 @RegisterAction
 class MoveLeftArrow extends MoveLeft {
-  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<left>"];
 }
 
 @RegisterAction
 class MoveUp extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["k"];
   doesntChangeDesiredColumn = true;
 
@@ -1417,13 +1428,13 @@ class MoveUp extends BaseMovement {
 
 @RegisterAction
 class MoveUpArrow extends MoveUp {
-  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<up>"];
 }
 
 @RegisterAction
 class MoveDown extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["j"];
   doesntChangeDesiredColumn = true;
 
@@ -1434,13 +1445,13 @@ class MoveDown extends BaseMovement {
 
 @RegisterAction
 class MoveDownArrow extends MoveDown {
-  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<down>"];
 }
 
 @RegisterAction
 class MoveRight extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["l"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1450,13 +1461,13 @@ class MoveRight extends BaseMovement {
 
 @RegisterAction
 class MoveRightArrow extends MoveRight {
-  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<right>"];
 }
 
 @RegisterAction
 class MoveRightWithSpace extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = [" "];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {

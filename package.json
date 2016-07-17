@@ -73,6 +73,11 @@
                 "when": "editorTextFocus"
             },
             {
+                "key": "ctrl+v",
+                "command": "extension.vim_ctrl+v",
+                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+            },
+            {
                 "key": "ctrl+d",
                 "command": "extension.vim_ctrl+d",
                 "when": "editorTextFocus"
