@@ -67,7 +67,7 @@ export interface IMovement {
    * will not move the cursor. Furthermore, dfx won't delete *anything*, even though
    * deleting to the current character would generally delete 1 character.
    */
-  failed       : boolean;
+  failed?      : boolean;
 
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
@@ -2242,10 +2242,18 @@ abstract class MoveInsideCharacter extends BaseMovement {
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
 
     // Poor man's check for whether we found an opening character
-    if (startPos === position && text[position.character] !== this.charToMatch) {
-      return position;
+    if ((startPos === position && text[position.character] !== this.charToMatch) ||
+         // Make sure the start position is inside the selection
+         startPos.isAfter(position) ||
+         endPos.isBefore(position)) {
+
+      return {
+        start : position,
+        stop  : position,
+        failed: true
+      };
     }
-    // Make sure the start position is inside the selection
+
     if (startPos.isAfter(position) || endPos.isBefore(position)) {
       return position;
     }
@@ -2255,10 +2263,12 @@ abstract class MoveInsideCharacter extends BaseMovement {
     } else {
       startPos = startPlusOne;
     }
+
     // If the closing character is the first on the line, don't swallow it.
     if (endPos.character === 0) {
       endPos = endPos.getLeftThroughLineBreaks();
     }
+
     return {
       start : startPos,
       stop  : endPos,

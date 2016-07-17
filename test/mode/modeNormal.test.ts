@@ -252,6 +252,22 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "will fail when ca( with no ()",
+      start: ['|blaaah'],
+      keysPressed: 'ca(',
+      end: ['|blaaah'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "will fail when ca{ with no {}",
+      start: ['|blaaah'],
+      keysPressed: 'ca{',
+      end: ['|blaaah'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'df'",
       start: ['aext tex|t'],
       keysPressed: '^dft',
