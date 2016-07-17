@@ -2025,13 +2025,9 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const topLeft     = VisualBlockMode.getTopLeftPosition    (vimState.cursorStartPosition, vimState.cursorPosition);
-    const bottomRight = VisualBlockMode.getBottomRightPosition(vimState.cursorStartPosition, vimState.cursorPosition);
     const toReplace   = this.keysPressed[1];
 
-    for (const { pos } of Position.IterateBlock(topLeft, bottomRight)) {
-      console.log(pos.line, pos.character);
-
+    for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
       vimState = await new DeleteOperator().run(vimState, pos, pos);
       await TextEditor.insertAt(toReplace, pos);
     }
@@ -2039,6 +2035,29 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
     vimState.cursorPosition = position;
     return vimState;
   }
+}
+
+@RegisterAction
+class ActionXVisualBlock extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ["x"];
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
+      vimState = await new DeleteOperator().run(vimState, pos, pos);
+    }
+
+    vimState.cursorPosition = position;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionDVisualBlock extends ActionXVisualBlock {
+  modes = [ModeName.VisualBlock];
+  keys = ["d"];
+  canBeRepeatedWithDot = true;
 }
 
 // DOUBLE MOTIONS

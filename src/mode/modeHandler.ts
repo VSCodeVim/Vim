@@ -109,6 +109,20 @@ export class VimState {
     }
   }
 
+  /**
+   * The top left of a selected block of text. Useful for Visual Block mode.
+   */
+  public get topLeft(): Position {
+    return VisualBlockMode.getTopLeftPosition(this.cursorStartPosition, this.cursorPosition);
+  }
+
+  /**
+   * The bottom right of a selected block of text. Useful for Visual Block mode.
+   */
+  public get bottomRight(): Position {
+    return VisualBlockMode.getBottomRightPosition(this.cursorStartPosition, this.cursorPosition);
+  }
+
   public registerName = '"';
 
   /**

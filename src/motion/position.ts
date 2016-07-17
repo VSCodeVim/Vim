@@ -77,7 +77,7 @@ export class Position extends vscode.Position {
     for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
       const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
 
-      for (let charIndex = topLeft.character; charIndex < bottomRight.character; charIndex++) {
+      for (let charIndex = topLeft.character; charIndex < bottomRight.character + 1; charIndex++) {
         yield {
           line: line,
           char: line[charIndex],
