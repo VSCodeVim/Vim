@@ -2264,10 +2264,6 @@ abstract class MoveInsideCharacter extends BaseMovement {
       };
     }
 
-    if (startPos.isAfter(position) || endPos.isBefore(position)) {
-      return position;
-    }
-
     if (this.includeSurrounding) {
       endPos = new Position(endPos.line, endPos.character + 1);
     } else {
