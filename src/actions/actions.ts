@@ -2361,6 +2361,32 @@ class MoveAClosingCaret extends MoveInsideCharacter {
 }
 
 @RegisterAction
+class MoveISquareBracket extends MoveInsideCharacter {
+  keys = ["i", "["];
+  charToMatch = "[";
+}
+
+@RegisterAction
+class MoveIClosingSquareBraket extends MoveInsideCharacter {
+  keys = ["i", "]"];
+  charToMatch = "[";
+}
+
+@RegisterAction
+class MoveASquareBracket extends MoveInsideCharacter {
+  keys = ["a", "["];
+  charToMatch = "[";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveAClosingSquareBracket extends MoveInsideCharacter {
+  keys = ["a", "]"];
+  charToMatch = "[";
+  includeSurrounding = true;
+}
+
+@RegisterAction
 class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
   keys = ["[", "("];
 

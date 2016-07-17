@@ -268,6 +268,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci[' spanning multiple lines",
+      start: ['one [', '|', ']'],
+      keysPressed: 'ci[',
+      end: ['one [|]'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'df'",
       start: ['aext tex|t'],
       keysPressed: '^dft',
