@@ -172,6 +172,7 @@
         "gulp-tslint": "^5.0.0",
         "gulp-typescript": "^2.13.4",
         "gulp-typings": "^2.0.0",
+        "merge-stream": "^1.0.0",
         "tslint": "^3.10.2",
         "typescript": "2.0.0",
         "typings": "^1.0.4",
