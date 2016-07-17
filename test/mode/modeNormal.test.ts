@@ -276,6 +276,30 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci]' on first bracket",
+      start: ['one[|"two"]'],
+      keysPressed: 'ci]',
+      end: ['one[|]'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca[' on first bracket",
+      start: ['one[|"two"]'],
+      keysPressed: 'ca[',
+      end: ['one|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca]' on first bracket",
+      start: ['one[|"two"]'],
+      keysPressed: 'ca]',
+      end: ['one|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'df'",
       start: ['aext tex|t'],
       keysPressed: '^dft',
