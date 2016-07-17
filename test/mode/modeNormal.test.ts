@@ -10,7 +10,7 @@ suite("Mode Normal", () => {
 
     let {
         newTest,
-        // newTestOnly
+        newTestOnly
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
