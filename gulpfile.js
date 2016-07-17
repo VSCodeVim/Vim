@@ -8,7 +8,8 @@ var gulp = require('gulp'),
     filter = require('gulp-filter'),
     tag_version = require('gulp-tag-version'),
     inject = require('gulp-inject-string'),
-    trimlines = require('gulp-trimlines');
+    trimlines = require('gulp-trimlines'),
+    merge = require('merge-stream');
 
 var paths = {
     src_ts: "src/**/*.ts",
@@ -23,7 +24,7 @@ function versionBump(importance) {
         .pipe(filter('package.json'))
         .pipe(tag_version());
 }
- 
+
 gulp.task('patch', function() { return versionBump('patch'); })
 gulp.task('minor', function() { return versionBump('minor'); })
 gulp.task('major', function() { return versionBump('major'); })
@@ -57,11 +58,19 @@ gulp.task('fix-whitespace', function() {
 });
 
 gulp.task('tslint', ['fix-whitespace'], function() {
-    return gulp.src([paths.src_ts, paths.tests_ts])
+    var tslintOptions = {
+        summarizeFailureOutput: true
+    };
+
+    var srcs = gulp.src(paths.src_ts)
         .pipe(tslint())
-        .pipe(tslint.report('prose', {
-          summarizeFailureOutput: true
-        }));
+        .pipe(tslint.report('prose', tslintOptions));
+    var tests = gulp.src(paths.tests_ts)
+        .pipe(tslint({
+            configuration: 'test/tslint.json'
+        }))
+        .pipe(tslint.report('prose', tslintOptions));
+    return merge(srcs, tests);
 });
 
 gulp.task('compile', shell.task([
