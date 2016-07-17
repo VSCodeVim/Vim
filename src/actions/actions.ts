@@ -62,6 +62,13 @@ export interface IMovement {
   start        : Position;
   stop         : Position;
 
+  /**
+   * Whether this motion succeeded. Some commands, like fx when 'x' can't be found,
+   * will not move the cursor. Furthermore, dfx won't delete *anything*, even though
+   * deleting to the current character would generally delete 1 character.
+   */
+  failed?      : boolean;
+
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
 }
@@ -1534,6 +1541,10 @@ class MoveFindForward extends BaseMovement {
     const toFind = this.keysPressed[1];
     let result = position.findForwards(toFind, count);
 
+    if (!result) {
+      return { start: position, stop: position, failed: true };
+    }
+
     if (vimState.recordedState.operator) {
       result = result.getRight();
     }
@@ -1551,6 +1562,10 @@ class MoveFindBackward extends BaseMovement {
     count = count || 1;
     const toFind = this.keysPressed[1];
     let result = position.findBackwards(toFind, count);
+
+    if (!result) {
+      return { start: position, stop: position, failed: true };
+    }
 
     if (vimState.recordedState.operator) {
       result = result.getLeft();
@@ -1571,6 +1586,10 @@ class MoveTilForward extends BaseMovement {
     const toFind = this.keysPressed[1];
     let result = position.tilForwards(toFind, count);
 
+    if (!result) {
+      return { start: position, stop: position, failed: true };
+    }
+
     if (vimState.recordedState.operator) {
       result = result.getRight();
     }
@@ -1588,6 +1607,10 @@ class MoveTilBackward extends BaseMovement {
     count = count || 1;
     const toFind = this.keysPressed[1];
     let result = position.tilBackwards(toFind, count);
+
+    if (!result) {
+      return { start: position, stop: position, failed: true };
+    }
 
     if (vimState.recordedState.operator) {
       result = result.getLeft();
@@ -2229,10 +2252,18 @@ abstract class MoveInsideCharacter extends BaseMovement {
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
 
     // Poor man's check for whether we found an opening character
-    if (startPos === position && text[position.character] !== this.charToMatch) {
-      return position;
+    if ((startPos === position && text[position.character] !== this.charToMatch) ||
+         // Make sure the start position is inside the selection
+         startPos.isAfter(position) ||
+         endPos.isBefore(position)) {
+
+      return {
+        start : position,
+        stop  : position,
+        failed: true
+      };
     }
-    // Make sure the start position is inside the selection
+
     if (startPos.isAfter(position) || endPos.isBefore(position)) {
       return position;
     }
@@ -2242,10 +2273,12 @@ abstract class MoveInsideCharacter extends BaseMovement {
     } else {
       startPos = startPlusOne;
     }
+
     // If the closing character is the first on the line, don't swallow it.
     if (endPos.character === 0) {
       endPos = endPos.getLeftThroughLineBreaks();
     }
+
     return {
       start : startPos,
       stop  : endPos,

@@ -707,6 +707,10 @@ export class ModeHandler implements vscode.Disposable {
     if (result instanceof Position) {
       vimState.cursorPosition = result;
     } else if (isIMovement(result)) {
+      if (result.failed) {
+        vimState.recordedState = new RecordedState();
+      }
+      
       vimState.cursorPosition    = result.stop;
       vimState.cursorStartPosition = result.start;
 
@@ -740,8 +744,8 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async executeOperator(vimState: VimState): Promise<VimState> {
-    let start     = vimState.cursorStartPosition;
-    let stop      = vimState.cursorPosition;
+    let start         = vimState.cursorStartPosition;
+    let stop          = vimState.cursorPosition;
     let recordedState = vimState.recordedState;
 
     if (!recordedState.operator) {
@@ -752,9 +756,10 @@ export class ModeHandler implements vscode.Disposable {
       [start, stop] = [stop, start];
     }
 
-    if (vimState.currentMode !== ModeName.Visual &&
-      vimState.currentMode !== ModeName.VisualLine &&
-      vimState.currentRegisterMode !== RegisterMode.LineWise) {
+    if (vimState.currentMode         !== ModeName.Visual &&
+        vimState.currentMode         !== ModeName.VisualLine &&
+        vimState.currentRegisterMode !== RegisterMode.LineWise) {
+
       if (Position.EarlierOf(start, stop) === start) {
         stop = stop.getLeft();
       } else {

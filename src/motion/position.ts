@@ -609,30 +609,30 @@ export class Position extends vscode.Position {
     return undefined;
   }
 
-  public tilForwards(char: string, count: number = 1): Position {
+  public tilForwards(char: string, count: number = 1): Position | null {
     const position = this.findHelper(char, count, +1);
-    if (!position) { return this; }
+    if (!position) { return null; }
 
     return new Position(this.line, position.character - 1);
   }
 
-  public tilBackwards(char: string, count: number = 1): Position {
+  public tilBackwards(char: string, count: number = 1): Position | null {
     const position = this.findHelper(char, count, -1);
-    if (!position) { return this; }
+    if (!position) { return null; }
 
     return new Position(this.line, position.character + 1);
   }
 
-  public findForwards(char: string, count: number = 1): Position {
+  public findForwards(char: string, count: number = 1): Position | null {
     const position = this.findHelper(char, count, +1);
-    if (!position) { return this; }
+    if (!position) { return null; }
 
     return new Position(this.line, position.character);
   }
 
-  public findBackwards(char: string, count: number = 1): Position {
+  public findBackwards(char: string, count: number = 1): Position | null {
     const position = this.findHelper(char, count, -1);
-    if (!position) { return this; }
+    if (!position) { return null; }
 
     return position;
   }
