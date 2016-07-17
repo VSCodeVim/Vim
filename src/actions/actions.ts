@@ -62,6 +62,13 @@ export interface IMovement {
   start        : Position;
   stop         : Position;
 
+  /**
+   * Whether this motion succeeded. Some commands, like fx when 'x' can't be found,
+   * will not move the cursor. Furthermore, dfx won't delete *anything*, even though
+   * deleting to the current character would generally delete 1 character.
+   */
+  failed       : boolean;
+
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
 }
@@ -1524,6 +1531,10 @@ class MoveFindForward extends BaseMovement {
     const toFind = this.keysPressed[1];
     let result = position.findForwards(toFind, count);
 
+    if (!result) {
+      return { start: position, stop: position, failed: true };
+    }
+
     if (vimState.recordedState.operator) {
       result = result.getRight();
     }
@@ -1541,6 +1552,10 @@ class MoveFindBackward extends BaseMovement {
     count = count || 1;
     const toFind = this.keysPressed[1];
     let result = position.findBackwards(toFind, count);
+
+    if (!result) {
+      return { start: position, stop: position, failed: true };
+    }
 
     if (vimState.recordedState.operator) {
       result = result.getLeft();
@@ -1561,6 +1576,10 @@ class MoveTilForward extends BaseMovement {
     const toFind = this.keysPressed[1];
     let result = position.tilForwards(toFind, count);
 
+    if (!result) {
+      return { start: position, stop: position, failed: true };
+    }
+
     if (vimState.recordedState.operator) {
       result = result.getRight();
     }
@@ -1578,6 +1597,10 @@ class MoveTilBackward extends BaseMovement {
     count = count || 1;
     const toFind = this.keysPressed[1];
     let result = position.tilBackwards(toFind, count);
+
+    if (!result) {
+      return { start: position, stop: position, failed: true };
+    }
 
     if (vimState.recordedState.operator) {
       result = result.getLeft();
