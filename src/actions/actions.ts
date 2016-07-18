@@ -2246,7 +2246,7 @@ abstract class MoveInsideCharacter extends BaseMovement {
     const text = TextEditor.getLineAt(position).text;
 
     // First, search backwards for the opening character of the sequence
-    let startPos = position.lastIndexOf(this.charToMatch);
+    let startPos = PairMatcher.nextPairedChar(position, PairMatcher.pairings[this.charToMatch].match, false);
     const startPlusOne = new Position(startPos.line, startPos.character + 1);
 
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);

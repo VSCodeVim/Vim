@@ -236,6 +236,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' backwards through nested parens",
+      start: ['call(() => |5)'],
+      keysPressed: 'ci(',
+      end: ['call(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
