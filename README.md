@@ -31,13 +31,13 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 
 ## F.A.Q.
 
-* `j`, `k` and others don't repeat when I hold them down.
+#### `j`, `k` and others don't repeat when I hold them down.
 
 On OSX, the fix is to run this in the terminal:
 
 `defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
 
-* How can I bind `jj` to `<esc>`?
+#### How can I bind `jj` to `<esc>`?
 
 1. Open the Command palette (cmd-p on OSX, probably ctrl-shift-p on Windows), and add the following:
    
@@ -61,13 +61,15 @@ On OSX, the fix is to run this in the terminal:
       ]
 ```
 
-* How can I enable `ctrl-c` as an alternative to `<esc>`?
+Be sure to restart VSCode after making these changes.
+
+#### How can I enable `ctrl-c` as an alternative to `<esc>`?
 
 Put the following in your `settings.json`:
 
 ```    "vim.useCtrlKeys": true```
 
-3. Restart VSCode!
+and restart VSCode.
 
 ## Contributing
 
