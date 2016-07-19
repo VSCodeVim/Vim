@@ -4,9 +4,11 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code.
 
-Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
+Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. 
 
-We're also super friendly people if you want to drop by and talk to us on our [Slack channel](https://vscodevim-slackin.azurewebsites.net)!
+We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
+
+We're super friendly people if you want to drop by and talk to us on our [Slack channel](https://vscodevim-slackin.azurewebsites.net)!
 
 ![Screenshot](images/screen.png)
 
