@@ -260,6 +260,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' on the closing bracket",
+      start: ['(one|)'],
+      keysPressed: 'ci(',
+      end: ['(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "will fail when ca( with no ()",
       start: ['|blaaah'],
       keysPressed: 'ca(',
