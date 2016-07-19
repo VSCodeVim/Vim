@@ -2244,9 +2244,11 @@ abstract class MoveInsideCharacter extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const text = TextEditor.getLineAt(position).text;
+    const closingChar = PairMatcher.pairings[this.charToMatch].match;
+    const closedMatch = text[position.character] === closingChar;
 
     // First, search backwards for the opening character of the sequence
-    let startPos = PairMatcher.nextPairedChar(position, PairMatcher.pairings[this.charToMatch].match, false);
+    let startPos = PairMatcher.nextPairedChar(position, closingChar, closedMatch);
     const startPlusOne = new Position(startPos.line, startPos.character + 1);
 
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
