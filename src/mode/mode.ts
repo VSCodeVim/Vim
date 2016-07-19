@@ -6,6 +6,7 @@ export enum ModeName {
   Visual,
   VisualBlock,
   VisualLine,
+  VisualBlockInsertMode,
   SearchInProgressMode,
 }
 

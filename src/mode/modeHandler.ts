@@ -9,6 +9,7 @@ import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualBlockMode } from './modeVisualBlock';
+import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
@@ -410,6 +411,7 @@ export class ModeHandler implements vscode.Disposable {
       new InsertMode(),
       new VisualMode(),
       new VisualBlockMode(),
+      new InsertVisualBlockMode(),
       new VisualLineMode(),
       new SearchInProgressMode(),
     ];
@@ -458,7 +460,8 @@ export class ModeHandler implements vscode.Disposable {
         return;
       }
 
-      if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
+      if (this._vimState.currentMode === ModeName.SearchInProgressMode ||
+          this._vimState.currentMode === ModeName.VisualBlockInsertMode) {
         return;
       }
 

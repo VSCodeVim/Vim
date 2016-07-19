@@ -2060,6 +2060,36 @@ class ActionDVisualBlock extends ActionXVisualBlock {
   canBeRepeatedWithDot = true;
 }
 
+@RegisterAction
+class ActionGoToInsertVisualBlockMode extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ["i"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.VisualBlockInsertMode;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class InsertInInsertVisualBlockMode extends BaseCommand {
+  modes = [ModeName.VisualBlockInsertMode];
+  keys = ["<any>"]
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const toInsert = this.keysPressed[0];
+
+    for (const { pos } of Position.IterateLineStart(vimState.topLeft, vimState.bottomRight)) {
+      await TextEditor.insertAt(toInsert, pos);
+    }
+
+    vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
+
+    return vimState;
+  }
+}
+
 // DOUBLE MOTIONS
 // (dd yy cc << >>)
 // These work because there is a check in does/couldActionApply where

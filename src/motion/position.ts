@@ -88,6 +88,20 @@ export class Position extends vscode.Position {
   }
 
   /**
+   * Iterate over the start of every line in the block defined by the two positions passed in.
+   */
+  public static *IterateLineStart(topLeft: Position, bottomRight: Position): Iterable<{ line: string, pos: Position }> {
+    for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
+      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+
+      yield {
+        line: line,
+        pos : new Position(lineIndex, topLeft.character);
+      }
+    }
+  }
+
+  /**
    * Returns which of the 2 provided Positions comes later in the document.
    */
   public static LaterOf(p1: Position, p2: Position): Position {
