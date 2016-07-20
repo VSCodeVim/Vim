@@ -55,8 +55,14 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   return handler;
 }
 
+class CompositionState {
+  public isInComposition: boolean = false;
+  public composingText: string = "";
+}
+
 export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
+  let compositionState = new CompositionState();
 
   registerCommand(context, 'type', async (args) => {
     if (!vscode.window.activeTextEditor) {
@@ -66,7 +72,12 @@ export async function activate(context: vscode.ExtensionContext) {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
-        await mh.handleKeyEvent(args.text);
+
+        if (compositionState.isInComposition) {
+          compositionState.composingText += args.text;
+        } else {
+          await mh.handleKeyEvent(args.text);
+        }
       },
       isRunning: false
     });
@@ -80,12 +91,47 @@ export async function activate(context: vscode.ExtensionContext) {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
-        await vscode.commands.executeCommand('default:replacePreviousChar', {
-          text: args.text,
-          replaceCharCnt: args.replaceCharCnt
-        });
-        mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-        mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+        if (compositionState.isInComposition) {
+          compositionState.composingText = compositionState.composingText.substr(0, compositionState.composingText.length - args.replaceCharCnt) + args.text;
+        } else {
+          await vscode.commands.executeCommand('default:replacePreviousChar', {
+            text: args.text,
+            replaceCharCnt: args.replaceCharCnt
+          });
+          mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+          mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        }
+      },
+      isRunning: false
+    });
+  });
+
+  registerCommand(context, 'compositionStart', async (args) => {
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
+
+    taskQueue.enqueueTask({
+      promise: async () => {
+        const mh = await getAndUpdateModeHandler();
+        compositionState.isInComposition = true;
+      },
+      isRunning: false
+    });
+  });
+
+  registerCommand(context, 'compositionEnd', async (args) => {
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
+
+    taskQueue.enqueueTask({
+      promise: async () => {
+        const mh = await getAndUpdateModeHandler();
+        let text = compositionState.composingText;
+        compositionState = new CompositionState();
+        await mh.handleMultipleKeyEvents(text.split(""));
       },
       isRunning: false
     });

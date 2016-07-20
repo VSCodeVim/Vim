@@ -710,7 +710,7 @@ export class ModeHandler implements vscode.Disposable {
       if (result.failed) {
         vimState.recordedState = new RecordedState();
       }
-      
+
       vimState.cursorPosition    = result.stop;
       vimState.cursorStartPosition = result.start;
 
