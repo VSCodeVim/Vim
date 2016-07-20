@@ -272,12 +272,12 @@ Status | Command | Description
 :warning:    | :1234:  i>	| Select "inner <> block"
     | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
     | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
-    | :1234:  a'	| Select "a single quoted string"
-    | :1234:  i'	| Select "inner single quoted string"
-    | :1234:  a"	| Select "a double quoted string"
-    | :1234:  i"	| Select "inner double quoted string"
-    | :1234:  a`	| Select "a backward quoted string"
-    | :1234:  i`	| Select "inner backward quoted string"
+:warning:    | :1234:  a'	| Select "a single quoted string"
+:warning:    | :1234:  i'	| Select "inner single quoted string"
+:warning:    | :1234:  a"	| Select "a double quoted string"
+:warning:    | :1234:  i"	| Select "inner double quoted string"
+:warning:    | :1234:  a`	| Select "a backward quoted string"
+:warning:    | :1234:  i`	| Select "inner backward quoted string"
 
 ## Repeating commands
 
