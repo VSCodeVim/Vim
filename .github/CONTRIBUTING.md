@@ -34,14 +34,14 @@ When submitting a PR, ensure:
 4. Install the dependencies:
 
 	```bash
-	$ npm install -g gulp-cli typescript
+	$ npm install -g gulp-cli
 	$ npm install
 	```
 5. Open the folder in VS Code
 
 ## Developing
 
-1. Watch for changes and recompile Typescript files. Run this in the `Vim` directory: `tsc --watch`
+1. Watch for changes and recompile Typescript files. Run this in the `Vim` directory: `npm run compile`
 2. Open up Visual Studio code and add the `Vim` directory as a folder. 
 3. Click on the debugger. You now have two options - Launch Extension (to play around with the extension) and Launch Tests (to run the tests). 
 
