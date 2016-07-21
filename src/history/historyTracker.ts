@@ -33,17 +33,10 @@ export class DocumentChange {
    * Run this change.
    */
   public async do(undo = false): Promise<void> {
-    const rangeStart = this.start;
-
     if ((this.isAdd && !undo) || (!this.isAdd && undo)) {
-      await TextEditor.insert(this.text, rangeStart, false);
+      await TextEditor.insert(this.text, this.start, false);
     } else {
-      const rangeStop = rangeStart.advancePositionByText(this.text);
-
-      await TextEditor.delete(new vscode.Range(
-        rangeStart,
-        rangeStop
-      ));
+      await TextEditor.delete(new vscode.Range(this.start, this.end()));
     }
   }
 
@@ -52,6 +45,13 @@ export class DocumentChange {
    */
   public async undo(): Promise<void> {
     return this.do(true);
+  }
+
+  /**
+   * the position after advancing start by text
+   */
+  public end(): Position {
+    return this.start.advancePositionByText(this.text);
   }
 }
 
@@ -92,6 +92,51 @@ class HistoryStep {
     this.isFinished  = init.isFinished || false;
     this.cursorStart = init.cursorStart || undefined;
     this.marks     = init.marks || [];
+  }
+
+  /**
+   * merge collapses individual character changes into larger blocks of changes
+   */
+  public merge(): void {
+    if (this.changes.length < 2) {
+      return;
+    }
+    // merged will replace this.changes
+    var merged: DocumentChange[] = [];
+    // manually reduce() this.changes with variables `current` and `next`
+    // we can't use reduce() directly because the loop can emit multiple elements
+    var current = this.changes[0];
+    for (const next of this.changes.slice(1)) {
+      if (current.text.length === 0) {
+        // current is eliminated, replace it with top of merged, or adopt next as current
+        // see also add+del case
+        if (merged.length > 0) {
+          current = merged.pop();
+        } else {
+          current = next;
+          continue;
+        }
+      }
+      // merge logic. also compares start & end() Positions to ensure this is the same location
+      if (current.isAdd && next.isAdd && current.end().isEqual(next.start)) {
+        // merge add+add together
+        current.text += next.text;
+      } else if (!current.isAdd && !next.isAdd && next.end().isEqual(current.start)) {
+        // merge del+del together, but in reverse so it still reads forward
+        next.text += current.text;
+        current = next;
+      } else if (current.isAdd && !next.isAdd && current.end().isEqual(next.end())) {
+        // collapse add+del into add. this might make current.text.length === 0, see beginning of loop
+        current.text = current.text.slice(0, -next.text.length);
+      } else {
+        // del+add must be two separate DocumentChanges. e.g. start with "a|b", do `i<backspace>x<esc>` you end up with "|xb"
+        // also handles multiple changes in distant locations in the document
+        merged.push(current);
+        current = next;
+      }
+    }
+    merged.push(current);
+    this.changes = merged;
   }
 }
 
@@ -356,6 +401,8 @@ export class HistoryTracker {
     }
 
     this.currentHistoryStep.isFinished = true;
+
+    this.currentHistoryStep.merge();
 
     this.currentHistoryStep.marks = this.updateAndReturnMarks();
   }
