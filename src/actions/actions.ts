@@ -1094,12 +1094,12 @@ class CommandDot extends BaseCommand {
 
 @RegisterAction
 class CommandFold extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal];
   keys = ["z", "c"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("editor.fold");
-
+    vimState.currentMode = ModeName.Normal;
     return vimState;
   }
 }
