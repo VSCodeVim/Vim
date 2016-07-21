@@ -2224,7 +2224,9 @@ class MoveToMatchingBracket extends BaseMovement {
 
       for (let i = position.character; i < text.length; i++) {
         if (PairMatcher.pairings[text[i]]) {
-          return new Position(position.line, i);
+          // We found an opening char, now move to the matching closing char
+          const openPosition = new Position(position.line, i);
+          return PairMatcher.nextPairedChar(openPosition, text[i], true);
         }
       }
 
