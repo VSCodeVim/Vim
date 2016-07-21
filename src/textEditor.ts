@@ -42,6 +42,10 @@ export class TextEditor {
     });
   }
 
+  static getDocumentVersion(): number {
+    return vscode.window.activeTextEditor.document.version;
+  }
+
   /**
    * Removes all text in the entire document.
    */

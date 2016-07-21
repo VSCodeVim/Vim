@@ -1,4 +1,4 @@
-import { VimSpecialCommands, VimState, SearchState } from './../mode/modeHandler';
+import { VimSpecialCommands, VimState, SearchState, SearchDirection } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
@@ -490,7 +490,7 @@ class CommandStar extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const currentWord = CommandStar.GetWordAtPosition(position);
 
-    vimState.searchState = new SearchState(+1, vimState.cursorPosition, currentWord);
+    vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
 
     do {
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
@@ -517,7 +517,7 @@ class CommandHash extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const currentWord = CommandStar.GetWordAtPosition(position);
 
-    vimState.searchState = new SearchState(-1, vimState.cursorPosition, currentWord);
+    vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
 
     do {
       // use getWordLeft() on position to start at the beginning of the word.
@@ -606,7 +606,7 @@ export class CommandSearchForwards extends BaseCommand {
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.searchState = new SearchState(+1, vimState.cursorPosition);
+    vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     return vimState;
@@ -620,7 +620,7 @@ export class CommandSearchBackwards extends BaseCommand {
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.searchState = new SearchState(-1, vimState.cursorPosition);
+    vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     return vimState;
