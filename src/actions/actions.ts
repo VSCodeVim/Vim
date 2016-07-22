@@ -1103,12 +1103,12 @@ class CommandDot extends BaseCommand {
 
 @RegisterAction
 class CommandFold extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["z", "c"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("editor.fold");
-
+    vimState.currentMode = ModeName.Normal;
     return vimState;
   }
 }
@@ -1130,12 +1130,12 @@ class CommandCenterScroll extends BaseCommand {
 
 @RegisterAction
 class CommandUnfold extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["z", "o"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("editor.unfold");
-
+    vimState.currentMode = ModeName.Normal;
     return vimState;
   }
 }
