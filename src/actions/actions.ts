@@ -1652,6 +1652,114 @@ class MoveLineBegin extends BaseMovement {
 }
 
 @RegisterAction
+class MoveScreenLineBegin extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "0"];
+  viewPosition = "wrappedLineStart";
+  /**
+   * This paramter will be consumed only when `to` is `lineUp` or `lineDown`.
+   * For other screen line movements, we are always operating on the same screen line.
+   * So we make its default value as 0.
+   */
+  noOfLines = 0;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    await vscode.commands.executeCommand("cursorMove", {
+      to: this.viewPosition,
+      inSelectionMode: vimState.currentMode !== ModeName.Normal,
+      noOfLines: this.noOfLines
+    });
+
+    if (vimState.currentMode === ModeName.Normal) {
+      return Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+    } else {
+      /**
+       * cursorMove command is handling the selection for us.
+       * So we are not following our design principal (do no real movement inside an action) here.
+       */
+      return {
+        start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
+        stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+      };
+    }
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    await vscode.commands.executeCommand("cursorMove", {
+      to: this.viewPosition,
+      inSelectionMode: true,
+      noOfLines: this.noOfLines
+    });
+
+    return {
+      start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
+      stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+    };
+  }
+}
+
+@RegisterAction
+class MoveScreenNonBlank extends MoveScreenLineBegin {
+  keys = ["g", "^"];
+  viewPosition = "wrappedLineFirstNonWhitespaceCharacter";
+}
+
+@RegisterAction
+class MoveScreenLineEnd extends MoveScreenLineBegin {
+  keys = ["g", "$"];
+  viewPosition = "wrappedLineEnd";
+}
+
+@RegisterAction
+class MoveScreenLineCenter extends MoveScreenLineBegin {
+  keys = ["g", "m"];
+  viewPosition = "wrappedLineColumnCenter";
+}
+
+@RegisterAction
+class MoveUpByScreenLine extends MoveScreenLineBegin {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "k"];
+  viewPosition = "up";
+  noOfLines = 1;
+}
+
+@RegisterAction
+class MoveDownByScreenLine extends MoveScreenLineBegin {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "j"];
+  viewPosition = "down";
+  noOfLines = 1;
+}
+
+@RegisterAction
+class MoveToLineFromViewPortTop extends MoveScreenLineBegin {
+  modes = [ ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["H"];
+  viewPosition = "viewPortTop";
+  noOfLines = 1;
+  canBePrefixedWithCount = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    this.noOfLines = count < 1 ? 1 : count;
+    return await this.execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveToLineFromViewPortBottom extends MoveToLineFromViewPortTop {
+  keys = ["L"];
+  viewPosition = "viewPortBottom";
+}
+
+@RegisterAction
+class MoveToViewPortCenter extends MoveScreenLineBegin {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["M"];
+  viewPosition = "viewPortCenter";
+}
+
+@RegisterAction
 class MoveNonBlank extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["^"];
