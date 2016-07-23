@@ -4,6 +4,7 @@ import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
+import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import * as vscode from 'vscode';
 
 const controlKeys: string[] = [
@@ -1508,6 +1509,38 @@ class MoveToLeftPane  extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.focusChanged = true;
     await vscode.commands.executeCommand("workbench.action.focusPreviousGroup");
+    return vimState;
+  }
+}
+
+class BaseTabCommand extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+}
+
+@RegisterAction
+class CommandTabNext extends BaseTabCommand {
+  keys = ["g", "t"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    (new TabCommand({
+      tab: Tab.Next,
+      count: 1
+    })).execute();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandTabPrevious extends BaseTabCommand {
+  keys = ["g", "T"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    (new TabCommand({
+      tab: Tab.Previous,
+      count: 1
+    })).execute();
+
     return vimState;
   }
 }
