@@ -17,7 +17,6 @@ import {
   BaseMovement, BaseCommand, Actions, BaseAction,
   BaseOperator, isIMovement,
   KeypressState } from './../actions/actions';
-import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
@@ -335,7 +334,6 @@ export class ModeHandler implements vscode.Disposable {
 
   private _modes: Mode[];
   private static _statusBarItem: vscode.StatusBarItem;
-  private _configuration: Configuration;
   private _vimState: VimState;
   private _insertModeRemapper: InsertModeRemapper;
   private _otherModesRemapper: OtherModesRemapper;
@@ -377,7 +375,6 @@ export class ModeHandler implements vscode.Disposable {
     ModeHandler.IsTesting = isTesting;
 
     this.filename = filename;
-    this._configuration = Configuration.fromUserFile();
 
     this._vimState = new VimState();
     this._insertModeRemapper = new InsertModeRemapper();
