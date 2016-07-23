@@ -256,10 +256,10 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:warning:    | :1234:  aw	| Select "a word"
-:warning:    | :1234:  iw	| Select "inner word"
-    | :1234:  aW	| Select "a |WORD|"
-    | :1234:  iW	| Select "inner |WORD|"
+:white_check_mark:    | :1234:  aw	| Select "a word"
+:white_check_mark:    | :1234:  iw	| Select "inner word"
+:white_check_mark:    | :1234:  aW	| Select "a |WORD|"
+:white_check_mark:    | :1234:  iW	| Select "inner |WORD|"
     | :1234:  as	| Select "a sentence"
     | :1234:  is	| Select "inner sentence"
     | :1234:  ap	| Select "a paragraph"

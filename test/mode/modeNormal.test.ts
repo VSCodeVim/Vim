@@ -9,8 +9,7 @@ suite("Mode Normal", () => {
     let modeHandler: ModeHandler = new ModeHandler();
 
     let {
-        newTest,
-        newTestOnly
+        newTest
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
@@ -327,6 +326,174 @@ suite("Mode Normal", () => {
       keysPressed: 'ca]',
       end: ['one|'],
       endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'daw',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'daw',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'daw',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3aw',
+      end: ['|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five  six'],
+      keysPressed: 'd2aw',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix and across lines, containing words end with `.`",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd2aw',
+      end: ['one   two   three,   |.  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on big word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'daW',
+      end: ['one   two|   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'daW',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'daW',
+      end: ['one   two   |four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3aW',
+      end: ['|four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd2aW',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'diw',
+      end: ['one   two|three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'diw',
+      end: ['one   |   three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3iw',
+      end: ['|   three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five  six'],
+      keysPressed: 'd3iw',
+      end: ['one   two   three,   |  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word with numeric prefix and across lines, containing words end with `.`",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd3iw',
+      end: ['one   two   three,   |.  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on big word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'diW',
+      end: ['one   two|three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on word with trailing spaces",
+      start: ['one   tw|o,   three,   four  '],
+      keysPressed: 'diW',
+      end: ['one   |   three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'diW',
+      end: ['one   two   |   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3iW',
+      end: ['|   three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd3iW',
+      end: ['one   two   three,   |  six'],
+      endMode: ModeName.Normal
     });
 
     newTest({

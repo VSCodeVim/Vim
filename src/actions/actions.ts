@@ -179,7 +179,7 @@ export abstract class BaseMovement extends BaseAction {
    */
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
       let recordedState = vimState.recordedState;
-      let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+      let result: Position | IMovement = new Position(0, 0);  // bogus init to satisfy typechecker
 
       if (count < 1) {
           count = 1;
@@ -188,17 +188,32 @@ export abstract class BaseMovement extends BaseAction {
       }
 
       for (let i = 0; i < count; i++) {
+          const firstIteration = (i === 0);
           const lastIteration = (i === count - 1);
           const temporaryResult = (recordedState.operator && lastIteration) ?
               await this.execActionForOperator(position, vimState) :
               await this.execAction           (position, vimState);
 
-          result = temporaryResult;
+          if (temporaryResult instanceof Position) {
+            result = temporaryResult;
+            position = temporaryResult;
+          } else if (isIMovement(temporaryResult)) {
+            if (result instanceof Position) {
+              result = {
+                start : new Position(0, 0),
+                stop : new Position(0, 0)
+              };
+            }
 
-          if (result instanceof Position) {
-            position = result;
-          } else if (isIMovement(result)) {
-            position = result.stop;
+            if (firstIteration) {
+              (result as IMovement).start = temporaryResult.start;
+            }
+
+            if (lastIteration) {
+              (result as IMovement).stop = temporaryResult.stop;
+            } else {
+              position = temporaryResult.stop.getRightThroughLineBreaks();
+            }
           }
       }
 
@@ -2117,94 +2132,168 @@ class ActionChangeChar extends BaseCommand {
 class MovementAWordTextObject extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["a", "w"];
+  canBePrefixedWithCount = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      // TODO: This is kind of a bad way to do this, but text objects only work in
-      // visual mode if you JUST entered visual mode
-      // TODO TODO: I just looked at this again and omg this is awful what was I smoking plz get rid of this asap
-      return {
-        start: vimState.cursorStartPosition,
-        stop: await new MoveWordBegin().execAction(position, vimState),
-      };
-    }
+    let start: Position;
+    let stop: Position;
 
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
-    // TODO(whitespace) - this is a bad way to do this. we need some sort of global
-    // white space checking function.
-    if (currentChar === ' ' || currentChar === '\t') {
-      return {
-        start: position.getLastWordEnd().getRight(),
-        stop: position.getCurrentWordEnd()
-      };
+    if (/\s/.test(currentChar)) {
+        start = position.getLastWordEnd().getRight();
+        stop = position.getCurrentWordEnd();
     } else {
-      return {
-        start: position.getWordLeft(true),
-        stop: position.getWordRight().getLeft()
-      };
+        stop = position.getWordRight().getLeftThroughLineBreaks();
+
+        if (stop.isEqual(position.getCurrentWordEnd())) {
+          start = position.getLastWordEnd().getRight();
+        } else {
+          start = position.getWordLeft(true);
+        }
     }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+        start = vimState.cursorStartPosition;
+
+        if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+          // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+          if (/\s/.test(currentChar)) {
+            stop = position.getWordLeft(true);
+          } else {
+            stop = position.getLastWordEnd().getRight();
+          }
+        }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const line = TextEditor.getLineAt(position).text;
-    const currentChar = line[position.character];
     const res = await this.execAction(position, vimState);
-    const wordEnd = await new MoveWordBegin().execActionForOperator(position, vimState);
-
-    // TODO(whitespace)
-    if (currentChar !== ' ' && currentChar !== '\t') {
-      res.stop = wordEnd.getRight();
-    } else {
-      res.stop = wordEnd;
-    }
-
-    if (res.stop.character === line.length + 1) {
-      res.start = (await new MoveLastWordEnd().execAction(res.start, vimState)).getRight();
-    }
+    // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
+    // In normal mode, the character on the stop position will be the first character after the operator executed
+    // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
+    res.stop = new Position(res.stop.line, res.stop.character + 1);
 
     return res;
   }
 }
 
 @RegisterAction
-class MovementIWordTextObject extends BaseMovement {
+class MovementABigWordTextObject extends MovementAWordTextObject {
+  keys = ["a", "W"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    let stop: Position;
+
+    const currentChar = TextEditor.getLineAt(position).text[position.character];
+
+    if (/\s/.test(currentChar)) {
+        start = position.getLastBigWordEnd().getRight();
+        stop = position.getCurrentBigWordEnd();
+    } else {
+        start = position.getBigWordLeft();
+        stop = position.getBigWordRight().getLeft();
+    }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+        start = vimState.cursorStartPosition;
+
+        if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+          // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+          if (/\s/.test(currentChar)) {
+            stop = position.getBigWordLeft();
+          } else {
+            stop = position.getLastBigWordEnd().getRight();
+          }
+        }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
+  }
+}
+
+@RegisterAction
+class MovementIWordTextObject extends MovementAWordTextObject {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["i", "w"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      // TODO: This is kind of a bad way to do this, but text objects only work in
-      // visual mode if you JUST entered visual mode
-      return {
-        start: vimState.cursorStartPosition,
-        stop: await new MoveWordBegin().execAction(position, vimState),
-      };
-    }
-
+    let start: Position;
+    let stop: Position;
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
-    // TODO(whitespace)  - this is a bad way to do this. we need some sort of global
-    // white space checking function.
-    if (currentChar === ' ' || currentChar === '\t') {
-      return {
-        start: position.getLastWordEnd().getRight(),
-        stop:  position.getWordRight().getLeft()
-      };
+    if (/\s/.test(currentChar)) {
+        start = position.getLastWordEnd().getRight();
+        stop = position.getWordRight().getLeft();
     } else {
-      return {
-        start: position.getWordLeft(true),
-        stop: position.getCurrentWordEnd(true),
-      };
+        start = position.getWordLeft(true);
+        stop = position.getCurrentWordEnd(true);
     }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      start = vimState.cursorStartPosition;
+
+      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+        if (/\s/.test(currentChar)) {
+          stop = position.getLastWordEnd().getRight();
+        } else {
+          stop = position.getWordLeft(true);
+        }
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
   }
+}
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState);
+@RegisterAction
+class MovementIBigWordTextObject extends MovementAWordTextObject {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["i", "W"];
 
-    res.stop = res.stop.getRight();
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    let stop: Position;
+    const currentChar = TextEditor.getLineAt(position).text[position.character];
 
-    return res;
+    if (/\s/.test(currentChar)) {
+        start = position.getLastBigWordEnd().getRight();
+        stop = position.getBigWordRight().getLeft();
+    } else {
+        start = position.getBigWordLeft();
+        stop = position.getCurrentBigWordEnd(true);
+    }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      start = vimState.cursorStartPosition;
+
+      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+        if (/\s/.test(currentChar)) {
+          stop = position.getLastBigWordEnd().getRight();
+        } else {
+          stop = position.getBigWordLeft();
+        }
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
   }
 }
 
