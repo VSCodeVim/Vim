@@ -41,7 +41,7 @@ On OSX, the fix is to run this in the terminal. Be mindful as this is a global s
 
 #### How can I bind `jj` to `<esc>`?
 
-1. Open the Command palette (cmd-p on OSX, probably ctrl-shift-p on Windows), and add the following:
+1. Add the following to `settings.json` (open the Command Pallete and search for "User Settings"):
    
    ```
       "vim.insertModeKeyBindings": [
