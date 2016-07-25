@@ -14,8 +14,6 @@ export class PairMatcher {
     "]" : { match: "[",  nextMatchIsForward: false, matchesWithPercentageMotion: true },
     // These characters can't be used for "%"-based matching, but are still
     // useful for text objects.
-    // "'" : { match: "'",  nextMatchIsForward: true },
-    // "\"": { match: "\"", nextMatchIsForward: true },
     "<" : { match: ">",  nextMatchIsForward: true },
     ">" : { match: "<",  nextMatchIsForward: false },
   };

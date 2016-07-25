@@ -4,6 +4,7 @@ import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
+import { QuoteMatcher } from './../matching/quoteMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import * as vscode from 'vscode';
 
@@ -2525,6 +2526,89 @@ class MoveASquareBracket extends MoveInsideCharacter {
 class MoveAClosingSquareBracket extends MoveInsideCharacter {
   keys = ["a", "]"];
   charToMatch = "[";
+  includeSurrounding = true;
+}
+
+abstract class MoveQuoteMatch extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  protected charToMatch: string;
+  protected includeSurrounding = false;
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const text = TextEditor.getLineAt(position).text;
+    const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
+    const start = quoteMatcher.findOpening(position.character);
+    const end = quoteMatcher.findClosing(start + 1);
+
+    if (start === -1 || end === -1 || end === start || end < position.character) {
+      return {
+        start: position,
+        stop: position,
+        failed: true
+      };
+    }
+
+    let startPos = new Position(position.line, start);
+    let endPos = new Position(position.line, end);
+    if (!this.includeSurrounding) {
+      startPos = startPos.getRight();
+      endPos = endPos.getLeft();
+    }
+
+    return {
+      start: startPos,
+      stop: endPos
+    };
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const res = await this.execAction(position, vimState);
+
+    res.stop = res.stop.getRight();
+
+    return res;
+  }
+}
+
+@RegisterAction
+class MoveInsideSingleQuotes extends MoveQuoteMatch {
+  keys = ["i", "'"];
+  charToMatch = "'";
+  includeSurrounding = false;
+}
+
+@RegisterAction
+class MoveASingleQuotes extends MoveQuoteMatch {
+  keys = ["a", "'"];
+  charToMatch = "'";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveInsideDoubleQuotes extends MoveQuoteMatch {
+  keys = ["i", "\""];
+  charToMatch = "\"";
+  includeSurrounding = false;
+}
+
+@RegisterAction
+class MoveADoubleQuotes extends MoveQuoteMatch {
+  keys = ["a", "\""];
+  charToMatch = "\"";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveInsideBacktick extends MoveQuoteMatch {
+  keys = ["i", "`"];
+  charToMatch = "`";
+  includeSurrounding = false;
+}
+
+@RegisterAction
+class MoveABacktick extends MoveQuoteMatch {
+  keys = ["a", "`"];
+  charToMatch = "`";
   includeSurrounding = true;
 }
 

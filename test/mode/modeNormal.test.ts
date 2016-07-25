@@ -330,6 +330,150 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci\'' on first quote",
+      start: ["|'one'"],
+      keysPressed: "ci'",
+      end: ["'|'"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\'' inside quoted string",
+      start: ["'o|ne'"],
+      keysPressed: "ci'",
+      end: ["'|'"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\'' on closing quote",
+      start: ["'one|'"],
+      keysPressed: "ci'",
+      end: ["'|'"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\'' when string is ahead",
+      start: ["on|e 'two'"],
+      keysPressed: "ci'",
+      end: ["one '|'"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' on opening quote",
+      start: ['|"one"'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' starting behind the quoted word",
+      start: ['|one "two"'],
+      keysPressed: 'ci"',
+      end: ['one "|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca\"' starting behind the quoted word",
+      start: ['|one "two"'],
+      keysPressed: 'ca"',
+      end: ['one |'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca\"' starting on the opening quote",
+      start: ['one |"two"'],
+      keysPressed: 'ca"',
+      end: ['one |'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with escaped quotes",
+      start: ['"one \\"tw|o\\""'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with a single escaped quote",
+      start: ['|"one \\" two"'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with a single escaped quote behind",
+      start: ['one "two \\" |three"'],
+      keysPressed: 'ci"',
+      end: ['one "|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with an escaped backslash",
+      start: ['one "tw|o \\\\three"'],
+      keysPressed: 'ci"',
+      end: ['one "|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with an escaped backslash on closing quote",
+      start: ['"\\\\|"'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca\"' starting on the closing quote",
+      start: ['one "two|"'],
+      keysPressed: 'ca"',
+      end: ['one |'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with complex escape sequences",
+      start: ['"two|\\\\\\""'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can pick the correct open quote between two strings for 'ci\"'",
+      start: ['"one" |"two"'],
+      keysPressed: 'ci"',
+      end: ['"one" "|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "will fail when ca\" ahead of quoted string",
+      start: ['"one" |two'],
+      keysPressed: 'ca"',
+      end: ['"one" |two'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'ca`' inside word",
+      start: ['one `t|wo`'],
+      keysPressed: 'ca`',
+      end: ['one |'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'daw' on word with cursor inside spaces",
       start: ['one   two |  three,   four  '],
       keysPressed: 'daw',
