@@ -22,7 +22,7 @@ export abstract class Mode {
   public text: string;
   public cursorType: VSCodeVimCursorType;
 
-  public isVisualMode = true;
+  public isVisualMode = false;
 
   constructor(name: ModeName) {
     this._name = name;
