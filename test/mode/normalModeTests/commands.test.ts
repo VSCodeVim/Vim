@@ -19,9 +19,16 @@ suite("Mode Normal", () => {
     teardown(cleanUpWorkspace);
 
     newTest({
-      title: "Can handle x",
+      title: "Can handle 'x'",
       start: ['te|xt'],
       keysPressed: 'x',
+      end: ["te|t"],
+    });
+
+    newTest({
+      title: "Can handle '<delete>'",
+      start: ['te|xt'],
+      keysPressed: '<delete>',
       end: ["te|t"],
     });
 
@@ -61,9 +68,16 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle x at end of line",
+      title: "Can handle 'x' at end of line",
       start: ['one tw|o'],
       keysPressed: '^llxxxxxxxxx',
+      end: ['|'],
+    });
+
+    newTest({
+      title: "Can handle '<delete>' at end of line",
+      start: ['one tw|o'],
+      keysPressed: '^ll<delete><delete><delete><delete><delete><delete><delete><delete><delete>',
       end: ['|'],
     });
 
@@ -168,7 +182,7 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can backspace in insert mode",
+      title: "Can handle '<backspace>' in insert mode",
       start: ['one', '|'],
       keysPressed: 'i<backspace><esc>',
       end: ['on|e']

@@ -1960,6 +1960,11 @@ class ActionDeleteChar extends BaseCommand {
 }
 
 @RegisterAction
+class ActionDeleteCharWithDeleteKey extends ActionDeleteChar {
+  keys = ["<delete>"];
+}
+
+@RegisterAction
 class ActionDeleteLastChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["X"];
