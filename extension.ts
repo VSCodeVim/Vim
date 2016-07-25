@@ -58,7 +58,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
   if (!modeHandlerToEditorIdentity[activeEditorId.toString()]) {
-    const newModeHandler = new ModeHandler(false, activeEditorId.toString());
+    const newModeHandler = new ModeHandler(false, activeEditorId.fileName);
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
