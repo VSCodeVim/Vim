@@ -396,6 +396,13 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
+    title: "Can handle # already on the word",
+    start: ['one o|ne'],
+    keysPressed: '#',
+    end: ['|one one']
+  });
+
+  newTest({
     title: "Can handle ##",
     start: ['blah duh blah duh |blah'],
     keysPressed: '##',
