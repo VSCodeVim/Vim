@@ -499,3 +499,4 @@ Status | Command | Description
 :x: | foldnestmax fdn | Maximum nesting for "indent" and "syntax" folding.
 :x: | foldopen fdo | Which kinds of commands open closed folds.
 :x: | foldclose fcl | When the folds not under the cursor are closed.
+

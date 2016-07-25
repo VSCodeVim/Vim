@@ -23,6 +23,7 @@ import {
 import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
+import { Configuration } from '../../src/configuration/configuration';
 
 export enum VimSpecialCommands {
   Nothing,
@@ -145,6 +146,7 @@ export class VimState {
    * by us or by a mouse action.
    */
   public whatILastSetTheSelectionTo: vscode.Selection;
+<<<<<<< b9a0b15742532ecc54e66ee04c417d82e70d29dc
 
   public settings = new VimSettings();
 }
@@ -153,6 +155,8 @@ export class VimSettings {
   useSolidBlockCursor = false;
   scroll              = 20;
   useCtrlKeys         = false;
+=======
+>>>>>>> Vim Settings
 }
 
 export enum SearchDirection {
@@ -478,8 +482,6 @@ export class ModeHandler implements vscode.Disposable {
       this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
 
-    this.loadSettings();
-
     // Handle scenarios where mouse used to change current position.
     vscode.window.onDidChangeTextEditorSelection(async (e) => {
       let selection = e.selections[0];
@@ -556,6 +558,7 @@ export class ModeHandler implements vscode.Disposable {
     });
   }
 
+<<<<<<< b9a0b15742532ecc54e66ee04c417d82e70d29dc
   private loadSettings(): void {
     this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
       .get("useSolidBlockCursor", false);
@@ -564,6 +567,8 @@ export class ModeHandler implements vscode.Disposable {
   }
 
 
+=======
+>>>>>>> Vim Settings
   /**
    * The active mode.
    */
@@ -969,7 +974,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    if (vimState.settings.useSolidBlockCursor) {
+    if (Configuration.getInstance().get("useSolidBlockCursor", false)) {
       if (this.currentMode.name !== ModeName.Insert) {
         rangesToDraw.push(new vscode.Range(
           vimState.cursorPosition,
@@ -1033,7 +1038,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
-    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', this.vimState.settings.useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().get("useCtrlKeys", false));
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {

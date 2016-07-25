@@ -5,9 +5,10 @@ import * as vscode from "vscode";
 import { TextEditor } from "./../textEditor";
 import { VimState } from './../mode/modeHandler';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
+import { Configuration } from "./../configuration/configuration";
 
 export class Position extends vscode.Position {
-  private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
+  private static NonWordCharacters = Configuration.getInstance().get("iskeyword") as string; // ";
   private static NonBigWordCharacters = "";
 
   private _nonWordCharRegex : RegExp;
