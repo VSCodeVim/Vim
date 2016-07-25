@@ -256,10 +256,10 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:warning:    | :1234:  aw	| Select "a word"
-:warning:    | :1234:  iw	| Select "inner word"
-    | :1234:  aW	| Select "a |WORD|"
-    | :1234:  iW	| Select "inner |WORD|"
+:white_check_mark:    | :1234:  aw	| Select "a word"
+:white_check_mark:    | :1234:  iw	| Select "inner word"
+:white_check_mark:    | :1234:  aW	| Select "a |WORD|"
+:white_check_mark:    | :1234:  iW	| Select "inner |WORD|"
     | :1234:  as	| Select "a sentence"
     | :1234:  is	| Select "inner sentence"
     | :1234:  ap	| Select "a paragraph"
@@ -272,12 +272,12 @@ Status | Command | Description
 :warning:    | :1234:  i>	| Select "inner <> block"
     | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
     | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
-    | :1234:  a'	| Select "a single quoted string"
-    | :1234:  i'	| Select "inner single quoted string"
-    | :1234:  a"	| Select "a double quoted string"
-    | :1234:  i"	| Select "inner double quoted string"
-    | :1234:  a`	| Select "a backward quoted string"
-    | :1234:  i`	| Select "inner backward quoted string"
+:warning:    | :1234:  a'	| Select "a single quoted string"
+:warning:    | :1234:  i'	| Select "inner single quoted string"
+:warning:    | :1234:  a"	| Select "a double quoted string"
+:warning:    | :1234:  i"	| Select "inner double quoted string"
+:warning:    | :1234:  a`	| Select "a backward quoted string"
+:warning:    | :1234:  i`	| Select "inner backward quoted string"
 
 ## Repeating commands
 

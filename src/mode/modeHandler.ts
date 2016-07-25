@@ -19,7 +19,6 @@ import {
   BaseMovement, BaseCommand, Actions, BaseAction,
   BaseOperator, isIMovement,
   KeypressState } from './../actions/actions';
-import { Configuration } from '../configuration/configuration';
 import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
@@ -355,7 +354,6 @@ export class ModeHandler implements vscode.Disposable {
 
   private _modes: Mode[];
   private static _statusBarItem: vscode.StatusBarItem;
-  private _configuration: Configuration;
   private _vimState: VimState;
   private _insertModeRemapper: InsertModeRemapper;
   private _otherModesRemapper: OtherModesRemapper;
@@ -401,7 +399,6 @@ export class ModeHandler implements vscode.Disposable {
     ModeHandler.IsTesting = isTesting;
 
     this.filename = filename;
-    this._configuration = Configuration.fromUserFile();
 
     this._vimState = new VimState();
     this._insertModeRemapper = new InsertModeRemapper();
@@ -619,7 +616,7 @@ export class ModeHandler implements vscode.Disposable {
     let ranAction = false;
 
     if (action instanceof BaseMovement) {
-      vimState = await this.executeMovement(vimState, action);
+      ({ vimState, recordedState } = await this.executeMovement(vimState, action));
 
       ranAction = true;
     }
@@ -730,7 +727,9 @@ export class ModeHandler implements vscode.Disposable {
     return vimState;
   }
 
-  private async executeMovement(vimState: VimState, movement: BaseMovement): Promise<VimState> {
+  private async executeMovement(vimState: VimState, movement: BaseMovement)
+    : Promise<{ vimState: VimState, recordedState: RecordedState }> {
+
     let recordedState = vimState.recordedState;
 
     const result = await movement.execActionWithCount(vimState.cursorPosition, vimState, recordedState.count);
@@ -771,7 +770,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    return vimState;
+    return { vimState, recordedState };
   }
 
   private async executeOperator(vimState: VimState): Promise<VimState> {

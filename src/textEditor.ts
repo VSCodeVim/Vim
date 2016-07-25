@@ -63,7 +63,11 @@ export class TextEditor {
   }
 
   static getAllText(): string {
-    return vscode.window.activeTextEditor.document.getText();
+    if (vscode.window.activeTextEditor) {
+      return vscode.window.activeTextEditor.document.getText();
+    }
+
+    return "";
   }
 
   static readLine(): string {

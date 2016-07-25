@@ -4,9 +4,11 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code.
 
-Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
+Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. 
 
-We're also super friendly people if you want to drop by and talk to us on our [Slack channel](https://vscodevim-slackin.azurewebsites.net)!
+We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
+
+We're super friendly people if you want to drop by and talk to us on our [Slack channel](https://vscodevim-slackin.azurewebsites.net)!
 
 ![Screenshot](images/screen.png)
 
@@ -31,15 +33,15 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 
 ## F.A.Q.
 
-* `j`, `k` and others don't repeat when I hold them down.
+#### `j`, `k` and others don't repeat when I hold them down.
 
-On OSX, the fix is to run this in the terminal:
+On OSX, the fix is to run this in the terminal. Be mindful as this is a global setting:
 
-`defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
+`defaults write -g ApplePressAndHoldEnabled -bool false`
 
-* How can I bind `jj` to `<esc>`?
+#### How can I bind `jj` to `<esc>`?
 
-1. Open the Command palette (cmd-p on OSX, probably ctrl-shift-p on Windows), and add the following:
+1. Add the following to `settings.json` (open the Command Pallete and search for "User Settings"):
    
    ```
       "vim.insertModeKeyBindings": [
@@ -61,13 +63,15 @@ On OSX, the fix is to run this in the terminal:
       ]
 ```
 
-* How can I enable `ctrl-c` as an alternative to `<esc>`?
+Be sure to restart VSCode after making these changes.
+
+#### How can I enable `ctrl-c` as an alternative to `<esc>`?
 
 Put the following in your `settings.json`:
 
 ```    "vim.useCtrlKeys": true```
 
-3. Restart VSCode!
+and restart VSCode.
 
 ## Contributing
 

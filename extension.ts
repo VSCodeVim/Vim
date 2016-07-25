@@ -12,37 +12,72 @@ import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
 
+export class EditorIdentity {
+  private _fileName: string;
+  private _viewColumn: vscode.ViewColumn;
+
+  constructor(textEditor?: vscode.TextEditor) {
+    this._fileName = textEditor && textEditor.document.fileName || "";
+    this._viewColumn = textEditor && textEditor.viewColumn || vscode.ViewColumn.One;
+  }
+
+  get fileName() {
+    return this._fileName;
+  }
+
+  get viewColumn() {
+    return this._viewColumn;
+  }
+
+  public hasSameBuffer(identity: EditorIdentity): boolean {
+    return this.fileName === identity.fileName;
+  }
+
+  public isEqual(identity: EditorIdentity): boolean {
+    return this.fileName === identity.fileName && this.viewColumn === identity.viewColumn;
+  }
+
+  public toString() {
+    return this.fileName + this.viewColumn;
+  }
+}
+
 let extensionContext: vscode.ExtensionContext;
 
 /**
  * Note: We can't initialize modeHandler here, or even inside activate(), because some people
  * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
  */
-let modeHandlerToFilename: { [key: string]: ModeHandler } = {};
-let previousActiveFilename: string | undefined = undefined;
+let modeHandlerToEditorIdentity: { [key: string]: ModeHandler } = {};
+let previousActiveEditorId: EditorIdentity = new EditorIdentity();
 
 let taskQueue = new TaskQueue();
 
-function activeFileName(): string {
-  return vscode.window.activeTextEditor.document.fileName;
-}
-
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-  const oldHandler = previousActiveFilename ? modeHandlerToFilename[previousActiveFilename] : undefined;
+  const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
+  const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
-  if (!modeHandlerToFilename[activeFileName()]) {
-    const newModeHandler = new ModeHandler(false, activeFileName());
+  if (!modeHandlerToEditorIdentity[activeEditorId.toString()]) {
+    const newModeHandler = new ModeHandler(false, activeEditorId.toString());
 
-    modeHandlerToFilename[activeFileName()] = newModeHandler;
+    modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
 
-    console.log('make new mode handler for ', activeFileName());
+    console.log('make new mode handler for ', activeEditorId.toString());
   }
 
-  const handler = modeHandlerToFilename[activeFileName()];
+  const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
 
-  if (previousActiveFilename !== activeFileName()) {
-    previousActiveFilename = activeFileName();
+  if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
+    if (!previousActiveEditorId.isEqual(activeEditorId)) {
+      // We have opened two editors, working on the same file.
+      previousActiveEditorId = activeEditorId;
+
+      handler.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+      handler.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+  } else {
+    previousActiveEditorId = activeEditorId;
 
     await handler.updateView(handler.vimState);
   }
@@ -55,8 +90,14 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   return handler;
 }
 
-export function activate(context: vscode.ExtensionContext) {
+class CompositionState {
+  public isInComposition: boolean = false;
+  public composingText: string = "";
+}
+
+export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
+  let compositionState = new CompositionState();
 
   registerCommand(context, 'type', async (args) => {
     if (!vscode.window.activeTextEditor) {
@@ -66,9 +107,14 @@ export function activate(context: vscode.ExtensionContext) {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
-        await mh.handleKeyEvent(args.text);
+
+        if (compositionState.isInComposition) {
+          compositionState.composingText += args.text;
+        } else {
+          await mh.handleKeyEvent(args.text);
+        }
       },
-      isRunning : false
+      isRunning: false
     });
   });
 
@@ -80,22 +126,57 @@ export function activate(context: vscode.ExtensionContext) {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
-        await vscode.commands.executeCommand('default:replacePreviousChar', {
-          text: args.text,
-          replaceCharCnt: args.replaceCharCnt
-        });
-        mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-        mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+        if (compositionState.isInComposition) {
+          compositionState.composingText = compositionState.composingText.substr(0, compositionState.composingText.length - args.replaceCharCnt) + args.text;
+        } else {
+          await vscode.commands.executeCommand('default:replacePreviousChar', {
+            text: args.text,
+            replaceCharCnt: args.replaceCharCnt
+          });
+          mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+          mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        }
       },
-      isRunning : false
+      isRunning: false
     });
-   });
+  });
+
+  registerCommand(context, 'compositionStart', async (args) => {
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
+
+    taskQueue.enqueueTask({
+      promise: async () => {
+        const mh = await getAndUpdateModeHandler();
+        compositionState.isInComposition = true;
+      },
+      isRunning: false
+    });
+  });
+
+  registerCommand(context, 'compositionEnd', async (args) => {
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
+
+    taskQueue.enqueueTask({
+      promise: async () => {
+        const mh = await getAndUpdateModeHandler();
+        let text = compositionState.composingText;
+        compositionState = new CompositionState();
+        await mh.handleMultipleKeyEvents(text.split(""));
+      },
+      isRunning: false
+    });
+  });
 
   registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
   registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
 
   registerCommand(context, 'extension.showCmdLine', () => {
-    showCmdLine("", modeHandlerToFilename[activeFileName()]);
+    showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
 
   'rfbducwv['.split('').forEach(key => {
@@ -105,6 +186,12 @@ export function activate(context: vscode.ExtensionContext) {
   ['left', 'right', 'up', 'down'].forEach(key => {
     registerCommand(context, `extension.vim_${key}`, () => handleKeyEvent(`<${key}>`));
   });
+
+  // Initialize mode handler for current active Text Editor at startup.
+  if (vscode.window.activeTextEditor) {
+    let mh = await getAndUpdateModeHandler()
+    mh.updateView(mh.vimState, false);
+  }
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {

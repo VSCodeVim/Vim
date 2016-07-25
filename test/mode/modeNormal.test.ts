@@ -10,7 +10,7 @@ suite("Mode Normal", () => {
 
     let {
         newTest,
-        newTestOnly
+        newTestOnly,
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
@@ -41,6 +41,20 @@ suite("Mode Normal", () => {
       start: ['|((( )))'],
       keysPressed: '%',
       end: ["((( ))|)"],
+    });
+
+    newTest({
+      title: "Can handle % before opening brace",
+      start: ['|one (two)'],
+      keysPressed: '%',
+      end: ["one (two|)"],
+    });
+
+    newTest({
+      title: "Can handle % nested inside parens",
+      start: ['(|one { two })'],
+      keysPressed: '%',
+      end: ["(one { two |})"],
     });
 
     newTest({
@@ -236,6 +250,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' backwards through nested parens",
+      start: ['call(() => |5)'],
+      keysPressed: 'ci(',
+      end: ['call(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
@@ -252,6 +274,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' on the closing bracket",
+      start: ['(one|)'],
+      keysPressed: 'ci(',
+      end: ['(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "will fail when ca( with no ()",
       start: ['|blaaah'],
       keysPressed: 'ca(',
@@ -264,6 +294,350 @@ suite("Mode Normal", () => {
       start: ['|blaaah'],
       keysPressed: 'ca{',
       end: ['|blaaah'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'ci[' spanning multiple lines",
+      start: ['one [', '|', ']'],
+      keysPressed: 'ci[',
+      end: ['one [|]'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci]' on first bracket",
+      start: ['one[|"two"]'],
+      keysPressed: 'ci]',
+      end: ['one[|]'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca[' on first bracket",
+      start: ['one[|"two"]'],
+      keysPressed: 'ca[',
+      end: ['one|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca]' on first bracket",
+      start: ['one[|"two"]'],
+      keysPressed: 'ca]',
+      end: ['one|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\'' on first quote",
+      start: ["|'one'"],
+      keysPressed: "ci'",
+      end: ["'|'"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\'' inside quoted string",
+      start: ["'o|ne'"],
+      keysPressed: "ci'",
+      end: ["'|'"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\'' on closing quote",
+      start: ["'one|'"],
+      keysPressed: "ci'",
+      end: ["'|'"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\'' when string is ahead",
+      start: ["on|e 'two'"],
+      keysPressed: "ci'",
+      end: ["one '|'"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' on opening quote",
+      start: ['|"one"'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' starting behind the quoted word",
+      start: ['|one "two"'],
+      keysPressed: 'ci"',
+      end: ['one "|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca\"' starting behind the quoted word",
+      start: ['|one "two"'],
+      keysPressed: 'ca"',
+      end: ['one |'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca\"' starting on the opening quote",
+      start: ['one |"two"'],
+      keysPressed: 'ca"',
+      end: ['one |'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with escaped quotes",
+      start: ['"one \\"tw|o\\""'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with a single escaped quote",
+      start: ['|"one \\" two"'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with a single escaped quote behind",
+      start: ['one "two \\" |three"'],
+      keysPressed: 'ci"',
+      end: ['one "|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with an escaped backslash",
+      start: ['one "tw|o \\\\three"'],
+      keysPressed: 'ci"',
+      end: ['one "|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with an escaped backslash on closing quote",
+      start: ['"\\\\|"'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ca\"' starting on the closing quote",
+      start: ['one "two|"'],
+      keysPressed: 'ca"',
+      end: ['one |'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci\"' with complex escape sequences",
+      start: ['"two|\\\\\\""'],
+      keysPressed: 'ci"',
+      end: ['"|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can pick the correct open quote between two strings for 'ci\"'",
+      start: ['"one" |"two"'],
+      keysPressed: 'ci"',
+      end: ['"one" "|"'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "will fail when ca\" ahead of quoted string",
+      start: ['"one" |two'],
+      keysPressed: 'ca"',
+      end: ['"one" |two'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'ca`' inside word",
+      start: ['one `t|wo`'],
+      keysPressed: 'ca`',
+      end: ['one |'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'daw',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'daw',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'daw',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3aw',
+      end: ['|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five  six'],
+      keysPressed: 'd2aw',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word with numeric prefix and across lines, containing words end with `.`",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd2aw',
+      end: ['one   two   three,   |.  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on big word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'daW',
+      end: ['one   two|   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'daW',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'daW',
+      end: ['one   two   |four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3aW',
+      end: ['|four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd2aW',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'diw',
+      end: ['one   two|three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'diw',
+      end: ['one   |   three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3iw',
+      end: ['|   three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five  six'],
+      keysPressed: 'd3iw',
+      end: ['one   two   three,   |  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diw' on word with numeric prefix and across lines, containing words end with `.`",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd3iw',
+      end: ['one   two   three,   |.  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on big word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'diW',
+      end: ['one   two|three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on word with trailing spaces",
+      start: ['one   tw|o,   three,   four  '],
+      keysPressed: 'diW',
+      end: ['one   |   three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'diW',
+      end: ['one   two   |   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'd3iW',
+      end: ['|   three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'diW' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'd3iW',
+      end: ['one   two   three,   |  six'],
       endMode: ModeName.Normal
     });
 

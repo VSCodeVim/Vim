@@ -237,4 +237,230 @@ suite("Mode Visual", () => {
       end: ['blah', 'duh', '|r', 'hur']
     });
   });
+
+  suite("handles aw in visual mode", () => {
+    newTest({
+      title: "Can handle 'vawd' on word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'vawd',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'vawd',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'vawd',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'v3awd',
+      end: ['|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five  six'],
+      keysPressed: 'v2awd',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with numeric prefix and across lines, containing words end with `.`",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'v2awd',
+      end: ['one   two   three,   |.  six'],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles aW in visual mode", () => {
+    newTest({
+      title: "Can handle 'vaWd' on big word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   two|   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   two   |four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'v3aWd',
+      end: ['|four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'v2aWd',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles aW in visual mode", () => {
+    newTest({
+      title: "Can handle 'vaWd' on big word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   two|   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   two   |four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'v3aWd',
+      end: ['|four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'v2aWd',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles aw in visual mode", () => {
+    newTest({
+      title: "Can handle 'vawd' on word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'vawd',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'vawd',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'vawd',
+      end: ['one   two|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'v3awd',
+      end: ['|,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five  six'],
+      keysPressed: 'v2awd',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vawd' on word with numeric prefix and across lines, containing words end with `.`",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'v2awd',
+      end: ['one   two   three,   |.  six'],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles aW in visual mode", () => {
+    newTest({
+      title: "Can handle 'vaWd' on big word with cursor inside spaces",
+      start: ['one   two |  three,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   two|   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with trailing spaces",
+      start: ['one   tw|o   three,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   |three,   four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with leading spaces",
+      start: ['one   two   th|ree,   four  '],
+      keysPressed: 'vaWd',
+      end: ['one   two   |four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with numeric prefix",
+      start: ['on|e   two   three,   four  '],
+      keysPressed: 'v3aWd',
+      end: ['|four  '],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vaWd' on word with numeric prefix and across lines",
+      start: ['one   two   three,   fo|ur  ', 'five.  six'],
+      keysPressed: 'v2aWd',
+      end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+  });
 });
