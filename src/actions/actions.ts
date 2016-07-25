@@ -2392,7 +2392,7 @@ abstract class MoveMatchingCharacter extends BaseMovement {
   protected charToMatch: string;
   protected includeSurrounding = false;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const failure = { start: position, stop: position, failed: true };
     const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
@@ -2402,23 +2402,14 @@ abstract class MoveMatchingCharacter extends BaseMovement {
     let startPos = PairMatcher.nextPairedChar(position, closingChar, closedMatch);
     if (startPos === undefined) { return failure; }
 
-    const startPlusOne = new Position(startPos.line, startPos.character + 1);
+    const startPlusOne = startPos.getRight();
 
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
     if (endPos === undefined) { return failure; }
-    // Poor man's check for whether we found an opening character
-    if ((startPos === position && text[position.character] !== this.charToMatch) ||
-         // Make sure the start position is inside the selection
-         startPos.isAfter(position) ||
-         endPos.isBefore(position)) {
 
-      return failure;
-    }
-
-    if (this.includeSurrounding) {
-      endPos = new Position(endPos.line, endPos.character + 1);
-    } else {
+    if (!this.includeSurrounding) {
       startPos = startPlusOne;
+      endPos = endPos.getLeftThroughLineBreaks();
     }
 
     // If the closing character is the first on the line, don't swallow it.
@@ -2430,6 +2421,14 @@ abstract class MoveMatchingCharacter extends BaseMovement {
       start : startPos,
       stop  : endPos,
     };
+  }
+
+ public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const res = await this.execAction(position, vimState);
+
+    res.stop = res.stop.getRightThroughLineBreaks();
+
+    return res;
   }
 }
 
