@@ -66,7 +66,6 @@ export class BaseOptionDetails {
   }
 
   public source: OptionValueSource = OptionValueSource.Default;
-  public shouldUpdateView: boolean;
   static globalOptionUpdateHandler: () => void;
 }
 
@@ -95,6 +94,12 @@ class OptionUseControlKeys extends BaseOptionDetails {
 class OptionScroll extends BaseOptionDetails {
   id = "scroll";
   defaultValue = 20;
+}
+
+@RegisterOption
+class OptionHightlightSearch extends BaseOptionDetails {
+  id = "hlsearch";
+  defaultValue = false;
 }
 
 @RegisterOption
@@ -235,10 +240,10 @@ export class Configuration {
     return Configuration._instance;
   }
 
-  set(option: string, value?: number | string | boolean, source?: OptionValueSource): void {
+  set(option: string, value: number | string | boolean, source?: OptionValueSource): void {
     let targetOption = OptionMap.allOptions[option];
 
-    if (!value) {
+    if (!targetOption) {
       return;
     }
 

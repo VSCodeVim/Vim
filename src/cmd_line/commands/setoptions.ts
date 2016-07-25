@@ -59,7 +59,7 @@ export class SetOptionsCommand extends node.CommandBase {
         Configuration.getInstance().set(this._arguments.name!, false);
         break;
       case SetOptionOperator.Equal:
-        Configuration.getInstance().set(this._arguments.name!, this._arguments.value);
+        Configuration.getInstance().set(this._arguments.name!, this._arguments.value!);
         break;
       default:
         break;
