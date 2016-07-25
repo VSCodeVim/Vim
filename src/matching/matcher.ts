@@ -20,7 +20,7 @@ export class PairMatcher {
     ">" : { match: "<",  nextMatchIsForward: false },
   };
 
-  static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true): Position {
+  static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true): Position | undefined {
     /**
      * We do a fairly basic implementation that only tracks the state of the type of
      * character you're over and its pair (e.g. "[" and "]"). This is similar to
@@ -58,6 +58,6 @@ export class PairMatcher {
     }
 
     // TODO(bell)
-    return position;
+    return undefined;
   }
 }

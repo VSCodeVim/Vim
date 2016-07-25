@@ -201,10 +201,13 @@ export abstract class BaseMovement extends BaseAction {
           } else if (isIMovement(temporaryResult)) {
             if (result instanceof Position) {
               result = {
-                start : new Position(0, 0),
-                stop : new Position(0, 0)
+                start  : new Position(0, 0),
+                stop   : new Position(0, 0),
+                failed : false
               };
             }
+
+            result.failed = result.failed || temporaryResult.failed;
 
             if (firstIteration) {
               (result as IMovement).start = temporaryResult.start;
@@ -2335,10 +2338,11 @@ class MoveToMatchingBracket extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["%"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const text = TextEditor.getLineAt(position).text;
     const charToMatch = text[position.character];
     const toFind = PairMatcher.pairings[charToMatch];
+    const failure = { start: position, stop: position, failed: true };
 
     if (!toFind || !toFind.matchesWithPercentageMotion) {
       // If we're not on a match, go right until we find a
@@ -2348,19 +2352,31 @@ class MoveToMatchingBracket extends BaseMovement {
         if (PairMatcher.pairings[text[i]]) {
           // We found an opening char, now move to the matching closing char
           const openPosition = new Position(position.line, i);
-          return PairMatcher.nextPairedChar(openPosition, text[i], true);
+          const result = PairMatcher.nextPairedChar(openPosition, text[i], true);
+
+          if (!result) { return failure; }
+          return result;
         }
       }
 
-      // TODO (bell);
-      return position;
+      return failure;
     }
 
-    return PairMatcher.nextPairedChar(position, charToMatch, true);
+    const result = PairMatcher.nextPairedChar(position, charToMatch, true);
+    if (!result) { return failure; }
+    return result;
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const result = await this.execAction(position, vimState);
+
+    if (isIMovement(result)) {
+      if (result.failed) {
+        return result;
+      } else {
+        throw new Error("Did not ever handle this case!");
+      }
+    }
 
     if (position.compareTo(result) > 0) {
       return result.getLeft();
@@ -2376,28 +2392,19 @@ abstract class MoveInsideCharacter extends BaseMovement {
   protected includeSurrounding = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const failure = { start: position, stop: position, failed: true };
     const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
     const closedMatch = text[position.character] === closingChar;
 
     // First, search backwards for the opening character of the sequence
     let startPos = PairMatcher.nextPairedChar(position, closingChar, closedMatch);
+    if (startPos === undefined) { return failure; }
+
     const startPlusOne = new Position(startPos.line, startPos.character + 1);
 
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
-
-    // Poor man's check for whether we found an opening character
-    if ((startPos === position && text[position.character] !== this.charToMatch) ||
-         // Make sure the start position is inside the selection
-         startPos.isAfter(position) ||
-         endPos.isBefore(position)) {
-
-      return {
-        start : position,
-        stop  : position,
-        failed: true
-      };
-    }
+    if (endPos === undefined) { return failure; }
 
     if (this.includeSurrounding) {
       endPos = new Position(endPos.line, endPos.character + 1);
@@ -2525,9 +2532,13 @@ class MoveAClosingSquareBracket extends MoveInsideCharacter {
 class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
   keys = ["[", "("];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const failure = { start: position, stop: position, failed: true };
     const charToMatch = ")";
-    return PairMatcher.nextPairedChar(position.getLeftThroughLineBreaks(), charToMatch, false);
+    const result = PairMatcher.nextPairedChar(position.getLeftThroughLineBreaks(), charToMatch, false);
+
+    if (!result) { return failure; }
+    return result;
   }
 }
 
@@ -2535,9 +2546,13 @@ class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
 class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
   keys = ["[", ")"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const failure = { start: position, stop: position, failed: true };
     const charToMatch = "(";
-    return PairMatcher.nextPairedChar(position.getRightThroughLineBreaks(), charToMatch, false);
+    const result = PairMatcher.nextPairedChar(position.getRightThroughLineBreaks(), charToMatch, false);
+
+    if (!result) { return failure; }
+    return result;
   }
 }
 
@@ -2545,9 +2560,13 @@ class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
 class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
   keys = ["[", "{"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const failure = { start: position, stop: position, failed: true };
     const charToMatch = "}";
-    return PairMatcher.nextPairedChar(position.getLeftThroughLineBreaks(), charToMatch, false);
+    const result = PairMatcher.nextPairedChar(position.getLeftThroughLineBreaks(), charToMatch, false);
+
+    if (!result) { return failure; }
+    return result;
   }
 }
 
@@ -2555,9 +2574,13 @@ class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
 class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
   keys = ["[", "}"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const failure = { start: position, stop: position, failed: true };
     const charToMatch = "{";
-    return PairMatcher.nextPairedChar(position.getRightThroughLineBreaks(), charToMatch, false);
+    const result = PairMatcher.nextPairedChar(position.getRightThroughLineBreaks(), charToMatch, false);
+
+    if (!result) { return failure; }
+    return result;
   }
 }
 
