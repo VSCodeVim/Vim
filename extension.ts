@@ -179,7 +179,7 @@ export async function activate(context: vscode.ExtensionContext) {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
 
-  'rfbducw['.split('').forEach(key => {
+  'rfbducw[ax'.split('').forEach(key => {
     registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
   });
 

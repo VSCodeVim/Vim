@@ -2694,3 +2694,76 @@ class ToggleCaseAndMoveForward extends BaseMovement {
     return position.getRight();
   }
 }
+
+abstract class IncrementDecrementNumberAction extends BaseMovement {
+  modes = [ModeName.Normal];
+  canBePrefixedWithCount = true;
+
+  offset: number;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
+    count = count || 1;
+    const text = TextEditor.getLineAt(position).text;
+
+    // They may start on a number, so check the current word boundaries first.
+    let wordEnd = position.getCurrentWordEnd(true);
+    let wordStart = position.getWordLeft(true);
+    do {
+      // '-' doesn't count as a word, but is important to include in parsing the number
+      if (text[wordStart.character - 1] === '-') {
+        wordStart = wordStart.getLeft();
+      }
+      const word = text.substring(wordStart.character, wordEnd.character + 1);
+      // Strict number parsing so "1a" doesn't silently get converted to "1"
+      const num = Number(word);
+
+      if (!isNaN(num)) {
+        return this.replaceNum(num, this.offset * count, wordStart, wordEnd);
+      }
+
+      if (wordEnd.isLineEnd()) {
+        // We got to the end of the line and didn't find anything that looks like a number
+        break;
+      }
+
+      // Move forward to the next word
+      wordStart = wordStart.getWordRight();
+      wordEnd = wordStart.getCurrentWordEnd();
+    } while (true);
+
+    // No usable numbers, return the original position
+    return position;
+  }
+
+  public async replaceNum(start: number, offset: number, startPos: Position, endPos: Position): Promise<Position> {
+    const oldWidth = start.toString().length;
+    start += offset;
+    const newNum = start.toString();
+
+    const range = new vscode.Range(startPos, endPos.getRight());
+
+    if (oldWidth === newNum.length) {
+      await TextEditor.replace(range, newNum);
+    } else {
+      // Can't use replace, since new number is a different width than old
+      await TextEditor.delete(range);
+      await TextEditor.insertAt(newNum, startPos);
+      // Adjust end position according to difference in width of number-string
+      endPos = new Position(endPos.line, endPos.character + (newNum.length - oldWidth));
+    }
+
+    return endPos;
+  }
+}
+
+@RegisterAction
+class IncrementNumberAction extends IncrementDecrementNumberAction {
+  keys = ["ctrl+a"];
+  offset = +1;
+}
+
+@RegisterAction
+class DecrementNumberAction extends IncrementDecrementNumberAction {
+  keys = ["ctrl+x"];
+  offset = -1;
+}
