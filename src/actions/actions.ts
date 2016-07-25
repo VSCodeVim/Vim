@@ -142,6 +142,12 @@ export class BaseAction {
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
  */
 export abstract class BaseMovement extends BaseAction {
+  modes = [
+    ModeName.Normal,
+    ModeName.Visual,
+    ModeName.VisualLine,
+    ModeName.VisualBlock];
+
   isMotion = true;
 
   canBePrefixedWithCount = false;
@@ -369,7 +375,14 @@ class CommandNumber extends BaseCommand {
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  modes = [
+    ModeName.Insert,
+    ModeName.Visual,
+    ModeName.VisualLine,
+    ModeName.VisualBlockInsertMode,
+    ModeName.VisualBlock
+  ];
+
   keys = ["<esc>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -458,7 +471,6 @@ class CommandInsertInSearchMode extends BaseCommand {
 
 @RegisterAction
 class CommandNextSearchMatch extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["n"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -528,7 +540,6 @@ class CommandHash extends BaseCommand {
 
 @RegisterAction
 class CommandPreviousSearchMatch extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["N"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -830,7 +841,6 @@ export class MarkCommand extends BaseCommand {
 
 @RegisterAction
 export class MarkMovementBOL extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["'", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -843,7 +853,6 @@ export class MarkMovementBOL extends BaseMovement {
 
 @RegisterAction
 export class MarkMovement extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["`", "<character>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1218,7 +1227,7 @@ class CommandRedo extends BaseCommand {
 
 @RegisterAction
 class CommandMoveFullPageDown extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["ctrl+f"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1229,7 +1238,7 @@ class CommandMoveFullPageDown extends BaseCommand {
 
 @RegisterAction
 class CommandMoveFullPageUp extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["ctrl+b"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1239,8 +1248,7 @@ class CommandMoveFullPageUp extends BaseCommand {
 }
 
 @RegisterAction
-class MCommandMoveHalfPageDown extends BaseMovement {
-  modes = [ModeName.Normal];
+class CommandMoveHalfPageDown extends BaseMovement {
   keys = ["ctrl+d"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1249,8 +1257,7 @@ class MCommandMoveHalfPageDown extends BaseMovement {
 }
 
 @RegisterAction
-class MCommandMoveHalfPageUp extends BaseMovement {
-  modes = [ModeName.Normal];
+class CommandMoveHalfPageUp extends BaseMovement {
   keys = ["ctrl+u"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1431,7 +1438,6 @@ class CommandInsertNewLineBefore extends BaseCommand {
 
 @RegisterAction
 class MoveLeft extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["h"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1447,7 +1453,6 @@ class MoveLeftArrow extends MoveLeft {
 
 @RegisterAction
 class MoveUp extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["k"];
   doesntChangeDesiredColumn = true;
 
@@ -1464,7 +1469,6 @@ class MoveUpArrow extends MoveUp {
 
 @RegisterAction
 class MoveDown extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["j"];
   doesntChangeDesiredColumn = true;
 
@@ -1481,7 +1485,6 @@ class MoveDownArrow extends MoveDown {
 
 @RegisterAction
 class MoveRight extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["l"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1497,7 +1500,6 @@ class MoveRightArrow extends MoveRight {
 
 @RegisterAction
 class MoveRightWithSpace extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = [" "];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1563,7 +1565,6 @@ class CommandTabPrevious extends BaseTabCommand {
 
 @RegisterAction
 class MoveDownNonBlank extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["+"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1574,7 +1575,6 @@ class MoveDownNonBlank extends BaseMovement {
 
 @RegisterAction
 class MoveUpNonBlank extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["-"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1585,7 +1585,6 @@ class MoveUpNonBlank extends BaseMovement {
 
 @RegisterAction
 class MoveUpUnderscore extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["_"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1596,7 +1595,6 @@ class MoveUpUnderscore extends BaseMovement {
 
 @RegisterAction
 class MoveToColumn extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["|"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1606,7 +1604,6 @@ class MoveToColumn extends BaseMovement {
 
 @RegisterAction
 class MoveFindForward extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["f", "<character>"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1628,7 +1625,6 @@ class MoveFindForward extends BaseMovement {
 
 @RegisterAction
 class MoveFindBackward extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["F", "<character>"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1651,7 +1647,6 @@ class MoveFindBackward extends BaseMovement {
 
 @RegisterAction
 class MoveTilForward extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["t", "<character>"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1673,7 +1668,6 @@ class MoveTilForward extends BaseMovement {
 
 @RegisterAction
 class MoveTilBackward extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["T", "<character>"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1695,7 +1689,6 @@ class MoveTilBackward extends BaseMovement {
 
 @RegisterAction
 class MoveLineEnd extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["$"];
   setsDesiredColumnToEOL = true;
 
@@ -1706,7 +1699,6 @@ class MoveLineEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLineBegin extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["0"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1726,7 +1718,6 @@ class MoveLineBegin extends BaseMovement {
 
 @RegisterAction
 class MoveNonBlank extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["^"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1736,7 +1727,6 @@ class MoveNonBlank extends BaseMovement {
 
 @RegisterAction
 class MoveNextLineNonBlank extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["\n"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1746,7 +1736,6 @@ class MoveNextLineNonBlank extends BaseMovement {
 
 @RegisterAction
 class MoveNonBlankFirst extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "g"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1760,7 +1749,6 @@ class MoveNonBlankFirst extends BaseMovement {
 
 @RegisterAction
 class MoveNonBlankLast extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["G"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1782,7 +1770,6 @@ class MoveNonBlankLast extends BaseMovement {
 
 @RegisterAction
 export class MoveWordBegin extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["w"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1827,7 +1814,6 @@ export class MoveWordBegin extends BaseMovement {
 
 @RegisterAction
 class MoveFullWordBegin extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["W"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1844,7 +1830,6 @@ class MoveFullWordBegin extends BaseMovement {
 
 @RegisterAction
 class MoveWordEnd extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["e"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1860,7 +1845,6 @@ class MoveWordEnd extends BaseMovement {
 
 @RegisterAction
 class MoveFullWordEnd extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["E"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1874,7 +1858,6 @@ class MoveFullWordEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLastWordEnd  extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "e"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1884,7 +1867,6 @@ class MoveLastWordEnd  extends BaseMovement {
 
 @RegisterAction
 class MoveLastFullWordEnd extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "E"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1894,7 +1876,6 @@ class MoveLastFullWordEnd extends BaseMovement {
 
 @RegisterAction
 class MoveBeginningWord extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["b"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1904,7 +1885,6 @@ class MoveBeginningWord extends BaseMovement {
 
 @RegisterAction
 class MoveBeginningFullWord extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["B"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1914,7 +1894,6 @@ class MoveBeginningFullWord extends BaseMovement {
 
 @RegisterAction
 class MovePreviousSentenceBegin extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["("];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1924,7 +1903,6 @@ class MovePreviousSentenceBegin extends BaseMovement {
 
 @RegisterAction
 class MoveNextSentenceBegin extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [")"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1934,7 +1912,6 @@ class MoveNextSentenceBegin extends BaseMovement {
 
 @RegisterAction
 class MoveParagraphEnd extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["}"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1944,7 +1921,6 @@ class MoveParagraphEnd extends BaseMovement {
 
 @RegisterAction
 class MoveParagraphBegin extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["{"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -2136,7 +2112,7 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 @RegisterAction
 class InsertInInsertVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlockInsertMode];
-  keys = ["<any>"]
+  keys = ["<any>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toInsert = this.keysPressed[0];
@@ -2146,6 +2122,7 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
     }
 
     vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
+    vimState.cursorPosition      = vimState.cursorPosition.getRight();
 
     return vimState;
   }
@@ -2251,7 +2228,7 @@ class ActionChangeChar extends BaseCommand {
 
 @RegisterAction
 class MovementAWordTextObject extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   keys = ["a", "w"];
   canBePrefixedWithCount = true;
 
@@ -2420,7 +2397,6 @@ class MovementIBigWordTextObject extends MovementAWordTextObject {
 
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["%"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
@@ -2472,7 +2448,7 @@ class MoveToMatchingBracket extends BaseMovement {
 }
 
 abstract class MoveInsideCharacter extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
 
@@ -2614,7 +2590,7 @@ class MoveAClosingSquareBracket extends MoveInsideCharacter {
 }
 
 abstract class MoveQuoteMatch extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
 
