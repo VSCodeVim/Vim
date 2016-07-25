@@ -519,7 +519,10 @@ class CommandHash extends BaseCommand {
     vimState.searchState = new SearchState(-1, vimState.cursorPosition, currentWord);
 
     do {
-      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
+      // use getWordLeft() on position to start at the beginning of the word.
+      // this ensures that any matches happen ounside of the word currently selected,
+      // which are the desired semantics for this motion.
+      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft()).pos;
     } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
 
     return vimState;
