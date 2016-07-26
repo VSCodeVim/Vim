@@ -1,6 +1,6 @@
 import { VimSpecialCommands, VimState, SearchState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
-import { VisualBlockMode } from './../mode/modeVisualBlock';
+import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { Position } from './../motion/position';
@@ -2118,6 +2118,20 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.VisualBlockInsertMode;
+    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ["A"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.VisualBlockInsertMode;
+    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Append;
 
     return vimState;
   }
@@ -2131,12 +2145,17 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let char = this.keysPressed[0];
     let change = 0;
+    let insertAtBeginning = vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Insert;
 
     if (char === '\n') {
       return vimState;
     }
 
-    for (const { pos } of Position.IterateLineStart(vimState.topLeft, vimState.bottomRight)) {
+    if (char === '<backspace>' && vimState.topLeft.character === 0) {
+      return vimState;
+    }
+
+    for (const { pos } of Position.IterateLine(vimState.topLeft, vimState.bottomRight, insertAtBeginning)) {
       const insertAction = new CommandInsertInInsertMode();
       const { start } = await insertAction.insert(this.keysPressed[0], pos);
 

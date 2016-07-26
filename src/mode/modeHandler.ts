@@ -8,7 +8,7 @@ import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
-import { VisualBlockMode } from './modeVisualBlock';
+import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
 import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
 import { SearchInProgressMode } from './modeSearchInProgress';
@@ -276,6 +276,8 @@ export class RecordedState {
 
   public hasRunOperator = false;
 
+  public visualBlockInsertionType = VisualBlockInsertionType.Insert;
+
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
@@ -510,8 +512,6 @@ export class ModeHandler implements vscode.Disposable {
       .get("useSolidBlockCursor", false);
     this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
     this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
-
-    console.log("hello it is ", vscode.workspace.getConfiguration('vim')['blahblah']);
   }
 
 

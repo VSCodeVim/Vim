@@ -27,3 +27,15 @@ export class VisualBlockMode extends Mode {
     );
   }
 }
+
+export enum VisualBlockInsertionType {
+  /**
+   * Triggered with I
+   */
+  Insert,
+
+  /**
+   * Triggered with A
+   */
+  Append,
+}

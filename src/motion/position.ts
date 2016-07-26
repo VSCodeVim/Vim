@@ -88,16 +88,18 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Iterate over the start of every line in the block defined by the two positions passed in.
+   * Iterate over every line in the block defined by the two positions passed in. If start
+   * is true, iterate over the first character in every line. Otherwise, iterate over the
+   * last.
    */
-  public static *IterateLineStart(topLeft: Position, bottomRight: Position): Iterable<{ line: string, pos: Position }> {
+  public static *IterateLine(topLeft: Position, bottomRight: Position, start = true): Iterable<{ line: string, pos: Position }> {
     for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
       const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
 
       yield {
         line: line,
-        pos : new Position(lineIndex, topLeft.character)
-      }
+        pos : new Position(lineIndex, start ? topLeft.character : bottomRight.character)
+      };
     }
   }
 
