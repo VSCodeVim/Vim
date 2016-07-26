@@ -979,6 +979,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can ctrl-a on a hex number",
+      start: ["|0xf"],
+      keysPressed: "<c-a>",
+      end: ["0x1|0"]
+    });
+
+    newTest({
       title: "can ctrl-a on decimal",
       start: ["1|1.123"],
       keysPressed: "<c-a>",

@@ -2,6 +2,7 @@ import { VimSpecialCommands, VimState, SearchState } from './../mode/modeHandler
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
+import { NumericString } from './../number/numericString';
 import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
@@ -2715,9 +2716,9 @@ abstract class IncrementDecrementNumberAction extends BaseMovement {
       }
       const word = text.substring(wordStart.character, wordEnd.character + 1);
       // Strict number parsing so "1a" doesn't silently get converted to "1"
-      const num = Number(word);
+      const num = NumericString.parse(word);
 
-      if (!isNaN(num)) {
+      if (num !== null) {
         return this.replaceNum(num, this.offset * count, wordStart, wordEnd);
       }
 
@@ -2735,9 +2736,9 @@ abstract class IncrementDecrementNumberAction extends BaseMovement {
     return position;
   }
 
-  public async replaceNum(start: number, offset: number, startPos: Position, endPos: Position): Promise<Position> {
+  public async replaceNum(start: NumericString, offset: number, startPos: Position, endPos: Position): Promise<Position> {
     const oldWidth = start.toString().length;
-    start += offset;
+    start.value += offset;
     const newNum = start.toString();
 
     const range = new vscode.Range(startPos, endPos.getRight());
