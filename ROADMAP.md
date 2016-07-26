@@ -440,6 +440,7 @@ Status | Command | Description
 
 ### Option list
 Since the list is too long, now we just put those already supported options here.
+
 Status | Command | Default Value | Description
 ---|--------|-------|------------------------------
 :white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that <Tab> in file uses
