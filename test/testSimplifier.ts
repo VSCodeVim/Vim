@@ -146,7 +146,7 @@ class TestObjectHelper {
 }
 
 /**
- * Tokenize a string like "abc<esc>d<c-c>" into ["a", "b", "c", "<esc>", "d", "ctrl+c"]
+ * Tokenize a string like "abc<esc>d<c-c>" into ["a", "b", "c", "<esc>", "d", "<c-c>"]
  */
 function tokenizeKeySequence(sequence: string): string[] {
   let isBracketedKey = false;
@@ -162,9 +162,6 @@ function tokenizeKeySequence(sequence: string): string[] {
 
     if (char === '>') {
       isBracketedKey = false;
-      if (key.startsWith("<c-")) {
-        key = "ctrl+" + key.substring(3, key.length - 1);
-      }
     }
 
     if (isBracketedKey) {
