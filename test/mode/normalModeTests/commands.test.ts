@@ -26,10 +26,38 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'Nx'",
+      start: ['te|xt'],
+      keysPressed: '2x',
+      end: ["t|e"],
+    });
+
+    newTest({
+      title: "Can handle 'x' at end of line",
+      start: ['one tw|o'],
+      keysPressed: '^llxxxxxxxxx',
+      end: ['|'],
+    });
+
+    newTest({
       title: "Can handle '<delete>'",
       start: ['te|xt'],
       keysPressed: '<delete>',
       end: ["te|t"],
+    });
+
+    newTest({
+      title: "Can handle 'N<delete>', which should be a no-op",
+      start: ['te|xt'],
+      keysPressed: '2<delete>',
+      end: ["te|xt"],
+    });
+
+    newTest({
+      title: "Can handle '<delete>' at end of line",
+      start: ['one tw|o'],
+      keysPressed: '^ll<delete><delete><delete><delete><delete><delete><delete><delete><delete>',
+      end: ['|'],
     });
 
     newTest({
@@ -65,20 +93,6 @@ suite("Mode Normal", () => {
       start: ['tex|t'],
       keysPressed: '^llDD',
       end: ['|t'],
-    });
-
-    newTest({
-      title: "Can handle 'x' at end of line",
-      start: ['one tw|o'],
-      keysPressed: '^llxxxxxxxxx',
-      end: ['|'],
-    });
-
-    newTest({
-      title: "Can handle '<delete>' at end of line",
-      start: ['one tw|o'],
-      keysPressed: '^ll<delete><delete><delete><delete><delete><delete><delete><delete><delete>',
-      end: ['|'],
     });
 
     newTest({
