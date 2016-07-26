@@ -23,6 +23,8 @@ export const commandParsers = {
 
   tabp: tabCmd.parseTabPCommandArgs,
   tabprevious: tabCmd.parseTabPCommandArgs,
+  tabN: tabCmd.parseTabPCommandArgs,
+  tabNext: tabCmd.parseTabPCommandArgs,
 
   tabfirst: tabCmd.parseTabFirstCommandArgs,
   tabfir: tabCmd.parseTabFirstCommandArgs,
@@ -39,6 +41,8 @@ export const commandParsers = {
 
   tabo: tabCmd.parseTabOnlyCommandArgs,
   tabonly: tabCmd.parseTabOnlyCommandArgs,
+
+  tabm: tabCmd.parseTabMovementCommandArgs,
 
   e: fileCmd.parseEditFileCommandArgs,
 

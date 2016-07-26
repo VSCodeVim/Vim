@@ -12,9 +12,9 @@
 
 ## Roadmap
 
-These are the big Vim features, put generally in the order in which we plan to implement them. 
+These are the big Vim features, put generally in the order in which we plan to implement them.
 
-Status | Command 
+Status | Command
 ---|--------
 :white_check_mark: | Normal Mode
 :white_check_mark: | Insert Mode
@@ -23,16 +23,16 @@ Status | Command
 :white_check_mark: | Number Prefixes
 :white_check_mark: | . Operator
 :warning: | Searching with / and ?
-:white_check_mark: | Correct Undo/Redo 
+:white_check_mark: | Correct Undo/Redo
 :warning: | Command Remapping
 :warning:  | Marks
 :warning: | Text Objects
  | Visual Block Mode
  | Macros
-:warning: | Buffer/Window/Tab 
+:warning: | Buffer/Window/Tab
 
 
-Now follows an exhaustive list of every known Vim command that we could find. 
+Now follows an exhaustive list of every known Vim command that we could find.
 
 ## Left-right motions
 
@@ -243,9 +243,9 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:white_check_mark:   | v		| start highlighting characters  
-:white_check_mark:   | V		| start highlighting linewise   
-   | CTRL-V	| start highlighting blockwise   
+:white_check_mark:   | v		| start highlighting characters
+:white_check_mark:   | V		| start highlighting linewise
+   | CTRL-V	| start highlighting blockwise
    | o		| exchange cursor position with start of highlighting
    | gv		| start highlighting on previous visual area
 :white_check_mark:   | v		| highlight characters or stop highlighting
@@ -297,7 +297,7 @@ Status | Command | Description
 :arrow_down:   | :so[urce]! {file}  | read Vim commands from {file}
 :arrow_down:   | :sl[eep] [sec]  | don't do anything for [sec] seconds
 :arrow_down:   | :1234:  gs	 | goto Sleep for N seconds
-   
+
 
 ## Marks and motions
 
@@ -359,8 +359,8 @@ Status | Command | Description
     | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
     | 0 CTRL-D	                 |  delete all indent in the current line
     | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
-    
-    
+
+
 
 ## Scrolling
 
@@ -397,17 +397,23 @@ Status | Command | Description
    | :vne[w] | Create a new window vertically and start editing an empty file in it.
 
 
-## Tabs 
+## Tabs
 
 Status | Command | Description
 ---|--------|------------------------------
-:warning:   | :1234: :tabe[dit]    | Open a new tab page with an empty window, after the current tab page
-:warning:   | :1234: :tabnew    | Open a new tab page with an empty window, after the current tab page
-:warning:   | :tabc[lose][!] :1234: | Close current tab page.
-:warning:   | :tabo[nly][!] | Close all other tab pages.
-:white_check_mark:   | :tabn[ext] :1234:	    | Go to tab page {count}.  The first tab page has number one.
+:white_check_mark:   | :tabn[ext] :1234:	    | Go to next tab page or tab page {count}.  The first tab page has number one.
+    | {count}<C-PageDown>, {count}gt | Same as above
 :white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
+:white_check_mark:   | :tabN[ext]	:1234:  | Same as above
+    | {count}<C-PageUp>, {count}gT | Same as above
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
-:x:   | :tabls	 | List the tab pages and the windows they contain.
-:x:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
+:warning:   | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page
+    | :[count]tabe[dit], :[count]tabnew | Same as above
+:warning:   | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page
+    | :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
+:warning:   | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}.
+:warning:   | :tabo[nly][!] | Close all other tab pages.
+:white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
+:x:   | :tabs	 | List the tab pages and the windows they contain.
+    | :tabd[o] {cmd} | Execute {cmd} in each tab page.
