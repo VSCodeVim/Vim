@@ -95,7 +95,7 @@
             {
                 "key": "ctrl+a",
                 "command": "extension.vim_ctrl+a",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.useCtrlKeys"
             },
             {
                 "key": "ctrl+x",
