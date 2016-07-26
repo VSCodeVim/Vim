@@ -30,16 +30,16 @@ export class Register {
    * Puts content in a register. If none is specified, uses the default
    * register ".
    */
-  public static put(content: string, vimState: VimState): void {
-    const register = vimState.registerName;
+  public static put(content: string, registerMode: RegisterMode): void {
+    const register = '"'; // (TODO)
 
     if (Register.validRegisters.indexOf(register) === -1) {
       throw new Error(`Invalid register ${register}`);
     }
 
     Register.registers[register] = {
-      text    : content,
-      registerMode: vimState.effectiveRegisterMode(),
+      text        : content,
+      registerMode: registerMode,
     };
   }
 

@@ -677,8 +677,8 @@ export class DeleteOperator extends BaseOperator {
     /**
      * Deletes from the position of start to 1 past the position of end.
      */
-    public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
-        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+    public async delete(start: Position, end: Position, currentMode: ModeName, registerMode: RegisterMode, yank = true): Promise<Position> {
+        if (registerMode === RegisterMode.LineWise) {
           start = start.getLineBegin();
           end   = end.getLineEnd();
         }
@@ -703,35 +703,43 @@ export class DeleteOperator extends BaseOperator {
         // Just writing about this is making me more confused. -_-
         if (isOnLastLine &&
             start.line !== 0 &&
-            vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+            registerMode === RegisterMode.LineWise) {
           start = start.getPreviousLineBegin().getLineEnd();
         }
 
         let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
 
-        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+        if (registerMode === RegisterMode.LineWise) {
           text = text.slice(0, -1); // slice final newline in linewise mode - linewise put will add it back.
         }
 
         if (yank) {
-          Register.put(text, vimState);
+          Register.put(text, registerMode);
         }
 
         await TextEditor.delete(new vscode.Range(start, end));
 
-        if (vimState.currentMode === ModeName.Visual) {
-          vimState.cursorPosition = Position.EarlierOf(start, end);
+        let resultingPosition: Position;
+
+        if (currentMode === ModeName.Visual) {
+          resultingPosition = Position.EarlierOf(start, end);
         }
 
         if (start.character >= TextEditor.getLineAt(start).text.length) {
-          vimState.cursorPosition = start.getLeft();
+          resultingPosition = start.getLeft();
         } else {
-          vimState.cursorPosition = start;
+          resultingPosition = start;
         }
 
-        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
-          vimState.cursorPosition = vimState.cursorPosition.getLineBegin();
+        if (registerMode === RegisterMode.LineWise) {
+          resultingPosition = resultingPosition.getLineBegin();
         }
+
+        return resultingPosition;
+    }
+
+    public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
+        this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), true);
 
         vimState.currentMode = ModeName.Normal;
 
@@ -774,7 +782,7 @@ export class YankOperator extends BaseOperator {
           text = text + "\n";
         }
 
-        Register.put(text, vimState);
+        Register.put(text, vimState.effectiveRegisterMode());
 
         vimState.currentMode = ModeName.Normal;
         vimState.cursorPosition = start;
@@ -2125,6 +2133,25 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 }
 
 @RegisterAction
+class ActionChangeInVisualBlockMode extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ["c"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const deleteOperator = new DeleteOperator();
+
+    for (const { start, end } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
+      await deleteOperator.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), true);
+    }
+
+    vimState.currentMode = ModeName.VisualBlockInsertMode;
+    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["A"];
@@ -2145,7 +2172,7 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let char = this.keysPressed[0];
     let change = 0;
-    let insertAtBeginning = vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Insert;
+    let insertAtStart = vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Insert;
 
     if (char === '\n') {
       return vimState;
@@ -2155,11 +2182,12 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
       return vimState;
     }
 
-    for (const { pos } of Position.IterateLine(vimState.topLeft, vimState.bottomRight, insertAtBeginning)) {
+    for (const { start, end } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
+      const insertPos    = insertAtStart ? start : end;
       const insertAction = new CommandInsertInInsertMode();
-      const { start } = await insertAction.insert(this.keysPressed[0], pos);
+      const insertResult = await insertAction.insert(this.keysPressed[0], insertPos);
 
-      change = start.character - pos.character;
+      change = insertResult.stop.character - insertPos.character;
     }
 
     vimState.cursorStartPosition = vimState.cursorStartPosition.getRight(change);
