@@ -10,12 +10,12 @@ export class NumericString {
   ];
 
   static parse(input: string): NumericString | null {
-    for (let matcher of NumericString.matchings) {
-      const match = matcher.regex.exec(input);
+    for (const { regex, base, prefix } of NumericString.matchings) {
+      const match = regex.exec(input);
       if (match == null) {
         continue;
       }
-      return new NumericString(parseInt(match[1], matcher.base), matcher.base, matcher.prefix);
+      return new NumericString(parseInt(match[1], base), base, prefix);
     }
     return null;
   }
