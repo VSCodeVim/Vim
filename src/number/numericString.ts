@@ -2,9 +2,10 @@ export class NumericString {
   radix: number;
   value: number;
   prefix: string;
+  private static octalRegex = new RegExp('^0[0-7]+');
 
   static parse(input: string): NumericString | null {
-    const num = Number(input);
+    let num = Number(input);
     if (isNaN(num)) {
       return null;
     }
@@ -13,6 +14,11 @@ export class NumericString {
     if (input.startsWith("0x")) {
       radix = 16;
       prefix = "0x";
+    } else if (NumericString.octalRegex.test(input)) {
+      // Re-parse, since it didn't get it right the first time
+      num = parseInt(input, 8);
+      radix = 8;
+      prefix = "0";
     }
 
     return new NumericString(num, radix, prefix);

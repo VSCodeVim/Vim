@@ -17,4 +17,9 @@ suite("numeric string", () => {
     const input = "9";
     assert.equal(input, NumericString.parse(input)!.toString());
   });
+
+  test("handles octal trip", () => {
+    const input = "07";
+    assert.equal(input, NumericString.parse(input)!.toString());
+  });
 });
