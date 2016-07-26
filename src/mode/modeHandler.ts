@@ -510,7 +510,10 @@ export class ModeHandler implements vscode.Disposable {
       .get("useSolidBlockCursor", false);
     this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
     this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
+
+    console.log("hello it is ", vscode.workspace.getConfiguration('vim')['blahblah']);
   }
+
 
   /**
    * The active mode.

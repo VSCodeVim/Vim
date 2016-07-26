@@ -96,7 +96,7 @@ export class Position extends vscode.Position {
 
       yield {
         line: line,
-        pos : new Position(lineIndex, topLeft.character);
+        pos : new Position(lineIndex, topLeft.character)
       }
     }
   }

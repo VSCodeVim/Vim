@@ -562,9 +562,17 @@ class CommandInsertInInsertMode extends BaseCommand {
   // The hard case is . where we have to track cursor pos since we don't
   // update the view
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char = this.keysPressed[this.keysPressed.length - 1];
+    const char   = this.keysPressed[this.keysPressed.length - 1];
+    const result = await this.insert(char, position);
 
-    if (char === "<backspace>") {
+    vimState.cursorPosition      = result.stop;
+    vimState.cursorStartPosition = result.start;
+
+    return vimState;
+  }
+
+  public async insert(text: string, position: Position): Promise<IMovement> {
+    if (text === "<backspace>") {
       if (position.character === 0) {
         if (position.line > 0) {
           await TextEditor.delete(new vscode.Range(
@@ -572,8 +580,10 @@ class CommandInsertInInsertMode extends BaseCommand {
             position.getLineBegin()
           ));
 
-          vimState.cursorPosition      = position.getPreviousLineBegin().getLineEnd();
-          vimState.cursorStartPosition = position.getPreviousLineBegin().getLineEnd();
+          return {
+            start: position.getPreviousLineBegin().getLineEnd(),
+            stop: position.getPreviousLineBegin().getLineEnd()
+          };
         }
       } else {
         let leftPosition = position.getLeft();
@@ -588,17 +598,21 @@ class CommandInsertInInsertMode extends BaseCommand {
 
         await TextEditor.delete(new vscode.Range(position, leftPosition));
 
-        vimState.cursorPosition      = leftPosition;
-        vimState.cursorStartPosition = leftPosition;
+        return {
+          start: leftPosition,
+          stop: leftPosition,
+        };
       }
-    } else {
-      await TextEditor.insert(char, vimState.cursorPosition);
-
-      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
 
-    return vimState;
+    // handle normal text insertion.
+
+    await TextEditor.insert(text, position);
+
+    return {
+      start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
+      stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start)
+    };
   }
 
   public toString(): string {
@@ -2100,7 +2114,7 @@ class ActionDVisualBlock extends ActionXVisualBlock {
 @RegisterAction
 class ActionGoToInsertVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ["i"];
+  keys = ["I"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.VisualBlockInsertMode;
@@ -2115,14 +2129,22 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
   keys = ["<any>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const toInsert = this.keysPressed[0];
+    let char = this.keysPressed[0];
+    let change = 0;
 
-    for (const { pos } of Position.IterateLineStart(vimState.topLeft, vimState.bottomRight)) {
-      await TextEditor.insertAt(toInsert, pos);
+    if (char === '\n') {
+      return vimState;
     }
 
-    vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
-    vimState.cursorPosition      = vimState.cursorPosition.getRight();
+    for (const { pos } of Position.IterateLineStart(vimState.topLeft, vimState.bottomRight)) {
+      const insertAction = new CommandInsertInInsertMode();
+      const { start } = await insertAction.insert(this.keysPressed[0], pos);
+
+      change = start.character - pos.character;
+    }
+
+    vimState.cursorStartPosition = vimState.cursorStartPosition.getRight(change);
+    vimState.cursorPosition      = vimState.cursorPosition.getRight(change);
 
     return vimState;
   }
