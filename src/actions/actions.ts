@@ -2706,8 +2706,6 @@ abstract class IncrementDecrementNumberAction extends BaseMovement {
     count = count || 1;
     const text = TextEditor.getLineAt(position).text;
 
-    // They may start on a number, so check the current word boundaries first.
-
     for (let { start, end, word } of Position.IterateWords(position.getWordLeft(true))) {
       // '-' doesn't count as a word, but is important to include in parsing the number
       if (text[start.character - 1] === '-') {
