@@ -1007,6 +1007,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can ctrl-a on an octal ",
+      start: ["07|"],
+      keysPressed: "<c-a>",
+      end: ["01|0"]
+    });
+
+    newTest({
       title: "can ctrl-x correctly behind a word",
       start: ["|one 10"],
       keysPressed: "<c-x>",
