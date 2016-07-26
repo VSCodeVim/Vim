@@ -2248,7 +2248,11 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "j"];
   movementType = "down";
+<<<<<<< 5bac058831cf7fb4106029c7d601afc1bba782aa
  noOfLines = 1;
+=======
+  noOfLines = 1;
+>>>>>>> abstract class for code sharing
 }
 
 @RegisterAction
@@ -2281,7 +2285,7 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
 class MoveToViewPortCenter extends MoveScreenLineBegin {
  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["M"];
-  viewPosition = "viewPortCenter";
+  movementType = "viewPortCenter";
 }
 
 @RegisterAction
