@@ -70,6 +70,25 @@ export class Position extends vscode.Position {
     }
   }
 
+  public static *IterateWords(start: Position): Iterable<{ start: Position, end: Position, word: string }> {
+    const text = TextEditor.getLineAt(start).text;
+    let wordEnd = start.getCurrentWordEnd(true);
+    do {
+      const word = text.substring(start.character, wordEnd.character + 1);
+      yield {
+        start: start,
+        end: wordEnd,
+        word: word,
+      };
+
+      if (wordEnd.isLineEnd()) {
+        return;
+      }
+      start = start.getWordRight();
+      wordEnd = start.getCurrentWordEnd();
+    } while (true);
+  }
+
   /**
    * Returns which of the 2 provided Positions comes later in the document.
    */

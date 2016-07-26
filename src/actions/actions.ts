@@ -2707,31 +2707,20 @@ abstract class IncrementDecrementNumberAction extends BaseMovement {
     const text = TextEditor.getLineAt(position).text;
 
     // They may start on a number, so check the current word boundaries first.
-    let wordEnd = position.getCurrentWordEnd(true);
-    let wordStart = position.getWordLeft(true);
-    do {
+
+    for (let { start, end, word } of Position.IterateWords(position.getWordLeft(true))) {
       // '-' doesn't count as a word, but is important to include in parsing the number
-      if (text[wordStart.character - 1] === '-') {
-        wordStart = wordStart.getLeft();
+      if (text[start.character - 1] === '-') {
+        start = start.getLeft();
+        word = text[start.character - 1] + word;
       }
-      const word = text.substring(wordStart.character, wordEnd.character + 1);
       // Strict number parsing so "1a" doesn't silently get converted to "1"
       const num = NumericString.parse(word);
 
       if (num !== null) {
-        return this.replaceNum(num, this.offset * count, wordStart, wordEnd);
+        return this.replaceNum(num, this.offset * count, start, end);
       }
-
-      if (wordEnd.isLineEnd()) {
-        // We got to the end of the line and didn't find anything that looks like a number
-        break;
-      }
-
-      // Move forward to the next word
-      wordStart = wordStart.getWordRight();
-      wordEnd = wordStart.getCurrentWordEnd();
-    } while (true);
-
+    }
     // No usable numbers, return the original position
     return position;
   }
