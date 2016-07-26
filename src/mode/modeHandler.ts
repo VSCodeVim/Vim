@@ -160,11 +160,11 @@ export class SearchState {
   public set searchString(search: string){
     if (this._searchString !== search) {
       this._searchString = search;
-      this._recalculateSearchRanges(/*forceRecalc=*/true);
+      this._recalculateSearchRanges({ forceRecalc: true });
     }
   }
 
-  private _recalculateSearchRanges(forceRecalc?: boolean): void {
+  private _recalculateSearchRanges({ forceRecalc }: { forceRecalc?: boolean } = {}): void {
     const search = this.searchString;
 
     if (search === "") { return; }
@@ -174,12 +174,17 @@ export class SearchState {
       this._matchesDocVersion = TextEditor.getDocumentVersion();
       this._matchRanges = [];
 
-      for (let lineIdx = 0; lineIdx < TextEditor.getLineCount() && this._matchRanges.length < SearchState.MAX_SEARCH_RANGES; lineIdx++) {
+      outer:
+      for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
         const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
 
         let i = line.indexOf(search);
 
-        for (; i !== -1 && this._matchRanges.length < SearchState.MAX_SEARCH_RANGES; i = line.indexOf(search, i + search.length)) {
+        for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+          if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
+            break outer;
+          }
+
           this._matchRanges.push(new vscode.Range(
             new Position(lineIdx, i),
             new Position(lineIdx, i + search.length)
