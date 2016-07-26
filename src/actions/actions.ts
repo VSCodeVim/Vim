@@ -1651,13 +1651,11 @@ class MoveLineBegin extends BaseMovement {
   }
 }
 
-@RegisterAction
-class MoveScreenLineBegin extends BaseMovement {
+abstract class MoveByScreenLine extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["g", "0"];
-  viewPosition = "wrappedLineStart";
+  movementType: string;
   /**
-   * This paramter will be consumed only when `to` is `lineUp` or `lineDown`.
+   * This parameter is used only when to is lineUp or lineDown.
    * For other screen line movements, we are always operating on the same screen line.
    * So we make its default value as 0.
    */
@@ -1665,7 +1663,7 @@ class MoveScreenLineBegin extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     await vscode.commands.executeCommand("cursorMove", {
-      to: this.viewPosition,
+      to: this.movementType,
       inSelectionMode: vimState.currentMode !== ModeName.Normal,
       noOfLines: this.noOfLines
     });
@@ -1686,7 +1684,7 @@ class MoveScreenLineBegin extends BaseMovement {
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     await vscode.commands.executeCommand("cursorMove", {
-      to: this.viewPosition,
+      to: this.movementType,
       inSelectionMode: true,
       noOfLines: this.noOfLines
     });
@@ -1699,44 +1697,49 @@ class MoveScreenLineBegin extends BaseMovement {
 }
 
 @RegisterAction
-class MoveScreenNonBlank extends MoveScreenLineBegin {
+class MoveScreenLineBegin extends MoveByScreenLine {
+  keys = ["g", "0"];
+  movementType = "wrappedLineStart";
+}
+
+@RegisterAction
+class MoveScreenNonBlank extends MoveByScreenLine {
   keys = ["g", "^"];
-  viewPosition = "wrappedLineFirstNonWhitespaceCharacter";
+  movementType = "wrappedLineFirstNonWhitespaceCharacter";
 }
 
 @RegisterAction
-class MoveScreenLineEnd extends MoveScreenLineBegin {
+class MoveScreenLineEnd extends MoveByScreenLine {
   keys = ["g", "$"];
-  viewPosition = "wrappedLineEnd";
+  movementType = "wrappedLineEnd";
 }
 
 @RegisterAction
-class MoveScreenLineCenter extends MoveScreenLineBegin {
+class MoveScreenLineCenter extends MoveByScreenLine {
   keys = ["g", "m"];
-  viewPosition = "wrappedLineColumnCenter";
+  movementType = "wrappedLineColumnCenter";
 }
 
 @RegisterAction
-class MoveUpByScreenLine extends MoveScreenLineBegin {
+class MoveUpByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "k"];
-  viewPosition = "up";
+  movementType = "up";
   noOfLines = 1;
 }
 
 @RegisterAction
-class MoveDownByScreenLine extends MoveScreenLineBegin {
+class MoveDownByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "j"];
-  viewPosition = "down";
+  movementType = "down";
   noOfLines = 1;
 }
 
 @RegisterAction
-class MoveToLineFromViewPortTop extends MoveScreenLineBegin {
-  modes = [ ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+class MoveToLineFromViewPortTop extends MoveByScreenLine {
   keys = ["H"];
-  viewPosition = "viewPortTop";
+  movementType = "viewPortTop";
   noOfLines = 1;
   canBePrefixedWithCount = true;
 
@@ -1747,16 +1750,23 @@ class MoveToLineFromViewPortTop extends MoveScreenLineBegin {
 }
 
 @RegisterAction
-class MoveToLineFromViewPortBottom extends MoveToLineFromViewPortTop {
+class MoveToLineFromViewPortBottom extends MoveByScreenLine {
   keys = ["L"];
-  viewPosition = "viewPortBottom";
+  movementType = "viewPortBottom";
+  noOfLines = 1;
+  canBePrefixedWithCount = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    this.noOfLines = count < 1 ? 1 : count;
+    return await this.execAction(position, vimState);
+  }
 }
 
 @RegisterAction
 class MoveToViewPortCenter extends MoveScreenLineBegin {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["M"];
-  viewPosition = "viewPortCenter";
+  movementType = "viewPortCenter";
 }
 
 @RegisterAction
