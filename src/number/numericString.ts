@@ -4,9 +4,9 @@ export class NumericString {
   prefix: string;
 
   private static matchings: { regex: RegExp, base: number, prefix: string }[] = [
-    { regex: /^0([0-7]+)$/, base: 8, prefix: "0"},
-    { regex: /^(\d+)$/, base: 10, prefix: ""},
-    { regex: /^0x([\da-fA-F]+)$/, base: 16, prefix: "0x"},
+    { regex: /^([-+])?0([0-7]+)$/, base: 8, prefix: "0"},
+    { regex: /^([-+])?(\d+)$/, base: 10, prefix: ""},
+    { regex: /^([-+])?0x([\da-fA-F]+)$/, base: 16, prefix: "0x"},
   ];
 
   static parse(input: string): NumericString | null {
@@ -15,7 +15,7 @@ export class NumericString {
       if (match == null) {
         continue;
       }
-      return new NumericString(parseInt(match[1], base), base, prefix);
+      return new NumericString(parseInt(match[0], base), base, prefix);
     }
     return null;
   }

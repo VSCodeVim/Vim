@@ -2712,7 +2712,7 @@ abstract class IncrementDecrementNumberAction extends BaseMovement {
       // '-' doesn't count as a word, but is important to include in parsing the number
       if (text[start.character - 1] === '-') {
         start = start.getLeft();
-        word = text[start.character - 1] + word;
+        word = text[start.character] + word;
       }
       // Strict number parsing so "1a" doesn't silently get converted to "1"
       const num = NumericString.parse(word);
