@@ -2,6 +2,7 @@ import { VimSpecialCommands, VimState, SearchState } from './../mode/modeHandler
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
+import { NumericString } from './../number/numericString';
 import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
@@ -2693,4 +2694,64 @@ class ToggleCaseAndMoveForward extends BaseMovement {
 
     return position.getRight();
   }
+}
+
+abstract class IncrementDecrementNumberAction extends BaseMovement {
+  modes = [ModeName.Normal];
+  canBePrefixedWithCount = true;
+
+  offset: number;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
+    count = count || 1;
+    const text = TextEditor.getLineAt(position).text;
+
+    for (let { start, end, word } of Position.IterateWords(position.getWordLeft(true))) {
+      // '-' doesn't count as a word, but is important to include in parsing the number
+      if (text[start.character - 1] === '-') {
+        start = start.getLeft();
+        word = text[start.character] + word;
+      }
+      // Strict number parsing so "1a" doesn't silently get converted to "1"
+      const num = NumericString.parse(word);
+
+      if (num !== null) {
+        return this.replaceNum(num, this.offset * count, start, end);
+      }
+    }
+    // No usable numbers, return the original position
+    return position;
+  }
+
+  public async replaceNum(start: NumericString, offset: number, startPos: Position, endPos: Position): Promise<Position> {
+    const oldWidth = start.toString().length;
+    start.value += offset;
+    const newNum = start.toString();
+
+    const range = new vscode.Range(startPos, endPos.getRight());
+
+    if (oldWidth === newNum.length) {
+      await TextEditor.replace(range, newNum);
+    } else {
+      // Can't use replace, since new number is a different width than old
+      await TextEditor.delete(range);
+      await TextEditor.insertAt(newNum, startPos);
+      // Adjust end position according to difference in width of number-string
+      endPos = new Position(endPos.line, endPos.character + (newNum.length - oldWidth));
+    }
+
+    return endPos;
+  }
+}
+
+@RegisterAction
+class IncrementNumberAction extends IncrementDecrementNumberAction {
+  keys = ["ctrl+a"];
+  offset = +1;
+}
+
+@RegisterAction
+class DecrementNumberAction extends IncrementDecrementNumberAction {
+  keys = ["ctrl+x"];
+  offset = -1;
 }

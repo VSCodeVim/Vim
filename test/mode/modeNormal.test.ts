@@ -963,4 +963,60 @@ suite("Mode Normal", () => {
       keysPressed: "dE",
       end: ["one two| "]
     });
+
+    newTest({
+      title: "can ctrl-a correctly behind a word",
+      start: ["|one 9"],
+      keysPressed: "<c-a>",
+      end: ["one 1|0"]
+    });
+
+    newTest({
+      title: "can ctrl-a on word",
+      start: ["one -|11"],
+      keysPressed: "<c-a>",
+      end: ["one -1|0"]
+    });
+
+    newTest({
+      title: "can ctrl-a on a hex number",
+      start: ["|0xf"],
+      keysPressed: "<c-a>",
+      end: ["0x1|0"]
+    });
+
+    newTest({
+      title: "can ctrl-a on decimal",
+      start: ["1|1.123"],
+      keysPressed: "<c-a>",
+      end: ["1|2.123"]
+    });
+
+    newTest({
+      title: "can ctrl-a with numeric prefix",
+      start: ["|-10"],
+      keysPressed: "15<c-a>",
+      end: ["|5"]
+    });
+
+    newTest({
+      title: "can ctrl-a on a decimal",
+      start: ["-10.|1"],
+      keysPressed: "10<c-a>",
+      end: ["-10.1|1"]
+    });
+
+    newTest({
+      title: "can ctrl-a on an octal ",
+      start: ["07|"],
+      keysPressed: "<c-a>",
+      end: ["01|0"]
+    });
+
+    newTest({
+      title: "can ctrl-x correctly behind a word",
+      start: ["|one 10"],
+      keysPressed: "<c-x>",
+      end: ["one |9"]
+    });
 });
