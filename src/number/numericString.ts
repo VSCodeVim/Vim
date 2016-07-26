@@ -2,26 +2,22 @@ export class NumericString {
   radix: number;
   value: number;
   prefix: string;
-  private static octalRegex = new RegExp('^0[0-7]+');
+
+  private static matchings: { regex: RegExp, base: number, prefix: string }[] = [
+    { regex: /^0([0-7]+)$/, base: 8, prefix: "0"},
+    { regex: /^(\d+)$/, base: 10, prefix: ""},
+    { regex: /^0x([\da-fA-F]+)$/, base: 16, prefix: "0x"},
+  ];
 
   static parse(input: string): NumericString | null {
-    let num = Number(input);
-    if (isNaN(num)) {
-      return null;
+    for (let matcher of NumericString.matchings) {
+      const match = matcher.regex.exec(input);
+      if (match == null) {
+        continue;
+      }
+      return new NumericString(parseInt(match[1], matcher.base), matcher.base, matcher.prefix);
     }
-    let radix = 10;
-    let prefix = "";
-    if (input.startsWith("0x")) {
-      radix = 16;
-      prefix = "0x";
-    } else if (NumericString.octalRegex.test(input)) {
-      // Re-parse, since it didn't get it right the first time
-      num = parseInt(input, 8);
-      radix = 8;
-      prefix = "0";
-    }
-
-    return new NumericString(num, radix, prefix);
+    return null;
   }
 
   constructor(value: number, radix: number, prefix: string) {
