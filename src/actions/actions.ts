@@ -739,9 +739,10 @@ export class DeleteOperator extends BaseOperator {
     }
 
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
-        this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), true);
+        const result = await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), true);
 
         vimState.currentMode = ModeName.Normal;
+        vimState.cursorPosition = result;
 
         return vimState;
     }
@@ -2142,6 +2143,28 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 
     for (const { start, end } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
       await deleteOperator.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), true);
+    }
+
+    vimState.currentMode = ModeName.VisualBlockInsertMode;
+    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
+
+    return vimState;
+  }
+}
+
+// TODO - this is basically a duplicate of the above command
+
+@RegisterAction
+class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ["C"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const deleteOperator = new DeleteOperator();
+
+    for (const { start } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
+      // delete from start up to but not including the newline.
+      await deleteOperator.delete(start, start.getLineEnd().getLeft(), vimState.currentMode, vimState.effectiveRegisterMode(), true);
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;
