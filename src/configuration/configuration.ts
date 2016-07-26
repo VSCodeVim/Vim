@@ -2,7 +2,6 @@
 
 import * as vscode from 'vscode';
 
-export type OptionHandler = () => {};
 export type OptionValue = number | string | boolean;
 
 enum OptionValueSource {
@@ -16,32 +15,19 @@ enum OptionValueSource {
  * 1. Be added to contribution section of `package.json`.
  * 2. Named as `vim.{optionName}`, `optionName` is the name we use in Vim.
  * 3. Define a subclass below, inherited from `BaseOptionDetails`.
- * 4. If user doesn't set the option explicitly, initialize the option as default value.
+ * 4. If user doesn't set the option explicitly
+ *    a. we don't have a similar setting in Code, initialize the option as default value.
+ *    b. we have a similar setting in Code, use Code's setting.'
  */
 export class BaseOptionDetails {
   id: string;
   defaultValue: OptionValue;
   protected _value: OptionValue;
 
-  constructor() {
-    let res: OptionValue;
-    res = this.fetchCodeConfiguration();
-
-    if (res) {
-      this._value = res;
-      this.source = OptionValueSource.UserSetting;
-    } else {
-      this._value = this.defaultValue;
-      this.source = OptionValueSource.Default;
-    }
-
-    this.initialize();
-  }
-
   // By default, we are fetching options from `vim` section but when we have overlap
   // between Code and Vim, eg `tabstop`, we may want to override this method.
   protected fetchCodeConfiguration() {
-    return vscode.workspace.getConfiguration("vim").get<OptionValue>(this.id);
+    return vscode.workspace.getConfiguration("vim").get<OptionValue>(this.id, this.defaultValue);
   }
 
   /**
@@ -54,18 +40,29 @@ export class BaseOptionDetails {
    *   If user defines `vim.tabstop` explicitly in `settings.json`, we need to update Code's `tabSize`
    *   accordingly to take effect.
    */
-  protected initialize() { return; }
+  public initialize() {
+    let res: OptionValue;
+    res = this.fetchCodeConfiguration();
+
+    if (res !== undefined) {
+      this._value = res;
+      this.source = OptionValueSource.UserSetting;
+    } else {
+      this._value = this.defaultValue;
+      this.source = OptionValueSource.Default;
+    }
+ }
 
   public get value() {
     return  this._value;
   }
 
-  public set value(value: number | string | boolean) {
+  public set value(value: OptionValue) {
     this._value = value;
     this.source = OptionValueSource.Runtime;
   }
 
-  public source: OptionValueSource = OptionValueSource.Default;
+  public source: OptionValueSource = OptionValueSource.Default  ;
   static globalOptionUpdateHandler: () => void;
 }
 
@@ -75,6 +72,7 @@ export class OptionMap {
 
 export function RegisterOption(optionDetails: typeof BaseOptionDetails): void {
   let newOption = new optionDetails();
+  newOption.initialize();
   OptionMap.allOptions[newOption.id] = newOption;
 }
 
@@ -120,12 +118,13 @@ class OptionTabStop extends BaseOptionDetails {
   defaultValue = 8; // Vim default value but here we always use Code configuration
 
   fetchCodeConfiguration() {
-    const vimOptionInCode = vscode.workspace.getConfiguration("vim").get<number>(this.id);
+    const vimOptionInCode = vscode.workspace.getConfiguration("vim").get<number>(this.id, undefined);
 
-    return vimOptionInCode ? vimOptionInCode : this.getTabSizeFromCode();
+    return vimOptionInCode !== undefined ? vimOptionInCode : this.getTabSizeFromCode();
   }
 
   initialize() {
+    super.initialize();
     // TODO we should update through API instead of tweaking editor's copy of config.
     const options = vscode.window.activeTextEditor.options;
     options.tabSize = this.value as number;
@@ -140,7 +139,7 @@ class OptionTabStop extends BaseOptionDetails {
     }
   }
 
-  public set value(value: number | string | boolean) {
+  public set value(value: OptionValue) {
     super.value = value;
 
     if (!vscode.window.activeTextEditor) {
@@ -168,11 +167,12 @@ class OptionInsertSpaces extends BaseOptionDetails {
   defaultValue = false;
 
   fetchCodeConfiguration() {
-    const vimOptionInCode = vscode.workspace.getConfiguration("vim").get<boolean>(this.id);
-    return vimOptionInCode ? vimOptionInCode : this.getInsertSpaccesFromCode();
+    const vimOptionInCode = vscode.workspace.getConfiguration("vim").get<boolean>(this.id, undefined);
+    return vimOptionInCode !== undefined ? vimOptionInCode : this.getInsertSpaccesFromCode();
   }
 
   initialize() {
+    super.initialize();
     const options = vscode.window.activeTextEditor.options;
     options.insertSpaces = this.value as boolean;
     vscode.window.activeTextEditor.options = options;
@@ -186,7 +186,7 @@ class OptionInsertSpaces extends BaseOptionDetails {
     }
   }
 
-  public set value(value: number | string | boolean) {
+  public set value(value: OptionValue) {
     super.value = value;
     const oldOptions = vscode.window.activeTextEditor.options;
     oldOptions.insertSpaces = <boolean> value;
@@ -208,11 +208,14 @@ class OptionIskeyword extends BaseOptionDetails {
   defaultValue = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 
   fetchCodeConfiguration() {
-    const vimOptionInCode = vscode.workspace.getConfiguration("vim").get<boolean>(this.id);
-    return vimOptionInCode ? vimOptionInCode : vscode.workspace.getConfiguration("editor").get("wordSeparators", this.defaultValue);
+    const vimOptionInCode = vscode.workspace.getConfiguration("vim").get<boolean>(this.id, undefined);
+    return vimOptionInCode !== undefined ?
+      vimOptionInCode :
+      vscode.workspace.getConfiguration("editor").get("wordSeparators", this.defaultValue);
   }
 
   initialize() {
+    super.initialize();
     // TODO: modify Code's wordSeparators configuration.
   }
 }
@@ -225,7 +228,7 @@ class OptionIskeyword extends BaseOptionDetails {
  * 4. VSCodeVim flavored Vim option default values
  */
 export class Configuration {
-  private static _instance: Configuration;
+  private static _instance: Configuration | null;
 
   constructor() {
     // TODO: Read the real Vim config and override existing configration.
@@ -240,7 +243,7 @@ export class Configuration {
     return Configuration._instance;
   }
 
-  set(option: string, value: number | string | boolean, source?: OptionValueSource): void {
+  set(option: string, value: OptionValue, source?: OptionValueSource): void {
     let targetOption = OptionMap.allOptions[option];
 
     if (!targetOption) {
@@ -260,7 +263,7 @@ export class Configuration {
    * @param vim option.
    * @param defaultValue A value should be returned when no value could be found, is `undefined`.
    */
-  get(option: string, defaultValue?: number | string | boolean): number | string | boolean {
+  get(option: string, defaultValue?: OptionValue): OptionValue | undefined {
     let targetOption = OptionMap.allOptions[option];
 
     if (targetOption) {

@@ -166,6 +166,30 @@
                 "vim.scroll": {
                     "type": "number",
                     "description": "Number of lines to scroll with CTRL-U and CTRL-D commands."
+                },
+                "vim.tabstop": {
+                    "type": "number",
+                    "description": "Number of spaces that a <Tab> in the file counts for."
+                },
+                "vim.expandtab": {
+                    "type": "boolean",
+                    "description": "In Insert mode: Use the appropriate number of spaces to insert a <Tab>."
+                },
+                "vim.iskeyword": {
+                    "type": "string",
+                    "description": "keywords contain alphanumeric characters and '_'"
+                },
+                "vim.ignorecase": {
+                    "type": "boolean",
+                    "description": "Ignore case in search patterns."
+                },
+                "vim.smartcase": {
+                    "type": "boolean",
+                    "description": "Override the 'ignorecase' option if the search pattern contains upper case characters."
+                },
+                "vim.hlsearch": {
+                    "type": "boolean",
+                    "description": "When there is a previous search pattern, highlight all its matches."
                 }
             }
         }
