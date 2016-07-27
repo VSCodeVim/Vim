@@ -109,9 +109,9 @@ export class Position extends vscode.Position {
       let tabSize = vscode.window.activeTextEditor.options.tabSize as number;
 
       if (indentationWidth % tabSize > 0) {
-        return new Position(this.line, this.character - indentationWidth % tabSize);
+        return new Position(this.line, Math.max(0, this.character - indentationWidth % tabSize));
       } else {
-        return new Position(this.line, this.character - tabSize);
+        return new Position(this.line, Math.max(0, this.character - tabSize));
       }
     }
 
