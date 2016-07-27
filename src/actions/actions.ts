@@ -2230,6 +2230,12 @@ class MoveScreenLienEndNonBlank extends MoveByScreenLine {
 }
 
 @RegisterAction
+class MoveScreenLienEndNonBlank extends MoveByScreenLine {
+  keys = ["g", "_"];
+  movementType = "wrappedLineLastNonWhitespaceCharacter";
+}
+
+@RegisterAction
 class MoveScreenLineCenter extends MoveByScreenLine {
   keys = ["g", "m"];
   movementType = "wrappedLineColumnCenter";
