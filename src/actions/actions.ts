@@ -1664,7 +1664,7 @@ abstract class MoveByScreenLine extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
-      inSelectionMode: vimState.currentMode !== ModeName.Normal,
+      select: vimState.currentMode !== ModeName.Normal,
       noOfLines: this.noOfLines
     });
 
