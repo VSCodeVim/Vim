@@ -10,7 +10,7 @@ import { TextEditor } from "../../textEditor";
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
   pattern: string;
   replace: string;
-  flags?: number;
+  flags: number;
   count?: number;
 }
 
@@ -60,8 +60,40 @@ export class SubstituteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  execute() : void {
-    throw new Error("not implemented");
+  getRegex(args: ISubstituteCommandArguments) {
+    let jsRegexFlags = "";
+
+    if (args.flags & SubstituteFlags.ReplaceAll) {
+      jsRegexFlags += "g";
+    }
+
+    if (args.flags & SubstituteFlags.IgnoreCase) {
+      jsRegexFlags += "i";
+    }
+
+    return new RegExp(args.pattern, jsRegexFlags);
+  }
+
+  async replaceTextAtLine(line: number, regex: RegExp) {
+    const originalContent = TextEditor.readLineAt(line);
+    const newContent = originalContent.replace(regex, this._arguments.replace);
+
+    if (originalContent !== newContent) {
+      await TextEditor.replace(new vscode.Range(line, 0, line, originalContent.length), newContent);
+    }
+  }
+
+  async execute(): Promise<void> {
+    const regex = this.getRegex(this._arguments);
+    const selection = vscode.window.activeTextEditor.selection;
+
+    if (selection.start.isEqual(selection.end)) {
+      await this.replaceTextAtLine(selection.start.line, regex);
+    } else {
+      const originalContent = TextEditor.getText(selection);
+      const newContent = originalContent.replace(regex, this._arguments.replace);
+      await TextEditor.replace(selection, newContent);
+    }
   }
 
   async executeWithRange(modeHandler : ModeHandler, range: node.LineRange) {
@@ -84,25 +116,9 @@ export class SubstituteCommand extends node.CommandBase {
     // TODO: Global Setting.
     // TODO: There are differencies between Vim Regex and JS Regex.
 
-    let jsRegexFlags = "";
-    let flags = this._arguments.flags;
-
-    if (flags & SubstituteFlags.ReplaceAll) {
-      jsRegexFlags += "g";
-    }
-
-    if (flags & SubstituteFlags.IgnoreCase) {
-      jsRegexFlags += "i";
-    }
-
-    var regex = new RegExp(this._arguments.pattern, jsRegexFlags);
+    let regex = this.getRegex(this._arguments);
     for (let currentLine = startLine.line; currentLine <= endLine.line && currentLine < TextEditor.getLineCount(); currentLine++) {
-      let originalContent = TextEditor.readLineAt(currentLine);
-      let content = originalContent.replace(regex, this._arguments.replace);
-
-      if (originalContent !== content) {
-        await TextEditor.replace(new vscode.Range(currentLine, 0, currentLine, originalContent.length), content);
-      }
+      await this.replaceTextAtLine(currentLine, regex);
     }
   }
 }

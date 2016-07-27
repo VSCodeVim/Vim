@@ -52,5 +52,23 @@ suite("Basic substitute", () => {
     ]);
   });
 
+  test("Replace current line with no active selection", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>', 'o', 'a', 'b', 'k']);
+    await runCmdLine("s/a/d/g", modeHandler);
 
+    assertEqualLines([
+      "dbd",
+      "ab"
+    ]);
+  });
+
+  test("Replace text in selection", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>', 'o', 'a', 'b', '<esc>', '$', 'v', 'k', '0']);
+    await runCmdLine("s/a/d/g", modeHandler);
+
+    assertEqualLines([
+      "dbd",
+      "ad"
+    ]);
+  });
 });

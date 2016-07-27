@@ -1167,7 +1167,7 @@ export class PutBeforeWithIndentCommand extends BaseCommand {
 
 @RegisterAction
 class CommandShowCommandLine extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [":"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
