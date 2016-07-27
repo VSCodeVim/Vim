@@ -73,6 +73,9 @@ export class SetOptionsCommand extends node.CommandBase {
       case SetOptionOperator.Equal:
         Configuration.getInstance()[this._arguments.name!] = this._arguments.value!;
         break;
+      case SetOptionOperator.Invert:
+        Configuration.getInstance()[this._arguments.name!] = !Configuration.getInstance()[this._arguments.name!];
+        break;
       default:
         break;
     }

@@ -205,21 +205,39 @@ export class SearchState {
       this._matchesDocVersion = TextEditor.getDocumentVersion();
       this._matchRanges = [];
 
+      /* Decide whether the search is case sensitive.
+       * If ignorecase is false, the search is case sensitive.
+       * If ignorecase is true, the search should be case insenstive.
+       * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
+       */
+      let ignorecase = Configuration.getInstance().ignorecase;
+
+      if (ignorecase && Configuration.getInstance().smartcase && /[A-Z]/.test(search)) {
+        ignorecase = false;
+      }
+
+      const regex = new RegExp(search.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&"), ignorecase ? 'gi' : 'g');
+
       outer:
       for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
         const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+        let result = regex.exec(line);
 
-        let i = line.indexOf(search);
-
-        for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+        while (result) {
           if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
             break outer;
           }
 
-          this._matchRanges.push(new vscode.Range(
-            new Position(lineIdx, i),
-            new Position(lineIdx, i + search.length)
+          this.matchRanges.push(new vscode.Range(
+            new Position(lineIdx, result.index),
+            new Position(lineIdx, result.index + search.length)
           ));
+
+          if (result.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+
+          result = regex.exec(line);
         }
       }
     }

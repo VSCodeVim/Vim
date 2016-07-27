@@ -44,7 +44,7 @@ export class Scanner {
       result += c;
     }
 
-    if (c && c !== Scanner.EOF) {
+    if (c && wordSeparators.indexOf(c) !== -1) {
       this.backup();
     }
 
