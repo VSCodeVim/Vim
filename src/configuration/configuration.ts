@@ -49,10 +49,6 @@ export class Configuration {
     return Configuration._instance;
   }
 
-  set(option: string, value: OptionValue): void {
-    this[option] = value;
-  }
-
   useSolidBlockCursor: boolean = false;
   useCtrlKeys: boolean = false;
   scroll: number = 20;

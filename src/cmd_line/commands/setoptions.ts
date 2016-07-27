@@ -65,13 +65,13 @@ export class SetOptionsCommand extends node.CommandBase {
   async execute(): Promise<void> {
     switch (this._arguments.operator) {
       case SetOptionOperator.Set:
-        Configuration.getInstance().set(this._arguments.name!, true);
+        Configuration.getInstance()[this._arguments.name!] = true;
         break;
       case SetOptionOperator.Reset:
-        Configuration.getInstance().set(this._arguments.name!, false);
+        Configuration.getInstance()[this._arguments.name!] = false;
         break;
       case SetOptionOperator.Equal:
-        Configuration.getInstance().set(this._arguments.name!, this._arguments.value!);
+        Configuration.getInstance()[this._arguments.name!] = this._arguments.value!;
         break;
       default:
         break;
