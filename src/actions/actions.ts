@@ -369,13 +369,19 @@ class CommandNumber extends BaseCommand {
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.SearchInProgressMode];
   keys = ["<esc>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode !== ModeName.Visual &&
         vimState.currentMode !== ModeName.VisualLine) {
       vimState.cursorPosition = position.getLeft();
+    }
+
+    if (vimState.currentMode === ModeName.SearchInProgressMode) {
+      if (vimState.searchState) {
+        vimState.cursorPosition = vimState.searchState.searchCursorStartPosition
+      }
     }
 
     vimState.currentMode = ModeName.Normal;
@@ -406,7 +412,6 @@ class CommandCtrlW extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlC extends CommandEsc {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine];
   keys = ["ctrl+c"];
 }
 
