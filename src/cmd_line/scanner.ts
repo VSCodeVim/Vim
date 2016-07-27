@@ -23,8 +23,9 @@ export class Scanner {
   }
 
   // Returns the next word in the input, or EOF.
-  nextWord(): string {
-    this.skipWhiteSpace();
+  nextWord(wordSeparators: string[] = [" ", "\t"]): string {
+    this.skipRun(wordSeparators);
+
     if (this.isAtEof) {
       this.pos = this.input.length;
       return Scanner.EOF;
@@ -36,7 +37,7 @@ export class Scanner {
     while (!this.isAtEof) {
       c = this.next();
 
-      if (!(c !== Scanner.EOF && c !== ' ' && c !== '\t')) {
+      if (c === Scanner.EOF || wordSeparators.indexOf(c) !== -1) {
         break;
       }
 
@@ -46,8 +47,6 @@ export class Scanner {
     if (c && c !== Scanner.EOF) {
       this.backup();
     }
-
-    this.pos += result.length;
 
     this.ignore();
     return result;

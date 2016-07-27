@@ -149,7 +149,7 @@ export class TextEditor {
   }
 
   static getIndentationLevel(line: string): number {
-    let tabSize = <number> Configuration.getInstance().get("tabSize");
+    let tabSize = Configuration.getInstance().tabstop;
     let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
     let visibleColumn: number = 0;
 
@@ -174,8 +174,8 @@ export class TextEditor {
   }
 
   static setIndentationLevel(line: string, screenCharacters: number): string {
-    let tabSize = <number> Configuration.getInstance().get("tabstop");
-    let insertTabAsSpaces = <boolean> Configuration.getInstance().get("expandtab");
+    let tabSize = Configuration.getInstance().tabstop;
+    let insertTabAsSpaces = Configuration.getInstance().expandtab;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;

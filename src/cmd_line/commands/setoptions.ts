@@ -19,6 +19,10 @@ export enum SetOptionOperator {
    * Toggle option: Reset, switch it off.
    */
   Reset,
+  /**
+   * Toggle option: Insert value.
+   */
+  Invert,
   /*
    * Add the {value} to a number option, or append the {value} to a string option.
    * When the option is a comma separated list, a comma is added, unless the value was empty.
@@ -27,7 +31,15 @@ export enum SetOptionOperator {
   /*
    * Subtract the {value} from a number option, or remove the {value} from a string option, if it is there.
    */
-  Subtract
+  Subtract,
+  /**
+   * Multiply the {value} to a number option, or prepend the {value} to a string option.
+   */
+  Multiply,
+  /**
+   * Show value of {option}.
+   */
+  Info
 }
 
 export interface IOptionArgs extends node.ICommandArgs {

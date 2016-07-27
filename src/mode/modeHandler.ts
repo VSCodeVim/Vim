@@ -974,7 +974,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    if (Configuration.getInstance().get("useSolidBlockCursor", false)) {
+    if (Configuration.getInstance().useSolidBlockCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
         rangesToDraw.push(new vscode.Range(
           vimState.cursorPosition,
@@ -1016,7 +1016,7 @@ export class ModeHandler implements vscode.Disposable {
     // Draw search highlight
 
     if (this.currentMode.name === ModeName.SearchInProgressMode ||
-      (Configuration.getInstance().get("hlsearch") && vimState.searchState)) {
+      (Configuration.getInstance().hlsearch && vimState.searchState)) {
       const searchState = vimState.searchState!;
 
       rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
@@ -1039,7 +1039,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
-    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().get("useCtrlKeys", false));
+    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().useCtrlKeys);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {

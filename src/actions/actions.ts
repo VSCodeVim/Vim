@@ -1489,7 +1489,7 @@ class CommandMoveHalfPageDown extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return new Position(
-      Math.min(TextEditor.getLineCount() - 1, position.line + <number> Configuration.getInstance().get("scroll")),
+      Math.min(TextEditor.getLineCount() - 1, position.line + Configuration.getInstance().scroll),
       position.character
     );
   }
@@ -1500,7 +1500,7 @@ class CommandMoveHalfPageUp extends BaseMovement {
   keys = ["ctrl+u"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(Math.max(0, position.line - <number> Configuration.getInstance().get("scroll")), position.character);
+    return new Position(Math.max(0, position.line - Configuration.getInstance().scroll), position.character);
   }
 }
 

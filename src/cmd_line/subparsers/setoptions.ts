@@ -11,41 +11,65 @@ export function parseOption(args: string) : node.IOptionArgs {
     return {};
   }
 
-  let option = scanner.nextWord();
+  let optionName = scanner.nextWord("?!&=:^+-".split(""));
 
-  if (option.startsWith("no")) {
-    // :se[t] no{option}  Toggle option: Reset, switch it off.
+  if (optionName.startsWith("no")) {
     return {
-      name: option.substring(2, option.length),
+      name: optionName.substring(2, optionName.length),
       operator: node.SetOptionOperator.Reset
     };
   }
 
-  if (option.includes('=')) {
-    // :se[t] {option}={value} Set string or number option to {value}.
-    let equalSign = option.indexOf('=');
+  if (optionName.startsWith("inv")) {
     return {
-      name: option.substring(0, equalSign),
-      value: option.substring(equalSign + 1, option.length),
-      operator: node.SetOptionOperator.Equal
+      name: optionName.substring(3, optionName.length),
+      operator: node.SetOptionOperator.Invert
     };
   }
 
-  if (option.includes(':')) {
-    // :se[t] {option}:{value} Set string or number option to {value}.
-    let equalSign = option.indexOf(':');
+  scanner.skipWhiteSpace();
+
+  if (scanner.isAtEof) {
     return {
-      name: option.substring(0, equalSign),
-      value: option.substring(equalSign + 1, option.length),
-      operator: node.SetOptionOperator.Equal
+      name: optionName,
+      operator: node.SetOptionOperator.Set
     };
   }
 
-  // :se[t] {option}
-  return {
-    name: option,
-    operator: node.SetOptionOperator.Set
+  let operator = scanner.next();
+  let optionArgs: node.IOptionArgs = {
+    name: optionName,
+    value: scanner.nextWord([])
   };
+
+  switch (operator) {
+    case "=":
+    case ":":
+      optionArgs.operator = node.SetOptionOperator.Equal;
+      break;
+    case "!":
+      optionArgs.operator = node.SetOptionOperator.Invert;
+      break;
+    case "^":
+      optionArgs.operator = node.SetOptionOperator.Multiply;
+      break;
+    case "+":
+      optionArgs.operator = node.SetOptionOperator.Append;
+      break;
+    case "-":
+      optionArgs.operator = node.SetOptionOperator.Subtract;
+      break;
+    case "?":
+      optionArgs.operator = node.SetOptionOperator.Info;
+      break;
+    case "&":
+      optionArgs.operator = node.SetOptionOperator.Reset;
+      break;
+    default:
+      throw new Error("Unknown option");
+  }
+
+  return optionArgs;
 }
 
 export function parseOptionsCommandArgs(args : string) : node.SetOptionsCommand {
