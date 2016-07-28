@@ -56,80 +56,29 @@ export class Configuration {
   ignorecase: boolean = true;
   smartcase: boolean = true;
 
-  /**
-   * Intersection of Vim options and Code configuration.
-   */
-  private _tabstop: number;
-  public set tabstop(tabstop: number) {
-    this._tabstop = tabstop;
-    if (!vscode.window.activeTextEditor) {
-      // TODO: We should set configuration by API, which is not currently supported.
-      return;
-    }
+  @overlapSetting({ codeName: "tabSize", default: 8})
+  tabstop: number;
 
-    const oldOptions = vscode.window.activeTextEditor.options;
-    oldOptions.tabSize = tabstop;
-    vscode.window.activeTextEditor.options = oldOptions;
-  }
+  @overlapSetting({ codeName: "insertSpaces", default: false})
+  expandtab: boolean;
 
-  @enumerable()
-  public get tabstop() {
-    if (this._tabstop !== undefined) {
-      return this._tabstop;
-    } else {
-      if (vscode.window.activeTextEditor) {
-        return vscode.window.activeTextEditor.options.tabSize as number;
-      } else {
-        return 8;
-      }
-    }
-  }
-
-  private _expandtab: boolean;
-  public set expandtab(expand: boolean) {
-    this._expandtab = expand;
-
-    if (!vscode.window.activeTextEditor) {
-      // TODO: We should set configuration by API, which is not currently supported.
-      return;
-    }
-
-    const oldOptions = vscode.window.activeTextEditor.options;
-    oldOptions.insertSpaces = expand;
-    vscode.window.activeTextEditor.options = oldOptions;
-  }
-
-  @enumerable()
-  public get expandtab() {
-    if (this._expandtab !== undefined) {
-      return this._expandtab;
-    } else {
-      if (vscode.window.activeTextEditor) {
-        return vscode.window.activeTextEditor.options.insertSpaces as boolean;
-      } else {
-        // Default value.
-        return false;
-      }
-    }
-  }
-
-  private _iskeyword: string;
-  public set iskeyword(keyword) {
-    this._iskeyword = keyword;
-  }
-
-  @enumerable()
-  public get iskeyword() {
-    if (this._iskeyword) {
-      return this._iskeyword;
-    } else {
-      return vscode.workspace.getConfiguration("editor").get("wordSeparators", "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?");
-    }
-  }
+  @overlapSetting({ codeName: "wordSepatators", default: "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?"})
+  iskeyword: string;
 }
 
-function enumerable() {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    descriptor.enumerable = true;
+function overlapSetting(args: {codeName: string, default: OptionValue}) {
+  return function (target: any, propertyKey: string) {
+    Object.defineProperty(target, propertyKey, {
+      get: function () {
+        if (this["_" + propertyKey] !== undefined) {
+          return this["_" + propertyKey];
+        }
+
+        return vscode.workspace.getConfiguration("editor").get(args.codeName, args.default);
+      },
+      set: function (value) { this["_" + propertyKey] = value; },
+      enumerable: true,
+      configurable: true
+    });
   };
 }
