@@ -257,6 +257,38 @@ export class Position extends vscode.Position {
   }
 
   /**
+   * Get the boundary position of the section.
+   */
+  public getSectionBoundary(args: { forward: boolean, boundary: string }): Position {
+    let pos: Position = this;
+
+    if ((args.forward && pos.line === TextEditor.getLineCount() - 1) ||
+        (!args.forward && pos.line === 0)) {
+      return pos.getFirstLineNonBlankChar();
+    }
+
+    pos = args.forward ? pos.getDown(0) : pos.getUp(0);
+
+    while (!TextEditor.getLineAt(pos).text.startsWith(args.boundary)) {
+      if (args.forward) {
+        if (pos.line === TextEditor.getLineCount() - 1) {
+          break;
+        }
+
+        pos = pos.getDown(0);
+      } else {
+        if (pos.line === 0) {
+          break;
+        }
+
+        pos = pos.getUp(0);
+      }
+    }
+
+    return pos.getFirstLineNonBlankChar();
+  }
+
+  /**
    * Get the end of the current paragraph.
    */
   public getCurrentParagraphEnd(): Position {

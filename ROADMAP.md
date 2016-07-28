@@ -86,10 +86,10 @@ Status | Command | Description
 :white_check_mark:   | :1234:  (		| N sentences backward
 :white_check_mark:   | :1234:  }		| N paragraphs forward
 :white_check_mark:   | :1234:  {		| N paragraphs backward
-   | :1234:  ]]		| N sections forward, at start of section
-   | :1234:  [[		| N sections backward, at start of section
-   | :1234:  ][		| N sections forward, at end of section
-   | :1234:  []		| N sections backward, at end of section
+:white_check_mark:   | :1234:  ]]		| N sections forward, at start of section
+:white_check_mark:   | :1234:  [[		| N sections backward, at start of section
+:white_check_mark:   | :1234:  ][		| N sections forward, at end of section
+:white_check_mark:   | :1234:  []		| N sections backward, at end of section
 :white_check_mark:   | :1234:  [(		| N times back to unclosed '('
 :white_check_mark:   | :1234:  [{		| N times back to unclosed '{'
 :arrow_down:   | :1234:  [m		| N times back to start of method (for Java)
@@ -192,10 +192,10 @@ Status | Command | Description
 :warning:   | :1234:  Y		| yank N lines into a register
 :white_check_mark:   | :1234:  p		| put a register after the cursor position (N times)
 :white_check_mark:   | :1234:  P		| put a register before the cursor position (N times)
-   | :1234:  ]p		| like p, but adjust indent to current line
-   | :1234:  [p		| like P, but adjust indent to current line
-   | :1234:  gp		| like p, but leave cursor after the new text
-   | :1234:  gP		| like P, but leave cursor after the new text
+:white_check_mark:   | :1234:  ]p		| like p, but adjust indent to current line
+:white_check_mark:   | :1234:  [p		| like P, but adjust indent to current line
+:white_check_mark:   | :1234:  gp		| like p, but leave cursor after the new text
+:white_check_mark:   | :1234:  gP		| like P, but leave cursor after the new text
 
 ## Changing text
 
