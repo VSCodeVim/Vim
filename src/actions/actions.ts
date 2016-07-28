@@ -380,7 +380,7 @@ class CommandEsc extends BaseCommand {
 
     if (vimState.currentMode === ModeName.SearchInProgressMode) {
       if (vimState.searchState) {
-        vimState.cursorPosition = vimState.searchState.searchCursorStartPosition
+        vimState.cursorPosition = vimState.searchState.searchCursorStartPosition;
       }
     }
 
