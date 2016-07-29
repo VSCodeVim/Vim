@@ -1278,6 +1278,18 @@ class CommandDeleteToLineEnd extends BaseCommand {
 }
 
 @RegisterAction
+class CommandYankFullLine extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["Y"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    return await new YankOperator().run(vimState, position.getLineBegin(), position.getLineEnd().getLeft());
+  }
+}
+
+@RegisterAction
 class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["C"];
