@@ -1733,6 +1733,130 @@ class MoveLineBegin extends BaseMovement {
   }
 }
 
+abstract class MoveByScreenLine extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  movementType: string;
+  /**
+   * This parameter is used only when to is lineUp or lineDown.
+   * For other screen line movements, we are always operating on the same screen line.
+   * So we make its default value as 0.
+   */
+  noOfLines = 0;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    await vscode.commands.executeCommand("cursorMove", {
+      to: this.movementType,
+      select: vimState.currentMode !== ModeName.Normal,
+      noOfLines: this.noOfLines
+    });
+
+    if (vimState.currentMode === ModeName.Normal) {
+      return Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+    } else {
+      /**
+       * cursorMove command is handling the selection for us.
+       * So we are not following our design principal (do no real movement inside an action) here.
+       */
+      return {
+        start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
+        stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+      };
+    }
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    await vscode.commands.executeCommand("cursorMove", {
+      to: this.movementType,
+      inSelectionMode: true,
+      noOfLines: this.noOfLines
+    });
+
+    return {
+      start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
+      stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+    };
+  }
+}
+
+@RegisterAction
+class MoveScreenLineBegin extends MoveByScreenLine {
+  keys = ["g", "0"];
+  movementType = "wrappedLineStart";
+}
+
+@RegisterAction
+class MoveScreenNonBlank extends MoveByScreenLine {
+  keys = ["g", "^"];
+  movementType = "wrappedLineFirstNonWhitespaceCharacter";
+}
+
+@RegisterAction
+class MoveScreenLineEnd extends MoveByScreenLine {
+  keys = ["g", "$"];
+  movementType = "wrappedLineEnd";
+}
+
+@RegisterAction
+class MoveScreenLienEndNonBlank extends MoveByScreenLine {
+  keys = ["g", "_"];
+  movementType = "wrappedLineLastNonWhitespaceCharacter";
+}
+
+@RegisterAction
+class MoveScreenLineCenter extends MoveByScreenLine {
+  keys = ["g", "m"];
+  movementType = "wrappedLineColumnCenter";
+}
+
+@RegisterAction
+class MoveUpByScreenLine extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "k"];
+  movementType = "up";
+  noOfLines = 1;
+}
+
+@RegisterAction
+class MoveDownByScreenLine extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "j"];
+  movementType = "down";
+  noOfLines = 1;
+}
+
+@RegisterAction
+class MoveToLineFromViewPortTop extends MoveByScreenLine {
+  keys = ["H"];
+  movementType = "viewPortTop";
+  noOfLines = 1;
+  canBePrefixedWithCount = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    this.noOfLines = count < 1 ? 1 : count;
+    return await this.execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveToLineFromViewPortBottom extends MoveByScreenLine {
+  keys = ["L"];
+  movementType = "viewPortBottom";
+  noOfLines = 1;
+  canBePrefixedWithCount = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    this.noOfLines = count < 1 ? 1 : count;
+    return await this.execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveToViewPortCenter extends MoveScreenLineBegin {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["M"];
+  movementType = "viewPortCenter";
+}
+
 @RegisterAction
 class MoveNonBlank extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
