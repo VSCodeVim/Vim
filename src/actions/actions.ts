@@ -2103,6 +2103,27 @@ class ActionDeleteChar extends BaseCommand {
 }
 
 @RegisterAction
+class ActionDeleteCharWithDeleteKey extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<delete>"];
+  canBePrefixedWithCount = true;
+  canBeRepeatedWithDot = true;
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    // N<del> is a no-op in Vim
+    if (vimState.recordedState.count !== 0) {
+      return vimState;
+    }
+
+    const state = await new DeleteOperator().run(vimState, position, position);
+
+    state.currentMode = ModeName.Normal;
+
+    return state;
+  }
+}
+
+@RegisterAction
 class ActionDeleteLastChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["X"];

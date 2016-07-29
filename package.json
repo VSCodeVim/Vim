@@ -53,6 +53,11 @@
                 "when": "editorTextFocus"
             },
             {
+                "key": "Delete",
+                "command": "extension.vim_delete",
+                "when": "editorTextFocus && vim.mode == 'Normal Mode'"
+            },
+            {
                 "key": "ctrl+r",
                 "command": "extension.vim_ctrl+r",
                 "when": "editorTextFocus"
