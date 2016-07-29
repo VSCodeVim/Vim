@@ -1130,16 +1130,53 @@ class CommandDot extends BaseCommand {
   }
 }
 
-@RegisterAction
-class CommandFold extends BaseCommand {
+abstract class CommandFold extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["z", "c"];
+  commandName: string;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.fold");
+    await vscode.commands.executeCommand(this.commandName);
     vimState.currentMode = ModeName.Normal;
     return vimState;
   }
+}
+
+@RegisterAction
+class CommandCloseFold extends CommandFold {
+  keys = ["z", "c"];
+  commandName = "editor.fold";
+}
+
+@RegisterAction
+class CommandCloseAllFolds extends CommandFold {
+  keys = ["z", "M"];
+  commandName = "editor.foldAll";
+}
+
+@RegisterAction
+class CommandOpenFold extends CommandFold {
+  keys = ["z", "o"];
+  commandName = "editor.unfold";
+}
+
+@RegisterAction
+class CommandOpenAllFolds extends CommandFold {
+  keys = ["z", "R"];
+  commandName = "editor.unfoldAll";
+}
+
+@RegisterAction
+class CommandCloseAllFoldsRecursively extends CommandFold {
+  modes = [ModeName.Normal];
+  keys = ["z", "C"];
+  commandName = "editor.foldRecursively";
+}
+
+@RegisterAction
+class CommandOpenAllFoldsRecursively extends CommandFold {
+  modes = [ModeName.Normal];
+  keys = ["z", "O"];
+  commandName = "editor.unFoldRecursively";
 }
 
 @RegisterAction
@@ -1152,42 +1189,6 @@ class CommandCenterScroll extends BaseCommand {
       new vscode.Range(vimState.cursorPosition,
                        vimState.cursorPosition),
       vscode.TextEditorRevealType.InCenter);
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandUnfold extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["z", "o"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.unfold");
-    vimState.currentMode = ModeName.Normal;
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandFoldAll extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["z", "C"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.foldAll");
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandUnfoldAll extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["z", "O"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.unfoldAll");
 
     return vimState;
   }
