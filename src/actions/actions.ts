@@ -1350,6 +1350,20 @@ class CommandExitVisualLineMode extends BaseCommand {
   }
 }
 
+@RegisterAction
+class CommandGoToDefinition extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "d"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.goToDeclaration");
+
+    vimState.focusChanged = true;
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    return vimState;
+  }
+}
+
 // begin insert commands
 
 @RegisterAction
