@@ -917,7 +917,7 @@ export class PutCommand extends BaseCommand {
     canBeRepeatedWithDot = true;
 
     public async exec(position: Position, vimState: VimState, before: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
-        const register = Register.get(vimState);
+        const register = await Register.get(vimState);
         const dest = before ? position : position.getRight();
         let text = register.text;
 
@@ -985,7 +985,7 @@ export class GPutCommand extends BaseCommand {
       }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    const register = Register.get(vimState);
+    const register = await Register.get(vimState);
     const addedLinesCount = register.text.split('\n').length;
     const result = await super.execCount(position, vimState);
 
@@ -1104,7 +1104,7 @@ export class GPutBeforeCommand extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const result = await new PutCommand().exec(position, vimState, true);
-    const register = Register.get(vimState);
+    const register = await Register.get(vimState);
     const addedLinesCount = register.text.split('\n').length;
 
     if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
