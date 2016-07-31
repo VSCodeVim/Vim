@@ -1195,15 +1195,12 @@ class CommandUnfoldAll extends BaseCommand {
 
 @RegisterAction
 class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
-  modes = [ModeName.Visual];
+  modes = [ModeName.Visual, ModeName.VisualLine];
   keys = ["o"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let t1 = vimState.cursorPosition;
-    let t2 = vimState.cursorStartPosition;
-
-    vimState.cursorStartPosition = t1;
-    vimState.cursorPosition = t2;
+    [vimState.cursorStartPosition, vimState.cursorPosition] =
+    [vimState.cursorPosition, vimState.cursorStartPosition];
 
     return vimState;
   }
