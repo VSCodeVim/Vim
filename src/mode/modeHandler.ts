@@ -103,8 +103,6 @@ export class VimState {
     }
   }
 
-  public registerName = '"';
-
   /**
    * This is for oddball commands that don't manipulate text in any way.
    */
@@ -301,6 +299,11 @@ export class RecordedState {
    * The number of times the user wants to repeat this action.
    */
   public count: number = 0;
+
+  /**
+   * The register name for this action.
+   */
+  public registerName: string = '"';
 
   public clone(): RecordedState {
     const res = new RecordedState();

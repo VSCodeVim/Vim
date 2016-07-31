@@ -18,8 +18,12 @@ export interface IRegisterContent {
 }
 
 export class Register {
+  /**
+   * The '*' is the special register for stroing into system clipboard.
+   */
   private static validRegisters = [
-    '"'
+    '"',
+    '*'
   ];
 
   private static registers: { [key: string]: IRegisterContent } = {
@@ -31,7 +35,7 @@ export class Register {
    * register ".
    */
   public static put(content: string, vimState: VimState): void {
-    const register = vimState.registerName;
+    const register = vimState.recordedState.registerName;
 
     if (Register.validRegisters.indexOf(register) === -1) {
       throw new Error(`Invalid register ${register}`);
@@ -48,7 +52,7 @@ export class Register {
    * register ".
    */
   public static get(vimState: VimState): IRegisterContent {
-    const register = vimState.registerName;
+    const register = vimState.recordedState.registerName;
 
     if (Register.validRegisters.indexOf(register) === -1) {
       throw new Error(`Invalid register ${register}`);
