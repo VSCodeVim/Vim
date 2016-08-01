@@ -498,11 +498,14 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private loadSettings(): void {
-    this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
-      .get("useSolidBlockCursor", false);
-    this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
-    this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
-    this._vimState.settings.switchToVisualOnSelection = vscode.workspace.getConfiguration("vim").get("switchToVisualOnSelection", false) || false;
+    this._vimState.settings.useSolidBlockCursor =
+      vscode.workspace.getConfiguration("vim").get("useSolidBlockCursor", false);
+    this._vimState.settings.scroll =
+      vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
+    this._vimState.settings.useCtrlKeys =
+      vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
+    this._vimState.settings.switchToVisualOnSelection =
+      vscode.workspace.getConfiguration("vim").get("switchToVisualOnSelection", false) || false;
   }
 
   /**
