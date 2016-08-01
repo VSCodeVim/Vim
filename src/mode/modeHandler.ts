@@ -124,8 +124,9 @@ export class VimState {
 
 export class VimSettings {
   useSolidBlockCursor = false;
-  scroll        = 20;
-  useCtrlKeys     = false;
+  scroll = 20;
+  useCtrlKeys = false;
+  switchToVisualOnSelection = false;
 }
 
 export enum SearchDirection {
@@ -459,7 +460,6 @@ export class ModeHandler implements vscode.Disposable {
 
         this._vimState.desiredColumn     = newPosition.character;
 
-        // start visual mode?
 
         if (!selection.anchor.isEqual(selection.active)) {
           var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
@@ -474,7 +474,12 @@ export class ModeHandler implements vscode.Disposable {
             this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
           }
 
-          if (this._vimState.currentMode !== ModeName.Visual &&
+          // start visual mode?
+
+          const stayInInsertModeWhenSelecting = this._vimState.settings.switchToVisualOnSelection ?
+            true : this._vimState.currentMode !== ModeName.Insert;
+          if (stayInInsertModeWhenSelecting &&
+            this._vimState.currentMode !== ModeName.Visual &&
             this._vimState.currentMode !== ModeName.VisualLine) {
 
             this._vimState.currentMode = ModeName.Visual;
@@ -497,6 +502,7 @@ export class ModeHandler implements vscode.Disposable {
       .get("useSolidBlockCursor", false);
     this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
     this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
+    this._vimState.settings.switchToVisualOnSelection = vscode.workspace.getConfiguration("vim").get("switchToVisualOnSelection", false) || false;
   }
 
   /**

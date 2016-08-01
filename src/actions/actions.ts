@@ -590,10 +590,17 @@ class CommandInsertInInsertMode extends BaseCommand {
         vimState.cursorStartPosition = leftPosition;
       }
     } else {
-      await TextEditor.insert(char, vimState.cursorPosition);
+      const selection = vscode.window.activeTextEditor.selection;
+      if (selection.isEmpty) {
+        await TextEditor.insert(char, vimState.cursorPosition);
+      } else {
+        await TextEditor.replace(selection, char);
+      }
 
-      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      const cursorPosition = vscode.window.activeTextEditor.selection.end;
+
+      vimState.cursorStartPosition = Position.FromVSCodePosition(cursorPosition);
+      vimState.cursorPosition = Position.FromVSCodePosition(cursorPosition);
     }
 
     return vimState;
