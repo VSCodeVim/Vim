@@ -1130,16 +1130,53 @@ class CommandDot extends BaseCommand {
   }
 }
 
-@RegisterAction
-class CommandFold extends BaseCommand {
+abstract class CommandFold extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["z", "c"];
+  commandName: string;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.fold");
+    await vscode.commands.executeCommand(this.commandName);
     vimState.currentMode = ModeName.Normal;
     return vimState;
   }
+}
+
+@RegisterAction
+class CommandCloseFold extends CommandFold {
+  keys = ["z", "c"];
+  commandName = "editor.fold";
+}
+
+@RegisterAction
+class CommandCloseAllFolds extends CommandFold {
+  keys = ["z", "M"];
+  commandName = "editor.foldAll";
+}
+
+@RegisterAction
+class CommandOpenFold extends CommandFold {
+  keys = ["z", "o"];
+  commandName = "editor.unfold";
+}
+
+@RegisterAction
+class CommandOpenAllFolds extends CommandFold {
+  keys = ["z", "R"];
+  commandName = "editor.unfoldAll";
+}
+
+@RegisterAction
+class CommandCloseAllFoldsRecursively extends CommandFold {
+  modes = [ModeName.Normal];
+  keys = ["z", "C"];
+  commandName = "editor.foldRecursively";
+}
+
+@RegisterAction
+class CommandOpenAllFoldsRecursively extends CommandFold {
+  modes = [ModeName.Normal];
+  keys = ["z", "O"];
+  commandName = "editor.unFoldRecursively";
 }
 
 @RegisterAction
@@ -1152,42 +1189,6 @@ class CommandCenterScroll extends BaseCommand {
       new vscode.Range(vimState.cursorPosition,
                        vimState.cursorPosition),
       vscode.TextEditorRevealType.InCenter);
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandUnfold extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["z", "o"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.unfold");
-    vimState.currentMode = ModeName.Normal;
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandFoldAll extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["z", "C"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.foldAll");
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandUnfoldAll extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["z", "O"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.unfoldAll");
 
     return vimState;
   }
@@ -1287,6 +1288,18 @@ class CommandDeleteToLineEnd extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
+  }
+}
+
+@RegisterAction
+class CommandYankFullLine extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["Y"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    return await new YankOperator().run(vimState, position.getLineBegin(), position.getLineEnd().getLeft());
   }
 }
 
@@ -1734,6 +1747,130 @@ class MoveLineBegin extends BaseMovement {
   }
 }
 
+abstract class MoveByScreenLine extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  movementType: string;
+  /**
+   * This parameter is used only when to is lineUp or lineDown.
+   * For other screen line movements, we are always operating on the same screen line.
+   * So we make its default value as 0.
+   */
+  noOfLines = 0;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    await vscode.commands.executeCommand("cursorMove", {
+      to: this.movementType,
+      select: vimState.currentMode !== ModeName.Normal,
+      noOfLines: this.noOfLines
+    });
+
+    if (vimState.currentMode === ModeName.Normal) {
+      return Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+    } else {
+      /**
+       * cursorMove command is handling the selection for us.
+       * So we are not following our design principal (do no real movement inside an action) here.
+       */
+      return {
+        start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
+        stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+      };
+    }
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    await vscode.commands.executeCommand("cursorMove", {
+      to: this.movementType,
+      inSelectionMode: true,
+      noOfLines: this.noOfLines
+    });
+
+    return {
+      start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
+      stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+    };
+  }
+}
+
+@RegisterAction
+class MoveScreenLineBegin extends MoveByScreenLine {
+  keys = ["g", "0"];
+  movementType = "wrappedLineStart";
+}
+
+@RegisterAction
+class MoveScreenNonBlank extends MoveByScreenLine {
+  keys = ["g", "^"];
+  movementType = "wrappedLineFirstNonWhitespaceCharacter";
+}
+
+@RegisterAction
+class MoveScreenLineEnd extends MoveByScreenLine {
+  keys = ["g", "$"];
+  movementType = "wrappedLineEnd";
+}
+
+@RegisterAction
+class MoveScreenLienEndNonBlank extends MoveByScreenLine {
+  keys = ["g", "_"];
+  movementType = "wrappedLineLastNonWhitespaceCharacter";
+}
+
+@RegisterAction
+class MoveScreenLineCenter extends MoveByScreenLine {
+  keys = ["g", "m"];
+  movementType = "wrappedLineColumnCenter";
+}
+
+@RegisterAction
+class MoveUpByScreenLine extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "k"];
+  movementType = "up";
+  noOfLines = 1;
+}
+
+@RegisterAction
+class MoveDownByScreenLine extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "j"];
+  movementType = "down";
+  noOfLines = 1;
+}
+
+@RegisterAction
+class MoveToLineFromViewPortTop extends MoveByScreenLine {
+  keys = ["H"];
+  movementType = "viewPortTop";
+  noOfLines = 1;
+  canBePrefixedWithCount = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    this.noOfLines = count < 1 ? 1 : count;
+    return await this.execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveToLineFromViewPortBottom extends MoveByScreenLine {
+  keys = ["L"];
+  movementType = "viewPortBottom";
+  noOfLines = 1;
+  canBePrefixedWithCount = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    this.noOfLines = count < 1 ? 1 : count;
+    return await this.execAction(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveToViewPortCenter extends MoveScreenLineBegin {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["M"];
+  movementType = "viewPortCenter";
+}
+
 @RegisterAction
 class MoveNonBlank extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
@@ -1970,6 +2107,27 @@ class ActionDeleteChar extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const state = await new DeleteOperator().run(vimState, position, position);
+
+    state.currentMode = ModeName.Normal;
+
+    return state;
+  }
+}
+
+@RegisterAction
+class ActionDeleteCharWithDeleteKey extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<delete>"];
+  canBePrefixedWithCount = true;
+  canBeRepeatedWithDot = true;
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    // N<del> is a no-op in Vim
+    if (vimState.recordedState.count !== 0) {
+      return vimState;
+    }
+
     const state = await new DeleteOperator().run(vimState, position, position);
 
     state.currentMode = ModeName.Normal;

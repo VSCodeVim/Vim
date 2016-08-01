@@ -417,3 +417,82 @@ Status | Command | Description
 :white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
 :x:   | :tabs	 | List the tab pages and the windows they contain.
     | :tabd[o] {cmd} | Execute {cmd} in each tab page.
+
+## options
+### Commands
+Status | Command | Description
+---|--------|------------------------------
+    | :se[t]              | show all modified options
+    | :se[t] all		  | show all non-termcap options
+    | :se[t] termcap      | show all termcap options
+:white_check_mark: | :se[t] {option}	  | set boolean option (switch it on), show string or number option
+:white_check_mark: | :se[t] no{option}	  | reset boolean option (switch it off)
+    | :se[t] inv{option}  |invert boolean option
+:white_check_mark: | :se[t] {option}={value} | set string/number option to {value}
+    | :se[t] {option}+={value} | append {value} to string option, add {value} to number option
+    | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option
+    | :se[t] {option}?	  | show value of {option}
+    | :se[t] {option}&	  | reset {option} to its default value
+    | :setl[ocal]		  | like ":set" but set the local value for options that have one
+    | :setg[lobal]		  | like ":set" but set the global value of a local option
+    | :fix[del]		      | set value of 't_kD' according to value of 't_kb'
+    | :opt[ions]		  | open a new window to view and set options, grouped by functionality, a one line explanation and links to the help
+
+### Option list
+Since the list is too long, now we just put those already supported options here.
+
+Status | Command | Default Value | Description
+---|--------|-------|------------------------------
+:white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that <Tab> in file uses
+:white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when <Tab> is inserted
+
+## Folding
+### Fold methods
+The folding method can be set with the 'foldmethod' option. This is currently not possible as we are relying on Code's Fold logic.
+
+### Fold commands
+
+Status | Command | Description
+---|--------|------------------------------
+:x: | zf{motion} or {Visual}zf | Operator to create a fold.
+:x: | zF | Create a fold for [count] lines.  Works like "zf".
+:x: | zd | Delete one fold at the cursor.
+:x: | zD | Delete folds recursively at the cursor.
+:x: | zE | Eliminate all folds in the window.
+:warning: :x: | zo | Open one fold under the cursor.When a count is given, that many folds deep will be opened.
+:white_check_mark: | zO | Open all folds under the cursor recursively.
+:warning: :x: | zc | Close one fold under the cursor.  When a count is given, that many folds deep are closed.
+:white_check_mark:| zC | Close all folds under the cursor recursively.
+:x: | za | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.
+:x: | zA | When on a closed fold: open it recursively. When on an open fold: close it recursively and set 'foldenable'.
+:x: | zv | View cursor line: Open just enough folds to make the line in which the cursor is located not folded.
+:x: | zx | Update folds: Undo manually opened and closed folds: re-apply 'foldlevel', then do "zv": View cursor line.
+:x: | zX | Undo manually opened and closed folds
+:x: | zm | Fold more: Subtract one from 'foldlevel'.
+:white_check_mark: | zM | Close all folds: set 'foldlevel' to 0. 'foldenable' will be set.
+:x: | zr | Reduce folding: Add one to 'foldlevel'.
+:white_check_mark: | zR | Open all folds.  This sets 'foldlevel' to highest fold level.
+ | zn | Fold none: reset 'foldenable'.  All folds will be open.
+ | zN | Fold normal: set 'foldenable'.  All folds will be as they were before.
+ | zi | Invert 'foldenable'.
+:x: | [z | Move to the start of the current open fold.
+:x: | ]z | Move to the end of the current open fold.
+:x: | zj | Move downwards to the start of the next fold.
+:x: | zk | Move upwards to the end of the previous fold.
+
+### Fold options
+
+Status | Command | Description
+---|--------|------------------------------
+:x: | foldlevel | 'foldlevel' is a number option: The higher the more folded regions are open.
+:x: | foldtext | 'foldtext' is a string option that specifies an expression. This expression is evaluated to obtain the text displayed for a closed fold.
+:x: | foldcolumn | 'foldcolumn' is a number, which sets the width for a column on the side of the window to indicate folds.
+    | foldenable fen | Open all folds while not set.
+:x: | foldexpr fde | Expression used for "expr" folding.
+:x: | foldignore fdi | Characters used for "indent" folding.
+:x: | foldmarker fmr | Defined markers used for "marker" folding.
+:x: | foldmethod fdm | Name of the current folding method.
+:x: | foldminlines fml | Minimum number of screen lines for a fold to be displayed closed.
+:x: | foldnestmax fdn | Maximum nesting for "indent" and "syntax" folding.
+:x: | foldopen fdo | Which kinds of commands open closed folds.
+:x: | foldclose fcl | When the folds not under the cursor are closed.
