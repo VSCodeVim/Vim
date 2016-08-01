@@ -32,7 +32,7 @@ export class Register {
     '*': { text: "", registerMode: RegisterMode.CharacterWise }
   };
 
-  private static isValidRegister(register: string): boolean {
+  public static isValidRegister(register: string): boolean {
     return register in Register.registers || /^[a-z0-9]+$/i.test(register);
   }
 
@@ -76,8 +76,11 @@ export class Register {
     if (register === '*') {
       const text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => {
-          if (err) { reject(err); }
-          else { resolve(text); }
+          if (err) {
+            reject(err);
+          } else {
+            resolve(text);
+          }
         })
       );
       Register.registers[register].text = text;

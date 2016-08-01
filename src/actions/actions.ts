@@ -382,13 +382,13 @@ class CommandRegister extends BaseCommand {
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const register = keysPressed[1];
 
-    return super.doesActionApply(vimState, keysPressed) && true;
+    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const register = keysPressed[1];
 
-    return super.couldActionApply(vimState, keysPressed) && true;
+    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 }
 

@@ -1025,5 +1025,5 @@ suite("Mode Normal", () => {
       start: ["|blah blah"],
       keysPressed: "Yp",
       end: ["blah blah", "|blah blah"]
-    })
+    });
 });
