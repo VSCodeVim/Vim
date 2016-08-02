@@ -43,10 +43,10 @@ Status | Command | Description
 :white_check_mark:   |   0		| to first character in the line (also: Home key)
 :white_check_mark:   |   ^		| to first non-blank character in the line
 :white_check_mark:   |:1234:  $	| to the last character in the line (N-1 lines lower) (also: End key)
-:x:   |   g0		| to first character in screen line (differs from "0" when lines wrap)
-:x:   |   g^		| to first non-blank character in screen line (differs from "^" when lines wrap)
-:x:   |:1234:  g$    	| to last character in screen line (differs from "$" when lines wrap)
-:x:   |   gm		| to middle of the screen line
+:white_check_mark:   |   g0		| to first character in screen line (differs from "0" when lines wrap)
+:white_check_mark:   |   g^		| to first non-blank character in screen line (differs from "^" when lines wrap)
+:white_check_mark:   |:1234:  g$    	| to last character in screen line (differs from "$" when lines wrap)
+:white_check_mark:   |   gm		| to middle of the screen line
 :white_check_mark:   |:1234:  \|	| to column N (default: 1)
 :white_check_mark:   |:1234:  f{char}	| to the Nth occurrence of {char} to the right
 :white_check_mark:   |:1234:  F{char}	| to the Nth occurrence of {char} to the left
@@ -67,8 +67,8 @@ Status | Command | Description
 :white_check_mark:   | :1234:  G		| goto line N (default: last line), on the first non-blank character
 :white_check_mark:   | :1234:  gg		| goto line N (default: first line), on the first non-blank character
 :white_check_mark:   | :1234:  %		| goto line N percentage down in the file; N must be given, otherwise it is the |%| command
-:x:   | :1234:  gk		| up N screen lines (differs from "k" when line wraps)
-:x:   | :1234:  gj		| own N screen lines (differs from "j" when line wraps)
+:white_check_mark:   | :1234:  gk		| up N screen lines (differs from "k" when line wraps)
+:white_check_mark:   | :1234:  gj		| own N screen lines (differs from "j" when line wraps)
 
 ## Text object motions
 
@@ -108,9 +108,9 @@ Status | Command | Description
 Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:    |   %		        | find the next brace, bracket, comment, or "#if"/ "#else"/"#endif" in this line and go to its match
- :x:   |:1234:  H		        | go to the Nth line in the window, on the first non-blank
-  :x:  |        M		        | go to the middle line in the window, on the first non-blank
-  :x:  |:1234:  L		        | go to the Nth line from the bottom, on the first non-blank
+:white_check_mark:    |:1234:  H		        | go to the Nth line in the window, on the first non-blank
+:white_check_mark:    |        M		        | go to the middle line in the window, on the first non-blank
+:white_check_mark:    |:1234:  L		        | go to the Nth line from the bottom, on the first non-blank
     |:1234:  go			| go to Nth byte in the buffer
     |:[range]go[to] [off]	| go to [off] byte in the buffer
 
@@ -149,7 +149,7 @@ leaving Insert mode:
 Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:   | Esc		 | end Insert mode, back to Normal mode
-   | CTRL-C		 | like Esc, but do not use an abbreviation
+:white_check_mark:   | CTRL-C		 | like Esc, but do not use an abbreviation
 :arrow_down:   | CTRL-O {command}    | execute {command} and return to Insert mode
 
 moving around:
@@ -167,7 +167,7 @@ Status | Command | Description
 Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:    | :1234:  x		| delete N characters under and after the cursor
-    | :1234:  Del	| delete N characters under and after the cursor
+:white_check_mark:    | :1234:  Del	    | delete N characters under and after the cursor
 :white_check_mark:    | :1234:  X		| delete N characters before the cursor
 :white_check_mark:    | :1234:  d{motion}	| delete the text that is moved over with {motion}
 :white_check_mark:    |    {visual}d	| delete the highlighted text
