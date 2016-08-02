@@ -100,8 +100,8 @@ Status | Command | Description
 :arrow_down:   | :1234:  ]M		| N times forward to end of method (for Java)
 :arrow_down:   | :1234:  [#		| N times back to unclosed "#if" or "#else"
 :arrow_down:   | :1234:  ]#		| N times forward to unclosed "#else" or "#endif"
-   | :1234:  [*		| N times back to start of comment "/*"
-   | :1234:  ]*		| N times forward to end of comment "*/"
+:arrow_down:   | :1234:  [*		| N times back to start of a C comment "/*"
+:arrow_down:   | :1234:  ]*		| N times forward to end of a C comment "*/"
 
 ## Various motions
 
