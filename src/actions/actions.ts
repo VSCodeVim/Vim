@@ -588,7 +588,13 @@ class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<backspace>") {
-      if (position.character === 0) {
+      const selection = vscode.window.activeTextEditor.selection;
+      if (!selection.isEmpty) {
+        await TextEditor.delete(selection);
+
+        vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+        vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+      } else if (position.character === 0) {
         if (position.line > 0) {
           await TextEditor.delete(new vscode.Range(
             position.getPreviousLineBegin().getLineEnd(),
@@ -615,10 +621,18 @@ class CommandInsertInInsertMode extends BaseCommand {
         vimState.cursorStartPosition = leftPosition;
       }
     } else {
-      await TextEditor.insert(char, vimState.cursorPosition);
+      const selection = vscode.window.activeTextEditor.selection;
+      if (selection.isEmpty) {
+        await TextEditor.insert(char, vimState.cursorPosition);
 
-      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      } else {
+        await TextEditor.replace(selection, char);
+
+        vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+        vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+      }
     }
 
     return vimState;
