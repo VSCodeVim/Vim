@@ -2118,6 +2118,47 @@ class MoveParagraphBegin extends BaseMovement {
   }
 }
 
+abstract class MoveSectionBoundary extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  boundary: string;
+  forward: boolean;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getSectionBoundary({
+      forward: this.forward,
+      boundary: this.boundary
+    });
+  }
+}
+
+@RegisterAction
+class MoveNextSectionBegin extends MoveSectionBoundary {
+  keys = ["]", "]"];
+  boundary = "{";
+  forward = true;
+}
+
+@RegisterAction
+class MoveNextSectionEnd extends MoveSectionBoundary {
+  keys = ["]", "["];
+  boundary = "}";
+  forward = true;
+}
+
+@RegisterAction
+class MovePreviousSectionBegin extends MoveSectionBoundary {
+  keys = ["[", "["];
+  boundary = "{";
+  forward = false;
+}
+
+@RegisterAction
+class MovePreviousSectionEnd extends MoveSectionBoundary {
+  keys = ["[", "]"];
+  boundary = "}";
+  forward = false;
+}
+
 @RegisterAction
 class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal];
@@ -2827,7 +2868,7 @@ class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
 
 @RegisterAction
 class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
-  keys = ["[", ")"];
+  keys = ["]", ")"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };
@@ -2855,7 +2896,7 @@ class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
 
 @RegisterAction
 class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
-  keys = ["[", "}"];
+  keys = ["]", "}"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };

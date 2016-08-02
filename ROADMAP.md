@@ -86,10 +86,10 @@ Status | Command | Description
 :white_check_mark:   | :1234:  (		| N sentences backward
 :white_check_mark:   | :1234:  }		| N paragraphs forward
 :white_check_mark:   | :1234:  {		| N paragraphs backward
-   | :1234:  ]]		| N sections forward, at start of section
-   | :1234:  [[		| N sections backward, at start of section
-   | :1234:  ][		| N sections forward, at end of section
-   | :1234:  []		| N sections backward, at end of section
+:white_check_mark:   | :1234:  ]]		| N sections forward, at start of section
+:white_check_mark:   | :1234:  [[		| N sections backward, at start of section
+:white_check_mark:   | :1234:  ][		| N sections forward, at end of section
+:white_check_mark:   | :1234:  []		| N sections backward, at end of section
 :white_check_mark:   | :1234:  [(		| N times back to unclosed '('
 :white_check_mark:   | :1234:  [{		| N times back to unclosed '{'
 :arrow_down:   | :1234:  [m		| N times back to start of method (for Java)
@@ -100,8 +100,8 @@ Status | Command | Description
 :arrow_down:   | :1234:  ]M		| N times forward to end of method (for Java)
 :arrow_down:   | :1234:  [#		| N times back to unclosed "#if" or "#else"
 :arrow_down:   | :1234:  ]#		| N times forward to unclosed "#else" or "#endif"
-   | :1234:  [*		| N times back to start of comment "/*"
-   | :1234:  ]*		| N times forward to end of comment "*/"
+:arrow_down:   | :1234:  [*		| N times back to start of a C comment "/*"
+:arrow_down:   | :1234:  ]*		| N times forward to end of a C comment "*/"
 
 ## Various motions
 
