@@ -1440,6 +1440,24 @@ class CommandInsertNewLineBefore extends BaseCommand {
 }
 
 @RegisterAction
+class CommandClearLine extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["S"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const lineStart = position.getFirstLineNonBlankChar();
+    const lineEnd = position.getLineEnd();
+
+    await TextEditor.delete(new vscode.Range(lineStart, lineEnd));
+
+    vimState.cursorPosition = lineStart;
+    vimState.currentMode = ModeName.Insert;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class MoveLeft extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["h"];
