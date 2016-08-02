@@ -108,6 +108,8 @@ export class VimState {
    */
   public commandAction = VimSpecialCommands.Nothing;
 
+  public commandInitialText = "";
+
   public recordedState = new RecordedState();
 
   /**
@@ -805,7 +807,7 @@ export class ModeHandler implements vscode.Disposable {
 
     switch (command) {
       case VimSpecialCommands.ShowCommandLine:
-        await showCmdLine("", this);
+        await showCmdLine(vimState.commandInitialText, this);
       break;
       case VimSpecialCommands.Dot:
         if (!vimState.previousFullAction) {

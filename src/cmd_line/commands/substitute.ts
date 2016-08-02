@@ -86,14 +86,9 @@ export class SubstituteCommand extends node.CommandBase {
   async execute(): Promise<void> {
     const regex = this.getRegex(this._arguments);
     const selection = vscode.window.activeTextEditor.selection;
+    const line = selection.start.isBefore(selection.end) ? selection.start.line : selection.end.line;
 
-    if (selection.start.isEqual(selection.end)) {
-      await this.replaceTextAtLine(selection.start.line, regex);
-    } else {
-      const originalContent = TextEditor.getText(selection);
-      const newContent = originalContent.replace(regex, this._arguments.replace);
-      await TextEditor.replace(selection, newContent);
-    }
+    await this.replaceTextAtLine(line, regex);
   }
 
   async executeWithRange(modeHandler : ModeHandler, range: node.LineRange) {

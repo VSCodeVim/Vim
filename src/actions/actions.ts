@@ -1173,6 +1173,12 @@ class CommandShowCommandLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.commandAction = VimSpecialCommands.ShowCommandLine;
 
+    if (vimState.currentMode === ModeName.Normal) {
+      vimState.commandInitialText = "";
+    } else {
+      vimState.commandInitialText = "'<,'>";
+    }
+
     return vimState;
   }
 }
