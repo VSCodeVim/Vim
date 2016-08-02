@@ -2,56 +2,50 @@
 
 import { ModeHandler } from "../../src/mode/modeHandler";
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
+import { getTestingFunctions } from '../testSimplifier';
+import * as clipboard from 'copy-paste';
 
 suite("register", () => {
+  let modeHandler: ModeHandler = new ModeHandler();
 
-  let modeHandler: ModeHandler;
+  let {
+      newTest,
+      newTestOnly,
+  } = getTestingFunctions(modeHandler);
 
   setup(async () => {
     await setupWorkspace();
-
-    modeHandler = new ModeHandler();
   });
 
   suiteTeardown(cleanUpWorkspace);
 
-  test("basic register put test", async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'iblah blah'.split('')
-    );
-
-    await modeHandler.handleMultipleKeyEvents([
-      '<esc>',
-      '^', '"', '"', 'D', '"', '"', 'p', '"', '"', 'p'
-    ]);
-
-    await assertEqualLines(["blah blahblah blah"]);
+  newTest({
+    title: "Can copy to a register",
+    start: ['|one', 'two'],
+    keysPressed: '"add"ap',
+    end: ["two", "|one"],
   });
 
-  test("test yy and '*' register", async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'iblah blah\nblah'.split('')
-    );
-
-    await modeHandler.handleMultipleKeyEvents([
-      '<esc>',
-      '^', '"', '*', 'y', 'y', '"', '*', 'p'
-    ]);
-
-    await assertEqualLines(["blah blah", "blah", "blah"]);
+  newTest({
+    title: "Can copy to a register",
+    start: ['|one', 'two'],
+    keysPressed: '"add"ap',
+    end: ["two", "|one"],
   });
 
-  test("test two seperate registers", async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'iblah blah\nblah'.split('')
-    );
-    /* Register '"' is the default register */
-    await modeHandler.handleMultipleKeyEvents([
-      '<esc>',
-      'g', 'g', '"', '*', 'y', 'y', 'j', 'y', 'y', '"', '*', 'p', 'p',
-    ]);
+  clipboard.copy("12345");
+  newTest({
+    title: "Can access '*' (clipboard) register",
+    start: ['|one'],
+    keysPressed: '"*P',
+    end: ["1234|5one"],
+  });
 
-    await assertEqualLines(["blah blah", "blah", "blah blah", "blah"]);
+  newTest({
+    title: "Can use two registers together",
+    start: ['|one', "two"],
+    keysPressed: '"*yyjyy"*pp',
+    end: ["one", "two", "one", "|two"],
   });
 
 });
