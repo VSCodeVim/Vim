@@ -183,7 +183,8 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-   | "{char}	        | use register {char} for the next delete, yank, or put
+:warning:   | "{char}	        | use register {char} for the next delete, yank, or put
+:white_check_mark:   | "*	        | use register `*` to access system clipboard
    | :reg		| show the contents of all registers
    | :reg {arg}	        | show the contents of registers mentioned in {arg}
 :white_check_mark:   | :1234:  y{motion}	| yank the text moved over with {motion} into a register
