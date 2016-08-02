@@ -126,4 +126,17 @@ suite("Mode Insert", () => {
 
         assertEqualLines(["text "]);
     });
+
+    test("Correctly places the cursor after deleting the previous line break", async() => {
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            'o', 'n', 'e', '\n', 't', 'w', 'o',
+            '<left>', '<left>', '<left>',
+            '<backspace>'
+        ]);
+
+        assertEqualLines(["onetwo"]);
+
+        assertEqual(TextEditor.getSelection().start.character, 3, "<backspace> moved cursor to correct position");
+    });
 });
