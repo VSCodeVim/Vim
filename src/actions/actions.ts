@@ -1220,6 +1220,19 @@ class CommandCenterScroll extends BaseCommand {
 }
 
 @RegisterAction
+class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["o"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    [vimState.cursorStartPosition, vimState.cursorPosition] =
+    [vimState.cursorPosition, vimState.cursorStartPosition];
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandUndo extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["u"];
@@ -1370,6 +1383,38 @@ class CommandExitVisualLineMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandGoToDefinition extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "d"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const startPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    await vscode.commands.executeCommand("editor.action.goToDeclaration");
+
+    // Unfortuantely, the above does not necessarily have to have finished executing
+    // (even though we do await!). THe only way to ensure it's done is to poll, which is
+    // a major bummer.
+
+    await new Promise(resolve => {
+      let interval = setInterval(() => {
+        const positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+        if (!startPosition.isEqual(positionNow)) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 50);
+    });
+
+    vimState.focusChanged = true;
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
     return vimState;
   }
@@ -2111,6 +2156,47 @@ class MoveParagraphBegin extends BaseMovement {
   }
 }
 
+abstract class MoveSectionBoundary extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  boundary: string;
+  forward: boolean;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getSectionBoundary({
+      forward: this.forward,
+      boundary: this.boundary
+    });
+  }
+}
+
+@RegisterAction
+class MoveNextSectionBegin extends MoveSectionBoundary {
+  keys = ["]", "]"];
+  boundary = "{";
+  forward = true;
+}
+
+@RegisterAction
+class MoveNextSectionEnd extends MoveSectionBoundary {
+  keys = ["]", "["];
+  boundary = "}";
+  forward = true;
+}
+
+@RegisterAction
+class MovePreviousSectionBegin extends MoveSectionBoundary {
+  keys = ["[", "["];
+  boundary = "{";
+  forward = false;
+}
+
+@RegisterAction
+class MovePreviousSectionEnd extends MoveSectionBoundary {
+  keys = ["[", "]"];
+  boundary = "}";
+  forward = false;
+}
+
 @RegisterAction
 class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal];
@@ -2820,7 +2906,7 @@ class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
 
 @RegisterAction
 class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
-  keys = ["[", ")"];
+  keys = ["]", ")"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };
@@ -2848,7 +2934,7 @@ class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
 
 @RegisterAction
 class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
-  keys = ["[", "}"];
+  keys = ["]", "}"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };
