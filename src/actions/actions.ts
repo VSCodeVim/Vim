@@ -1350,6 +1350,38 @@ class CommandExitVisualLineMode extends BaseCommand {
   }
 }
 
+@RegisterAction
+class CommandGoToDefinition extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "d"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const startPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    await vscode.commands.executeCommand("editor.action.goToDeclaration");
+
+    // Unfortuantely, the above does not necessarily have to have finished executing
+    // (even though we do await!). THe only way to ensure it's done is to poll, which is
+    // a major bummer.
+
+    await new Promise(resolve => {
+      let interval = setInterval(() => {
+        const positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+        if (!startPosition.isEqual(positionNow)) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 50);
+    });
+
+    vimState.focusChanged = true;
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+}
+
 // begin insert commands
 
 @RegisterAction
