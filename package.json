@@ -44,7 +44,7 @@
     "keybindings": [
       {
         "key": "Escape",
-        "command": "extension.vim_esc",
+        "command": "extension.vim_escape",
         "when": "editorTextFocus"
       },
       {
