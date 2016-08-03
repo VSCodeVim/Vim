@@ -88,30 +88,30 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
-    title: "Can handle [)",
+    title: "Can handle ])",
     start: ['({|})'],
-    keysPressed: '[)',
+    keysPressed: '])',
     end: ['({}|)']
   });
 
   newTest({
-    title: "Can handle nested [)",
+    title: "Can handle nested ])",
     start: ['(({|}))'],
-    keysPressed: '[)',
+    keysPressed: '])',
     end: ['(({}|))']
   });
 
   newTest({
-    title: "Can handle <number>[)",
+    title: "Can handle <number>])",
     start: ['(({|}))'],
-    keysPressed: '2[)',
+    keysPressed: '2])',
     end: ['(({})|)']
   });
 
   newTest({
-    title: "Can handle [) and character under cursor exclusive",
+    title: "Can handle ]) and character under cursor exclusive",
     start: ['(({}|))'],
-    keysPressed: '[)',
+    keysPressed: '])',
     end: ['(({})|)']
   });
 
@@ -144,30 +144,30 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
-    title: "Can handle [}",
+    title: "Can handle ]}",
     start: ['{(|)}'],
-    keysPressed: '[}',
+    keysPressed: ']}',
     end: ['{()|}']
   });
 
   newTest({
-    title: "Can handle nested [}",
+    title: "Can handle nested ]}",
     start: ['{{(|)}}'],
-    keysPressed: '[}',
+    keysPressed: ']}',
     end: ['{{()|}}']
   });
 
   newTest({
-    title: "Can handle <number>[}",
+    title: "Can handle <number>]}",
     start: ['{{(|)}}'],
-    keysPressed: '2[}',
+    keysPressed: '2]}',
     end: ['{{()}|}']
   });
 
   newTest({
-    title: "Can handle [} and character under cursor exclusive",
+    title: "Can handle ]} and character under cursor exclusive",
     start: ['{{()|}}'],
-    keysPressed: '[}',
+    keysPressed: ']}',
     end: ['{{()}|}']
   });
 
