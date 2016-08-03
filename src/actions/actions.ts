@@ -1404,11 +1404,13 @@ class CommandGoToDefinition extends BaseCommand {
     // (even though we do await!). THe only way to ensure it's done is to poll, which is
     // a major bummer.
 
+    let maxIntervals = 10;
+
     await new Promise(resolve => {
       let interval = setInterval(() => {
         const positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
-        if (!startPosition.isEqual(positionNow)) {
+        if (!startPosition.isEqual(positionNow) || maxIntervals-- < 0) {
           clearInterval(interval);
           resolve();
         }
