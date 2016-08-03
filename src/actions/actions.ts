@@ -453,8 +453,6 @@ class CommandCtrlY extends BaseCommand {
   keys = ["ctrl+y"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    console.log("!");
-
     await vscode.commands.executeCommand("scrollLineUp");
 
     return vimState;
