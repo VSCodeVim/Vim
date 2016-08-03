@@ -53,6 +53,11 @@
                 "when": "editorTextFocus"
             },
             {
+                "key": "Delete",
+                "command": "extension.vim_delete",
+                "when": "editorTextFocus && vim.mode == 'Normal Mode'"
+            },
+            {
                 "key": "ctrl+r",
                 "command": "extension.vim_ctrl+r",
                 "when": "editorTextFocus"
@@ -127,11 +132,6 @@
             "title": "Vim Configuration",
             "type": "object",
             "properties": {
-                "vim.keyboardLayout": {
-                    "default": "en-US (QWERTY)",
-                    "type": "string",
-                    "description": "Keyboard layout to use to translated key presses."
-                },
                 "vim.otherModesKeyBindings": {
                     "type": "array",
                     "description": "Keybinding overrides to use for normal mode."
@@ -166,6 +166,7 @@
         "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
     },
     "dependencies": {
+        "copy-paste": "^1.3.0",
         "diff": "^2.2.3",
         "lodash": "^4.12.0"
     },

@@ -174,6 +174,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
   registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
+  registerCommand(context, 'extension.vim_delete', () => handleKeyEvent("<delete>"));
 
   registerCommand(context, 'extension.showCmdLine', () => {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);

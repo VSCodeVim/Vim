@@ -1019,4 +1019,11 @@ suite("Mode Normal", () => {
       keysPressed: "<c-x>",
       end: ["one |9"]
     });
+
+    newTest({
+      title: "can do Y",
+      start: ["|blah blah"],
+      keysPressed: "Yp",
+      end: ["blah blah", "|blah blah"]
+    });
 });
