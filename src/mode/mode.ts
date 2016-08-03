@@ -6,6 +6,7 @@ export enum ModeName {
   Visual,
   VisualLine,
   SearchInProgressMode,
+  Replace,
 }
 
 export enum VSCodeVimCursorType {
