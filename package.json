@@ -73,6 +73,16 @@
         "when": "editorTextFocus && vim.mode != 'Insert Mode'"
       },
       {
+        "key": "ctrl+e",
+        "command": "extension.vim_ctrl+e",
+        "when": "editorTextFocus && vim.useCtrlKeys"
+      },
+      {
+        "key": "ctrl+y",
+        "command": "extension.vim_ctrl+y",
+        "when": "editorTextFocus && vim.useCtrlKeys"
+      },
+      {
         "key": "ctrl+u",
         "command": "extension.vim_ctrl+u",
         "when": "editorTextFocus"

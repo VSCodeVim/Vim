@@ -436,6 +436,32 @@ class CommandCtrlW extends BaseCommand {
 }
 
 @RegisterAction
+class CommandCtrlE extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+e"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("scrollLineDown");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlY extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+y"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    console.log("!");
+
+    await vscode.commands.executeCommand("scrollLineUp");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandCtrlC extends CommandEsc {
   keys = ["ctrl+c"];
 }
