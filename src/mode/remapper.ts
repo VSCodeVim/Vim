@@ -14,10 +14,10 @@ class Remapper {
 
   private _remappings: IKeybinding[] = [];
 
-  private _isInsertModeRemapping = false;
+  private _remappedModes: ModeName[];
 
-  constructor(configKey: string, insertModeRemapping = false) {
-    this._isInsertModeRemapping = insertModeRemapping;
+  constructor(configKey: string, remappedModes: ModeName[], insertModeRemapping = false) {
+    this._remappedModes = remappedModes;
     this._remappings = vscode.workspace.getConfiguration('vim')
       .get<IKeybinding[]>(configKey, []);
   }
@@ -31,9 +31,7 @@ class Remapper {
   }
 
   public async sendKey(key: string, modeHandler: ModeHandler, vimState: VimState): Promise<boolean> {
-    if ((vimState.currentMode === ModeName.Insert && !this._isInsertModeRemapping) ||
-      (vimState.currentMode !== ModeName.Insert && this._isInsertModeRemapping)) {
-
+    if (this._remappedModes.indexOf(vimState.currentMode) === -1) {
       this._reset();
 
       return false;
@@ -49,7 +47,9 @@ class Remapper {
       const remapping = _.find(this._remappings, map => map.before.join("") === slice.join(""));
 
       if (remapping) {
-        if (this._isInsertModeRemapping) {
+        // if we remapped e.g. jj to esc, we have to revert the inserted "jj"
+
+        if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
           vimState.historyTracker.undoAndRemoveChanges(this._mostRecentKeys.length);
         }
 
@@ -71,12 +71,20 @@ class Remapper {
 
 export class InsertModeRemapper extends Remapper {
   constructor() {
-    super("insertModeKeyBindings", true);
+    super(
+      "insertModeKeyBindings",
+      [ModeName.Insert],
+      true
+    );
   }
 }
 
 export class OtherModesRemapper extends Remapper {
   constructor() {
-    super("otherModesKeyBindings", false);
+    super(
+      "otherModesKeyBindings",
+      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine],
+      false
+    );
   }
 }
