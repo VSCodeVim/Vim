@@ -21,7 +21,7 @@ suite("Mode Normal", () => {
     teardown(cleanUpWorkspace);
 
     test("can be activated", async () => {
-        let activationKeys = ['<esc>', 'ctrl+['];
+        let activationKeys = ['<escape>', 'ctrl+['];
 
         for (let key of activationKeys) {
             await modeHandler.handleKeyEvent('i');
@@ -658,7 +658,7 @@ suite("Mode Normal", () => {
     newTest({
       title: "Can handle A and backspace",
       start: ['|text text'],
-      keysPressed: 'A<backspace><esc>',
+      keysPressed: 'A<backspace><escape>',
       end: ['text te|x']
     });
 
@@ -806,14 +806,14 @@ suite("Mode Normal", () => {
     newTest({
       title: "I works correctly",
       start: ['|    one'],
-      keysPressed: 'Itest <esc>',
+      keysPressed: 'Itest <escape>',
       end: ['    test| one']
     });
 
     newTest({
       title: "gI works correctly",
       start: ['|    one'],
-      keysPressed: 'gItest<esc>',
+      keysPressed: 'gItest<escape>',
       end: ['tes|t    one']
     });
 
@@ -834,63 +834,63 @@ suite("Mode Normal", () => {
     newTest({
       title: "Undo 1",
       start: ['|'],
-      keysPressed: 'iabc<esc>adef<esc>uu',
+      keysPressed: 'iabc<escape>adef<escape>uu',
       end: ['|']
     });
 
     newTest({
       title: "Undo 2",
       start: ['|'],
-      keysPressed: 'iabc<esc>adef<esc>u',
+      keysPressed: 'iabc<escape>adef<escape>u',
       end: ['ab|c']
     });
 
     newTest({
       title: "Undo cursor",
       start: ['|'],
-      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>uuu',
+      keysPressed: 'Iabc<escape>Idef<escape>Ighi<escape>uuu',
       end: ['|']
     });
 
     newTest({
       title: "Undo cursor 2",
       start: ['|'],
-      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>uu',
+      keysPressed: 'Iabc<escape>Idef<escape>Ighi<escape>uu',
       end: ['|abc']
     });
 
     newTest({
       title: "Undo cursor 3",
       start: ['|'],
-      keysPressed: 'Iabc<esc>Idef<esc>Ighi<esc>u',
+      keysPressed: 'Iabc<escape>Idef<escape>Ighi<escape>u',
       end: ['|defabc']
     });
 
     newTest({
       title: "Undo with movement first",
       start: ['|'],
-      keysPressed: 'iabc<esc>adef<esc>hlhlu',
+      keysPressed: 'iabc<escape>adef<escape>hlhlu',
       end: ['ab|c']
     });
 
     newTest({
       title: "Redo",
       start: ['|'],
-      keysPressed: 'iabc<esc>adef<esc>uu<c-r>',
+      keysPressed: 'iabc<escape>adef<escape>uu<c-r>',
       end: ['|abc']
     });
 
     newTest({
       title: "Redo",
       start: ['|'],
-      keysPressed: 'iabc<esc>adef<esc>uu<c-r><c-r>',
+      keysPressed: 'iabc<escape>adef<escape>uu<c-r><c-r>',
       end: ['abc|def']
     });
 
     newTest({
       title: "Redo",
       start: ['|'],
-      keysPressed: 'iabc<esc>adef<esc>uuhlhl<c-r><c-r>',
+      keysPressed: 'iabc<escape>adef<escape>uuhlhl<c-r><c-r>',
       end: ['abc|def']
     });
 
@@ -911,7 +911,7 @@ suite("Mode Normal", () => {
     newTest({
       title: "can handle s in visual mode",
       start: ["|abc def ghi"],
-      keysPressed: "vwshi <esc>",
+      keysPressed: "vwshi <escape>",
       end: ["hi| ef ghi"]
     });
 
@@ -932,7 +932,7 @@ suite("Mode Normal", () => {
     newTest({
       title: "can repeat backspace twice",
       start: ["|11223344"],
-      keysPressed: "A<backspace><backspace><esc>0.",
+      keysPressed: "A<backspace><backspace><escape>0.",
       end: ["112|2"]
     });
 

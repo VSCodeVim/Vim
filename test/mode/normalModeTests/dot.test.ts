@@ -41,14 +41,14 @@ suite("Dot Operator", () => {
     newTest({
       title: "Can handle dot with A",
       start: ['|one', 'two', 'three'],
-      keysPressed: 'A!<esc>j.j.',
+      keysPressed: 'A!<escape>j.j.',
       end: ['one!', 'two!', 'three|!']
     });
 
     newTest({
       title: "Can handle dot with I",
       start: ['on|e', 'two', 'three'],
-      keysPressed: 'I!<esc>j.j.',
+      keysPressed: 'I!<escape>j.j.',
       end: ['!one', '!two', '|!three']
     });
 

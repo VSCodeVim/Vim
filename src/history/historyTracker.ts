@@ -129,7 +129,7 @@ class HistoryStep {
         // collapse add+del into add. this might make current.text.length === 0, see beginning of loop
         current.text = current.text.slice(0, -next.text.length);
       } else {
-        // del+add must be two separate DocumentChanges. e.g. start with "a|b", do `i<backspace>x<esc>` you end up with "|xb"
+        // del+add must be two separate DocumentChanges. e.g. start with "a|b", do `i<backspace>x<escape>` you end up with "|xb"
         // also handles multiple changes in distant locations in the document
         merged.push(current);
         current = next;

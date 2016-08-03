@@ -15,7 +15,7 @@ suite("Basic substitute", () => {
   teardown(cleanUpWorkspace);
 
   test("Replace single word once", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>']);
     await runCmdLine("%s/a/d", modeHandler);
 
     assertEqualLines([
@@ -24,7 +24,7 @@ suite("Basic substitute", () => {
   });
 
   test("Replace with `g` flag", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>']);
     await runCmdLine("%s/a/d/g", modeHandler);
 
     assertEqualLines([
@@ -33,7 +33,7 @@ suite("Basic substitute", () => {
   });
 
   test("Replace multiple lines", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>', 'o', 'a', 'b']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>', 'o', 'a', 'b']);
     await runCmdLine("%s/a/d/g", modeHandler);
 
     assertEqualLines([
@@ -43,7 +43,7 @@ suite("Basic substitute", () => {
   });
 
   test("Replace across specific lines", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<esc>', 'o', 'a', 'b']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>', 'o', 'a', 'b']);
     await runCmdLine("1,1s/a/d/g", modeHandler);
 
     assertEqualLines([

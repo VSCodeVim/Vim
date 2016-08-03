@@ -228,7 +228,7 @@ export abstract class BaseMovement extends BaseAction {
 }
 
 /**
- * A command is something like <esc>, :, v, i, etc.
+ * A command is something like <escape>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
   /**
@@ -395,7 +395,7 @@ class CommandRegister extends BaseCommand {
 @RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.SearchInProgressMode];
-  keys = ["<esc>"];
+  keys = ["<escape>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode !== ModeName.Visual &&
@@ -496,7 +496,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
 
       return vimState;
-    } else if (key === "<esc>") {
+    } else if (key === "<escape>") {
       vimState.currentMode = ModeName.Normal;
       vimState.searchState = undefined;
 
