@@ -32,7 +32,8 @@ class Remapper {
 
   public async sendKey(key: string, modeHandler: ModeHandler, vimState: VimState): Promise<boolean> {
     if ((vimState.currentMode === ModeName.Insert && !this._isInsertModeRemapping) ||
-      (vimState.currentMode !== ModeName.Insert && this._isInsertModeRemapping)) {
+      (vimState.currentMode !== ModeName.Insert && this._isInsertModeRemapping) ||
+      (vimState.currentMode === ModeName.SearchInProgressMode)) {
 
       this._reset();
 
