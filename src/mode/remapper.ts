@@ -16,7 +16,7 @@ class Remapper {
 
   private _remappedModes: ModeName[];
 
-  constructor(configKey: string, remappedModes: ModeName[], insertModeRemapping = false) {
+  constructor(configKey: string, remappedModes: ModeName[]) {
     this._remappedModes = remappedModes;
     this._remappings = vscode.workspace.getConfiguration('vim')
       .get<IKeybinding[]>(configKey, []);
@@ -73,8 +73,7 @@ export class InsertModeRemapper extends Remapper {
   constructor() {
     super(
       "insertModeKeyBindings",
-      [ModeName.Insert],
-      true
+      [ModeName.Insert]
     );
   }
 }
@@ -83,8 +82,7 @@ export class OtherModesRemapper extends Remapper {
   constructor() {
     super(
       "otherModesKeyBindings",
-      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine],
-      false
+      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine]
     );
   }
 }
