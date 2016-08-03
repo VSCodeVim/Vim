@@ -1368,7 +1368,7 @@ class CommandVisualMode extends BaseCommand {
 
 @RegisterAction
 class CommandVisualLineMode extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual];
   keys = ["V"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
