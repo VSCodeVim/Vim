@@ -590,13 +590,15 @@ class CommandInsertInInsertMode extends BaseCommand {
     if (char === "<backspace>") {
       if (position.character === 0) {
         if (position.line > 0) {
+          const prevEndOfLine = position.getPreviousLineBegin().getLineEnd();
+
           await TextEditor.delete(new vscode.Range(
             position.getPreviousLineBegin().getLineEnd(),
             position.getLineBegin()
           ));
 
-          vimState.cursorPosition      = position.getPreviousLineBegin().getLineEnd();
-          vimState.cursorStartPosition = position.getPreviousLineBegin().getLineEnd();
+          vimState.cursorPosition      = prevEndOfLine;
+          vimState.cursorStartPosition = prevEndOfLine;
         }
       } else {
         let leftPosition = position.getLeft();
