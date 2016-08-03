@@ -1026,4 +1026,11 @@ suite("Mode Normal", () => {
       keysPressed: "Yp",
       end: ["blah blah", "|blah blah"]
     });
+
+    newTest({
+      title: "/ does not affect mark",
+      start: ["|one", "twooo", "thurr"],
+      keysPressed: "ma/two<enter>'a",
+      end: ["|one", "twooo", "thurr"],
+    });
 });

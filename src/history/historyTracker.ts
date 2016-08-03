@@ -203,8 +203,8 @@ export class HistoryTracker {
     // clone old marks into new marks
     for (const mark of previousMarks) {
       newMarks.push({
-        name      : mark.name,
-        position    : mark.position,
+        name            : mark.name,
+        position        : mark.position,
         isUppercaseMark : mark.isUppercaseMark
       });
     }
@@ -396,7 +396,8 @@ export class HistoryTracker {
    * and the next time we add a change, it'll be added to a new Step.
    */
   finishCurrentStep(): void {
-    if (this.currentHistoryStep.changes.length === 0) {
+    if (this.currentHistoryStep.changes.length === 0 ||
+        this.currentHistoryStep.isFinished) {
       return;
     }
 
