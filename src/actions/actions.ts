@@ -1639,16 +1639,17 @@ class MoveToLeftPane  extends BaseCommand {
 
 class BaseTabCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  canBePrefixedWithCount = true;
 }
 
 @RegisterAction
 class CommandTabNext extends BaseTabCommand {
   keys = ["g", "t"];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     (new TabCommand({
       tab: Tab.Next,
-      count: 1
+      count: vimState.recordedState.count
     })).execute();
 
     return vimState;
