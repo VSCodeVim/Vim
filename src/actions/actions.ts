@@ -228,7 +228,7 @@ export abstract class BaseMovement extends BaseAction {
 }
 
 /**
- * A command is something like <esc>, :, v, i, etc.
+ * A command is something like <escape>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
   /**
@@ -368,9 +368,34 @@ class CommandNumber extends BaseCommand {
 }
 
 @RegisterAction
+class CommandRegister extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["\"", "<character>"];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const register = this.keysPressed[1];
+    vimState.recordedState.registerName = register;
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
+  }
+}
+
+@RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.SearchInProgressMode];
-  keys = ["<esc>"];
+  keys = ["<escape>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode !== ModeName.Visual &&
@@ -411,6 +436,30 @@ class CommandCtrlW extends BaseCommand {
 }
 
 @RegisterAction
+class CommandCtrlE extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+e"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("scrollLineDown");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlY extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+y"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("scrollLineUp");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandCtrlC extends CommandEsc {
   keys = ["ctrl+c"];
 }
@@ -445,7 +494,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
 
       return vimState;
-    } else if (key === "<esc>") {
+    } else if (key === "<escape>") {
       vimState.currentMode = ModeName.Normal;
       vimState.searchState = undefined;
 
@@ -565,13 +614,15 @@ class CommandInsertInInsertMode extends BaseCommand {
     if (char === "<backspace>") {
       if (position.character === 0) {
         if (position.line > 0) {
+          const prevEndOfLine = position.getPreviousLineBegin().getLineEnd();
+
           await TextEditor.delete(new vscode.Range(
             position.getPreviousLineBegin().getLineEnd(),
             position.getLineBegin()
           ));
 
-          vimState.cursorPosition      = position.getPreviousLineBegin().getLineEnd();
-          vimState.cursorStartPosition = position.getPreviousLineBegin().getLineEnd();
+          vimState.cursorPosition      = prevEndOfLine;
+          vimState.cursorStartPosition = prevEndOfLine;
         }
       } else {
         let leftPosition = position.getLeft();
@@ -892,7 +943,7 @@ export class PutCommand extends BaseCommand {
     canBeRepeatedWithDot = true;
 
     public async exec(position: Position, vimState: VimState, before: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
-        const register = Register.get(vimState);
+        const register = await Register.get(vimState);
         const dest = before ? position : position.getRight();
         let text = register.text;
 
@@ -960,7 +1011,7 @@ export class GPutCommand extends BaseCommand {
       }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    const register = Register.get(vimState);
+    const register = await Register.get(vimState);
     const addedLinesCount = register.text.split('\n').length;
     const result = await super.execCount(position, vimState);
 
@@ -1079,7 +1130,7 @@ export class GPutBeforeCommand extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const result = await new PutCommand().exec(position, vimState, true);
-    const register = Register.get(vimState);
+    const register = await Register.get(vimState);
     const addedLinesCount = register.text.split('\n').length;
 
     if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
@@ -1189,6 +1240,19 @@ class CommandCenterScroll extends BaseCommand {
       new vscode.Range(vimState.cursorPosition,
                        vimState.cursorPosition),
       vscode.TextEditorRevealType.InCenter);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["o"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    [vimState.cursorStartPosition, vimState.cursorPosition] =
+    [vimState.cursorPosition, vimState.cursorStartPosition];
 
     return vimState;
   }
@@ -1341,7 +1405,7 @@ class CommandVisualMode extends BaseCommand {
 
 @RegisterAction
 class CommandVisualLineMode extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual];
   keys = ["V"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1358,6 +1422,40 @@ class CommandExitVisualLineMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandGoToDefinition extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "d"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const startPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    await vscode.commands.executeCommand("editor.action.goToDeclaration");
+
+    // Unfortuantely, the above does not necessarily have to have finished executing
+    // (even though we do await!). THe only way to ensure it's done is to poll, which is
+    // a major bummer.
+
+    let maxIntervals = 10;
+
+    await new Promise(resolve => {
+      let interval = setInterval(() => {
+        const positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+        if (!startPosition.isEqual(positionNow) || maxIntervals-- < 0) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 50);
+    });
+
+    vimState.focusChanged = true;
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
     return vimState;
   }
@@ -1554,16 +1652,17 @@ class MoveToLeftPane  extends BaseCommand {
 
 class BaseTabCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  canBePrefixedWithCount = true;
 }
 
 @RegisterAction
 class CommandTabNext extends BaseTabCommand {
   keys = ["g", "t"];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     (new TabCommand({
       tab: Tab.Next,
-      count: 1
+      count: vimState.recordedState.count
     })).execute();
 
     return vimState;
@@ -2097,6 +2196,47 @@ class MoveParagraphBegin extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCurrentParagraphBeginning();
   }
+}
+
+abstract class MoveSectionBoundary extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  boundary: string;
+  forward: boolean;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getSectionBoundary({
+      forward: this.forward,
+      boundary: this.boundary
+    });
+  }
+}
+
+@RegisterAction
+class MoveNextSectionBegin extends MoveSectionBoundary {
+  keys = ["]", "]"];
+  boundary = "{";
+  forward = true;
+}
+
+@RegisterAction
+class MoveNextSectionEnd extends MoveSectionBoundary {
+  keys = ["]", "["];
+  boundary = "}";
+  forward = true;
+}
+
+@RegisterAction
+class MovePreviousSectionBegin extends MoveSectionBoundary {
+  keys = ["[", "["];
+  boundary = "{";
+  forward = false;
+}
+
+@RegisterAction
+class MovePreviousSectionEnd extends MoveSectionBoundary {
+  keys = ["[", "]"];
+  boundary = "}";
+  forward = false;
 }
 
 @RegisterAction
@@ -2808,7 +2948,7 @@ class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
 
 @RegisterAction
 class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
-  keys = ["[", ")"];
+  keys = ["]", ")"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };
@@ -2836,7 +2976,7 @@ class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
 
 @RegisterAction
 class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
-  keys = ["[", "}"];
+  keys = ["]", "}"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };

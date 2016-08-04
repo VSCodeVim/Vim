@@ -1,5 +1,5 @@
 import { VimState } from './../mode/modeHandler';
-
+import * as clipboard from 'copy-paste';
 /**
  * There are two different modes of copy/paste in Vim - copy by character
  * and copy by line. Copy by line typically happens in Visual Line mode, but
@@ -18,23 +18,37 @@ export interface IRegisterContent {
 }
 
 export class Register {
-  private static validRegisters = [
-    '"'
-  ];
-
+  /**
+   * The '"' is the unnamed register.
+   * The '*' is the special register for stroing into system clipboard.
+   * TODO: Read-Only registers
+   *  '.' register has the last inserted text.
+   *  '%' register has the current file path.
+   *  ':' is the most recently executed command.
+   *  '#' is the name of last edited file. (low priority)
+   */
   private static registers: { [key: string]: IRegisterContent } = {
-    '"': { text: "", registerMode: RegisterMode.CharacterWise }
+    '"': { text: "", registerMode: RegisterMode.CharacterWise },
+    '*': { text: "", registerMode: RegisterMode.CharacterWise }
   };
+
+  public static isValidRegister(register: string): boolean {
+    return register in Register.registers || /^[a-z0-9]+$/i.test(register);
+  }
 
   /**
    * Puts content in a register. If none is specified, uses the default
    * register ".
    */
   public static put(content: string, vimState: VimState): void {
-    const register = vimState.registerName;
+    const register = vimState.recordedState.registerName;
 
-    if (Register.validRegisters.indexOf(register) === -1) {
+    if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
+    }
+
+    if (register === '*') {
+      clipboard.copy(content);
     }
 
     Register.registers[register] = {
@@ -47,11 +61,29 @@ export class Register {
    * Gets content from a register. If none is specified, uses the default
    * register ".
    */
-  public static get(vimState: VimState): IRegisterContent {
-    const register = vimState.registerName;
+  public static async get(vimState: VimState): Promise<IRegisterContent> {
+    const register = vimState.recordedState.registerName;
 
-    if (Register.validRegisters.indexOf(register) === -1) {
+    if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
+    }
+
+    if (!Register.registers[register]) {
+      Register.registers[register] = { text: "", registerMode: RegisterMode.CharacterWise };
+    }
+
+    /* Read from system clipboard */
+    if (register === '*') {
+      const text = await new Promise<string>((resolve, reject) =>
+        clipboard.paste((err, text) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(text);
+          }
+        })
+      );
+      Register.registers[register].text = text;
     }
 
     return Register.registers[register];
