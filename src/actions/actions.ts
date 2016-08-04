@@ -1367,6 +1367,19 @@ class CommandChangeToLineEnd extends BaseCommand {
 }
 
 @RegisterAction
+class CommandClearLine extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["S"];
+  canBePrefixedWithCount = true;
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft()
+    return new ChangeOperator().run(vimState, position.getLineBegin(), end);
+  }
+}
+
+@RegisterAction
 class CommandExitVisualMode extends BaseCommand {
   modes = [ModeName.Visual, ModeName.VisualLine];
   keys = ["v"];

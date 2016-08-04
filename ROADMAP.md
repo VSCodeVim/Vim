@@ -215,7 +215,7 @@ Status | Command | Description
 :warning:    | :1234:  c{motion}	| change the text that is moved over with {motion}
 :white_check_mark:    |    {visual}c	| change the highlighted text
 :warning:    | :1234:  cc	| 	change N lines
-    | :1234:  S		| change N lines
+:warning:    | :1234:  S		| change N lines
 :warning:    | :1234:  C		| change to the end of the line (and N-1 more lines)
     | :1234:  s		| change N characters
     |    {visual}c	| in Visual block mode: Change each of the selected lines with the entered text

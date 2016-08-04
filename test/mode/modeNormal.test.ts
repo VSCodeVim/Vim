@@ -1028,9 +1028,16 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can do S",
+      start: ["    one", "    tw|o", "    three"],
+      keysPressed: "2S",
+      end: ["    one", "|"]
+    });
+
+    newTest({
       title: "/ does not affect mark",
       start: ["|one", "twooo", "thurr"],
       keysPressed: "ma/two<enter>'a",
-      end: ["|one", "twooo", "thurr"],
+      end: ["|one", "twooo", "thurr"]
     });
 });
