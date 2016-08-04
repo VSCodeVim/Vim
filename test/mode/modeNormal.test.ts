@@ -1030,7 +1030,7 @@ suite("Mode Normal", () => {
     newTest({
       title: "Can do S",
       start: ["    one", "    tw|o", "    three"],
-      keysPressed: "S",
-      end: ["    one", "    |", "    three"],
+      keysPressed: "2S",
+      end: ["    one", "|"],
     });
 });
