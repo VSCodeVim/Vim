@@ -189,7 +189,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   for (let { key } of packagejson.contributes.keybindings) {
     if (key.startsWith("ctrl+")) {
-      registerCommand(context, `extension.vim_${ key }`, () => handleKeyEvent(`ctrl+${ key }`));
+      registerCommand(context, `extension.vim_${ key }`, () => handleKeyEvent(key));
     } else {
       let bracketedKey = `<${ key.toLowerCase() }>`;
 
