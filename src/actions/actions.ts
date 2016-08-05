@@ -1374,7 +1374,7 @@ class CommandClearLine extends BaseCommand {
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
-    let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft()
+    let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft();
     return new ChangeOperator().run(vimState, position.getLineBegin(), end);
   }
 }
