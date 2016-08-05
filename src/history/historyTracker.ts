@@ -55,10 +55,11 @@ export class DocumentChange {
   }
 }
 
-interface IMark {
+export interface IMark {
   name: string;
   position: Position;
   isUppercaseMark: boolean;
+  editor?: vscode.TextEditor; // only required when using global marks (isUppercaseMark is true)
 }
 
 class HistoryStep {
@@ -156,6 +157,11 @@ export class HistoryTracker {
    */
   private oldText: string;
 
+  /**
+   * The marks shared across all files.
+   */
+  private static globalMarks: IMark[] = [];
+
   private get currentHistoryStep(): HistoryStep {
     if (this.currentHistoryStepIndex === -1) {
       console.log("Tried to modify history at index -1");
@@ -205,7 +211,8 @@ export class HistoryTracker {
       newMarks.push({
         name            : mark.name,
         position        : mark.position,
-        isUppercaseMark : mark.isUppercaseMark
+        isUppercaseMark : mark.isUppercaseMark,
+        editor          : mark.editor
       });
     }
 
@@ -283,17 +290,32 @@ export class HistoryTracker {
    * Adds a mark.
    */
   addMark(position: Position, markName: string): void {
+    let isUppercaseMark = markName === markName.toUpperCase();
     const newMark: IMark = {
       position,
       name: markName,
-      isUppercaseMark: markName === markName.toUpperCase()
+      isUppercaseMark: isUppercaseMark,
+      editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined
     };
-    const previousIndex = _.findIndex(this.currentHistoryStep.marks, mark => mark.name === markName);
+
+    this.putMarkInList(newMark);
+    // const previousIndex = _.findIndex(this.currentHistoryStep.marks, mark => mark.name === markName);
+
+    // if (previousIndex !== -1) {
+    //   this.currentHistoryStep.marks[previousIndex] = newMark;
+    // } else {
+    //   this.currentHistoryStep.marks.push(newMark);
+    // }
+  }
+
+  private putMarkInList(mark: IMark): void {
+    let list: IMark[] = mark.isUppercaseMark ? HistoryTracker.globalMarks : this.currentHistoryStep.marks;
+    const previousIndex = _.findIndex(list, x => x.name == mark.name);
 
     if (previousIndex !== -1) {
-      this.currentHistoryStep.marks[previousIndex] = newMark;
+      list[previousIndex] = mark;
     } else {
-      this.currentHistoryStep.marks.push(newMark);
+      list.push(mark);
     }
   }
 
@@ -301,10 +323,14 @@ export class HistoryTracker {
    * Retrieves a mark.
    */
   getMark(markName: string): IMark {
-    return _.find(this.currentHistoryStep.marks, mark => mark.name === markName);
+    let isUppercaseMark = markName === markName.toUpperCase();
+    let list: IMark[] = isUppercaseMark ? HistoryTracker.globalMarks : this.currentHistoryStep.marks;
+    return _.find(list, mark => mark.name === markName);
   }
 
   getMarks(): IMark[] {
+    // nothing is using this. why have it?
+    // how should this handle HistoryTracker.globalMarks?
     return this.currentHistoryStep.marks;
   }
 
