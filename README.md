@@ -4,7 +4,7 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code.
 
-Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. 
+Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**.
 
 We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
 
@@ -12,7 +12,7 @@ We're super friendly people if you want to drop by and talk to us on our [Slack 
 
 ![Screenshot](images/screen.png)
 
-## Features We Support 
+## Features We Support
 
 * All basic modes
 * Most typical commands, including command combinations like `c3w`, `daw`, `2dd`, etc. (Check the [roadmap](ROADMAP.md) for details.)
@@ -39,33 +39,33 @@ On OSX, the fix is to run this in the terminal. Be mindful as this is a global s
 
 `defaults write -g ApplePressAndHoldEnabled -bool false`
 
-#### How can I bind `jj` to `<esc>`?
+#### How can I bind `jj` to `<escape>`?
 
 1. Add the following to `settings.json` (open the Command Pallete and search for "User Settings"):
-   
+
    ```
       "vim.insertModeKeyBindings": [
            {
                "before": ["j", "j"],
-               "after": ["<esc>"]
+               "after": ["<escape>"]
            }
       ]
    ```
 
-2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<esc>`, do the following as well:
+2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<escape>`, do the following as well:
 
    ```
       "vim.otherModesKeyBindings": [
            {
                "before": ["j", "j"],
-               "after": ["<esc>"]
+               "after": ["<escape>"]
            }
       ]
 ```
 
 Be sure to restart VSCode after making these changes.
 
-#### How can I enable `ctrl-c` as an alternative to `<esc>`?
+#### How can I enable `ctrl-c` as an alternative to `<escape>`?
 
 Put the following in your `settings.json`:
 

@@ -63,21 +63,21 @@ suite("Mode Normal", () => {
     newTest({
       title: "Can handle 'cc'",
       start: ['one', '|one two', 'three'],
-      keysPressed: 'cca<esc>',
+      keysPressed: 'cca<escape>',
       end: ["one", "|a", "three"],
     });
 
     newTest({
       title: "Can handle 'Ncc'",
       start: ['one', '|one two', 'three four', 'five'],
-      keysPressed: '2cca<esc>',
+      keysPressed: '2cca<escape>',
       end: ["one", "|a", "five"]
     });
 
     newTest({
       title: "Can handle 'yy'",
       start: ['|one'],
-      keysPressed: 'yyO<esc>p',
+      keysPressed: 'yyO<escape>p',
       end: ["", "|one", "one"],
     });
 
@@ -198,7 +198,7 @@ suite("Mode Normal", () => {
     newTest({
       title: "Can handle '<backspace>' in insert mode",
       start: ['one', '|'],
-      keysPressed: 'i<backspace><esc>',
+      keysPressed: 'i<backspace><escape>',
       end: ['on|e']
     });
 

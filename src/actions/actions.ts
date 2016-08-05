@@ -228,7 +228,7 @@ export abstract class BaseMovement extends BaseAction {
 }
 
 /**
- * A command is something like <esc>, :, v, i, etc.
+ * A command is something like <escape>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
   /**
@@ -395,7 +395,7 @@ class CommandRegister extends BaseCommand {
 @RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.SearchInProgressMode];
-  keys = ["<esc>"];
+  keys = ["<escape>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode !== ModeName.Visual &&
@@ -436,6 +436,30 @@ class CommandCtrlW extends BaseCommand {
 }
 
 @RegisterAction
+class CommandCtrlE extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+e"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("scrollLineDown");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlY extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["ctrl+y"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("scrollLineUp");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandCtrlC extends CommandEsc {
   keys = ["ctrl+c"];
 }
@@ -470,7 +494,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
 
       return vimState;
-    } else if (key === "<esc>") {
+    } else if (key === "<escape>") {
       vimState.currentMode = ModeName.Normal;
       vimState.searchState = undefined;
 
@@ -590,13 +614,15 @@ class CommandInsertInInsertMode extends BaseCommand {
     if (char === "<backspace>") {
       if (position.character === 0) {
         if (position.line > 0) {
+          const prevEndOfLine = position.getPreviousLineBegin().getLineEnd();
+
           await TextEditor.delete(new vscode.Range(
             position.getPreviousLineBegin().getLineEnd(),
             position.getLineBegin()
           ));
 
-          vimState.cursorPosition      = position.getPreviousLineBegin().getLineEnd();
-          vimState.cursorStartPosition = position.getPreviousLineBegin().getLineEnd();
+          vimState.cursorPosition      = prevEndOfLine;
+          vimState.cursorStartPosition = prevEndOfLine;
         }
       } else {
         let leftPosition = position.getLeft();
@@ -1354,6 +1380,19 @@ class CommandChangeToLineEnd extends BaseCommand {
 }
 
 @RegisterAction
+class CommandClearLine extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["S"];
+  canBePrefixedWithCount = true;
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft()
+    return new ChangeOperator().run(vimState, position.getLineBegin(), end);
+  }
+}
+
+@RegisterAction
 class CommandExitVisualMode extends BaseCommand {
   modes = [ModeName.Visual, ModeName.VisualLine];
   keys = ["v"];
@@ -1379,7 +1418,7 @@ class CommandVisualMode extends BaseCommand {
 
 @RegisterAction
 class CommandVisualLineMode extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual];
   keys = ["V"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1415,11 +1454,13 @@ class CommandGoToDefinition extends BaseCommand {
     // (even though we do await!). THe only way to ensure it's done is to poll, which is
     // a major bummer.
 
+    let maxIntervals = 10;
+
     await new Promise(resolve => {
       let interval = setInterval(() => {
         const positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
-        if (!startPosition.isEqual(positionNow)) {
+        if (!startPosition.isEqual(positionNow) || maxIntervals-- < 0) {
           clearInterval(interval);
           resolve();
         }
@@ -1624,16 +1665,17 @@ class MoveToLeftPane  extends BaseCommand {
 
 class BaseTabCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  canBePrefixedWithCount = true;
 }
 
 @RegisterAction
 class CommandTabNext extends BaseTabCommand {
   keys = ["g", "t"];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     (new TabCommand({
       tab: Tab.Next,
-      count: 1
+      count: vimState.recordedState.count
     })).execute();
 
     return vimState;

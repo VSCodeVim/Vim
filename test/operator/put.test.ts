@@ -21,7 +21,7 @@ suite("put operator", () => {
     );
 
     await modeHandler.handleMultipleKeyEvents([
-      '<esc>',
+      '<escape>',
       '^', 'D', 'p', 'p'
     ]);
 
@@ -34,7 +34,7 @@ suite("put operator", () => {
     );
 
     await modeHandler.handleMultipleKeyEvents([
-      '<esc>',
+      '<escape>',
       '^', 'y', 'y', 'p'
     ]);
 
@@ -47,7 +47,7 @@ suite("put operator", () => {
     );
 
     await modeHandler.handleMultipleKeyEvents([
-      '<esc>',
+      '<escape>',
       'g', 'g', 'y', 'y', 'p'
     ]);
 
@@ -60,7 +60,7 @@ suite("put operator", () => {
     );
 
     await modeHandler.handleMultipleKeyEvents([
-      '<esc>',
+      '<escape>',
       'k', 'y', 'y', 'p'
     ]);
 
