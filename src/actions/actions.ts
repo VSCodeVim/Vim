@@ -573,6 +573,14 @@ class CommandHash extends BaseCommand {
 
     vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
 
+    // hack start
+    // temporary fix for https://github.com/VSCodeVim/Vim/issues/569
+    let text = TextEditor.getText(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition.getRight()));
+    if (text === " ") {
+      return vimState;
+    }
+    // hack end
+
     do {
       // use getWordLeft() on position to start at the beginning of the word.
       // this ensures that any matches happen ounside of the word currently selected,
