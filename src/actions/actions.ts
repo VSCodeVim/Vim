@@ -498,28 +498,34 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[0];
+    const replaceState = vimState.replaceState!;
 
     if (char === "<backspace>") {
-      if (position.isBefore(vimState.replaceState!.replaceCursorStartPosition)) {
+      if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
         vimState.cursorPosition = position.getLeft();
         vimState.cursorStartPosition = position.getLeft();
-      } else if (position.line > vimState.replaceState!.replaceCursorStartPosition.line) {
+      } else if (position.line > replaceState.replaceCursorStartPosition.line ||
+                 position.character > replaceState.originalChars.length) {
         const newPosition = await TextEditor.backspace(position);
         vimState.cursorPosition = newPosition;
         vimState.cursorStartPosition = newPosition;
       } else {
-        // Same line
+        TextEditor.replace(new vscode.Range(position.getLeft(), position), replaceState.originalChars[position.character - 1]);
+        let leftPosition = position.getLeft();
+        vimState.cursorPosition = leftPosition;
+        vimState.cursorStartPosition = leftPosition;
       }
     } else {
-      const state = await new DeleteOperator().run(vimState, position, position);
+      if (!position.isLineEnd()) {
+        vimState = await new DeleteOperator().run(vimState, position, position);
+      }
       await TextEditor.insertAt(char, position);
 
-      state.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      state.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      state.currentMode = ModeName.Replace;
-      return state;
+      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
 
+    vimState.currentMode = ModeName.Replace;
     return vimState;
   }
 }
@@ -541,7 +547,7 @@ class ArrowsInReplaceMode extends BaseMovement {
       case "<left>":
         newPosition = await new MoveLeftArrow().execAction(position, vimState);
         break;
-      case "<down>":
+      case "<right>":
         newPosition = await new MoveRightArrow().execAction(position, vimState);
         break;
       default:
@@ -558,17 +564,17 @@ class UpArrowInReplaceMode extends ArrowsInReplaceMode {
 }
 
 @RegisterAction
-class DownArrowInReplaceMode extends BaseMovement {
+class DownArrowInReplaceMode extends ArrowsInReplaceMode {
   keys = ["<down>"];
 }
 
 @RegisterAction
-class LeftArrowInReplaceMode extends BaseMovement {
-  keys = ["<Left>"];
+class LeftArrowInReplaceMode extends ArrowsInReplaceMode {
+  keys = ["<left>"];
 }
 
 @RegisterAction
-class RightArrowInReplaceMode extends BaseMovement {
+class RightArrowInReplaceMode extends ArrowsInReplaceMode {
   keys = ["<right>"];
 }
 

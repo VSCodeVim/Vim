@@ -249,11 +249,15 @@ export class ReplaceState {
     return this._replaceCursorStartPosition;
   }
 
-  private originalChars: string[];
+  public originalChars: string[] = [];
 
   constructor(startPosition: Position) {
     this._replaceCursorStartPosition = startPosition;
-    this.originalChars = TextEditor.getLineAt(startPosition).text.substring(startPosition.character).split("");
+    let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
+    /* tslint:disable:forin */
+    for (const index in text.split("")) {
+      this.originalChars[Number.parseInt(index) + startPosition.character] = text[index];
+    }
   }
 }
 
