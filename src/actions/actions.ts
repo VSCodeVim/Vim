@@ -511,7 +511,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState.cursorStartPosition = newPosition;
       } else {
         TextEditor.replace(new vscode.Range(position.getLeft(), position), replaceState.originalChars[position.character - 1]);
-        let leftPosition = position.getLeft();
+        const leftPosition = position.getLeft();
         vimState.cursorPosition = leftPosition;
         vimState.cursorStartPosition = leftPosition;
       }
