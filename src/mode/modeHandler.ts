@@ -254,9 +254,8 @@ export class ReplaceState {
   constructor(startPosition: Position) {
     this._replaceCursorStartPosition = startPosition;
     let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
-    /* tslint:disable:forin */
-    for (const index in text.split("")) {
-      this.originalChars[Number.parseInt(index) + startPosition.character] = text[index];
+    for (let [key, value] of text.split("").entries()) {
+      this.originalChars[key + startPosition.character] = value;
     }
   }
 }
