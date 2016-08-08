@@ -30,6 +30,8 @@ function parseLineRange(state: ParserState, commandLine: node.CommandLine): IPar
       case token.TokenType.Percent:
       case token.TokenType.Comma:
       case token.TokenType.LineNumber:
+      case token.TokenType.SelectionFirstLine:
+      case token.TokenType.SelectionLastLine:
         commandLine.range.addToken(tok);
         continue;
       case token.TokenType.CommandName:

@@ -65,6 +65,12 @@ export class LineRange {
         line = Math.max(0, line - 1);
         line = Math.min(doc.document.lineCount, line);
         return new vscode.Position(line, 0);
+      case token.TokenType.SelectionFirstLine:
+        let start = doc.selection.start.isBeforeOrEqual(doc.selection.end) ? doc.selection.start : doc.selection.end;
+        return new vscode.Position(start.line, 0);
+      case token.TokenType.SelectionLastLine:
+        let end = doc.selection.start.isAfter(doc.selection.end) ? doc.selection.start : doc.selection.end;
+        return new vscode.Position(end.line, 0);
       default:
         throw new Error("not implemented");
     }
