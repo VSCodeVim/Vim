@@ -170,6 +170,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'dF'",
+      start: ['abcdefg|h'],
+      keysPressed: 'dFd',
+      end: ['abc|h'],
+    });
+
+    newTest({
+      title: "Can handle 'dT'",
+      start: ['abcdefg|h'],
+      keysPressed: 'dTd',
+      end: ['abcd|h'],
+    });
+
+    newTest({
       title: "Can handle 'cw'",
       start: ['text text tex|t'],
       keysPressed: '^lllllllcw',

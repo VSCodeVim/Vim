@@ -1770,10 +1770,6 @@ class MoveFindBackward extends BaseMovement {
       return { start: position, stop: position, failed: true };
     }
 
-    if (vimState.recordedState.operator) {
-      result = result.getLeft();
-    }
-
     return result;
   }
 }
@@ -1813,10 +1809,6 @@ class MoveTilBackward extends BaseMovement {
 
     if (!result) {
       return { start: position, stop: position, failed: true };
-    }
-
-    if (vimState.recordedState.operator) {
-      result = result.getLeft();
     }
 
     return result;
