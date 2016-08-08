@@ -1,4 +1,4 @@
-import { VimSpecialCommands, VimState, SearchState, SearchDirection } from './../mode/modeHandler';
+import { VimSpecialCommands, VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
@@ -394,7 +394,7 @@ class CommandRegister extends BaseCommand {
 
 @RegisterAction
 class CommandEsc extends BaseCommand {
-  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.SearchInProgressMode];
+  modes = [ModeName.Insert, ModeName.Visual, ModeName.VisualLine, ModeName.SearchInProgressMode, ModeName.Replace];
   keys = ["<escape>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -475,6 +475,109 @@ class CommandInsertAtCursor extends BaseCommand {
 
     return vimState;
   }
+}
+
+@RegisterAction
+class CommandReplacecAtCursor extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["R"];
+  mustBeFirstKey = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Replace;
+    vimState.replaceState = new ReplaceState(position);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandReplaceInReplaceMode extends BaseCommand {
+  modes = [ModeName.Replace];
+  keys = ["<character>"];
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const char = this.keysPressed[0];
+
+    const replaceState = vimState.replaceState!;
+
+    if (char === "<backspace>") {
+      if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
+        vimState.cursorPosition = position.getLeft();
+        vimState.cursorStartPosition = position.getLeft();
+      } else if (position.line > replaceState.replaceCursorStartPosition.line ||
+                 position.character > replaceState.originalChars.length) {
+        const newPosition = await TextEditor.backspace(position);
+        vimState.cursorPosition = newPosition;
+        vimState.cursorStartPosition = newPosition;
+      } else {
+        await TextEditor.replace(new vscode.Range(position.getLeft(), position), replaceState.originalChars[position.character - 1]);
+        const leftPosition = position.getLeft();
+        vimState.cursorPosition = leftPosition;
+        vimState.cursorStartPosition = leftPosition;
+      }
+    } else {
+      if (!position.isLineEnd()) {
+        vimState = await new DeleteOperator().run(vimState, position, position);
+      }
+      await TextEditor.insertAt(char, position);
+
+      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+
+    vimState.currentMode = ModeName.Replace;
+    return vimState;
+  }
+}
+
+class ArrowsInReplaceMode extends BaseMovement {
+  modes = [ModeName.Replace];
+  keys: string[];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    let newPosition: Position = position;
+
+    switch (this.keys[0]) {
+      case "<up>":
+        newPosition = await new MoveUpArrow().execAction(position, vimState);
+        break;
+      case "<down>":
+        newPosition = await new MoveDownArrow().execAction(position, vimState);
+        break;
+      case "<left>":
+        newPosition = await new MoveLeftArrow().execAction(position, vimState);
+        break;
+      case "<right>":
+        newPosition = await new MoveRightArrow().execAction(position, vimState);
+        break;
+      default:
+        break;
+    }
+    vimState.replaceState = new ReplaceState(newPosition);
+    return newPosition;
+  }
+}
+
+@RegisterAction
+class UpArrowInReplaceMode extends ArrowsInReplaceMode {
+  keys = ["<up>"];
+}
+
+@RegisterAction
+class DownArrowInReplaceMode extends ArrowsInReplaceMode {
+  keys = ["<down>"];
+}
+
+@RegisterAction
+class LeftArrowInReplaceMode extends ArrowsInReplaceMode {
+  keys = ["<left>"];
+}
+
+@RegisterAction
+class RightArrowInReplaceMode extends ArrowsInReplaceMode {
+  keys = ["<right>"];
 }
 
 @RegisterAction
@@ -620,34 +723,9 @@ class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<backspace>") {
-      if (position.character === 0) {
-        if (position.line > 0) {
-          const prevEndOfLine = position.getPreviousLineBegin().getLineEnd();
-
-          await TextEditor.delete(new vscode.Range(
-            position.getPreviousLineBegin().getLineEnd(),
-            position.getLineBegin()
-          ));
-
-          vimState.cursorPosition      = prevEndOfLine;
-          vimState.cursorStartPosition = prevEndOfLine;
-        }
-      } else {
-        let leftPosition = position.getLeft();
-
-        if (position.getFirstLineNonBlankChar().character >= position.character) {
-          let tabStop = vscode.workspace.getConfiguration("editor").get("useTabStops", true);
-
-          if (tabStop) {
-            leftPosition = position.getLeftTabStop();
-          }
-        }
-
-        await TextEditor.delete(new vscode.Range(position, leftPosition));
-
-        vimState.cursorPosition      = leftPosition;
-        vimState.cursorStartPosition = leftPosition;
-      }
+      const newPosition = await TextEditor.backspace(position);
+      vimState.cursorPosition = newPosition;
+      vimState.cursorStartPosition = newPosition;
     } else {
       await TextEditor.insert(char, vimState.cursorPosition);
 

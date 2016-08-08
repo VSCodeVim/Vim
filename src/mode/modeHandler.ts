@@ -9,6 +9,7 @@ import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { VisualMode } from './modeVisual';
+import { ReplaceMode } from './modeReplace';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
@@ -83,6 +84,8 @@ export class VimState {
   public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
 
   public searchState: SearchState | undefined = undefined;
+
+  public replaceState: ReplaceState | undefined = undefined;
 
   /**
    * The mode Vim will be in once this action finishes.
@@ -238,6 +241,24 @@ export class SearchState {
     this._searchDirection = direction;
     this._searchCursorStartPosition = startPosition;
     this.searchString = searchString;
+  }
+}
+
+export class ReplaceState {
+  private _replaceCursorStartPosition: Position;
+
+  public get replaceCursorStartPosition() {
+    return this._replaceCursorStartPosition;
+  }
+
+  public originalChars: string[] = [];
+
+  constructor(startPosition: Position) {
+    this._replaceCursorStartPosition = startPosition;
+    let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
+    for (let [key, value] of text.split("").entries()) {
+      this.originalChars[key + startPosition.character] = value;
+    }
   }
 }
 
@@ -408,6 +429,7 @@ export class ModeHandler implements vscode.Disposable {
       new VisualMode(),
       new VisualLineMode(),
       new SearchInProgressMode(),
+      new ReplaceMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
 
