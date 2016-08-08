@@ -495,9 +495,11 @@ class CommandReplacecAtCursor extends BaseCommand {
 class CommandReplaceInReplaceMode extends BaseCommand {
   modes = [ModeName.Replace];
   keys = ["<character>"];
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[0];
+
     const replaceState = vimState.replaceState!;
 
     if (char === "<backspace>") {
@@ -510,7 +512,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState.cursorPosition = newPosition;
         vimState.cursorStartPosition = newPosition;
       } else {
-        TextEditor.replace(new vscode.Range(position.getLeft(), position), replaceState.originalChars[position.character - 1]);
+        await TextEditor.replace(new vscode.Range(position.getLeft(), position), replaceState.originalChars[position.character - 1]);
         const leftPosition = position.getLeft();
         vimState.cursorPosition = leftPosition;
         vimState.cursorStartPosition = leftPosition;
