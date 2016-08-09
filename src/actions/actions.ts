@@ -2791,12 +2791,12 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-abstract class MoveInsideCharacter extends BaseMovement {
+abstract class MoveMatchingCharacter extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   protected charToMatch: string;
   protected includeSurrounding = false;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const failure = { start: position, stop: position, failed: true };
     const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
@@ -2806,15 +2806,14 @@ abstract class MoveInsideCharacter extends BaseMovement {
     let startPos = PairMatcher.nextPairedChar(position, closingChar, closedMatch);
     if (startPos === undefined) { return failure; }
 
-    const startPlusOne = new Position(startPos.line, startPos.character + 1);
+    const startPlusOne = startPos.getRight();
 
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
     if (endPos === undefined) { return failure; }
 
-    if (this.includeSurrounding) {
-      endPos = new Position(endPos.line, endPos.character + 1);
-    } else {
+    if (!this.includeSurrounding) {
       startPos = startPlusOne;
+      endPos = endPos.getLeftThroughLineBreaks();
     }
 
     // If the closing character is the first on the line, don't swallow it.
@@ -2827,107 +2826,115 @@ abstract class MoveInsideCharacter extends BaseMovement {
       stop  : endPos,
     };
   }
+
+ public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const res = await this.execAction(position, vimState);
+
+    res.stop = res.stop.getRightThroughLineBreaks();
+
+    return res;
+  }
 }
 
 @RegisterAction
-class MoveIParentheses extends MoveInsideCharacter {
+class MoveIParentheses extends MoveMatchingCharacter {
   keys = ["i", "("];
   charToMatch = "(";
 }
 
 @RegisterAction
-class MoveIClosingParentheses extends MoveInsideCharacter {
+class MoveIClosingParentheses extends MoveMatchingCharacter {
   keys = ["i", ")"];
   charToMatch = "(";
 }
 
 @RegisterAction
-class MoveAParentheses extends MoveInsideCharacter {
+class MoveAParentheses extends MoveMatchingCharacter {
   keys = ["a", "("];
   charToMatch = "(";
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveAClosingParentheses extends MoveInsideCharacter {
+class MoveAClosingParentheses extends MoveMatchingCharacter {
   keys = ["a", ")"];
   charToMatch = "(";
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveICurlyBrace extends MoveInsideCharacter {
+class MoveICurlyBrace extends MoveMatchingCharacter {
   keys = ["i", "{"];
   charToMatch = "{";
 }
 
 @RegisterAction
-class MoveIClosingCurlyBrace extends MoveInsideCharacter {
+class MoveIClosingCurlyBrace extends MoveMatchingCharacter {
   keys = ["i", "}"];
   charToMatch = "{";
 }
 
 @RegisterAction
-class MoveACurlyBrace extends MoveInsideCharacter {
+class MoveACurlyBrace extends MoveMatchingCharacter {
   keys = ["a", "{"];
   charToMatch = "{";
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveAClosingCurlyBrace extends MoveInsideCharacter {
+class MoveAClosingCurlyBrace extends MoveMatchingCharacter {
   keys = ["a", "}"];
   charToMatch = "{";
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveICaret extends MoveInsideCharacter {
+class MoveICaret extends MoveMatchingCharacter {
   keys = ["i", "<"];
   charToMatch = "<";
 }
 
 @RegisterAction
-class MoveIClosingCaret extends MoveInsideCharacter {
+class MoveIClosingCaret extends MoveMatchingCharacter {
   keys = ["i", ">"];
   charToMatch = "<";
 }
 
 @RegisterAction
-class MoveACaret extends MoveInsideCharacter {
+class MoveACaret extends MoveMatchingCharacter {
   keys = ["a", "<"];
   charToMatch = "<";
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveAClosingCaret extends MoveInsideCharacter {
+class MoveAClosingCaret extends MoveMatchingCharacter {
   keys = ["a", ">"];
   charToMatch = "<";
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveISquareBracket extends MoveInsideCharacter {
+class MoveISquareBracket extends MoveMatchingCharacter {
   keys = ["i", "["];
   charToMatch = "[";
 }
 
 @RegisterAction
-class MoveIClosingSquareBraket extends MoveInsideCharacter {
+class MoveIClosingSquareBraket extends MoveMatchingCharacter {
   keys = ["i", "]"];
   charToMatch = "[";
 }
 
 @RegisterAction
-class MoveASquareBracket extends MoveInsideCharacter {
+class MoveASquareBracket extends MoveMatchingCharacter {
   keys = ["a", "["];
   charToMatch = "[";
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveAClosingSquareBracket extends MoveInsideCharacter {
+class MoveAClosingSquareBracket extends MoveMatchingCharacter {
   keys = ["a", "]"];
   charToMatch = "[";
   includeSurrounding = true;

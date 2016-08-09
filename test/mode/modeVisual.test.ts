@@ -463,4 +463,22 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
   });
+
+  suite("handles i{ in visual mode", () => {
+    newTest({
+      title: "Can handle 'vi{d' on a single line",
+      start: ['{ one | } two'],
+      keysPressed: 'vi{d',
+      end: ['{|} two'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'vi{d' across lines",
+      start: ['one |{', '', 'two }'],
+      keysPressed: 'vi{d',
+      end: ['one {|}'],
+      endMode: ModeName.Normal
+    });
+  });
 });
