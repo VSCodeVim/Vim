@@ -26,8 +26,9 @@ Status | Command
 :white_check_mark: | Correct Undo/Redo
 :warning: | Command Remapping
 :warning:  | Marks
-:warning: | Text Objects
- | Visual Block Mode
+:white_check_mark: | Text Objects
+:white_check_mark: | Visual Block Mode
+ | Multiple Select Mode
  | Macros
 :warning: | Buffer/Window/Tab
 
