@@ -197,6 +197,8 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   }
 
+  registerCommand(context, `extension.vim_esc`, () => handleKeyEvent(`<escape>`));
+
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler()
