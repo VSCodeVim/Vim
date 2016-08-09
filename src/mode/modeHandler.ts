@@ -590,6 +590,8 @@ export class ModeHandler implements vscode.Disposable {
     if (key === "<c-a>") { key = "ctrl+a"; } // TODO - temporary hack for tests only!
     if (key === "<c-x>") { key = "ctrl+x"; } // TODO - temporary hack for tests only!
 
+    if (key === "<esc>") { key = "<escape>"; }
+
     // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
     // We'll try to mitigate this problem until it's fixed upstream.
     // https://github.com/Microsoft/vscode/issues/713
