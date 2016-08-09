@@ -890,15 +890,12 @@ export class ModeHandler implements vscode.Disposable {
           Position.LaterOf(start, stop).getLineEnd()
         ) ];
       } else if (vimState.currentMode === ModeName.VisualBlock) {
-        const topLeft     = VisualBlockMode.getTopLeftPosition(start, stop);
-        const bottomRight = VisualBlockMode.getBottomRightPosition(start, stop);
-
         selections = [];
 
-        for (let line = topLeft.line; line <= bottomRight.line; line++) {
+        for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
           selections.push(new vscode.Selection(
-            new Position(line, topLeft.character),
-            new Position(line, bottomRight.character + 1)
+            lineStart,
+            end
           ));
         }
       } else {

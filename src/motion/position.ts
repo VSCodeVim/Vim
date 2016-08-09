@@ -3,6 +3,8 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import { TextEditor } from "./../textEditor";
+import { VimState } from './../mode/modeHandler';
+import { VisualBlockMode } from './../mode/modeVisualBlock';
 
 export class Position extends vscode.Position {
   private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
@@ -88,20 +90,37 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Iterate over every line in the block defined by the two positions passed in. If start
-   * is true, iterate over the first character in every line. Otherwise, iterate over the
-   * last.
+   * Iterate over every line in the block defined by the two positions passed in.
+   *
+   * This is intended for visual block mode.
    */
-  public static *IterateLine(topLeft: Position, bottomRight: Position, start = true)
+  public static *IterateLine(vimState: VimState, options: { reverse?: boolean } = { reverse: false })
     : Iterable<{ line: string, start: Position, end: Position }> {
 
-    for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
+    const { reverse } = options;
+    const start = vimState.cursorStartPosition;
+    const stop  = vimState.cursorPosition;
+
+    const topLeft     = VisualBlockMode.getTopLeftPosition(start, stop);
+    const bottomRight = VisualBlockMode.getBottomRightPosition(start, stop);
+
+    // Special case for $, which potentially makes the box ragged
+    // on the right side.
+
+    const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
+
+    const itrStart = reverse ? bottomRight.line : topLeft.line;
+    const itrEnd   = reverse ? topLeft.line     : bottomRight.line;
+
+    for (let lineIndex = itrStart; reverse ? lineIndex >= itrEnd : lineIndex <= itrEnd; reverse ? lineIndex-- : lineIndex++) {
       const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
 
       yield {
         line : line,
         start: new Position(lineIndex, topLeft.character),
-        end  : new Position(lineIndex, bottomRight.character),
+        end  : runToLineEnd ?
+          new Position(lineIndex, line.length) :
+          new Position(lineIndex, bottomRight.character)
       };
     }
   }

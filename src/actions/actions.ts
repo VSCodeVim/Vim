@@ -2104,7 +2104,9 @@ class ActionXVisualBlock extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
+
+    // Iterate in reverse so we don't lose track of indicies
+    for (const { start, end } of Position.IterateLine(vimState, { reverse: true })) {
       vimState = await new DeleteOperator().run(vimState, start, end);
     }
 
@@ -2141,7 +2143,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const deleteOperator = new DeleteOperator();
 
-    for (const { start, end } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
+    for (const { start, end } of Position.IterateLine(vimState)) {
       await deleteOperator.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), true);
     }
 
@@ -2162,7 +2164,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const deleteOperator = new DeleteOperator();
 
-    for (const { start } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
+    for (const { start } of Position.IterateLine(vimState)) {
       // delete from start up to but not including the newline.
       await deleteOperator.delete(start, start.getLineEnd().getLeft(), vimState.currentMode, vimState.effectiveRegisterMode(), true);
     }
@@ -2211,7 +2213,7 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
       return vimState;
     }
 
-    for (const { start, end } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
+    for (const { start, end } of Position.IterateLine(vimState)) {
       const insertPos    = insertAtStart ? start : end;
       const insertAction = new CommandInsertInInsertMode();
       const insertResult = await insertAction.insert(this.keysPressed[0], insertPos);
