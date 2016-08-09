@@ -929,7 +929,8 @@ export class ModeHandler implements vscode.Disposable {
       const options = vscode.window.activeTextEditor.options;
 
       options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-                  this.currentMode.name     !== ModeName.Insert ?
+                            this.currentMode.name       !== ModeName.VisualBlockInsertMode &&
+                            this.currentMode.name       !== ModeName.Insert ?
         vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
       vscode.window.activeTextEditor.options = options;
     }
