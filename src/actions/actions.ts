@@ -919,6 +919,10 @@ export class PutCommand extends BaseCommand {
         const dest = before ? position : position.getRight();
         let text = register.text;
 
+        if (typeof text === "object") {
+          return await this.execVisualBlockPaste(text, position, vimState);
+        }
+
         if (register.registerMode === RegisterMode.CharacterWise) {
           await TextEditor.insertAt(text, dest);
         } else {
@@ -957,6 +961,23 @@ export class PutCommand extends BaseCommand {
 
         vimState.currentRegisterMode = register.registerMode;
         return vimState;
+    }
+
+    private async execVisualBlockPaste(block: string[], position: Position, vimState: VimState): Promise<VimState> {
+
+      // paste the entire block.
+      for (let lineIndex = position.line; lineIndex < position.line + block.length; lineIndex++) {
+        const line = block[lineIndex - position.line];
+        const insertPos = new Position(
+          lineIndex,
+          Math.min(position.character, TextEditor.getLineAt(new Position(lineIndex, 0)).text.length)
+        );
+
+        await TextEditor.insertAt(line, insertPos);
+      }
+
+      vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+      return vimState;
     }
 
     public async execCount(position: Position, vimState: VimState): Promise<VimState> {
