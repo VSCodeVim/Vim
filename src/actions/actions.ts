@@ -2180,6 +2180,12 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   keys = ["A"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.cursorPosition.character >= vimState.cursorStartPosition.character) {
+      vimState.cursorPosition = vimState.cursorPosition.getRight();
+    } else {
+      vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
+    }
+
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Append;
 
