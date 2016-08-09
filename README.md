@@ -95,6 +95,10 @@ This project is maintained by a group of awesome [contributors](https://github.c
 
 For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
 
+## Changelog
+
+Please see our [list of recent releases and features added.](https://github.com/VSCodeVim/Vim/releases)
+
 ## License
 
 MIT, please see [License](LICENSE) for more information.
