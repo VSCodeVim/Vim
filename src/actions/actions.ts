@@ -914,9 +914,9 @@ export class PutCommand extends BaseCommand {
     canBePrefixedWithCount = true;
     canBeRepeatedWithDot = true;
 
-    public async exec(position: Position, vimState: VimState, before: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
+    public async exec(position: Position, vimState: VimState, after: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
         const register = Register.get(vimState);
-        const dest = before ? position : position.getRight();
+        const dest = after ? position : position.getRight();
         let text = register.text;
 
         if (typeof text === "object") {
@@ -939,7 +939,7 @@ export class PutCommand extends BaseCommand {
             }).join('\n');
           }
 
-          if (before) {
+          if (after) {
             await TextEditor.insertAt(text + "\n", dest.getLineBegin());
           } else {
             await TextEditor.insertAt("\n" + text, dest.getLineEnd());
@@ -1001,7 +1001,7 @@ export class GPutCommand extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const result = await new PutCommand().exec(position, vimState);
     return result;
-      }
+  }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     const register = Register.get(vimState);
@@ -1052,8 +1052,8 @@ export class PutCommandVisual extends BaseCommand {
   canBePrefixedWithCount = true;
   canBePrefixedWithDot = true;
 
-  public async exec(position: Position, vimState: VimState, before: boolean = false): Promise<VimState> {
-    const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, false);
+  public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
+    const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, after);
 
     return await new PutCommand().exec(result.cursorPosition, result, true);
   }
