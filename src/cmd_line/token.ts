@@ -16,7 +16,13 @@ export enum TokenType {
   CommandArgs,
   ForwardSearch,
   ReverseSearch,
-  Offset
+  Offset,
+  /**
+   * Marks
+   *
+   */
+  SelectionFirstLine,
+  SelectionLastLine
 }
 
 export class Token {

@@ -68,12 +68,36 @@ module LexerFunctions {
         case "-":
           tokens.push(emitToken(TokenType.Minus, state)!);
           continue;
+        case "'":
+          return lexMark;
         default:
           return lexCommand;
       }
     }
 
     return null;
+  }
+
+  function lexMark(state: Scanner, tokens: Token[]): ILexFunction | null {
+    // The first token has already been lexed.
+    while (true) {
+      if (state.isAtEof) {
+        return null;
+      }
+
+      var c = state.next();
+      switch (c) {
+        case '<':
+          tokens.push(emitToken(TokenType.SelectionFirstLine, state)!);
+          break;
+        case '>':
+          tokens.push(emitToken(TokenType.SelectionLastLine, state)!);
+          break;
+        default:
+          state.backup();
+          return lexRange;
+      }
+    }
   }
 
   function lexLineRef(state : Scanner, tokens: Token[]): ILexFunction | null {

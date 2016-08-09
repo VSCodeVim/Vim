@@ -73,10 +73,8 @@ gulp.task('tslint', ['fix-whitespace'], function() {
     return merge(srcs, tests);
 });
 
-gulp.task('compile', shell.task([
-  'node ./node_modules/vscode/bin/compile -p ./',
-]));
-
+gulp.task('compile', shell.task(['npm run vscode:prepublish']));
+gulp.task('watch', shell.task(['npm run compile']));
 gulp.task('init', ['typings']);
 gulp.task('default', ['tslint', 'compile']);
 gulp.task('release', ['default', 'patch']);

@@ -6,11 +6,24 @@
  * handleKeyEvent().
  */
 
+
 import * as vscode from 'vscode';
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
+
+interface VSCodeKeybinding {
+  key: string;
+  command: string;
+  when: string;
+}
+
+const packagejson: {
+  contributes: {
+    keybindings: VSCodeKeybinding[];
+  }
+} = require('../package.json'); // out/../package.json
 
 export class EditorIdentity {
   private _fileName: string;
@@ -58,12 +71,10 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
   if (!modeHandlerToEditorIdentity[activeEditorId.toString()]) {
-    const newModeHandler = new ModeHandler(false, activeEditorId.toString());
+    const newModeHandler = new ModeHandler(false, activeEditorId.fileName);
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
-
-    console.log('make new mode handler for ', activeEditorId.toString());
   }
 
   const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
@@ -172,20 +183,19 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  registerCommand(context, 'extension.vim_esc', () => handleKeyEvent("<esc>"));
-  registerCommand(context, 'extension.vim_backspace', () => handleKeyEvent("<backspace>"));
-
   registerCommand(context, 'extension.showCmdLine', () => {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
 
-  'rfbducwv['.split('').forEach(key => {
-    registerCommand(context, `extension.vim_ctrl+${key}`, () => handleKeyEvent(`ctrl+${key}`));
-  });
+  for (let { key } of packagejson.contributes.keybindings) {
+    if (key.startsWith("ctrl+")) {
+      registerCommand(context, `extension.vim_${ key }`, () => handleKeyEvent(key));
+    } else {
+      let bracketedKey = `<${ key.toLowerCase() }>`;
 
-  ['left', 'right', 'up', 'down'].forEach(key => {
-    registerCommand(context, `extension.vim_${key}`, () => handleKeyEvent(`<${key}>`));
-  });
+      registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
+    }
+  }
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {

@@ -3,22 +3,22 @@
 import * as node from "../commands/tab";
 import {Scanner} from '../scanner';
 
-function parseCount(args: string): number {
+function parseCount(args: string): number | undefined {
   if (!args) {
-    return 1;
+    return undefined;
   }
 
   let scanner = new Scanner(args);
   scanner.skipWhiteSpace();
 
   if (scanner.isAtEof) {
-    return 1;
+    return undefined;
   }
 
   let c = scanner.next();
   let count = Number.parseInt(c);
 
-  if (Number.isInteger(count) && count > 0 ) {
+  if (Number.isInteger(count) && count >= 0 ) {
     if (count > 999) {
       count = 999;
     }
@@ -29,6 +29,10 @@ function parseCount(args: string): number {
   }
 }
 
+/**
+ * :tabn[ext] Go to the next tab page.
+ * :tabn[ext] {count} Go to tab page {count}.
+ */
 export function parseTabNCommandArgs(args : string) : node.TabCommand {
   return new node.TabCommand({
     tab: node.Tab.Next,
@@ -36,6 +40,10 @@ export function parseTabNCommandArgs(args : string) : node.TabCommand {
   });
 }
 
+/**
+ * :tabp[revious] Go to the previous tab page.  Wraps around from the first one  to the last one.
+ * :tabp[revious] {count} Go {count} tab pages back.
+ */
 export function parseTabPCommandArgs(args : string) : node.TabCommand {
   return new node.TabCommand({
     tab: node.Tab.Previous,
@@ -43,41 +51,55 @@ export function parseTabPCommandArgs(args : string) : node.TabCommand {
   });
 }
 
+/**
+ * :tabfir[st]  Go to the first tab page.
+ */
 export function parseTabFirstCommandArgs(args : string) : node.TabCommand {
   return new node.TabCommand({
-    tab: node.Tab.First,
-    count: 1
+    tab: node.Tab.First
   });
 }
 
+/**
+ * :tabl[ast]  Go to the last tab page.
+ */
 export function parseTabLastCommandArgs(args : string) : node.TabCommand {
   return new node.TabCommand({
-    tab: node.Tab.Last,
-    count: 1
+    tab: node.Tab.Last
   });
 }
 
+/**
+ * :tabe[dit]
+ * :tabnew Open a new tab page with an empty window, after the current tab page.
+ */
 export function parseTabNewCommandArgs(args: string) : node.TabCommand {
-  // New Tab command should support `count`
-  // And the new created Tab's position depends on `count`
-  // For now VS Code only allows open tab next to current Tab
-  // So `count == 0` is not possible. But we can workaround this once we can move tabs through API.
+  // TODO: Tab New takes parameter file name.
   return new node.TabCommand({
-    tab: node.Tab.New,
-    count: 1
+    tab: node.Tab.New
   });
 }
 
+/**
+ * :tabc[lose][!]  Close current tab page.
+ * :tabc[lose][!] {count}. Close tab page {count}.
+ */
 export function parseTabCloseCommandArgs(args: string) : node.TabCommand {
   return new node.TabCommand({
     tab: node.Tab.Close,
-    count: 1
+    count: parseCount(args)
   });
 }
 
 export function parseTabOnlyCommandArgs(args: string) : node.TabCommand {
   return new node.TabCommand({
-    tab: node.Tab.Only,
-    count: 1
+    tab: node.Tab.Only
+  });
+}
+
+export function parseTabMovementCommandArgs(args: string) : node.TabCommand {
+  return new node.TabCommand({
+    tab: node.Tab.Move,
+    count: parseCount(args)
   });
 }

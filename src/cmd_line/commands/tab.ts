@@ -10,12 +10,13 @@ export enum Tab {
   Last,
   New,
   Close,
-  Only
+  Only,
+  Move
 }
 
 export interface ITabCommandArguments extends node.ICommandArgs {
   tab: Tab;
-  count: number;
+  count?: number;
 }
 
 //
@@ -45,25 +46,56 @@ export class TabCommand extends node.CommandBase {
   execute() : void {
     switch (this._arguments.tab) {
       case Tab.Next:
-        this.executeCommandWithCount(this._arguments.count, "workbench.action.nextEditor");
+        if (this._arguments.count /** not undefined or 0 */) {
+          vscode.commands.executeCommand("workbench.action.openEditorAtIndex1");
+          this.executeCommandWithCount(this._arguments.count! - 1, "workbench.action.nextEditor");
+        } else {
+          this.executeCommandWithCount(1, "workbench.action.nextEditor");
+        }
         break;
       case Tab.Previous:
-        this.executeCommandWithCount(this._arguments.count, "workbench.action.previousEditor");
+        if (this._arguments.count !== undefined && this._arguments.count <= 0) {
+          break;
+        }
+
+        this.executeCommandWithCount(this._arguments.count || 1, "workbench.action.previousEditor");
         break;
       case Tab.First:
-        this.executeCommandWithCount(this._arguments.count, "workbench.action.openEditorAtIndex1");
+        this.executeCommandWithCount(1, "workbench.action.openEditorAtIndex1");
         break;
       case Tab.Last:
-        this.executeCommandWithCount(this._arguments.count, "workbench.action.openLastEditorInGroup");
+        this.executeCommandWithCount(1, "workbench.action.openLastEditorInGroup");
         break;
       case Tab.New:
-        this.executeCommandWithCount(this._arguments.count, "workbench.action.files.newUntitledFile");
+        this.executeCommandWithCount(1, "workbench.action.files.newUntitledFile");
         break;
       case Tab.Close:
-        this.executeCommandWithCount(this._arguments.count, "workbench.action.closeActiveEditor");
+        // Navigate the correct position
+        if (this._arguments.count === undefined) {
+          vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+          break;
+        }
+
+        if (this._arguments.count === 0) {
+          // Wrong paramter
+          break;
+        }
+
+        // TODO: Close Page {count}. Page count is one-based.
         break;
       case Tab.Only:
-        this.executeCommandWithCount(this._arguments.count, "workbench.action.closeOtherEditors");
+        this.executeCommandWithCount(1, "workbench.action.closeOtherEditors");
+        break;
+      case Tab.Move:
+        if (this._arguments.count !== undefined) {
+          if (this._arguments.count === 0) {
+            vscode.commands.executeCommand("activeEditorMove", { to: "first" });
+          } else {
+            vscode.commands.executeCommand("activeEditorMove", { to: "position", amount: this._arguments.count });
+          }
+        } else {
+          vscode.commands.executeCommand("activeEditorMove", { to: "last" });
+        }
         break;
 
       default:

@@ -11,6 +11,7 @@ import { InsertMode } from './modeInsert';
 import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
 import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
+import { ReplaceMode } from './modeReplace';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
@@ -86,6 +87,8 @@ export class VimState {
 
   public searchState: SearchState | undefined = undefined;
 
+  public replaceState: ReplaceState | undefined = undefined;
+
   /**
    * The mode Vim will be in once this action finishes.
    */
@@ -132,6 +135,8 @@ export class VimState {
    */
   public commandAction = VimSpecialCommands.Nothing;
 
+  public commandInitialText = "";
+
   public recordedState = new RecordedState();
 
   /**
@@ -150,50 +155,68 @@ export class VimSettings {
   useCtrlKeys         = false;
 }
 
+export enum SearchDirection {
+  Forward = 1,
+  Backward = -1
+}
+
 export class SearchState {
+  private static readonly MAX_SEARCH_RANGES = 1000;
+
   /**
    * Every range in the document that matches the search string.
    */
-  public matchRanges: vscode.Range[] = [];
+  private _matchRanges: vscode.Range[] = [];
+  public get matchRanges(): vscode.Range[] {
+    return this._matchRanges;
+  }
+
+  private _searchCursorStartPosition: Position;
+  public get searchCursorStartPosition(): Position {
+    return this._searchCursorStartPosition;
+  }
+
+  private _matchesDocVersion: number;
+  private _searchDirection: SearchDirection = SearchDirection.Forward;
 
   private _searchString = "";
   public get searchString(): string {
     return this._searchString;
   }
 
-  public searchCursorStartPosition: Position;
-
-  /**
-   * 1  === forward
-   * -1 === backward
-   */
-  public searchDirection = 1;
-
-
   public set searchString(search: string){
-    this._searchString = search;
-
-    this._recalculateSearchRanges();
+    if (this._searchString !== search) {
+      this._searchString = search;
+      this._recalculateSearchRanges({ forceRecalc: true });
+    }
   }
 
-  private _recalculateSearchRanges(): void {
+  private _recalculateSearchRanges({ forceRecalc }: { forceRecalc?: boolean } = {}): void {
     const search = this.searchString;
 
     if (search === "") { return; }
 
-    // Calculate and store all matching ranges
-    this.matchRanges = [];
+    if (this._matchesDocVersion !== TextEditor.getDocumentVersion() || forceRecalc) {
+      // Calculate and store all matching ranges
+      this._matchesDocVersion = TextEditor.getDocumentVersion();
+      this._matchRanges = [];
 
-    for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
-      const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+      outer:
+      for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
+        const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
 
-      let i = line.indexOf(search);
+        let i = line.indexOf(search);
 
-      for (; i !== -1; i = line.indexOf(search, i + search.length)) {
-        this.matchRanges.push(new vscode.Range(
-          new Position(lineIdx, i),
-          new Position(lineIdx, i + search.length)
-        ));
+        for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+          if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
+            break outer;
+          }
+
+          this._matchRanges.push(new vscode.Range(
+            new Position(lineIdx, i),
+            new Position(lineIdx, i + search.length)
+          ));
+        }
       }
     }
   }
@@ -206,15 +229,15 @@ export class SearchState {
   public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean} {
     this._recalculateSearchRanges();
 
-    if (this.matchRanges.length === 0) {
+    if (this._matchRanges.length === 0) {
       // TODO(bell)
       return { pos: startPosition, match: false };
     }
 
-    const effectiveDirection = direction * this.searchDirection;
+    const effectiveDirection = direction * this._searchDirection;
 
-    if (effectiveDirection === 1) {
-      for (let matchRange of this.matchRanges) {
+    if (effectiveDirection === SearchDirection.Forward) {
+      for (let matchRange of this._matchRanges) {
         if (matchRange.start.compareTo(startPosition) > 0) {
           return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
         }
@@ -222,9 +245,9 @@ export class SearchState {
 
       // Wrap around
       // TODO(bell)
-      return { pos: Position.FromVSCodePosition(this.matchRanges[0].start), match: true };
+      return { pos: Position.FromVSCodePosition(this._matchRanges[0].start), match: true };
     } else {
-      for (let matchRange of this.matchRanges.slice(0).reverse()) {
+      for (let matchRange of this._matchRanges.slice(0).reverse()) {
         if (matchRange.start.compareTo(startPosition) < 0) {
           return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
         }
@@ -232,16 +255,34 @@ export class SearchState {
 
       // TODO(bell)
       return {
-        pos: Position.FromVSCodePosition(this.matchRanges[this.matchRanges.length - 1].start),
+        pos: Position.FromVSCodePosition(this._matchRanges[this._matchRanges.length - 1].start),
         match: true
       };
     }
   }
 
-  constructor(direction: number, startPosition: Position, searchString = "") {
-    this.searchDirection = direction;
-    this.searchCursorStartPosition = startPosition;
+  constructor(direction: SearchDirection, startPosition: Position, searchString = "") {
+    this._searchDirection = direction;
+    this._searchCursorStartPosition = startPosition;
     this.searchString = searchString;
+  }
+}
+
+export class ReplaceState {
+  private _replaceCursorStartPosition: Position;
+
+  public get replaceCursorStartPosition() {
+    return this._replaceCursorStartPosition;
+  }
+
+  public originalChars: string[] = [];
+
+  constructor(startPosition: Position) {
+    this._replaceCursorStartPosition = startPosition;
+    let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
+    for (let [key, value] of text.split("").entries()) {
+      this.originalChars[key + startPosition.character] = value;
+    }
   }
 }
 
@@ -294,7 +335,7 @@ export class RecordedState {
   public get command(): BaseCommand {
     const list = _.filter(this.actionsRun, a => a instanceof BaseCommand);
 
-    // TODO - disregard <esc>, then assert this is of length 1.
+    // TODO - disregard <escape>, then assert this is of length 1.
 
     return list[0] as any;
   }
@@ -307,6 +348,11 @@ export class RecordedState {
    * The number of times the user wants to repeat this action.
    */
   public count: number = 0;
+
+  /**
+   * The register name for this action.
+   */
+  public registerName: string = '"';
 
   public clone(): RecordedState {
     const res = new RecordedState();
@@ -415,6 +461,7 @@ export class ModeHandler implements vscode.Disposable {
       new InsertVisualBlockMode(),
       new VisualLineMode(),
       new SearchInProgressMode(),
+      new ReplaceMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
 
@@ -540,6 +587,8 @@ export class ModeHandler implements vscode.Disposable {
 
   async handleKeyEvent(key: string): Promise<Boolean> {
     if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
+    if (key === "<c-a>") { key = "ctrl+a"; } // TODO - temporary hack for tests only!
+    if (key === "<c-x>") { key = "ctrl+x"; } // TODO - temporary hack for tests only!
 
     // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
     // We'll try to mitigate this problem until it's fixed upstream.
@@ -611,7 +660,6 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Update view
-
     await this.updateView(vimState);
 
     return vimState;
@@ -819,7 +867,7 @@ export class ModeHandler implements vscode.Disposable {
 
     switch (command) {
       case VimSpecialCommands.ShowCommandLine:
-        await showCmdLine("", this);
+        await showCmdLine(vimState.commandInitialText, this);
       break;
       case VimSpecialCommands.Dot:
         if (!vimState.previousFullAction) {

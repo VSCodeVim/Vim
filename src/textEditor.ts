@@ -42,6 +42,41 @@ export class TextEditor {
     });
   }
 
+  static async backspace(position: Position): Promise<Position> {
+    if (position.character === 0) {
+      if (position.line > 0) {
+        const prevEndOfLine = position.getPreviousLineBegin().getLineEnd();
+
+        await TextEditor.delete(new vscode.Range(
+          position.getPreviousLineBegin().getLineEnd(),
+          position.getLineBegin()
+        ));
+
+        return prevEndOfLine;
+      } else {
+        return position;
+      }
+    } else {
+      let leftPosition = position.getLeft();
+
+      if (position.getFirstLineNonBlankChar().character >= position.character) {
+        let tabStop = vscode.workspace.getConfiguration("editor").get("useTabStops", true);
+
+        if (tabStop) {
+          leftPosition = position.getLeftTabStop();
+        }
+      }
+
+      await TextEditor.delete(new vscode.Range(position, leftPosition));
+
+      return leftPosition;
+    }
+  }
+
+  static getDocumentVersion(): number {
+    return vscode.window.activeTextEditor.document.version;
+  }
+
   /**
    * Removes all text in the entire document.
    */

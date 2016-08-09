@@ -88,30 +88,30 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
-    title: "Can handle [)",
+    title: "Can handle ])",
     start: ['({|})'],
-    keysPressed: '[)',
+    keysPressed: '])',
     end: ['({}|)']
   });
 
   newTest({
-    title: "Can handle nested [)",
+    title: "Can handle nested ])",
     start: ['(({|}))'],
-    keysPressed: '[)',
+    keysPressed: '])',
     end: ['(({}|))']
   });
 
   newTest({
-    title: "Can handle <number>[)",
+    title: "Can handle <number>])",
     start: ['(({|}))'],
-    keysPressed: '2[)',
+    keysPressed: '2])',
     end: ['(({})|)']
   });
 
   newTest({
-    title: "Can handle [) and character under cursor exclusive",
+    title: "Can handle ]) and character under cursor exclusive",
     start: ['(({}|))'],
-    keysPressed: '[)',
+    keysPressed: '])',
     end: ['(({})|)']
   });
 
@@ -144,30 +144,30 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
-    title: "Can handle [}",
+    title: "Can handle ]}",
     start: ['{(|)}'],
-    keysPressed: '[}',
+    keysPressed: ']}',
     end: ['{()|}']
   });
 
   newTest({
-    title: "Can handle nested [}",
+    title: "Can handle nested ]}",
     start: ['{{(|)}}'],
-    keysPressed: '[}',
+    keysPressed: ']}',
     end: ['{{()|}}']
   });
 
   newTest({
-    title: "Can handle <number>[}",
+    title: "Can handle <number>]}",
     start: ['{{(|)}}'],
-    keysPressed: '2[}',
+    keysPressed: '2]}',
     end: ['{{()}|}']
   });
 
   newTest({
-    title: "Can handle [} and character under cursor exclusive",
+    title: "Can handle ]} and character under cursor exclusive",
     start: ['{{()|}}'],
-    keysPressed: '[}',
+    keysPressed: ']}',
     end: ['{{()}|}']
   });
 
@@ -342,14 +342,14 @@ suite("Motions in Normal Mode", () => {
   newTest({
     title: "Can handle dot with A",
     start: ['|one', 'two', 'three'],
-    keysPressed: 'A!<esc>j.j.',
+    keysPressed: 'A!<escape>j.j.',
     end: ['one!', 'two!', 'three|!']
   });
 
   newTest({
     title: "Can handle dot with I",
     start: ['on|e', 'two', 'three'],
-    keysPressed: 'I!<esc>j.j.',
+    keysPressed: 'I!<escape>j.j.',
     end: ['!one', '!two', '|!three']
   });
 
@@ -393,6 +393,13 @@ suite("Motions in Normal Mode", () => {
     start: ['blah duh |blah duh blah'],
     keysPressed: '#',
     end: ['|blah duh blah duh blah']
+  });
+
+  newTest({
+    title: "Can handle # already on the word",
+    start: ['one o|ne'],
+    keysPressed: '#',
+    end: ['|one one']
   });
 
   newTest({
