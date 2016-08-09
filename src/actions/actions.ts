@@ -2104,8 +2104,8 @@ class ActionXVisualBlock extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
-      vimState = await new DeleteOperator().run(vimState, pos, pos);
+    for (const { start, end } of Position.IterateLine(vimState.topLeft, vimState.bottomRight)) {
+      vimState = await new DeleteOperator().run(vimState, start, end);
     }
 
     vimState.cursorPosition = position;
