@@ -14,7 +14,7 @@ We're super friendly people if you want to drop by and talk to us on our [Slack 
 
 ## Features We Support
 
-* All basic modes
+* All modes (including visual block mode!)
 * Most typical commands, including command combinations like `c3w`, `daw`, `2dd`, etc. (Check the [roadmap](ROADMAP.md) for details.)
 * Command remapping (jj to esc)
 * Repeating actions with `.`
@@ -74,6 +74,14 @@ Put the following in your `settings.json`:
 and restart VSCode.
 
 #### How can I enable `ctrl-f`? 
+
+Put the following in your `settings.json`:
+
+```    "vim.useCtrlKeys": true```
+
+and restart VSCode.
+
+#### How can I enable visual block mode with `ctrl-v`? 
 
 Put the following in your `settings.json`:
 
