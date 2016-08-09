@@ -968,6 +968,18 @@ export class PutCommand extends BaseCommand {
         position = position.getRight();
       }
 
+      // Add empty lines at the end of the document, if necessary.
+      let linesToAdd = Math.max(0, block.length - (TextEditor.getLineCount() - position.line) + 1);
+
+      if (linesToAdd > 0) {
+        await TextEditor.insertAt(Array(linesToAdd).join("\n"),
+          new Position(
+            TextEditor.getLineCount() - 1,
+            TextEditor.getLineAt(new Position(TextEditor.getLineCount() - 1, 0)).text.length
+          )
+        );
+      }
+
       // paste the entire block.
       for (let lineIndex = position.line; lineIndex < position.line + block.length; lineIndex++) {
         const line = block[lineIndex - position.line];
