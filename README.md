@@ -73,6 +73,14 @@ Put the following in your `settings.json`:
 
 and restart VSCode.
 
+#### How can I enable `ctrl-f`? 
+
+Put the following in your `settings.json`:
+
+```    "vim.useCtrlKeys": true```
+
+and restart VSCode.
+
 ## Contributing
 
 This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP.md).
