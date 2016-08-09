@@ -4,7 +4,9 @@ export enum ModeName {
   Normal,
   Insert,
   Visual,
+  VisualBlock,
   VisualLine,
+  VisualBlockInsertMode,
   SearchInProgressMode,
   Replace,
 }
@@ -20,6 +22,8 @@ export abstract class Mode {
 
   public text: string;
   public cursorType: VSCodeVimCursorType;
+
+  public isVisualMode = false;
 
   constructor(name: ModeName) {
     this._name = name;

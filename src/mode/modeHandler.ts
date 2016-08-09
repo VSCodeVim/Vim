@@ -8,6 +8,8 @@ import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
+import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
+import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
 import { ReplaceMode } from './modeReplace';
 import { SearchInProgressMode } from './modeSearchInProgress';
@@ -92,12 +94,18 @@ export class VimState {
    */
   public currentMode = ModeName.Normal;
 
+  public getModeObject(modeHandler: ModeHandler): Mode {
+    return modeHandler.modeList.find(mode => mode.isActive);
+  }
+
   public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
   public effectiveRegisterMode(): RegisterMode {
     if (this.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
       if (this.currentMode === ModeName.VisualLine) {
         return RegisterMode.LineWise;
+      } else if (this.currentMode === ModeName.VisualBlock || this.currentMode === ModeName.VisualBlockInsertMode) {
+        return RegisterMode.BlockWise;
       } else {
         return RegisterMode.CharacterWise;
       }
@@ -105,6 +113,22 @@ export class VimState {
       return this.currentRegisterMode;
     }
   }
+
+  /**
+   * The top left of a selected block of text. Useful for Visual Block mode.
+   */
+  public get topLeft(): Position {
+    return VisualBlockMode.getTopLeftPosition(this.cursorStartPosition, this.cursorPosition);
+  }
+
+  /**
+   * The bottom right of a selected block of text. Useful for Visual Block mode.
+   */
+  public get bottomRight(): Position {
+    return VisualBlockMode.getBottomRightPosition(this.cursorStartPosition, this.cursorPosition);
+  }
+
+  public registerName = '"';
 
   /**
    * This is for oddball commands that don't manipulate text in any way.
@@ -127,8 +151,8 @@ export class VimState {
 
 export class VimSettings {
   useSolidBlockCursor = false;
-  scroll        = 20;
-  useCtrlKeys     = false;
+  scroll              = 20;
+  useCtrlKeys         = false;
 }
 
 export enum SearchDirection {
@@ -295,6 +319,8 @@ export class RecordedState {
 
   public hasRunOperator = false;
 
+  public visualBlockInsertionType = VisualBlockInsertionType.Insert;
+
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
@@ -411,6 +437,10 @@ export class ModeHandler implements vscode.Disposable {
     return this.currentMode.name;
   }
 
+  public get modeList(): Mode[] {
+    return this._modes;
+  }
+
   /**
    * isTesting speeds up tests drastically by turning off our checks for
    * mouse events.
@@ -427,6 +457,8 @@ export class ModeHandler implements vscode.Disposable {
       new NormalMode(this),
       new InsertMode(),
       new VisualMode(),
+      new VisualBlockMode(),
+      new InsertVisualBlockMode(),
       new VisualLineMode(),
       new SearchInProgressMode(),
       new ReplaceMode(),
@@ -460,6 +492,12 @@ export class ModeHandler implements vscode.Disposable {
         return;
       }
 
+      if (this.currentModeName === ModeName.VisualBlock) {
+        // Not worth it until we get a better API for this stuff.
+
+        return;
+      }
+
       if (this._vimState.focusChanged) {
         this._vimState.focusChanged = false;
         return;
@@ -470,7 +508,8 @@ export class ModeHandler implements vscode.Disposable {
         return;
       }
 
-      if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
+      if (this._vimState.currentMode === ModeName.SearchInProgressMode ||
+          this._vimState.currentMode === ModeName.VisualBlockInsertMode) {
         return;
       }
 
@@ -501,9 +540,7 @@ export class ModeHandler implements vscode.Disposable {
             this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
           }
 
-          if (this._vimState.currentMode !== ModeName.Visual &&
-            this._vimState.currentMode !== ModeName.VisualLine) {
-
+          if (!this._vimState.getModeObject(this).isVisualMode) {
             this._vimState.currentMode = ModeName.Visual;
             this.setCurrentModeByName(this._vimState);
           }
@@ -525,6 +562,7 @@ export class ModeHandler implements vscode.Disposable {
     this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
     this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
   }
+
 
   /**
    * The active mode.
@@ -610,7 +648,10 @@ export class ModeHandler implements vscode.Disposable {
 
     const movement = action instanceof BaseMovement ? action : undefined;
 
-    if ((movement && !movement.doesntChangeDesiredColumn) || recordedState.command) {
+    if ((movement && !movement.doesntChangeDesiredColumn) ||
+        (recordedState.command &&
+         vimState.currentMode !== ModeName.VisualBlock &&
+         vimState.currentMode !== ModeName.VisualBlockInsertMode)) {
       // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
 
       if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
@@ -801,8 +842,7 @@ export class ModeHandler implements vscode.Disposable {
       [start, stop] = [stop, start];
     }
 
-    if (vimState.currentMode         !== ModeName.Visual &&
-        vimState.currentMode         !== ModeName.VisualLine &&
+    if (!this._vimState.getModeObject(this).isVisualMode &&
         vimState.currentRegisterMode !== RegisterMode.LineWise) {
 
       if (Position.EarlierOf(start, stop) === start) {
@@ -893,20 +933,30 @@ export class ModeHandler implements vscode.Disposable {
     // Draw selection (or cursor)
 
     if (drawSelection) {
-      let selection: vscode.Selection;
+      let selections: vscode.Selection[];
 
       if (vimState.currentMode === ModeName.Visual) {
-        selection = new vscode.Selection(start, stop);
+        selections = [ new vscode.Selection(start, stop) ];
       } else if (vimState.currentMode === ModeName.VisualLine) {
-        selection = new vscode.Selection(
+        selections = [ new vscode.Selection(
           Position.EarlierOf(start, stop).getLineBegin(),
-          Position.LaterOf(start, stop).getLineEnd());
+          Position.LaterOf(start, stop).getLineEnd()
+        ) ];
+      } else if (vimState.currentMode === ModeName.VisualBlock) {
+        selections = [];
+
+        for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
+          selections.push(new vscode.Selection(
+            lineStart,
+            end
+          ));
+        }
       } else {
-        selection = new vscode.Selection(stop, stop);
+        selections = [ new vscode.Selection(stop, stop) ];
       }
 
-      this._vimState.whatILastSetTheSelectionTo = selection;
-      vscode.window.activeTextEditor.selection = selection;
+      this._vimState.whatILastSetTheSelectionTo = selections[0];
+      vscode.window.activeTextEditor.selections = selections;
     }
 
     // Scroll to position of cursor
@@ -930,7 +980,8 @@ export class ModeHandler implements vscode.Disposable {
       const options = vscode.window.activeTextEditor.options;
 
       options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-                  this.currentMode.name     !== ModeName.Insert ?
+                            this.currentMode.name       !== ModeName.VisualBlockInsertMode &&
+                            this.currentMode.name       !== ModeName.Insert ?
         vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
       vscode.window.activeTextEditor.options = options;
     }
