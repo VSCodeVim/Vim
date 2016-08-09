@@ -101,6 +101,8 @@ export class VimState {
     if (this.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
       if (this.currentMode === ModeName.VisualLine) {
         return RegisterMode.LineWise;
+      } else if (this.currentMode === ModeName.VisualBlock || this.currentMode === ModeName.VisualBlockInsertMode) {
+        return RegisterMode.BlockWise;
       } else {
         return RegisterMode.CharacterWise;
       }

@@ -2195,6 +2195,29 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   }
 }
 
+
+@RegisterAction
+export class YankVisualBlockMode extends BaseOperator {
+    public keys = ["y"];
+    public modes = [ModeName.VisualBlock];
+    canBeRepeatedWithDot = false;
+
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      let toCopy: string[] = [];
+
+      for ( const { line } of Position.IterateLine(vimState)) {
+        toCopy.push(line);
+      }
+
+      Register.put(toCopy, vimState.effectiveRegisterMode());
+
+      vimState.currentMode = ModeName.Normal;
+      vimState.cursorPosition = start;
+      return vimState;
+    }
+}
+
+
 @RegisterAction
 class InsertInInsertVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlockInsertMode];

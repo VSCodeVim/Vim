@@ -104,9 +104,8 @@ export class Position extends vscode.Position {
     const topLeft     = VisualBlockMode.getTopLeftPosition(start, stop);
     const bottomRight = VisualBlockMode.getBottomRightPosition(start, stop);
 
-    // Special case for $, which potentially makes the box ragged
+    // Special case for $, which potentially makes the block ragged
     // on the right side.
-
     const runToLineEnd = vimState.desiredColumn === Number.POSITIVE_INFINITY;
 
     const itrStart = reverse ? bottomRight.line : topLeft.line;
@@ -114,13 +113,12 @@ export class Position extends vscode.Position {
 
     for (let lineIndex = itrStart; reverse ? lineIndex >= itrEnd : lineIndex <= itrEnd; reverse ? lineIndex-- : lineIndex++) {
       const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+      const endCharacter = runToLineEnd ? line.length : bottomRight.character + 1;
 
       yield {
-        line : line,
-        start: new Position(lineIndex, topLeft.character),
-        end  : runToLineEnd ?
-          new Position(lineIndex, line.length) :
-          new Position(lineIndex, bottomRight.character)
+        line  : line.substring(topLeft.character, endCharacter),
+        start : new Position(lineIndex, topLeft.character),
+        end   : new Position(lineIndex, endCharacter)
       };
     }
   }

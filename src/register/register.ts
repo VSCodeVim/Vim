@@ -10,10 +10,11 @@ export enum RegisterMode {
   FigureItOutFromCurrentMode,
   CharacterWise,
   LineWise,
+  BlockWise,
 };
 
 export interface IRegisterContent {
-  text    : string;
+  text        : string | string[];
   registerMode: RegisterMode;
 }
 
@@ -30,7 +31,7 @@ export class Register {
    * Puts content in a register. If none is specified, uses the default
    * register ".
    */
-  public static put(content: string, registerMode: RegisterMode): void {
+  public static put(content: string | string[], registerMode: RegisterMode): void {
     const register = '"'; // (TODO)
 
     if (Register.validRegisters.indexOf(register) === -1) {
