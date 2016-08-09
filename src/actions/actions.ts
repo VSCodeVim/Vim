@@ -813,7 +813,8 @@ export class DeleteOperator extends BaseOperator {
     /**
      * Deletes from the position of start to 1 past the position of end.
      */
-    public async delete(start: Position, end: Position, currentMode: ModeName, registerMode: RegisterMode, vimState: VimState, yank = true): Promise<Position> {
+    public async delete(start: Position, end: Position, currentMode: ModeName,
+                        registerMode: RegisterMode, vimState: VimState, yank = true): Promise<Position> {
         if (registerMode === RegisterMode.LineWise) {
           start = start.getLineBegin();
           end   = end.getLineEnd();
@@ -875,7 +876,7 @@ export class DeleteOperator extends BaseOperator {
     }
 
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
-        const result = await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, true);
+        const result = await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, yank);
 
         vimState.currentMode = ModeName.Normal;
         vimState.cursorPosition = result;
@@ -1213,7 +1214,7 @@ export class PutCommandVisual extends BaseCommand {
   canBePrefixedWithDot = true;
 
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
-    const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, after);
+    const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, false);
 
     return await new PutCommand().exec(result.cursorPosition, result, true);
   }
@@ -2611,7 +2612,8 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
 
     for (const { start } of Position.IterateLine(vimState)) {
       // delete from start up to but not including the newline.
-      await deleteOperator.delete(start, start.getLineEnd().getLeft(), vimState.currentMode, vimState.effectiveRegisterMode(), vimState, true);
+      await deleteOperator.delete(
+        start, start.getLineEnd().getLeft(), vimState.currentMode, vimState.effectiveRegisterMode(), vimState, true);
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;
@@ -2639,7 +2641,6 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
     return vimState;
   }
 }
-
 
 @RegisterAction
 export class YankVisualBlockMode extends BaseOperator {
@@ -2682,7 +2683,7 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
     }
 
     for (const { start, end } of Position.IterateLine(vimState)) {
-      const insertPos    = insertAtStart ? start : end;
+      const insertPos = insertAtStart ? start : end;
 
       if (char === '<backspace>') {
         await TextEditor.backspace(insertPos.getLeft());

@@ -649,7 +649,9 @@ export class ModeHandler implements vscode.Disposable {
     const movement = action instanceof BaseMovement ? action : undefined;
 
     if ((movement && !movement.doesntChangeDesiredColumn) ||
-        (recordedState.command && vimState.currentMode !== ModeName.VisualBlock)) {
+        (recordedState.command &&
+         vimState.currentMode !== ModeName.VisualBlock &&
+         vimState.currentMode !== ModeName.VisualBlockInsertMode)) {
       // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
 
       if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
