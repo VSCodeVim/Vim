@@ -920,7 +920,7 @@ export class PutCommand extends BaseCommand {
         let text = register.text;
 
         if (typeof text === "object") {
-          return await this.execVisualBlockPaste(text, position, vimState);
+          return await this.execVisualBlockPaste(text, position, vimState, after);
         }
 
         if (register.registerMode === RegisterMode.CharacterWise) {
@@ -963,7 +963,10 @@ export class PutCommand extends BaseCommand {
         return vimState;
     }
 
-    private async execVisualBlockPaste(block: string[], position: Position, vimState: VimState): Promise<VimState> {
+    private async execVisualBlockPaste(block: string[], position: Position, vimState: VimState, after: boolean): Promise<VimState> {
+      if (after) {
+        position = position.getRight();
+      }
 
       // paste the entire block.
       for (let lineIndex = position.line; lineIndex < position.line + block.length; lineIndex++) {
