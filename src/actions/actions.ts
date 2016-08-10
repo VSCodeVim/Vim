@@ -820,7 +820,7 @@ class CommandFormatCode extends BaseCommand {
 @RegisterAction
 export class DeleteOperator extends BaseOperator {
     public keys = ["d"];
-    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.MultiCursor, ModeName.MultiCursorVisual];
 
     /**
      * Deletes from the position of start to 1 past the position of end.

@@ -391,7 +391,8 @@ export class RecordedState {
       mode !== ModeName.SearchInProgressMode &&
       (this.hasRunAMovement || (
       mode === ModeName.Visual ||
-      mode === ModeName.VisualLine));
+      mode === ModeName.VisualLine ||
+      mode === ModeName.MultiCursorVisual ));
   }
 
   public get isInInitialState(): boolean {
@@ -525,6 +526,10 @@ export class ModeHandler implements vscode.Disposable {
 
         if (e.selections.length >= 2) {
           this._vimState.currentMode = ModeName.MultiCursorVisual;
+          this.setCurrentModeByName(this._vimState);
+        } else {
+          // The selections ran together - go back to visual mode.
+          this._vimState.currentMode = ModeName.Visual;
           this.setCurrentModeByName(this._vimState);
         }
 
@@ -875,36 +880,45 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async executeOperator(vimState: VimState): Promise<VimState> {
-    let start         = vimState.cursorStartPosition;
-    let stop          = vimState.cursorPosition;
     let recordedState = vimState.recordedState;
 
     if (!recordedState.operator) {
       throw new Error("what in god's name");
     }
 
-    if (start.compareTo(stop) > 0) {
-      [start, stop] = [stop, start];
-    }
+    let resultVimState   = vimState;
 
-    if (!this._vimState.getModeObject(this).isVisualMode &&
-        vimState.currentRegisterMode !== RegisterMode.LineWise) {
+    // TODO - if actions were more pure, this would be unnecessary.
+    const cachedMode     = this._vimState.getModeObject(this);
+    const cachedRegister = vimState.currentRegisterMode;
 
-      if (Position.EarlierOf(start, stop) === start) {
-        stop = stop.getLeft();
-      } else {
-        stop = stop.getRight();
+    for (let i = 0; i < vimState.allCursorPositions.length; i++) {
+      let start         = vimState.allCursorStartPositions[i];
+      let stop          = vimState.allCursorPositions[i];
+
+      if (start.compareTo(stop) > 0) {
+        [start, stop] = [stop, start];
       }
+
+      if (!cachedMode.isVisualMode && cachedRegister !== RegisterMode.LineWise) {
+        if (Position.EarlierOf(start, stop) === start) {
+          stop = stop.getLeft();
+        } else {
+          stop = stop.getRight();
+        }
+      }
+
+      if (this.currentModeName === ModeName.VisualLine) {
+        start = start.getLineBegin();
+        stop  = stop.getLineEnd();
+
+        vimState.currentRegisterMode = RegisterMode.LineWise;
+      }
+
+      resultVimState = await recordedState.operator.run(resultVimState, start, stop);
     }
 
-    if (this.currentModeName === ModeName.VisualLine) {
-      start = start.getLineBegin();
-      stop  = stop.getLineEnd();
-
-      vimState.currentRegisterMode = RegisterMode.LineWise;
-    }
-
-    return await recordedState.operator.run(vimState, start, stop);
+    return resultVimState;
   }
 
   private async executeCommand(vimState: VimState): Promise<VimState> {

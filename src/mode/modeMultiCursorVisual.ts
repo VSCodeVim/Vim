@@ -5,6 +5,7 @@ import { ModeHandler } from './modeHandler';
 import { VSCodeVimCursorType } from './mode';
 
 export class MultiCursorVisualMode extends Mode {
+  public isVisualMode = true;
   public text = "Multi Cursor Visual Mode";
   public cursorType = VSCodeVimCursorType.Native;
 
