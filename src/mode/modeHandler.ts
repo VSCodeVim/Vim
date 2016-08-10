@@ -9,6 +9,7 @@ import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
 import { MultiCursorMode } from './modeMultiCursor';
+import { MultiCursorVisualMode } from './modeMultiCursorVisual';
 import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
 import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
@@ -78,17 +79,22 @@ export class VimState {
    * the range over which to run an Operator. May rarely be different than where the cursor
    * actually starts e.g. if you use the "aw" text motion in the middle of a word.
    */
-  public cursorStartPosition = new Position(0, 0);
+  public get cursorStartPosition(): Position {
+    return this.otherCursorPositions[0];
+  }
+  public set cursorStartPosition(value: Position) {
+    this.otherCursorPositions[0] = value;
+  }
 
   /**
    * In Multi Cursor Mode, the position of the other cursors.
    */
-  public otherCursorPositions: Position[] = [];
+  public otherCursorPositions: Position[] = [ new Position(0, 0) ];
 
   /**
    * In Multi Cursor Mode, the start position of the other cursors.
    */
-  public otherCursorStartPositions: Position[] = [];
+  public otherCursorStartPositions: Position[] = [ new Position(0, 0) ];
 
   public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
 
@@ -470,6 +476,7 @@ export class ModeHandler implements vscode.Disposable {
       new SearchInProgressMode(),
       new ReplaceMode(),
       new MultiCursorMode(),
+      new MultiCursorVisualMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
 
@@ -506,26 +513,25 @@ export class ModeHandler implements vscode.Disposable {
         return;
       }
 
-      if (e.selections.length !== this._vimState.otherCursorPositions.length + 1) {
+      if (this._vimState.currentMode !== ModeName.VisualBlock           &&
+          this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
+        e.selections.length !== this._vimState.otherCursorPositions.length) {
         // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
 
         if (e.selections.length >= 2) {
-          this._vimState.currentMode = ModeName.MultiCursor;
+          this._vimState.currentMode = ModeName.MultiCursorVisual;
           this.setCurrentModeByName(this._vimState);
         }
 
         this._vimState.otherCursorPositions = [];
         this._vimState.otherCursorStartPositions = [];
 
-        this._vimState.cursorPosition = Position.FromVSCodePosition(e.selections[0].end);
-        this._vimState.cursorStartPosition = Position.FromVSCodePosition(e.selections[0].start);
-
-        for (let i = 1; i < e.selections.length; i++) {
+        for (let i = 0; i < e.selections.length; i++) {
           this._vimState.otherCursorPositions.push(Position.FromVSCodePosition(e.selections[i].end));
           this._vimState.otherCursorStartPositions.push(Position.FromVSCodePosition(e.selections[i].start));
         }
 
-        await this.updateView(this._vimState, false);
+        await this.updateView(this._vimState);
 
         return;
       }
@@ -980,6 +986,24 @@ export class ModeHandler implements vscode.Disposable {
           selections.push(new vscode.Selection(
             lineStart,
             end
+          ));
+        }
+      } else if (vimState.currentMode === ModeName.MultiCursorVisual) {
+        selections = [];
+
+        for (let i = 0; i < vimState.otherCursorPositions.length; i++) {
+          selections.push(new vscode.Selection(
+            vimState.otherCursorStartPositions[i],
+            vimState.otherCursorPositions[i]
+          ));
+        }
+      } else if (vimState.currentMode === ModeName.MultiCursor) {
+        selections = [];
+
+        for (let i = 0; i < vimState.otherCursorPositions.length; i++) {
+          selections.push(new vscode.Selection(
+            vimState.otherCursorPositions[i],
+            vimState.otherCursorPositions[i]
           ));
         }
       } else {

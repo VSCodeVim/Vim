@@ -408,7 +408,8 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlockInsertMode,
     ModeName.VisualBlock,
     ModeName.SearchInProgressMode,
-    ModeName.Replace
+    ModeName.Replace,
+    ModeName.MultiCursorVisual,
   ];
   keys = ["<escape>"];
 
@@ -424,7 +425,11 @@ class CommandEsc extends BaseCommand {
       }
     }
 
-    vimState.currentMode = ModeName.Normal;
+    if (vimState.currentMode === ModeName.MultiCursorVisual) {
+      vimState.currentMode = ModeName.MultiCursor;
+    } else {
+      vimState.currentMode = ModeName.Normal;
+    }
 
     return vimState;
   }

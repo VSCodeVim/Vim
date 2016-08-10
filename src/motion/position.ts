@@ -22,6 +22,10 @@ export class Position extends vscode.Position {
     this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
   }
 
+  public toString(): string {
+    return `[${ this.line }, ${ this.character }]`;
+  }
+
   public static FromVSCodePosition(pos: vscode.Position): Position {
     return new Position(pos.line, pos.character);
   }
