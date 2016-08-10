@@ -412,6 +412,7 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.SearchInProgressMode,
     ModeName.Replace,
+    ModeName.MultiCursor,
     ModeName.MultiCursorVisual,
   ];
   keys = ["<escape>"];
@@ -432,6 +433,9 @@ class CommandEsc extends BaseCommand {
       vimState.currentMode = ModeName.MultiCursor;
     } else {
       vimState.currentMode = ModeName.Normal;
+
+      vimState.allCursorPositions      = [ vimState.allCursorPositions[0] ];
+      vimState.allCursorStartPositions = [ vimState.allCursorStartPositions[0] ];
     }
 
     return vimState;

@@ -1,4 +1,5 @@
 out
+testing
 node_modules
 *.sw?
 .vscode-test
