@@ -8,6 +8,7 @@ import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
+import { IMark } from './../history/historyTracker';
 import * as vscode from 'vscode';
 
 const controlKeys: string[] = [
@@ -1007,6 +1008,8 @@ export class MarkMovementBOL extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
+    await maybeChangeEditorFocus(mark);
+
     return mark.position.getFirstLineNonBlankChar();
   }
 }
@@ -1019,7 +1022,15 @@ export class MarkMovement extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
+    await maybeChangeEditorFocus(mark);
+
     return mark.position;
+  }
+}
+
+async function maybeChangeEditorFocus(mark?: IMark) {
+  if (mark && mark.editor && mark.editor !== vscode.window.activeTextEditor) {
+    await vscode.window.showTextDocument(mark.editor.document);
   }
 }
 
