@@ -147,7 +147,10 @@ export abstract class BaseMovement extends BaseAction {
     ModeName.Normal,
     ModeName.Visual,
     ModeName.VisualLine,
-    ModeName.VisualBlock];
+    ModeName.VisualBlock,
+    ModeName.MultiCursor,
+    ModeName.MultiCursorVisual,
+  ];
 
   isMotion = true;
 

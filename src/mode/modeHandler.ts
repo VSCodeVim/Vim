@@ -72,7 +72,12 @@ export class VimState {
   /**
    * The position the cursor will be when this action finishes.
    */
-  public cursorPosition = new Position(0, 0);
+  public get cursorPosition(): Position {
+    return this.allCursorPositions[0];
+  }
+  public set cursorPosition(value: Position) {
+    this.allCursorPositions[0] = value;
+  }
 
   /**
    * The effective starting position of the movement, used along with cursorPosition to determine
@@ -80,10 +85,10 @@ export class VimState {
    * actually starts e.g. if you use the "aw" text motion in the middle of a word.
    */
   public get cursorStartPosition(): Position {
-    return this.allCursorPositions[0];
+    return this.allCursorStartPositions[0];
   }
   public set cursorStartPosition(value: Position) {
-    this.allCursorPositions[0] = value;
+    this.allCursorStartPositions[0] = value;
   }
 
   /**
@@ -825,22 +830,31 @@ export class ModeHandler implements vscode.Disposable {
 
     let recordedState = vimState.recordedState;
 
-    const result = await movement.execActionWithCount(vimState.cursorPosition, vimState, recordedState.count);
+    for (let i = 0; i < vimState.allCursorPositions.length; i++) {
+      const cursorPosition = vimState.allCursorPositions[i];
+      const result = await movement.execActionWithCount(cursorPosition, vimState, recordedState.count);
 
-    if (result instanceof Position) {
-      vimState.cursorPosition = result;
-    } else if (isIMovement(result)) {
-      if (result.failed) {
-        vimState.recordedState = new RecordedState();
-      }
+      console.log("start", cursorPosition.toString());
+      console.log("end", result.toString());
 
-      vimState.cursorPosition    = result.stop;
-      vimState.cursorStartPosition = result.start;
+      if (result instanceof Position) {
+        vimState.allCursorPositions[i]      = result;
+        vimState.allCursorStartPositions[i] = result;
+      } else if (isIMovement(result)) {
+        if (result.failed) {
+          vimState.recordedState = new RecordedState();
+        }
 
-      if (result.registerMode) {
-        vimState.currentRegisterMode = result.registerMode;
+        vimState.allCursorPositions[i]      = result.stop;
+        vimState.allCursorStartPositions[i] = result.start;
+
+        if (result.registerMode) {
+          vimState.currentRegisterMode = result.registerMode;
+        }
       }
     }
+
+    console.log("now its", vimState.cursorPosition.toString());
 
     vimState.recordedState.count = 0;
 
