@@ -834,12 +834,8 @@ export class ModeHandler implements vscode.Disposable {
       const cursorPosition = vimState.allCursorPositions[i];
       const result = await movement.execActionWithCount(cursorPosition, vimState, recordedState.count);
 
-      console.log("start", cursorPosition.toString());
-      console.log("end", result.toString());
-
       if (result instanceof Position) {
         vimState.allCursorPositions[i]      = result;
-        vimState.allCursorStartPositions[i] = result;
       } else if (isIMovement(result)) {
         if (result.failed) {
           vimState.recordedState = new RecordedState();
@@ -853,8 +849,6 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
     }
-
-    console.log("now its", vimState.cursorPosition.toString());
 
     vimState.recordedState.count = 0;
 
