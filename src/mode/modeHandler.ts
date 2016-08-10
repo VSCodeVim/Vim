@@ -8,6 +8,7 @@ import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
+import { MultiCursorMode } from './modeMultiCursor';
 import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
 import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
@@ -19,7 +20,8 @@ import { HistoryTracker } from './../history/historyTracker';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
   BaseOperator, isIMovement,
-  KeypressState } from './../actions/actions';
+  KeypressState
+} from './../actions/actions';
 import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
@@ -69,12 +71,7 @@ export class VimState {
   /**
    * The position the cursor will be when this action finishes.
    */
-  // public cursorPosition = new Position(0, 0);
-  private _cursorPosition = new Position(0, 0);
-  public get cursorPosition(): Position { return this._cursorPosition; }
-  public set cursorPosition(v: Position) {
-    this._cursorPosition = v;
-  }
+  public cursorPosition = new Position(0, 0);
 
   /**
    * The effective starting position of the movement, used along with cursorPosition to determine
@@ -82,6 +79,16 @@ export class VimState {
    * actually starts e.g. if you use the "aw" text motion in the middle of a word.
    */
   public cursorStartPosition = new Position(0, 0);
+
+  /**
+   * In Multi Cursor Mode, the position of the other cursors.
+   */
+  public otherCursorPositions: Position[] = [];
+
+  /**
+   * In Multi Cursor Mode, the start position of the other cursors.
+   */
+  public otherCursorStartPositions: Position[] = [];
 
   public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
 
@@ -462,6 +469,7 @@ export class ModeHandler implements vscode.Disposable {
       new VisualLineMode(),
       new SearchInProgressMode(),
       new ReplaceMode(),
+      new MultiCursorMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
 
@@ -492,14 +500,39 @@ export class ModeHandler implements vscode.Disposable {
         return;
       }
 
-      if (this.currentModeName === ModeName.VisualBlock) {
-        // Not worth it until we get a better API for this stuff.
+      if (this._vimState.focusChanged) {
+        this._vimState.focusChanged = false;
 
         return;
       }
 
-      if (this._vimState.focusChanged) {
-        this._vimState.focusChanged = false;
+      if (e.selections.length !== this._vimState.otherCursorPositions.length + 1) {
+        // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
+
+        if (e.selections.length >= 2) {
+          this._vimState.currentMode = ModeName.MultiCursor;
+          this.setCurrentModeByName(this._vimState);
+        }
+
+        this._vimState.otherCursorPositions = [];
+        this._vimState.otherCursorStartPositions = [];
+
+        this._vimState.cursorPosition = Position.FromVSCodePosition(e.selections[0].end);
+        this._vimState.cursorStartPosition = Position.FromVSCodePosition(e.selections[0].start);
+
+        for (let i = 1; i < e.selections.length; i++) {
+          this._vimState.otherCursorPositions.push(Position.FromVSCodePosition(e.selections[i].end));
+          this._vimState.otherCursorStartPositions.push(Position.FromVSCodePosition(e.selections[i].start));
+        }
+
+        await this.updateView(this._vimState, false);
+
+        return;
+      }
+
+      if (this.currentModeName === ModeName.VisualBlock) {
+        // Not worth it until we get a better API for this stuff.
+
         return;
       }
 
@@ -591,10 +624,6 @@ export class ModeHandler implements vscode.Disposable {
     if (key === "<c-x>") { key = "ctrl+x"; } // TODO - temporary hack for tests only!
 
     if (key === "<esc>") { key = "<escape>"; }
-
-    // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
-    // We'll try to mitigate this problem until it's fixed upstream.
-    // https://github.com/Microsoft/vscode/issues/713
 
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
 
