@@ -151,6 +151,10 @@
                     "type": "array",
                     "description": "Keybinding overrides to use for normal mode."
                 },
+                "vim.otherModesKeyBindingsNonRecursive": {
+                    "type": "array",
+                    "description": "Non-recursive keybinding overrides to use for normal mode."
+                },
                 "vim.useCtrlKeys": {
                     "type": "boolean",
                     "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c"
@@ -162,6 +166,10 @@
                 "vim.insertModeKeyBindings": {
                     "type": "array",
                     "description": "Keybinding overrides to use for insert mode."
+                },
+                "vim.insertModeKeyBindingsNonRecursive": {
+                    "type": "array",
+                    "description": "Non-recursive keybinding overrides to use for insert mode."
                 },
                 "vim.useSolidBlockCursor": {
                     "type": "boolean",
