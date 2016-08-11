@@ -2308,7 +2308,7 @@ class MovePreviousSentenceBegin extends BaseMovement {
   keys = ["("];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getPreviousSentenceBegin();
+    return position.getSentenceBegin({forward: false});
   }
 }
 
@@ -2317,7 +2317,7 @@ class MoveNextSentenceBegin extends BaseMovement {
   keys = [")"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getNextSentenceBegin();
+    return position.getSentenceBegin({forward: true});
   }
 }
 
@@ -2805,11 +2805,24 @@ class ActionChangeChar extends BaseCommand {
   }
 }
 
-@RegisterAction
-class MovementAWordTextObject extends BaseMovement {
+abstract class TextObjectMovement extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
-  keys = ["a", "w"];
   canBePrefixedWithCount = true;
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const res = await this.execAction(position, vimState) as IMovement;
+    // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
+    // In normal mode, the character on the stop position will be the first character after the operator executed
+    // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
+    res.stop = new Position(res.stop.line, res.stop.character + 1);
+
+    return res;
+  }
+}
+
+@RegisterAction
+class SelectWord extends TextObjectMovement {
+  keys = ["a", "w"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -2848,20 +2861,10 @@ class MovementAWordTextObject extends BaseMovement {
       stop: stop
     };
   }
-
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState);
-    // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
-    // In normal mode, the character on the stop position will be the first character after the operator executed
-    // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
-    res.stop = new Position(res.stop.line, res.stop.character + 1);
-
-    return res;
-  }
 }
 
 @RegisterAction
-class MovementABigWordTextObject extends MovementAWordTextObject {
+class SelectABigWord extends TextObjectMovement {
   keys = ["a", "W"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -2899,7 +2902,7 @@ class MovementABigWordTextObject extends MovementAWordTextObject {
 }
 
 @RegisterAction
-class MovementIWordTextObject extends MovementAWordTextObject {
+class SelectInnerWord extends TextObjectMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["i", "w"];
 
@@ -2937,7 +2940,7 @@ class MovementIWordTextObject extends MovementAWordTextObject {
 }
 
 @RegisterAction
-class MovementIBigWordTextObject extends MovementAWordTextObject {
+class SelectInnerBigWord extends TextObjectMovement {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["i", "W"];
 
@@ -2974,6 +2977,93 @@ class MovementIBigWordTextObject extends MovementAWordTextObject {
   }
 }
 
+@RegisterAction
+class SelectSentence extends TextObjectMovement {
+  keys = ["a", "s"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    let stop: Position;
+
+    const currentSentenceBegin = position.getSentenceBegin({forward: false});
+    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getCurrentSentenceEnd();
+
+    if (currentSentenceNonWhitespaceEnd.isBefore(position)) {
+      // The cursor is on a trailing white space.
+      start = currentSentenceNonWhitespaceEnd.getRight();
+      stop = currentSentenceBegin.getSentenceBegin({forward: true}).getCurrentSentenceEnd();
+    } else {
+      const nextSentenceBegin = currentSentenceBegin.getSentenceBegin({forward: true});
+
+      // If the sentence has no trailing white spaces, `as` should include its leading white spaces.
+      if (nextSentenceBegin.isEqual(currentSentenceBegin.getCurrentSentenceEnd())) {
+        start = currentSentenceBegin.getSentenceBegin({forward: false}).getCurrentSentenceEnd().getRight();
+        stop = nextSentenceBegin;
+      } else {
+        start = currentSentenceBegin;
+        stop = nextSentenceBegin.getLeft();
+      }
+    }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      start = vimState.cursorStartPosition;
+
+      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+        // If current cursor postion is before cursor start position, we are selecting sentences in reverser order.
+        if (currentSentenceNonWhitespaceEnd.isAfter(vimState.cursorPosition)) {
+          stop = currentSentenceBegin.getSentenceBegin({forward: false}).getCurrentSentenceEnd().getRight();
+        } else {
+          stop = currentSentenceBegin;
+        }
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
+  }
+}
+
+@RegisterAction
+class SelectInnerSentence extends TextObjectMovement {
+  keys = ["i", "s"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    let stop: Position;
+
+    const currentSentenceBegin = position.getSentenceBegin({forward: false});
+    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getCurrentSentenceEnd();
+
+    if (currentSentenceNonWhitespaceEnd.isBefore(position)) {
+      // The cursor is on a trailing white space.
+      start = currentSentenceNonWhitespaceEnd.getRight();
+      stop = currentSentenceBegin.getSentenceBegin({forward: true}).getLeft();
+    } else {
+      start = currentSentenceBegin;
+      stop = currentSentenceNonWhitespaceEnd;
+    }
+
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+      start = vimState.cursorStartPosition;
+
+      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+        // If current cursor postion is before cursor start position, we are selecting sentences in reverser order.
+        if (currentSentenceNonWhitespaceEnd.isAfter(vimState.cursorPosition)) {
+          stop = currentSentenceBegin;
+        } else {
+          stop = currentSentenceNonWhitespaceEnd.getRight();
+        }
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
+  }
+}
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   keys = ["%"];
