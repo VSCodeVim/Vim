@@ -1054,4 +1054,12 @@ suite("Mode Normal", () => {
       keysPressed: "ma/two<enter>'a",
       end: ["|one", "twooo", "thurr"]
     });
+
+    newTest({
+      title: "Can do C",
+      start: ["export const options = {", "|", "};"],
+      keysPressed: "C",
+      end: ["export const options = {", "|", "};"],
+      endMode: ModeName.Insert
+  });
 });
