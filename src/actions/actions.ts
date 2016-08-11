@@ -419,7 +419,8 @@ class CommandEsc extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode !== ModeName.Visual &&
-        vimState.currentMode !== ModeName.VisualLine) {
+        vimState.currentMode !== ModeName.VisualLine &&
+        vimState.currentMode !== ModeName.MultiCursorVisual) {
       vimState.cursorPosition = position.getLeft();
     }
 
