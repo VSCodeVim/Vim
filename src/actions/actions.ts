@@ -1035,12 +1035,13 @@ export class ChangeOperator extends BaseOperator {
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
         // the line.
-        if (isEndOfLine) {
+        if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0) {
           state = await new DeleteOperator().run(vimState, start, end);
-          state.currentMode = ModeName.Insert;
+        }
+        state.currentMode = ModeName.Insert;
+
+        if (isEndOfLine) {
           state.cursorPosition = state.cursorPosition.getRight();
-        } else {
-          state.currentMode = ModeName.Insert;
         }
 
         return state;
