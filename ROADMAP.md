@@ -28,6 +28,7 @@ Status | Command
 :warning:  | Marks
 :white_check_mark: | Text Objects
 :white_check_mark: | Visual Block Mode
+:warning: | Replace Mode
  | Multiple Select Mode
  | Macros
 :warning: | Buffer/Window/Tab
@@ -205,7 +206,7 @@ Status | Command | Description
 ---|--------|------------------------------
 :warning:    | :1234:  r{char}	| replace N characters with {char}
     | :1234:  gr{char}	| replace N characters without affecting layout
-    | :1234:  R		| enter Replace mode (repeat the entered text N times)
+:warning:    | :1234:  R		| enter Replace mode (repeat the entered text N times)
     | :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
     |  {visual}r{char} | in Visual block mode: Replace each char of the selected text with {char}
 
@@ -230,8 +231,8 @@ Status | Command | Description
     |    gU{motion}     | make the text that is moved over with {motion} uppercase
 :arrow_down:    |    {visual}g?     | perform rot13 encoding on highlighted text
 :arrow_down:    |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
-    | :1234:  CTRL-A	| add N to the number at or after the cursor
-    | :1234:  CTRL-X	| subtract N from the number at or after the cursor
+:white_check_mark:    | :1234:  CTRL-A	| add N to the number at or after the cursor
+:white_check_mark:    | :1234:  CTRL-X	| subtract N from the number at or after the cursor
 :white_check_mark:    | :1234:  <{motion}	| move the lines that are moved over with {motion} one shiftwidth left
 :white_check_mark:    | :1234:  <<	|	move N lines one shiftwidth left
 :white_check_mark:    | :1234:  >{motion}	|  move the lines that are moved over with {motion} one shiftwidth right
@@ -270,16 +271,16 @@ Status | Command | Description
     | :1234:  ib	| Select "inner block" (from "[(" to "])")
     | :1234:  aB	| Select "a Block" (from "[{" to "]}")
     | :1234:  iB	| Select "inner Block" (from "[{" to "]}")
-:warning:    | :1234:  a>	| Select "a &lt;&gt; block"
-:warning:    | :1234:  i>	| Select "inner <> block"
+:white_check_mark:    | :1234:  a>	| Select "a &lt;&gt; block"
+:white_check_mark:    | :1234:  i>	| Select "inner <> block"
     | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
     | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
-:warning:    | :1234:  a'	| Select "a single quoted string"
-:warning:    | :1234:  i'	| Select "inner single quoted string"
-:warning:    | :1234:  a"	| Select "a double quoted string"
-:warning:    | :1234:  i"	| Select "inner double quoted string"
-:warning:    | :1234:  a`	| Select "a backward quoted string"
-:warning:    | :1234:  i`	| Select "inner backward quoted string"
+:white_check_mark:    | :1234:  a'	| Select "a single quoted string"
+:white_check_mark:    | :1234:  i'	| Select "inner single quoted string"
+:white_check_mark:    | :1234:  a"	| Select "a double quoted string"
+:white_check_mark:    | :1234:  i"	| Select "inner double quoted string"
+:white_check_mark:    | :1234:  a`	| Select "a backward quoted string"
+:white_check_mark:    | :1234:  i`	| Select "inner backward quoted string"
 
 ## Repeating commands
 
@@ -305,7 +306,7 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-      |    m{a-zA-Z}	       |  mark current position with mark {a-zA-Z}
+:white_check_mark: |    m{a-zA-Z}	       |  mark current position with mark {a-zA-Z}
       |    `{a-z}	       |  go to mark {a-z} within current file
       |    `{A-Z}	       |  go to mark {A-Z} in any file
       |    `{0-9}	       |  go to the position where Vim was previously exited
