@@ -62,7 +62,7 @@ export class Configuration {
   @overlapSetting({ codeName: "insertSpaces", default: false})
   expandtab: boolean;
 
-  @overlapSetting({ codeName: "wordSepatators", default: "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?"})
+  @overlapSetting({ codeName: "wordSeparators", default: "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?"})
   iskeyword: string;
 }
 

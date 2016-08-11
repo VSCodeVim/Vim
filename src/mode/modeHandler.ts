@@ -166,6 +166,7 @@ export enum SearchDirection {
 
 export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
+  private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
   /**
    * Every range in the document that matches the search string.
@@ -207,7 +208,7 @@ export class SearchState {
 
       /* Decide whether the search is case sensitive.
        * If ignorecase is false, the search is case sensitive.
-       * If ignorecase is true, the search should be case insenstive.
+       * If ignorecase is true, the search should be case insensitive.
        * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
        */
       let ignorecase = Configuration.getInstance().ignorecase;
@@ -216,7 +217,7 @@ export class SearchState {
         ignorecase = false;
       }
 
-      const regex = new RegExp(search.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&"), ignorecase ? 'gi' : 'g');
+      const regex = new RegExp(search.replace(SearchState.specialCharactersRegex, "\\$&"), ignorecase ? 'gi' : 'g');
 
       outer:
       for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {

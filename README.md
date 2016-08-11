@@ -21,6 +21,7 @@ We're super friendly people if you want to drop by and talk to us on our [Slack 
 * Incremental search with `/` and `?` that works like Vim (doesn't just open the search box!)
 * Correct undo/redo state
 * Marks
+* Vim Options
 
 ## Roadmap
 
@@ -88,6 +89,16 @@ Put the following in your `settings.json`:
 ```    "vim.useCtrlKeys": true```
 
 and restart VSCode.
+
+#### Vim option override sequence.
+
+The way we load Vim options is slightly different from native Vim as there is some overlap between Code and Vim. The option loading sequence is as below.
+
+1. `:set {option}` on the fly
+2. [TODO] .vimrc.
+2. `vim.{option}` from user settings or workspace settings.
+3. VS Code configuration
+4. VSCodeVim flavored Vim option default values
 
 ## Contributing
 
