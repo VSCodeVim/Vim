@@ -673,24 +673,7 @@ export class Position extends vscode.Position {
       }
     }
 
-    // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
-    // Find the first non-whitepsace character.
-    if (TextEditor.getLineAt(new vscode.Position(this.line, 0)).text) {
-      return paragraphEnd;
-    } else {
-      for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
-        let nonWhitePositions = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, /\S/g);
-        let newCharacter = _.find(nonWhitePositions,
-          index => ((index >  this.character && !inclusive)  ||
-              (index >= this.character &&  inclusive)) || currentLine !== this.line);
-
-        if (newCharacter !== undefined) {
-          return new Position(currentLine, newCharacter);
-        }
-      }
-    }
-
-    throw new Error("This should never happen...");
+    return this.getFirstNonWhitespaceInParagraph(paragraphEnd, inclusive);
   }
 
   private getCurrentSentenceEndWithRegex(regex: RegExp, inclusive: boolean): Position {
@@ -706,6 +689,10 @@ export class Position extends vscode.Position {
       }
     }
 
+    return this.getFirstNonWhitespaceInParagraph(paragraphEnd, inclusive);
+  }
+
+  private getFirstNonWhitespaceInParagraph(paragraphEnd: Position, inclusive: boolean): Position {
     // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
     // Find the first non-whitepsace character.
     if (TextEditor.getLineAt(new vscode.Position(this.line, 0)).text) {
