@@ -1030,14 +1030,17 @@ export class ChangeOperator extends BaseOperator {
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const isEndOfLine = end.character === TextEditor.getLineAt(end).text.length - 1;
-        const state = await new DeleteOperator().run(vimState, start, end);
-        state.currentMode = ModeName.Insert;
+        let state = vimState;
 
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
         // the line.
         if (isEndOfLine) {
+          state = await new DeleteOperator().run(vimState, start, end);
+          state.currentMode = ModeName.Insert;
           state.cursorPosition = state.cursorPosition.getRight();
+        } else {
+          state.currentMode = ModeName.Insert;
         }
 
         return state;
