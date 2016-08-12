@@ -146,17 +146,6 @@ export class VimState {
    * by us or by a mouse action.
    */
   public whatILastSetTheSelectionTo: vscode.Selection;
-<<<<<<< b9a0b15742532ecc54e66ee04c417d82e70d29dc
-
-  public settings = new VimSettings();
-}
-
-export class VimSettings {
-  useSolidBlockCursor = false;
-  scroll              = 20;
-  useCtrlKeys         = false;
-=======
->>>>>>> Vim Settings
 }
 
 export enum SearchDirection {
@@ -577,17 +566,6 @@ export class ModeHandler implements vscode.Disposable {
     });
   }
 
-<<<<<<< b9a0b15742532ecc54e66ee04c417d82e70d29dc
-  private loadSettings(): void {
-    this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
-      .get("useSolidBlockCursor", false);
-    this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
-    this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
-  }
-
-
-=======
->>>>>>> Vim Settings
   /**
    * The active mode.
    */
