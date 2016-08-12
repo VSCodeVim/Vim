@@ -4,6 +4,8 @@ import * as assert from 'assert';
 import { TextEditor } from './../src/textEditor';
 import { Position } from './../src/motion/position';
 import { setupWorkspace, cleanUpWorkspace } from './testUtils';
+import { ModeHandler } from './../src/mode/modeHandler';
+import { getTestingFunctions } from './testSimplifier';
 
 suite("old motion tests", () => {
   let text: string[] = [
@@ -374,6 +376,13 @@ suite("sentence motion", () => {
     "Another sentence inside one paragraph."
   ];
 
+  let modeHandler: ModeHandler = new ModeHandler();
+
+  let {
+    newTest,
+    newTestOnly,
+  } = getTestingFunctions(modeHandler);
+
   suiteSetup(() => {
     return setupWorkspace().then(() => {
       return TextEditor.insert(text.join('\n'));
@@ -384,7 +393,7 @@ suite("sentence motion", () => {
 
   suite("sentence forward", () => {
     test("next concrete sentence", () => {
-      let motion = new Position(0, 0).getNextSentenceBegin();
+      let motion = new Position(0, 0).getSentenceBegin({forward: true});
       assert.equal(motion.line, 0);
       assert.equal(motion.character, 35);
     });
@@ -396,46 +405,45 @@ suite("sentence motion", () => {
     });
 
     test("next sentence when cursor is at the end of previous paragraph", () => {
-      let motion = new Position(3, 0).getNextSentenceBegin();
+      let motion = new Position(3, 0).getSentenceBegin({forward: true});
       assert.equal(motion.line, 4);
       assert.equal(motion.character, 0);
     });
 
     test("next sentence when paragraph contains a line of whilte spaces", () => {
-      let motion = new Position(6, 2).getNextSentenceBegin();
+      let motion = new Position(6, 2).getSentenceBegin({forward: true});
       assert.equal(motion.line, 9);
       assert.equal(motion.character, 0);
     });
   });
 
-
   suite("sentence backward", () => {
     test("current sentence begin", () => {
-      let motion = new Position(0, 37).getPreviousSentenceBegin();
+      let motion = new Position(0, 37).getSentenceBegin({forward: false});
       assert.equal(motion.line, 0);
       assert.equal(motion.character, 35);
     });
 
     test("sentence forward when cursor is at the beginning of the second sentence", () => {
-      let motion = new Position(0, 35).getPreviousSentenceBegin();
+      let motion = new Position(0, 35).getSentenceBegin({forward: false});
       assert.equal(motion.line, 0);
       assert.equal(motion.character, 0);
     });
 
     test("current sentence begin with no concrete sentense inside", () => {
-      let motion = new Position(3, 0).getPreviousSentenceBegin();
+      let motion = new Position(3, 0).getSentenceBegin({forward: false});
       assert.equal(motion.line, 2);
       assert.equal(motion.character, 0);
     });
 
     test("current sentence begin when it's not the same as current paragraph begin", () => {
-      let motion = new Position(2, 0).getPreviousSentenceBegin();
+      let motion = new Position(2, 0).getSentenceBegin({forward: false});
       assert.equal(motion.line, 1);
       assert.equal(motion.character, 0);
     });
 
     test("current sentence begin when previous line ends with a concrete sentence", () => {
-      let motion = new Position(9, 5).getPreviousSentenceBegin();
+      let motion = new Position(9, 5).getSentenceBegin({forward: false});
       assert.equal(motion.line, 9);
       assert.equal(motion.character, 0);
     });

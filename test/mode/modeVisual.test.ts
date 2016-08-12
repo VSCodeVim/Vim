@@ -471,4 +471,56 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
   });
+
+  suite("handles as in visual mode", () => {
+    newTest({
+      title: "Select sentence with trailing spaces in visual mode",
+      start: ["That's my sec|ret, Captain. I'm always angry."],
+      keysPressed: 'vlasd',
+      end: ["That's my sec|I'm always angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select sentence with leading spaces in visual mode",
+      start: ["That's my secret, Captain. I'm a|lways angry."],
+      keysPressed: 'vhasd',
+      end: ["That's my secret, Captain.|ways angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select multiple sentences in visual mode",
+      start: ["That's my secret, Captain. I|'m always angry."],
+      keysPressed: 'vhhasd',
+      end: ["|m always angry."],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles is in visual mode", () => {
+    newTest({
+      title: "Select inner sentence with trailing spaces in visual mode",
+      start: ["That's my sec|ret, Captain. I'm always angry."],
+      keysPressed: 'vlisd',
+      end: ["That's my sec| I'm always angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select inner sentence with leading spaces in visual mode",
+      start: ["That's my secret, Captain. I'm a|lways angry."],
+      keysPressed: 'vhisd',
+      end: ["That's my secret, Captain. |ways angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select spaces between sentences in visual mode",
+      start: ["That's my secret, Captain.  |  I'm always angry."],
+      keysPressed: 'vhisd',
+      end: ["That's my secret, Captain.| I'm always angry."],
+      endMode: ModeName.Normal
+    });
+  });
 });
