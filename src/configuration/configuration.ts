@@ -57,13 +57,12 @@ export class Configuration {
   smartcase: boolean = true;
 
   @overlapSetting({ codeName: "tabSize", default: 8})
-  tabstop: number;
+  tabstop: number | undefined = undefined;
 
   @overlapSetting({ codeName: "insertSpaces", default: false})
-  expandtab: boolean;
+  expandtab: boolean | undefined = undefined;
 
-  @overlapSetting({ codeName: "wordSeparators", default: "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?"})
-  iskeyword: string;
+  iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 }
 
 function overlapSetting(args: {codeName: string, default: OptionValue}) {
@@ -76,7 +75,9 @@ function overlapSetting(args: {codeName: string, default: OptionValue}) {
 
         return vscode.workspace.getConfiguration("editor").get(args.codeName, args.default);
       },
-      set: function (value) { this["_" + propertyKey] = value; },
+      set: function (value) {
+        this["_" + propertyKey] = value;
+      },
       enumerable: true,
       configurable: true
     });

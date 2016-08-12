@@ -161,35 +161,33 @@
                 },
                 "vim.useSolidBlockCursor": {
                     "type": "boolean",
-                    "description": "Use a non blinking block cursor."
+                    "description": "Use a non blinking block cursor.",
+                    "default": false
                 },
                 "vim.scroll": {
                     "type": "number",
-                    "description": "Number of lines to scroll with CTRL-U and CTRL-D commands."
-                },
-                "vim.tabstop": {
-                    "type": "number",
-                    "description": "Number of spaces that a <Tab> in the file counts for."
-                },
-                "vim.expandtab": {
-                    "type": "boolean",
-                    "description": "In Insert mode: Use the appropriate number of spaces to insert a <Tab>."
+                    "description": "Number of lines to scroll with CTRL-U and CTRL-D commands.",
+                    "default": 20
                 },
                 "vim.iskeyword": {
                     "type": "string",
-                    "description": "keywords contain alphanumeric characters and '_'"
+                    "description": "keywords contain alphanumeric characters and '_'",
+                    "default": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-"
                 },
                 "vim.ignorecase": {
                     "type": "boolean",
-                    "description": "Ignore case in search patterns."
+                    "description": "Ignore case in search patterns.",
+                    "default": true
                 },
                 "vim.smartcase": {
                     "type": "boolean",
-                    "description": "Override the 'ignorecase' option if the search pattern contains upper case characters."
+                    "description": "Override the 'ignorecase' option if the search pattern contains upper case characters.",
+                    "default": true
                 },
                 "vim.hlsearch": {
                     "type": "boolean",
-                    "description": "When there is a previous search pattern, highlight all its matches."
+                    "description": "When there is a previous search pattern, highlight all its matches.",
+                    "default": true
                 }
             }
         }
