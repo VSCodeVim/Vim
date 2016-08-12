@@ -8,6 +8,7 @@ import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
+import { Configuration } from './../configuration/configuration';
 import * as vscode from 'vscode';
 
 const controlKeys: string[] = [
@@ -1487,7 +1488,10 @@ class CommandMoveHalfPageDown extends BaseMovement {
   keys = ["ctrl+d"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(Math.min(TextEditor.getLineCount() - 1, position.line + vimState.settings.scroll), position.character);
+    return new Position(
+      Math.min(TextEditor.getLineCount() - 1, position.line + Configuration.getInstance().scroll),
+      position.character
+    );
   }
 }
 
@@ -1496,7 +1500,7 @@ class CommandMoveHalfPageUp extends BaseMovement {
   keys = ["ctrl+u"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(Math.max(0, position.line - vimState.settings.scroll), position.character);
+    return new Position(Math.max(0, position.line - Configuration.getInstance().scroll), position.character);
   }
 }
 

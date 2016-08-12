@@ -3,6 +3,7 @@
 import * as vscode from "vscode";
 import { ModeHandler } from './mode/modeHandler';
 import { Position } from './motion/position';
+import { Configuration } from './configuration/configuration';
 
 export class TextEditor {
   // TODO: Refactor args
@@ -148,7 +149,7 @@ export class TextEditor {
   }
 
   static getIndentationLevel(line: string): number {
-    let tabSize = vscode.workspace.getConfiguration("editor").get<number>("tabSize");
+    let tabSize = Configuration.getInstance().tabstop;
     let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
     let visibleColumn: number = 0;
 
@@ -173,8 +174,8 @@ export class TextEditor {
   }
 
   static setIndentationLevel(line: string, screenCharacters: number): string {
-    let tabSize = <number> vscode.window.activeTextEditor.options.tabSize;
-    let insertTabAsSpaces = <boolean> vscode.window.activeTextEditor.options.insertSpaces;
+    let tabSize = Configuration.getInstance().tabstop;
+    let insertTabAsSpaces = Configuration.getInstance().expandtab;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;

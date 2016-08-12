@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, cleanUpWorkspace } from './../../testUtils';
+import { setupWorkspace, cleanUpWorkspace, setTextEditorOptions } from './../../testUtils';
 import { ModeHandler } from '../../../src/mode/modeHandler';
 import { getTestingFunctions } from '../../testSimplifier';
 
@@ -13,6 +13,7 @@ suite("Dot Operator", () => {
 
     setup(async () => {
         await setupWorkspace();
+        setTextEditorOptions(4, false);
     });
 
     teardown(cleanUpWorkspace);
@@ -56,7 +57,7 @@ suite("Dot Operator", () => {
       title: "Can repeat actions that require selections",
       start: ['on|e', 'two'],
       keysPressed: 'Vj>.',
-      end: ['    |one', '    two']
+      end: ['        |one', '        two']
     });
 
 });
