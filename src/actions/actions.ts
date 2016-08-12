@@ -1523,6 +1523,12 @@ class CommandYankFullLine extends BaseCommand {
 }
 
 @RegisterAction
+class ShiftYankVisualMode extends YankOperator {
+  modes = [ModeName.Visual];
+  keys = ["Y"];
+}
+
+@RegisterAction
 class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["C"];
