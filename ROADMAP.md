@@ -447,7 +447,12 @@ Since the list is too long, now we just put those already supported options here
 Status | Command | Default Value | Description
 ---|--------|-------|------------------------------
 :white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that <Tab> in file uses
-:white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when <Tab> is inserted
+:white_check_mark:| :white_check_mark:| hlsearch (hls) | false | When there is a previous search pattern, highlight all its matches.
+:white_check_mark:| ignorecase (ic) | false | Ignore case in search patterns.
+:white_check_mark:| smartcase (scs) | false | Override the 'ignorecase' option if the search pattern contains upper case characters.
+:white_check_mark:| iskeyword (isk) | `@,48-57,_,128-167,224-235` | keywords contain alphanumeric characters and '_'. If there is no user setting for `iskeyword`, we use `editor.wordSeparators` properties.
+:white_check_mark:| scroll (scr) | 20 | Number of lines to scroll with CTRL-U and CTRL-D commands.
+>expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when <Tab> is inserted
 
 ## Folding
 ### Fold methods

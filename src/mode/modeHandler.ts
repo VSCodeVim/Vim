@@ -23,6 +23,7 @@ import {
 import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
+import { Configuration } from '../../src/configuration/configuration';
 
 export enum VimSpecialCommands {
   Nothing,
@@ -145,14 +146,6 @@ export class VimState {
    * by us or by a mouse action.
    */
   public whatILastSetTheSelectionTo: vscode.Selection;
-
-  public settings = new VimSettings();
-}
-
-export class VimSettings {
-  useSolidBlockCursor = false;
-  scroll              = 20;
-  useCtrlKeys         = false;
 }
 
 export enum SearchDirection {
@@ -162,6 +155,7 @@ export enum SearchDirection {
 
 export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
+  private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
   /**
    * Every range in the document that matches the search string.
@@ -201,21 +195,39 @@ export class SearchState {
       this._matchesDocVersion = TextEditor.getDocumentVersion();
       this._matchRanges = [];
 
+      /* Decide whether the search is case sensitive.
+       * If ignorecase is false, the search is case sensitive.
+       * If ignorecase is true, the search should be case insensitive.
+       * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
+       */
+      let ignorecase = Configuration.getInstance().ignorecase;
+
+      if (ignorecase && Configuration.getInstance().smartcase && /[A-Z]/.test(search)) {
+        ignorecase = false;
+      }
+
+      const regex = new RegExp(search.replace(SearchState.specialCharactersRegex, "\\$&"), ignorecase ? 'gi' : 'g');
+
       outer:
       for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
         const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+        let result = regex.exec(line);
 
-        let i = line.indexOf(search);
-
-        for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+        while (result) {
           if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
             break outer;
           }
 
-          this._matchRanges.push(new vscode.Range(
-            new Position(lineIdx, i),
-            new Position(lineIdx, i + search.length)
+          this.matchRanges.push(new vscode.Range(
+            new Position(lineIdx, result.index),
+            new Position(lineIdx, result.index + search.length)
           ));
+
+          if (result.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+
+          result = regex.exec(line);
         }
       }
     }
@@ -478,8 +490,6 @@ export class ModeHandler implements vscode.Disposable {
       this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
 
-    this.loadSettings();
-
     // Handle scenarios where mouse used to change current position.
     vscode.window.onDidChangeTextEditorSelection(async (e) => {
       let selection = e.selections[0];
@@ -555,14 +565,6 @@ export class ModeHandler implements vscode.Disposable {
       }
     });
   }
-
-  private loadSettings(): void {
-    this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
-      .get("useSolidBlockCursor", false);
-    this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
-    this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
-  }
-
 
   /**
    * The active mode.
@@ -969,7 +971,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    if (vimState.settings.useSolidBlockCursor) {
+    if (Configuration.getInstance().useSolidBlockCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
         rangesToDraw.push(new vscode.Range(
           vimState.cursorPosition,
@@ -1010,7 +1012,8 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw search highlight
 
-    if (this.currentMode.name === ModeName.SearchInProgressMode) {
+    if (this.currentMode.name === ModeName.SearchInProgressMode ||
+      (Configuration.getInstance().hlsearch && vimState.searchState)) {
       const searchState = vimState.searchState!;
 
       rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
@@ -1033,7 +1036,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
-    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', this.vimState.settings.useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().useCtrlKeys);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
