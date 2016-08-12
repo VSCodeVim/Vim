@@ -656,6 +656,47 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Select sentence with trailing spaces",
+      start: ["That's my sec|ret, Captain. I'm always angry."],
+      keysPressed: 'das',
+      end: ["|I'm always angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select sentence with leading spaces",
+      start: ["That's my secret, Captain. I'm a|lways angry."],
+      keysPressed: 'das',
+      end: ["That's my secret, Captain|."],
+      endMode: ModeName.Normal
+    });
+
+  newTest({
+    title: "Select inner sentence with trailing spaces",
+    start: ["That's my sec|ret, Captain. I'm always angry."],
+    keysPressed: 'dis',
+    end: ["| I'm always angry."],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Select inner sentence with leading spaces",
+    start: ["That's my secret, Captain. I'm a|lways angry."],
+    keysPressed: 'dis',
+    end: ["That's my secret, Captain.| "],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Select spaces between sentences",
+    start: ["That's my secret, Captain.  |  I'm always angry."],
+    keysPressed: 'visd',
+    end: ["That's my secret, Captain.|I'm always angry."],
+    endMode: ModeName.Normal
+  });
+
+
+    newTest({
       title: "Can handle 'df'",
       start: ['aext tex|t'],
       keysPressed: '^dft',
