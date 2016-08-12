@@ -929,6 +929,16 @@ export class YankOperator extends BaseOperator {
 }
 
 @RegisterAction
+export class ShiftYankOperatorVisual extends BaseOperator {
+    public keys = ["Y"];
+    public modes = [ModeName.Visual];
+
+    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      return await new YankOperator().run(vimState, start, end);
+    }
+}
+
+@RegisterAction
 export class DeleteOperatorXVisual extends BaseOperator {
     public keys = ["x"];
     public modes = [ModeName.Visual, ModeName.VisualLine];
@@ -1520,12 +1530,6 @@ class CommandYankFullLine extends BaseCommand {
 
     return await new YankOperator().run(vimState, position.getLineBegin(), position.getLineEnd().getLeft());
   }
-}
-
-@RegisterAction
-class ShiftYankVisualMode extends YankOperator {
-  modes = [ModeName.Visual];
-  keys = ["Y"];
 }
 
 @RegisterAction
