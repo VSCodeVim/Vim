@@ -63,6 +63,11 @@ export class VimState {
   public focusChanged = false;
 
   /**
+   * Used to prevent non-recursive remappings from looping.
+   */
+  public isCurrentlyPreformingRemapping = false;
+
+  /**
    * The current full action we are building up.
    */
   public currentFullAction: string[] = [];
@@ -419,6 +424,9 @@ export class ModeHandler implements vscode.Disposable {
   private _vimState: VimState;
   private _insertModeRemapper: InsertModeRemapper;
   private _otherModesRemapper: OtherModesRemapper;
+  private _otherModesNonRecursive: OtherModesRemapper;
+  private _insertModeNonRecursive: InsertModeRemapper;
+
 
   public get vimState(): VimState {
     return this._vimState;
@@ -463,8 +471,11 @@ export class ModeHandler implements vscode.Disposable {
     this.filename = filename;
 
     this._vimState = new VimState();
-    this._insertModeRemapper = new InsertModeRemapper();
-    this._otherModesRemapper = new OtherModesRemapper();
+    this._insertModeRemapper = new InsertModeRemapper(true);
+    this._otherModesRemapper = new OtherModesRemapper(true);
+    this._insertModeNonRecursive = new InsertModeRemapper(false);
+    this._otherModesNonRecursive = new OtherModesRemapper(false);
+
     this._modes = [
       new NormalMode(this),
       new InsertMode(),
@@ -602,9 +613,13 @@ export class ModeHandler implements vscode.Disposable {
 
     try {
       let handled = false;
-
-      handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
-      handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
+      if (!this._vimState.isCurrentlyPreformingRemapping) {
+        // Non-recursive remapping do not allow for further mappings
+        handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
+        handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
+        handled = handled || await this._insertModeNonRecursive.sendKey(key, this, this.vimState);
+        handled = handled || await this._otherModesNonRecursive.sendKey(key, this, this.vimState);
+      }
 
       if (!handled) {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
