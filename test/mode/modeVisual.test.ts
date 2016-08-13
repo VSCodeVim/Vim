@@ -462,6 +462,14 @@ suite("Mode Visual", () => {
       end: ['one   two   three,   |six'],
       endMode: ModeName.Normal
     });
+
+    newTest({
+      title: "Can handle 'Y' in visual mode" ,
+      start: ['one', '|two'],
+      keysPressed: 'vwYP',
+      end: ['one', '|two', 'two'],
+      endMode: ModeName.Normal
+    });
   });
 
   suite("handles as in visual mode", () => {
