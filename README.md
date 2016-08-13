@@ -66,6 +66,21 @@ On OS X, run the following command:
 
 Be sure to restart VSCode after making these changes.
 
+#### How can I bind something like `j` to `gj`? How can I get the equivalent of `:noremap`?
+
+Notice the problem is that if you did this normally, the `j` in `gj` would be expanded into `gj`, on and on forever. To stop this recursive expansion, use vim.otherModesKeyBindingsNonRecursive! 
+
+   ```
+      "vim.otherModesKeyBindings": [
+           {
+               "before": ["j"],
+               "after": ["g", "j"]
+           }
+      ]
+```
+
+Don't forget to restart!
+
 #### How can I enable `ctrl-c` as an alternative to `<escape>`?
 
 Put the following in your `settings.json`:
