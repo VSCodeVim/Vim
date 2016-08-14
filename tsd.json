@@ -1,0 +1,12 @@
+{
+  "version": "v4",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master",
+  "path": "typings",
+  "bundle": "typings/tsd.d.ts",
+  "installed": {
+    "diff-match-patch/diff-match-patch.d.ts": {
+      "commit": "67557f18a898462614ed14063a54ca33a1cfab12"
+    }
+  }
+}
