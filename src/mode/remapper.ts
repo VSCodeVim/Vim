@@ -53,7 +53,9 @@ class Remapper {
         // if we remapped e.g. jj to esc, we have to revert the inserted "jj"
 
         if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
-          vimState.historyTracker.undoAndRemoveChanges(this._mostRecentKeys.length);
+          // we subtract 1 because we haven't actually applied the last key.
+
+          await vimState.historyTracker.undoAndRemoveChanges(Math.max(0, this._mostRecentKeys.length - 1));
         }
 
         if (!this._recursive) {
@@ -62,7 +64,6 @@ class Remapper {
 
         await modeHandler.handleMultipleKeyEvents(remapping.after);
 
-        // Since this should always be false after remapping, save the cycles by skipping the check
         vimState.isCurrentlyPreformingRemapping = false;
 
         this._mostRecentKeys = [];

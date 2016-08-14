@@ -358,7 +358,6 @@ export class HistoryTracker {
       const [whatHappened, text] = diff;
       const added   = whatHappened === DiffMatchPatch.DIFF_INSERT;
       const removed = whatHappened === DiffMatchPatch.DIFF_DELETE;
-      const same    = whatHappened === DiffMatchPatch.DIFF_EQUAL;
 
       let change: DocumentChange;
       // let lastChange = this.currentHistoryStep.changes.length > 1 &&
@@ -380,6 +379,8 @@ export class HistoryTracker {
     }
 
     this.oldText = newText;
+
+    console.log(this.toString());
   }
 
   /**
@@ -393,8 +394,10 @@ export class HistoryTracker {
     }
 
     for (let i = 0; i < n; i++) {
-      this.currentHistoryStep.changes.pop().undo();
+      await this.currentHistoryStep.changes.pop().undo();
     }
+
+    this.ignoreChange();
   }
 
   /**
@@ -470,7 +473,7 @@ export class HistoryTracker {
     step = this.currentHistoryStep;
 
     for (const change of step.changes) {
-      await change!.do();
+      await change.do();
     }
 
     return step.cursorStart;
