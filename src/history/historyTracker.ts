@@ -379,8 +379,6 @@ export class HistoryTracker {
     }
 
     this.oldText = newText;
-
-    console.log(this.toString());
   }
 
   /**
