@@ -90,7 +90,7 @@
       {
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys"
       },
       {
         "key": "ctrl+d",
