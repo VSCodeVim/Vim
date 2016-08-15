@@ -100,7 +100,7 @@
             {
                 "key": "ctrl+[",
                 "command": "extension.vim_ctrl+[",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.useCtrlKeys"
             },
             {
                 "key": "ctrl+w",

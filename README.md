@@ -36,7 +36,7 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 
 #### `j`, `k` and others don't repeat when I hold them down.
 
-On OS X, run the following command: 
+On OS X, run the following command:
 
 `defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
 
@@ -68,7 +68,7 @@ Be sure to restart VSCode after making these changes.
 
 #### How can I bind something like `j` to `gj`? How can I get the equivalent of `:noremap`?
 
-Notice the problem is that if you did this normally, the `j` in `gj` would be expanded into `gj`, on and on forever. To stop this recursive expansion, use vim.otherModesKeyBindingsNonRecursive! 
+Notice the problem is that if you did this normally, the `j` in `gj` would be expanded into `gj`, on and on forever. To stop this recursive expansion, use vim.otherModesKeyBindingsNonRecursive!
 
    ```
       "vim.otherModesKeyBindings": [
@@ -81,7 +81,7 @@ Notice the problem is that if you did this normally, the `j` in `gj` would be ex
 
 Don't forget to restart!
 
-#### How can I enable `ctrl-c` as an alternative to `<escape>`?
+#### How can I enable `ctrl-c` or `ctrl-[` as an alternative to `<escape>`?
 
 Put the following in your `settings.json`:
 
@@ -89,7 +89,7 @@ Put the following in your `settings.json`:
 
 and restart VSCode.
 
-#### How can I enable `ctrl-f`? 
+#### How can I enable `ctrl-f`?
 
 Put the following in your `settings.json`:
 
@@ -97,7 +97,7 @@ Put the following in your `settings.json`:
 
 and restart VSCode.
 
-#### How can I enable visual block mode with `ctrl-v`? 
+#### How can I enable visual block mode with `ctrl-v`?
 
 Put the following in your `settings.json`:
 
