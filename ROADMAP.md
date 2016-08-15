@@ -109,10 +109,10 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:warning: | :1234: /{pattern}[/[offset]]<CR> | search forward for the Nth occurrence of {pattern}
-:warning: | :1234: ?{pattern}[?[offset]]<CR> | search backward for the Nth occurrence of {pattern}
- | :1234: /<CR> | repeat last search, in the forward direction
- | :1234: ?<CR> | repeat last search, in the backward direction
+:warning: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern}
+:warning: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern}
+ | :1234: `/<CR>` | repeat last search, in the forward direction
+ | :1234: `?<CR>` | repeat last search, in the backward direction
 :warning: | :1234: n | repeat last search
 :warning: | :1234: N | repeat last search, in opposite direction
 :white_check_mark: | :1234: * | search forward for the identifier under the cursor
@@ -158,25 +158,25 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-| :ta[g][!] {tag} | jump to tag {tag}
-| :[count]ta[g][!] | jump to [count]'th newer tag in tag list
-| CTRL-] | jump to the tag under cursor, unless changes have been made
-| :ts[elect][!] [tag] | list matching tags and select one to jump to
-| :tj[ump][!] [tag]	| jump to tag [tag] or select from list when there are multiple matches
-| :lt[ag][!] [tag] | jump to tag [tag] and add matching tags to the location list
-| :tagsa | print tag list
-| :1234: CTRL-T	| jump back from Nth older tag in tag list
-| :[count]po[p][!] | jump back from [count]'th older tag in tag list
-| :[count]tn[ext][!] | jump to [count]'th next matching tag
-| :[count]tp[revious][!] | jump to [count]'th previous matching tag
-| :[count]tr[ewind][!] | jump to [count]'th matching tag
-| :tl[ast][!] | jump to last matching tag
-| :pt[ag] {tag}	| open a preview window to show tag {tag}
-| CTRL-W } | like CTRL-] but show tag in preview window
-| :pts[elect] |	like ":tselect" but show tag in preview window
-| :ptj[ump]	| like ":tjump" but show tag in preview window
-| :pc[lose]	| close tag preview window
-| CTRL-W z | close tag preview window`
+   | :ta[g][!] {tag} | jump to tag {tag}
+   | :[count]ta[g][!] | jump to [count]'th newer tag in tag list
+   | CTRL-] | jump to the tag under cursor, unless changes have been made
+   | :ts[elect][!] [tag] | list matching tags and select one to jump to
+   | :tj[ump][!] [tag]	| jump to tag [tag] or select from list when there are multiple matches
+   | :lt[ag][!] [tag] | jump to tag [tag] and add matching tags to the location list
+   | :tagsa | print tag list
+   | :1234: CTRL-T	| jump back from Nth older tag in tag list
+   | :[count]po[p][!] | jump back from [count]'th older tag in tag list
+   | :[count]tn[ext][!] | jump to [count]'th next matching tag
+   | :[count]tp[revious][!] | jump to [count]'th previous matching tag
+   | :[count]tr[ewind][!] | jump to [count]'th matching tag
+   | :tl[ast][!] | jump to last matching tag
+   | :pt[ag] {tag}	| open a preview window to show tag {tag}
+   | CTRL-W } | like CTRL-] but show tag in preview window
+   | :pts[elect] |	like ":tselect" but show tag in preview window
+   | :ptj[ump]	| like ":tjump" but show tag in preview window
+   | :pc[lose]	| close tag preview window
+   | CTRL-W z | close tag preview window`
 
 ## Scrolling
 
@@ -359,10 +359,10 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-   | :1234:  !{motion}{command}<CR> | filter the lines that are moved over through {command}
-   | :1234:  !!{command}<CR>        | filter N lines through {command}
-   |    {visual}!{command}<CR>      |  filter the highlighted lines through {command}
-   | :[range]! {command}<CR>      | filter [range] lines through {command}
+   | :1234:  `!{motion}{command}<CR>` | filter the lines that are moved over through {command}
+   | :1234:  `!!{command}<CR>`       | filter N lines through {command}
+   |    `{visual}!{command}<CR>`      |  filter the highlighted lines through {command}
+   | `:[range]! {command}<CR>`      | filter [range] lines through {command}
 :white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
    | :1234:  ==	                 |    filter N lines through 'equalprg'
 :white_check_mark:  |    {visual}=                | filter the highlighted lines through 'equalprg'
