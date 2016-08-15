@@ -1897,7 +1897,7 @@ class MoveUpUnderscore extends BaseMovement {
   keys = ["_"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    return position.getUpByCount(Math.max(count - 1, 0))
+    return position.getDownByCount(Math.max(count - 1, 0))
              .getFirstLineNonBlankChar();
   }
 }
