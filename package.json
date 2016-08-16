@@ -58,6 +58,11 @@
                 "when": "editorTextFocus && vim.mode == 'Normal Mode'"
             },
             {
+                "key": "tab",
+                "command": "extension.vim_tab",
+                "when": "editorFocus && vim.mode == 'Normal Mode'"
+            },
+            {
                 "key": "ctrl+r",
                 "command": "extension.vim_ctrl+r",
                 "when": "editorTextFocus"
