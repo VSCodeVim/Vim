@@ -523,4 +523,22 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
   });
+
+  suite("handles tag blocks in visual mode", () => {
+    newTest({
+      title: "Can do vit on a matching tag",
+      start: ["one <blink>he|llo</blink> two"],
+      keysPressed: "vitd",
+      end: ["one <blink>|</blink> two"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do vat on a matching tag",
+      start: ["one <blink>he|llo</blink> two"],
+      keysPressed: "vatd",
+      end: ["one | two"],
+      endMode: ModeName.Normal
+    });
+  });
 });
