@@ -246,15 +246,15 @@ Status | Command | Description
 ---|--------|------------------------------
     | CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
 :warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line
-    | CTRL-E		                 |  insert the character from below the cursor
-    | CTRL-Y		                 |  insert the character from above the cursor
+:white_check_mark: | CTRL-E		                 |  insert the character from below the cursor
+:white_check_mark: | CTRL-Y		                 |  insert the character from above the cursor
     | CTRL-A		                 |  insert previously inserted text
     | CTRL-@		                 |  insert previously inserted text and stop Insert mode
-    | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
+:white_check_mark: | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
     | CTRL-N		                 |  insert next match of identifier before the cursor
     | CTRL-P		                 |  insert previous match of identifier before the cursor
     | CTRL-X ...	                 |  complete the word before the cursor in various ways
-    | BS or CTRL-H	                 |  delete the character before the cursor
+:white_check_mark: | BS or CTRL-H	                 |  delete the character before the cursor
 :white_check_mark:    | Del		                 |  delete the character under the cursor
 :white_check_mark:    | CTRL-W		                 |  delete word before the cursor
     | CTRL-U		                 |  delete all entered characters in the current line
