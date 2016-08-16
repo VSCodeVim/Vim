@@ -718,6 +718,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'yy' without changing cursor position",
+      start: ['one', 'tw|o'],
+      keysPressed: 'yy',
+      end: ['one', 'tw|o']
+    });
+
+    newTest({
       title: "Can handle 'P' after 'yy'",
       start: ['one', 'tw|o'],
       keysPressed: 'yyP',

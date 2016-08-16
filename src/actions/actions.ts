@@ -903,6 +903,7 @@ export class YankOperator extends BaseOperator {
     canBeRepeatedWithDot = false;
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      const originalMode = vimState.currentMode;
         if (start.compareTo(end) <= 0) {
           end = new Position(end.line, end.character + 1);
         } else {
@@ -924,7 +925,13 @@ export class YankOperator extends BaseOperator {
         Register.put(text, vimState);
 
         vimState.currentMode = ModeName.Normal;
+
+      if (originalMode === ModeName.Normal) {
+        vimState.cursorPosition = vimState.cursorPositionJustBeforeAnythingHappened;
+      } else {
         vimState.cursorPosition = start;
+      }
+
         return vimState;
     }
 }
