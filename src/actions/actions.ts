@@ -10,6 +10,7 @@ import { QuoteMatcher } from './../matching/quoteMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
 import * as vscode from 'vscode';
+import * as clipboard from 'copy-paste';
 
 const controlKeys: string[] = [
   "ctrl",
@@ -618,6 +619,12 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.searchState = undefined;
 
       return vimState;
+    } else if (key === "ctrl+v") {
+      const text = await new Promise<string>((resolve, reject) =>
+        clipboard.paste((err, text) => err ? reject(err) : resolve(text))
+      );
+
+      searchState.searchString += text;
     } else {
       searchState.searchString += this.keysPressed[0];
     }
