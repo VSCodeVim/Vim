@@ -2108,6 +2108,13 @@ class MoveScreenLineEnd extends MoveByScreenLine {
 class MoveScreenLienEndNonBlank extends MoveByScreenLine {
   keys = ["g", "_"];
   movementType = "wrappedLineLastNonWhitespaceCharacter";
+  canBePrefixedWithCount = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    count = count || 1;
+    const pos = await this.execAction(position, vimState) as Position;
+    return pos.getDownByCount(count - 1);
+  }
 }
 
 @RegisterAction
