@@ -396,12 +396,14 @@ Status | Command | Description
 :white_check_mark:    | :1234:  is	| Select "inner sentence"
     | :1234:  ap	| Select "a paragraph"
     | :1234:  ip	| Select "inner paragraph"
-    | :1234:  ab	| Select "a block" (from "[(" to "])")
-    | :1234:  ib	| Select "inner block" (from "[(" to "])")
-    | :1234:  aB	| Select "a Block" (from "[{" to "]}")
-    | :1234:  iB	| Select "inner Block" (from "[{" to "]}")
-:white_check_mark:    | :1234:  a>	| Select "a &lt;&gt; block"
-:white_check_mark:    | :1234:  i>	| Select "inner <> block"
+:white_check_mark:    | :1234:  a], a[    | select '[' ']' blocks
+:white_check_mark:    | :1234:  i], i[    | select inner  '[' ']' blocks
+:white_check_mark:    | :1234:  ab, a(, a)	| Select "a block" (from "[(" to "])")
+:white_check_mark:    | :1234:  ib, i), i(	| Select "inner block" (from "[(" to "])")
+:white_check_mark:    | :1234:  a>, a<	| Select "a &lt;&gt; block"
+:white_check_mark:    | :1234:  i>, i<	| Select "inner <> block"
+:white_check_mark:    | :1234:  aB, a{, a}	| Select "a Block" (from "[{" to "]}")
+:white_check_mark:    | :1234:  iB, i{, i}	| Select "inner Block" (from "[{" to "]}")
     | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
     | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
 :white_check_mark:    | :1234:  a'	| Select "a single quoted string"

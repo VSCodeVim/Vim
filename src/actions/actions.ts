@@ -3224,6 +3224,12 @@ class MoveIClosingParentheses extends MoveInsideCharacter {
 }
 
 @RegisterAction
+class MoveIClosingParenthesesBlock extends MoveInsideCharacter {
+  keys = ["i", "b"];
+  charToMatch = "(";
+}
+
+@RegisterAction
 class MoveAParentheses extends MoveInsideCharacter {
   keys = ["a", "("];
   charToMatch = "(";
@@ -3233,6 +3239,13 @@ class MoveAParentheses extends MoveInsideCharacter {
 @RegisterAction
 class MoveAClosingParentheses extends MoveInsideCharacter {
   keys = ["a", ")"];
+  charToMatch = "(";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveAParenthesesBlock extends MoveInsideCharacter {
+  keys = ["a", "b"];
   charToMatch = "(";
   includeSurrounding = true;
 }
@@ -3250,6 +3263,12 @@ class MoveIClosingCurlyBrace extends MoveInsideCharacter {
 }
 
 @RegisterAction
+class MoveIClosingCurlyBraceBlock extends MoveInsideCharacter {
+  keys = ["i", "B"];
+  charToMatch = "{";
+}
+
+@RegisterAction
 class MoveACurlyBrace extends MoveInsideCharacter {
   keys = ["a", "{"];
   charToMatch = "{";
@@ -3259,6 +3278,13 @@ class MoveACurlyBrace extends MoveInsideCharacter {
 @RegisterAction
 class MoveAClosingCurlyBrace extends MoveInsideCharacter {
   keys = ["a", "}"];
+  charToMatch = "{";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveAClosingCurlyBraceBlock extends MoveInsideCharacter {
+  keys = ["a", "B"];
   charToMatch = "{";
   includeSurrounding = true;
 }
