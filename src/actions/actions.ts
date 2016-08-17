@@ -993,6 +993,12 @@ export class UpperCaseOperator extends BaseOperator {
 }
 
 @RegisterAction
+export class UpperCaseWithMotion extends UpperCaseOperator {
+  public keys = ["g", "U"];
+  public modes = [ModeName.Normal];
+}
+
+@RegisterAction
 export class LowerCaseOperator extends BaseOperator {
     public keys = ["u"];
     public modes = [ModeName.Visual, ModeName.VisualLine];
@@ -1008,6 +1014,12 @@ export class LowerCaseOperator extends BaseOperator {
 
       return vimState;
     }
+}
+
+@RegisterAction
+export class LowerCaseWithMotion extends LowerCaseOperator {
+  public keys = ["g", "u"];
+  public modes = [ModeName.Normal];
 }
 
 @RegisterAction
@@ -3469,6 +3481,12 @@ class ToggleCaseOperator extends BaseOperator {
 
     return vimState;
   }
+}
+
+@RegisterAction
+class ToggleCaseWithMotion extends ToggleCaseOperator {
+  public keys = ["g", "~"];
+  public modes = [ModeName.Normal];
 }
 
 @RegisterAction

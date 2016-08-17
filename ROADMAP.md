@@ -339,9 +339,9 @@ Status | Command | Description
 :white_check_mark:  |    {visual}~	| switch case for highlighted text
 :white_check_mark:  |    {visual}u	| make highlighted text lowercase
 :white_check_mark:  |    {visual}U	| make highlighted text uppercase
-    |    g~{motion}     | switch case for the text that is moved over with {motion}
-    |    gu{motion}     | make the text that is moved over with {motion} lowercase
-    |    gU{motion}     | make the text that is moved over with {motion} uppercase
+:white_check_mark:  |    g~{motion}     | switch case for the text that is moved over with {motion}
+:white_check_mark:  |    gu{motion}     | make the text that is moved over with {motion} lowercase
+:white_check_mark:  |    gU{motion}     | make the text that is moved over with {motion} uppercase
 :arrow_down:    |    {visual}g?     | perform rot13 encoding on highlighted text
 :arrow_down:    |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
 :white_check_mark:    | :1234:  CTRL-A	| add N to the number at or after the cursor
