@@ -1774,6 +1774,16 @@ class MoveLeftArrow extends MoveLeft {
 }
 
 @RegisterAction
+class BackSpaceInNormalMode extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["<backspace>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getLeftThroughLineBreaks();
+  }
+}
+
+@RegisterAction
 class MoveUp extends BaseMovement {
   keys = ["k"];
   doesntChangeDesiredColumn = true;
