@@ -3443,12 +3443,12 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
 }
 
 @RegisterAction
-class ToggleCaseAndMoveForward extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["~"];
+class ToggleCaseOperator extends BaseOperator {
+  public keys = ["~"];
+  public modes = [ModeName.Visual, ModeName.VisualLine];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const range = new vscode.Range(position, position.getRight());
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    const range = new vscode.Range(start, new Position(end.line, end.character + 1));
     const char = TextEditor.getText(range);
 
     // Try lower-case
@@ -3461,6 +3461,23 @@ class ToggleCaseAndMoveForward extends BaseMovement {
     if (toggled !== char) {
       await TextEditor.replace(range, toggled);
     }
+
+    const cursorPosition = start.isBefore(end) ? start : end;
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ToggleCaseAndMoveForward extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["~"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    await new ToggleCaseOperator().run(vimState, position, position);
 
     return position.getRight();
   }

@@ -477,7 +477,7 @@ suite("Motions in Normal Mode", () => {
     title: "Can handle _ with count prefix",
     start: ['blah', 'duh', '|dur', 'hur'],
     keysPressed: '2_',
-    end: ['blah', '|duh', 'dur', 'hur']
+    end: ['blah', 'duh', 'dur', '|hur']
   });
 
   newTest({

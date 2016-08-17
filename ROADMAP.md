@@ -336,9 +336,9 @@ Status | Command | Description
     |    {visual}c	| in Visual block mode: Change each of the selected lines with the entered text
     |    {visual}C	| in Visual block mode: Change each of the selected lines until end-of-line with the entered text
 :warning:    | :1234:  ~		| switch case for N characters and advance cursor
-    |    {visual}~	| switch case for highlighted text
-    |    {visual}u	| make highlighted text lowercase
-    |    {visual}U	| make highlighted text uppercase
+:white_check_mark:  |    {visual}~	| switch case for highlighted text
+:white_check_mark:  |    {visual}u	| make highlighted text lowercase
+:white_check_mark:  |    {visual}U	| make highlighted text uppercase
     |    g~{motion}     | switch case for the text that is moved over with {motion}
     |    gu{motion}     | make the text that is moved over with {motion} lowercase
     |    gU{motion}     | make the text that is moved over with {motion} uppercase
