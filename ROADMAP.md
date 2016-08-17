@@ -255,9 +255,9 @@ Status | Command | Description
     | CTRL-P		                 |  insert previous match of identifier before the cursor
     | CTRL-X ...	                 |  complete the word before the cursor in various ways
 :white_check_mark: | BS or CTRL-H	                 |  delete the character before the cursor
-:white_check_mark:    | Del		                 |  delete the character under the cursor
-:white_check_mark:    | CTRL-W		                 |  delete word before the cursor
-    | CTRL-U		                 |  delete all entered characters in the current line
+:white_check_mark: | Del		                 |  delete the character under the cursor
+:white_check_mark: | CTRL-W		                 |  delete word before the cursor
+:white_check_mark: | CTRL-U		                 |  delete all entered characters in the current line
     | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
     | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
     | 0 CTRL-D	                 |  delete all indent in the current line

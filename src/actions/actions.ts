@@ -875,6 +875,21 @@ class CommandCtrlHInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandCtrlUInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+u"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const start = position.getLineBegin();
+    const stop = position.getLineEnd();
+    await TextEditor.delete(new vscode.Range(start, stop));
+    vimState.cursorPosition = start;
+    vimState.cursorStartPosition = start;
+    return vimState;
+  }
+}
+
+@RegisterAction
 export class CommandSearchForwards extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["/"];
