@@ -272,9 +272,25 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'cib' on first parentheses",
+      start: ['print(|"hello")'],
+      keysPressed: 'cib',
+      end: ['print(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
+      end: ['call|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'cab' spanning multiple lines",
+      start: ['call(', '  |arg1)'],
+      keysPressed: 'cab',
       end: ['call|'],
       endMode: ModeName.Insert
     });
@@ -296,6 +312,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ciB' spanning multiple lines",
+      start: ['one {', '|', '}'],
+      keysPressed: 'ciB',
+      end: ['one {|}'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "will fail when ca( with no ()",
       start: ['|blaaah'],
       keysPressed: 'ca(',
@@ -307,6 +331,14 @@ suite("Mode Normal", () => {
       title: "will fail when ca{ with no {}",
       start: ['|blaaah'],
       keysPressed: 'ca{',
+      end: ['|blaaah'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "will fail when caB with no {}",
+      start: ['|blaaah'],
+      keysPressed: 'caB',
       end: ['|blaaah'],
       endMode: ModeName.Normal
     });
@@ -711,6 +743,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle backspace",
+      start: ['text |text'],
+      keysPressed: '<backspace><backspace>',
+      end: ['tex|t text']
+    });
+
+    newTest({
+      title: "Can handle backspace across lines",
+      start: ['one', '|two'],
+      keysPressed: '<backspace><backspace>',
+      end: ['o|ne', 'two']
+    });
+
+    newTest({
       title: "Can handle A and backspace",
       start: ['|text text'],
       keysPressed: 'A<backspace><escape>',
@@ -961,6 +1007,20 @@ suite("Mode Normal", () => {
       start: ['|ABC DEF'],
       keysPressed: 'vwu',
       end: ['|abc dEF']
+    });
+
+    newTest({
+      title: "Can handle guw",
+      start: ['|ABC DEF'],
+      keysPressed: 'guw',
+      end: ['|abc DEF']
+    });
+
+    newTest({
+      title: "Can handle gUw",
+      start: ['|abc def'],
+      keysPressed: 'gUw',
+      end: ['|ABC def']
     });
 
     newTest({

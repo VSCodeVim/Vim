@@ -196,6 +196,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'g~{motion}'",
+      start: ['|one two'],
+      keysPressed: 'g~w',
+      end: ['|ONE two']
+    });
+
+    newTest({
       title: "Can handle '<backspace>' in insert mode",
       start: ['one', '|'],
       keysPressed: 'i<backspace><escape>',

@@ -336,12 +336,12 @@ Status | Command | Description
     |    {visual}c	| in Visual block mode: Change each of the selected lines with the entered text
     |    {visual}C	| in Visual block mode: Change each of the selected lines until end-of-line with the entered text
 :warning:    | :1234:  ~		| switch case for N characters and advance cursor
-    |    {visual}~	| switch case for highlighted text
-    |    {visual}u	| make highlighted text lowercase
-    |    {visual}U	| make highlighted text uppercase
-    |    g~{motion}     | switch case for the text that is moved over with {motion}
-    |    gu{motion}     | make the text that is moved over with {motion} lowercase
-    |    gU{motion}     | make the text that is moved over with {motion} uppercase
+:white_check_mark:  |    {visual}~	| switch case for highlighted text
+:white_check_mark:  |    {visual}u	| make highlighted text lowercase
+:white_check_mark:  |    {visual}U	| make highlighted text uppercase
+:white_check_mark:  |    g~{motion}     | switch case for the text that is moved over with {motion}
+:white_check_mark:  |    gu{motion}     | make the text that is moved over with {motion} lowercase
+:white_check_mark:  |    gU{motion}     | make the text that is moved over with {motion} uppercase
 :arrow_down:    |    {visual}g?     | perform rot13 encoding on highlighted text
 :arrow_down:    |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
 :white_check_mark:    | :1234:  CTRL-A	| add N to the number at or after the cursor
@@ -396,12 +396,14 @@ Status | Command | Description
 :white_check_mark:    | :1234:  is	| Select "inner sentence"
     | :1234:  ap	| Select "a paragraph"
     | :1234:  ip	| Select "inner paragraph"
-    | :1234:  ab	| Select "a block" (from "[(" to "])")
-    | :1234:  ib	| Select "inner block" (from "[(" to "])")
-    | :1234:  aB	| Select "a Block" (from "[{" to "]}")
-    | :1234:  iB	| Select "inner Block" (from "[{" to "]}")
-:white_check_mark:    | :1234:  a>	| Select "a &lt;&gt; block"
-:white_check_mark:    | :1234:  i>	| Select "inner <> block"
+:white_check_mark:    | :1234:  a], a[    | select '[' ']' blocks
+:white_check_mark:    | :1234:  i], i[    | select inner  '[' ']' blocks
+:white_check_mark:    | :1234:  ab, a(, a)	| Select "a block" (from "[(" to "])")
+:white_check_mark:    | :1234:  ib, i), i(	| Select "inner block" (from "[(" to "])")
+:white_check_mark:    | :1234:  a>, a<	| Select "a &lt;&gt; block"
+:white_check_mark:    | :1234:  i>, i<	| Select "inner <> block"
+:white_check_mark:    | :1234:  aB, a{, a}	| Select "a Block" (from "[{" to "]}")
+:white_check_mark:    | :1234:  iB, i{, i}	| Select "inner Block" (from "[{" to "]}")
     | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
     | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
 :white_check_mark:    | :1234:  a'	| Select "a single quoted string"

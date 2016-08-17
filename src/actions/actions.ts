@@ -993,6 +993,12 @@ export class UpperCaseOperator extends BaseOperator {
 }
 
 @RegisterAction
+export class UpperCaseWithMotion extends UpperCaseOperator {
+  public keys = ["g", "U"];
+  public modes = [ModeName.Normal];
+}
+
+@RegisterAction
 export class LowerCaseOperator extends BaseOperator {
     public keys = ["u"];
     public modes = [ModeName.Visual, ModeName.VisualLine];
@@ -1008,6 +1014,12 @@ export class LowerCaseOperator extends BaseOperator {
 
       return vimState;
     }
+}
+
+@RegisterAction
+export class LowerCaseWithMotion extends LowerCaseOperator {
+  public keys = ["g", "u"];
+  public modes = [ModeName.Normal];
 }
 
 @RegisterAction
@@ -1774,6 +1786,16 @@ class MoveLeftArrow extends MoveLeft {
 }
 
 @RegisterAction
+class BackSpaceInNormalMode extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["<backspace>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    return position.getLeftThroughLineBreaks();
+  }
+}
+
+@RegisterAction
 class MoveUp extends BaseMovement {
   keys = ["k"];
   doesntChangeDesiredColumn = true;
@@ -1907,11 +1929,11 @@ class MoveUpNonBlank extends BaseMovement {
 }
 
 @RegisterAction
-class MoveUpUnderscore extends BaseMovement {
+class MoveDownUnderscore extends BaseMovement {
   keys = ["_"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    return position.getUpByCount(Math.max(count - 1, 0))
+    return position.getDownByCount(Math.max(count - 1, 0))
              .getFirstLineNonBlankChar();
   }
 }
@@ -2098,6 +2120,13 @@ class MoveScreenLineEnd extends MoveByScreenLine {
 class MoveScreenLienEndNonBlank extends MoveByScreenLine {
   keys = ["g", "_"];
   movementType = "wrappedLineLastNonWhitespaceCharacter";
+  canBePrefixedWithCount = true;
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    count = count || 1;
+    const pos = await this.execAction(position, vimState) as Position;
+    return pos.getDownByCount(count - 1);
+  }
 }
 
 @RegisterAction
@@ -3195,6 +3224,12 @@ class MoveIClosingParentheses extends MoveInsideCharacter {
 }
 
 @RegisterAction
+class MoveIClosingParenthesesBlock extends MoveInsideCharacter {
+  keys = ["i", "b"];
+  charToMatch = "(";
+}
+
+@RegisterAction
 class MoveAParentheses extends MoveInsideCharacter {
   keys = ["a", "("];
   charToMatch = "(";
@@ -3204,6 +3239,13 @@ class MoveAParentheses extends MoveInsideCharacter {
 @RegisterAction
 class MoveAClosingParentheses extends MoveInsideCharacter {
   keys = ["a", ")"];
+  charToMatch = "(";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveAParenthesesBlock extends MoveInsideCharacter {
+  keys = ["a", "b"];
   charToMatch = "(";
   includeSurrounding = true;
 }
@@ -3221,6 +3263,12 @@ class MoveIClosingCurlyBrace extends MoveInsideCharacter {
 }
 
 @RegisterAction
+class MoveIClosingCurlyBraceBlock extends MoveInsideCharacter {
+  keys = ["i", "B"];
+  charToMatch = "{";
+}
+
+@RegisterAction
 class MoveACurlyBrace extends MoveInsideCharacter {
   keys = ["a", "{"];
   charToMatch = "{";
@@ -3230,6 +3278,13 @@ class MoveACurlyBrace extends MoveInsideCharacter {
 @RegisterAction
 class MoveAClosingCurlyBrace extends MoveInsideCharacter {
   keys = ["a", "}"];
+  charToMatch = "{";
+  includeSurrounding = true;
+}
+
+@RegisterAction
+class MoveAClosingCurlyBraceBlock extends MoveInsideCharacter {
+  keys = ["a", "B"];
   charToMatch = "{";
   includeSurrounding = true;
 }
@@ -3426,12 +3481,12 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
 }
 
 @RegisterAction
-class ToggleCaseAndMoveForward extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["~"];
+class ToggleCaseOperator extends BaseOperator {
+  public keys = ["~"];
+  public modes = [ModeName.Visual, ModeName.VisualLine];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const range = new vscode.Range(position, position.getRight());
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    const range = new vscode.Range(start, new Position(end.line, end.character + 1));
     const char = TextEditor.getText(range);
 
     // Try lower-case
@@ -3444,6 +3499,29 @@ class ToggleCaseAndMoveForward extends BaseMovement {
     if (toggled !== char) {
       await TextEditor.replace(range, toggled);
     }
+
+    const cursorPosition = start.isBefore(end) ? start : end;
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ToggleCaseWithMotion extends ToggleCaseOperator {
+  public keys = ["g", "~"];
+  public modes = [ModeName.Normal];
+}
+
+@RegisterAction
+class ToggleCaseAndMoveForward extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["~"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    await new ToggleCaseOperator().run(vimState, position, position);
 
     return position.getRight();
   }
