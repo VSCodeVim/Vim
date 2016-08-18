@@ -7,6 +7,7 @@ import { NumericString } from './../number/numericString';
 import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
+import { TagMatcher } from './../matching/tagMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
 import * as vscode from 'vscode';
@@ -3585,4 +3586,52 @@ class IncrementNumberAction extends IncrementDecrementNumberAction {
 class DecrementNumberAction extends IncrementDecrementNumberAction {
   keys = ["ctrl+x"];
   offset = -1;
+}
+
+abstract class MoveTagMatch extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  protected includeTag = false;
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const text = TextEditor.getLineAt(position).text;
+    const tagMatcher = new TagMatcher(text, position.character);
+    const start = tagMatcher.findOpening(this.includeTag);
+    const end = tagMatcher.findClosing(this.includeTag);
+
+    if (start === undefined || end === undefined || end === start) {
+      return {
+        start: position,
+        stop: position,
+        failed: true
+      };
+    }
+
+    let startPos = new Position(position.line, start);
+    let endPos = new Position(position.line, end - 1);
+
+    return {
+      start: startPos,
+      stop: endPos
+    };
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    const res = await this.execAction(position, vimState);
+
+    res.stop = res.stop.getRight();
+
+    return res;
+  }
+}
+
+@RegisterAction
+class MoveInsideTag extends MoveTagMatch {
+  keys = ["i", "t"];
+  includeTag = false;
+}
+
+@RegisterAction
+class MoveAroundTag extends MoveTagMatch {
+  keys = ["a", "t"];
+  includeTag = true;
 }

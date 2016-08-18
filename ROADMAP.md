@@ -404,8 +404,8 @@ Status | Command | Description
 :white_check_mark:    | :1234:  i>, i<	| Select "inner <> block"
 :white_check_mark:    | :1234:  aB, a{, a}	| Select "a Block" (from "[{" to "]}")
 :white_check_mark:    | :1234:  iB, i{, i}	| Select "inner Block" (from "[{" to "]}")
-    | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
-    | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
+:white_check_mark:    | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
+:white_check_mark:    | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
 :white_check_mark:    | :1234:  a'	| Select "a single quoted string"
 :white_check_mark:    | :1234:  i'	| Select "inner single quoted string"
 :white_check_mark:    | :1234:  a"	| Select "a double quoted string"

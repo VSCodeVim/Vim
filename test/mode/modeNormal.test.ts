@@ -1169,5 +1169,45 @@ suite("Mode Normal", () => {
       keysPressed: "C",
       end: ["export const options = {", "|", "};"],
       endMode: ModeName.Insert
-  });
+    });
+
+    newTest({
+      title: "Can do cit on a matching tag",
+      start: ["<blink>he|llo</blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Ignores cit on a non-matching tag",
+      start: ["<blink>he|llo</unblink>"],
+      keysPressed: "cit",
+      end: ["<blink>he|llo</unblink>"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Ignores cit on a nested tag",
+      start: ["<blink>he|llo<hello></blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit on a tag with an attribute tag",
+      start: ["<blink |level=\"extreme\">hello</blink>"],
+      keysPressed: "cit",
+      end: ["<blink level=\"extreme\">|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cat on a matching tag",
+      start: ["one <blink>he|llo</blink> two"],
+      keysPressed: "cat",
+      end: ["one | two"],
+      endMode: ModeName.Insert
+    });
 });
