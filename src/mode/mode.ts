@@ -9,8 +9,6 @@ export enum ModeName {
   VisualBlockInsertMode,
   SearchInProgressMode,
   Replace,
-  MultiCursorVisual,
-  MultiCursor,
 }
 
 export enum VSCodeVimCursorType {

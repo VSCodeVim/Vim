@@ -8,8 +8,6 @@ import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
-import { MultiCursorMode } from './modeMultiCursor';
-import { MultiCursorVisualMode } from './modeMultiCursorVisual';
 import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
 import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
@@ -53,6 +51,8 @@ export class VimState {
   public desiredColumn = 0;
 
   public historyTracker: HistoryTracker;
+
+  public isMultiCursor = false;
 
   /**
    * The keystroke sequence that made up our last complete action (that can be
@@ -391,8 +391,7 @@ export class RecordedState {
       mode !== ModeName.SearchInProgressMode &&
       (this.hasRunAMovement || (
       mode === ModeName.Visual ||
-      mode === ModeName.VisualLine ||
-      mode === ModeName.MultiCursorVisual ));
+      mode === ModeName.VisualLine ));
   }
 
   public get isInInitialState(): boolean {
@@ -481,8 +480,6 @@ export class ModeHandler implements vscode.Disposable {
       new VisualLineMode(),
       new SearchInProgressMode(),
       new ReplaceMode(),
-      new MultiCursorMode(),
-      new MultiCursorVisualMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
 
@@ -527,7 +524,9 @@ export class ModeHandler implements vscode.Disposable {
         // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
 
         if (e.selections.length >= 2) {
-          this._vimState.currentMode = ModeName.MultiCursorVisual;
+          this._vimState.currentMode = ModeName.Visual;
+          this._vimState.isMultiCursor = true;
+
           this.setCurrentModeByName(this._vimState);
         } else {
           // The selections ran together - go back to visual mode.
@@ -773,8 +772,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     ranRepeatableAction = ranRepeatableAction && vimState.currentMode === ModeName.Normal;
-    ranAction           = ranAction           && (vimState.currentMode === ModeName.Normal ||
-                                                  vimState.currentMode === ModeName.MultiCursor);
+    ranAction           = ranAction           && vimState.currentMode === ModeName.Normal;
 
     // Record down previous action and flush temporary state
 
@@ -1024,42 +1022,50 @@ export class ModeHandler implements vscode.Disposable {
     if (drawSelection) {
       let selections: vscode.Selection[];
 
-      if (vimState.currentMode === ModeName.Visual) {
-        selections = [ new vscode.Selection(start, stop) ];
-      } else if (vimState.currentMode === ModeName.VisualLine) {
-        selections = [ new vscode.Selection(
-          Position.EarlierOf(start, stop).getLineBegin(),
-          Position.LaterOf(start, stop).getLineEnd()
-        ) ];
-      } else if (vimState.currentMode === ModeName.VisualBlock) {
-        selections = [];
+      if (!vimState.isMultiCursor) {
+        if (vimState.currentMode === ModeName.Visual) {
+          selections = [ new vscode.Selection(start, stop) ];
+        } else if (vimState.currentMode === ModeName.VisualLine) {
+          selections = [ new vscode.Selection(
+            Position.EarlierOf(start, stop).getLineBegin(),
+            Position.LaterOf(start, stop).getLineEnd()
+          ) ];
+        } else if (vimState.currentMode === ModeName.VisualBlock) {
+          selections = [];
 
-        for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
-          selections.push(new vscode.Selection(
-            lineStart,
-            end
-          ));
-        }
-      } else if (vimState.currentMode === ModeName.MultiCursorVisual) {
-        selections = [];
-
-        for (let i = 0; i < vimState.allCursorPositions.length; i++) {
-          selections.push(new vscode.Selection(
-            vimState.allCursorStartPositions[i],
-            vimState.allCursorPositions[i]
-          ));
-        }
-      } else if (vimState.currentMode === ModeName.MultiCursor) {
-        selections = [];
-
-        for (let i = 0; i < vimState.allCursorPositions.length; i++) {
-          selections.push(new vscode.Selection(
-            vimState.allCursorPositions[i],
-            vimState.allCursorPositions[i]
-          ));
+          for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
+            selections.push(new vscode.Selection(
+              lineStart,
+              end
+            ));
+          }
+        } else {
+          selections = [ new vscode.Selection(stop, stop) ];
         }
       } else {
-        selections = [ new vscode.Selection(stop, stop) ];
+        if (vimState.currentMode === ModeName.Visual && vimState.isMultiCursor) {
+          selections = [];
+
+          for (let i = 0; i < vimState.allCursorPositions.length; i++) {
+            selections.push(new vscode.Selection(
+              vimState.allCursorStartPositions[i],
+              vimState.allCursorPositions[i]
+            ));
+          }
+        } else if (vimState.currentMode === ModeName.Normal && vimState.isMultiCursor) {
+          selections = [];
+
+          for (let i = 0; i < vimState.allCursorPositions.length; i++) {
+            selections.push(new vscode.Selection(
+              vimState.allCursorPositions[i],
+              vimState.allCursorPositions[i]
+            ));
+          }
+        } else {
+          console.error("This is pretty bad!");
+
+          selections = [];
+        }
       }
 
       this._vimState.whatILastSetTheSelectionTo = selections[0];

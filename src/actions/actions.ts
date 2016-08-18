@@ -148,8 +148,6 @@ export abstract class BaseMovement extends BaseAction {
     ModeName.Visual,
     ModeName.VisualLine,
     ModeName.VisualBlock,
-    ModeName.MultiCursor,
-    ModeName.MultiCursorVisual,
   ];
 
   isMotion = true;
@@ -412,15 +410,12 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.SearchInProgressMode,
     ModeName.Replace,
-    ModeName.MultiCursor,
-    ModeName.MultiCursorVisual,
   ];
   keys = ["<escape>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode !== ModeName.Visual &&
-        vimState.currentMode !== ModeName.VisualLine &&
-        vimState.currentMode !== ModeName.MultiCursorVisual) {
+        vimState.currentMode !== ModeName.VisualLine) {
       vimState.cursorPosition = position.getLeft();
     }
 
@@ -430,11 +425,13 @@ class CommandEsc extends BaseCommand {
       }
     }
 
-    if (vimState.currentMode === ModeName.MultiCursorVisual) {
-      vimState.currentMode = ModeName.MultiCursor;
-    } else {
-      vimState.currentMode = ModeName.Normal;
+    if (vimState.currentMode === ModeName.Normal && vimState.isMultiCursor) {
+      vimState.isMultiCursor = false;
+    }
 
+    vimState.currentMode = ModeName.Normal;
+
+    if (!vimState.isMultiCursor) {
       vimState.allCursorPositions      = [ vimState.allCursorPositions[0] ];
       vimState.allCursorStartPositions = [ vimState.allCursorStartPositions[0] ];
     }
@@ -494,7 +491,7 @@ class CommandCtrlC extends CommandEsc {
 
 @RegisterAction
 class CommandInsertAtCursor extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.MultiCursor];
+  modes = [ModeName.Normal];
   keys = ["i"];
   mustBeFirstKey = true;
 
@@ -821,7 +818,7 @@ class CommandFormatCode extends BaseCommand {
 @RegisterAction
 export class DeleteOperator extends BaseOperator {
     public keys = ["d"];
-    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.MultiCursor, ModeName.MultiCursorVisual];
+    public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     /**
      * Deletes from the position of start to 1 past the position of end.
@@ -891,10 +888,7 @@ export class DeleteOperator extends BaseOperator {
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
         const result = await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, yank);
 
-        if (vimState.currentMode !== ModeName.MultiCursor) {
-          vimState.currentMode = ModeName.Normal;
-        }
-
+        vimState.currentMode = ModeName.Normal;
         vimState.cursorPosition      = result;
         vimState.cursorStartPosition = result;
 
