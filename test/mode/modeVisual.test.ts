@@ -462,5 +462,83 @@ suite("Mode Visual", () => {
       end: ['one   two   three,   |six'],
       endMode: ModeName.Normal
     });
+
+    newTest({
+      title: "Can handle 'Y' in visual mode" ,
+      start: ['one', '|two'],
+      keysPressed: 'vwYP',
+      end: ['one', '|two', 'two'],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles as in visual mode", () => {
+    newTest({
+      title: "Select sentence with trailing spaces in visual mode",
+      start: ["That's my sec|ret, Captain. I'm always angry."],
+      keysPressed: 'vlasd',
+      end: ["That's my sec|I'm always angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select sentence with leading spaces in visual mode",
+      start: ["That's my secret, Captain. I'm a|lways angry."],
+      keysPressed: 'vhasd',
+      end: ["That's my secret, Captain.|ways angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select multiple sentences in visual mode",
+      start: ["That's my secret, Captain. I|'m always angry."],
+      keysPressed: 'vhhasd',
+      end: ["|m always angry."],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles is in visual mode", () => {
+    newTest({
+      title: "Select inner sentence with trailing spaces in visual mode",
+      start: ["That's my sec|ret, Captain. I'm always angry."],
+      keysPressed: 'vlisd',
+      end: ["That's my sec| I'm always angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select inner sentence with leading spaces in visual mode",
+      start: ["That's my secret, Captain. I'm a|lways angry."],
+      keysPressed: 'vhisd',
+      end: ["That's my secret, Captain. |ways angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select spaces between sentences in visual mode",
+      start: ["That's my secret, Captain.  |  I'm always angry."],
+      keysPressed: 'vhisd',
+      end: ["That's my secret, Captain.| I'm always angry."],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles tag blocks in visual mode", () => {
+    newTest({
+      title: "Can do vit on a matching tag",
+      start: ["one <blink>he|llo</blink> two"],
+      keysPressed: "vitd",
+      end: ["one <blink>|</blink> two"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do vat on a matching tag",
+      start: ["one <blink>he|llo</blink> two"],
+      keysPressed: "vatd",
+      end: ["one | two"],
+      endMode: ModeName.Normal
+    });
   });
 });

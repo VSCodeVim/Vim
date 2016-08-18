@@ -170,6 +170,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'dF'",
+      start: ['abcdefg|h'],
+      keysPressed: 'dFd',
+      end: ['abc|h'],
+    });
+
+    newTest({
+      title: "Can handle 'dT'",
+      start: ['abcdefg|h'],
+      keysPressed: 'dTd',
+      end: ['abcd|h'],
+    });
+
+    newTest({
       title: "Can handle 'cw'",
       start: ['text text tex|t'],
       keysPressed: '^lllllllcw',
@@ -258,9 +272,25 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'cib' on first parentheses",
+      start: ['print(|"hello")'],
+      keysPressed: 'cib',
+      end: ['print(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
+      end: ['call|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'cab' spanning multiple lines",
+      start: ['call(', '  |arg1)'],
+      keysPressed: 'cab',
       end: ['call|'],
       endMode: ModeName.Insert
     });
@@ -282,6 +312,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ciB' spanning multiple lines",
+      start: ['one {', '|', '}'],
+      keysPressed: 'ciB',
+      end: ['one {|}'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "will fail when ca( with no ()",
       start: ['|blaaah'],
       keysPressed: 'ca(',
@@ -293,6 +331,14 @@ suite("Mode Normal", () => {
       title: "will fail when ca{ with no {}",
       start: ['|blaaah'],
       keysPressed: 'ca{',
+      end: ['|blaaah'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "will fail when caB with no {}",
+      start: ['|blaaah'],
+      keysPressed: 'caB',
       end: ['|blaaah'],
       endMode: ModeName.Normal
     });
@@ -642,6 +688,47 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Select sentence with trailing spaces",
+      start: ["That's my sec|ret, Captain. I'm always angry."],
+      keysPressed: 'das',
+      end: ["|I'm always angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select sentence with leading spaces",
+      start: ["That's my secret, Captain. I'm a|lways angry."],
+      keysPressed: 'das',
+      end: ["That's my secret, Captain|."],
+      endMode: ModeName.Normal
+    });
+
+  newTest({
+    title: "Select inner sentence with trailing spaces",
+    start: ["That's my sec|ret, Captain. I'm always angry."],
+    keysPressed: 'dis',
+    end: ["| I'm always angry."],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Select inner sentence with leading spaces",
+    start: ["That's my secret, Captain. I'm a|lways angry."],
+    keysPressed: 'dis',
+    end: ["That's my secret, Captain.| "],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Select spaces between sentences",
+    start: ["That's my secret, Captain.  |  I'm always angry."],
+    keysPressed: 'visd',
+    end: ["That's my secret, Captain.|I'm always angry."],
+    endMode: ModeName.Normal
+  });
+
+
+    newTest({
       title: "Can handle 'df'",
       start: ['aext tex|t'],
       keysPressed: '^dft',
@@ -656,10 +743,31 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle backspace",
+      start: ['text |text'],
+      keysPressed: '<backspace><backspace>',
+      end: ['tex|t text']
+    });
+
+    newTest({
+      title: "Can handle backspace across lines",
+      start: ['one', '|two'],
+      keysPressed: '<backspace><backspace>',
+      end: ['o|ne', 'two']
+    });
+
+    newTest({
       title: "Can handle A and backspace",
       start: ['|text text'],
       keysPressed: 'A<backspace><escape>',
       end: ['text te|x']
+    });
+
+    newTest({
+      title: "Can handle 'yy' without changing cursor position",
+      start: ['one', 'tw|o'],
+      keysPressed: 'yy',
+      end: ['one', 'tw|o']
     });
 
     newTest({
@@ -902,6 +1010,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle guw",
+      start: ['|ABC DEF'],
+      keysPressed: 'guw',
+      end: ['|abc DEF']
+    });
+
+    newTest({
+      title: "Can handle gUw",
+      start: ['|abc def'],
+      keysPressed: 'gUw',
+      end: ['|ABC def']
+    });
+
+    newTest({
       title: "Can handle u over line breaks",
       start: ['|ABC', 'DEF'],
       keysPressed: 'vG$u',
@@ -1039,5 +1161,53 @@ suite("Mode Normal", () => {
       start: ["|one", "twooo", "thurr"],
       keysPressed: "ma/two<enter>'a",
       end: ["|one", "twooo", "thurr"]
+    });
+
+    newTest({
+      title: "Can do C",
+      start: ["export const options = {", "|", "};"],
+      keysPressed: "C",
+      end: ["export const options = {", "|", "};"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit on a matching tag",
+      start: ["<blink>he|llo</blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Ignores cit on a non-matching tag",
+      start: ["<blink>he|llo</unblink>"],
+      keysPressed: "cit",
+      end: ["<blink>he|llo</unblink>"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Ignores cit on a nested tag",
+      start: ["<blink>he|llo<hello></blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit on a tag with an attribute tag",
+      start: ["<blink |level=\"extreme\">hello</blink>"],
+      keysPressed: "cit",
+      end: ["<blink level=\"extreme\">|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cat on a matching tag",
+      start: ["one <blink>he|llo</blink> two"],
+      keysPressed: "cat",
+      end: ["one | two"],
+      endMode: ModeName.Insert
     });
 });

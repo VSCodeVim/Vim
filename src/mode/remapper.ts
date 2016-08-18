@@ -16,7 +16,10 @@ class Remapper {
 
   private _remappedModes: ModeName[];
 
-  constructor(configKey: string, remappedModes: ModeName[]) {
+  private _recursive: boolean;
+
+  constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
+    this._recursive = recursive;
     this._remappedModes = remappedModes;
     this._remappings = vscode.workspace.getConfiguration('vim')
       .get<IKeybinding[]>(configKey, []);
@@ -50,10 +53,18 @@ class Remapper {
         // if we remapped e.g. jj to esc, we have to revert the inserted "jj"
 
         if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
-          vimState.historyTracker.undoAndRemoveChanges(this._mostRecentKeys.length);
+          // we subtract 1 because we haven't actually applied the last key.
+
+          await vimState.historyTracker.undoAndRemoveChanges(Math.max(0, this._mostRecentKeys.length - 1));
+        }
+
+        if (!this._recursive) {
+          vimState.isCurrentlyPreformingRemapping = true;
         }
 
         await modeHandler.handleMultipleKeyEvents(remapping.after);
+
+        vimState.isCurrentlyPreformingRemapping = false;
 
         this._mostRecentKeys = [];
 
@@ -70,19 +81,22 @@ class Remapper {
 }
 
 export class InsertModeRemapper extends Remapper {
-  constructor() {
+  constructor(recursive: boolean) {
     super(
-      "insertModeKeyBindings",
-      [ModeName.Insert]
+      "insertModeKeyBindings" + (recursive ? "" : "NonRecursive"),
+      [ModeName.Insert],
+      recursive
     );
   }
 }
 
 export class OtherModesRemapper extends Remapper {
-  constructor() {
+  constructor(recursive: boolean) {
     super(
-      "otherModesKeyBindings",
-      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine]
+      "otherModesKeyBindings" + (recursive ? "" : "NonRecursive"),
+      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine],
+      recursive
     );
   }
 }
+

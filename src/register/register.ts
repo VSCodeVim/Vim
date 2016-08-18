@@ -10,10 +10,11 @@ export enum RegisterMode {
   FigureItOutFromCurrentMode,
   CharacterWise,
   LineWise,
+  BlockWise,
 };
 
 export interface IRegisterContent {
-  text    : string;
+  text        : string | string[];
   registerMode: RegisterMode;
 }
 
@@ -40,7 +41,7 @@ export class Register {
    * Puts content in a register. If none is specified, uses the default
    * register ".
    */
-  public static put(content: string, vimState: VimState): void {
+  public static put(content: string | string[], vimState: VimState): void {
     const register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
@@ -52,7 +53,7 @@ export class Register {
     }
 
     Register.registers[register] = {
-      text    : content,
+      text        : content,
       registerMode: vimState.effectiveRegisterMode(),
     };
   }

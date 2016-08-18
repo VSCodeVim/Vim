@@ -3,6 +3,7 @@
 import * as vscode from "vscode";
 import { ModeHandler } from './mode/modeHandler';
 import { Position } from './motion/position';
+import { Configuration } from './configuration/configuration';
 
 export class TextEditor {
   // TODO: Refactor args
@@ -40,6 +41,37 @@ export class TextEditor {
     return vscode.window.activeTextEditor.edit(editBuilder => {
       editBuilder.delete(range);
     });
+  }
+
+  static async backspace(position: Position): Promise<Position> {
+    if (position.character === 0) {
+      if (position.line > 0) {
+        const prevEndOfLine = position.getPreviousLineBegin().getLineEnd();
+
+        await TextEditor.delete(new vscode.Range(
+          position.getPreviousLineBegin().getLineEnd(),
+          position.getLineBegin()
+        ));
+
+        return prevEndOfLine;
+      } else {
+        return position;
+      }
+    } else {
+      let leftPosition = position.getLeft();
+
+      if (position.getFirstLineNonBlankChar().character >= position.character) {
+        let tabStop = vscode.workspace.getConfiguration("editor").get("useTabStops", true);
+
+        if (tabStop) {
+          leftPosition = position.getLeftTabStop();
+        }
+      }
+
+      await TextEditor.delete(new vscode.Range(position, leftPosition));
+
+      return leftPosition;
+    }
   }
 
   static getDocumentVersion(): number {
@@ -117,7 +149,7 @@ export class TextEditor {
   }
 
   static getIndentationLevel(line: string): number {
-    let tabSize = vscode.workspace.getConfiguration("editor").get<number>("tabSize");
+    let tabSize = Configuration.getInstance().tabstop;
     let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
     let visibleColumn: number = 0;
 
@@ -142,8 +174,8 @@ export class TextEditor {
   }
 
   static setIndentationLevel(line: string, screenCharacters: number): string {
-    let tabSize = <number> vscode.window.activeTextEditor.options.tabSize;
-    let insertTabAsSpaces = <boolean> vscode.window.activeTextEditor.options.insertSpaces;
+    let tabSize = Configuration.getInstance().tabstop;
+    let insertTabAsSpaces = Configuration.getInstance().expandtab;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;

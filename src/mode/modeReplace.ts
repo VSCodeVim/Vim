@@ -3,12 +3,11 @@
 import { ModeName, Mode } from './mode';
 import { VSCodeVimCursorType } from './mode';
 
-export class VisualMode extends Mode {
-  public text = "Visual Mode";
+export class ReplaceMode extends Mode {
+  public text = "Replace";
   public cursorType = VSCodeVimCursorType.TextDecoration;
-  public isVisualMode = true;
 
   constructor() {
-    super(ModeName.Visual);
+    super(ModeName.Replace);
   }
 }

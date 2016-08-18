@@ -41,7 +41,7 @@ When submitting a PR, ensure:
 
 ## Developing
 
-1. Watch for changes and recompile Typescript files. Run this in the `Vim` directory: `npm run compile`
+1. Watch for changes and recompile Typescript files. Run this in the `Vim` directory: `gulp watch`
 2. Open up Visual Studio code and add the `Vim` directory as a folder. 
 3. Click on the debugger. You now have two options - Launch Extension (to play around with the extension) and Launch Tests (to run the tests). 
 

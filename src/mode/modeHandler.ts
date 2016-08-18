@@ -8,7 +8,10 @@ import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
+import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
+import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
+import { ReplaceMode } from './modeReplace';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
@@ -20,6 +23,7 @@ import {
 import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
+import { Configuration } from '../../src/configuration/configuration';
 
 export enum VimSpecialCommands {
   Nothing,
@@ -59,6 +63,11 @@ export class VimState {
   public focusChanged = false;
 
   /**
+   * Used to prevent non-recursive remappings from looping.
+   */
+  public isCurrentlyPreformingRemapping = false;
+
+  /**
    * The current full action we are building up.
    */
   public currentFullAction: string[] = [];
@@ -84,10 +93,16 @@ export class VimState {
 
   public searchState: SearchState | undefined = undefined;
 
+  public replaceState: ReplaceState | undefined = undefined;
+
   /**
    * The mode Vim will be in once this action finishes.
    */
   public currentMode = ModeName.Normal;
+
+  public getModeObject(modeHandler: ModeHandler): Mode {
+    return modeHandler.modeList.find(mode => mode.isActive);
+  }
 
   public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
@@ -95,6 +110,8 @@ export class VimState {
     if (this.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
       if (this.currentMode === ModeName.VisualLine) {
         return RegisterMode.LineWise;
+      } else if (this.currentMode === ModeName.VisualBlock || this.currentMode === ModeName.VisualBlockInsertMode) {
+        return RegisterMode.BlockWise;
       } else {
         return RegisterMode.CharacterWise;
       }
@@ -104,9 +121,27 @@ export class VimState {
   }
 
   /**
+   * The top left of a selected block of text. Useful for Visual Block mode.
+   */
+  public get topLeft(): Position {
+    return VisualBlockMode.getTopLeftPosition(this.cursorStartPosition, this.cursorPosition);
+  }
+
+  /**
+   * The bottom right of a selected block of text. Useful for Visual Block mode.
+   */
+  public get bottomRight(): Position {
+    return VisualBlockMode.getBottomRightPosition(this.cursorStartPosition, this.cursorPosition);
+  }
+
+  public registerName = '"';
+
+  /**
    * This is for oddball commands that don't manipulate text in any way.
    */
   public commandAction = VimSpecialCommands.Nothing;
+
+  public commandInitialText = "";
 
   public recordedState = new RecordedState();
 
@@ -116,14 +151,6 @@ export class VimState {
    * by us or by a mouse action.
    */
   public whatILastSetTheSelectionTo: vscode.Selection;
-
-  public settings = new VimSettings();
-}
-
-export class VimSettings {
-  useSolidBlockCursor = false;
-  scroll        = 20;
-  useCtrlKeys     = false;
 }
 
 export enum SearchDirection {
@@ -133,6 +160,7 @@ export enum SearchDirection {
 
 export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
+  private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
   /**
    * Every range in the document that matches the search string.
@@ -172,21 +200,39 @@ export class SearchState {
       this._matchesDocVersion = TextEditor.getDocumentVersion();
       this._matchRanges = [];
 
+      /* Decide whether the search is case sensitive.
+       * If ignorecase is false, the search is case sensitive.
+       * If ignorecase is true, the search should be case insensitive.
+       * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
+       */
+      let ignorecase = Configuration.getInstance().ignorecase;
+
+      if (ignorecase && Configuration.getInstance().smartcase && /[A-Z]/.test(search)) {
+        ignorecase = false;
+      }
+
+      const regex = new RegExp(search.replace(SearchState.specialCharactersRegex, "\\$&"), ignorecase ? 'gi' : 'g');
+
       outer:
       for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
         const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+        let result = regex.exec(line);
 
-        let i = line.indexOf(search);
-
-        for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+        while (result) {
           if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
             break outer;
           }
 
-          this._matchRanges.push(new vscode.Range(
-            new Position(lineIdx, i),
-            new Position(lineIdx, i + search.length)
+          this.matchRanges.push(new vscode.Range(
+            new Position(lineIdx, result.index),
+            new Position(lineIdx, result.index + search.length)
           ));
+
+          if (result.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+
+          result = regex.exec(line);
         }
       }
     }
@@ -239,6 +285,24 @@ export class SearchState {
   }
 }
 
+export class ReplaceState {
+  private _replaceCursorStartPosition: Position;
+
+  public get replaceCursorStartPosition() {
+    return this._replaceCursorStartPosition;
+  }
+
+  public originalChars: string[] = [];
+
+  constructor(startPosition: Position) {
+    this._replaceCursorStartPosition = startPosition;
+    let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
+    for (let [key, value] of text.split("").entries()) {
+      this.originalChars[key + startPosition.character] = value;
+    }
+  }
+}
+
 /**
  * The RecordedState class holds the current action that the user is
  * doing. Example: Imagine that the user types:
@@ -271,6 +335,8 @@ export class RecordedState {
   public actionsRun: BaseAction[] = [];
 
   public hasRunOperator = false;
+
+  public visualBlockInsertionType = VisualBlockInsertionType.Insert;
 
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
@@ -358,6 +424,9 @@ export class ModeHandler implements vscode.Disposable {
   private _vimState: VimState;
   private _insertModeRemapper: InsertModeRemapper;
   private _otherModesRemapper: OtherModesRemapper;
+  private _otherModesNonRecursive: OtherModesRemapper;
+  private _insertModeNonRecursive: InsertModeRemapper;
+
 
   public get vimState(): VimState {
     return this._vimState;
@@ -388,6 +457,10 @@ export class ModeHandler implements vscode.Disposable {
     return this.currentMode.name;
   }
 
+  public get modeList(): Mode[] {
+    return this._modes;
+  }
+
   /**
    * isTesting speeds up tests drastically by turning off our checks for
    * mouse events.
@@ -398,14 +471,20 @@ export class ModeHandler implements vscode.Disposable {
     this.filename = filename;
 
     this._vimState = new VimState();
-    this._insertModeRemapper = new InsertModeRemapper();
-    this._otherModesRemapper = new OtherModesRemapper();
+    this._insertModeRemapper = new InsertModeRemapper(true);
+    this._otherModesRemapper = new OtherModesRemapper(true);
+    this._insertModeNonRecursive = new InsertModeRemapper(false);
+    this._otherModesNonRecursive = new OtherModesRemapper(false);
+
     this._modes = [
       new NormalMode(this),
       new InsertMode(),
       new VisualMode(),
+      new VisualBlockMode(),
+      new InsertVisualBlockMode(),
       new VisualLineMode(),
       new SearchInProgressMode(),
+      new ReplaceMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
 
@@ -422,8 +501,6 @@ export class ModeHandler implements vscode.Disposable {
       this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
 
-    this.loadSettings();
-
     // Handle scenarios where mouse used to change current position.
     vscode.window.onDidChangeTextEditorSelection(async (e) => {
       let selection = e.selections[0];
@@ -433,6 +510,12 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (e.textEditor.document.fileName !== this.filename) {
+        return;
+      }
+
+      if (this.currentModeName === ModeName.VisualBlock) {
+        // Not worth it until we get a better API for this stuff.
+
         return;
       }
 
@@ -446,7 +529,8 @@ export class ModeHandler implements vscode.Disposable {
         return;
       }
 
-      if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
+      if (this._vimState.currentMode === ModeName.SearchInProgressMode ||
+          this._vimState.currentMode === ModeName.VisualBlockInsertMode) {
         return;
       }
 
@@ -477,9 +561,7 @@ export class ModeHandler implements vscode.Disposable {
             this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
           }
 
-          if (this._vimState.currentMode !== ModeName.Visual &&
-            this._vimState.currentMode !== ModeName.VisualLine) {
-
+          if (!this._vimState.getModeObject(this).isVisualMode) {
             this._vimState.currentMode = ModeName.Visual;
             this.setCurrentModeByName(this._vimState);
           }
@@ -493,13 +575,6 @@ export class ModeHandler implements vscode.Disposable {
         await this.updateView(this._vimState, false);
       }
     });
-  }
-
-  private loadSettings(): void {
-    this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
-      .get("useSolidBlockCursor", false);
-    this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
-    this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
   }
 
   /**
@@ -528,6 +603,8 @@ export class ModeHandler implements vscode.Disposable {
     if (key === "<c-a>") { key = "ctrl+a"; } // TODO - temporary hack for tests only!
     if (key === "<c-x>") { key = "ctrl+x"; } // TODO - temporary hack for tests only!
 
+    if (key === "<esc>") { key = "<escape>"; }
+
     // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
     // We'll try to mitigate this problem until it's fixed upstream.
     // https://github.com/Microsoft/vscode/issues/713
@@ -536,9 +613,13 @@ export class ModeHandler implements vscode.Disposable {
 
     try {
       let handled = false;
-
-      handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
-      handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
+      if (!this._vimState.isCurrentlyPreformingRemapping) {
+        // Non-recursive remapping do not allow for further mappings
+        handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
+        handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
+        handled = handled || await this._insertModeNonRecursive.sendKey(key, this, this.vimState);
+        handled = handled || await this._otherModesNonRecursive.sendKey(key, this, this.vimState);
+      }
 
       if (!handled) {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
@@ -586,7 +667,10 @@ export class ModeHandler implements vscode.Disposable {
 
     const movement = action instanceof BaseMovement ? action : undefined;
 
-    if ((movement && !movement.doesntChangeDesiredColumn) || recordedState.command) {
+    if ((movement && !movement.doesntChangeDesiredColumn) ||
+        (recordedState.command &&
+         vimState.currentMode !== ModeName.VisualBlock &&
+         vimState.currentMode !== ModeName.VisualBlockInsertMode)) {
       // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
 
       if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
@@ -777,8 +861,7 @@ export class ModeHandler implements vscode.Disposable {
       [start, stop] = [stop, start];
     }
 
-    if (vimState.currentMode         !== ModeName.Visual &&
-        vimState.currentMode         !== ModeName.VisualLine &&
+    if (!this._vimState.getModeObject(this).isVisualMode &&
         vimState.currentRegisterMode !== RegisterMode.LineWise) {
 
       if (Position.EarlierOf(start, stop) === start) {
@@ -805,7 +888,7 @@ export class ModeHandler implements vscode.Disposable {
 
     switch (command) {
       case VimSpecialCommands.ShowCommandLine:
-        await showCmdLine("", this);
+        await showCmdLine(vimState.commandInitialText, this);
       break;
       case VimSpecialCommands.Dot:
         if (!vimState.previousFullAction) {
@@ -869,20 +952,30 @@ export class ModeHandler implements vscode.Disposable {
     // Draw selection (or cursor)
 
     if (drawSelection) {
-      let selection: vscode.Selection;
+      let selections: vscode.Selection[];
 
       if (vimState.currentMode === ModeName.Visual) {
-        selection = new vscode.Selection(start, stop);
+        selections = [ new vscode.Selection(start, stop) ];
       } else if (vimState.currentMode === ModeName.VisualLine) {
-        selection = new vscode.Selection(
+        selections = [ new vscode.Selection(
           Position.EarlierOf(start, stop).getLineBegin(),
-          Position.LaterOf(start, stop).getLineEnd());
+          Position.LaterOf(start, stop).getLineEnd()
+        ) ];
+      } else if (vimState.currentMode === ModeName.VisualBlock) {
+        selections = [];
+
+        for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
+          selections.push(new vscode.Selection(
+            lineStart,
+            end
+          ));
+        }
       } else {
-        selection = new vscode.Selection(stop, stop);
+        selections = [ new vscode.Selection(stop, stop) ];
       }
 
-      this._vimState.whatILastSetTheSelectionTo = selection;
-      vscode.window.activeTextEditor.selection = selection;
+      this._vimState.whatILastSetTheSelectionTo = selections[0];
+      vscode.window.activeTextEditor.selections = selections;
     }
 
     // Scroll to position of cursor
@@ -893,7 +986,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    if (vimState.settings.useSolidBlockCursor) {
+    if (Configuration.getInstance().useSolidBlockCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
         rangesToDraw.push(new vscode.Range(
           vimState.cursorPosition,
@@ -906,7 +999,8 @@ export class ModeHandler implements vscode.Disposable {
       const options = vscode.window.activeTextEditor.options;
 
       options.cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-                  this.currentMode.name     !== ModeName.Insert ?
+                            this.currentMode.name       !== ModeName.VisualBlockInsertMode &&
+                            this.currentMode.name       !== ModeName.Insert ?
         vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
       vscode.window.activeTextEditor.options = options;
     }
@@ -933,7 +1027,8 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw search highlight
 
-    if (this.currentMode.name === ModeName.SearchInProgressMode) {
+    if (this.currentMode.name === ModeName.SearchInProgressMode ||
+      (Configuration.getInstance().hlsearch && vimState.searchState)) {
       const searchState = vimState.searchState!;
 
       rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
@@ -956,7 +1051,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
-    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', this.vimState.settings.useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().useCtrlKeys);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {

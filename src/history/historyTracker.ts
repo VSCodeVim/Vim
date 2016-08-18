@@ -16,7 +16,10 @@ import * as _ from "lodash";
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
 
-import jsdiff = require('diff');
+import DiffMatchPatch = require("diff-match-patch");
+
+const diffEngine = new DiffMatchPatch.diff_match_patch();
+diffEngine.Diff_Timeout = 1000;
 
 export class DocumentChange {
   start : Position;
@@ -339,17 +342,29 @@ export class HistoryTracker {
     // multiple changes in different places simultaneously. For those, we could require
     // them to call addChange manually, I guess...
 
-    const diffs = jsdiff.diffChars(this.oldText, newText);
+    const diffs = diffEngine.diff_main(this.oldText, newText);
+
+    /*
+    this.historySteps.push(new HistoryStep({
+      changes  : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
+      isFinished : true,
+      cursorStart: new Position(0, 0)
+    }));
+    */
 
     let currentPosition = new Position(0, 0);
 
     for (const diff of diffs) {
+      const [whatHappened, text] = diff;
+      const added   = whatHappened === DiffMatchPatch.DIFF_INSERT;
+      const removed = whatHappened === DiffMatchPatch.DIFF_DELETE;
+
       let change: DocumentChange;
       // let lastChange = this.currentHistoryStep.changes.length > 1 &&
       //   this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 2];
 
-      if (diff.added || diff.removed) {
-        change = new DocumentChange(currentPosition, diff.value, !!diff.added);
+      if (added || removed) {
+        change = new DocumentChange(currentPosition, text, !!added);
 
         this.currentHistoryStep.changes.push(change);
 
@@ -358,8 +373,8 @@ export class HistoryTracker {
         }
       }
 
-      if (!diff.removed) {
-        currentPosition = currentPosition.advancePositionByText(diff.value);
+      if (!removed) {
+        currentPosition = currentPosition.advancePositionByText(text);
       }
     }
 
@@ -377,8 +392,10 @@ export class HistoryTracker {
     }
 
     for (let i = 0; i < n; i++) {
-      this.currentHistoryStep.changes.pop().undo();
+      await this.currentHistoryStep.changes.pop().undo();
     }
+
+    this.ignoreChange();
   }
 
   /**
@@ -454,7 +471,7 @@ export class HistoryTracker {
     step = this.currentHistoryStep;
 
     for (const change of step.changes) {
-      await change!.do();
+      await change.do();
     }
 
     return step.cursorStart;

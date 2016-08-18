@@ -189,13 +189,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
   for (let { key } of packagejson.contributes.keybindings) {
     if (key.startsWith("ctrl+")) {
-      registerCommand(context, `extension.vim_${ key }`, () => handleKeyEvent(`ctrl+${ key }`));
+      registerCommand(context, `extension.vim_${ key }`, () => handleKeyEvent(key));
     } else {
       let bracketedKey = `<${ key.toLowerCase() }>`;
 
       registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
     }
   }
+
+  registerCommand(context, `extension.vim_esc`, () => handleKeyEvent(`<escape>`));
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
