@@ -1140,7 +1140,7 @@ export class ModeHandler implements vscode.Disposable {
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
     } else {
-      this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
+      this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } ${ this._vimState.isMultiCursor ? 'MULTI CURSOR' : '' } --`);
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
