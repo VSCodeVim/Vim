@@ -891,8 +891,12 @@ export class DeleteOperator extends BaseOperator {
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
         const result = await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, yank);
 
-        vimState.currentMode = ModeName.Normal;
-        vimState.cursorPosition = result;
+        if (vimState.currentMode !== ModeName.MultiCursor) {
+          vimState.currentMode = ModeName.Normal;
+        }
+
+        vimState.cursorPosition      = result;
+        vimState.cursorStartPosition = result;
 
         return vimState;
     }

@@ -895,9 +895,14 @@ export class ModeHandler implements vscode.Disposable {
     const cachedMode     = this._vimState.getModeObject(this);
     const cachedRegister = vimState.currentRegisterMode;
 
+    const resultingCursorPositions     : Position[] = [];
+    const resultingCursorStartPositions: Position[] = [];
+
     for (let i = 0; i < vimState.allCursorPositions.length; i++) {
       let start         = vimState.allCursorStartPositions[i];
       let stop          = vimState.allCursorPositions[i];
+
+      console.log(start.toString(), stop.toString());
 
       if (start.compareTo(stop) > 0) {
         [start, stop] = [stop, start];
@@ -919,7 +924,29 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       resultVimState = await recordedState.operator.run(resultVimState, start, stop);
+
+      resultingCursorStartPositions.push(resultVimState.cursorStartPosition);
+      resultingCursorPositions     .push(resultVimState.cursorPosition);
     }
+
+    // Keep track of all cursors (in the case of multi-cursor).
+
+    resultVimState.allCursorPositions      = resultingCursorPositions;
+    resultVimState.allCursorStartPositions = resultingCursorStartPositions;
+
+    const selections: vscode.Selection[] = [];
+
+    for (let i = 0; i < resultingCursorPositions.length; i++) {
+      console.log(resultingCursorStartPositions[i])
+      console.log(resultingCursorPositions[i])
+
+      selections.push(new vscode.Selection(
+        resultingCursorStartPositions[i],
+        resultingCursorPositions[i],
+      ));
+    }
+
+    vscode.window.activeTextEditor.selections = selections;
 
     return resultVimState;
   }
