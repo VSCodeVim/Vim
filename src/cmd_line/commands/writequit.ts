@@ -39,9 +39,9 @@ export class WriteQuitCommand extends node.CommandBase {
 
   // Writing command. Taken as a basis from the "write.ts" file.
   execute(modeHandler : ModeHandler) : void {
-    var filename : RegExp = new RegExp("Untitled-[0-9]*");
-    if (!this.activeTextEditor.document.isDirty) {
-      if (filename.test(this.activeTextEditor.document.fileName)) {
+    if (this.activeTextEditor.document.isDirty) {
+
+      if (this.activeTextEditor.document.isUntitled) {
         vscode.commands.executeCommand("workbench.action.files.saveAs");
       } else {
         vscode.commands.executeCommand("workbench.action.files.save");
