@@ -1467,19 +1467,6 @@ class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
 }
 
 @RegisterAction
-class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
-  keys = ["o"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    [vimState.cursorStartPosition, vimState.cursorPosition] =
-    [vimState.cursorPosition, vimState.cursorStartPosition];
-
-    return vimState;
-  }
-}
-
-@RegisterAction
 class CommandUndo extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["u"];
