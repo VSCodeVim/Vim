@@ -36,9 +36,11 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 
 #### `j`, `k` and others don't repeat when I hold them down.
 
-On OS X, run the following command:
+On OS X, open Terminal and run the following command:
 
-`defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
+```
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+```
 
 #### How can I bind `jj` to `<escape>`?
 
