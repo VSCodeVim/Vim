@@ -494,7 +494,7 @@ class CommandCtrlC extends CommandEsc {
 
 @RegisterAction
 class CommandInsertAtCursor extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.MultiCursor];
   keys = ["i"];
   mustBeFirstKey = true;
 

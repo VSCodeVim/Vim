@@ -502,7 +502,7 @@ export class ModeHandler implements vscode.Disposable {
     this.loadSettings();
 
     // Handle scenarios where mouse used to change current position.
-    vscode.window.onDidChangeTextEditorSelection(async (e) => {
+    vscode.window.onDidChangeTextEditorSelection(async (e: vscode.TextEditorSelectionChangeEvent) => {
       let selection = e.selections[0];
 
       if (isTesting) {
@@ -518,6 +518,8 @@ export class ModeHandler implements vscode.Disposable {
 
         return;
       }
+
+      console.log("!", e.kind);
 
       if (this._vimState.currentMode !== ModeName.VisualBlock           &&
           this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
@@ -771,7 +773,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     ranRepeatableAction = ranRepeatableAction && vimState.currentMode === ModeName.Normal;
-    ranAction       = ranAction       && vimState.currentMode === ModeName.Normal;
+    ranAction           = ranAction           && (vimState.currentMode === ModeName.Normal ||
+                                                  vimState.currentMode === ModeName.MultiCursor);
 
     // Record down previous action and flush temporary state
 
