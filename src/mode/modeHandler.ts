@@ -11,6 +11,7 @@ import { InsertMode } from './modeInsert';
 import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
 import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
+import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
@@ -499,111 +500,124 @@ export class ModeHandler implements vscode.Disposable {
     this.loadSettings();
 
     // Handle scenarios where mouse used to change current position.
-    vscode.window.onDidChangeTextEditorSelection(async (e: vscode.TextEditorSelectionChangeEvent) => {
-      let selection = e.selections[0];
-
-      if (isTesting) {
-        return;
-      }
-
-      if (e.textEditor.document.fileName !== this.filename) {
-        return;
-      }
-
-      if (this._vimState.focusChanged) {
-        this._vimState.focusChanged = false;
-
-        return;
-      }
-
-      console.log("!", e.kind);
-
-      if (this._vimState.currentMode !== ModeName.VisualBlock           &&
-          this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
-        e.selections.length !== this._vimState.allCursorPositions.length) {
-        // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
-
-        if (e.selections.length >= 2) {
-          this._vimState.currentMode = ModeName.Visual;
-          this._vimState.isMultiCursor = true;
-
-          this.setCurrentModeByName(this._vimState);
-        } else {
-          // The selections ran together - go back to visual mode.
-          this._vimState.currentMode = ModeName.Visual;
-          this.setCurrentModeByName(this._vimState);
-        }
-
-        this._vimState.allCursorPositions = [];
-        this._vimState.allCursorStartPositions = [];
-
-        for (let i = 0; i < e.selections.length; i++) {
-          this._vimState.allCursorPositions.push(Position.FromVSCodePosition(e.selections[i].end));
-          this._vimState.allCursorStartPositions.push(Position.FromVSCodePosition(e.selections[i].start));
-        }
-
-        await this.updateView(this._vimState);
-
-        return;
-      }
-
-      if (this.currentModeName === ModeName.VisualBlock) {
-        // Not worth it until we get a better API for this stuff.
-
-        return;
-      }
-
-      // See comment about whatILastSetTheSelectionTo.
-      if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
-        return;
-      }
-
-      if (this._vimState.currentMode === ModeName.SearchInProgressMode ||
-          this._vimState.currentMode === ModeName.VisualBlockInsertMode) {
-        return;
-      }
-
-      if (selection) {
-        var newPosition = new Position(selection.active.line, selection.active.character);
-
-        if (newPosition.character >= newPosition.getLineEnd().character) {
-           newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character, 0));
-        }
-
-        this._vimState.cursorPosition    = newPosition;
-        this._vimState.cursorStartPosition = newPosition;
-
-        this._vimState.desiredColumn     = newPosition.character;
-
-        // start visual mode?
-
-        if (!selection.anchor.isEqual(selection.active)) {
-          var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
-
-          if (selectionStart.character > selectionStart.getLineEnd().character) {
-            selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
-          }
-
-          this._vimState.cursorStartPosition = selectionStart;
-
-          if (selectionStart.compareTo(newPosition) > 0) {
-            this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
-          }
-
-          if (!this._vimState.getModeObject(this).isVisualMode) {
-            this._vimState.currentMode = ModeName.Visual;
-            this.setCurrentModeByName(this._vimState);
-          }
-        } else {
-          if (this._vimState.currentMode !== ModeName.Insert) {
-            this._vimState.currentMode = ModeName.Normal;
-            this.setCurrentModeByName(this._vimState);
-          }
-        }
-
-        await this.updateView(this._vimState, false);
-      }
+    vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
+      taskQueue.enqueueTask({
+        promise: () => this.handleSelectionChange(e),
+        isRunning: false,
+      });
     });
+  }
+
+  private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
+    let selection = e.selections[0];
+
+    console.log(e.kind);
+
+    if (ModeHandler.IsTesting) {
+      return;
+    }
+
+    if (e.textEditor.document.fileName !== this.filename) {
+      return;
+    }
+
+    if (this._vimState.focusChanged) {
+      this._vimState.focusChanged = false;
+
+      return;
+    }
+
+    if (this._vimState.currentMode !== ModeName.VisualBlock           &&
+        this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
+      e.selections.length !== this._vimState.allCursorPositions.length) {
+      // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
+
+      console.log('do the thinggg');
+
+      if (e.selections.length >= 2) {
+        this._vimState.currentMode = ModeName.Visual;
+        this._vimState.isMultiCursor = true;
+
+        this.setCurrentModeByName(this._vimState);
+      } else {
+        // The selections ran together - go back to visual mode.
+        this._vimState.currentMode = ModeName.Visual;
+        this.setCurrentModeByName(this._vimState);
+      }
+
+      this._vimState.allCursorPositions = [];
+      this._vimState.allCursorStartPositions = [];
+
+      for (let i = 0; i < e.selections.length; i++) {
+        this._vimState.allCursorPositions.push(Position.FromVSCodePosition(e.selections[i].end));
+        this._vimState.allCursorStartPositions.push(Position.FromVSCodePosition(e.selections[i].start));
+      }
+
+      await this.updateView(this._vimState);
+
+      return;
+    }
+
+    if (this._vimState.isMultiCursor) {
+      return;
+    }
+
+    if (this.currentModeName === ModeName.VisualBlock) {
+      // Not worth it until we get a better API for this stuff.
+
+      return;
+    }
+
+    // See comment about whatILastSetTheSelectionTo.
+    if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
+      return;
+    }
+
+    if (this._vimState.currentMode === ModeName.SearchInProgressMode ||
+        this._vimState.currentMode === ModeName.VisualBlockInsertMode) {
+      return;
+    }
+
+    if (selection) {
+      var newPosition = new Position(selection.active.line, selection.active.character);
+
+      if (newPosition.character >= newPosition.getLineEnd().character) {
+          newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character, 0));
+      }
+
+      this._vimState.cursorPosition    = newPosition;
+      this._vimState.cursorStartPosition = newPosition;
+
+      this._vimState.desiredColumn     = newPosition.character;
+
+      // start visual mode?
+
+      if (!selection.anchor.isEqual(selection.active)) {
+        var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
+
+        if (selectionStart.character > selectionStart.getLineEnd().character) {
+          selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
+        }
+
+        this._vimState.cursorStartPosition = selectionStart;
+
+        if (selectionStart.compareTo(newPosition) > 0) {
+          this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
+        }
+
+        if (!this._vimState.getModeObject(this).isVisualMode) {
+          this._vimState.currentMode = ModeName.Visual;
+          this.setCurrentModeByName(this._vimState);
+        }
+      } else {
+        if (this._vimState.currentMode !== ModeName.Insert) {
+          this._vimState.currentMode = ModeName.Normal;
+          this.setCurrentModeByName(this._vimState);
+        }
+      }
+
+      await this.updateView(this._vimState, false);
+    }
   }
 
   private loadSettings(): void {
@@ -1043,7 +1057,9 @@ export class ModeHandler implements vscode.Disposable {
           selections = [ new vscode.Selection(stop, stop) ];
         }
       } else {
-        if (vimState.currentMode === ModeName.Visual && vimState.isMultiCursor) {
+        // MultiCursor is true.
+
+        if (vimState.currentMode === ModeName.Visual) {
           selections = [];
 
           for (let i = 0; i < vimState.allCursorPositions.length; i++) {
@@ -1052,7 +1068,8 @@ export class ModeHandler implements vscode.Disposable {
               vimState.allCursorPositions[i]
             ));
           }
-        } else if (vimState.currentMode === ModeName.Normal && vimState.isMultiCursor) {
+        } else if (vimState.currentMode === ModeName.Normal ||
+                   vimState.currentMode === ModeName.Insert) {
           selections = [];
 
           for (let i = 0; i < vimState.allCursorPositions.length; i++) {

@@ -245,6 +245,13 @@ export abstract class BaseCommand extends BaseAction {
    */
   isCompleteAction = true;
 
+  supportsMultiCursor = true;
+
+  /**
+   * In multi-cursor mode, do we run this command for every cursor, or just once?
+   */
+  runsOnceForEveryCursor = true;
+
   canBePrefixedWithCount = false;
 
   canBeRepeatedWithDot = false;
@@ -260,11 +267,25 @@ export abstract class BaseCommand extends BaseAction {
    * Run the command the number of times VimState wants us to.
    */
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let timesToRepeat     = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let numCursorsToRunOn = this.runsOnceForEveryCursor ? vimState.allCursorPositions.length : 1;
+    let allCursors        = vimState.allCursorPositions     .slice(0);
+    let allStartCursors   = vimState.allCursorStartPositions.slice(0);
 
-    for (let i = 0; i < timesToRepeat; i++) {
-      vimState = await this.exec(position, vimState);
+    for (let i = 0; i < numCursorsToRunOn; i++) {
+      for (let j = 0; j < timesToRepeat; j++) {
+        vimState.cursorPosition      = allCursors[i];
+        vimState.cursorStartPosition = allStartCursors[i];
+
+        vimState = await this.exec(allCursors[i], vimState);
+
+        allCursors[i]      = vimState.cursorPosition;
+        allStartCursors[i] = vimState.cursorStartPosition;
+      }
     }
+
+    vimState.allCursorPositions      = allCursors;
+    vimState.allCursorStartPositions = allStartCursors;
 
     return vimState;
   }
@@ -412,8 +433,11 @@ class CommandEsc extends BaseCommand {
     ModeName.Replace,
   ];
   keys = ["<escape>"];
+  runsOnceForEveryCursor = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    console.log('exec!');
+
     if (vimState.currentMode !== ModeName.Visual &&
         vimState.currentMode !== ModeName.VisualLine) {
       vimState.cursorPosition = position.getLeft();
@@ -743,7 +767,9 @@ class CommandInsertInInsertMode extends BaseCommand {
   // The hard case is . where we have to track cursor pos since we don't
   // update the view
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char   = this.keysPressed[this.keysPressed.length - 1];
+    const char = this.keysPressed[this.keysPressed.length - 1];
+
+    console.log('start! ', vimState.cursorPosition.toString(), vimState.cursorStartPosition.toString());
 
     if (char === "<backspace>") {
       const newPosition = await TextEditor.backspace(position);
@@ -751,11 +777,18 @@ class CommandInsertInInsertMode extends BaseCommand {
       vimState.cursorPosition = newPosition;
       vimState.cursorStartPosition = newPosition;
     } else {
-      await TextEditor.insert(char, vimState.cursorPosition);
+      await TextEditor.insert(char, position, !vimState.isMultiCursor);
 
-      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      if (vimState.isMultiCursor) {
+        vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
+        vimState.cursorPosition      = vimState.cursorPosition.getRight();
+      } else {
+        vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      }
     }
+
+    console.log('done! ', vimState.cursorPosition.toString(), vimState.cursorStartPosition.toString());
 
     return vimState;
   }

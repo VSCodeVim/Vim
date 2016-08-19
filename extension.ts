@@ -10,7 +10,7 @@
 import * as vscode from 'vscode';
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
-import { TaskQueue } from './src/taskQueue';
+import { taskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
 
 interface VSCodeKeybinding {
@@ -63,8 +63,6 @@ let extensionContext: vscode.ExtensionContext;
  */
 let modeHandlerToEditorIdentity: { [key: string]: ModeHandler } = {};
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
-
-let taskQueue = new TaskQueue();
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
