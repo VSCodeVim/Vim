@@ -404,8 +404,8 @@ Status | Command | Description
 :white_check_mark:    | :1234:  i>, i<	| Select "inner <> block"
 :white_check_mark:    | :1234:  aB, a{, a}	| Select "a Block" (from "[{" to "]}")
 :white_check_mark:    | :1234:  iB, i{, i}	| Select "inner Block" (from "[{" to "]}")
-:white_check_mark:    | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
-:white_check_mark:    | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
+:white_check_mark:    | :1234:  at	| Select "a tag block" (from &lt;aaa&gt; to &lt;/aaa&gt;)
+:white_check_mark:    | :1234:  it	| Select "inner tag block" (from &lt;aaa&gt; to &lt;/aaa&gt;)
 :white_check_mark:    | :1234:  a'	| Select "a single quoted string"
 :white_check_mark:    | :1234:  i'	| Select "inner single quoted string"
 :white_check_mark:    | :1234:  a"	| Select "a double quoted string"
@@ -456,13 +456,13 @@ Since the list is too long, now we just put those already supported options here
 
 Status | Command | Default Value | Description
 ---|--------|-------|------------------------------
-:white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that <Tab> in file uses
+:white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that &lt;Tab&gt; in file uses
 :white_check_mark:| :white_check_mark:| hlsearch (hls) | false | When there is a previous search pattern, highlight all its matches.
 :white_check_mark:| ignorecase (ic) | false | Ignore case in search patterns.
 :white_check_mark:| smartcase (scs) | false | Override the 'ignorecase' option if the search pattern contains upper case characters.
 :white_check_mark:| iskeyword (isk) | `@,48-57,_,128-167,224-235` | keywords contain alphanumeric characters and '_'. If there is no user setting for `iskeyword`, we use `editor.wordSeparators` properties.
 :white_check_mark:| scroll (scr) | 20 | Number of lines to scroll with CTRL-U and CTRL-D commands.
-:white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when <Tab> is inserted
+:white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted
 
 ---
 
@@ -510,7 +510,7 @@ Status | Command | Description
 Status | Command | Description
 ---|--------|------------------------------
 :warning:   | :e[dit] {file}  | Edit {file}. We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
-:warning:   | <ctrl-w> hl  | Switching between windows. As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
+:warning:   | &lt;ctrl-w&gt; hl  | Switching between windows. As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
 :x:   | :sp {file}  | Split current window in two. VS Code doesn't support split Window horizontally.
    | :vsp {file}  | Split vertically current window in two.
 :x:   | :new | Create a new window horizontally and start editing an empty file in it.
@@ -521,10 +521,10 @@ Status | Command | Description
 Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:   | :tabn[ext] :1234:	    | Go to next tab page or tab page {count}.  The first tab page has number one.
-    | {count}<C-PageDown>, {count}gt | Same as above
+    | {count}&lt;C-PageDown&gt;, {count}gt | Same as above
 :white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
 :white_check_mark:   | :tabN[ext]	:1234:  | Same as above
-    | {count}<C-PageUp>, {count}gT | Same as above
+    | {count}&lt;C-PageUp&gt;, {count}gT | Same as above
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
 :warning:   | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page
