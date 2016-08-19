@@ -250,7 +250,9 @@ export abstract class BaseCommand extends BaseAction {
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?
    */
-  runsOnceForEveryCursor = true;
+  public runsOnceForEveryCursor(): boolean {
+    return true;
+  }
 
   canBePrefixedWithCount = false;
 
@@ -268,7 +270,7 @@ export abstract class BaseCommand extends BaseAction {
    */
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat     = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
-    let numCursorsToRunOn = this.runsOnceForEveryCursor ? vimState.allCursorPositions.length : 1;
+    let numCursorsToRunOn = this.runsOnceForEveryCursor() ? vimState.allCursorPositions.length : 1;
     let allCursors        = vimState.allCursorPositions     .slice(0);
     let allStartCursors   = vimState.allCursorStartPositions.slice(0);
 
@@ -433,7 +435,8 @@ class CommandEsc extends BaseCommand {
     ModeName.Replace,
   ];
   keys = ["<escape>"];
-  runsOnceForEveryCursor = false;
+
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     console.log('exec!');
@@ -633,6 +636,7 @@ class RightArrowInReplaceMode extends ArrowsInReplaceMode {
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
   keys = ["<any>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
@@ -643,7 +647,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
-      vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
+      vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       return vimState;
     } else if (key === "<escape>") {
@@ -654,10 +658,6 @@ class CommandInsertInSearchMode extends BaseCommand {
     } else {
       searchState.searchString += this.keysPressed[0];
     }
-
-    // console.log(vimState.searchString); (TODO: Show somewhere!)
-
-    vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
 
     return vimState;
   }
