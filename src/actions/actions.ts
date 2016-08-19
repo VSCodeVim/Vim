@@ -431,6 +431,7 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualLine,
     ModeName.VisualBlockInsertMode,
     ModeName.VisualBlock,
+    ModeName.Normal,
     ModeName.SearchInProgressMode,
     ModeName.Replace,
   ];

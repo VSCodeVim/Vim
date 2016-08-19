@@ -9,7 +9,7 @@ export class TextEditor {
 
   static async insert(text: string, at: Position | undefined = undefined,
             letVSCodeHandleKeystrokes: boolean | undefined = undefined): Promise<boolean> {
-    const selections = vscode.window.activeTextEditor.selections.slice(0);
+const selections = vscode.window.activeTextEditor.selections.slice(0);
 
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
