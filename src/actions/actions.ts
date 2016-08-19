@@ -1584,7 +1584,7 @@ class CommandClearLine extends BaseCommand {
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
     let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft();
-    return new ChangeOperator().run(vimState, position.getLineBegin(), end);
+    return new ChangeOperator().run(vimState, position.getLineBeginRespectingIndent(), end);
   }
 }
 
@@ -2806,7 +2806,7 @@ class MoveCC extends BaseMovement {
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
     return {
-      start       : position.getLineBegin(),
+      start       : position.getLineBeginRespectingIndent(),
       stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
       registerMode: RegisterMode.CharacterWise
     };
