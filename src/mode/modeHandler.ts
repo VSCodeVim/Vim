@@ -1097,12 +1097,11 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    if (vimState.settings.useSolidBlockCursor) {
+    if (vimState.settings.useSolidBlockCursor || vimState.isMultiCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
-        rangesToDraw.push(new vscode.Range(
-          vimState.cursorPosition,
-          vimState.cursorPosition.getRight()
-        ));
+        for (const pos of vimState.allCursorPositions) {
+          rangesToDraw.push(new vscode.Range(pos, pos.getRight()));
+        }
       }
     } else {
       // Use native block cursor if possible.
