@@ -1153,7 +1153,7 @@ suite("Mode Normal", () => {
       title: "Can do S",
       start: ["    one", "    tw|o", "    three"],
       keysPressed: "2S",
-      end: ["    one", "|"]
+      end: ["    one", "    |"]
     });
 
     newTest({
@@ -1208,6 +1208,14 @@ suite("Mode Normal", () => {
       start: ["one <blink>he|llo</blink> two"],
       keysPressed: "cat",
       end: ["one | two"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Respects indentation with cc",
+      start: ["{", "  int| a;"],
+      keysPressed: "cc",
+      end: ["{", "  |"],
       endMode: ModeName.Insert
     });
 });
