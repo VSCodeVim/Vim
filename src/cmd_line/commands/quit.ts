@@ -28,6 +28,10 @@ export class QuitCommand extends node.CommandBase {
   }
 
   execute() : void {
+    if (this.activeTextEditor.document.isUntitled && !this._arguments.bang) {
+      throw error.VimError.fromCode(error.ErrorCode.E32);
+    }
+
     if (this.activeTextEditor.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.E37);
     }
