@@ -2206,8 +2206,8 @@ class MoveNextLineNonBlank extends BaseMovement {
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    // Count == 0 if just pressing enter in normal mode, need to still go down 1 line
-    if(count == 0){
+    // Count === 0 if just pressing enter in normal mode, need to still go down 1 line
+    if (count === 0) {
       count++;
     }
 
