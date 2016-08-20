@@ -4,6 +4,8 @@ import * as vscode from "vscode";
 import * as node from "../node";
 import * as error from "../../error";
 import {ModeHandler} from "../../mode/modeHandler";
+import * as write from "./write";
+import * as quit from "./quit";
 
 //
 // Implements :writequit
@@ -39,15 +41,25 @@ export class WriteQuitCommand extends node.CommandBase {
 
   // Writing command. Taken as a basis from the "write.ts" file.
   execute(modeHandler : ModeHandler) : void {
-    if (this.activeTextEditor.document.isDirty) {
-      if (this.activeTextEditor.document.isUntitled) {
-        vscode.commands.executeCommand("workbench.action.files.saveAs");
-      } else {
-        vscode.commands.executeCommand("workbench.action.files.save");
-      }
-      vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-    } else {
-      throw error.VimError.fromCode(error.ErrorCode.E208);
-    }
+    let writeArgs : write.IWriteCommandArguments = {
+      opt: this.arguments.opt,
+      optValue: this.arguments.optValue,
+      bang: this.arguments.bang,
+      file: this.arguments.file,
+      range: this.arguments.range
+    };
+
+    let writeCmd = new write.WriteCommand(writeArgs);
+    writeCmd.execute(modeHandler).then(() => {
+      let quitArgs : quit.IQuitCommandArguments = {
+        //wq! fails when no file name is provided
+        bang: false,
+        range: this.arguments.range
+      };
+
+      let quitCmd = new quit.QuitCommand(quitArgs);
+      quitCmd.execute();
+    });
+
   }
 }
