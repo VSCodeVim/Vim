@@ -1820,6 +1820,11 @@ class MoveDown extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getDown(vimState.desiredColumn);
   }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return position.getDown(position.getLineEnd().character);
+  }
 }
 
 @RegisterAction
@@ -2198,8 +2203,15 @@ class MoveNonBlank extends BaseMovement {
 class MoveNextLineNonBlank extends BaseMovement {
   keys = ["\n"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getDown(0).getFirstLineNonBlankChar();
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    // Count == 0 if just pressing enter in normal mode, need to still go down 1 line
+    if(count == 0){
+      count++;
+    }
+
+    return position.getDownByCount(count).getFirstLineNonBlankChar();
   }
 }
 
