@@ -184,6 +184,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'd3' then <enter>",
+      start: ['|1', '2', '3', '4', '5', '6'],
+      keysPressed: 'd3\n',
+      end: ['|5', '6'],
+    });
+
+    newTest({
+      title: "Can handle 'dj'",
+      start: ['|11', '22', '33', '44', '55', '66'],
+      keysPressed: 'dj',
+      end: ['|33', '44', '55', '66'],
+    });
+
+    newTest({
       title: "Can handle 'cw'",
       start: ['text text tex|t'],
       keysPressed: '^lllllllcw',
