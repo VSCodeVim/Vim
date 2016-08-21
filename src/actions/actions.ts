@@ -420,7 +420,7 @@ class CommandInsertRegisterContent extends BaseCommand {
     const register = await Register.get(vimState);
     let text: string;
 
-    if (typeof register.text === "object") {
+    if (register.text instanceof Array) {
        text = (register.text as string []).join("\n");
     } else {
        text = register.text;
