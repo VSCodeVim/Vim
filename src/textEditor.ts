@@ -9,8 +9,6 @@ export class TextEditor {
 
   static async insert(text: string, at: Position | undefined = undefined,
             letVSCodeHandleKeystrokes: boolean | undefined = undefined): Promise<boolean> {
-const selections = vscode.window.activeTextEditor.selections.slice(0);
-
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
     if (letVSCodeHandleKeystrokes === undefined) {
@@ -18,9 +16,14 @@ const selections = vscode.window.activeTextEditor.selections.slice(0);
     }
 
     if (ModeHandler.IsTesting || !letVSCodeHandleKeystrokes) {
+      const selections = vscode.window.activeTextEditor.selections.slice(0);
+
       await vscode.window.activeTextEditor.edit(editBuilder => {
         editBuilder.insert(at!, text);
       });
+
+      // maintain all selections in multi-cursor mode.
+      vscode.window.activeTextEditor.selections = selections;
     } else {
       if (at) {
         vscode.window.activeTextEditor.selection = new vscode.Selection(at, at);
@@ -28,8 +31,6 @@ const selections = vscode.window.activeTextEditor.selections.slice(0);
 
       await vscode.commands.executeCommand('default:type', { text });
     }
-
-    vscode.window.activeTextEditor.selections = selections;
 
     return true;
   }
