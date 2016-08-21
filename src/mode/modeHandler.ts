@@ -742,12 +742,31 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // [({< keys all start a new undo state.
+    ranRepeatableAction = ranRepeatableAction && vimState.currentMode === ModeName.Normal;
+    ranAction = ranAction && vimState.currentMode === ModeName.Normal;
+
+    // }])> keys all start a new undo state when directly next to an {[(< opening character
     const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
 
-    ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) ||
-                          (vimState.currentMode === ModeName.Insert && "<[({".indexOf(key) !== -1);
-    ranAction           = ranAction           && vimState.currentMode === ModeName.Normal;
+    if (vimState.currentMode === ModeName.Insert) {
+      const letterToTheLeft = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character - 2];
+      switch (key) {
+        case "}":
+          if (letterToTheLeft === "{") { ranRepeatableAction = true; }
+          break;
+        case "]":
+          if (letterToTheLeft === "[") { ranRepeatableAction = true; }
+          break;
+        case ")":
+          if (letterToTheLeft === "(") { ranRepeatableAction = true; }
+          break;
+        case ">":
+          if (letterToTheLeft === "<") { ranRepeatableAction = true; }
+          break;
+        default:
+          break;
+      }
+    }
 
     // Record down previous action and flush temporary state
 
