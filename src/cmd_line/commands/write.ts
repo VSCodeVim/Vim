@@ -58,6 +58,7 @@ export class WriteCommand extends node.CommandBase {
 
     try {
       fs.accessSync(this.activeTextEditor.document.fileName, fs.W_OK);
+      return this.save(modeHandler);
     } catch (accessErr) {
       if (this.arguments.bang) {
         fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
@@ -71,8 +72,6 @@ export class WriteCommand extends node.CommandBase {
         modeHandler.setupStatusBarItem(accessErr.message);
       }
     }
-
-    return this.save(modeHandler);
   }
 
   private async save(modeHandler : ModeHandler) {
