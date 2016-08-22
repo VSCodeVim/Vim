@@ -3543,6 +3543,7 @@ class ToggleCaseAndMoveForward extends BaseMovement {
 abstract class IncrementDecrementNumberAction extends BaseMovement {
   modes = [ModeName.Normal];
   canBePrefixedWithCount = true;
+  canBeRepeatedWithDot = true;
 
   offset: number;
 
