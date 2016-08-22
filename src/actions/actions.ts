@@ -1404,6 +1404,7 @@ abstract class CommandFold extends BaseCommand {
 class CommandCloseFold extends CommandFold {
   keys = ["z", "c"];
   commandName = "editor.fold";
+  canBePrefixedWithCount = true;
 }
 
 @RegisterAction
@@ -1416,6 +1417,7 @@ class CommandCloseAllFolds extends CommandFold {
 class CommandOpenFold extends CommandFold {
   keys = ["z", "o"];
   commandName = "editor.unfold";
+  canBePrefixedWithCount = true;
 }
 
 @RegisterAction

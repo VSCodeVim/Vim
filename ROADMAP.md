@@ -550,9 +550,9 @@ Status | Command | Description
 :x: | zd | Delete one fold at the cursor.
 :x: | zD | Delete folds recursively at the cursor.
 :x: | zE | Eliminate all folds in the window.
-:warning: :x: | zo | Open one fold under the cursor.When a count is given, that many folds deep will be opened.
+:white_check_mark: | zo | Open one fold under the cursor.When a count is given, that many folds deep will be opened.
 :white_check_mark: | zO | Open all folds under the cursor recursively.
-:warning: :x: | zc | Close one fold under the cursor.  When a count is given, that many folds deep are closed.
+:white_check_mark: | zc | Close one fold under the cursor.  When a count is given, that many folds deep are closed.
 :white_check_mark:| zC | Close all folds under the cursor recursively.
 :x: | za | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.
 :x: | zA | When on a closed fold: open it recursively. When on an open fold: close it recursively and set 'foldenable'.
