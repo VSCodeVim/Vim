@@ -1804,6 +1804,11 @@ class MoveUp extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getUp(vimState.desiredColumn);
   }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return position.getUp(position.getLineEnd().character);
+  }
 }
 
 @RegisterAction
