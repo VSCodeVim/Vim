@@ -528,7 +528,7 @@ class CommandCtrlE extends BaseCommand {
   keys = ["<C-e>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("scrollLineDown");
+    await vscode.commands.executeCommand("editorScroll", {to: 'down', by: 'line', value: 1, revealCursor: true});
 
     return vimState;
   }
@@ -615,7 +615,7 @@ class CommandCtrlY extends BaseCommand {
   keys = ["<C-y>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("scrollLineUp");
+    await vscode.commands.executeCommand("editorScroll", {to: 'up', by: 'line', value: 1, revealCursor: true});
 
     return vimState;
   }
@@ -1731,7 +1731,7 @@ class CommandMoveFullPageDown extends BaseCommand {
   keys = ["<C-f>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("cursorPageDown");
+    await vscode.commands.executeCommand("editorScroll", {to: 'down', by: 'page', value: 1, revealCursor: true});
     return vimState;
   }
 }
@@ -1742,7 +1742,7 @@ class CommandMoveFullPageUp extends BaseCommand {
   keys = ["<C-b>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("cursorPageUp");
+    await vscode.commands.executeCommand("editorScroll", {to: 'up', by: 'page', value: 1, revealCursor: true});
     return vimState;
   }
 }
