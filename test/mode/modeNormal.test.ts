@@ -198,6 +198,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'dk'",
+      start: ['11', '22', '33', '44', '55', '|66'],
+      keysPressed: 'dk',
+      end: ['11', '22', '33', '|44'],
+    });
+
+    newTest({
       title: "Can handle 'cw'",
       start: ['text text tex|t'],
       keysPressed: '^lllllllcw',
