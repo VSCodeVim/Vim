@@ -40,7 +40,7 @@ export class WriteQuitCommand extends node.CommandBase {
   }
 
   // Writing command. Taken as a basis from the "write.ts" file.
-  execute(modeHandler : ModeHandler) : void {
+  async execute(modeHandler : ModeHandler) : Promise<void> {
     let writeArgs : write.IWriteCommandArguments = {
       opt: this.arguments.opt,
       optValue: this.arguments.optValue,
@@ -50,16 +50,14 @@ export class WriteQuitCommand extends node.CommandBase {
     };
 
     let writeCmd = new write.WriteCommand(writeArgs);
-    writeCmd.execute(modeHandler).then(() => {
-      let quitArgs : quit.IQuitCommandArguments = {
-        //wq! fails when no file name is provided
-        bang: false,
-        range: this.arguments.range
-      };
+    await writeCmd.execute(modeHandler);
+    let quitArgs : quit.IQuitCommandArguments = {
+      //wq! fails when no file name is provided
+      bang: false,
+      range: this.arguments.range
+    };
 
-      let quitCmd = new quit.QuitCommand(quitArgs);
-      quitCmd.execute();
-    });
-
+    let quitCmd = new quit.QuitCommand(quitArgs);
+    await quitCmd.execute();
   }
 }

@@ -37,7 +37,7 @@ export class WriteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(modeHandler : ModeHandler) {
+  async execute(modeHandler : ModeHandler) : Promise<void> {
     if (this.arguments.opt) {
       util.showError("Not implemented.");
       return;
@@ -74,7 +74,7 @@ export class WriteCommand extends node.CommandBase {
     }
   }
 
-  private async save(modeHandler : ModeHandler) {
+  private async save(modeHandler : ModeHandler) : Promise<void> {
     await this.activeTextEditor.document.save().then(
       (ok) => {
         modeHandler.setupStatusBarItem('"' + path.basename(this.activeTextEditor.document.fileName) +
