@@ -2639,10 +2639,10 @@ class ActionXVisualBlock extends BaseCommand {
 
     // Iterate in reverse so we don't lose track of indicies
     for (const { start, end } of Position.IterateLine(vimState, { reverse: true })) {
-      vimState = await new DeleteOperator().run(vimState, start, end);
+      vimState = await new DeleteOperator().run(vimState, start, new Position(end.line, end.character - 1));
     }
 
-    vimState.cursorPosition = position;
+    vimState.cursorPosition = vimState.cursorStartPosition;
     return vimState;
   }
 }
