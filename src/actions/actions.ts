@@ -1616,11 +1616,16 @@ class CommandVisualMode extends BaseCommand {
 
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   keys = ["ctrl+v"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.VisualBlock;
+
+    if (vimState.currentMode === ModeName.VisualBlock) {
+      vimState.currentMode = ModeName.Normal;
+    } else {
+      vimState.currentMode = ModeName.VisualBlock;
+    }
 
     return vimState;
   }
