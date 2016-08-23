@@ -1074,6 +1074,11 @@ export class ModeHandler implements vscode.Disposable {
     const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
 
     if (vimState.currentMode === ModeName.Insert) {
+
+      if (TextEditor.getLineAt(vimState.cursorPosition).text.length <= 1) {
+        return false;
+      }
+
       const letterToTheLeft = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character - 2];
       switch (key) {
         case "}":
