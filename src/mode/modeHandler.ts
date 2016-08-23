@@ -692,7 +692,6 @@ export class ModeHandler implements vscode.Disposable {
 
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
-      ranRepeatableAction = action.canBeRepeatedWithDot;
       ranAction = true;
     }
 
