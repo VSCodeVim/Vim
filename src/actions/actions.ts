@@ -1724,6 +1724,28 @@ class CommandCenterScroll extends BaseCommand {
 }
 
 @RegisterAction
+class COmmandTopScroll extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["z", "t"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand('revealLine', {lineNumber: 1, at: 'top'});
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandBottomScroll extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["z", "b"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand('revealLine', {lineNumber: 10, at: 'bottom'});
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
   modes = [ModeName.Visual, ModeName.VisualLine];
   keys = ["o"];
