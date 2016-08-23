@@ -1616,11 +1616,16 @@ class CommandVisualMode extends BaseCommand {
 
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   keys = ["ctrl+v"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.VisualBlock;
+
+    if (vimState.currentMode === ModeName.VisualBlock) {
+      vimState.currentMode = ModeName.Normal;
+    } else {
+      vimState.currentMode = ModeName.VisualBlock;
+    }
 
     return vimState;
   }
@@ -2634,10 +2639,10 @@ class ActionXVisualBlock extends BaseCommand {
 
     // Iterate in reverse so we don't lose track of indicies
     for (const { start, end } of Position.IterateLine(vimState, { reverse: true })) {
-      vimState = await new DeleteOperator().run(vimState, start, end);
+      vimState = await new DeleteOperator().run(vimState, start, new Position(end.line, end.character - 1));
     }
 
-    vimState.cursorPosition = position;
+    vimState.cursorPosition = vimState.cursorStartPosition;
     return vimState;
   }
 }
