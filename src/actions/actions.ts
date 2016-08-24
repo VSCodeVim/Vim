@@ -247,6 +247,8 @@ export abstract class BaseCommand extends BaseAction {
 
   supportsMultiCursor = true;
 
+  multicursorIndex: number | undefined = undefined;
+
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?
    */
@@ -279,6 +281,8 @@ export abstract class BaseCommand extends BaseAction {
         vimState.cursorPosition      = allCursors[i];
         vimState.cursorStartPosition = allStartCursors[i];
 
+        this.multicursorIndex = i;
+
         vimState = await this.exec(allCursors[i], vimState);
 
         allCursors[i]      = vimState.cursorPosition;
@@ -295,6 +299,7 @@ export abstract class BaseCommand extends BaseAction {
 
 export class BaseOperator extends BaseAction {
     canBeRepeatedWithDot = true;
+    multicursorIndex: number | undefined = undefined;
 
     /**
      * Run this operator on a range, returning the new location of the cursor.
@@ -965,10 +970,20 @@ export class YankOperator extends BaseOperator {
           text = text + "\n";
         }
 
-        Register.put(text, vimState);
+        if (!vimState.isMultiCursor) {
+          Register.put(text, vimState);
+        } else {
+          if (this.multicursorIndex === 0) {
+            Register.put([], vimState);
+          }
+
+          Register.add(text, vimState);
+        }
 
         vimState.currentMode = ModeName.Normal;
-        vimState.cursorPosition = start;
+        vimState.cursorPosition      = start;
+        vimState.cursorStartPosition = start;
+
         return vimState;
     }
 }
@@ -1101,8 +1116,22 @@ export class PutCommand extends BaseCommand {
         const dest = after ? position : position.getRight();
         let text = register.text;
 
-        if (typeof text === "object") {
+        // TODO(johnfn): This is really bad - see if I can
+        // do this in in a better way.
+        if (vimState.isMultiCursor && this.multicursorIndex === undefined) {
+          console.log("ERROR: no multi cursor index when calling PutCommand#exec");
+        }
+
+        if (!vimState.isMultiCursor && typeof text === "object") {
           return await this.execVisualBlockPaste(text, position, vimState, after);
+        }
+
+        if (vimState.isMultiCursor && typeof text === "object") {
+          text = text[this.multicursorIndex!];
+
+          console.log('index is ', this.multicursorIndex, 'text obj', JSON.stringify(text));
+        } else {
+          throw new Error("Bad...");
         }
 
         if (register.registerMode === RegisterMode.CharacterWise) {
@@ -1312,7 +1341,10 @@ export class PutBeforeCommand extends BaseCommand {
     public modes = [ModeName.Normal];
 
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
-        const result = await new PutCommand().exec(position, vimState, true);
+        const command = new PutCommand();
+        command.multicursorIndex = this.multicursorIndex;
+
+        const result = await command.exec(position, vimState, true);
 
         if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
           result.cursorPosition = result.cursorPosition.getPreviousLineBegin();

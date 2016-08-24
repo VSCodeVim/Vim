@@ -532,7 +532,7 @@ export class ModeHandler implements vscode.Disposable {
       e.selections.length !== this._vimState.allCursorPositions.length) {
       // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
 
-      console.log('do the thinggg');
+      console.log('Changed number of cursors?');
 
       if (e.selections.length >= 2) {
         this._vimState.currentMode = ModeName.Visual;
@@ -914,8 +914,6 @@ export class ModeHandler implements vscode.Disposable {
       let start         = vimState.allCursorStartPositions[i];
       let stop          = vimState.allCursorPositions[i];
 
-      console.log(start.toString(), stop.toString());
-
       if (start.compareTo(stop) > 0) {
         [start, stop] = [stop, start];
       }
@@ -934,6 +932,8 @@ export class ModeHandler implements vscode.Disposable {
 
         vimState.currentRegisterMode = RegisterMode.LineWise;
       }
+
+      recordedState.operator.multicursorIndex = i;
 
       resultVimState = await recordedState.operator.run(resultVimState, start, stop);
 
