@@ -745,15 +745,10 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // [({< keys all start a new undo state.
-    const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
-
-    ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) ||
-                          (vimState.currentMode === ModeName.Insert && "<[({".indexOf(key) !== -1);
-    ranAction           = ranAction           && vimState.currentMode === ModeName.Normal;
+    ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) || this.createUndoPointForBrackets(vimState);
+    ranAction = ranAction && vimState.currentMode === ModeName.Normal;
 
     // Record down previous action and flush temporary state
-
     if (ranRepeatableAction) {
       vimState.previousFullAction = vimState.recordedState;
     }
@@ -1074,6 +1069,38 @@ export class ModeHandler implements vscode.Disposable {
 
     ModeHandler._statusBarItem.text = text || '';
     ModeHandler._statusBarItem.show();
+  }
+
+  // Return true if a new undo point should be created based on the keypress
+  private createUndoPointForBrackets(vimState: VimState): boolean {
+    // }])> keys all start a new undo state when directly next to an {[(< opening character
+    const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
+
+    if (vimState.currentMode === ModeName.Insert) {
+
+      if (TextEditor.getLineAt(vimState.cursorPosition).text.length <= 1) {
+        return false;
+      }
+
+      const letterToTheLeft = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character - 2];
+      switch (key) {
+        case "}":
+          if (letterToTheLeft === "{") { return true; }
+          break;
+        case "]":
+          if (letterToTheLeft === "[") { return true; }
+          break;
+        case ")":
+          if (letterToTheLeft === "(") { return true; }
+          break;
+        case ">":
+          if (letterToTheLeft === "<") { return true; }
+          break;
+        default:
+          return false;
+      }
+    }
+    return false;
   }
 
   dispose() {
