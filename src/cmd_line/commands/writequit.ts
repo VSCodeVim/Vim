@@ -1,8 +1,6 @@
 "use strict";
 
-import * as vscode from "vscode";
 import * as node from "../node";
-import * as error from "../../error";
 import {ModeHandler} from "../../mode/modeHandler";
 import * as write from "./write";
 import * as quit from "./quit";
@@ -52,7 +50,7 @@ export class WriteQuitCommand extends node.CommandBase {
     let writeCmd = new write.WriteCommand(writeArgs);
     await writeCmd.execute(modeHandler);
     let quitArgs : quit.IQuitCommandArguments = {
-      //wq! fails when no file name is provided
+      // wq! fails when no file name is provided
       bang: false,
       range: this.arguments.range
     };
