@@ -73,7 +73,7 @@ Be sure to restart VSCode after making these changes.
 Notice the problem is that if you did this normally, the `j` in `gj` would be expanded into `gj`, on and on forever. To stop this recursive expansion, use vim.otherModesKeyBindingsNonRecursive!
 
    ```
-      "vim.otherModesKeyBindings": [
+      "vim.otherModesKeyBindingsNonRecursive": [
            {
                "before": ["j"],
                "after": ["g", "j"]
