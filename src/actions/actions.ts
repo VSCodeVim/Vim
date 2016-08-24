@@ -271,8 +271,18 @@ export abstract class BaseCommand extends BaseAction {
    * Run the command the number of times VimState wants us to.
    */
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    if (!this.runsOnceForEveryCursor()) {
+      let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+
+      for (let i = 0; i < timesToRepeat; i++) {
+        vimState = await this.exec(position, vimState);
+      }
+
+      return vimState;
+    }
+
     let timesToRepeat     = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
-    let numCursorsToRunOn = this.runsOnceForEveryCursor() ? vimState.allCursorPositions.length : 1;
+    let numCursorsToRunOn = vimState.allCursorPositions.length;
     let allCursors        = vimState.allCursorPositions     .slice(0);
     let allStartCursors   = vimState.allCursorStartPositions.slice(0);
 
@@ -445,11 +455,16 @@ class CommandEsc extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    console.log('exec!');
-
     if (vimState.currentMode !== ModeName.Visual &&
         vimState.currentMode !== ModeName.VisualLine) {
-      vimState.cursorPosition = position.getLeft();
+
+      // Normally, you don't have to iterate over all cursors,
+      // as that is handled for you by the state machine. ESC is
+      // a special case since runsOnceForEveryCursor is false.
+
+      for (let i = 0; i < vimState.allCursorPositions.length; i++) {
+        vimState.allCursorPositions[i] = vimState.allCursorPositions[i].getLeft();
+      }
     }
 
     if (vimState.currentMode === ModeName.SearchInProgressMode) {
