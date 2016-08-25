@@ -690,10 +690,15 @@ export class ModeHandler implements vscode.Disposable {
     let ranRepeatableAction = false;
     let ranAction = false;
 
-    // If arrow keys were used prior to entering characters while in insert mode, create an undo point, this needs to happen before any changes are made
-    if (this.createUndoPointForArrows(vimState)){
-      vimState.previousFullAction = recordedState;
-      vimState.historyTracker.finishCurrentStep();
+    // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
+    // this needs to happen before any changes are made
+    let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
+    if (prevPos !== undefined) {
+      if (vimState.cursorPositionJustBeforeAnythingHappened.line !== prevPos.line ||
+        vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
+        vimState.previousFullAction = recordedState;
+        vimState.historyTracker.finishCurrentStep();
+      }
     }
 
     if (action instanceof BaseMovement) {
@@ -808,6 +813,9 @@ export class ModeHandler implements vscode.Disposable {
         currentLineLength - 1
       );
     }
+
+    // Update the current history step to have the latest cursor position incase it is needed
+    vimState.historyTracker.setLastHistoryEndPosition(vimState.cursorPosition);
 
     return vimState;
   }
@@ -1077,25 +1085,6 @@ export class ModeHandler implements vscode.Disposable {
 
     ModeHandler._statusBarItem.text = text || '';
     ModeHandler._statusBarItem.show();
-  }
-
-  private createUndoPointForArrows(vimState: VimState): boolean {
-    // If arrow keys were used in insert, create new undo point
-    if (vimState.currentMode === ModeName.Insert) {
-      if (vimState.currentFullAction.length > 1) {
-        const prevKey = vimState.currentFullAction[vimState.currentFullAction.length - 2];
-        switch (prevKey) {
-          case "<up>":
-          case "<down>":
-          case "<left>":
-          case "<right>":
-            return true;
-          default:
-            return false;
-        }
-      }
-    }
-    return false;
   }
 
   dispose() {
