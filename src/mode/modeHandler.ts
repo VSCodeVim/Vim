@@ -543,6 +543,7 @@ export class ModeHandler implements vscode.Disposable {
         // The selections ran together - go back to visual mode.
         this._vimState.currentMode = ModeName.Visual;
         this.setCurrentModeByName(this._vimState);
+        this._vimState.isMultiCursor = false;
       }
 
       this._vimState.allCursorPositions = [];
@@ -855,7 +856,13 @@ export class ModeHandler implements vscode.Disposable {
       const result = await movement.execActionWithCount(cursorPosition, vimState, recordedState.count);
 
       if (result instanceof Position) {
-        vimState.allCursorPositions[i]      = result;
+        vimState.allCursorPositions[i] = result;
+
+        if (!vimState.getModeObject(this).isVisualMode &&
+            !vimState.recordedState.operator) {
+
+          vimState.allCursorStartPositions[i] = result;
+        }
       } else if (isIMovement(result)) {
         if (result.failed) {
           vimState.recordedState = new RecordedState();
