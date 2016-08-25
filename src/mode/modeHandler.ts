@@ -1070,7 +1070,7 @@ export class ModeHandler implements vscode.Disposable {
     ModeHandler._statusBarItem.show();
   }
 
-  // Return true if a new undo point should be created based on the keypress
+  // Return true if a new undo point should be created based on brackets and parenthesis
   private createUndoPointForBrackets(vimState: VimState): boolean {
     // }])> keys all start a new undo state when directly next to an {[(< opening character
     const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
@@ -1081,6 +1081,7 @@ export class ModeHandler implements vscode.Disposable {
         return false;
       }
 
+      // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
       const letterToTheLeft = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character - 2];
       switch (key) {
         case "}":
@@ -1095,8 +1096,25 @@ export class ModeHandler implements vscode.Disposable {
         case ">":
           if (letterToTheLeft === "<") { return true; }
           break;
-        default:
-          return false;
+      }
+
+      // This section is mostly for vscode auto closing brackets without a user inserting them
+      const letterToTheRight = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character];
+      if (letterToTheRight !== undefined) {
+        switch (key) {
+          case "{":
+            if (letterToTheRight === "}") { return true; }
+            break;
+          case "[":
+            if (letterToTheRight === "]") { return true; }
+            break;
+          case "(":
+            if (letterToTheRight === ")") { return true; }
+            break;
+          case "<":
+            if (letterToTheRight === ">") { return true; }
+            break;
+        }
       }
     }
     return false;
