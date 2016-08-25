@@ -1404,6 +1404,7 @@ abstract class CommandFold extends BaseCommand {
 class CommandCloseFold extends CommandFold {
   keys = ["z", "c"];
   commandName = "editor.fold";
+  canBePrefixedWithCount = true;
 }
 
 @RegisterAction
@@ -1416,6 +1417,7 @@ class CommandCloseAllFolds extends CommandFold {
 class CommandOpenFold extends CommandFold {
   keys = ["z", "o"];
   commandName = "editor.unfold";
+  canBePrefixedWithCount = true;
 }
 
 @RegisterAction
@@ -1584,7 +1586,7 @@ class CommandClearLine extends BaseCommand {
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
     let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft();
-    return new ChangeOperator().run(vimState, position.getLineBegin(), end);
+    return new ChangeOperator().run(vimState, position.getLineBeginRespectingIndent(), end);
   }
 }
 
@@ -1614,11 +1616,16 @@ class CommandVisualMode extends BaseCommand {
 
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   keys = ["ctrl+v"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.VisualBlock;
+
+    if (vimState.currentMode === ModeName.VisualBlock) {
+      vimState.currentMode = ModeName.Normal;
+    } else {
+      vimState.currentMode = ModeName.VisualBlock;
+    }
 
     return vimState;
   }
@@ -1804,6 +1811,11 @@ class MoveUp extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getUp(vimState.desiredColumn);
   }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return position.getUp(position.getLineEnd().character);
+  }
 }
 
 @RegisterAction
@@ -1819,6 +1831,11 @@ class MoveDown extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getDown(vimState.desiredColumn);
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return position.getDown(position.getLineEnd().character);
   }
 }
 
@@ -2198,8 +2215,15 @@ class MoveNonBlank extends BaseMovement {
 class MoveNextLineNonBlank extends BaseMovement {
   keys = ["\n"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getDown(0).getFirstLineNonBlankChar();
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    // Count === 0 if just pressing enter in normal mode, need to still go down 1 line
+    if (count === 0) {
+      count++;
+    }
+
+    return position.getDownByCount(count).getFirstLineNonBlankChar();
   }
 }
 
@@ -2615,10 +2639,10 @@ class ActionXVisualBlock extends BaseCommand {
 
     // Iterate in reverse so we don't lose track of indicies
     for (const { start, end } of Position.IterateLine(vimState, { reverse: true })) {
-      vimState = await new DeleteOperator().run(vimState, start, end);
+      vimState = await new DeleteOperator().run(vimState, start, new Position(end.line, end.character - 1));
     }
 
-    vimState.cursorPosition = position;
+    vimState.cursorPosition = vimState.cursorStartPosition;
     return vimState;
   }
 }
@@ -2806,7 +2830,7 @@ class MoveCC extends BaseMovement {
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
     return {
-      start       : position.getLineBegin(),
+      start       : position.getLineBeginRespectingIndent(),
       stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
       registerMode: RegisterMode.CharacterWise
     };
@@ -3528,14 +3552,13 @@ class ToggleCaseAndMoveForward extends BaseMovement {
   }
 }
 
-abstract class IncrementDecrementNumberAction extends BaseMovement {
+abstract class IncrementDecrementNumberAction extends BaseCommand {
   modes = [ModeName.Normal];
-  canBePrefixedWithCount = true;
+  canBeRepeatedWithDot = true;
 
   offset: number;
 
-  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
-    count = count || 1;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const text = TextEditor.getLineAt(position).text;
 
     for (let { start, end, word } of Position.IterateWords(position.getWordLeft(true))) {
@@ -3548,11 +3571,12 @@ abstract class IncrementDecrementNumberAction extends BaseMovement {
       const num = NumericString.parse(word);
 
       if (num !== null) {
-        return this.replaceNum(num, this.offset * count, start, end);
+        vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+        return vimState;
       }
     }
     // No usable numbers, return the original position
-    return position;
+    return vimState;
   }
 
   public async replaceNum(start: NumericString, offset: number, startPos: Position, endPos: Position): Promise<Position> {

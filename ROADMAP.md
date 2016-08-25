@@ -458,8 +458,8 @@ Status | Command | Default Value | Description
 ---|--------|-------|------------------------------
 :white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that &lt;Tab&gt; in file uses
 :white_check_mark:| :white_check_mark:| hlsearch (hls) | false | When there is a previous search pattern, highlight all its matches.
-:white_check_mark:| ignorecase (ic) | false | Ignore case in search patterns.
-:white_check_mark:| smartcase (scs) | false | Override the 'ignorecase' option if the search pattern contains upper case characters.
+:white_check_mark:| ignorecase (ic) | true | Ignore case in search patterns.
+:white_check_mark:| smartcase (scs) | true | Override the 'ignorecase' option if the search pattern contains upper case characters.
 :white_check_mark:| iskeyword (isk) | `@,48-57,_,128-167,224-235` | keywords contain alphanumeric characters and '_'. If there is no user setting for `iskeyword`, we use `editor.wordSeparators` properties.
 :white_check_mark:| scroll (scr) | 20 | Number of lines to scroll with CTRL-U and CTRL-D commands.
 :white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted
@@ -550,9 +550,9 @@ Status | Command | Description
 :x: | zd | Delete one fold at the cursor.
 :x: | zD | Delete folds recursively at the cursor.
 :x: | zE | Eliminate all folds in the window.
-:warning: :x: | zo | Open one fold under the cursor.When a count is given, that many folds deep will be opened.
+:white_check_mark: | zo | Open one fold under the cursor.When a count is given, that many folds deep will be opened.
 :white_check_mark: | zO | Open all folds under the cursor recursively.
-:warning: :x: | zc | Close one fold under the cursor.  When a count is given, that many folds deep are closed.
+:white_check_mark: | zc | Close one fold under the cursor.  When a count is given, that many folds deep are closed.
 :white_check_mark:| zC | Close all folds under the cursor recursively.
 :x: | za | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.
 :x: | zA | When on a closed fold: open it recursively. When on an open fold: close it recursively and set 'foldenable'.

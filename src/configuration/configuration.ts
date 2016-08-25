@@ -55,6 +55,7 @@ export class Configuration {
   hlsearch: boolean = false;
   ignorecase: boolean = true;
   smartcase: boolean = true;
+  autoindent: boolean = true;
 
   @overlapSetting({ codeName: "tabSize", default: 8})
   tabstop: number | undefined = undefined;
