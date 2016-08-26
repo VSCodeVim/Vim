@@ -614,6 +614,16 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.currentMode = ModeName.Normal;
       vimState.cursorPosition = searchState.getNextSearchMatchPosition(searchState.searchCursorStartPosition).pos;
 
+      // Repeat the previous search if no new string is entered
+      if (searchState.searchString === "") {
+        const prevSearch = vimState.searchStatePrevious!;
+        if (prevSearch) {
+          searchState.searchString = prevSearch.searchString;
+        }
+      }
+      // Store this search
+      vimState.searchStatePrevious = searchState;
+
       return vimState;
     } else if (key === "<escape>") {
       vimState.currentMode = ModeName.Normal;
