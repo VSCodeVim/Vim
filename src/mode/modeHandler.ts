@@ -23,6 +23,7 @@ import {
   KeypressState
 } from './../actions/actions';
 import { Position } from './../motion/position';
+import { Range } from './../motion/range'
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 
@@ -74,10 +75,10 @@ export class VimState {
    * The position the cursor will be when this action finishes.
    */
   public get cursorPosition(): Position {
-    return this.allCursorPositions[0];
+    return this.allCursors[0].stop;
   }
   public set cursorPosition(value: Position) {
-    this.allCursorPositions[0] = value;
+    this.allCursors[0].stop = value;
   }
 
   /**
@@ -86,21 +87,16 @@ export class VimState {
    * actually starts e.g. if you use the "aw" text motion in the middle of a word.
    */
   public get cursorStartPosition(): Position {
-    return this.allCursorStartPositions[0];
+    return this.allCursors[0].start;
   }
   public set cursorStartPosition(value: Position) {
-    this.allCursorStartPositions[0] = value;
+    this.allCursors[0].start = value;
   }
 
   /**
    * In Multi Cursor Mode, the position of every cursor.
    */
-  public allCursorPositions: Position[] = [ new Position(0, 0) ];
-
-  /**
-   * In Multi Cursor Mode, the start position of every cursor.
-   */
-  public allCursorStartPositions: Position[] = [ new Position(0, 0) ];
+  public allCursors: Range[] = [ new Range(new Position(0, 0), new Position(0, 0)) ];
 
   public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
 
@@ -527,7 +523,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this._vimState.currentMode !== ModeName.VisualBlock           &&
         this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
-      e.selections.length !== this._vimState.allCursorPositions.length) {
+      e.selections.length !== this._vimState.allCursors.length) {
       // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
 
       console.log('Changed number of cursors?');
@@ -544,12 +540,10 @@ export class ModeHandler implements vscode.Disposable {
         this._vimState.isMultiCursor = false;
       }
 
-      this._vimState.allCursorPositions = [];
-      this._vimState.allCursorStartPositions = [];
+      this._vimState.allCursors = [];
 
-      for (let i = 0; i < e.selections.length; i++) {
-        this._vimState.allCursorPositions.push(Position.FromVSCodePosition(e.selections[i].end));
-        this._vimState.allCursorStartPositions.push(Position.FromVSCodePosition(e.selections[i].start));
+      for (const sel of e.selections) {
+        this._vimState.allCursors.push(Range.FromVSCodeSelection(sel));
       }
 
       await this.updateView(this._vimState);
@@ -849,25 +843,24 @@ export class ModeHandler implements vscode.Disposable {
 
     let recordedState = vimState.recordedState;
 
-    for (let i = 0; i < vimState.allCursorPositions.length; i++) {
-      const cursorPosition = vimState.allCursorPositions[i];
+    for (let i = 0; i < vimState.allCursors.length; i++) {
+      const cursorPosition = vimState.allCursors[i].stop;
       const result = await movement.execActionWithCount(cursorPosition, vimState, recordedState.count);
 
       if (result instanceof Position) {
-        vimState.allCursorPositions[i] = result;
+        vimState.allCursors[i].stop = result;
 
         if (!vimState.getModeObject(this).isVisualMode &&
             !vimState.recordedState.operator) {
 
-          vimState.allCursorStartPositions[i] = result;
+          vimState.allCursors[i].start = result;
         }
       } else if (isIMovement(result)) {
         if (result.failed) {
           vimState.recordedState = new RecordedState();
         }
 
-        vimState.allCursorPositions[i]      = result.stop;
-        vimState.allCursorStartPositions[i] = result.start;
+        vimState.allCursors[i] = Range.FromIMovement(result);
 
         if (result.registerMode) {
           vimState.currentRegisterMode = result.registerMode;
@@ -912,13 +905,10 @@ export class ModeHandler implements vscode.Disposable {
     const cachedMode     = this._vimState.getModeObject(this);
     const cachedRegister = vimState.currentRegisterMode;
 
-    const resultingCursorPositions     : Position[] = [];
-    const resultingCursorStartPositions: Position[] = [];
+    const resultingCursors: Range[] = [];
+    let i = 0;
 
-    for (let i = 0; i < vimState.allCursorPositions.length; i++) {
-      let start         = vimState.allCursorStartPositions[i];
-      let stop          = vimState.allCursorPositions[i];
-
+    for (let { start, stop } of vimState.allCursors) {
       if (start.compareTo(stop) > 0) {
         [start, stop] = [stop, start];
       }
@@ -938,28 +928,26 @@ export class ModeHandler implements vscode.Disposable {
         vimState.currentRegisterMode = RegisterMode.LineWise;
       }
 
-      recordedState.operator.multicursorIndex = i;
+      recordedState.operator.multicursorIndex = i++;
 
       resultVimState = await recordedState.operator.run(resultVimState, start, stop);
 
-      resultingCursorStartPositions.push(resultVimState.cursorStartPosition);
-      resultingCursorPositions     .push(resultVimState.cursorPosition);
+      resultingCursors.push(new Range(
+        resultVimState.cursorStartPosition,
+        resultVimState.cursorPosition
+      ));
     }
 
     // Keep track of all cursors (in the case of multi-cursor).
 
-    resultVimState.allCursorPositions      = resultingCursorPositions;
-    resultVimState.allCursorStartPositions = resultingCursorStartPositions;
+    resultVimState.allCursors = resultingCursors;
 
     const selections: vscode.Selection[] = [];
 
-    for (let i = 0; i < resultingCursorPositions.length; i++) {
-      console.log(resultingCursorStartPositions[i]);
-      console.log(resultingCursorPositions[i]);
-
+    for (const cursor of vimState.allCursors) {
       selections.push(new vscode.Selection(
-        resultingCursorStartPositions[i],
-        resultingCursorPositions[i],
+        cursor.start,
+        cursor.stop,
       ));
     }
 
@@ -1067,21 +1055,15 @@ export class ModeHandler implements vscode.Disposable {
         if (vimState.currentMode === ModeName.Visual) {
           selections = [];
 
-          for (let i = 0; i < vimState.allCursorPositions.length; i++) {
-            selections.push(new vscode.Selection(
-              vimState.allCursorStartPositions[i],
-              vimState.allCursorPositions[i]
-            ));
+          for (const { start, stop } of vimState.allCursors) {
+            selections.push(new vscode.Selection(start, stop));
           }
         } else if (vimState.currentMode === ModeName.Normal ||
                    vimState.currentMode === ModeName.Insert) {
           selections = [];
 
-          for (let i = 0; i < vimState.allCursorPositions.length; i++) {
-            selections.push(new vscode.Selection(
-              vimState.allCursorPositions[i],
-              vimState.allCursorPositions[i]
-            ));
+          for (const { stop } of vimState.allCursors) {
+            selections.push(new vscode.Selection(stop, stop));
           }
         } else {
           console.error("This is pretty bad!");
@@ -1104,8 +1086,8 @@ export class ModeHandler implements vscode.Disposable {
 
     if (vimState.settings.useSolidBlockCursor || vimState.isMultiCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
-        for (const pos of vimState.allCursorPositions) {
-          rangesToDraw.push(new vscode.Range(pos, pos.getRight()));
+        for (const { stop } of vimState.allCursors) {
+          rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
         }
       }
     } else {

@@ -2,6 +2,7 @@ import { VimSpecialCommands, VimState, SearchState, SearchDirection, ReplaceStat
 import { ModeName } from './../mode/mode';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
 import { TextEditor } from './../textEditor';
+import { Range } from './../motion/range'
 import { Register, RegisterMode } from './../register/register';
 import { NumericString } from './../number/numericString';
 import { Position } from './../motion/position';
@@ -281,27 +282,25 @@ export abstract class BaseCommand extends BaseAction {
       return vimState;
     }
 
-    let timesToRepeat     = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
-    let numCursorsToRunOn = vimState.allCursorPositions.length;
-    let allCursors        = vimState.allCursorPositions     .slice(0);
-    let allStartCursors   = vimState.allCursorStartPositions.slice(0);
+    // TODO - Need to sort cursors by range, go in reverse!
+    let timesToRepeat       = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let allCursors: Range[] = [];
+    let i = 0;
 
-    for (let i = 0; i < numCursorsToRunOn; i++) {
+    for (const { start, stop } of vimState.allCursors) {
       for (let j = 0; j < timesToRepeat; j++) {
-        vimState.cursorPosition      = allCursors[i];
-        vimState.cursorStartPosition = allStartCursors[i];
+        vimState.cursorPosition      = stop;
+        vimState.cursorStartPosition = start;
 
-        this.multicursorIndex = i;
+        this.multicursorIndex = i++;
 
-        vimState = await this.exec(allCursors[i], vimState);
+        vimState = await this.exec(stop, vimState);
 
-        allCursors[i]      = vimState.cursorPosition;
-        allStartCursors[i] = vimState.cursorStartPosition;
+        allCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorPosition));
       }
     }
 
-    vimState.allCursorPositions      = allCursors;
-    vimState.allCursorStartPositions = allStartCursors;
+    vimState.allCursors = allCursors;
 
     return vimState;
   }
@@ -462,8 +461,8 @@ class CommandEsc extends BaseCommand {
       // as that is handled for you by the state machine. ESC is
       // a special case since runsOnceForEveryCursor is false.
 
-      for (let i = 0; i < vimState.allCursorPositions.length; i++) {
-        vimState.allCursorPositions[i] = vimState.allCursorPositions[i].getLeft();
+      for (let i = 0; i < vimState.allCursors.length; i++) {
+        vimState.allCursors[i].stop = vimState.allCursors[i].stop.getLeft();
       }
     }
 
@@ -480,8 +479,7 @@ class CommandEsc extends BaseCommand {
     vimState.currentMode = ModeName.Normal;
 
     if (!vimState.isMultiCursor) {
-      vimState.allCursorPositions      = [ vimState.allCursorPositions[0] ];
-      vimState.allCursorStartPositions = [ vimState.allCursorStartPositions[0] ];
+      vimState.allCursors = [ vimState.allCursors[0] ];
     }
 
     return vimState;
