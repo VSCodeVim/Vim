@@ -1194,7 +1194,7 @@ suite("Mode Normal", () => {
     newTest({
       title: "/ can search with regex",
       start: ["|", "one two2o"],
-      keysPressed: "/o\do",
+      keysPressed: "/o\\do",
       end: ["", "one tw|o2o"]
     });
 
