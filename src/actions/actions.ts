@@ -871,7 +871,7 @@ export class DeleteOperator extends BaseOperator {
           resultingPosition = Position.EarlierOf(start, end);
         }
 
-        if (start.character >= TextEditor.getLineAt(start).text.length) {
+        if (start.character > TextEditor.getLineAt(start).text.length) {
           resultingPosition = start.getLeft();
         } else {
           resultingPosition = start;
