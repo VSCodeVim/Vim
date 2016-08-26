@@ -179,6 +179,7 @@ export class SearchState {
 
   private _matchesDocVersion: number;
   private _searchDirection: SearchDirection = SearchDirection.Forward;
+  private isRegex: boolean;
 
   private _searchString = "";
   public get searchString(): string {
@@ -213,7 +214,11 @@ export class SearchState {
         ignorecase = false;
       }
 
-      const regex = new RegExp(search.replace(SearchState.specialCharactersRegex, "\\$&"), ignorecase ? 'gi' : 'g');
+      let searchRE = search;
+      if (!this.isRegex) {
+        searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
+      }
+      const regex = new RegExp(searchRE, ignorecase ? 'gi' : 'g');
 
       outer:
       for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
@@ -227,7 +232,7 @@ export class SearchState {
 
           this.matchRanges.push(new vscode.Range(
             new Position(lineIdx, result.index),
-            new Position(lineIdx, result.index + search.length)
+            new Position(lineIdx, result.index + result[0].length)
           ));
 
           if (result.index === regex.lastIndex) {
@@ -280,10 +285,11 @@ export class SearchState {
     }
   }
 
-  constructor(direction: SearchDirection, startPosition: Position, searchString = "") {
+  constructor(direction: SearchDirection, startPosition: Position, searchString = "", isRegex = false) {
     this._searchDirection = direction;
     this._searchCursorStartPosition = startPosition;
     this.searchString = searchString;
+    this.isRegex = isRegex;
   }
 }
 

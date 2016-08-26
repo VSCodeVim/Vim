@@ -1192,6 +1192,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "/ can search with regex",
+      start: ["|", "one two"],
+      keysPressed: "/o.*o",
+      end: ["", "|one two"]
+    });
+
+    newTest({
       title: "Can do C",
       start: ["export const options = {", "|", "};"],
       keysPressed: "C",
