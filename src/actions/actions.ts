@@ -3552,14 +3552,13 @@ class ToggleCaseAndMoveForward extends BaseMovement {
   }
 }
 
-abstract class IncrementDecrementNumberAction extends BaseMovement {
+abstract class IncrementDecrementNumberAction extends BaseCommand {
   modes = [ModeName.Normal];
-  canBePrefixedWithCount = true;
+  canBeRepeatedWithDot = true;
 
   offset: number;
 
-  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
-    count = count || 1;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const text = TextEditor.getLineAt(position).text;
 
     for (let { start, end, word } of Position.IterateWords(position.getWordLeft(true))) {
@@ -3572,11 +3571,12 @@ abstract class IncrementDecrementNumberAction extends BaseMovement {
       const num = NumericString.parse(word);
 
       if (num !== null) {
-        return this.replaceNum(num, this.offset * count, start, end);
+        vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+        return vimState;
       }
     }
     // No usable numbers, return the original position
-    return position;
+    return vimState;
   }
 
   public async replaceNum(start: NumericString, offset: number, startPos: Position, endPos: Position): Promise<Position> {
