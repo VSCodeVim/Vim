@@ -1077,46 +1077,37 @@ export class ModeHandler implements vscode.Disposable {
 
     if (vimState.currentMode === ModeName.Insert) {
 
-      if (TextEditor.getLineAt(vimState.cursorPosition).text.length <= 1) {
-        return false;
-      }
+      const pairOpen = {
+        "}": "{",
+        "]": "[",
+        ">": "<",
+        ")": "(",
+      };
+
+      const pairClose = {
+        "{": "}",
+        "[": "]",
+        "<": ">",
+        "(": ")",
+      };
 
       // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
       const letterToTheLeft = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character - 2];
-      switch (key) {
-        case "}":
-          if (letterToTheLeft === "{") { return true; }
-          break;
-        case "]":
-          if (letterToTheLeft === "[") { return true; }
-          break;
-        case ")":
-          if (letterToTheLeft === "(") { return true; }
-          break;
-        case ">":
-          if (letterToTheLeft === "<") { return true; }
-          break;
+      if (letterToTheLeft !== undefined) {
+        if (letterToTheLeft === pairOpen[key]) {
+          return true;
+        }
       }
 
       // This section is mostly for vscode auto closing brackets without a user inserting them
       const letterToTheRight = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character];
       if (letterToTheRight !== undefined) {
-        switch (key) {
-          case "{":
-            if (letterToTheRight === "}") { return true; }
-            break;
-          case "[":
-            if (letterToTheRight === "]") { return true; }
-            break;
-          case "(":
-            if (letterToTheRight === ")") { return true; }
-            break;
-          case "<":
-            if (letterToTheRight === ">") { return true; }
-            break;
+        if (letterToTheRight === pairClose[key]) {
+          return true;
         }
       }
     }
+
     return false;
   }
 
