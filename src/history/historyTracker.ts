@@ -81,6 +81,11 @@ class HistoryStep {
   cursorStart: Position | undefined;
 
   /**
+   * The cursor position at the end of this history step so far.
+   */
+  cursorEnd: Position | undefined;
+
+  /**
    * The position of every mark at the start of this history step.
    */
   marks: IMark[] = [];
@@ -89,11 +94,13 @@ class HistoryStep {
     changes?: DocumentChange[],
     isFinished?: boolean,
     cursorStart?: Position | undefined,
+    cursorEnd?: Position | undefined,
     marks?: IMark[]
   }) {
     this.changes   = init.changes = [];
     this.isFinished  = init.isFinished || false;
     this.cursorStart = init.cursorStart || undefined;
+    this.cursorEnd = init.cursorEnd || undefined;
     this.marks     = init.marks || [];
   }
 
@@ -176,7 +183,8 @@ export class HistoryTracker {
     this.historySteps.push(new HistoryStep({
       changes  : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
       isFinished : true,
-      cursorStart: new Position(0, 0)
+      cursorStart: new Position(0, 0),
+      cursorEnd: new Position(0, 0)
     }));
 
     this.finishCurrentStep();
@@ -378,6 +386,7 @@ export class HistoryTracker {
       }
     }
 
+    this.currentHistoryStep.cursorEnd = cursorPosition;
     this.oldText = newText;
   }
 
@@ -475,6 +484,17 @@ export class HistoryTracker {
     }
 
     return step.cursorStart;
+  }
+
+  getLastHistoryEndPosition(): Position | undefined {
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+    return this.historySteps[this.currentHistoryStepIndex].cursorEnd;
+  }
+
+  setLastHistoryEndPosition(pos: Position) {
+    this.historySteps[this.currentHistoryStepIndex].cursorEnd = pos;
   }
 
   /**

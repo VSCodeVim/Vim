@@ -693,6 +693,17 @@ export class ModeHandler implements vscode.Disposable {
     let ranRepeatableAction = false;
     let ranAction = false;
 
+    // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
+    // this needs to happen before any changes are made
+    let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
+    if (prevPos !== undefined) {
+      if (vimState.cursorPositionJustBeforeAnythingHappened.line !== prevPos.line ||
+        vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
+        vimState.previousFullAction = recordedState;
+        vimState.historyTracker.finishCurrentStep();
+      }
+    }
+
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
       ranAction = true;
@@ -799,6 +810,9 @@ export class ModeHandler implements vscode.Disposable {
         currentLineLength - 1
       );
     }
+
+    // Update the current history step to have the latest cursor position incase it is needed
+    vimState.historyTracker.setLastHistoryEndPosition(vimState.cursorPosition);
 
     return vimState;
   }
