@@ -1073,6 +1073,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can handle p in visual to end of line",
+      start: ["1234 |5678", "test test"],
+      keysPressed: "vllllyjvllllp",
+      end: ["1234 5678", "test |5678", ""]
+    });
+
+    newTest({
       title: "can repeat backspace twice",
       start: ["|11223344"],
       keysPressed: "A<backspace><backspace><escape>0.",
