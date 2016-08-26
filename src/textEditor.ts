@@ -25,10 +25,6 @@ export class TextEditor {
       // maintain all selections in multi-cursor mode.
       vscode.window.activeTextEditor.selections = selections;
     } else {
-      if (at) {
-        vscode.window.activeTextEditor.selection = new vscode.Selection(at, at);
-      }
-
       await vscode.commands.executeCommand('default:type', { text });
     }
 
