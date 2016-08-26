@@ -796,9 +796,8 @@ class CommandInsertInInsertMode extends BaseCommand {
       vimState.cursorPosition = newPosition;
       vimState.cursorStartPosition = newPosition;
     } else {
-
       if (vimState.isMultiCursor) {
-        await TextEditor.insert(char, position, !vimState.isMultiCursor);
+        await TextEditor.insert(char, position, false);
 
         vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
         vimState.cursorPosition      = vimState.cursorPosition.getRight();

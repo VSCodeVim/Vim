@@ -7,6 +7,16 @@ import { Position } from './motion/position';
 export class TextEditor {
   // TODO: Refactor args
 
+  /**
+   * Insert text in the document.
+   *
+   * If letVSCodeHandleKeystrokes is true, then we will insert the text at the
+   * position of the cursor, and allow VSCode to expand abbreviations, etc. (For example,
+   * in some contexts, if you type "("" VSCode will insert a matching )" automatically, etc.)
+   *
+   * If letVSCodeHandleKeystrokes is false, directly insert the character at all cursor positions,
+   * without expanding abbreviations.
+   */
   static async insert(text: string, at: Position | undefined = undefined,
             letVSCodeHandleKeystrokes: boolean | undefined = undefined): Promise<boolean> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
