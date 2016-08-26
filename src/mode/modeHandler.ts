@@ -93,6 +93,8 @@ export class VimState {
 
   public searchState: SearchState | undefined = undefined;
 
+  public searchStatePrevious: SearchState | undefined = undefined;
+
   public replaceState: ReplaceState | undefined = undefined;
 
   /**
