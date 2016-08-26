@@ -790,8 +790,6 @@ class CommandInsertInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
-    console.log('start! ', vimState.cursorPosition.toString(), vimState.cursorStartPosition.toString());
-
     if (char === "<backspace>") {
       const newPosition = await TextEditor.backspace(position);
 
@@ -805,11 +803,9 @@ class CommandInsertInInsertMode extends BaseCommand {
         vimState.cursorPosition      = vimState.cursorPosition.getRight();
       } else {
         vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-        vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
       }
     }
-
-    console.log('done! ', vimState.cursorPosition.toString(), vimState.cursorStartPosition.toString());
 
     return vimState;
   }

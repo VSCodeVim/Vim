@@ -511,8 +511,6 @@ export class ModeHandler implements vscode.Disposable {
   private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
     let selection = e.selections[0];
 
-    console.log(e.kind);
-
     if (ModeHandler.IsTesting) {
       return;
     }
@@ -956,8 +954,8 @@ export class ModeHandler implements vscode.Disposable {
     const selections: vscode.Selection[] = [];
 
     for (let i = 0; i < resultingCursorPositions.length; i++) {
-      console.log(resultingCursorStartPositions[i])
-      console.log(resultingCursorPositions[i])
+      console.log(resultingCursorStartPositions[i]);
+      console.log(resultingCursorPositions[i]);
 
       selections.push(new vscode.Selection(
         resultingCursorStartPositions[i],
