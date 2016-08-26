@@ -256,7 +256,7 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Get the position *count* lines up from this position, but not lower
+   * Get the position *count* lines up from this position, but not higher
    * than the end of the document.
    */
   public getUpByCount(count = 0): Position {
@@ -264,6 +264,22 @@ export class Position extends vscode.Position {
       Math.max(0, this.line - count),
       this.character
     );
+  }
+
+  /**
+   * Get the position *count* lines left from this position, but not farther
+   * than the beginning of the line
+   */
+  public getLeftByCount(count = 0): Position {
+    return new Position(this.line, Math.max(0, this.character - count));
+  }
+
+  /**
+   * Get the position *count* lines right from this position, but not farther
+   * than the end of the line
+   */
+  public getRightByCount(count = 0): Position {
+    return new Position(this.line, Math.min(TextEditor.getLineAt(this).text.length - 1, this.character + count));
   }
 
   /**

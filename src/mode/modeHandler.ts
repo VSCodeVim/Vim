@@ -24,6 +24,7 @@ import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
+import { PairMatcher } from './../matching/matcher';
 
 export enum VimSpecialCommands {
   Nothing,
@@ -1075,34 +1076,22 @@ export class ModeHandler implements vscode.Disposable {
     // }])> keys all start a new undo state when directly next to an {[(< opening character
     const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
 
+    if (key === undefined) {
+      return false;
+    }
+
     if (vimState.currentMode === ModeName.Insert) {
-
-      const pairOpen = {
-        "}": "{",
-        "]": "[",
-        ">": "<",
-        ")": "(",
-      };
-
-      const pairClose = {
-        "{": "}",
-        "[": "]",
-        "<": ">",
-        "(": ")",
-      };
-
       // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
-      const letterToTheLeft = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character - 2];
-      if (letterToTheLeft !== undefined) {
-        if (letterToTheLeft === pairOpen[key]) {
+      let result = PairMatcher.nextPairedChar(vimState.cursorPosition, key, false);
+      if (result !== undefined) {
+        if (vimState.cursorPosition.compareTo(result) === 0) {
           return true;
         }
       }
 
-      // This section is mostly for vscode auto closing brackets without a user inserting them
-      const letterToTheRight = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character];
-      if (letterToTheRight !== undefined) {
-        if (letterToTheRight === pairClose[key]) {
+      result = PairMatcher.nextPairedChar(vimState.cursorPosition.getLeft(), key, true);
+      if (result !== undefined) {
+        if (vimState.cursorPosition.getLeftByCount(2).compareTo(result) === 0) {
           return true;
         }
       }
