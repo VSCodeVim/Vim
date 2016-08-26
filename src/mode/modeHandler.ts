@@ -295,7 +295,7 @@ export class SearchState {
     }
   }
 
-  constructor(direction: SearchDirection, startPosition: Position, searchString = "", isRegex = false) {
+  constructor(direction: SearchDirection, startPosition: Position, searchString = "", { isRegex = false } = {}) {
     this._searchDirection = direction;
     this._searchCursorStartPosition = startPosition;
     this.searchString = searchString;

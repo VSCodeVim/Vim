@@ -782,7 +782,7 @@ export class CommandSearchForwards extends BaseCommand {
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", true);
+    vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     return vimState;
