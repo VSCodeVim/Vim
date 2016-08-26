@@ -218,7 +218,17 @@ export class SearchState {
       if (!this.isRegex) {
         searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
       }
-      const regex = new RegExp(searchRE, ignorecase ? 'gi' : 'g');
+
+      const regexFlags = ignorecase ? 'gi' : 'g';
+
+      let regex: RegExp;
+      try {
+        regex = new RegExp(searchRE, regexFlags);
+      } catch (err) {
+        // Couldn't compile the regexp, try again with special characters escaped
+        searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
+        regex = new RegExp(searchRE, regexFlags);
+      }
 
       outer:
       for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
