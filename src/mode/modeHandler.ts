@@ -24,6 +24,7 @@ import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
+import { PairMatcher } from './../matching/matcher';
 
 export enum VimSpecialCommands {
   Nothing,
@@ -1086,35 +1087,32 @@ export class ModeHandler implements vscode.Disposable {
     ModeHandler._statusBarItem.show();
   }
 
-  // Return true if a new undo point should be created based on the keypress
+  // Return true if a new undo point should be created based on brackets and parenthesis
   private createUndoPointForBrackets(vimState: VimState): boolean {
     // }])> keys all start a new undo state when directly next to an {[(< opening character
     const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
 
-    if (vimState.currentMode === ModeName.Insert) {
+    if (key === undefined) {
+      return false;
+    }
 
-      if (TextEditor.getLineAt(vimState.cursorPosition).text.length <= 1) {
-        return false;
+    if (vimState.currentMode === ModeName.Insert) {
+      // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
+      let result = PairMatcher.nextPairedChar(vimState.cursorPosition, key, false);
+      if (result !== undefined) {
+        if (vimState.cursorPosition.compareTo(result) === 0) {
+          return true;
+        }
       }
 
-      const letterToTheLeft = TextEditor.getLineAt(vimState.cursorPosition).text[vimState.cursorPosition.character - 2];
-      switch (key) {
-        case "}":
-          if (letterToTheLeft === "{") { return true; }
-          break;
-        case "]":
-          if (letterToTheLeft === "[") { return true; }
-          break;
-        case ")":
-          if (letterToTheLeft === "(") { return true; }
-          break;
-        case ">":
-          if (letterToTheLeft === "<") { return true; }
-          break;
-        default:
-          return false;
+      result = PairMatcher.nextPairedChar(vimState.cursorPosition.getLeft(), key, true);
+      if (result !== undefined) {
+        if (vimState.cursorPosition.getLeftByCount(2).compareTo(result) === 0) {
+          return true;
+        }
       }
     }
+
     return false;
   }
 
