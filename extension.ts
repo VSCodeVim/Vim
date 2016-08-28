@@ -12,7 +12,7 @@ import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
-import './src/globals';
+import { Globals } from './src/globals';
 
 interface VSCodeKeybinding {
   key: string;
@@ -226,7 +226,7 @@ async function handleKeyEvent(key: string): Promise<void> {
 async function handleActiveEditorChange(): Promise<void> {
 
   // Don't run this event handler during testing
-  if(isTesting){
+  if (Globals.isTesting) {
     return;
   }
 

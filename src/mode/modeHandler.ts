@@ -25,6 +25,7 @@ import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../matching/matcher';
+import { Globals } from '../../src/globals';
 
 export enum VimSpecialCommands {
   Nothing,
@@ -469,7 +470,7 @@ export class ModeHandler implements vscode.Disposable {
    * mouse events.
    */
   constructor(filename = "") {
-    ModeHandler.IsTesting = isTesting;
+    ModeHandler.IsTesting = Globals.isTesting;
 
     this.filename = filename;
 
@@ -508,7 +509,7 @@ export class ModeHandler implements vscode.Disposable {
     vscode.window.onDidChangeTextEditorSelection(async (e) => {
       let selection = e.selections[0];
 
-      if (isTesting) {
+      if (ModeHandler.IsTesting) {
         return;
       }
 
