@@ -32,6 +32,10 @@ export class PairMatcher {
      */
     const toFind = this.pairings[charToMatch];
 
+    if (toFind === undefined) {
+      return undefined;
+    }
+
     let stackHeight = closed ? 0 : 1;
     let matchedPosition: Position | undefined = undefined;
 
