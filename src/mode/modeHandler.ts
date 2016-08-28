@@ -468,7 +468,7 @@ export class ModeHandler implements vscode.Disposable {
    * isTesting speeds up tests drastically by turning off our checks for
    * mouse events.
    */
-  constructor(isTesting = true, filename = "") {
+  constructor(filename = "") {
     ModeHandler.IsTesting = isTesting;
 
     this.filename = filename;
