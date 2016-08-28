@@ -25,6 +25,7 @@ import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../matching/matcher';
+import { Globals } from '../../src/globals';
 
 export enum VimSpecialCommands {
   Nothing,
@@ -484,8 +485,8 @@ export class ModeHandler implements vscode.Disposable {
    * isTesting speeds up tests drastically by turning off our checks for
    * mouse events.
    */
-  constructor(isTesting = true, filename = "") {
-    ModeHandler.IsTesting = isTesting;
+  constructor(filename = "") {
+    ModeHandler.IsTesting = Globals.isTesting;
 
     this.filename = filename;
 
@@ -524,7 +525,7 @@ export class ModeHandler implements vscode.Disposable {
     vscode.window.onDidChangeTextEditorSelection(async (e) => {
       let selection = e.selections[0];
 
-      if (isTesting) {
+      if (ModeHandler.IsTesting) {
         return;
       }
 

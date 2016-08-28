@@ -12,6 +12,7 @@ import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
+import { Globals } from './src/globals';
 
 interface VSCodeKeybinding {
   key: string;
@@ -71,7 +72,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
   if (!modeHandlerToEditorIdentity[activeEditorId.toString()]) {
-    const newModeHandler = new ModeHandler(false, activeEditorId.fileName);
+    const newModeHandler = new ModeHandler(activeEditorId.fileName);
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
@@ -109,6 +110,8 @@ class CompositionState {
 export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   let compositionState = new CompositionState();
+
+  vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
   registerCommand(context, 'type', async (args) => {
     if (!vscode.window.activeTextEditor) {
@@ -218,6 +221,19 @@ async function handleKeyEvent(key: string): Promise<void> {
     promise   : async () => { await mh.handleKeyEvent(key); },
     isRunning : false
   });
+}
+
+async function handleActiveEditorChange(): Promise<void> {
+
+  // Don't run this event handler during testing
+  if (Globals.isTesting) {
+    return;
+  }
+
+  if (vscode.window.activeTextEditor !== undefined) {
+    const mh = await getAndUpdateModeHandler();
+    mh.updateView(mh.vimState, false);
+  }
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
