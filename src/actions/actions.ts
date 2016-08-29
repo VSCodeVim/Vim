@@ -3571,20 +3571,90 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const text = TextEditor.getLineAt(position).text;
 
-    for (let { start, end, word } of Position.IterateWords(position.getWordLeft(true))) {
-      // '-' doesn't count as a word, but is important to include in parsing the number
-      if (text[start.character - 1] === '-') {
-        start = start.getLeft();
-        word = text[start.character] + word;
-      }
-      // Strict number parsing so "1a" doesn't silently get converted to "1"
-      const num = NumericString.parse(word);
+    if (text.length === 0) {
+      return vimState;
+    }
 
-      if (num !== null) {
-        vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
-        return vimState;
+    let numFound = false;
+    let numStart = 0;
+    let numEnd = 0;
+    let numString = "";
+    let negative = false;
+    let isHex = false;
+
+    // Character to start searching at (beginning of this word)
+    let startSearchPos = vimState.cursorPosition.getWordLeft(true).character;
+
+    // Was the previous char a negative sign?
+    // Found a potential negative number, record the start position just incase
+    if (text[startSearchPos - 1] === '-') {
+      numStart = startSearchPos - 1;
+      negative = true;
+    }
+
+    // Handle the case where this is the first character on the line, check for negative
+    if (text[startSearchPos] === '-') {
+      negative = true;
+      startSearchPos += 1;
+    }
+
+    // Iterate over characters and compute the number
+    // Needs to handle hex, octal, negative, ints
+    for (let i = startSearchPos; i < text.length; i++) {
+      const char = text[i];
+      const val = NumericString.parse(char);
+
+      // Set a hex flag if it starts with 0x
+      if (numString.length > 1 && !isHex) {
+        if (numString[0] === '0' && numString[1] === 'x') {
+          isHex = true;
+        }
+      }
+
+      // Add to the number string if it is a number or potential hex num
+      if ((val !== null) || (numFound && char === 'x') || (numFound && isHex)) {
+        // Found first digit of a number!
+        // Don't reset start position if a negative flag is already started
+        if (!numFound && !negative) {
+          numStart = i;
+        }
+        numString += char;
+        numEnd = i;
+        numFound = true;
+      } else {
+        // Last digit was a character ago, we found the whole number, quit looking
+        if (numFound) {
+          break;
+        }
+        // This was not a negative number! Continue looking...
+        negative = false;
       }
     }
+
+    // This was a negative number, add in the negative sign
+    if (negative) {
+      numString = "-" + numString;
+    }
+
+    // If we flagged this as hex but it actually just happened to end in x, remove the x
+    if (numString[numString.length - 1] === 'x') {
+      numString = numString.substring(0, numString.length - 1);
+      numEnd -= 1;
+    }
+
+    // Strict number parsing so "1a" doesn't silently get converted to "1"
+    const num = NumericString.parse(numString);
+
+    if (num !== null) {
+      // Set start and end positions based on where the number was found
+      let start = new Position(position.line, numStart);
+      let end = new Position(position.line, numEnd);
+
+      // Perform the actual replacement with the new number
+      vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+      return vimState;
+    }
+
     // No usable numbers, return the original position
     return vimState;
   }

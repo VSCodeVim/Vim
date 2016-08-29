@@ -1164,6 +1164,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can ctrl-a on an number in a word ",
+      start: ["|test3"],
+      keysPressed: "<c-a>",
+      end: ["test|4"]
+    });
+
+    newTest({
       title: "can ctrl-x correctly behind a word",
       start: ["|one 10"],
       keysPressed: "<c-x>",
