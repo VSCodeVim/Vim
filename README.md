@@ -107,6 +107,14 @@ Put the following in your `settings.json`:
 
 and restart VSCode.
 
+#### How can I enable yanking to system clipboard by default?
+
+Put the following in your `settings.json`:
+
+```    "vim.useSystemClipboard": true```
+
+and restart VSCode.
+
 #### Vim option override sequence.
 
 The way we load Vim options is slightly different from native Vim as there is some overlap between Code and Vim. The option loading sequence is as below.

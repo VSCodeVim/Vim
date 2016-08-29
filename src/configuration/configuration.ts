@@ -50,6 +50,7 @@ export class Configuration {
   }
 
   useSolidBlockCursor: boolean = false;
+  useSystemClipboard: boolean = false;
   useCtrlKeys: boolean = false;
   scroll: number = 20;
   hlsearch: boolean = false;
