@@ -1992,13 +1992,13 @@ class MoveRepeat extends BaseMovement {
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     const movement = VimState.lastRepeatableMovement;
     if (movement) {
-      const result = await movement.execActionWithCount(position,vimState, count);
+      const result = await movement.execActionWithCount(position, vimState, count);
       /**
        * For t<character> and T<character> commands vim executes ; as 2;
        * This way the cursor will get to the next instance of <character>
        */
       if (result instanceof Position && position.isEqual(result) && count <= 1) {
-        return await movement.execActionWithCount(position,vimState, 2);
+        return await movement.execActionWithCount(position, vimState, 2);
       }
       return result;
     }
@@ -2013,10 +2013,10 @@ class MoveRepeatReversed extends BaseMovement {
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     const movement = VimState.lastRepeatableMovement;
     if (movement) {
-      let result = await movement.reverse().execActionWithCount(position,vimState, count);
+      let result = await movement.reverse().execActionWithCount(position, vimState, count);
       // For t<character> and T<character> commands vim executes ; as 2;
       if (result instanceof Position && position.isEqual(result) && count <= 1) {
-        result = await movement.reverse().execActionWithCount(position,vimState, 2);
+        result = await movement.reverse().execActionWithCount(position, vimState, 2);
       }
       VimState.lastRepeatableMovement = movement;
       return result;
