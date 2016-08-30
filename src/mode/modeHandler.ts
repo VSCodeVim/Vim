@@ -138,8 +138,6 @@ export class VimState {
     return VisualBlockMode.getBottomRightPosition(this.cursorStartPosition, this.cursorPosition);
   }
 
-  public registerName = '"';
-
   /**
    * This is for oddball commands that don't manipulate text in any way.
    */
@@ -346,6 +344,11 @@ export class ReplaceState {
  *   * delete operator
  */
 export class RecordedState {
+
+  constructor() {
+    const useClipboard = Configuration.getInstance().useSystemClipboard;
+    this.registerName = useClipboard ? '*' : '"';
+  }
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
    * multiple length movements, e.g. gg.
@@ -389,7 +392,7 @@ export class RecordedState {
   /**
    * The register name for this action.
    */
-  public registerName: string = '"';
+  public registerName: string;
 
   public clone(): RecordedState {
     const res = new RecordedState();
