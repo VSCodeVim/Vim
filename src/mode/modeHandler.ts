@@ -951,12 +951,12 @@ export class ModeHandler implements vscode.Disposable {
       switch (command.type) {
         case "insertText":
           if (command.letVSCodeInsert) {
-            await TextEditor.insert(command.text, command.position, true);
+            await TextEditor.insert(command.text);
 
             vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
             vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
           } else {
-            await TextEditor.insert(command.text);
+            await TextEditor.insert(command.text, command.position, false);
           }
         break;
 
