@@ -54,8 +54,8 @@ Status | Command | Description
 :white_check_mark:   |:1234:  F{char}	| to the Nth occurrence of {char} to the left
 :white_check_mark:   |:1234:  t{char}	| till before the Nth occurrence of {char} to the right
 :white_check_mark:   |:1234:  T{char}	| till before the Nth occurrence of {char} to the left
-   |:1234:  ;	| repeat the last "f", "F", "t", or "T" N times
-   |:1234:  ,	| repeat the last "f", "F", "t", or "T" N times in opposite direction
+:white_check_mark:   |:1234:  ;	| repeat the last "f", "F", "t", or "T" N times
+:white_check_mark:   |:1234:  ,	| repeat the last "f", "F", "t", or "T" N times in opposite direction
 
 ## Up-down motions
 

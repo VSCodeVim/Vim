@@ -238,6 +238,16 @@ export abstract class BaseMovement extends BaseAction {
 }
 
 /**
+ * Movements that are repeatable by ; and ,
+ */
+export abstract class BaseRepeatableMovement extends BaseMovement {
+  /**
+   * Get the reverse of the this movement. f<character> => F<character>
+   */
+  public abstract reverse(): BaseRepeatableMovement;
+}
+
+/**
  * A command is something like <escape>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
@@ -1976,7 +1986,47 @@ class MoveToColumn extends BaseMovement {
 }
 
 @RegisterAction
-class MoveFindForward extends BaseMovement {
+class MoveRepeat extends BaseMovement {
+  keys = [";"];
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    const movement = VimState.lastRepeatableMovement;
+    if (movement) {
+      const result = await movement.execActionWithCount(position,vimState, count);
+      /**
+       * For t<character> and T<character> commands vim executes ; as 2;
+       * This way the cursor will get to the next instance of <character>
+       */
+      if (result instanceof Position && position.isEqual(result) && count <= 1) {
+        return await movement.execActionWithCount(position,vimState, 2);
+      }
+      return result;
+    }
+    return position;
+  }
+}
+
+@RegisterAction
+class MoveRepeatReversed extends BaseMovement {
+  keys = [","];
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    const movement = VimState.lastRepeatableMovement;
+    if (movement) {
+      let result = await movement.reverse().execActionWithCount(position,vimState, count);
+      // For t<character> and T<character> commands vim executes ; as 2;
+      if (result instanceof Position && position.isEqual(result) && count <= 1) {
+        result = await movement.reverse().execActionWithCount(position,vimState, 2);
+      }
+      VimState.lastRepeatableMovement = movement;
+      return result;
+    }
+    return position;
+  }
+}
+
+@RegisterAction
+class MoveFindForward extends BaseRepeatableMovement {
   keys = ["f", "<character>"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -1990,14 +2040,22 @@ class MoveFindForward extends BaseMovement {
 
     if (vimState.recordedState.operator) {
       result = result.getRight();
+    } else {
+      VimState.lastRepeatableMovement = this;
     }
 
     return result;
   }
+
+  public reverse() : BaseRepeatableMovement {
+    let reverse = new MoveFindBackward();
+    reverse.keysPressed = ['F', this.keysPressed[1]];
+    return reverse;
+  }
 }
 
 @RegisterAction
-class MoveFindBackward extends BaseMovement {
+class MoveFindBackward extends BaseRepeatableMovement {
   keys = ["F", "<character>"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -2007,15 +2065,23 @@ class MoveFindBackward extends BaseMovement {
 
     if (!result) {
       return { start: position, stop: position, failed: true };
+    } else {
+      VimState.lastRepeatableMovement = this;
     }
 
     return result;
+  }
+
+  public reverse() : BaseRepeatableMovement {
+    let reverse = new MoveFindForward();
+    reverse.keysPressed = ['f', this.keysPressed[1]];
+    return reverse;
   }
 }
 
 
 @RegisterAction
-class MoveTilForward extends BaseMovement {
+class MoveTilForward extends BaseRepeatableMovement {
   keys = ["t", "<character>"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -2029,14 +2095,22 @@ class MoveTilForward extends BaseMovement {
 
     if (vimState.recordedState.operator) {
       result = result.getRight();
+    } else {
+      VimState.lastRepeatableMovement = this;
     }
 
     return result;
   }
+
+  public reverse() : BaseRepeatableMovement {
+    let reverse = new MoveTilBackward();
+    reverse.keysPressed = ['T', this.keysPressed[1]];
+    return reverse;
+  }
 }
 
 @RegisterAction
-class MoveTilBackward extends BaseMovement {
+class MoveTilBackward extends BaseRepeatableMovement {
   keys = ["T", "<character>"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -2046,9 +2120,17 @@ class MoveTilBackward extends BaseMovement {
 
     if (!result) {
       return { start: position, stop: position, failed: true };
+    } else {
+      VimState.lastRepeatableMovement = this;
     }
 
     return result;
+  }
+
+  public reverse() : BaseRepeatableMovement {
+    let reverse = new MoveTilForward();
+    reverse.keysPressed = ['t', this.keysPressed[1]];
+    return reverse;
   }
 }
 
