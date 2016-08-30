@@ -18,7 +18,7 @@ import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
-  BaseOperator, isIMovement, BaseRepeatableMovement,
+  BaseOperator, isIMovement,
   KeypressState } from './../actions/actions';
 import { Position } from './../motion/position';
 import { RegisterMode } from './../register/register';
@@ -54,7 +54,7 @@ export class VimState {
 
   public historyTracker: HistoryTracker;
 
-  public static lastRepeatableMovement : BaseRepeatableMovement | undefined = undefined;
+  public static lastRepeatableMovement : BaseMovement | undefined = undefined;
 
   /**
    * The keystroke sequence that made up our last complete action (that can be
