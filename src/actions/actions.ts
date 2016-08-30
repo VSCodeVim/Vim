@@ -1415,6 +1415,13 @@ class CommandCloseFold extends CommandFold {
   keys = ["z", "c"];
   commandName = "editor.fold";
   canBePrefixedWithCount = true;
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    await vscode.commands.executeCommand("editor.fold", {levels: timesToRepeat, direction: "up"});
+
+    return vimState;
+  }
 }
 
 @RegisterAction
@@ -1428,6 +1435,13 @@ class CommandOpenFold extends CommandFold {
   keys = ["z", "o"];
   commandName = "editor.unfold";
   canBePrefixedWithCount = true;
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    await vscode.commands.executeCommand("editor.unfold", {levels: timesToRepeat, direction: "up"});
+
+    return vimState;
+  }
 }
 
 @RegisterAction
