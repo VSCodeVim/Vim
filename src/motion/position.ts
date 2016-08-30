@@ -58,6 +58,13 @@ export class Position extends vscode.Position {
     return p2;
   }
 
+  public isEarlierThan(other: Position): boolean {
+    if (this.line < other.line) { return true; }
+    if (this.line === other.line && this.character < other.character) { return true; }
+
+    return false;
+  }
+
   /**
    * Iterates over every position in the document starting at start, returning
    * at every position the current line text, character text, and a position object.

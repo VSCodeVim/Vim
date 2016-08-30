@@ -1,6 +1,6 @@
 import { VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
-import { Transformation } from './../transformations/transformations';
+import { Transformation, InsertTextTransformation } from './../transformations/transformations';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
 import { TextEditor } from './../textEditor';
 import { Range } from './../motion/range';
@@ -11,6 +11,7 @@ import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import * as vscode from 'vscode';
+import * as _ from 'lodash';
 
 const controlKeys: string[] = [
   "ctrl",
@@ -284,7 +285,7 @@ export abstract class BaseCommand extends BaseAction {
     }
 
     let timesToRepeat  = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
-    let diffs: { start: PositionDiff, stop: PositionDiff}[] = [];
+    let resultingCursors: Range[] = [];
     let i              = 0;
 
     const cursorsToIterateOver = vimState.allCursors
@@ -301,35 +302,31 @@ export abstract class BaseCommand extends BaseAction {
         vimState = await this.exec(stop, vimState);
       }
 
-      diffs.push({
-        start: vimState.cursorStartPosition.subtract(start),
-        stop:  vimState.cursorPosition.subtract(stop),
-      });
-    }
-
-    /*
-    let lastLine = -1;
-
-    for (const diff of diffs) {
-      if (diff.start.line === lastLine) {
-
-      }
-
-      lastLine = diff.stop.line;
-    }
-    */
-
-    let resultingCursors: Range[] = [];
-
-    for (let i = 0; i < diffs.length; i++) {
-      const { start: startDiff, stop: stopDiff } = diffs[i];
-      const oldCursor = cursorsToIterateOver[i];
-
       resultingCursors.push(new Range(
-        oldCursor.start.add(startDiff),
-        oldCursor.stop.add(stopDiff),
+        vimState.cursorStartPosition,
+        vimState.cursorPosition,
       ));
     }
+
+    const insertions: InsertTextTransformation[] = _.filter(vimState.recordedState.transformations, x => x.type === "insertText") as any;
+
+    resultingCursors = resultingCursors.map(range => {
+      let start = range.start;
+      let stop  = range.stop;
+
+      let beforeStart = _.filter(insertions, x => x.position!.line === start.line && x.position!.isBeforeOrEqual(start));
+      let beforeStop  = _.filter(insertions, x => x.position!.line === stop.line  && x.position!.isBeforeOrEqual(stop));
+
+      for (const insert of beforeStart) {
+        start = start.getRight(insert.text.length);
+      }
+
+      for (const insert of beforeStop) {
+        stop = stop.getRight(insert.text.length);
+      }
+
+      return new Range(start, stop);
+    });
 
     vimState.allCursors = resultingCursors;
 
@@ -836,8 +833,8 @@ class CommandInsertInInsertMode extends BaseCommand {
           letVSCodeInsert: false,
         });
 
-        vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
-        vimState.cursorPosition      = vimState.cursorPosition.getRight();
+        // vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
+        // vimState.cursorPosition      = vimState.cursorPosition.getRight();
       } else {
         vimState.recordedState.transformations.push({
           type           : "insertText",

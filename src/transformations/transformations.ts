@@ -3,7 +3,7 @@ import { Position } from "./../motion/position";
 /**
  * Represents inserting text at a position in the document.
  */
-interface InsertTextTransformation {
+export interface InsertTextTransformation {
   type           : "insertText";
   text           : string;
   position?      : Position;
@@ -13,7 +13,7 @@ interface InsertTextTransformation {
 /**
  * Represents deleting text at a position in the document.
  */
-interface DeleteTextTransformation {
+export interface DeleteTextTransformation {
   type    : "deleteText";
   position: Position;
 }
@@ -21,14 +21,14 @@ interface DeleteTextTransformation {
 /**
  * Represents pressing ':'
  */
-interface ShowCommandLine {
+export interface ShowCommandLine {
   type: "showCommandLine";
 }
 
 /**
  * Represents pressing '.'
  */
-interface Dot {
+export interface Dot {
   type: "dot";
 }
 
@@ -37,6 +37,3 @@ export type Transformation
   | ShowCommandLine
   | Dot
   | DeleteTextTransformation;
-
-function blah(x: Transformation) {
-}
