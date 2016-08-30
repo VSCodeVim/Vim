@@ -23,7 +23,7 @@ import {
   KeypressState
 } from './../actions/actions';
 import { Position } from './../motion/position';
-import { Range } from './../motion/range'
+import { Range } from './../motion/range';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 
@@ -1076,7 +1076,7 @@ export class ModeHandler implements vscode.Disposable {
       vscode.window.activeTextEditor.selections = selections;
     }
 
-    // Scroll to position of cursor
+    // Scroll to position of cursor TODO multi
 
     vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
 

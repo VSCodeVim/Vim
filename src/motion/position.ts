@@ -6,6 +6,24 @@ import { TextEditor } from "./../textEditor";
 import { VimState } from './../mode/modeHandler';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
 
+/**
+ * Represents a difference between two positions. Add it to a position
+ * to get another position.
+ */
+export class PositionDiff {
+  constructor(
+    public line: number,
+    public character: number
+  ) { }
+
+  public add(other: PositionDiff) {
+    return new PositionDiff(
+      this.line + other.line,
+      this.character + other.character
+    );
+  }
+}
+
 export class Position extends vscode.Position {
   private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
   private static NonBigWordCharacters = "";
@@ -153,6 +171,28 @@ export class Position extends vscode.Position {
     if (Position.EarlierOf(p1, p2) === p1) { return p2; }
 
     return p1;
+  }
+
+  /**
+   * Subtracts another position from this one, returning the
+   * difference between the two.
+   */
+  public subtract(other: Position): PositionDiff {
+    return new PositionDiff(
+      this.line      - other.line,
+      this.character - other.character,
+    );
+  }
+
+  /**
+   * Adds a PositionDiff to this position, returning a new
+   * position.
+   */
+  public add(other: PositionDiff): Position {
+    return new Position(
+      this.line + other.line,
+      this.character + other.character
+    );
   }
 
   public setLocation(line: number, character: number) : Position {

@@ -2,10 +2,10 @@ import { VimSpecialCommands, VimState, SearchState, SearchDirection, ReplaceStat
 import { ModeName } from './../mode/mode';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
 import { TextEditor } from './../textEditor';
-import { Range } from './../motion/range'
+import { Range } from './../motion/range';
 import { Register, RegisterMode } from './../register/register';
 import { NumericString } from './../number/numericString';
-import { Position } from './../motion/position';
+import { Position, PositionDiff } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
@@ -282,12 +282,15 @@ export abstract class BaseCommand extends BaseAction {
       return vimState;
     }
 
-    // TODO - Need to sort cursors by range, go in reverse!
-    let timesToRepeat       = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
-    let allCursors: Range[] = [];
-    let i = 0;
+    let timesToRepeat  = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let diffs: { start: PositionDiff, stop: PositionDiff}[] = [];
+    let i              = 0;
 
-    for (const { start, stop } of vimState.allCursors) {
+    const cursorsToIterateOver = vimState.allCursors
+      .map(x => new Range(x.start, x.stop))
+      .sort((a, b) => a.start.line > b.start.line || (a.start.line === b.start.line && a.start.character > b.start.character) ? 1 : -1);
+
+    for (const { start, stop } of cursorsToIterateOver) {
       for (let j = 0; j < timesToRepeat; j++) {
         vimState.cursorPosition      = stop;
         vimState.cursorStartPosition = start;
@@ -295,12 +298,39 @@ export abstract class BaseCommand extends BaseAction {
         this.multicursorIndex = i++;
 
         vimState = await this.exec(stop, vimState);
-
-        allCursors.push(new Range(vimState.cursorStartPosition, vimState.cursorPosition));
       }
+
+      diffs.push({
+        start: vimState.cursorStartPosition.subtract(start),
+        stop:  vimState.cursorPosition.subtract(stop),
+      });
     }
 
-    vimState.allCursors = allCursors;
+    /*
+    let lastLine = -1;
+
+    for (const diff of diffs) {
+      if (diff.start.line === lastLine) {
+
+      }
+
+      lastLine = diff.stop.line;
+    }
+    */
+
+    let resultingCursors: Range[] = [];
+
+    for (let i = 0; i < diffs.length; i++) {
+      const { start: startDiff, stop: stopDiff } = diffs[i];
+      const oldCursor = cursorsToIterateOver[i];
+
+      resultingCursors.push(new Range(
+        oldCursor.start.add(startDiff),
+        oldCursor.stop.add(stopDiff),
+      ));
+    }
+
+    vimState.allCursors = resultingCursors;
 
     return vimState;
   }
