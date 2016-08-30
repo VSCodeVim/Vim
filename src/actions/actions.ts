@@ -846,9 +846,11 @@ export class DeleteOperator extends BaseOperator {
         // Vim does this weird thing where it allows you to select and delete
         // the newline character, which it places 1 past the last character
         // in the line. Here we interpret a character position 1 past the end
-        // as selecting the newline character.
-        if (end.character === TextEditor.getLineAt(end).text.length + 1) {
-          end = end.getDown(0);
+        // as selecting the newline character. Don't allow this in visual block mode
+        if (vimState.currentMode !== ModeName.VisualBlock) {
+          if (end.character === TextEditor.getLineAt(end).text.length + 1) {
+            end = end.getDown(0);
+          }
         }
 
         // If we delete linewise to the final line of the document, we expect the line
@@ -2685,8 +2687,26 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const deleteOperator = new DeleteOperator();
 
+    // Check to see number in lines of block
+    let blockLines = 0;
+    let blockStart = position;
+    let blockEnd = position;
+    for (const {start, end} of Position.IterateLine(vimState)) {
+      blockStart = start;
+      blockEnd = end;
+      blockLines += 1;
+    }
+
+    // Do a regular visual 'change' if only 1 line of block is selected
+    if (blockLines < 2) {
+      await new DeleteOperator().run(vimState, blockStart, blockEnd.getLeft());
+      vimState.cursorPosition = vimState.cursorStartPosition;
+      vimState.currentMode = ModeName.Insert;
+      return vimState;
+    }
+
     for (const { start, end } of Position.IterateLine(vimState)) {
-      await deleteOperator.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, true);
+      await deleteOperator.delete(start, end.getLeft(), vimState.currentMode, vimState.effectiveRegisterMode(), vimState, true);
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;
@@ -2786,7 +2806,7 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 
         posChange = -1;
       } else {
-        await TextEditor.insert(this.keysPressed[0], insertPos.getLeft());
+        await TextEditor.insert(this.keysPressed[0], insertPos);
 
         posChange = 1;
       }
