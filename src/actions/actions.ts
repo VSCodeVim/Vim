@@ -1729,7 +1729,7 @@ class COmmandTopScroll extends BaseCommand {
   keys = ["z", "t"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand('revealLine', {lineNumber: 1, at: 'top'});
+    await vscode.commands.executeCommand('revealLine', {lineNumber: position.line, at: 'top'});
     return vimState;
   }
 }
@@ -1740,7 +1740,7 @@ class CommandBottomScroll extends BaseCommand {
   keys = ["z", "b"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand('revealLine', {lineNumber: 10, at: 'bottom'});
+    await vscode.commands.executeCommand('revealLine', {lineNumber: position.line, at: 'bottom'});
     return vimState;
   }
 }
