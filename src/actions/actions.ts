@@ -1,5 +1,6 @@
-import { VimSpecialCommands, VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
+import { VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
+import { Transformation } from './../transformations/transformations';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
 import { TextEditor } from './../textEditor';
 import { Range } from './../motion/range';
@@ -819,21 +820,30 @@ class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<backspace>") {
-      const newPosition = await TextEditor.backspace(position);
+      vimState.recordedState.transformations.push({
+        type           : "deleteText",
+        position       : position,
+      });
 
-      vimState.cursorPosition = newPosition;
-      vimState.cursorStartPosition = newPosition;
+      vimState.cursorPosition      = vimState.cursorPosition.getLeft();
+      vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
     } else {
       if (vimState.isMultiCursor) {
-        await TextEditor.insert(char, position, false);
+        vimState.recordedState.transformations.push({
+          type           : "insertText",
+          text           : char,
+          position       : position,
+          letVSCodeInsert: false,
+        });
 
         vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
         vimState.cursorPosition      = vimState.cursorPosition.getRight();
       } else {
-        await TextEditor.insert(char);
-
-        vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-        vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+        vimState.recordedState.transformations.push({
+          type           : "insertText",
+          text           : char,
+          letVSCodeInsert: true,
+        });
       }
     }
 
@@ -1441,7 +1451,9 @@ class CommandShowCommandLine extends BaseCommand {
   keys = [":"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimSpecialCommands.ShowCommandLine;
+    vimState.recordedState.transformations.push({
+      type: "showCommandLine"
+    });
 
     if (vimState.currentMode === ModeName.Normal) {
       vimState.commandInitialText = "";
@@ -1459,7 +1471,9 @@ class CommandDot extends BaseCommand {
   keys = ["."];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.commandAction = VimSpecialCommands.Dot;
+    vimState.recordedState.transformations.push({
+      type: "dot"
+    });
 
     return vimState;
   }

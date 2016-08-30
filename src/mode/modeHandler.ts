@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
 import { getAndUpdateModeHandler } from './../../extension';
+import { Transformation } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
@@ -26,12 +27,6 @@ import { Position } from './../motion/position';
 import { Range } from './../motion/range';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
-
-export enum VimSpecialCommands {
-  Nothing,
-  ShowCommandLine,
-  Dot
-}
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -144,11 +139,6 @@ export class VimState {
   }
 
   public registerName = '"';
-
-  /**
-   * This is for oddball commands that don't manipulate text in any way.
-   */
-  public commandAction = VimSpecialCommands.Nothing;
 
   public commandInitialText = "";
 
@@ -335,6 +325,8 @@ export class RecordedState {
   public hasRunOperator = false;
 
   public visualBlockInsertionType = VisualBlockInsertionType.Insert;
+
+  public transformations: Transformation[] = [];
 
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
@@ -735,9 +727,7 @@ export class ModeHandler implements vscode.Disposable {
     if (action instanceof BaseCommand) {
       vimState = await action.execCount(vimState.cursorPosition, vimState);
 
-      if (vimState.commandAction !== VimSpecialCommands.Nothing) {
-        await this.executeCommand(vimState);
-      }
+      await this.executeCommand(vimState);
 
       if (action.isCompleteAction) {
         ranAction = true;
@@ -957,26 +947,42 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async executeCommand(vimState: VimState): Promise<VimState> {
-    const command = vimState.commandAction;
+    for (const command of vimState.recordedState.transformations) {
+      switch (command.type) {
+        case "insertText":
+          if (command.letVSCodeInsert) {
+            await TextEditor.insert(command.text, command.position, true);
 
-    vimState.commandAction = VimSpecialCommands.Nothing;
+            vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+            vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+          } else {
+            await TextEditor.insert(command.text);
+          }
+        break;
 
-    switch (command) {
-      case VimSpecialCommands.ShowCommandLine:
-        await showCmdLine(vimState.commandInitialText, this);
-      break;
-      case VimSpecialCommands.Dot:
-        if (!vimState.previousFullAction) {
-          return vimState; // TODO(bell)
-        }
+        case "deleteText":
+          await TextEditor.backspace(command.position);
+        break;
 
-        const clonedAction = vimState.previousFullAction.clone();
+        case "showCommandLine":
+          await showCmdLine(vimState.commandInitialText, this);
+        break;
 
-        await this.rerunRecordedState(vimState, vimState.previousFullAction);
+        case "dot":
+          if (!vimState.previousFullAction) {
+            return vimState; // TODO(bell)
+          }
 
-        vimState.previousFullAction = clonedAction;
-      break;
+          const clonedAction = vimState.previousFullAction.clone();
+
+          await this.rerunRecordedState(vimState, vimState.previousFullAction);
+
+          vimState.previousFullAction = clonedAction;
+        break;
+      }
     }
+
+    vimState.recordedState.transformations = [];
 
     return vimState;
   }
