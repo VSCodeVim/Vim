@@ -417,7 +417,7 @@ export class Position extends vscode.Position {
 
   /**
    * Get the beginning of the line, excluding preceeding whitespace.
-   * This respects the `noautoindent` setting, and returns `getLineBegin()` if auto-indent
+   * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent
    * is disabled.
    */
   public getLineBeginRespectingIndent(): Position {
