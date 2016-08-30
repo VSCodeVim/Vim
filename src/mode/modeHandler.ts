@@ -68,6 +68,8 @@ export class VimState {
 
   public focusChanged = false;
 
+  public cursorRevealed = false;
+
   /**
    * Used to prevent non-recursive remappings from looping.
    */
@@ -705,7 +707,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Update view
-    await this.updateView(vimState);
+    if (!vimState.cursorRevealed) {
+      await this.updateView(vimState);
+    } else {
+      vimState.cursorRevealed = false;
+    }
 
     return vimState;
   }

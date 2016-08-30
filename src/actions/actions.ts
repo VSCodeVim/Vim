@@ -522,14 +522,24 @@ class CommandCtrlW extends BaseCommand {
   }
 }
 
-@RegisterAction
-class CommandCtrlE extends BaseCommand {
+abstract class CommandEditorScroll extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["<C-e>"];
+  canBePrefixedWithCount = true;
+  keys: string[];
+  to: string;
+  by: string;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editorScroll", {to: 'down', by: 'line', value: 1, revealCursor: true});
+    await vscode.commands.executeCommand("editorScroll", {to: this.to, by: this.by, value: 1, revealCursor: true});
+    vimState.cursorRevealed = true;
+    return vimState;
+  }
 
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+
+    await vscode.commands.executeCommand("editorScroll", {to: this.to, by: this.by, value: timesToRepeat, revealCursor: true});
+    vimState.cursorRevealed = true;
     return vimState;
   }
 }
@@ -609,16 +619,49 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
   }
 }
 
+class CommandCtrlE extends CommandEditorScroll {
+  keys = ["<C-e>"];
+  to = "down";
+  by = "line";
+}
+
 @RegisterAction
-class CommandCtrlY extends BaseCommand {
-  modes = [ModeName.Normal];
+class CommandCtrlY extends CommandEditorScroll {
   keys = ["<C-y>"];
+  to = "up";
+  by = "line";
+}
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editorScroll", {to: 'up', by: 'line', value: 1, revealCursor: true});
+@RegisterAction
+class CommandMoveFullPageUp extends CommandEditorScroll {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<C-b>"];
+  to = "up";
+  by = "page";
+}
 
-    return vimState;
-  }
+@RegisterAction
+class CommandMoveFullPageDown extends CommandEditorScroll {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<C-f>"];
+  to = "down";
+  by = "page";
+}
+
+@RegisterAction
+class CommandMoveHalfPageDown extends CommandEditorScroll {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<C-d>"];
+  to = "down";
+  by = "halfPage";
+}
+
+@RegisterAction
+class CommandMoveHalfPageUp extends CommandEditorScroll {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<C-u>"];
+  to = "up";
+  by = "halfPage";
 }
 
 @RegisterAction
@@ -1722,49 +1765,6 @@ class CommandRedo extends BaseCommand {
     }
     vimState.alteredHistory = true;
     return vimState;
-  }
-}
-
-@RegisterAction
-class CommandMoveFullPageDown extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["<C-f>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editorScroll", {to: 'down', by: 'page', value: 1, revealCursor: true});
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandMoveFullPageUp extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["<C-b>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editorScroll", {to: 'up', by: 'page', value: 1, revealCursor: true});
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandMoveHalfPageDown extends BaseMovement {
-  keys = ["<C-d>"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(
-      Math.min(TextEditor.getLineCount() - 1, position.line + Configuration.getInstance().scroll),
-      position.character
-    );
-  }
-}
-
-@RegisterAction
-class CommandMoveHalfPageUp extends BaseMovement {
-  keys = ["<C-u>"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(Math.max(0, position.line - Configuration.getInstance().scroll), position.character);
   }
 }
 
