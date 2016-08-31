@@ -238,7 +238,7 @@ export abstract class BaseMovement extends BaseAction {
 }
 
 /**
- * A command is something like <escape>, :, v, i, etc.
+ * A command is something like <Esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
   /**
@@ -413,7 +413,7 @@ class CommandEsc extends BaseCommand {
     ModeName.SearchInProgressMode,
     ModeName.Replace
   ];
-  keys = ["<escape>"];
+  keys = ["<Esc>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode !== ModeName.Visual &&
@@ -435,13 +435,13 @@ class CommandEsc extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlOpenBracket extends CommandEsc {
-  keys = ["ctrl+["];
+  keys = ["<C-[>"];
 }
 
 @RegisterAction
 class CommandCtrlW extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ["ctrl+w"];
+  keys = ["<C-w>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const wordBegin = position.getWordLeft();
@@ -456,7 +456,7 @@ class CommandCtrlW extends BaseCommand {
 @RegisterAction
 class CommandCtrlE extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["ctrl+e"];
+  keys = ["<C-e>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("scrollLineDown");
@@ -468,7 +468,7 @@ class CommandCtrlE extends BaseCommand {
 @RegisterAction
 class CommandCtrlY extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["ctrl+y"];
+  keys = ["<C-y>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("scrollLineUp");
@@ -479,7 +479,7 @@ class CommandCtrlY extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlC extends CommandEsc {
-  keys = ["ctrl+c"];
+  keys = ["<C-c>"];
 }
 
 @RegisterAction
@@ -520,7 +520,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 
     const replaceState = vimState.replaceState!;
 
-    if (char === "<backspace>") {
+    if (char === "<BS>") {
       if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
         vimState.cursorPosition = position.getLeft();
         vimState.cursorStartPosition = position.getLeft();
@@ -608,7 +608,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const searchState = vimState.searchState!;
 
     // handle special keys first
-    if (key === "<backspace>") {
+    if (key === "<BS>") {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
@@ -625,12 +625,12 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.searchStatePrevious = searchState;
 
       return vimState;
-    } else if (key === "<escape>") {
+    } else if (key === "<Esc>") {
       vimState.currentMode = ModeName.Normal;
       vimState.searchState = undefined;
 
       return vimState;
-    } else if (key === "ctrl+v") {
+    } else if (key === "<C-v>") {
       const text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => err ? reject(err) : resolve(text))
       );
@@ -754,7 +754,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char   = this.keysPressed[this.keysPressed.length - 1];
 
-    if (char === "<backspace>") {
+    if (char === "<BS>") {
       const newPosition = await TextEditor.backspace(position);
 
       vimState.cursorPosition = newPosition;
@@ -1511,7 +1511,7 @@ class CommandUndo extends BaseCommand {
 @RegisterAction
 class CommandRedo extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["ctrl+r"];
+  keys = ["<C-r>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPosition = await vimState.historyTracker.goForwardHistoryStep();
@@ -1527,7 +1527,7 @@ class CommandRedo extends BaseCommand {
 @RegisterAction
 class CommandMoveFullPageDown extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["ctrl+f"];
+  keys = ["<C-f>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("cursorPageDown");
@@ -1538,7 +1538,7 @@ class CommandMoveFullPageDown extends BaseCommand {
 @RegisterAction
 class CommandMoveFullPageUp extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["ctrl+b"];
+  keys = ["<C-b>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("cursorPageUp");
@@ -1548,7 +1548,7 @@ class CommandMoveFullPageUp extends BaseCommand {
 
 @RegisterAction
 class CommandMoveHalfPageDown extends BaseMovement {
-  keys = ["ctrl+d"];
+  keys = ["<C-d>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return new Position(
@@ -1560,7 +1560,7 @@ class CommandMoveHalfPageDown extends BaseMovement {
 
 @RegisterAction
 class CommandMoveHalfPageUp extends BaseMovement {
-  keys = ["ctrl+u"];
+  keys = ["<C-u>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return new Position(Math.max(0, position.line - Configuration.getInstance().scroll), position.character);
@@ -1641,7 +1641,7 @@ class CommandVisualMode extends BaseCommand {
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
-  keys = ["ctrl+v"];
+  keys = ["<C-v>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
 
@@ -1820,7 +1820,7 @@ class MoveLeftArrow extends MoveLeft {
 @RegisterAction
 class BackSpaceInNormalMode extends BaseMovement {
   modes = [ModeName.Normal];
-  keys = ["<backspace>"];
+  keys = ["<BS>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLeftThroughLineBreaks();
@@ -1896,7 +1896,7 @@ class MoveRightWithSpace extends BaseMovement {
 @RegisterAction
 class MoveToRightPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["ctrl+w", "l"];
+  keys = ["<C-w>", "l"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.focusChanged = true;
@@ -1908,7 +1908,7 @@ class MoveToRightPane extends BaseCommand {
 @RegisterAction
 class MoveToLeftPane  extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["ctrl+w", "h"];
+  keys = ["<C-w>", "h"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.focusChanged = true;
@@ -2505,7 +2505,7 @@ class ActionDeleteChar extends BaseCommand {
 @RegisterAction
 class ActionDeleteCharWithDeleteKey extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["<delete>"];
+  keys = ["<Del>"];
   canBePrefixedWithCount = true;
   canBeRepeatedWithDot = true;
 
@@ -2788,14 +2788,14 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
       return vimState;
     }
 
-    if (char === '<backspace>' && vimState.topLeft.character === 0) {
+    if (char === '<BS>' && vimState.topLeft.character === 0) {
       return vimState;
     }
 
     for (const { start, end } of Position.IterateLine(vimState)) {
       const insertPos = insertAtStart ? start : end;
 
-      if (char === '<backspace>') {
+      if (char === '<BS>') {
         await TextEditor.backspace(insertPos.getLeft());
 
         posChange = -1;
@@ -3626,13 +3626,13 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
 @RegisterAction
 class IncrementNumberAction extends IncrementDecrementNumberAction {
-  keys = ["ctrl+a"];
+  keys = ["<C-a>"];
   offset = +1;
 }
 
 @RegisterAction
 class DecrementNumberAction extends IncrementDecrementNumberAction {
-  keys = ["ctrl+x"];
+  keys = ["<C-x>"];
   offset = -1;
 }
 
