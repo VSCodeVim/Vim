@@ -2687,30 +2687,14 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const deleteOperator = new DeleteOperator();
 
-    // Check to see number in lines of block
-    let blockLines = 0;
-    let blockStart = position;
-    let blockEnd = position;
-    for (const {start, end} of Position.IterateLine(vimState)) {
-      blockStart = start;
-      blockEnd = end;
-      blockLines += 1;
-    }
-
-    // Do a regular visual 'change' if only 1 line of block is selected
-    if (blockLines < 2) {
-      await new DeleteOperator().run(vimState, blockStart, blockEnd.getLeft());
-      vimState.cursorPosition = vimState.cursorStartPosition;
-      vimState.currentMode = ModeName.Insert;
-      return vimState;
-    }
-
     for (const { start, end } of Position.IterateLine(vimState)) {
       await deleteOperator.delete(start, end.getLeft(), vimState.currentMode, vimState.effectiveRegisterMode(), vimState, true);
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
+
+    vimState.cursorPosition = vimState.cursorPosition.getLeft();
 
     return vimState;
   }
