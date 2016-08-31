@@ -543,6 +543,10 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+    if (this._vimState.isMultiCursor && e.selections.length === 1) {
+      this._vimState.isMultiCursor = false;
+    }
+
     if (this._vimState.isMultiCursor) {
       return;
     }
