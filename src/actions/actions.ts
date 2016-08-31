@@ -293,11 +293,11 @@ export abstract class BaseCommand extends BaseAction {
       .sort((a, b) => a.start.line > b.start.line || (a.start.line === b.start.line && a.start.character > b.start.character) ? 1 : -1);
 
     for (const { start, stop } of cursorsToIterateOver) {
+      this.multicursorIndex = i++;
+
       for (let j = 0; j < timesToRepeat; j++) {
         vimState.cursorPosition      = stop;
         vimState.cursorStartPosition = start;
-
-        this.multicursorIndex = i++;
 
         vimState = await this.exec(stop, vimState);
       }
@@ -435,6 +435,7 @@ class CommandNumber extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["<number>"];
   isCompleteAction = false;
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const number = parseInt(this.keysPressed[0], 10);
