@@ -19,6 +19,17 @@ export class Range {
     );
   }
 
+  public static *IterateRanges(list: Range[]): Iterable<{ start: Position; stop: Position; range: Range, i: number }> {
+    for (let i = 0; i < list.length; i++) {
+      yield {
+        i,
+        range: list[i],
+        start: list[i].start,
+        stop: list[i].stop,
+      };
+    }
+  }
+
   /**
    * Create a range from an IMovement.
    */

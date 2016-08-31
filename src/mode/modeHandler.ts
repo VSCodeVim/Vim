@@ -813,20 +813,18 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Ensure cursor is within bounds
+    for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
+      if (stop.line >= TextEditor.getLineCount()) {
+        vimState.allCursors[i].stop = vimState.cursorPosition.getDocumentEnd();
+      }
 
-    if (vimState.cursorPosition.line >= TextEditor.getLineCount()) {
-      vimState.cursorPosition = vimState.cursorPosition.getDocumentEnd();
-    }
+      const currentLineLength = TextEditor.getLineAt(stop).text.length;
 
-    const currentLineLength = TextEditor.getLineAt(vimState.cursorPosition).text.length;
+      if (vimState.currentMode === ModeName.Normal &&
+          stop.character >= currentLineLength && currentLineLength > 0) {
 
-    if (vimState.currentMode === ModeName.Normal &&
-      vimState.cursorPosition.character >= currentLineLength &&
-      currentLineLength > 0) {
-      vimState.cursorPosition = new Position(
-        vimState.cursorPosition.line,
-        currentLineLength - 1
-      );
+        vimState.allCursors[i].stop = stop.getLineEnd();
+      }
     }
 
     return vimState;
@@ -869,8 +867,10 @@ export class ModeHandler implements vscode.Disposable {
     // Keep the cursor within bounds
 
     if (vimState.currentMode === ModeName.Normal && !recordedState.operator) {
-      if (stop.character >= Position.getLineLength(stop.line)) {
-        vimState.cursorPosition = stop.getLineEnd().getLeft();
+      for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
+        if (stop.character >= Position.getLineLength(stop.line)) {
+          vimState.allCursors[i].stop = stop.getLineEnd().getLeft();
+        }
       }
     } else {
 
@@ -1059,7 +1059,7 @@ export class ModeHandler implements vscode.Disposable {
           selections = [ new vscode.Selection(stop, stop) ];
         }
       } else {
-        // MultiCursor is true.
+        // MultiCursor mode is active.
 
         if (vimState.currentMode === ModeName.Visual) {
           selections = [];
