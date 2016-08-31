@@ -515,7 +515,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this._vimState.currentMode !== ModeName.VisualBlock           &&
         this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
-      e.selections.length !== this._vimState.allCursors.length) {
+      e.selections.length > this._vimState.allCursors.length) {
       // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
 
       console.log('Changed number of cursors?');
