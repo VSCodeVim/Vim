@@ -308,27 +308,46 @@ export abstract class BaseCommand extends BaseAction {
       ));
     }
 
-    const insertions: InsertTextTransformation[] = _.filter(vimState.recordedState.transformations, x => x.type === "insertText") as any;
+    // TODO - should probably ensure that there are no vscode insertions here.
 
-    resultingCursors = resultingCursors.map(range => {
-      let start = range.start;
-      let stop  = range.stop;
+    let insertions: InsertTextTransformation[] = _.filter(vimState.recordedState.transformations,
+      x => x.type === "insertText") as any;
 
-      let beforeStart = _.filter(insertions, x => x.position!.line === start.line && x.position!.isBeforeOrEqual(start));
-      let beforeStop  = _.filter(insertions, x => x.position!.line === stop.line  && x.position!.isBeforeOrEqual(stop));
+    if (insertions.length === 0) {
+      vimState.allCursors = resultingCursors;
 
-      for (const insert of beforeStart) {
-        start = start.getRight(insert.text.length);
+      return vimState;
+    }
+
+    let modifiedInsertions = insertions.map(ins => {
+      let newInsertion = {
+        type: 'insertText',
+        text: ins.text,
+        associatedCursor: ins.associatedCursor,
+      };
+
+      let beforeInsert = _.filter(insertions, other =>
+        other.associatedCursor.stop.line === ins.associatedCursor.start.line &&
+        other.associatedCursor.stop.isBefore(ins.associatedCursor.start));
+
+      for (const before of beforeInsert) {
+        newInsertion.associatedCursor = newInsertion.associatedCursor.getRight(before.text.length);
       }
 
-      for (const insert of beforeStop) {
-        stop = stop.getRight(insert.text.length);
-      }
-
-      return new Range(start, stop);
+      return newInsertion;
     });
 
-    vimState.allCursors = resultingCursors;
+    let newCursors = _.map(modifiedInsertions, ins => ins.associatedCursor.getRight(ins.text.length));
+
+    // TODO - this is broken! We aren't preserving all transformations.
+    vimState.recordedState.transformations = modifiedInsertions as any;
+
+    // TODO - this is also broken! (what if we didnt return all cursors?)
+    if (newCursors.length > 0) {
+      console.log('SET!');
+
+      vimState.allCursors = newCursors;
+    }
 
     return vimState;
   }
@@ -827,19 +846,17 @@ class CommandInsertInInsertMode extends BaseCommand {
     } else {
       if (vimState.isMultiCursor) {
         vimState.recordedState.transformations.push({
-          type           : "insertText",
-          text           : char,
-          position       : position,
-          letVSCodeInsert: false,
+          type            : "insertText",
+          text            : char,
+          associatedCursor: new Range(
+            vimState.cursorStartPosition,
+            vimState.cursorPosition
+          )
         });
-
-        // vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
-        // vimState.cursorPosition      = vimState.cursorPosition.getRight();
       } else {
         vimState.recordedState.transformations.push({
-          type           : "insertText",
+          type           : "insertTextVSCode",
           text           : char,
-          letVSCodeInsert: true,
         });
       }
     }

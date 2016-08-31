@@ -950,23 +950,22 @@ export class ModeHandler implements vscode.Disposable {
     for (const command of vimState.recordedState.transformations) {
       switch (command.type) {
         case "insertText":
-          if (command.letVSCodeInsert) {
-            await TextEditor.insert(command.text);
+          await TextEditor.insert(command.text, command.associatedCursor.stop, false);
+          break;
 
-            vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-            vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
-          } else {
-            await TextEditor.insert(command.text, command.position, false);
-          }
-        break;
+        case "insertTextVSCode":
+          await TextEditor.insert(command.text);
 
+          vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+          vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+          break;
         case "deleteText":
           await TextEditor.backspace(command.position);
-        break;
+          break;
 
         case "showCommandLine":
           await showCmdLine(vimState.commandInitialText, this);
-        break;
+          break;
 
         case "dot":
           if (!vimState.previousFullAction) {
@@ -978,7 +977,7 @@ export class ModeHandler implements vscode.Disposable {
           await this.rerunRecordedState(vimState, vimState.previousFullAction);
 
           vimState.previousFullAction = clonedAction;
-        break;
+          break;
       }
     }
 

@@ -30,4 +30,11 @@ export class Range {
       i.stop
     );
   }
+
+  public getRight(count: number = 1): Range {
+    return new Range(
+      this.start.getRight(count),
+      this.stop.getRight(count)
+    );
+  }
 }

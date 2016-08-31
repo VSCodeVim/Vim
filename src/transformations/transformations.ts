@@ -1,13 +1,18 @@
 import { Position } from "./../motion/position";
+import { Range } from "./../motion/range";
 
 /**
  * Represents inserting text at a position in the document.
  */
 export interface InsertTextTransformation {
-  type           : "insertText";
-  text           : string;
-  position?      : Position;
-  letVSCodeInsert: boolean;
+  type             : "insertText";
+  text             : string;
+  associatedCursor : Range;
+}
+
+export interface InsertTextVSCodeTransformation {
+  type : "insertTextVSCode";
+  text : string;
 }
 
 /**
@@ -34,6 +39,7 @@ export interface Dot {
 
 export type Transformation
   = InsertTextTransformation
+  | InsertTextVSCodeTransformation
   | ShowCommandLine
   | Dot
   | DeleteTextTransformation;
