@@ -6,4 +6,3 @@ node_modules
 *.vsix
 *.log
 testing
-.vscode/
