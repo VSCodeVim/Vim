@@ -157,6 +157,11 @@ export abstract class BaseMovement extends BaseAction {
   canBePrefixedWithCount = false;
 
   /**
+   * Whether we should change lastRepeatableMovement in VimState.
+   */
+  public repeatableWithSemicolonOrComma = false;
+
+  /**
    * Whether we should change desiredColumn in VimState.
    */
   public doesntChangeDesiredColumn = false;
@@ -1991,7 +1996,7 @@ class MoveFindForward extends BaseMovement {
     if (vimState.recordedState.operator) {
       result = result.getRight();
     } else {
-      VimState.lastRepeatableMovement = this;
+      this.repeatableWithSemicolonOrComma = true;
     }
 
     return result;
@@ -2010,7 +2015,7 @@ class MoveFindBackward extends BaseMovement {
     if (!result) {
       return { start: position, stop: position, failed: true };
     } else {
-      VimState.lastRepeatableMovement = this;
+      this.repeatableWithSemicolonOrComma = true;
     }
 
     return result;
@@ -2034,7 +2039,7 @@ class MoveTilForward extends BaseMovement {
     if (vimState.recordedState.operator) {
       result = result.getRight();
     } else {
-      VimState.lastRepeatableMovement = this;
+      this.repeatableWithSemicolonOrComma = true;
     }
 
     return result;
@@ -2053,7 +2058,7 @@ class MoveTilBackward extends BaseMovement {
     if (!result) {
       return { start: position, stop: position, failed: true };
     } else {
-      VimState.lastRepeatableMovement = this;
+      this.repeatableWithSemicolonOrComma = true;
     }
 
     return result;
@@ -2103,7 +2108,6 @@ class MoveRepeatReversed extends BaseMovement {
       if (result instanceof Position && position.isEqual(result) && count <= 1) {
         result = await reverse.execActionWithCount(position, vimState, 2);
       }
-      VimState.lastRepeatableMovement = movement;
       return result;
     }
     return position;
