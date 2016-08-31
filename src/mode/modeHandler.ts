@@ -593,6 +593,9 @@ export class ModeHandler implements vscode.Disposable {
           }
         } else {
           if (this._vimState.currentMode !== ModeName.Insert) {
+            // Clear out the actions that were run that caused this mode to transition.
+            // This is mostly for commands that need to be the first key (i, a, etc.) will get triggered properly after this
+            this._vimState.recordedState.actionsRun = [];
             this._vimState.currentMode = ModeName.Normal;
             this.setCurrentModeByName(this._vimState);
           }
