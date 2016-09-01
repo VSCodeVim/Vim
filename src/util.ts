@@ -18,12 +18,16 @@ export function translateToAngleBracketNotation(key: string): string {
       'delete': 'Del',
     };
 
-    let bracketedKey = `<${ key.toLowerCase() }>`;
+    key = key.toLowerCase();
+    if (!(key.startsWith('<') && key.endsWith('>'))) {
+      key = `<${ key }>`;
+    }
+
     for (const searchKey in angleBracketNotationMap) {
       if (angleBracketNotationMap.hasOwnProperty(searchKey)) {
-        bracketedKey = bracketedKey.replace(searchKey, angleBracketNotationMap[searchKey]);
+        key = key.replace(searchKey, angleBracketNotationMap[searchKey]);
       }
     }
 
-    return bracketedKey;
+    return key;
 }
