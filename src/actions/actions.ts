@@ -3412,6 +3412,13 @@ abstract class MoveQuoteMatch extends BaseMovement {
 
     let startPos = new Position(position.line, start);
     let endPos = new Position(position.line, end);
+    let fullAction = vimState.currentFullAction;
+    let fullActionLength = fullAction.length;
+    if (fullAction[fullActionLength - 3] === "v"
+        && fullAction[fullActionLength - 2] === "i"
+        && ["\"", "'", "`"].indexOf(fullAction[fullActionLength - 1]) > -1) {
+      endPos = new Position(position.line, end + 1);
+    }
     if (!this.includeSurrounding) {
       startPos = startPos.getRight();
       endPos = endPos.getLeft();
