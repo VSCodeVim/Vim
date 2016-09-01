@@ -6,6 +6,7 @@ import * as assert from 'assert';
 import {join} from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
+import { Configuration } from '../src/configuration/configuration';
 
 function rndName() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
@@ -80,9 +81,7 @@ export async function cleanUpWorkspace(): Promise<any> {
   });
 }
 
-export function setTextEditorOptions(tabSize: number | string, insertSpaces: boolean | string): void {
-  vscode.window.activeTextEditor.options = {
-    tabSize,
-    insertSpaces
-  };
+export function setTextEditorOptions(tabSize: number, insertSpaces: boolean): void {
+  Configuration.getInstance().tabstop = tabSize;
+  Configuration.getInstance().expandtab = insertSpaces;
 }

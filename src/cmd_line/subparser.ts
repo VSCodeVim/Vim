@@ -5,6 +5,7 @@ import {parseWriteCommandArgs} from './subparsers/write';
 import {parseWriteQuitCommandArgs} from './subparsers/writequit';
 import * as tabCmd from './subparsers/tab';
 import * as fileCmd from './subparsers/file';
+import {parseOptionsCommandArgs} from './subparsers/setoptions';
 import {parseSubstituteCommandArgs} from './subparsers/substitute';
 
 // maps command names to parsers for said commands.
@@ -48,6 +49,10 @@ export const commandParsers = {
 
   s: parseSubstituteCommandArgs,
   vsp: fileCmd.parseEditFileInNewWindowCommandArgs,
+  vsplit: fileCmd.parseEditFileInNewWindowCommandArgs,
   vne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
-  vnew: fileCmd.parseEditNewFileInNewWindowCommandArgs
+  vnew: fileCmd.parseEditNewFileInNewWindowCommandArgs,
+
+  set: parseOptionsCommandArgs,
+  se: parseOptionsCommandArgs
 };

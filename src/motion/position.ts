@@ -5,6 +5,7 @@ import * as vscode from "vscode";
 import { TextEditor } from "./../textEditor";
 import { VimState } from './../mode/modeHandler';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
+import { Configuration } from "./../configuration/configuration";
 
 /**
  * Represents a difference between two positions. Add it to a position
@@ -25,7 +26,7 @@ export class PositionDiff {
 }
 
 export class Position extends vscode.Position {
-  private static NonWordCharacters = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
+  private static NonWordCharacters = Configuration.getInstance().iskeyword!;
   private static NonBigWordCharacters = "";
 
   private _nonWordCharRegex : RegExp;
@@ -306,7 +307,7 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Get the position *count* lines up from this position, but not lower
+   * Get the position *count* lines up from this position, but not higher
    * than the end of the document.
    */
   public getUpByCount(count = 0): Position {
@@ -314,6 +315,22 @@ export class Position extends vscode.Position {
       Math.max(0, this.line - count),
       this.character
     );
+  }
+
+  /**
+   * Get the position *count* lines left from this position, but not farther
+   * than the beginning of the line
+   */
+  public getLeftByCount(count = 0): Position {
+    return new Position(this.line, Math.max(0, this.character - count));
+  }
+
+  /**
+   * Get the position *count* lines right from this position, but not farther
+   * than the end of the line
+   */
+  public getRightByCount(count = 0): Position {
+    return new Position(this.line, Math.min(TextEditor.getLineAt(this).text.length - 1, this.character + count));
   }
 
   /**
@@ -430,12 +447,16 @@ export class Position extends vscode.Position {
     return pos.getLineBegin();
   }
 
-  public getPreviousSentenceBegin(): Position {
-    return this.getPreviousSentenceBeginWithRegex(this._sentenceEndRegex, false);
+  public getSentenceBegin(args: {forward: boolean}): Position {
+    if (args.forward) {
+      return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
+    } else {
+      return this.getPreviousSentenceBeginWithRegex(this._sentenceEndRegex, false);
+    }
   }
 
-  public getNextSentenceBegin(): Position {
-    return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
+  public getCurrentSentenceEnd(): Position {
+    return this.getCurrentSentenceEndWithRegex(this._sentenceEndRegex, false);
   }
 
   /**
@@ -443,6 +464,18 @@ export class Position extends vscode.Position {
    */
   public getLineBegin(): Position {
     return new Position(this.line, 0);
+  }
+
+  /**
+   * Get the beginning of the line, excluding preceeding whitespace.
+   * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent
+   * is disabled.
+   */
+  public getLineBeginRespectingIndent(): Position {
+    if (!Configuration.getInstance().autoindent) {
+      return this.getLineBegin();
+    }
+    return this.getFirstLineNonBlankChar();
   }
 
   /**
@@ -684,7 +717,6 @@ export class Position extends vscode.Position {
     return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
   }
 
-
   private getPreviousSentenceBeginWithRegex(regex: RegExp, inclusive: boolean): Position {
     let paragraphBegin = this.getCurrentParagraphBeginning();
     for (let currentLine = this.line; currentLine >= paragraphBegin.line; currentLine--) {
@@ -707,7 +739,6 @@ export class Position extends vscode.Position {
     }
   }
 
-
   private getNextSentenceBeginWithRegex(regex: RegExp, inclusive: boolean): Position {
     // A paragraph and section boundary is also a sentence boundary.
     let paragraphEnd = this.getCurrentParagraphEnd();
@@ -722,6 +753,26 @@ export class Position extends vscode.Position {
       }
     }
 
+    return this.getFirstNonWhitespaceInParagraph(paragraphEnd, inclusive);
+  }
+
+  private getCurrentSentenceEndWithRegex(regex: RegExp, inclusive: boolean): Position {
+    let paragraphEnd = this.getCurrentParagraphEnd();
+    for (let currentLine = this.line; currentLine <= paragraphEnd.line; currentLine++) {
+      let allPositions = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
+      let newCharacter = _.find(allPositions,
+        index => ((index >  this.character && !inclusive)  ||
+              (index >= this.character &&  inclusive)) || currentLine !== this.line);
+
+      if (newCharacter !== undefined) {
+        return new Position(currentLine, newCharacter);
+      }
+    }
+
+    return this.getFirstNonWhitespaceInParagraph(paragraphEnd, inclusive);
+  }
+
+  private getFirstNonWhitespaceInParagraph(paragraphEnd: Position, inclusive: boolean): Position {
     // If the cursor is at an empty line, it's the end of a paragraph and the begin of another paragraph
     // Find the first non-whitepsace character.
     if (TextEditor.getLineAt(new vscode.Position(this.line, 0)).text) {
@@ -741,7 +792,6 @@ export class Position extends vscode.Position {
 
     throw new Error("This should never happen...");
   }
-
 
   private findHelper(char: string, count: number, direction: number): Position | undefined {
     // -1 = backwards, +1 = forwards

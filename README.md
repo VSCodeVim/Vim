@@ -21,6 +21,7 @@ We're super friendly people if you want to drop by and talk to us on our [Slack 
 * Incremental search with `/` and `?` that works like Vim (doesn't just open the search box!)
 * Correct undo/redo state
 * Marks
+* Vim Options
 
 ## Roadmap
 
@@ -35,11 +36,13 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 
 #### `j`, `k` and others don't repeat when I hold them down.
 
-On OS X, run the following command: 
+On OS X, open Terminal and run the following command:
 
-`defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
+```
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+```
 
-#### How can I bind `jj` to `<escape>`?
+#### How can I bind `jj` to `<Esc>`?
 
 1. Add the following to `settings.json` (open the Command Pallete and search for "User Settings"):
 
@@ -47,25 +50,40 @@ On OS X, run the following command:
       "vim.insertModeKeyBindings": [
            {
                "before": ["j", "j"],
-               "after": ["<escape>"]
+               "after": ["<Esc>"]
            }
       ]
    ```
 
-2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<escape>`, do the following as well:
+2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<Esc>`, do the following as well:
 
    ```
       "vim.otherModesKeyBindings": [
            {
                "before": ["j", "j"],
-               "after": ["<escape>"]
+               "after": ["<Esc>"]
            }
       ]
 ```
 
 Be sure to restart VSCode after making these changes.
 
-#### How can I enable `ctrl-c` as an alternative to `<escape>`?
+#### How can I bind something like `j` to `gj`? How can I get the equivalent of `:noremap`?
+
+Notice the problem is that if you did this normally, the `j` in `gj` would be expanded into `gj`, on and on forever. To stop this recursive expansion, use vim.otherModesKeyBindingsNonRecursive!
+
+   ```
+      "vim.otherModesKeyBindingsNonRecursive": [
+           {
+               "before": ["j"],
+               "after": ["g", "j"]
+           }
+      ]
+```
+
+Don't forget to restart!
+
+#### How can I enable `ctrl-c` or `ctrl-[` as an alternative to `<Esc>`?
 
 Put the following in your `settings.json`:
 
@@ -73,7 +91,7 @@ Put the following in your `settings.json`:
 
 and restart VSCode.
 
-#### How can I enable `ctrl-f`? 
+#### How can I enable `ctrl-f`?
 
 Put the following in your `settings.json`:
 
@@ -81,13 +99,31 @@ Put the following in your `settings.json`:
 
 and restart VSCode.
 
-#### How can I enable visual block mode with `ctrl-v`? 
+#### How can I enable visual block mode with `ctrl-v`?
 
 Put the following in your `settings.json`:
 
 ```    "vim.useCtrlKeys": true```
 
 and restart VSCode.
+
+#### How can I enable yanking to system clipboard by default?
+
+Put the following in your `settings.json`:
+
+```    "vim.useSystemClipboard": true```
+
+and restart VSCode.
+
+#### Vim option override sequence.
+
+The way we load Vim options is slightly different from native Vim as there is some overlap between Code and Vim. The option loading sequence is as below.
+
+1. `:set {option}` on the fly
+2. [TODO] .vimrc.
+2. `vim.{option}` from user settings or workspace settings.
+3. VS Code configuration
+4. VSCodeVim flavored Vim option default values
 
 ## Contributing
 

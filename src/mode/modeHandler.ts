@@ -27,6 +27,9 @@ import { Position } from './../motion/position';
 import { Range } from './../motion/range';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
+import { Configuration } from '../../src/configuration/configuration';
+import { PairMatcher } from './../matching/matcher';
+import { Globals } from '../../src/globals';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -60,6 +63,11 @@ export class VimState {
   public alteredHistory = false;
 
   public focusChanged = false;
+
+  /**
+   * Used to prevent non-recursive remappings from looping.
+   */
+  public isCurrentlyPreformingRemapping = false;
 
   /**
    * The current full action we are building up.
@@ -96,6 +104,8 @@ export class VimState {
   public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
 
   public searchState: SearchState | undefined = undefined;
+
+  public searchStatePrevious: SearchState | undefined = undefined;
 
   public replaceState: ReplaceState | undefined = undefined;
 
@@ -150,14 +160,6 @@ export class VimState {
    * by us or by a mouse action.
    */
   public whatILastSetTheSelectionTo: vscode.Selection;
-
-  public settings = new VimSettings();
-}
-
-export class VimSettings {
-  useSolidBlockCursor = false;
-  scroll              = 20;
-  useCtrlKeys         = false;
 }
 
 export enum SearchDirection {
@@ -167,6 +169,7 @@ export enum SearchDirection {
 
 export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
+  private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
   /**
    * Every range in the document that matches the search string.
@@ -183,6 +186,7 @@ export class SearchState {
 
   private _matchesDocVersion: number;
   private _searchDirection: SearchDirection = SearchDirection.Forward;
+  private isRegex: boolean;
 
   private _searchString = "";
   public get searchString(): string {
@@ -206,21 +210,53 @@ export class SearchState {
       this._matchesDocVersion = TextEditor.getDocumentVersion();
       this._matchRanges = [];
 
+      /* Decide whether the search is case sensitive.
+       * If ignorecase is false, the search is case sensitive.
+       * If ignorecase is true, the search should be case insensitive.
+       * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
+       */
+      let ignorecase = Configuration.getInstance().ignorecase;
+
+      if (ignorecase && Configuration.getInstance().smartcase && /[A-Z]/.test(search)) {
+        ignorecase = false;
+      }
+
+      let searchRE = search;
+      if (!this.isRegex) {
+        searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
+      }
+
+      const regexFlags = ignorecase ? 'gi' : 'g';
+
+      let regex: RegExp;
+      try {
+        regex = new RegExp(searchRE, regexFlags);
+      } catch (err) {
+        // Couldn't compile the regexp, try again with special characters escaped
+        searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
+        regex = new RegExp(searchRE, regexFlags);
+      }
+
       outer:
       for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
         const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+        let result = regex.exec(line);
 
-        let i = line.indexOf(search);
-
-        for (; i !== -1; i = line.indexOf(search, i + search.length)) {
+        while (result) {
           if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
             break outer;
           }
 
-          this._matchRanges.push(new vscode.Range(
-            new Position(lineIdx, i),
-            new Position(lineIdx, i + search.length)
+          this.matchRanges.push(new vscode.Range(
+            new Position(lineIdx, result.index),
+            new Position(lineIdx, result.index + result[0].length)
           ));
+
+          if (result.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+
+          result = regex.exec(line);
         }
       }
     }
@@ -266,10 +302,11 @@ export class SearchState {
     }
   }
 
-  constructor(direction: SearchDirection, startPosition: Position, searchString = "") {
+  constructor(direction: SearchDirection, startPosition: Position, searchString = "", { isRegex = false } = {}) {
     this._searchDirection = direction;
     this._searchCursorStartPosition = startPosition;
     this.searchString = searchString;
+    this.isRegex = isRegex;
   }
 }
 
@@ -314,6 +351,11 @@ export class ReplaceState {
  *   * delete operator
  */
 export class RecordedState {
+
+  constructor() {
+    const useClipboard = Configuration.getInstance().useSystemClipboard;
+    this.registerName = useClipboard ? '*' : '"';
+  }
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
    * multiple length movements, e.g. gg.
@@ -342,7 +384,7 @@ export class RecordedState {
   public get command(): BaseCommand {
     const list = _.filter(this.actionsRun, a => a instanceof BaseCommand);
 
-    // TODO - disregard <escape>, then assert this is of length 1.
+    // TODO - disregard <Esc>, then assert this is of length 1.
 
     return list[0] as any;
   }
@@ -359,7 +401,7 @@ export class RecordedState {
   /**
    * The register name for this action.
    */
-  public registerName: string = '"';
+  public registerName: string;
 
   public clone(): RecordedState {
     const res = new RecordedState();
@@ -414,6 +456,9 @@ export class ModeHandler implements vscode.Disposable {
   private _vimState: VimState;
   private _insertModeRemapper: InsertModeRemapper;
   private _otherModesRemapper: OtherModesRemapper;
+  private _otherModesNonRecursive: OtherModesRemapper;
+  private _insertModeNonRecursive: InsertModeRemapper;
+
 
   public get vimState(): VimState {
     return this._vimState;
@@ -452,14 +497,17 @@ export class ModeHandler implements vscode.Disposable {
    * isTesting speeds up tests drastically by turning off our checks for
    * mouse events.
    */
-  constructor(isTesting = true, filename = "") {
-    ModeHandler.IsTesting = isTesting;
+  constructor(filename = "") {
+    ModeHandler.IsTesting = Globals.isTesting;
 
     this.filename = filename;
 
     this._vimState = new VimState();
-    this._insertModeRemapper = new InsertModeRemapper();
-    this._otherModesRemapper = new OtherModesRemapper();
+    this._insertModeRemapper = new InsertModeRemapper(true);
+    this._otherModesRemapper = new OtherModesRemapper(true);
+    this._insertModeNonRecursive = new InsertModeRemapper(false);
+    this._otherModesNonRecursive = new OtherModesRemapper(false);
+
     this._modes = [
       new NormalMode(this),
       new InsertMode(),
@@ -484,8 +532,6 @@ export class ModeHandler implements vscode.Disposable {
       this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
       this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
-
-    this.loadSettings();
 
     // Handle scenarios where mouse used to change current position.
     vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
@@ -597,6 +643,9 @@ export class ModeHandler implements vscode.Disposable {
         if (!this._vimState.getModeObject(this).isVisualMode) {
           this._vimState.currentMode = ModeName.Visual;
           this.setCurrentModeByName(this._vimState);
+
+          // double click mouse selection causes an extra character to be selected so take one less character
+          this._vimState.cursorPosition = this._vimState.cursorPosition.getLeft();
         }
       } else {
         if (this._vimState.currentMode !== ModeName.Insert) {
@@ -608,14 +657,6 @@ export class ModeHandler implements vscode.Disposable {
       await this.updateView(this._vimState, false);
     }
   }
-
-  private loadSettings(): void {
-    this._vimState.settings.useSolidBlockCursor = vscode.workspace.getConfiguration("vim")
-      .get("useSolidBlockCursor", false);
-    this._vimState.settings.scroll = vscode.workspace.getConfiguration("vim").get("scroll", 20) || 20;
-    this._vimState.settings.useCtrlKeys = vscode.workspace.getConfiguration("vim").get("useCtrlKeys", false) || false;
-  }
-
 
   /**
    * The active mode.
@@ -639,19 +680,17 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   async handleKeyEvent(key: string): Promise<Boolean> {
-    if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
-    if (key === "<c-a>") { key = "ctrl+a"; } // TODO - temporary hack for tests only!
-    if (key === "<c-x>") { key = "ctrl+x"; } // TODO - temporary hack for tests only!
-
-    if (key === "<esc>") { key = "<escape>"; }
-
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
 
     try {
       let handled = false;
-
-      handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
-      handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
+      if (!this._vimState.isCurrentlyPreformingRemapping) {
+        // Non-recursive remapping do not allow for further mappings
+        handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
+        handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
+        handled = handled || await this._insertModeNonRecursive.sendKey(key, this, this.vimState);
+        handled = handled || await this._otherModesNonRecursive.sendKey(key, this, this.vimState);
+      }
 
       if (!handled) {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
@@ -722,9 +761,19 @@ export class ModeHandler implements vscode.Disposable {
     let ranRepeatableAction = false;
     let ranAction = false;
 
+    // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
+    // this needs to happen before any changes are made
+    let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
+    if (prevPos !== undefined) {
+      if (vimState.cursorPositionJustBeforeAnythingHappened.line !== prevPos.line ||
+        vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
+        vimState.previousFullAction = recordedState;
+        vimState.historyTracker.finishCurrentStep();
+      }
+    }
+
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
-
       ranAction = true;
     }
 
@@ -772,11 +821,10 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    ranRepeatableAction = ranRepeatableAction && vimState.currentMode === ModeName.Normal;
-    ranAction           = ranAction           && vimState.currentMode === ModeName.Normal;
+    ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) || this.createUndoPointForBrackets(vimState);
+    ranAction = ranAction && vimState.currentMode === ModeName.Normal;
 
     // Record down previous action and flush temporary state
-
     if (ranRepeatableAction) {
       vimState.previousFullAction = vimState.recordedState;
     }
@@ -826,6 +874,9 @@ export class ModeHandler implements vscode.Disposable {
         vimState.allCursors[i].stop = stop.getLineEnd();
       }
     }
+
+    // Update the current history step to have the latest cursor position incase it is needed
+    vimState.historyTracker.setLastHistoryEndPosition(vimState.cursorPosition);
 
     return vimState;
   }
@@ -1093,7 +1144,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    if (vimState.settings.useSolidBlockCursor || vimState.isMultiCursor) {
+    if (Configuration.getInstance().useSolidBlockCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
         for (const { stop } of vimState.allCursors) {
           rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
@@ -1133,7 +1184,8 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw search highlight
 
-    if (this.currentMode.name === ModeName.SearchInProgressMode) {
+    if (this.currentMode.name === ModeName.SearchInProgressMode ||
+      (Configuration.getInstance().hlsearch && vimState.searchState)) {
       const searchState = vimState.searchState!;
 
       rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
@@ -1156,7 +1208,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
-    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', this.vimState.settings.useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().useCtrlKeys);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
@@ -1172,6 +1224,35 @@ export class ModeHandler implements vscode.Disposable {
 
     ModeHandler._statusBarItem.text = text || '';
     ModeHandler._statusBarItem.show();
+  }
+
+  // Return true if a new undo point should be created based on brackets and parenthesis
+  private createUndoPointForBrackets(vimState: VimState): boolean {
+    // }])> keys all start a new undo state when directly next to an {[(< opening character
+    const key = vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
+
+    if (key === undefined) {
+      return false;
+    }
+
+    if (vimState.currentMode === ModeName.Insert) {
+      // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
+      let result = PairMatcher.nextPairedChar(vimState.cursorPosition, key, false);
+      if (result !== undefined) {
+        if (vimState.cursorPosition.compareTo(result) === 0) {
+          return true;
+        }
+      }
+
+      result = PairMatcher.nextPairedChar(vimState.cursorPosition.getLeft(), key, true);
+      if (result !== undefined) {
+        if (vimState.cursorPosition.getLeftByCount(2).compareTo(result) === 0) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   dispose() {

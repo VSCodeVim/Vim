@@ -4,6 +4,7 @@
     "target": "es6",
     "outDir": "out",
     "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
     "noLib": true,
     "sourceMap": true,
     "strictNullChecks": true,

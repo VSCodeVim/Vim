@@ -37,7 +37,7 @@ export class WriteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  execute(modeHandler : ModeHandler) : void {
+  async execute(modeHandler : ModeHandler) : Promise<void> {
     if (this.arguments.opt) {
       util.showError("Not implemented.");
       return;
@@ -56,27 +56,26 @@ export class WriteCommand extends node.CommandBase {
       throw error.VimError.fromCode(error.ErrorCode.E32);
     }
 
-    fs.access(this.activeTextEditor.document.fileName, fs.W_OK, (accessErr) => {
-      if (accessErr) {
-        if (this.arguments.bang) {
-          fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
-            if (e) {
-              modeHandler.setupStatusBarItem(e.message);
-            } else {
-              this.save(modeHandler);
-            }
-          });
-        } else {
-          modeHandler.setupStatusBarItem(accessErr.message);
-        }
+    try {
+      fs.accessSync(this.activeTextEditor.document.fileName, fs.W_OK);
+      return this.save(modeHandler);
+    } catch (accessErr) {
+      if (this.arguments.bang) {
+        fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
+          if (e) {
+            modeHandler.setupStatusBarItem(e.message);
+          } else {
+            return this.save(modeHandler);
+          }
+        });
       } else {
-        this.save(modeHandler);
+        modeHandler.setupStatusBarItem(accessErr.message);
       }
-    });
+    }
   }
 
-  private save(modeHandler : ModeHandler) {
-    this.activeTextEditor.document.save().then(
+  private async save(modeHandler : ModeHandler) : Promise<void> {
+    await this.activeTextEditor.document.save().then(
       (ok) => {
         modeHandler.setupStatusBarItem('"' + path.basename(this.activeTextEditor.document.fileName) +
         '" ' + this.activeTextEditor.document.lineCount + 'L ' +

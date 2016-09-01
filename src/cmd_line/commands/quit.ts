@@ -27,11 +27,15 @@ export class QuitCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  execute() : void {
+  async execute() : Promise<void> {
+    if (this.activeTextEditor.document.isUntitled && !this._arguments.bang) {
+      throw error.VimError.fromCode(error.ErrorCode.E32);
+    }
+
     if (this.activeTextEditor.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.E37);
     }
 
-    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }
 }

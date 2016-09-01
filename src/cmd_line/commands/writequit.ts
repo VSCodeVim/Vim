@@ -1,9 +1,9 @@
 "use strict";
 
-import * as vscode from "vscode";
 import * as node from "../node";
-import * as error from "../../error";
 import {ModeHandler} from "../../mode/modeHandler";
+import * as write from "./write";
+import * as quit from "./quit";
 
 //
 // Implements :writequit
@@ -38,17 +38,24 @@ export class WriteQuitCommand extends node.CommandBase {
   }
 
   // Writing command. Taken as a basis from the "write.ts" file.
-  execute(modeHandler : ModeHandler) : void {
-    var filename : RegExp = new RegExp("Untitled-[0-9]*");
-    if (!this.activeTextEditor.document.isDirty) {
-      if (filename.test(this.activeTextEditor.document.fileName)) {
-        vscode.commands.executeCommand("workbench.action.files.saveAs");
-      } else {
-        vscode.commands.executeCommand("workbench.action.files.save");
-      }
-      vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-    } else {
-      throw error.VimError.fromCode(error.ErrorCode.E208);
-    }
+  async execute(modeHandler : ModeHandler) : Promise<void> {
+    let writeArgs : write.IWriteCommandArguments = {
+      opt: this.arguments.opt,
+      optValue: this.arguments.optValue,
+      bang: this.arguments.bang,
+      file: this.arguments.file,
+      range: this.arguments.range
+    };
+
+    let writeCmd = new write.WriteCommand(writeArgs);
+    await writeCmd.execute(modeHandler);
+    let quitArgs : quit.IQuitCommandArguments = {
+      // wq! fails when no file name is provided
+      bang: false,
+      range: this.arguments.range
+    };
+
+    let quitCmd = new quit.QuitCommand(quitArgs);
+    await quitCmd.execute();
   }
 }

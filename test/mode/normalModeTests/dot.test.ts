@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, cleanUpWorkspace } from './../../testUtils';
+import { setupWorkspace, cleanUpWorkspace, setTextEditorOptions } from './../../testUtils';
 import { ModeHandler } from '../../../src/mode/modeHandler';
 import { getTestingFunctions } from '../../testSimplifier';
 
@@ -13,6 +13,7 @@ suite("Dot Operator", () => {
 
     setup(async () => {
         await setupWorkspace();
+        setTextEditorOptions(4, false);
     });
 
     teardown(cleanUpWorkspace);
@@ -41,14 +42,14 @@ suite("Dot Operator", () => {
     newTest({
       title: "Can handle dot with A",
       start: ['|one', 'two', 'three'],
-      keysPressed: 'A!<escape>j.j.',
+      keysPressed: 'A!<Esc>j.j.',
       end: ['one!', 'two!', 'three|!']
     });
 
     newTest({
       title: "Can handle dot with I",
       start: ['on|e', 'two', 'three'],
-      keysPressed: 'I!<escape>j.j.',
+      keysPressed: 'I!<Esc>j.j.',
       end: ['!one', '!two', '|!three']
     });
 
@@ -56,7 +57,7 @@ suite("Dot Operator", () => {
       title: "Can repeat actions that require selections",
       start: ['on|e', 'two'],
       keysPressed: 'Vj>.',
-      end: ['    |one', '    two']
+      end: ['        |one', '        two']
     });
 
 });

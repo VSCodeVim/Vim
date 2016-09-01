@@ -8,7 +8,8 @@ suite("Motions in Normal Mode", () => {
   let modeHandler: ModeHandler = new ModeHandler();
 
   let {
-    newTest
+    newTest,
+    newTestOnly,
   } = getTestingFunctions(modeHandler);
 
   setup(async () => {
@@ -342,14 +343,14 @@ suite("Motions in Normal Mode", () => {
   newTest({
     title: "Can handle dot with A",
     start: ['|one', 'two', 'three'],
-    keysPressed: 'A!<escape>j.j.',
+    keysPressed: 'A!<Esc>j.j.',
     end: ['one!', 'two!', 'three|!']
   });
 
   newTest({
     title: "Can handle dot with I",
     start: ['on|e', 'two', 'three'],
-    keysPressed: 'I!<escape>j.j.',
+    keysPressed: 'I!<Esc>j.j.',
     end: ['!one', '!two', '|!three']
   });
 
@@ -477,7 +478,21 @@ suite("Motions in Normal Mode", () => {
     title: "Can handle _ with count prefix",
     start: ['blah', 'duh', '|dur', 'hur'],
     keysPressed: '2_',
-    end: ['blah', '|duh', 'dur', 'hur']
+    end: ['blah', 'duh', 'dur', '|hur']
+  });
+
+  newTest({
+    title: "Can handle g_",
+    start: ['blah', '|duh'],
+    keysPressed: 'g_',
+    end: ['blah', 'du|h']
+  });
+
+  newTest({
+    title: "Can handle g_ with count prefix",
+    start: ['blah', 'duh', '|dur', 'hur'],
+    keysPressed: '2g_',
+    end: ['blah', 'duh', 'dur', 'hu|r']
   });
 
   newTest({

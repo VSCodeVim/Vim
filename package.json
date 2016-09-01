@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#a5c9a2",
@@ -58,6 +58,11 @@
                 "when": "editorTextFocus && vim.mode == 'Normal Mode'"
             },
             {
+                "key": "tab",
+                "command": "extension.vim_tab",
+                "when": "editorFocus && vim.mode == 'Normal Mode'"
+            },
+            {
                 "key": "ctrl+r",
                 "command": "extension.vim_ctrl+r",
                 "when": "editorTextFocus"
@@ -90,7 +95,7 @@
             {
                 "key": "ctrl+v",
                 "command": "extension.vim_ctrl+v",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+                "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys"
             },
             {
                 "key": "ctrl+d",
@@ -100,7 +105,7 @@
             {
                 "key": "ctrl+[",
                 "command": "extension.vim_ctrl+[",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.useCtrlKeys"
             },
             {
                 "key": "ctrl+w",
@@ -151,29 +156,56 @@
                     "type": "array",
                     "description": "Keybinding overrides to use for normal mode."
                 },
+                "vim.otherModesKeyBindingsNonRecursive": {
+                    "type": "array",
+                    "description": "Non-recursive keybinding overrides to use for normal mode."
+                },
                 "vim.useCtrlKeys": {
                     "type": "boolean",
                     "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c"
                 },
-                "vim.blahblah": {
-                    "type": "boolean",
-                    "description": "blah"
+                "vim.useSystemClipboard": {
+                  "type": "boolean",
+                  "description": "Use system clipboard for unnamed register.",
+                  "default": false
                 },
                 "vim.insertModeKeyBindings": {
                     "type": "array",
                     "description": "Keybinding overrides to use for insert mode."
                 },
+                "vim.insertModeKeyBindingsNonRecursive": {
+                    "type": "array",
+                    "description": "Non-recursive keybinding overrides to use for insert mode."
+                },
                 "vim.useSolidBlockCursor": {
                     "type": "boolean",
-                    "description": "Use a non blinking block cursor."
-                },
-                "vim.visualModeKeyBindings": {
-                    "type": "object",
-                    "description": "Keybinding overrides to use for visual mode."
+                    "description": "Use a non blinking block cursor.",
+                    "default": false
                 },
                 "vim.scroll": {
                     "type": "number",
-                    "description": "Number of lines to scroll with CTRL-U and CTRL-D commands."
+                    "description": "Number of lines to scroll with CTRL-U and CTRL-D commands.",
+                    "default": 20
+                },
+                "vim.iskeyword": {
+                    "type": "string",
+                    "description": "keywords contain alphanumeric characters and '_'",
+                    "default": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-"
+                },
+                "vim.ignorecase": {
+                    "type": "boolean",
+                    "description": "Ignore case in search patterns.",
+                    "default": true
+                },
+                "vim.smartcase": {
+                    "type": "boolean",
+                    "description": "Override the 'ignorecase' option if the search pattern contains upper case characters.",
+                    "default": true
+                },
+                "vim.hlsearch": {
+                    "type": "boolean",
+                    "description": "When there is a previous search pattern, highlight all its matches.",
+                    "default": false
                 }
             }
         }
@@ -186,7 +218,7 @@
     },
     "dependencies": {
         "copy-paste": "^1.3.0",
-        "diff": "^2.2.3",
+        "diff-match-patch": "^1.0.0",
         "lodash": "^4.12.0"
     },
     "devDependencies": {
@@ -206,6 +238,6 @@
         "tslint": "^3.10.2",
         "typescript": "2.0.0",
         "typings": "^1.0.4",
-        "vscode": "^0.11.13"
+        "vscode": "^0.11.16"
     }
 }

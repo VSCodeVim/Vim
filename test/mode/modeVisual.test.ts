@@ -32,7 +32,7 @@ suite("Mode Visual", () => {
   test("Can handle w", async () => {
     await modeHandler.handleMultipleKeyEvents("itest test test\ntest\n".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', 'g', 'g',
+      '<Esc>', 'g', 'g',
       'v', 'w'
     ]);
 
@@ -50,7 +50,7 @@ suite("Mode Visual", () => {
   test("Can handle wd", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '^',
+      '<Esc>', '^',
       'v', 'w', 'd'
     ]);
 
@@ -60,7 +60,7 @@ suite("Mode Visual", () => {
   test("Can handle x", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '^',
+      '<Esc>', '^',
       'v', 'x'
     ]);
 
@@ -72,7 +72,7 @@ suite("Mode Visual", () => {
   test("Can handle x across a selection", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '^',
+      '<Esc>', '^',
       'v', 'w', 'x'
     ]);
 
@@ -84,7 +84,7 @@ suite("Mode Visual", () => {
   test("Can do vwd in middle of sentence", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two three foar".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '^',
+      '<Esc>', '^',
       'l', 'l', 'l', 'l',
       'v', 'w', 'd'
     ]);
@@ -95,7 +95,7 @@ suite("Mode Visual", () => {
   test("Can do vwd in middle of sentence", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '^',
+      '<Esc>', '^',
       'l', 'l', 'l', 'l',
       'v', 'w', 'd'
     ]);
@@ -106,7 +106,7 @@ suite("Mode Visual", () => {
   test("Can do vwd multiple times", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two three four".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '^',
+      '<Esc>', '^',
       'v', 'w', 'd',
       'v', 'w', 'd',
       'v', 'w', 'd'
@@ -118,7 +118,7 @@ suite("Mode Visual", () => {
   test("handles case where we go from selecting on right side to selecting on left side", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '^',
+      '<Esc>', '^',
       'l', 'l', 'l', 'l',
       'v', 'w', 'b', 'b', 'd'
     ]);
@@ -129,7 +129,7 @@ suite("Mode Visual", () => {
   test("handles case where we delete over a newline", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two\n\nthree four".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '0', 'k', 'k',
+      '<Esc>', '0', 'k', 'k',
       'v', '}', 'd'
     ]);
 
@@ -139,7 +139,7 @@ suite("Mode Visual", () => {
   test("handles change operator", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two three".split(""));
     await modeHandler.handleMultipleKeyEvents([
-      '<escape>', '^',
+      '<Esc>', '^',
       'v', 'w', 'c'
     ]);
 
@@ -155,7 +155,7 @@ suite("Mode Visual", () => {
       );
 
       await modeHandler.handleMultipleKeyEvents([
-        '<escape>',
+        '<Esc>',
         '^', 'g', 'g',
         'v', 'l', 'l', 'l',
         'd'
@@ -170,7 +170,7 @@ suite("Mode Visual", () => {
       );
 
       await modeHandler.handleMultipleKeyEvents([
-        '<escape>',
+        '<Esc>',
         'g', 'g',
         'l', 'v', 'l', 'l',
         'd'
@@ -185,7 +185,7 @@ suite("Mode Visual", () => {
       );
 
       await modeHandler.handleMultipleKeyEvents([
-        '<escape>',
+        '<Esc>',
         'g', 'g',
         'd', '$'
       ]);
@@ -199,7 +199,7 @@ suite("Mode Visual", () => {
       );
 
       await modeHandler.handleMultipleKeyEvents([
-        '<escape>',
+        '<Esc>',
         'g', 'g',
         'v', '$', 'd'
       ]);
@@ -460,6 +460,84 @@ suite("Mode Visual", () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'Y' in visual mode" ,
+      start: ['one', '|two'],
+      keysPressed: 'vwYP',
+      end: ['one', '|two', 'two'],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles as in visual mode", () => {
+    newTest({
+      title: "Select sentence with trailing spaces in visual mode",
+      start: ["That's my sec|ret, Captain. I'm always angry."],
+      keysPressed: 'vlasd',
+      end: ["That's my sec|I'm always angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select sentence with leading spaces in visual mode",
+      start: ["That's my secret, Captain. I'm a|lways angry."],
+      keysPressed: 'vhasd',
+      end: ["That's my secret, Captain.|ways angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select multiple sentences in visual mode",
+      start: ["That's my secret, Captain. I|'m always angry."],
+      keysPressed: 'vhhasd',
+      end: ["|m always angry."],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles is in visual mode", () => {
+    newTest({
+      title: "Select inner sentence with trailing spaces in visual mode",
+      start: ["That's my sec|ret, Captain. I'm always angry."],
+      keysPressed: 'vlisd',
+      end: ["That's my sec| I'm always angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select inner sentence with leading spaces in visual mode",
+      start: ["That's my secret, Captain. I'm a|lways angry."],
+      keysPressed: 'vhisd',
+      end: ["That's my secret, Captain. |ways angry."],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Select spaces between sentences in visual mode",
+      start: ["That's my secret, Captain.  |  I'm always angry."],
+      keysPressed: 'vhisd',
+      end: ["That's my secret, Captain.| I'm always angry."],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("handles tag blocks in visual mode", () => {
+    newTest({
+      title: "Can do vit on a matching tag",
+      start: ["one <blink>he|llo</blink> two"],
+      keysPressed: "vitd",
+      end: ["one <blink>|</blink> two"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do vat on a matching tag",
+      start: ["one <blink>he|llo</blink> two"],
+      keysPressed: "vatd",
+      end: ["one | two"],
       endMode: ModeName.Normal
     });
   });

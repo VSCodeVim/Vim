@@ -28,6 +28,7 @@ Status | Command
 :warning:  | Marks
 :white_check_mark: | Text Objects
 :white_check_mark: | Visual Block Mode
+:warning: | Replace Mode
  | Multiple Select Mode
  | Macros
 :warning: | Buffer/Window/Tab
@@ -104,6 +105,44 @@ Status | Command | Description
 :arrow_down:   | :1234:  [*		| N times back to start of a C comment "/*"
 :arrow_down:   | :1234:  ]*		| N times forward to end of a C comment "*/"
 
+## Pattern searches
+
+Status | Command | Description
+---|--------|------------------------------
+:warning: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern}
+:warning: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern}
+ | :1234: `/<CR>` | repeat last search, in the forward direction
+ | :1234: `?<CR>` | repeat last search, in the backward direction
+:warning: | :1234: n | repeat last search
+:warning: | :1234: N | repeat last search, in opposite direction
+:white_check_mark: | :1234: * | search forward for the identifier under the cursor
+:white_check_mark: | :1234: # | search backward for the identifier under the cursor
+ | :1234: g* | like "*", but also find partial matches
+ | :1234: g# | like "#", but also find partial matches
+:white_check_mark: | gd | goto local declaration of identifier under the cursor
+ | gD | goto global declaration of identifier under the cursor
+
+## Marks and motions
+
+Status | Command | Description
+---|--------|------------------------------
+:white_check_mark: |    m{a-zA-Z}	       |  mark current position with mark {a-zA-Z}
+      |    `{a-z}	       |  go to mark {a-z} within current file
+      |    `{A-Z}	       |  go to mark {A-Z} in any file
+      |    `{0-9}	       |  go to the position where Vim was previously exited
+      |    ``		       |  go to the position before the last jump
+      |    `"		       |  go to the position when last editing this file
+      |    `[		       |  go to the start of the previously operated or put text
+      |    `]		       |  go to the end of the previously operated or put text
+      |    `<		       |  go to the start of the (previous) Visual area
+      |    `>		       |  go to the end of the (previous) Visual area
+      |    `.		       |  go to the position of the last change in this file
+      |    '{a-zA-Z0-9[]'"<>.} |  same as `, but on the first non-blank in the line
+      | :marks	               |  print the active marks
+      | :1234:  CTRL-O	       |  go to Nth older position in jump list
+      | :1234:  CTRL-I	       |  go to Nth newer position in jump list
+      | :ju[mps]	       |  print the jump list
+
 ## Various motions
 
 Status | Command | Description
@@ -114,6 +153,44 @@ Status | Command | Description
 :white_check_mark:    |:1234:  L		        | go to the Nth line from the bottom, on the first non-blank
     |:1234:  go			| go to Nth byte in the buffer
     |:[range]go[to] [off]	| go to [off] byte in the buffer
+
+## Using tags
+
+Status | Command | Description
+---|--------|------------------------------
+   | :ta[g][!] {tag} | jump to tag {tag}
+   | :[count]ta[g][!] | jump to [count]'th newer tag in tag list
+   | CTRL-] | jump to the tag under cursor, unless changes have been made
+   | :ts[elect][!] [tag] | list matching tags and select one to jump to
+   | :tj[ump][!] [tag]	| jump to tag [tag] or select from list when there are multiple matches
+   | :lt[ag][!] [tag] | jump to tag [tag] and add matching tags to the location list
+   | :tagsa | print tag list
+   | :1234: CTRL-T	| jump back from Nth older tag in tag list
+   | :[count]po[p][!] | jump back from [count]'th older tag in tag list
+   | :[count]tn[ext][!] | jump to [count]'th next matching tag
+   | :[count]tp[revious][!] | jump to [count]'th previous matching tag
+   | :[count]tr[ewind][!] | jump to [count]'th matching tag
+   | :tl[ast][!] | jump to last matching tag
+   | :pt[ag] {tag}	| open a preview window to show tag {tag}
+   | CTRL-W } | like CTRL-] but show tag in preview window
+   | :pts[elect] |	like ":tselect" but show tag in preview window
+   | :ptj[ump]	| like ":tjump" but show tag in preview window
+   | :pc[lose]	| close tag preview window
+   | CTRL-W z | close tag preview window`
+
+## Scrolling
+
+Status | Command | Description
+---|--------|------------------------------
+:x:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
+:warning:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
+:x:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
+  :x:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
+:warning:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
+:x:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
+:x:    |    z CR or zt	| redraw, current line at top of window
+:warning: |    z.	 or zz	| redraw, current line at center of window
+:x:    |    z-	 or zb	| redraw, current line at bottom of window
 
 These only work when 'wrap' is off:
 
@@ -163,6 +240,43 @@ Status | Command | Description
 :white_check_mark:   | End		| cursor after last character in the line
 :white_check_mark:   | Home		| cursor to first character in the line
 
+## Special keys in Insert mode
+
+Status | Command | Description
+---|--------|------------------------------
+    | CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
+:warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line
+    | CTRL-E		                 |  insert the character from below the cursor
+    | CTRL-Y		                 |  insert the character from above the cursor
+    | CTRL-A		                 |  insert previously inserted text
+    | CTRL-@		                 |  insert previously inserted text and stop Insert mode
+    | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
+    | CTRL-N		                 |  insert next match of identifier before the cursor
+    | CTRL-P		                 |  insert previous match of identifier before the cursor
+    | CTRL-X ...	                 |  complete the word before the cursor in various ways
+    | BS or CTRL-H	                 |  delete the character before the cursor
+:white_check_mark:    | Del		                 |  delete the character under the cursor
+:white_check_mark:    | CTRL-W		                 |  delete word before the cursor
+    | CTRL-U		                 |  delete all entered characters in the current line
+    | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
+    | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
+    | 0 CTRL-D	                 |  delete all indent in the current line
+    | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
+
+## Digraphs
+
+Status | Command | Description
+---|--------|------------------------------
+:arrow_down: | :dig[raphs] | show current list of digraphs
+:arrow_down: | :dig[raphs] {char1}{char2} {number} ... | add digraph(s) to the list
+
+## Special inserts
+
+Status | Command | Description
+---|--------|------------------------------
+   | :r [file]	    | insert the contents of [file] below the cursor
+   | :r! {command}  | insert the standard output of {command} below the cursor
+
 ## Deleting text
 
 Status | Command | Description
@@ -205,7 +319,7 @@ Status | Command | Description
 ---|--------|------------------------------
 :warning:    | :1234:  r{char}	| replace N characters with {char}
     | :1234:  gr{char}	| replace N characters without affecting layout
-    | :1234:  R		| enter Replace mode (repeat the entered text N times)
+:warning:    | :1234:  R		| enter Replace mode (repeat the entered text N times)
     | :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
     |  {visual}r{char} | in Visual block mode: Replace each char of the selected text with {char}
 
@@ -222,16 +336,16 @@ Status | Command | Description
     |    {visual}c	| in Visual block mode: Change each of the selected lines with the entered text
     |    {visual}C	| in Visual block mode: Change each of the selected lines until end-of-line with the entered text
 :warning:    | :1234:  ~		| switch case for N characters and advance cursor
-    |    {visual}~	| switch case for highlighted text
-    |    {visual}u	| make highlighted text lowercase
-    |    {visual}U	| make highlighted text uppercase
-    |    g~{motion}     | switch case for the text that is moved over with {motion}
-    |    gu{motion}     | make the text that is moved over with {motion} lowercase
-    |    gU{motion}     | make the text that is moved over with {motion} uppercase
+:white_check_mark:  |    {visual}~	| switch case for highlighted text
+:white_check_mark:  |    {visual}u	| make highlighted text lowercase
+:white_check_mark:  |    {visual}U	| make highlighted text uppercase
+:white_check_mark:  |    g~{motion}     | switch case for the text that is moved over with {motion}
+:white_check_mark:  |    gu{motion}     | make the text that is moved over with {motion} lowercase
+:white_check_mark:  |    gU{motion}     | make the text that is moved over with {motion} uppercase
 :arrow_down:    |    {visual}g?     | perform rot13 encoding on highlighted text
 :arrow_down:    |    g?{motion}     | perform rot13 encoding on the text that is moved over with {motion}
-    | :1234:  CTRL-A	| add N to the number at or after the cursor
-    | :1234:  CTRL-X	| subtract N from the number at or after the cursor
+:white_check_mark:    | :1234:  CTRL-A	| add N to the number at or after the cursor
+:white_check_mark:    | :1234:  CTRL-X	| subtract N from the number at or after the cursor
 :white_check_mark:    | :1234:  <{motion}	| move the lines that are moved over with {motion} one shiftwidth left
 :white_check_mark:    | :1234:  <<	|	move N lines one shiftwidth left
 :white_check_mark:    | :1234:  >{motion}	|  move the lines that are moved over with {motion} one shiftwidth right
@@ -240,6 +354,22 @@ Status | Command | Description
     | :[range]ce[nter] [width] | center the lines in [range]
     | :[range]le[ft] [indent]  | left-align the lines in [range] (with [indent])
     | :[range]ri[ght] [width]  | right-align the lines in [range]
+
+## Complex changes
+
+Status | Command | Description
+---|--------|------------------------------
+   | :1234:  `!{motion}{command}<CR>` | filter the lines that are moved over through {command}
+   | :1234:  `!!{command}<CR>`       | filter N lines through {command}
+   |    `{visual}!{command}<CR>`      |  filter the highlighted lines through {command}
+   | `:[range]! {command}<CR>`      | filter [range] lines through {command}
+:white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
+   | :1234:  ==	                 |    filter N lines through 'equalprg'
+:white_check_mark:  |    {visual}=                | filter the highlighted lines through 'equalprg'
+:warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement
+   | :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
+   |    &		| Repeat previous ":s" on current line without options
+ :arrow_down:  | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
 
 ## Visual mode
 
@@ -262,24 +392,26 @@ Status | Command | Description
 :white_check_mark:    | :1234:  iw	| Select "inner word"
 :white_check_mark:    | :1234:  aW	| Select "a |WORD|"
 :white_check_mark:    | :1234:  iW	| Select "inner |WORD|"
-    | :1234:  as	| Select "a sentence"
-    | :1234:  is	| Select "inner sentence"
+:white_check_mark:    | :1234:  as	| Select "a sentence"
+:white_check_mark:    | :1234:  is	| Select "inner sentence"
     | :1234:  ap	| Select "a paragraph"
     | :1234:  ip	| Select "inner paragraph"
-    | :1234:  ab	| Select "a block" (from "[(" to "])")
-    | :1234:  ib	| Select "inner block" (from "[(" to "])")
-    | :1234:  aB	| Select "a Block" (from "[{" to "]}")
-    | :1234:  iB	| Select "inner Block" (from "[{" to "]}")
-:warning:    | :1234:  a>	| Select "a &lt;&gt; block"
-:warning:    | :1234:  i>	| Select "inner <> block"
-    | :1234:  at	| Select "a tag block" (from <aaa> to </aaa>)
-    | :1234:  it	| Select "inner tag block" (from <aaa> to </aaa>)
-:warning:    | :1234:  a'	| Select "a single quoted string"
-:warning:    | :1234:  i'	| Select "inner single quoted string"
-:warning:    | :1234:  a"	| Select "a double quoted string"
-:warning:    | :1234:  i"	| Select "inner double quoted string"
-:warning:    | :1234:  a`	| Select "a backward quoted string"
-:warning:    | :1234:  i`	| Select "inner backward quoted string"
+:white_check_mark:    | :1234:  a], a[    | select '[' ']' blocks
+:white_check_mark:    | :1234:  i], i[    | select inner  '[' ']' blocks
+:white_check_mark:    | :1234:  ab, a(, a)	| Select "a block" (from "[(" to "])")
+:white_check_mark:    | :1234:  ib, i), i(	| Select "inner block" (from "[(" to "])")
+:white_check_mark:    | :1234:  a>, a<	| Select "a &lt;&gt; block"
+:white_check_mark:    | :1234:  i>, i<	| Select "inner <> block"
+:white_check_mark:    | :1234:  aB, a{, a}	| Select "a Block" (from "[{" to "]}")
+:white_check_mark:    | :1234:  iB, i{, i}	| Select "inner Block" (from "[{" to "]}")
+:white_check_mark:    | :1234:  at	| Select "a tag block" (from &lt;aaa&gt; to &lt;/aaa&gt;)
+:white_check_mark:    | :1234:  it	| Select "inner tag block" (from &lt;aaa&gt; to &lt;/aaa&gt;)
+:white_check_mark:    | :1234:  a'	| Select "a single quoted string"
+:white_check_mark:    | :1234:  i'	| Select "inner single quoted string"
+:white_check_mark:    | :1234:  a"	| Select "a double quoted string"
+:white_check_mark:    | :1234:  i"	| Select "inner double quoted string"
+:white_check_mark:    | :1234:  a`	| Select "a backward quoted string"
+:white_check_mark:    | :1234:  i`	| Select "inner backward quoted string"
 
 ## Repeating commands
 
@@ -300,128 +432,8 @@ Status | Command | Description
 :arrow_down:   | :sl[eep] [sec]  | don't do anything for [sec] seconds
 :arrow_down:   | :1234:  gs	 | goto Sleep for N seconds
 
-
-## Marks and motions
-
-Status | Command | Description
----|--------|------------------------------
-      |    m{a-zA-Z}	       |  mark current position with mark {a-zA-Z}
-      |    `{a-z}	       |  go to mark {a-z} within current file
-      |    `{A-Z}	       |  go to mark {A-Z} in any file
-      |    `{0-9}	       |  go to the position where Vim was previously exited
-      |    ``		       |  go to the position before the last jump
-      |    `"		       |  go to the position when last editing this file
-      |    `[		       |  go to the start of the previously operated or put text
-      |    `]		       |  go to the end of the previously operated or put text
-      |    `<		       |  go to the start of the (previous) Visual area
-      |    `>		       |  go to the end of the (previous) Visual area
-      |    `.		       |  go to the position of the last change in this file
-      |    '{a-zA-Z0-9[]'"<>.} |  same as `, but on the first non-blank in the line
-      | :marks	               |  print the active marks
-      | :1234:  CTRL-O	       |  go to Nth older position in jump list
-      | :1234:  CTRL-I	       |  go to Nth newer position in jump list
-      | :ju[mps]	       |  print the jump list
-
-## Complex changes
-
-Status | Command | Description
----|--------|------------------------------
-   | :1234:  !{motion}{command}<CR> | filter the lines that are moved over through {command}
-   | :1234:  !!{command}<CR>        | filter N lines through {command}
-   |    {visual}!{command}<CR>      |  filter the highlighted lines through {command}
-   | :[range]! {command}<CR>      | filter [range] lines through {command}
-:white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
-   | :1234:  ==	                 |    filter N lines through 'equalprg'
-:white_check_mark:  |    {visual}=                | filter the highlighted lines through 'equalprg'
-:warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement
-   | :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
-   |    &		| Repeat previous ":s" on current line without options
- :arrow_down:  | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
-
-
-## Special keys in Insert mode
-
-Status | Command | Description
----|--------|------------------------------
-    | CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
-:warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line
-    | CTRL-E		                 |  insert the character from below the cursor
-    | CTRL-Y		                 |  insert the character from above the cursor
-    | CTRL-A		                 |  insert previously inserted text
-    | CTRL-@		                 |  insert previously inserted text and stop Insert mode
-    | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
-    | CTRL-N		                 |  insert next match of identifier before the cursor
-    | CTRL-P		                 |  insert previous match of identifier before the cursor
-    | CTRL-X ...	                 |  complete the word before the cursor in various ways
-    | BS or CTRL-H	                 |  delete the character before the cursor
-:white_check_mark:    | Del		                 |  delete the character under the cursor
-:white_check_mark:    | CTRL-W		                 |  delete word before the cursor
-    | CTRL-U		                 |  delete all entered characters in the current line
-    | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
-    | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
-    | 0 CTRL-D	                 |  delete all indent in the current line
-    | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
-
-
-
-## Scrolling
-
-Status | Command | Description
----|--------|------------------------------
-:x:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
-:warning:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
-:x:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
-  :x:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
-:warning:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
-:x:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
-:x:    |    z CR or zt	| redraw, current line at top of window
-:warning: |    z.	 or zz	| redraw, current line at center of window
-:x:    |    z-	 or zb	| redraw, current line at bottom of window
-
-
-## Special inserts
-
-Status | Command | Description
----|--------|------------------------------
-   | :r [file]	    | insert the contents of [file] below the cursor
-   | :r! {command}  | insert the standard output of {command} below the cursor
-
-
-## Window
-
-Status | Command | Description
----|--------|------------------------------
-:warning:   | :e[dit] {file}  | Edit {file}. We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
-:warning:   | <ctrl-w> hl  | Switching between windows. As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
-:x:   | :sp {file}  | Split current window in two. VS Code doesn't support split Window horizontally.
-   | :vsp {file}  | Split vertically current window in two.
-:x:   | :new | Create a new window horizontally and start editing an empty file in it.
-   | :vne[w] | Create a new window vertically and start editing an empty file in it.
-
-
-## Tabs
-
-Status | Command | Description
----|--------|------------------------------
-:white_check_mark:   | :tabn[ext] :1234:	    | Go to next tab page or tab page {count}.  The first tab page has number one.
-    | {count}<C-PageDown>, {count}gt | Same as above
-:white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
-:white_check_mark:   | :tabN[ext]	:1234:  | Same as above
-    | {count}<C-PageUp>, {count}gT | Same as above
-:white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
-:white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
-:warning:   | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page
-    | :[count]tabe[dit], :[count]tabnew | Same as above
-:warning:   | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page
-    | :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
-:warning:   | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}.
-:warning:   | :tabo[nly][!] | Close all other tab pages.
-:white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
-:x:   | :tabs	 | List the tab pages and the windows they contain.
-    | :tabd[o] {cmd} | Execute {cmd} in each tab page.
-
 ## options
-### Commands
+
 Status | Command | Description
 ---|--------|------------------------------
     | :se[t]              | show all modified options
@@ -440,13 +452,91 @@ Status | Command | Description
     | :fix[del]		      | set value of 't_kD' according to value of 't_kb'
     | :opt[ions]		  | open a new window to view and set options, grouped by functionality, a one line explanation and links to the help
 
-### Option list
 Since the list is too long, now we just put those already supported options here.
 
 Status | Command | Default Value | Description
 ---|--------|-------|------------------------------
-:white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that <Tab> in file uses
-:white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when <Tab> is inserted
+:white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that &lt;Tab&gt; in file uses
+:white_check_mark:| :white_check_mark:| hlsearch (hls) | false | When there is a previous search pattern, highlight all its matches.
+:white_check_mark:| ignorecase (ic) | true | Ignore case in search patterns.
+:white_check_mark:| smartcase (scs) | true | Override the 'ignorecase' option if the search pattern contains upper case characters.
+:white_check_mark:| iskeyword (isk) | `@,48-57,_,128-167,224-235` | keywords contain alphanumeric characters and '_'. If there is no user setting for `iskeyword`, we use `editor.wordSeparators` properties.
+:white_check_mark:| scroll (scr) | 20 | Number of lines to scroll with CTRL-U and CTRL-D commands.
+:white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted
+:white_check_mark:| autoindent | true | Keep indentation when doing `cc` or `S` in normal mode to replace a line.
+
+---
+
+## Undo/Redo commands
+
+Status | Command | Default Value | Description
+---|--------|-------|------------------------------
+:warning: | :1234: u | undo last N changes
+:warning: | :1234: CTRL-R |	redo last N undone changes
+| U | restore last changed line
+
+## External commands
+
+Status | Command | Default Value | Description
+---|--------|-------|------------------------------
+:arrow_down: | :sh[ell] | start a shell
+:arrow_down: | :!{command} | execute {command} with a shell
+:arrow_down: | K | lookup keyword under the cursor with 'keywordprg' program (default: "man")
+
+## Ex rangs
+
+Status | Command | Default Value | Description
+---|--------|-------|------------------------------
+:white_check_mark: | , | separates two line numbers
+| ; | idem, set cursor to the first line number before interpreting the second one
+:white_check_mark: | {number} | an absolute line number
+:white_check_mark: | . | the current line
+:white_check_mark: | $ | the last line in the file
+:white_check_mark: | % | equal to 1,$ (the entire file)
+| * | equal to '<,'> (visual area)
+| 't | position of mark t
+|	/{pattern}[/] |	the next line where {pattern} matches
+|	?{pattern}[?] | the previous line where {pattern} matches
+:white_check_mark: | +[num] | add [num] to the preceding line number (default: 1)
+:white_check_mark: | -[num] | subtract [num] from the preceding line number (default: 1)
+
+## Editing a file
+
+Status | Command | Description
+---|--------|------------------------------
+:warning:   | :e[dit] {file}  | Edit {file}. We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
+
+## Multi-window commands
+
+Status | Command | Description
+---|--------|------------------------------
+:warning:   | :e[dit] {file}  | Edit {file}. We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
+:warning:   | &lt;ctrl-w&gt; hl  | Switching between windows. As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
+:x:   | :sp {file}  | Split current window in two. VS Code doesn't support split Window horizontally.
+   | :vsp {file}  | Split vertically current window in two.
+:x:   | :new | Create a new window horizontally and start editing an empty file in it.
+   | :vne[w] | Create a new window vertically and start editing an empty file in it.
+
+## Tabs
+
+Status | Command | Description
+---|--------|------------------------------
+:white_check_mark:   | :tabn[ext] :1234:	    | Go to next tab page or tab page {count}.  The first tab page has number one.
+    | {count}&lt;C-PageDown&gt;, {count}gt | Same as above
+:white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
+:white_check_mark:   | :tabN[ext]	:1234:  | Same as above
+    | {count}&lt;C-PageUp&gt;, {count}gT | Same as above
+:white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
+:white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
+:warning:   | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page
+    | :[count]tabe[dit], :[count]tabnew | Same as above
+:warning:   | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page
+    | :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
+:warning:   | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}.
+:warning:   | :tabo[nly][!] | Close all other tab pages.
+:white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
+:x:   | :tabs	 | List the tab pages and the windows they contain.
+    | :tabd[o] {cmd} | Execute {cmd} in each tab page.
 
 ## Folding
 ### Fold methods
@@ -461,9 +551,9 @@ Status | Command | Description
 :x: | zd | Delete one fold at the cursor.
 :x: | zD | Delete folds recursively at the cursor.
 :x: | zE | Eliminate all folds in the window.
-:warning: :x: | zo | Open one fold under the cursor.When a count is given, that many folds deep will be opened.
+:white_check_mark: | zo | Open one fold under the cursor.When a count is given, that many folds deep will be opened.
 :white_check_mark: | zO | Open all folds under the cursor recursively.
-:warning: :x: | zc | Close one fold under the cursor.  When a count is given, that many folds deep are closed.
+:white_check_mark: | zc | Close one fold under the cursor.  When a count is given, that many folds deep are closed.
 :white_check_mark:| zC | Close all folds under the cursor recursively.
 :x: | za | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.
 :x: | zA | When on a closed fold: open it recursively. When on an open fold: close it recursively and set 'foldenable'.
