@@ -40,44 +40,44 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle '<delete>'",
+      title: "Can handle '<Del>'",
       start: ['te|xt'],
-      keysPressed: '<delete>',
+      keysPressed: '<Del>',
       end: ["te|t"],
     });
 
     newTest({
-      title: "Can handle 'N<delete>', which should be a no-op",
+      title: "Can handle 'N<Del>', which should be a no-op",
       start: ['te|xt'],
-      keysPressed: '2<delete>',
+      keysPressed: '2<Del>',
       end: ["te|xt"],
     });
 
     newTest({
-      title: "Can handle '<delete>' at end of line",
+      title: "Can handle '<Del>' at end of line",
       start: ['one tw|o'],
-      keysPressed: '^ll<delete><delete><delete><delete><delete><delete><delete><delete><delete>',
+      keysPressed: '^ll<Del><Del><Del><Del><Del><Del><Del><Del><Del>',
       end: ['|'],
     });
 
     newTest({
       title: "Can handle 'cc'",
       start: ['one', '|one two', 'three'],
-      keysPressed: 'cca<escape>',
+      keysPressed: 'cca<Esc>',
       end: ["one", "|a", "three"],
     });
 
     newTest({
       title: "Can handle 'Ncc'",
       start: ['one', '|one two', 'three four', 'five'],
-      keysPressed: '2cca<escape>',
+      keysPressed: '2cca<Esc>',
       end: ["one", "|a", "five"]
     });
 
     newTest({
       title: "Can handle 'yy'",
       start: ['|one'],
-      keysPressed: 'yyO<escape>p',
+      keysPressed: 'yyO<Esc>p',
       end: ["", "|one", "one"],
     });
 
@@ -203,9 +203,9 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle '<backspace>' in insert mode",
+      title: "Can handle '<BS>' in insert mode",
       start: ['one', '|'],
-      keysPressed: 'i<backspace><escape>',
+      keysPressed: 'i<BS><Esc>',
       end: ['on|e']
     });
 
