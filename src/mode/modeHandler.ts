@@ -864,7 +864,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    if (movement.repeatableWithSemicolonOrComma) {
+    if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
       VimState.lastRepeatableMovement = movement;
     }
 

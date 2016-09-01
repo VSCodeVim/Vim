@@ -159,7 +159,9 @@ export abstract class BaseMovement extends BaseAction {
   /**
    * Whether we should change lastRepeatableMovement in VimState.
    */
-  public repeatableWithSemicolonOrComma = false;
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return false;
+  }
 
   /**
    * Whether we should change desiredColumn in VimState.
@@ -1995,11 +1997,16 @@ class MoveFindForward extends BaseMovement {
 
     if (vimState.recordedState.operator) {
       result = result.getRight();
-    } else {
-      this.repeatableWithSemicolonOrComma = true;
     }
 
     return result;
+  }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    if (vimState.recordedState.operator) {
+      return false;
+    }
+    return !isIMovement(result) || !result.failed;
   }
 }
 
@@ -2014,11 +2021,16 @@ class MoveFindBackward extends BaseMovement {
 
     if (!result) {
       return { start: position, stop: position, failed: true };
-    } else {
-      this.repeatableWithSemicolonOrComma = true;
     }
 
     return result;
+  }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    if (vimState.recordedState.operator) {
+      return false;
+    }
+    return !isIMovement(result) || !result.failed;
   }
 }
 
@@ -2038,11 +2050,16 @@ class MoveTilForward extends BaseMovement {
 
     if (vimState.recordedState.operator) {
       result = result.getRight();
-    } else {
-      this.repeatableWithSemicolonOrComma = true;
     }
 
     return result;
+  }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    if (vimState.recordedState.operator) {
+      return false;
+    }
+    return !isIMovement(result) || !result.failed;
   }
 }
 
@@ -2057,11 +2074,16 @@ class MoveTilBackward extends BaseMovement {
 
     if (!result) {
       return { start: position, stop: position, failed: true };
-    } else {
-      this.repeatableWithSemicolonOrComma = true;
     }
 
     return result;
+  }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    if (vimState.recordedState.operator) {
+      return false;
+    }
+    return !isIMovement(result) || !result.failed;
   }
 }
 
