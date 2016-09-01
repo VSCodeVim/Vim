@@ -193,7 +193,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   for (let { key } of packagejson.contributes.keybindings) {
     let bracketedKey = util.translateToAngleBracketNotation(key);
-    registerCommand(context, `extension.vim_${ key }`, () => handleKeyEvent(`${ bracketedKey }`));
+    registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
   }
 
   // Initialize mode handler for current active Text Editor at startup.
