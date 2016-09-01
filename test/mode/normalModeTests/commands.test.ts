@@ -40,6 +40,22 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'Ns'",
+      start: ['|text'],
+      keysPressed: '3s',
+      end: ['|t'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'Ns' at end of line",
+      start: ['te|xt'],
+      keysPressed: '3s',
+      end: ['te|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle '<Del>'",
       start: ['te|xt'],
       keysPressed: '<Del>',
