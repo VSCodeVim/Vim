@@ -205,7 +205,7 @@
                 "vim.hlsearch": {
                     "type": "boolean",
                     "description": "When there is a previous search pattern, highlight all its matches.",
-                    "default": true
+                    "default": false
                 }
             }
         }
