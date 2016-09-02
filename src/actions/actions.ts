@@ -3566,7 +3566,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
   public keys = ["~"];
   public modes = [ModeName.VisualBlock];
 
-  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
     for (const { start, end } of Position.IterateLine(vimState)) {
       const range = new vscode.Range(start, end);
       const text = TextEditor.getText(range);
@@ -3585,7 +3585,7 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
       await TextEditor.replace(range, newText);
     }
 
-    const cursorPosition = start.isBefore(end) ? start : end;
+    const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
     vimState.cursorPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     vimState.currentMode = ModeName.Normal;
