@@ -3537,17 +3537,52 @@ class ToggleCaseOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-    const char = TextEditor.getText(range);
+    const text = TextEditor.getText(range);
 
-    // Try lower-case
-    let toggled = char.toLocaleLowerCase();
-    if (toggled === char) {
-      // Try upper-case
-      toggled = char.toLocaleUpperCase();
+    let newText = "";
+    for (var i = 0; i < text.length; i++) {
+      var char = text[i];
+      // Try lower-case
+      let toggled = char.toLocaleLowerCase();
+      if (toggled === char) {
+        // Try upper-case
+        toggled = char.toLocaleUpperCase();
+      }
+      newText += toggled;
     }
+    await TextEditor.replace(range, newText);
 
-    if (toggled !== char) {
-      await TextEditor.replace(range, toggled);
+    const cursorPosition = start.isBefore(end) ? start : end;
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ToggleCaseVisualBlockOperator extends BaseOperator {
+  public keys = ["~"];
+  public modes = [ModeName.VisualBlock];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    for (const { start, end } of Position.IterateLine(vimState)) {
+      const range = new vscode.Range(start, end);
+      const text = TextEditor.getText(range);
+
+      let newText = "";
+      for (var i = 0; i < text.length; i++) {
+        var char = text[i];
+        // Try lower-case
+        let toggled = char.toLocaleLowerCase();
+        if (toggled === char) {
+          // Try upper-case
+          toggled = char.toLocaleUpperCase();
+        }
+        newText += toggled;
+      }
+      await TextEditor.replace(range, newText);
     }
 
     const cursorPosition = start.isBefore(end) ? start : end;
@@ -3566,14 +3601,17 @@ class ToggleCaseWithMotion extends ToggleCaseOperator {
 }
 
 @RegisterAction
-class ToggleCaseAndMoveForward extends BaseMovement {
+class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["~"];
+  canBeRepeatedWithDot = true;
+  canBePrefixedWithCount = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    await new ToggleCaseOperator().run(vimState, position, position);
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await new ToggleCaseOperator().run(vimState, vimState.cursorPosition, vimState.cursorPosition);
 
-    return position.getRight();
+    vimState.cursorPosition = vimState.cursorPosition.getRight();
+    return vimState;
   }
 }
 
