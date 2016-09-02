@@ -8,6 +8,7 @@
 
 import * as vscode from 'vscode';
 import * as util from './src/util';
+import * as _ from "lodash";
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
@@ -114,6 +115,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
+  vscode.workspace.onDidChangeTextDocument((event) => {
+    /* TODO: Remove setTimeout (https://github.com/Microsoft/vscode/issues/11339) */
+    setTimeout(() => {
+      if (event.document.isDirty === false) {
+        handleContentChangedFromDisk(event.document);
+      }
+    }, 0);
+  });
+
   registerCommand(context, 'type', async (args) => {
     if (!vscode.window.activeTextEditor) {
       return;
@@ -215,6 +225,13 @@ async function handleKeyEvent(key: string): Promise<void> {
     promise   : async () => { await mh.handleKeyEvent(key); },
     isRunning : false
   });
+}
+
+function handleContentChangedFromDisk(document : vscode.TextDocument) : void {
+  _.filter(modeHandlerToEditorIdentity, { "fileName" : document.fileName})
+    .forEach((modeHandler) => {
+      modeHandler.vimState.historyTracker.clear();
+    });
 }
 
 async function handleActiveEditorChange(): Promise<void> {

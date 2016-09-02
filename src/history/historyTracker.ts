@@ -177,6 +177,16 @@ export class HistoryTracker {
   }
 
   constructor() {
+    this._initialize();
+  }
+
+  public clear() {
+    this.historySteps = [];
+    this.currentHistoryStepIndex = 0;
+    this._initialize();
+  }
+
+  private _initialize() {
     /**
      * We add an initial, unrevertable step, which inserts the entire document.
      */
