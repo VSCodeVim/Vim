@@ -26,10 +26,14 @@ export class TextEditor {
       letVSCodeHandleKeystrokes = text.length === 1;
     }
 
-    if (ModeHandler.IsTesting || !letVSCodeHandleKeystrokes) {
+    if (!letVSCodeHandleKeystrokes) {
       const selections = vscode.window.activeTextEditor.selections.slice(0);
 
       await vscode.window.activeTextEditor.edit(editBuilder => {
+        if (!at) {
+          at = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+        }
+
         editBuilder.insert(at!, text);
       });
 
