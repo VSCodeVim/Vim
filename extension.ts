@@ -117,7 +117,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.workspace.onDidChangeTextDocument((event) => {
     /**
-     * Change from vscode eidtor should set document.isDirty to true but they initially don't!
+     * Change from vscode editor should set document.isDirty to true but they initially don't!
      * There is a timing issue in vscode codebase between when the isDirty flag is set and
      * when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
      */
