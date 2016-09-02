@@ -2003,10 +2003,7 @@ class MoveFindForward extends BaseMovement {
   }
 
   public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
-    if (vimState.recordedState.operator) {
-      return false;
-    }
-    return !isIMovement(result) || !result.failed;
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
   }
 }
 
@@ -2027,10 +2024,7 @@ class MoveFindBackward extends BaseMovement {
   }
 
   public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
-    if (vimState.recordedState.operator) {
-      return false;
-    }
-    return !isIMovement(result) || !result.failed;
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
   }
 }
 
@@ -2056,10 +2050,7 @@ class MoveTilForward extends BaseMovement {
   }
 
   public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
-    if (vimState.recordedState.operator) {
-      return false;
-    }
-    return !isIMovement(result) || !result.failed;
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
   }
 }
 
@@ -2080,10 +2071,7 @@ class MoveTilBackward extends BaseMovement {
   }
 
   public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
-    if (vimState.recordedState.operator) {
-      return false;
-    }
-    return !isIMovement(result) || !result.failed;
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
   }
 }
 
