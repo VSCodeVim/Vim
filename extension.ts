@@ -116,9 +116,13 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
   vscode.workspace.onDidChangeTextDocument((event) => {
-    /* TODO: Remove setTimeout (https://github.com/Microsoft/vscode/issues/11339) */
+    /**
+     * Change from vscode eidtor should set document.isDirty to true but they initially don't!
+     * There is a timing issue in vscode codebase between when the isDirty flag is set and
+     * when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
+     */
     setTimeout(() => {
-      if (event.document.isDirty === false) {
+      if (!event.document.isDirty) {
         handleContentChangedFromDisk(event.document);
       }
     }, 0);
@@ -228,7 +232,7 @@ async function handleKeyEvent(key: string): Promise<void> {
 }
 
 function handleContentChangedFromDisk(document : vscode.TextDocument) : void {
-  _.filter(modeHandlerToEditorIdentity, { "fileName" : document.fileName})
+  _.filter(modeHandlerToEditorIdentity, (modeHandler) => modeHandler.fileName === document.fileName)
     .forEach((modeHandler) => {
       modeHandler.vimState.historyTracker.clear();
     });
