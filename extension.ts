@@ -232,8 +232,8 @@ async function handleKeyEvent(key: string): Promise<void> {
 }
 
 function handleContentChangedFromDisk(document : vscode.TextDocument) : void {
-  _.filter(modeHandlerToEditorIdentity, (modeHandler) => modeHandler.fileName === document.fileName)
-    .forEach((modeHandler) => {
+  _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.fileName === document.fileName)
+    .forEach(modeHandler => {
       modeHandler.vimState.historyTracker.clear();
     });
 }
