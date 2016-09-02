@@ -618,7 +618,7 @@ export class Position extends vscode.Position {
       let positions  = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
       let newCharacter = _.find(positions,
         index => ((index >  this.character && !inclusive)  ||
-              (index >= this.character &&  inclusive)) || currentLine !== this.line);
+              (index >= this.character && inclusive)) || currentLine !== this.line);
 
       if (newCharacter !== undefined) {
         return new Position(currentLine, newCharacter);
