@@ -23,7 +23,7 @@ suite("Mode Insert", () => {
             await modeHandler.handleKeyEvent(key);
             assertEqual(modeHandler.currentMode.name, ModeName.Insert);
 
-            await modeHandler.handleKeyEvent('<escape>');
+            await modeHandler.handleKeyEvent('<Esc>');
         }
     });
 
@@ -33,21 +33,21 @@ suite("Mode Insert", () => {
         return assertEqualLines(["!"]);
     });
 
-    test("<escape> should change cursor position", async () => {
+    test("<Esc> should change cursor position", async () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             'h', 'e', 'l', 'l', 'o',
-            '<escape>'
+            '<Esc>'
         ]);
 
-        assertEqual(TextEditor.getSelection().start.character, 4, "<escape> moved cursor position.");
+        assertEqual(TextEditor.getSelection().start.character, 4, "<Esc> moved cursor position.");
     });
 
-    test("Can handle 'o'", async () => {
+    test("", async () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't',
-            '<escape>',
+            '<Esc>',
             'o'
         ]);
 
@@ -58,7 +58,7 @@ suite("Mode Insert", () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't',
-            '<escape>',
+            '<Esc>',
             'O'
         ]);
 
@@ -69,7 +69,7 @@ suite("Mode Insert", () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't', 't', 'e', 'x', 't', // insert 'texttext'
-            '<escape>',
+            '<Esc>',
             '^', 'l', 'l', 'l', 'l',                // move to the 4th character
             'i',
             '!'                                     // insert a !
@@ -82,7 +82,7 @@ suite("Mode Insert", () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't',
-            '<escape>',
+            '<Esc>',
             '^', 'l', 'l', 'l',
             'I',
             '!',
@@ -95,7 +95,7 @@ suite("Mode Insert", () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't', 't', 'e', 'x', 't', // insert 'texttext'
-            '<escape>',
+            '<Esc>',
             '^', 'l', 'l', 'l', 'l',                // move to the 4th character
             'a',
             '!'                                     // append a !
@@ -108,7 +108,7 @@ suite("Mode Insert", () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't',
-            '<escape>',
+            '<Esc>',
             '^',
             'A',
             '!',
@@ -117,11 +117,11 @@ suite("Mode Insert", () => {
         assertEqualLines(["text!"]);
     });
 
-    test("Can handle 'ctrl+w'", async () => {
+    test("Can handle '<C-w>'", async () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't', ' ', 't', 'e', 'x', 't',
-            'ctrl+w',
+            '<C-w>',
         ]);
 
         assertEqualLines(["text "]);
@@ -132,11 +132,11 @@ suite("Mode Insert", () => {
             'i',
             'o', 'n', 'e', '\n', 't', 'w', 'o',
             '<left>', '<left>', '<left>',
-            '<backspace>'
+            '<BS>'
         ]);
 
         assertEqualLines(["onetwo"]);
 
-        assertEqual(TextEditor.getSelection().start.character, 3, "<backspace> moved cursor to correct position");
+        assertEqual(TextEditor.getSelection().start.character, 3, "<BS> moved cursor to correct position");
     });
 });

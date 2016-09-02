@@ -42,7 +42,7 @@ On OS X, open Terminal and run the following command:
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
 ```
 
-#### How can I bind `jj` to `<escape>`?
+#### How can I bind `jj` to `<Esc>`?
 
 1. Add the following to `settings.json` (open the Command Pallete and search for "User Settings"):
 
@@ -50,18 +50,18 @@ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
       "vim.insertModeKeyBindings": [
            {
                "before": ["j", "j"],
-               "after": ["<escape>"]
+               "after": ["<Esc>"]
            }
       ]
    ```
 
-2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<escape>`, do the following as well:
+2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<Esc>`, do the following as well:
 
    ```
       "vim.otherModesKeyBindings": [
            {
                "before": ["j", "j"],
-               "after": ["<escape>"]
+               "after": ["<Esc>"]
            }
       ]
 ```
@@ -83,7 +83,7 @@ Notice the problem is that if you did this normally, the `j` in `gj` would be ex
 
 Don't forget to restart!
 
-#### How can I enable `ctrl-c` or `ctrl-[` as an alternative to `<escape>`?
+#### How can I enable `ctrl-c` or `ctrl-[` as an alternative to `<Esc>`?
 
 Put the following in your `settings.json`:
 

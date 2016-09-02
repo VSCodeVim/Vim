@@ -51,7 +51,7 @@ suite("Basic write-quit", () => {
   teardown(cleanUpWorkspace);
 
   test("Run write and quit", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
 
     await runCmdLine("wq", modeHandler);
     await WaitForVsCodeClose();
