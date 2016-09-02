@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
-
+import * as util from '../util';
 import { ModeName } from './mode';
 import { ModeHandler, VimState } from './modeHandler';
 
@@ -11,18 +11,29 @@ interface IKeybinding {
 
 class Remapper {
   private _mostRecentKeys: string[] = [];
-
   private _remappings: IKeybinding[] = [];
-
   private _remappedModes: ModeName[];
-
   private _recursive: boolean;
 
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
-    this._remappings = vscode.workspace.getConfiguration('vim')
+
+    let remappings = vscode.workspace.getConfiguration('vim')
       .get<IKeybinding[]>(configKey, []);
+
+    for (let remapping of remappings) {
+      let before: string[] = [];
+      remapping.before.forEach(item => before.push(util.translateToAngleBracketNotation(item)));
+
+      let after: string[] = [];
+      remapping.after.forEach(item => after.push(util.translateToAngleBracketNotation(item)));
+
+      this._remappings.push(<IKeybinding> {
+        before: before,
+        after: after,
+      });
+    }
   }
 
   private _longestKeySequence(): number {

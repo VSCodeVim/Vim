@@ -191,8 +191,7 @@ export class Position extends vscode.Position {
       return this.getLeft();
     }
 
-    return new Position(this.line - 1, 0)
-      .getLineEnd();
+    return this.getUp(0).getLineEnd();
   }
 
   public getRightThroughLineBreaks(): Position {

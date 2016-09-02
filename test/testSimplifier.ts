@@ -146,7 +146,7 @@ class TestObjectHelper {
 }
 
 /**
- * Tokenize a string like "abc<escape>d<c-c>" into ["a", "b", "c", "<escape>", "d", "<c-c>"]
+ * Tokenize a string like "abc<Esc>d<C-c>" into ["a", "b", "c", "<Esc>", "d", "<C-c>"]
  */
 function tokenizeKeySequence(sequence: string): string[] {
   let isBracketedKey = false;
@@ -181,7 +181,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   // Don't try this at home, kids.
   (modeHandler as any)._vimState.cursorPosition = new Position(0, 0);
 
-  await modeHandler.handleKeyEvent('<escape>');
+  await modeHandler.handleKeyEvent('<Esc>');
 
   // start:
   //
@@ -189,7 +189,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // keysPressed:
   //
-  await modeHandler.handleKeyEvent('<escape>');
+  await modeHandler.handleKeyEvent('<Esc>');
   // move cursor to start position using 'hjkl'
   await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
 

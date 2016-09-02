@@ -6,13 +6,14 @@
  * handleKeyEvent().
  */
 
-
 import * as vscode from 'vscode';
+import * as util from './src/util';
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
+
 
 interface VSCodeKeybinding {
   key: string;
@@ -191,16 +192,9 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   for (let { key } of packagejson.contributes.keybindings) {
-    if (key.startsWith("ctrl+")) {
-      registerCommand(context, `extension.vim_${ key }`, () => handleKeyEvent(key));
-    } else {
-      let bracketedKey = `<${ key.toLowerCase() }>`;
-
-      registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
-    }
+    let bracketedKey = util.translateToAngleBracketNotation(key);
+    registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
   }
-
-  registerCommand(context, `extension.vim_esc`, () => handleKeyEvent(`<escape>`));
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
