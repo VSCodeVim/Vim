@@ -665,8 +665,6 @@ export class ModeHandler implements vscode.Disposable {
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
     if (result === KeypressState.NoPossibleMatch) {
-      console.log("Nothing matched!");
-
       vimState.recordedState = new RecordedState();
       return vimState;
     } else if (result === KeypressState.WaitingOnKeys) {
