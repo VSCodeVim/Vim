@@ -677,21 +677,17 @@ class CommandStar extends BaseCommand {
   isMotion = true;
   canBePrefixedWithCount = true;
 
-  public static GetWordAtPosition(position: Position): string {
-    const start = position.getWordLeft(true);
-    const end   = position.getCurrentWordEnd(true).getRight();
-
-    return TextEditor.getText(new vscode.Range(start, end));
-  }
-
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = CommandStar.GetWordAtPosition(position);
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
+      return vimState;
+    }
 
     vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
 
     do {
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-    } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
+    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
     return vimState;
   }
@@ -704,32 +700,20 @@ class CommandHash extends BaseCommand {
   isMotion = true;
   canBePrefixedWithCount = true;
 
-  public static GetWordAtPosition(position: Position): string {
-    const start = position.getWordLeft(true);
-    const end   = position.getCurrentWordEnd(true).getRight();
-
-    return TextEditor.getText(new vscode.Range(start, end));
-  }
-
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = CommandStar.GetWordAtPosition(position);
-
-    vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
-
-    // hack start
-    // temporary fix for https://github.com/VSCodeVim/Vim/issues/569
-    let text = TextEditor.getText(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition.getRight()));
-    if (text === " ") {
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
       return vimState;
     }
-    // hack end
+
+    vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
 
     do {
       // use getWordLeft() on position to start at the beginning of the word.
       // this ensures that any matches happen ounside of the word currently selected,
       // which are the desired semantics for this motion.
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft()).pos;
-    } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
+    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
     return vimState;
   }

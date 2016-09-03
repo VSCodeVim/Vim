@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { ModeHandler } from './mode/modeHandler';
 import { Position } from './motion/position';
 import { Configuration } from './configuration/configuration';
+import { Globals } from './globals';
 
 export class TextEditor {
   // TODO: Refactor args
@@ -138,6 +139,31 @@ export class TextEditor {
 
   static getText(selection: vscode.Range): string {
     return vscode.window.activeTextEditor.document.getText(selection);
+  }
+
+  /**
+   *  Retrieves the current word at position.
+   *  If current position is whitespace, selects the right-closest word
+   */
+  static getWord(position: Position) : string | undefined {
+    let start = position;
+    let end = position.getRight();
+
+    const char = TextEditor.getText(new vscode.Range(start, end));
+    if (Globals.WhitespaceRegExp.test(char)) {
+      start = position.getWordRight();
+    } else {
+      start = position.getWordLeft(true);
+    }
+    end = start.getCurrentWordEnd(true).getRight();
+
+    const word = TextEditor.getText(new vscode.Range(start, end));
+
+    if (Globals.WhitespaceRegExp.test(word)) {
+      return undefined;
+    }
+
+    return word;
   }
 
   static isFirstLine(position : vscode.Position): boolean {
