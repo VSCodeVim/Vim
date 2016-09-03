@@ -326,10 +326,11 @@ export abstract class BaseCommand extends BaseAction {
     // cause later insertions to move down or right through the document.
 
     let modifiedInsertions = insertions.map(ins => {
-      let newInsertion = {
+      let newInsertion: InsertTextTransformation = {
         type: 'insertText',
         text: ins.text,
         associatedCursor: ins.associatedCursor,
+        notAdjustedByOwnText: ins.notAdjustedByOwnText,
       };
 
       // We don't handle the case of inserting a long string with a newline in the middle
@@ -350,9 +351,12 @@ export abstract class BaseCommand extends BaseAction {
         return newInsertion;
       } else {
         let beforeInsert = _.filter(insertions, other =>
-          other.associatedCursor.isBefore(ins.associatedCursor));
+          other.associatedCursor.isBefore(ins.associatedCursor)).length;
 
-        newInsertion.associatedCursor = newInsertion.associatedCursor.getDownByCount(beforeInsert.length);
+        // no bounds check because it's entirely concievable that we're off the bounds of
+        // the (pre-insertion) document.
+
+        newInsertion.associatedCursor = newInsertion.associatedCursor.getDownByCount(beforeInsert, { boundsCheck: false });
 
         return newInsertion;
       }
@@ -362,6 +366,8 @@ export abstract class BaseCommand extends BaseAction {
     // calculate the position of all the cursors.
 
     let newCursors = _.map(modifiedInsertions, ins => {
+      if (ins.notAdjustedByOwnText) { return ins.associatedCursor; }
+
       if (ins.text === "\n") {
         return ins.associatedCursor.getDown(1);
       } else {
@@ -374,8 +380,6 @@ export abstract class BaseCommand extends BaseAction {
 
     // TODO - this is also broken! (what if we didnt return all cursors?)
     if (newCursors.length > 0) {
-      console.log('SET!');
-
       vimState.allCursors = newCursors.map(x => new Range(x, x));
     }
 
@@ -1947,10 +1951,16 @@ class CommandInsertNewLineAbove extends BaseCommand {
   keys = ["O"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.insertLineBefore");
+    vimState.recordedState.transformations.push({
+      type                : "insertText",
+      text                : "\n",
+      associatedCursor    : vimState.cursorPosition.getLineBegin(),
+      notAdjustedByOwnText: true,
+    });
 
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = new Position(position.line, TextEditor.getLineAt(position).text.length);
+    vimState.cursorPosition = vimState.cursorPosition.getLineBegin();
+
     return vimState;
   }
 }
@@ -1961,7 +1971,11 @@ class CommandInsertNewLineBefore extends BaseCommand {
   keys = ["o"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.insertLineAfter");
+    vimState.recordedState.transformations.push({
+      type            : "insertText",
+      text            : "\n",
+      associatedCursor: vimState.cursorPosition.getLineEnd(),
+    });
 
     vimState.currentMode = ModeName.Insert;
     vimState.cursorPosition = new Position(

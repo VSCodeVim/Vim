@@ -1005,8 +1005,6 @@ export class ModeHandler implements vscode.Disposable {
     for (const command of vimState.recordedState.transformations) {
       switch (command.type) {
         case "insertText":
-          console.log("insert at ", command.associatedCursor.toString());
-
           await TextEditor.insert(command.text, command.associatedCursor, false);
           break;
 

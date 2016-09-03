@@ -5,9 +5,31 @@ import { Range } from "./../motion/range";
  * Represents inserting text at a position in the document.
  */
 export interface InsertTextTransformation {
-  type             : "insertText";
-  text             : string;
-  associatedCursor : Position;
+  /**
+   * Type of this insertion (used for type checking with discriminated
+   * union types).
+   */
+  type                 : "insertText";
+
+  /**
+   * Text content of this insertion.
+   */
+  text                 : string;
+
+  /**
+   * The cursor that triggered this insertion.
+   */
+  associatedCursor     : Position;
+
+  /**
+   * Whether the associatedCursor should be adjusted by the contents of text.
+   * E.g., if text === 'a', you just inserted an 'a', so the cursor will
+   * be bumped one to the right after the insertion, unless notAdjustedByOwnText
+   * is set to true.
+   *
+   * If you're confused by this, just ignore it.
+   */
+  notAdjustedByOwnText?: boolean;
 }
 
 export interface InsertTextVSCodeTransformation {

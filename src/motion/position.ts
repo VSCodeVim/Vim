@@ -299,9 +299,13 @@ export class Position extends vscode.Position {
    * Get the position *count* lines down from this position, but not lower
    * than the end of the document.
    */
-  public getDownByCount(count = 0): Position {
+  public getDownByCount(count = 0, { boundsCheck = true }): Position {
+    const line = boundsCheck ?
+      Math.min(TextEditor.getLineCount() - 1, this.line + count) :
+      this.line + count;
+
     return new Position(
-      Math.min(TextEditor.getLineCount() - 1, this.line + count),
+      line,
       this.character
     );
   }
