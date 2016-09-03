@@ -917,7 +917,6 @@ suite("Mode Normal", () => {
       end: [' |one', 'two', ' three', '    one', ' two']
     });
 
-
     newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
