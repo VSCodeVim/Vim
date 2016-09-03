@@ -458,7 +458,7 @@ export class ModeHandler implements vscode.Disposable {
   /**
    * Filename associated with this ModeHandler. Only used for debugging.
    */
-  public filename: string;
+  public fileName: string;
 
   private _caretDecoration = vscode.window.createTextEditorDecorationType(
   {
@@ -491,7 +491,7 @@ export class ModeHandler implements vscode.Disposable {
   constructor(filename = "") {
     ModeHandler.IsTesting = Globals.isTesting;
 
-    this.filename = filename;
+    this.fileName = filename;
 
     this._vimState = new VimState();
     this._insertModeRemapper = new InsertModeRemapper(true);
@@ -532,7 +532,7 @@ export class ModeHandler implements vscode.Disposable {
         return;
       }
 
-      if (e.textEditor.document.fileName !== this.filename) {
+      if (e.textEditor.document.fileName !== this.fileName) {
         return;
       }
 
