@@ -7,7 +7,7 @@ import { Range } from "./../motion/range";
 export interface InsertTextTransformation {
   type             : "insertText";
   text             : string;
-  associatedCursor : Range;
+  associatedCursor : Position;
 }
 
 export interface InsertTextVSCodeTransformation {

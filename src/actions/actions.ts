@@ -322,6 +322,9 @@ export abstract class BaseCommand extends BaseAction {
       return vimState;
     }
 
+    // When we are doing multiple insertions, make earlier insertions
+    // cause later insertions to move down or right through the document.
+
     let modifiedInsertions = insertions.map(ins => {
       let newInsertion = {
         type: 'insertText',
@@ -329,18 +332,42 @@ export abstract class BaseCommand extends BaseAction {
         associatedCursor: ins.associatedCursor,
       };
 
-      let beforeInsert = _.filter(insertions, other =>
-        other.associatedCursor.stop.line === ins.associatedCursor.start.line &&
-        other.associatedCursor.stop.isBefore(ins.associatedCursor.start));
-
-      for (const before of beforeInsert) {
-        newInsertion.associatedCursor = newInsertion.associatedCursor.getRight(before.text.length);
+      // We don't handle the case of inserting a long string with a newline in the middle
+      // currently. I don't think it's necessary.
+      if (ins.text.indexOf("\n") > -1 && ins.text.length > 1) {
+        vscode.window.showErrorMessage("Bad error in execCount in actions.ts");
       }
 
-      return newInsertion;
+      if (ins.text !== "\n") {
+        let beforeInsert = _.filter(insertions, other =>
+          other.associatedCursor.line === ins.associatedCursor.line &&
+          other.associatedCursor.isBefore(ins.associatedCursor));
+
+        for (const before of beforeInsert) {
+          newInsertion.associatedCursor = newInsertion.associatedCursor.getRight(before.text.length);
+        }
+
+        return newInsertion;
+      } else {
+        let beforeInsert = _.filter(insertions, other =>
+          other.associatedCursor.isBefore(ins.associatedCursor));
+
+        newInsertion.associatedCursor = newInsertion.associatedCursor.getDownByCount(beforeInsert.length);
+
+        return newInsertion;
+      }
     });
 
-    let newCursors = _.map(modifiedInsertions, ins => ins.associatedCursor.getRight(ins.text.length));
+    // Now that we've calculated the positions of all the insertions,
+    // calculate the position of all the cursors.
+
+    let newCursors = _.map(modifiedInsertions, ins => {
+      if (ins.text === "\n") {
+        return ins.associatedCursor.getDown(1);
+      } else {
+        return ins.associatedCursor.getRight(ins.text.length);
+      }
+    });
 
     // TODO - this is broken! We aren't preserving all transformations.
     vimState.recordedState.transformations = modifiedInsertions as any;
@@ -349,7 +376,7 @@ export abstract class BaseCommand extends BaseAction {
     if (newCursors.length > 0) {
       console.log('SET!');
 
-      vimState.allCursors = newCursors;
+      vimState.allCursors = newCursors.map(x => new Range(x, x));
     }
 
     return vimState;
@@ -868,10 +895,7 @@ class CommandInsertInInsertMode extends BaseCommand {
         vimState.recordedState.transformations.push({
           type            : "insertText",
           text            : char,
-          associatedCursor: new Range(
-            vimState.cursorStartPosition,
-            vimState.cursorPosition
-          )
+          associatedCursor: vimState.cursorPosition,
         });
       } else {
         vimState.recordedState.transformations.push({

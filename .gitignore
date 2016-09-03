@@ -7,3 +7,4 @@ node_modules
 *.vsix
 *.log
 testing
+test2

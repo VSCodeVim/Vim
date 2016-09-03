@@ -5,8 +5,12 @@ import { Position } from "./position";
 import { IMovement } from './../actions/actions';
 
 export class Range {
-  constructor(public start: Position, public stop: Position) {
+  public start: Position;
+  public stop: Position;
 
+  constructor(start: Position, stop: Position) {
+    this.start = start;
+    this.stop  = stop;
   }
 
   /**
@@ -42,10 +46,17 @@ export class Range {
     );
   }
 
-  public getRight(count: number = 1): Range {
+  public getRight(count = 1): Range {
     return new Range(
       this.start.getRight(count),
       this.stop.getRight(count)
+    );
+  }
+
+  public getDown(count = 1): Range {
+    return new Range(
+      this.start.getDownByCount(count),
+      this.stop.getDownByCount(count),
     );
   }
 }
