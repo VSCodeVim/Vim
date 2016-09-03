@@ -43,42 +43,42 @@ suite("Mode Replace", () => {
     newTest({
       title: "Can handle backspace",
       start: ['123|456'],
-      keysPressed: 'Rabc<backspace><backspace><backspace>',
+      keysPressed: 'Rabc<BS><BS><BS>',
       end: ["123|456"]
     });
 
     newTest({
       title: "Can handle backspace",
       start: ['123|456'],
-      keysPressed: 'Rabcd<backspace><backspace><backspace><backspace><backspace>',
+      keysPressed: 'Rabcd<BS><BS><BS><BS><BS>',
       end: ["12|3456"]
     });
 
     newTest({
       title: "Can handle backspace across lines",
       start: ['123|456'],
-      keysPressed: 'Rabcd\nef<backspace><backspace><backspace><backspace><backspace>',
+      keysPressed: 'Rabcd\nef<BS><BS><BS><BS><BS>',
       end: ["123ab|6"]
     });
 
     newTest({
       title: "Can handle arrows",
       start: ['123|456'],
-      keysPressed: 'Rabc<left><backspace><backspace>',
+      keysPressed: 'Rabc<left><BS><BS>',
       end: ["123|abc"]
     });
 
     newTest({
       title: "Can handle .",
       start: ['123|456', '123456'],
-      keysPressed: 'Rabc<escape>j0.',
+      keysPressed: 'Rabc<Esc>j0.',
       end: ["123abc", "ab|c456"]
     });
 
     newTest({
       title: "Can handle . across lines",
       start: ['123|456', '123456'],
-      keysPressed: 'Rabc\ndef<escape>j0.',
+      keysPressed: 'Rabc\ndef<Esc>j0.',
       end: ["123abc", "def", "abc", "de|f"]
     });
 });

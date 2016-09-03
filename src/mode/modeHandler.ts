@@ -54,6 +54,8 @@ export class VimState {
 
   public historyTracker: HistoryTracker;
 
+  public static lastRepeatableMovement : BaseMovement | undefined = undefined;
+
   /**
    * The keystroke sequence that made up our last complete action (that can be
    * repeated with '.').
@@ -137,8 +139,6 @@ export class VimState {
   public get bottomRight(): Position {
     return VisualBlockMode.getBottomRightPosition(this.cursorStartPosition, this.cursorPosition);
   }
-
-  public registerName = '"';
 
   /**
    * This is for oddball commands that don't manipulate text in any way.
@@ -346,6 +346,11 @@ export class ReplaceState {
  *   * delete operator
  */
 export class RecordedState {
+
+  constructor() {
+    const useClipboard = Configuration.getInstance().useSystemClipboard;
+    this.registerName = useClipboard ? '*' : '"';
+  }
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
    * multiple length movements, e.g. gg.
@@ -372,7 +377,7 @@ export class RecordedState {
   public get command(): BaseCommand {
     const list = _.filter(this.actionsRun, a => a instanceof BaseCommand);
 
-    // TODO - disregard <escape>, then assert this is of length 1.
+    // TODO - disregard <Esc>, then assert this is of length 1.
 
     return list[0] as any;
   }
@@ -389,7 +394,7 @@ export class RecordedState {
   /**
    * The register name for this action.
    */
-  public registerName: string = '"';
+  public registerName: string;
 
   public clone(): RecordedState {
     const res = new RecordedState();
@@ -455,7 +460,7 @@ export class ModeHandler implements vscode.Disposable {
   /**
    * Filename associated with this ModeHandler. Only used for debugging.
    */
-  public filename: string;
+  public fileName: string;
 
   private _caretDecoration = vscode.window.createTextEditorDecorationType(
   {
@@ -488,7 +493,7 @@ export class ModeHandler implements vscode.Disposable {
   constructor(filename = "") {
     ModeHandler.IsTesting = Globals.isTesting;
 
-    this.filename = filename;
+    this.fileName = filename;
 
     this._vimState = new VimState();
     this._insertModeRemapper = new InsertModeRemapper(true);
@@ -529,7 +534,7 @@ export class ModeHandler implements vscode.Disposable {
         return;
       }
 
-      if (e.textEditor.document.fileName !== this.filename) {
+      if (e.textEditor.document.fileName !== this.fileName) {
         return;
       }
 
@@ -622,16 +627,6 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   async handleKeyEvent(key: string): Promise<Boolean> {
-    if (key === "<c-r>") { key = "ctrl+r"; } // TODO - temporary hack for tests only!
-    if (key === "<c-a>") { key = "ctrl+a"; } // TODO - temporary hack for tests only!
-    if (key === "<c-x>") { key = "ctrl+x"; } // TODO - temporary hack for tests only!
-
-    if (key === "<esc>") { key = "<escape>"; }
-
-    // Due to a limitation in Electron, en-US QWERTY char codes are used in international keyboards.
-    // We'll try to mitigate this problem until it's fixed upstream.
-    // https://github.com/Microsoft/vscode/issues/713
-
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
 
     try {
@@ -672,8 +667,6 @@ export class ModeHandler implements vscode.Disposable {
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
     if (result === KeypressState.NoPossibleMatch) {
-      console.log("Nothing matched!");
-
       vimState.recordedState = new RecordedState();
       return vimState;
     } else if (result === KeypressState.WaitingOnKeys) {
@@ -857,6 +850,10 @@ export class ModeHandler implements vscode.Disposable {
       if (result.registerMode) {
         vimState.currentRegisterMode = result.registerMode;
       }
+    }
+
+    if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
+      VimState.lastRepeatableMovement = movement;
     }
 
     vimState.recordedState.count = 0;

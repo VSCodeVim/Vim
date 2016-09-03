@@ -164,6 +164,11 @@
                     "type": "boolean",
                     "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c"
                 },
+                "vim.useSystemClipboard": {
+                  "type": "boolean",
+                  "description": "Use system clipboard for unnamed register.",
+                  "default": false
+                },
                 "vim.insertModeKeyBindings": {
                     "type": "array",
                     "description": "Keybinding overrides to use for insert mode."
@@ -200,7 +205,7 @@
                 "vim.hlsearch": {
                     "type": "boolean",
                     "description": "When there is a previous search pattern, highlight all its matches.",
-                    "default": true
+                    "default": false
                 }
             }
         }

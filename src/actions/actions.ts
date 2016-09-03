@@ -157,6 +157,13 @@ export abstract class BaseMovement extends BaseAction {
   canBePrefixedWithCount = false;
 
   /**
+   * Whether we should change lastRepeatableMovement in VimState.
+   */
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return false;
+  }
+
+  /**
    * Whether we should change desiredColumn in VimState.
    */
   public doesntChangeDesiredColumn = false;
@@ -238,7 +245,7 @@ export abstract class BaseMovement extends BaseAction {
 }
 
 /**
- * A command is something like <escape>, :, v, i, etc.
+ * A command is something like <Esc>, :, v, i, etc.
  */
 export abstract class BaseCommand extends BaseAction {
   /**
@@ -413,7 +420,7 @@ class CommandEsc extends BaseCommand {
     ModeName.SearchInProgressMode,
     ModeName.Replace
   ];
-  keys = ["<escape>"];
+  keys = ["<Esc>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode !== ModeName.Visual &&
@@ -435,13 +442,13 @@ class CommandEsc extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlOpenBracket extends CommandEsc {
-  keys = ["ctrl+["];
+  keys = ["<C-[>"];
 }
 
 @RegisterAction
 class CommandCtrlW extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ["ctrl+w"];
+  keys = ["<C-w>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const wordBegin = position.getWordLeft();
@@ -456,7 +463,7 @@ class CommandCtrlW extends BaseCommand {
 @RegisterAction
 class CommandCtrlE extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["ctrl+e"];
+  keys = ["<C-e>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("scrollLineDown");
@@ -468,7 +475,7 @@ class CommandCtrlE extends BaseCommand {
 @RegisterAction
 class CommandCtrlY extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["ctrl+y"];
+  keys = ["<C-y>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("scrollLineUp");
@@ -479,7 +486,7 @@ class CommandCtrlY extends BaseCommand {
 
 @RegisterAction
 class CommandCtrlC extends CommandEsc {
-  keys = ["ctrl+c"];
+  keys = ["<C-c>"];
 }
 
 @RegisterAction
@@ -520,7 +527,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 
     const replaceState = vimState.replaceState!;
 
-    if (char === "<backspace>") {
+    if (char === "<BS>") {
       if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
         vimState.cursorPosition = position.getLeft();
         vimState.cursorStartPosition = position.getLeft();
@@ -608,7 +615,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const searchState = vimState.searchState!;
 
     // handle special keys first
-    if (key === "<backspace>") {
+    if (key === "<BS>") {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
@@ -625,12 +632,12 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.searchStatePrevious = searchState;
 
       return vimState;
-    } else if (key === "<escape>") {
+    } else if (key === "<Esc>") {
       vimState.currentMode = ModeName.Normal;
       vimState.searchState = undefined;
 
       return vimState;
-    } else if (key === "ctrl+v") {
+    } else if (key === "<C-v>") {
       const text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => err ? reject(err) : resolve(text))
       );
@@ -670,21 +677,17 @@ class CommandStar extends BaseCommand {
   isMotion = true;
   canBePrefixedWithCount = true;
 
-  public static GetWordAtPosition(position: Position): string {
-    const start = position.getWordLeft(true);
-    const end   = position.getCurrentWordEnd(true).getRight();
-
-    return TextEditor.getText(new vscode.Range(start, end));
-  }
-
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = CommandStar.GetWordAtPosition(position);
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
+      return vimState;
+    }
 
     vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
 
     do {
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-    } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
+    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
     return vimState;
   }
@@ -697,32 +700,20 @@ class CommandHash extends BaseCommand {
   isMotion = true;
   canBePrefixedWithCount = true;
 
-  public static GetWordAtPosition(position: Position): string {
-    const start = position.getWordLeft(true);
-    const end   = position.getCurrentWordEnd(true).getRight();
-
-    return TextEditor.getText(new vscode.Range(start, end));
-  }
-
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = CommandStar.GetWordAtPosition(position);
-
-    vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
-
-    // hack start
-    // temporary fix for https://github.com/VSCodeVim/Vim/issues/569
-    let text = TextEditor.getText(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition.getRight()));
-    if (text === " ") {
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
       return vimState;
     }
-    // hack end
+
+    vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
 
     do {
       // use getWordLeft() on position to start at the beginning of the word.
       // this ensures that any matches happen ounside of the word currently selected,
       // which are the desired semantics for this motion.
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft()).pos;
-    } while (CommandStar.GetWordAtPosition(vimState.cursorPosition) !== currentWord);
+    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
     return vimState;
   }
@@ -754,7 +745,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char   = this.keysPressed[this.keysPressed.length - 1];
 
-    if (char === "<backspace>") {
+    if (char === "<BS>") {
       const newPosition = await TextEditor.backspace(position);
 
       vimState.cursorPosition = newPosition;
@@ -1417,6 +1408,13 @@ class CommandCloseFold extends CommandFold {
   keys = ["z", "c"];
   commandName = "editor.fold";
   canBePrefixedWithCount = true;
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    await vscode.commands.executeCommand("editor.fold", {levels: timesToRepeat, direction: "up"});
+
+    return vimState;
+  }
 }
 
 @RegisterAction
@@ -1430,6 +1428,13 @@ class CommandOpenFold extends CommandFold {
   keys = ["z", "o"];
   commandName = "editor.unfold";
   canBePrefixedWithCount = true;
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    await vscode.commands.executeCommand("editor.unfold", {levels: timesToRepeat, direction: "up"});
+
+    return vimState;
+  }
 }
 
 @RegisterAction
@@ -1499,7 +1504,7 @@ class CommandUndo extends BaseCommand {
 @RegisterAction
 class CommandRedo extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["ctrl+r"];
+  keys = ["<C-r>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPosition = await vimState.historyTracker.goForwardHistoryStep();
@@ -1515,7 +1520,7 @@ class CommandRedo extends BaseCommand {
 @RegisterAction
 class CommandMoveFullPageDown extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["ctrl+f"];
+  keys = ["<C-f>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("cursorPageDown");
@@ -1526,7 +1531,7 @@ class CommandMoveFullPageDown extends BaseCommand {
 @RegisterAction
 class CommandMoveFullPageUp extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["ctrl+b"];
+  keys = ["<C-b>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("cursorPageUp");
@@ -1536,7 +1541,7 @@ class CommandMoveFullPageUp extends BaseCommand {
 
 @RegisterAction
 class CommandMoveHalfPageDown extends BaseMovement {
-  keys = ["ctrl+d"];
+  keys = ["<C-d>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return new Position(
@@ -1548,7 +1553,7 @@ class CommandMoveHalfPageDown extends BaseMovement {
 
 @RegisterAction
 class CommandMoveHalfPageUp extends BaseMovement {
-  keys = ["ctrl+u"];
+  keys = ["<C-u>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return new Position(Math.max(0, position.line - Configuration.getInstance().scroll), position.character);
@@ -1629,7 +1634,7 @@ class CommandVisualMode extends BaseCommand {
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
-  keys = ["ctrl+v"];
+  keys = ["<C-v>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
 
@@ -1808,7 +1813,7 @@ class MoveLeftArrow extends MoveLeft {
 @RegisterAction
 class BackSpaceInNormalMode extends BaseMovement {
   modes = [ModeName.Normal];
-  keys = ["<backspace>"];
+  keys = ["<BS>"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLeftThroughLineBreaks();
@@ -1884,7 +1889,7 @@ class MoveRightWithSpace extends BaseMovement {
 @RegisterAction
 class MoveToRightPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["ctrl+w", "l"];
+  keys = ["<C-w>", "l"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.focusChanged = true;
@@ -1896,7 +1901,7 @@ class MoveToRightPane extends BaseCommand {
 @RegisterAction
 class MoveToLeftPane  extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["ctrl+w", "h"];
+  keys = ["<C-w>", "h"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.focusChanged = true;
@@ -1996,6 +2001,10 @@ class MoveFindForward extends BaseMovement {
 
     return result;
   }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
+  }
 }
 
 @RegisterAction
@@ -2012,6 +2021,10 @@ class MoveFindBackward extends BaseMovement {
     }
 
     return result;
+  }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
   }
 }
 
@@ -2035,6 +2048,10 @@ class MoveTilForward extends BaseMovement {
 
     return result;
   }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
+  }
 }
 
 @RegisterAction
@@ -2051,6 +2068,59 @@ class MoveTilBackward extends BaseMovement {
     }
 
     return result;
+  }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
+  }
+}
+
+@RegisterAction
+class MoveRepeat extends BaseMovement {
+  keys = [";"];
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    const movement = VimState.lastRepeatableMovement;
+    if (movement) {
+      const result = await movement.execActionWithCount(position, vimState, count);
+      /**
+       * For t<character> and T<character> commands vim executes ; as 2;
+       * This way the cursor will get to the next instance of <character>
+       */
+      if (result instanceof Position && position.isEqual(result) && count <= 1) {
+        return await movement.execActionWithCount(position, vimState, 2);
+      }
+      return result;
+    }
+    return position;
+  }
+}
+
+
+@RegisterAction
+class MoveRepeatReversed extends BaseMovement {
+  keys = [","];
+  static reverseMotionMapping : Map<Function, () => BaseMovement> = new Map([
+    [MoveFindForward, () => new MoveFindBackward()],
+    [MoveFindBackward, () => new MoveFindForward()],
+    [MoveTilForward, () => new MoveTilBackward()],
+    [MoveTilBackward, () => new MoveTilForward()]
+  ]);
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    const movement = VimState.lastRepeatableMovement;
+    if (movement) {
+      const reverse = MoveRepeatReversed.reverseMotionMapping.get(movement.constructor)();
+      reverse.keysPressed = [reverse.keys[0], movement.keysPressed[1]];
+
+      let result = await reverse.execActionWithCount(position, vimState, count);
+      // For t<character> and T<character> commands vim executes ; as 2;
+      if (result instanceof Position && position.isEqual(result) && count <= 1) {
+        result = await reverse.execActionWithCount(position, vimState, 2);
+      }
+      return result;
+    }
+    return position;
   }
 }
 
@@ -2493,7 +2563,7 @@ class ActionDeleteChar extends BaseCommand {
 @RegisterAction
 class ActionDeleteCharWithDeleteKey extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["<delete>"];
+  keys = ["<Del>"];
   canBePrefixedWithCount = true;
   canBeRepeatedWithDot = true;
 
@@ -2778,14 +2848,14 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
       return vimState;
     }
 
-    if (char === '<backspace>' && vimState.topLeft.character === 0) {
+    if (char === '<BS>' && vimState.topLeft.character === 0) {
       return vimState;
     }
 
     for (const { start, end } of Position.IterateLine(vimState)) {
       const insertPos = insertAtStart ? start : end;
 
-      if (char === '<backspace>') {
+      if (char === '<BS>') {
         await TextEditor.backspace(insertPos.getLeft());
 
         posChange = -1;
@@ -2891,6 +2961,7 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 class ActionChangeChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["s"];
+  canBePrefixedWithCount = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const state = await new ChangeOperator().run(vimState, position, position);
@@ -3616,13 +3687,13 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
 @RegisterAction
 class IncrementNumberAction extends IncrementDecrementNumberAction {
-  keys = ["ctrl+a"];
+  keys = ["<C-a>"];
   offset = +1;
 }
 
 @RegisterAction
 class DecrementNumberAction extends IncrementDecrementNumberAction {
-  keys = ["ctrl+x"];
+  keys = ["<C-x>"];
   offset = -1;
 }
 

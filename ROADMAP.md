@@ -54,8 +54,8 @@ Status | Command | Description
 :white_check_mark:   |:1234:  F{char}	| to the Nth occurrence of {char} to the left
 :white_check_mark:   |:1234:  t{char}	| till before the Nth occurrence of {char} to the right
 :white_check_mark:   |:1234:  T{char}	| till before the Nth occurrence of {char} to the left
-   |:1234:  ;	| repeat the last "f", "F", "t", or "T" N times
-   |:1234:  ,	| repeat the last "f", "F", "t", or "T" N times in opposite direction
+:white_check_mark:   |:1234:  ;	| repeat the last "f", "F", "t", or "T" N times
+:white_check_mark:   |:1234:  ,	| repeat the last "f", "F", "t", or "T" N times in opposite direction
 
 ## Up-down motions
 
@@ -463,6 +463,7 @@ Status | Command | Default Value | Description
 :white_check_mark:| iskeyword (isk) | `@,48-57,_,128-167,224-235` | keywords contain alphanumeric characters and '_'. If there is no user setting for `iskeyword`, we use `editor.wordSeparators` properties.
 :white_check_mark:| scroll (scr) | 20 | Number of lines to scroll with CTRL-U and CTRL-D commands.
 :white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted
+:white_check_mark:| autoindent | true | Keep indentation when doing `cc` or `S` in normal mode to replace a line.
 
 ---
 
