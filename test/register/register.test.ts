@@ -44,7 +44,7 @@ suite("register", () => {
   newTest({
     title: "Can use two registers together",
     start: ['|one', "two"],
-    keysPressed: '"*yyjyy"*pp',
+    keysPressed: '"ayyj"byy"ap"bp',
     end: ["one", "two", "one", "|two"],
   });
 

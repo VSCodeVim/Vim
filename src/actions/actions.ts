@@ -157,6 +157,13 @@ export abstract class BaseMovement extends BaseAction {
   canBePrefixedWithCount = false;
 
   /**
+   * Whether we should change lastRepeatableMovement in VimState.
+   */
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return false;
+  }
+
+  /**
    * Whether we should change desiredColumn in VimState.
    */
   public doesntChangeDesiredColumn = false;
@@ -1992,6 +1999,10 @@ class MoveFindForward extends BaseMovement {
 
     return result;
   }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
+  }
 }
 
 @RegisterAction
@@ -2008,6 +2019,10 @@ class MoveFindBackward extends BaseMovement {
     }
 
     return result;
+  }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
   }
 }
 
@@ -2031,6 +2046,10 @@ class MoveTilForward extends BaseMovement {
 
     return result;
   }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
+  }
 }
 
 @RegisterAction
@@ -2047,6 +2066,59 @@ class MoveTilBackward extends BaseMovement {
     }
 
     return result;
+  }
+
+  public canBeRepeatedWithSemicolon(vimState: VimState, result: Position | IMovement) {
+    return !vimState.recordedState.operator || !(isIMovement(result) && result.failed);
+  }
+}
+
+@RegisterAction
+class MoveRepeat extends BaseMovement {
+  keys = [";"];
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    const movement = VimState.lastRepeatableMovement;
+    if (movement) {
+      const result = await movement.execActionWithCount(position, vimState, count);
+      /**
+       * For t<character> and T<character> commands vim executes ; as 2;
+       * This way the cursor will get to the next instance of <character>
+       */
+      if (result instanceof Position && position.isEqual(result) && count <= 1) {
+        return await movement.execActionWithCount(position, vimState, 2);
+      }
+      return result;
+    }
+    return position;
+  }
+}
+
+
+@RegisterAction
+class MoveRepeatReversed extends BaseMovement {
+  keys = [","];
+  static reverseMotionMapping : Map<Function, () => BaseMovement> = new Map([
+    [MoveFindForward, () => new MoveFindBackward()],
+    [MoveFindBackward, () => new MoveFindForward()],
+    [MoveTilForward, () => new MoveTilBackward()],
+    [MoveTilBackward, () => new MoveTilForward()]
+  ]);
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    const movement = VimState.lastRepeatableMovement;
+    if (movement) {
+      const reverse = MoveRepeatReversed.reverseMotionMapping.get(movement.constructor)();
+      reverse.keysPressed = [reverse.keys[0], movement.keysPressed[1]];
+
+      let result = await reverse.execActionWithCount(position, vimState, count);
+      // For t<character> and T<character> commands vim executes ; as 2;
+      if (result instanceof Position && position.isEqual(result) && count <= 1) {
+        result = await reverse.execActionWithCount(position, vimState, 2);
+      }
+      return result;
+    }
+    return position;
   }
 }
 
