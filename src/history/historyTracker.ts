@@ -19,7 +19,7 @@ import { TextEditor } from './../textEditor';
 import DiffMatchPatch = require("diff-match-patch");
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
-diffEngine.Diff_Timeout = 1000;
+diffEngine.Diff_Timeout = 1; // 1 second
 
 export class DocumentChange {
   start : Position;
