@@ -186,10 +186,10 @@ export class HistoryTracker {
     this._initialize();
   }
 
+  /**
+   * We add an initial, unrevertable step, which inserts the entire document.
+   */
   private _initialize() {
-    /**
-     * We add an initial, unrevertable step, which inserts the entire document.
-     */
     this.historySteps.push(new HistoryStep({
       changes  : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
       isFinished : true,
