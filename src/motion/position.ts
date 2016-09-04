@@ -216,6 +216,56 @@ export class Position extends vscode.Position {
   }
 
   /**
+   * Get the position of the line directly below the current line that is not folded.
+   */
+  public async getDownNotFolded(desiredColumn: number, lines: number, select: boolean) : Promise<Position> {
+    if (this.getDocumentEnd().line !== this.line) {
+      await vscode.commands.executeCommand("cursorMove", {
+        to: "down",
+        by: "wrappedLine",
+        select: select,
+        value: lines
+      });
+      const nextLine = vscode.window.activeTextEditor.selection.active.line;
+      const nextLineLength = Position.getLineLength(nextLine);
+      await vscode.commands.executeCommand("cursorMove", {
+        to: "up",
+        by: "wrappedLine",
+        select: select,
+        value: lines
+      });
+      return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
+    }
+
+    return this;
+  }
+
+  /**
+   * Get the position of the line directly above the current line that is not folded
+   */
+  public async getUpNotFolded(desiredColumn: number, lines: number, select: boolean) : Promise<Position> {
+    if (this.getDocumentEnd().line !== 0) {
+      await vscode.commands.executeCommand("cursorMove", {
+        to: "up",
+        by: "wrappedLine",
+        select: select,
+        value: lines
+      });
+      const nextLine = vscode.window.activeTextEditor.selection.active.line;
+      const nextLineLength = Position.getLineLength(nextLine);
+      await vscode.commands.executeCommand("cursorMove", {
+        to: "down",
+        by: "wrappedLine",
+        select: select,
+        value: lines
+      });
+      return new Position(nextLine, Math.min(nextLineLength, desiredColumn));
+    }
+
+    return this;
+  }
+
+  /**
    * Get the position of the line directly below the current line.
    */
   public getDown(desiredColumn: number) : Position {
