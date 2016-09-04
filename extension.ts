@@ -122,7 +122,7 @@ export async function activate(context: vscode.ExtensionContext) {
      * when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
      */
     setTimeout(() => {
-      if (!event.document.isDirty) {
+      if (!event.document.isDirty && !event.document.isUntitled) {
         handleContentChangedFromDisk(event.document);
       }
     }, 0);
