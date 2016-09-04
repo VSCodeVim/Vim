@@ -798,7 +798,7 @@ export class ModeHandler implements vscode.Disposable {
       vimState.historyTracker.finishCurrentStep();
     }
 
-    // console.log(vimState.historyTracker.toString());
+    //  console.log(vimState.historyTracker.toString());
 
     recordedState.actionKeys = [];
     vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
