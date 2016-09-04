@@ -1828,10 +1828,21 @@ class MoveUp extends BaseMovement {
   doesntChangeDesiredColumn = true;
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
+    let select = vimState.currentMode !== ModeName.Normal;
     if (vimState.recordedState.operator) {
       vimState.currentRegisterMode = RegisterMode.LineWise;
+      select = true;
     }
-    return await position.getUpNotFolded(vimState.desiredColumn, count, vimState.currentMode !== ModeName.Normal);
+    /* We are not following our design principal (do no real movement inside an action) here. */
+    await vscode.commands.executeCommand("cursorMove", {
+      to: "up",
+      by: "wrappedLine",
+      select: select,
+      value: count
+    });
+    const nextLine = vscode.window.activeTextEditor.selection.active.line;
+    const nextLineLength = Position.getLineLength(nextLine);
+    return new Position(nextLine, Math.min(nextLineLength, vimState.desiredColumn));
   }
 }
 
@@ -1852,7 +1863,15 @@ class MoveDown extends BaseMovement {
       vimState.currentRegisterMode = RegisterMode.LineWise;
       select = true;
     }
-    return await position.getDownNotFolded(vimState.desiredColumn, count, select);
+    await vscode.commands.executeCommand("cursorMove", {
+      to: "down",
+      by: "wrappedLine",
+      select: select,
+      value: count
+    });
+    const nextLine = vscode.window.activeTextEditor.selection.active.line;
+    const nextLineLength = Position.getLineLength(nextLine);
+    return new Position(nextLine, Math.min(nextLineLength, vimState.desiredColumn));
   }
 }
 
