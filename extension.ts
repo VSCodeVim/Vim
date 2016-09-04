@@ -247,9 +247,11 @@ async function handleActiveEditorChange(): Promise<void> {
 
   taskQueue.enqueueTask({
     promise: async () => {
-      const mh = await getAndUpdateModeHandler();
+      if (vscode.window.activeTextEditor !== undefined) {
+        const mh = await getAndUpdateModeHandler();
 
-      mh.updateView(mh.vimState, false);
+        mh.updateView(mh.vimState, false);
+      }
     },
     isRunning: false
   });
