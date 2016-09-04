@@ -245,10 +245,14 @@ async function handleActiveEditorChange(): Promise<void> {
     return;
   }
 
-  if (vscode.window.activeTextEditor !== undefined) {
-    const mh = await getAndUpdateModeHandler();
-    mh.updateView(mh.vimState, false);
-  }
+  taskQueue.enqueueTask({
+    promise: async () => {
+      const mh = await getAndUpdateModeHandler();
+
+      mh.updateView(mh.vimState, false);
+    },
+    isRunning: false
+  });
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
