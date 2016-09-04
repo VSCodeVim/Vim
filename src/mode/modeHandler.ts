@@ -54,6 +54,8 @@ export class VimState {
 
   public historyTracker: HistoryTracker;
 
+  public static lastRepeatableMovement : BaseMovement | undefined = undefined;
+
   /**
    * The keystroke sequence that made up our last complete action (that can be
    * repeated with '.').
@@ -796,7 +798,7 @@ export class ModeHandler implements vscode.Disposable {
       vimState.historyTracker.finishCurrentStep();
     }
 
-    // console.log(vimState.historyTracker.toString());
+    //  console.log(vimState.historyTracker.toString());
 
     recordedState.actionKeys = [];
     vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
@@ -848,6 +850,10 @@ export class ModeHandler implements vscode.Disposable {
       if (result.registerMode) {
         vimState.currentRegisterMode = result.registerMode;
       }
+    }
+
+    if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
+      VimState.lastRepeatableMovement = movement;
     }
 
     vimState.recordedState.count = 0;
