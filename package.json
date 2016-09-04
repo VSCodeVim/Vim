@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#a5c9a2",
@@ -165,9 +165,9 @@
                     "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c"
                 },
                 "vim.useSystemClipboard": {
-                  "type": "boolean",
-                  "description": "Use system clipboard for unnamed register.",
-                  "default": false
+                    "type": "boolean",
+                    "description": "Use system clipboard for unnamed register.",
+                    "default": false
                 },
                 "vim.insertModeKeyBindings": {
                     "type": "array",
