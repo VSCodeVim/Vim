@@ -111,6 +111,7 @@ class HistoryStep {
     if (this.changes.length < 2) {
       return;
     }
+
     // merged will replace this.changes
     var merged: DocumentChange[] = [];
     // manually reduce() this.changes with variables `current` and `next`
