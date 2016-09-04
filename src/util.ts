@@ -19,7 +19,7 @@ export function translateToAngleBracketNotation(key: string): string {
     };
 
     key = key.toLowerCase();
-    if (!(key.startsWith('<') && key.endsWith('>'))) {
+    if (!(key.startsWith('<') && key.endsWith('>')) && key.length > 1) {
       key = `<${ key }>`;
     }
 
