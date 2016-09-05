@@ -2357,7 +2357,7 @@ export class MoveWordBegin extends BaseMovement {
       on a non-blank.  This is because "cw" is interpreted as change-word, and a
       word does not include the following white space.
       */
-      return position.getCurrentWordEnd().getRight();
+      return position.getCurrentWordEnd(true).getRight();
     } else {
       return position.getWordRight();
     }
