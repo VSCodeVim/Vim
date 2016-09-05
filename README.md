@@ -44,12 +44,12 @@ Due to overlap between VSCode and VIm, options are loaded slightly different fro
 
 ### Supported Options
 
-Options can be added to your user or workspace settings (open Command Pallete and search for "User Settings" or "Workspace Settings") and require restarting of VSCode to take effect.
+Vim options can be added to your user or workspace settings (open Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
 
-This is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L155):
+The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L155):
 
 * insertModeKeyBindings/otherModesKeyBindings
-  * Keybinding overrides to use for insert/non-insert modes
+  * Keybinding overrides to use for insert and other (non-insert) modes
   * *Example:* Bind `jj` to `<Esc>` while in insert mode
 
     ```
@@ -73,8 +73,9 @@ This is a subset of the supported configurations; the full list is described in 
     ```
 
 * insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
-  * Non-recursive keybinding overrides to use for insert/non-insert modes (similar to `:noremap`)
-  * Example:
+  * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
+  * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive/otherModesKeyBindingNonRecursive.
+
     ```
     "vim.otherModesKeyBindingsNonRecursive": [
     {
@@ -90,6 +91,11 @@ This is a subset of the supported configurations; the full list is described in 
     * `ctrl+v` => Visual Block Mode
     * etc.
   * Type: Boolean (Default: `false`)
+  * Example:
+
+    ```
+    "vim.useCtrlKeys": true
+    ```
 
 * useSystemClipboard
   * Enable yanking to the system clipboard by default
