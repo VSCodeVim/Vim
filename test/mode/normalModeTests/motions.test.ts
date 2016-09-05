@@ -8,7 +8,8 @@ suite("Motions in Normal Mode", () => {
   let modeHandler: ModeHandler = new ModeHandler();
 
   let {
-    newTest
+    newTest,
+    newTestOnly,
   } = getTestingFunctions(modeHandler);
 
   setup(async () => {
@@ -263,35 +264,28 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
-    title: "Can run a basic search",
+    title: "Can run a forward search",
     start: ['|one two three'],
     keysPressed: '/thr\n',
     end: ['one two |three'],
   });
 
   newTest({
-    title: "Can run a basic search",
-    start: ['|one two three'],
-    keysPressed: '/thr\n',
-    end: ['one two |three'],
-  });
-
-  newTest({
-    title: "Can run a basic search",
+    title: "Can run a forward and find next search",
     start: ['|one two two two'],
     keysPressed: '/two\nn',
     end: ['one two |two two'],
   });
 
   newTest({
-    title: "Can run a basic search",
+    title: "Can run a reverse search",
     start: ['one two thre|e'],
     keysPressed: '?two\n',
     end: ['one |two three'],
   });
 
   newTest({
-    title: "Can run a basic search",
+    title: "Can run a reverse and find next search",
     start: ['one two two thre|e'],
     keysPressed: '?two\nn',
     end: ['one |two two three'],
@@ -342,14 +336,14 @@ suite("Motions in Normal Mode", () => {
   newTest({
     title: "Can handle dot with A",
     start: ['|one', 'two', 'three'],
-    keysPressed: 'A!<escape>j.j.',
+    keysPressed: 'A!<Esc>j.j.',
     end: ['one!', 'two!', 'three|!']
   });
 
   newTest({
     title: "Can handle dot with I",
     start: ['on|e', 'two', 'three'],
-    keysPressed: 'I!<escape>j.j.',
+    keysPressed: 'I!<Esc>j.j.',
     end: ['!one', '!two', '|!three']
   });
 
@@ -386,6 +380,20 @@ suite("Motions in Normal Mode", () => {
     start: ['|blah duh blah duh blah'],
     keysPressed: '**',
     end: ['blah duh blah duh |blah']
+  });
+
+  newTest({
+    title: "Can handle # on whitespace",
+    start: ['abc abcdef| abc'],
+    keysPressed: '#',
+    end: ['|abc abcdef abc'],
+  });
+
+  newTest({
+    title: "Can handle # on EOL",
+    start: ['abc abcdef abc| '],
+    keysPressed: '#',
+    end: ['abc abcdef abc| '],
   });
 
   newTest({

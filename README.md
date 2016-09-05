@@ -32,6 +32,91 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 1. Within Visual Studio Code, open the command palette (`Ctrl-Shift-P` / `Cmd-Shift-P`)
 2. Select `Install Extension` and search for 'vim' *or* run `ext install vim`
 
+## Configure
+
+Due to overlap between VSCode and VIm, options are loaded slightly different from native Vim. The option loading sequence/priority is
+
+1. `:set {option}` on the fly
+2. [TODO] .vimrc.
+3. `vim.{option}` from user settings or workspace settings.
+4. VSCode configuration
+5. VSCodeVim flavored Vim option default values
+
+### Supported Options
+
+Vim options can be added to your user or workspace settings (open Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
+
+The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L155):
+
+* insertModeKeyBindings/otherModesKeyBindings
+  * Keybinding overrides to use for insert and other (non-insert) modes
+  * *Example:* Bind `jj` to `<Esc>` while in insert mode
+
+    ```
+      "vim.insertModeKeyBindings": [
+           {
+               "before": ["j", "j"],
+               "after": ["<Esc>"]
+           }
+      ]
+    ```
+
+    Similarly for `otherModesKeyBindings`, bind `jj` to `<Esc>` for modes which are not insert mode
+
+    ```
+      "vim.otherModesKeyBindings": [
+           {
+               "before": ["j", "j"],
+               "after": ["<Esc>"]
+           }
+      ]
+    ```
+
+* insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
+  * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
+  * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive/otherModesKeyBindingNonRecursive.
+
+    ```
+    "vim.otherModesKeyBindingsNonRecursive": [
+    {
+        "before": ["j"],
+        "after": ["g", "j"]
+    }]
+    ```
+
+* useCtrlKeys
+  * Enable Vim ctrl keys thus overriding common VSCode operations (eg. copy, paste, find, etc). Setting this option to true will enable:
+    * `ctrl+c`, `ctrl+[` => `<Esc>`
+    * `ctrl+f` => Page Forward
+    * `ctrl+v` => Visual Block Mode
+    * etc.
+  * Type: Boolean (Default: `false`)
+  * Example:
+
+    ```
+    "vim.useCtrlKeys": true
+    ```
+
+* useSystemClipboard
+  * Enable yanking to the system clipboard by default
+  * Type: Boolean (Default: `false`)
+
+* useSolidBlockCursor
+  * Use a non-blinking block cursor
+  * Type: Boolean (Default: `false`)
+
+* ignorecase
+  * Ignore case in search patterns
+  * Type: Boolean (Default: `true`)
+
+* smartcase
+  * Override the 'ignorecase' option if the search pattern contains upper case characters
+  * Type: Boolean (Default: `true`)
+
+* hlsearch
+  * When there is a previous search pattern, highlight all its matches
+  * Type: Boolean (Default: `true`)
+
 ## F.A.Q.
 
 #### `j`, `k` and others don't repeat when I hold them down.
@@ -41,89 +126,6 @@ On OS X, open Terminal and run the following command:
 ```
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
 ```
-
-#### How can I bind `jj` to `<escape>`?
-
-1. Add the following to `settings.json` (open the Command Pallete and search for "User Settings"):
-
-   ```
-      "vim.insertModeKeyBindings": [
-           {
-               "before": ["j", "j"],
-               "after": ["<escape>"]
-           }
-      ]
-   ```
-
-2. If you want to press `jj` in modes which are not Insert Mode and still have it trigger `<escape>`, do the following as well:
-
-   ```
-      "vim.otherModesKeyBindings": [
-           {
-               "before": ["j", "j"],
-               "after": ["<escape>"]
-           }
-      ]
-```
-
-Be sure to restart VSCode after making these changes.
-
-#### How can I bind something like `j` to `gj`? How can I get the equivalent of `:noremap`?
-
-Notice the problem is that if you did this normally, the `j` in `gj` would be expanded into `gj`, on and on forever. To stop this recursive expansion, use vim.otherModesKeyBindingsNonRecursive!
-
-   ```
-      "vim.otherModesKeyBindingsNonRecursive": [
-           {
-               "before": ["j"],
-               "after": ["g", "j"]
-           }
-      ]
-```
-
-Don't forget to restart!
-
-#### How can I enable `ctrl-c` or `ctrl-[` as an alternative to `<escape>`?
-
-Put the following in your `settings.json`:
-
-```    "vim.useCtrlKeys": true```
-
-and restart VSCode.
-
-#### How can I enable `ctrl-f`?
-
-Put the following in your `settings.json`:
-
-```    "vim.useCtrlKeys": true```
-
-and restart VSCode.
-
-#### How can I enable visual block mode with `ctrl-v`?
-
-Put the following in your `settings.json`:
-
-```    "vim.useCtrlKeys": true```
-
-and restart VSCode.
-
-#### How can I enable yanking to system clipboard by default?
-
-Put the following in your `settings.json`:
-
-```    "vim.useSystemClipboard": true```
-
-and restart VSCode.
-
-#### Vim option override sequence.
-
-The way we load Vim options is slightly different from native Vim as there is some overlap between Code and Vim. The option loading sequence is as below.
-
-1. `:set {option}` on the fly
-2. [TODO] .vimrc.
-2. `vim.{option}` from user settings or workspace settings.
-3. VS Code configuration
-4. VSCodeVim flavored Vim option default values
 
 ## Contributing
 
@@ -137,4 +139,4 @@ Please see our [list of recent releases and features added.](https://github.com/
 
 ## License
 
-MIT, please see [License](LICENSE) for more information.
+MIT, see [License](LICENSE) for more information.

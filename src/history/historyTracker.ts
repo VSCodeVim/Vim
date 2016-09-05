@@ -19,7 +19,7 @@ import { TextEditor } from './../textEditor';
 import DiffMatchPatch = require("diff-match-patch");
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
-diffEngine.Diff_Timeout = 1000;
+diffEngine.Diff_Timeout = 1; // 1 second
 
 export class DocumentChange {
   start : Position;
@@ -111,6 +111,7 @@ class HistoryStep {
     if (this.changes.length < 2) {
       return;
     }
+
     // merged will replace this.changes
     var merged: DocumentChange[] = [];
     // manually reduce() this.changes with variables `current` and `next`
@@ -139,7 +140,7 @@ class HistoryStep {
         // collapse add+del into add. this might make current.text.length === 0, see beginning of loop
         current.text = current.text.slice(0, -next.text.length);
       } else {
-        // del+add must be two separate DocumentChanges. e.g. start with "a|b", do `i<backspace>x<escape>` you end up with "|xb"
+        // del+add must be two separate DocumentChanges. e.g. start with "a|b", do `i<BS>x<Esc>` you end up with "|xb"
         // also handles multiple changes in distant locations in the document
         merged.push(current);
         current = next;
@@ -177,9 +178,19 @@ export class HistoryTracker {
   }
 
   constructor() {
-    /**
-     * We add an initial, unrevertable step, which inserts the entire document.
-     */
+    this._initialize();
+  }
+
+  public clear() {
+    this.historySteps = [];
+    this.currentHistoryStepIndex = 0;
+    this._initialize();
+  }
+
+  /**
+   * We add an initial, unrevertable step, which inserts the entire document.
+   */
+  private _initialize() {
     this.historySteps.push(new HistoryStep({
       changes  : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
       isFinished : true,

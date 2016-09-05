@@ -6,13 +6,15 @@
  * handleKeyEvent().
  */
 
-
 import * as vscode from 'vscode';
+import * as util from './src/util';
+import * as _ from "lodash";
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
+
 
 interface VSCodeKeybinding {
   key: string;
@@ -113,6 +115,19 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
+  vscode.workspace.onDidChangeTextDocument((event) => {
+    /**
+     * Change from vscode editor should set document.isDirty to true but they initially don't!
+     * There is a timing issue in vscode codebase between when the isDirty flag is set and
+     * when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
+     */
+    setTimeout(() => {
+      if (!event.document.isDirty && !event.document.isUntitled) {
+        handleContentChangedFromDisk(event.document);
+      }
+    }, 0);
+  });
+
   registerCommand(context, 'type', async (args) => {
     if (!vscode.window.activeTextEditor) {
       return;
@@ -191,16 +206,9 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   for (let { key } of packagejson.contributes.keybindings) {
-    if (key.startsWith("ctrl+")) {
-      registerCommand(context, `extension.vim_${ key }`, () => handleKeyEvent(key));
-    } else {
-      let bracketedKey = `<${ key.toLowerCase() }>`;
-
-      registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
-    }
+    let bracketedKey = util.translateToAngleBracketNotation(key);
+    registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
   }
-
-  registerCommand(context, `extension.vim_esc`, () => handleKeyEvent(`<escape>`));
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
@@ -223,6 +231,13 @@ async function handleKeyEvent(key: string): Promise<void> {
   });
 }
 
+function handleContentChangedFromDisk(document : vscode.TextDocument) : void {
+  _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.fileName === document.fileName)
+    .forEach(modeHandler => {
+      modeHandler.vimState.historyTracker.clear();
+    });
+}
+
 async function handleActiveEditorChange(): Promise<void> {
 
   // Don't run this event handler during testing
@@ -230,10 +245,16 @@ async function handleActiveEditorChange(): Promise<void> {
     return;
   }
 
-  if (vscode.window.activeTextEditor !== undefined) {
-    const mh = await getAndUpdateModeHandler();
-    mh.updateView(mh.vimState, false);
-  }
+  taskQueue.enqueueTask({
+    promise: async () => {
+      if (vscode.window.activeTextEditor !== undefined) {
+        const mh = await getAndUpdateModeHandler();
+
+        mh.updateView(mh.vimState, false);
+      }
+    },
+    isRunning: false
+  });
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
