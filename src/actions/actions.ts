@@ -2742,9 +2742,13 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
   keys = ["I"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
+      vimState.cursorPosition = vimState.cursorPosition.getRight();
+    }
+
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
-
+    vimState.cursorPosition = vimState.cursorPosition.getLeft();
     return vimState;
   }
 }
@@ -2799,14 +2803,13 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   keys = ["A"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.cursorPosition.character >= vimState.cursorStartPosition.character) {
+    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
       vimState.cursorPosition = vimState.cursorPosition.getRight();
-    } else {
-      vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Append;
+    vimState.cursorPosition = vimState.cursorPosition.getRight();
 
     return vimState;
   }
@@ -2860,7 +2863,11 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 
         posChange = -1;
       } else {
-        await TextEditor.insert(this.keysPressed[0], insertPos);
+        if (vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Append) {
+          await TextEditor.insert(this.keysPressed[0], insertPos.getLeft());
+        } else {
+          await TextEditor.insert(this.keysPressed[0], insertPos);
+        }
 
         posChange = 1;
       }
