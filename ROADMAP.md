@@ -109,10 +109,10 @@ Status | Command | Description
 
 ## Pattern searches
 
-Status | Command | Description
----|--------|------------------------------
-:warning: :red_circle: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern}
-:warning: :red_circle: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern}
+Status | Command | Description | Note
+---|--------|------------|------------------
+:warning: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
+:warning: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
  | :1234: `/<CR>` | repeat last search, in the forward direction
  | :1234: `?<CR>` | repeat last search, in the backward direction
 :warning: :red_circle: | :1234: n | repeat last search
@@ -317,11 +317,11 @@ Status | Command | Description
 
 ## Changing text
 
-Status | Command | Description
----|--------|------------------------------
-:warning: :red_circle:   | :1234:  r{char}	| replace N characters with {char}
+Status | Command | Description | Note
+---|--------|------------|------------------
+:warning: | :1234:  r{char}	| replace N characters with {char} | {count} is not supported yet
 :arrow_down:| :1234:  gr{char}	| replace N characters without affecting layout
-:warning: :red_circle:   | :1234:  R		| enter Replace mode (repeat the entered text N times)
+:warning: | :1234:  R		| enter Replace mode (repeat the entered text N times) | {count} is not supported yet
 :arrow_down:| :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
 :arrow_down:|  {visual}r{char} | in Visual block mode: Replace each char of the selected text with {char}
 
@@ -359,8 +359,8 @@ Status | Command | Description
 
 ## Complex changes
 
-Status | Command | Description
----|--------|------------------------------
+Status | Command | Description | Note
+---|--------|------------------|------------
 :arrow_down:| :1234:  `!{motion}{command}<CR>` | filter the lines that are moved over through {command}
 :arrow_down:| :1234:  `!!{command}<CR>`       | filter N lines through {command}
 :arrow_down:|    `{visual}!{command}<CR>`      |  filter the highlighted lines through {command}
@@ -368,9 +368,9 @@ Status | Command | Description
 :white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
 :arrow_down:| :1234:  ==	                 |    filter N lines through 'equalprg'
 :white_check_mark:  |    {visual}=                | filter the highlighted lines through 'equalprg'
-:warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement
-:red_circle:| :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
-:red_circle:|    &		| Repeat previous ":s" on current line without options
+:warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement |
+:arrow_down:| :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
+:arrow_down:|    &		| Repeat previous ":s" on current line without options
  :arrow_down:  | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
 
 ## Visual mode
@@ -509,19 +509,20 @@ Status | Command | Description
 
 ## Multi-window commands
 
-Status | Command | Description
----|--------|------------------------------
-:warning: :red_circle: | :e[dit] {file}  | Edit {file}. We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
-:warning: :red_circle:  | &lt;ctrl-w&gt; hl  | Switching between windows. As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
+Status | Command | Description | Note
+---|--------|-----------------|-------------
+:warning: | :e[dit] {file}  | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
+:warning: | &lt;ctrl-w&gt; hl  | Switching between windows. | As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
 :x:   | :sp {file}  | Split current window in two. VS Code doesn't support split Window horizontally.
-:red_circle:| :vsp {file}  | Split vertically current window in two.
+:warning: | :vsp {file}  | Split vertically current window in two. | VS Code only supports three vertical window at most and that's the limitation of this command.
 :x:   | :new | Create a new window horizontally and start editing an empty file in it.
-:red_circle:   | :vne[w] | Create a new window vertically and start editing an empty file in it.
+:warning:   | :vne[w] | Create a new window vertically and start editing an empty file in it. | VS Code only supports three vertical window at most and that's the limitation of this command.
+
 
 ## Tabs
 
-Status | Command | Description
----|--------|------------------------------
+Status | Command | Description | Note
+---|--------|------------------|------------
 :white_check_mark:   | :tabn[ext] :1234:	    | Go to next tab page or tab page {count}.  The first tab page has number one.
     | {count}&lt;C-PageDown&gt;, {count}gt | Same as above
 :white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
@@ -529,12 +530,12 @@ Status | Command | Description
     | {count}&lt;C-PageUp&gt;, {count}gT | Same as above
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
-:warning: :red_circle:   | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page
+:warning:  | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
     | :[count]tabe[dit], :[count]tabnew | Same as above
-:warning: :red_circle:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page
+:warning:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
     | :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
-:warning::red_circle:   | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}.
-:warning: :red_circle:  | :tabo[nly][!] | Close all other tab pages.
+:warning:  | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}. | `!` is not supported yet.
+:warning:  | :tabo[nly][!] | Close all other tab pages. | `!` is not supported yet.
 :white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
 :x:   | :tabs	 | List the tab pages and the windows they contain.
 :arrow_down:| :tabd[o] {cmd} | Execute {cmd} in each tab page.
