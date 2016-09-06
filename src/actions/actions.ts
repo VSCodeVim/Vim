@@ -6,7 +6,7 @@ import { TextEditor } from './../textEditor';
 import { Range } from './../motion/range';
 import { Register, RegisterMode } from './../register/register';
 import { NumericString } from './../number/numericString';
-import { Position, PositionDiff } from './../motion/position';
+import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
@@ -322,8 +322,9 @@ export abstract class BaseCommand extends BaseAction {
       return vimState;
     }
 
-    // When we are doing multiple insertions, make earlier insertions
-    // cause later insertions to move down or right through the document.
+    // Calculate the correct location of every insertion.
+    // (Note that e.g. inserting a newline earlier can cause later
+    // insertions to move down the document.)
 
     let modifiedInsertions = insertions.map(ins => {
       let newInsertion: InsertTextTransformation = {
@@ -356,7 +357,8 @@ export abstract class BaseCommand extends BaseAction {
         // no bounds check because it's entirely concievable that we're off the bounds of
         // the (pre-insertion) document.
 
-        newInsertion.associatedCursor = newInsertion.associatedCursor.getDownByCount(beforeInsert, { boundsCheck: false });
+        newInsertion.associatedCursor = newInsertion.associatedCursor
+          .getDownByCount(beforeInsert, { boundsCheck: false });
 
         return newInsertion;
       }
@@ -369,7 +371,8 @@ export abstract class BaseCommand extends BaseAction {
       if (ins.notAdjustedByOwnText) { return ins.associatedCursor; }
 
       if (ins.text === "\n") {
-        return ins.associatedCursor.getDown(1);
+        return ins.associatedCursor.getDownByCount(1, { boundsCheck: false })
+          .getLineBegin();
       } else {
         return ins.associatedCursor.getRight(ins.text.length);
       }
