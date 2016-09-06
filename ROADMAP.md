@@ -258,8 +258,8 @@ Status | Command | Description
 :white_check_mark: | Del		                 |  delete the character under the cursor
 :white_check_mark: | CTRL-W		                 |  delete word before the cursor
 :white_check_mark: | CTRL-U		                 |  delete all entered characters in the current line
-    | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
-    | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
+:white_check_mark: | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
+:white_check_mark: | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
     | 0 CTRL-D	                 |  delete all indent in the current line
     | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
 

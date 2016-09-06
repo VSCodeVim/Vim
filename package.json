@@ -105,7 +105,7 @@
             {
                 "key": "ctrl+d",
                 "command": "extension.vim_ctrl+d",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus && vim.useCtrlKeys"
             },
             {
                 "key": "ctrl+[",
@@ -130,6 +130,11 @@
             {
                 "key": "ctrl+x",
                 "command": "extension.vim_ctrl+x",
+                "when": "editorTextFocus && vim.useCtrlKeys"
+            },
+            {
+                "key": "ctrl+t",
+                "command": "extension.vim_ctrl+t",
                 "when": "editorTextFocus && vim.useCtrlKeys"
             },
             {
