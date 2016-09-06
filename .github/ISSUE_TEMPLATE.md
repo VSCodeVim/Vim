@@ -8,7 +8,7 @@ Please *thumbs-up* 👍 this issue if it personally affects you! You can do this
 
 ### What did you do?
 
-Put the exact keys you pressed, if relevant.
+Put the exact keys you pressed.
 
 ### What did you expect to happen?
 

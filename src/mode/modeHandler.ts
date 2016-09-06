@@ -64,6 +64,8 @@ export class VimState {
 
   public alteredHistory = false;
 
+  public isRunningDotCommand = false;
+
   public focusChanged = false;
 
   /**
@@ -709,12 +711,13 @@ export class ModeHandler implements vscode.Disposable {
     let ranRepeatableAction = false;
     let ranAction = false;
 
-    // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
-    // this needs to happen before any changes are made
+    // If arrow keys or mouse were in insert mode, create an undo point.
+    // This needs to happen before any changes are made
     let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
-    if (prevPos !== undefined) {
+    if (prevPos !== undefined && !vimState.isRunningDotCommand) {
       if (vimState.cursorPositionJustBeforeAnythingHappened.line !== prevPos.line ||
-        vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
+          vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
+
         vimState.previousFullAction = recordedState;
         vimState.historyTracker.finishCurrentStep();
       }
@@ -946,6 +949,7 @@ export class ModeHandler implements vscode.Disposable {
 
     recordedState = new RecordedState();
     vimState.recordedState = recordedState;
+    vimState.isRunningDotCommand = true;
 
     let i = 0;
 
@@ -953,6 +957,8 @@ export class ModeHandler implements vscode.Disposable {
       recordedState.actionsRun = actions.slice(0, ++i);
       vimState = await this.runAction(vimState, recordedState, action);
     }
+
+    vimState.isRunningDotCommand = false;
 
     recordedState.actionsRun = actions;
 

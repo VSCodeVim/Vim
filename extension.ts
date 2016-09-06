@@ -7,14 +7,13 @@
  */
 
 import * as vscode from 'vscode';
-import * as util from './src/util';
 import * as _ from "lodash";
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { TaskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
-
+import { AngleBracketNotation } from './src/notation';
 
 interface VSCodeKeybinding {
   key: string;
@@ -206,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   for (let { key } of packagejson.contributes.keybindings) {
-    let bracketedKey = util.translateToAngleBracketNotation(key);
+    let bracketedKey = AngleBracketNotation.Normalize(key);
     registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
   }
 

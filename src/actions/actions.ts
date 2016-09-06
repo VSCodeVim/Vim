@@ -90,9 +90,9 @@ export class BaseAction {
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
    */
-  isMotion = false;
+  public isMotion = false;
 
-  canBeRepeatedWithDot = false;
+  public canBeRepeatedWithDot = false;
 
   /**
    * Modes that this action can be run in.
@@ -2391,7 +2391,7 @@ export class MoveWordBegin extends BaseMovement {
       on a non-blank.  This is because "cw" is interpreted as change-word, and a
       word does not include the following white space.
       */
-      return position.getCurrentWordEnd().getRight();
+      return position.getCurrentWordEnd(true).getRight();
     } else {
       return position.getWordRight();
     }
@@ -2776,9 +2776,13 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
   keys = ["I"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
+      vimState.cursorPosition = vimState.cursorPosition.getRight();
+    }
+
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
-
+    vimState.cursorPosition = vimState.cursorPosition.getLeft();
     return vimState;
   }
 }
@@ -2833,14 +2837,13 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   keys = ["A"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.cursorPosition.character >= vimState.cursorStartPosition.character) {
+    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
       vimState.cursorPosition = vimState.cursorPosition.getRight();
-    } else {
-      vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Append;
+    vimState.cursorPosition = vimState.cursorPosition.getRight();
 
     return vimState;
   }
@@ -2894,7 +2897,11 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 
         posChange = -1;
       } else {
-        await TextEditor.insert(this.keysPressed[0], insertPos);
+        if (vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Append) {
+          await TextEditor.insert(this.keysPressed[0], insertPos.getLeft());
+        } else {
+          await TextEditor.insert(this.keysPressed[0], insertPos);
+        }
 
         posChange = 1;
       }
@@ -3630,21 +3637,48 @@ class ToggleCaseOperator extends BaseOperator {
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-    const char = TextEditor.getText(range);
+    const range = new vscode.Range(start, end.getRight());
 
-    // Try lower-case
-    let toggled = char.toLocaleLowerCase();
-    if (toggled === char) {
-      // Try upper-case
-      toggled = char.toLocaleUpperCase();
-    }
-
-    if (toggled !== char) {
-      await TextEditor.replace(range, toggled);
-    }
+    await ToggleCaseOperator.toggleCase(range);
 
     const cursorPosition = start.isBefore(end) ? start : end;
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+
+  static async toggleCase(range: vscode.Range) {
+    const text = TextEditor.getText(range);
+
+    let newText = "";
+    for (var i = 0; i < text.length; i++) {
+      var char = text[i];
+      // Try lower-case
+      let toggled = char.toLocaleLowerCase();
+      if (toggled === char) {
+        // Try upper-case
+        toggled = char.toLocaleUpperCase();
+      }
+      newText += toggled;
+    }
+    await TextEditor.replace(range, newText);
+  }
+}
+
+@RegisterAction
+class ToggleCaseVisualBlockOperator extends BaseOperator {
+  public keys = ["~"];
+  public modes = [ModeName.VisualBlock];
+
+  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
+    for (const { start, end } of Position.IterateLine(vimState)) {
+      const range = new vscode.Range(start, end);
+      await ToggleCaseOperator.toggleCase(range);
+    }
+
+    const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
     vimState.cursorPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     vimState.currentMode = ModeName.Normal;
@@ -3660,14 +3694,17 @@ class ToggleCaseWithMotion extends ToggleCaseOperator {
 }
 
 @RegisterAction
-class ToggleCaseAndMoveForward extends BaseMovement {
+class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["~"];
+  canBeRepeatedWithDot = true;
+  canBePrefixedWithCount = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    await new ToggleCaseOperator().run(vimState, position, position);
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await new ToggleCaseOperator().run(vimState, vimState.cursorPosition, vimState.cursorPosition);
 
-    return position.getRight();
+    vimState.cursorPosition = vimState.cursorPosition.getRight();
+    return vimState;
   }
 }
 
