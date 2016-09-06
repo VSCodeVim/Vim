@@ -1,6 +1,6 @@
 import { VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
-import { Transformation, InsertTextTransformation } from './../transformations/transformations';
+import { processInsertionsAndDeletions, InsertTextTransformation } from './../transformations/transformations';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
 import { TextEditor } from './../textEditor';
 import { Range } from './../motion/range';
@@ -311,79 +311,13 @@ export abstract class BaseCommand extends BaseAction {
       ));
     }
 
-    // TODO - should probably ensure that there are no vscode insertions here.
+    let result = processInsertionsAndDeletions(vimState.recordedState.transformations);
 
-    let insertions: InsertTextTransformation[] = _.filter(vimState.recordedState.transformations,
-      x => x.type === "insertText") as any;
-
-    if (insertions.length === 0) {
+    if (result) {
+      vimState.recordedState.transformations = result.modifiedTransformations;
+      vimState.allCursors = result.newCursorPositions;
+    } else {
       vimState.allCursors = resultingCursors;
-
-      return vimState;
-    }
-
-    // Calculate the correct location of every insertion.
-    // (Note that e.g. inserting a newline earlier can cause later
-    // insertions to move down the document.)
-
-    let modifiedInsertions = insertions.map(ins => {
-      let newInsertion: InsertTextTransformation = {
-        type: 'insertText',
-        text: ins.text,
-        associatedCursor: ins.associatedCursor,
-        notAdjustedByOwnText: ins.notAdjustedByOwnText,
-      };
-
-      // We don't handle the case of inserting a long string with a newline in the middle
-      // currently. I don't think it's necessary.
-      if (ins.text.indexOf("\n") > -1 && ins.text.length > 1) {
-        vscode.window.showErrorMessage("Bad error in execCount in actions.ts");
-      }
-
-      if (ins.text !== "\n") {
-        let beforeInsert = _.filter(insertions, other =>
-          other.associatedCursor.line === ins.associatedCursor.line &&
-          other.associatedCursor.isBefore(ins.associatedCursor));
-
-        for (const before of beforeInsert) {
-          newInsertion.associatedCursor = newInsertion.associatedCursor.getRight(before.text.length);
-        }
-
-        return newInsertion;
-      } else {
-        let beforeInsert = _.filter(insertions, other =>
-          other.associatedCursor.isBefore(ins.associatedCursor)).length;
-
-        // no bounds check because it's entirely concievable that we're off the bounds of
-        // the (pre-insertion) document.
-
-        newInsertion.associatedCursor = newInsertion.associatedCursor
-          .getDownByCount(beforeInsert, { boundsCheck: false });
-
-        return newInsertion;
-      }
-    });
-
-    // Now that we've calculated the positions of all the insertions,
-    // calculate the position of all the cursors.
-
-    let newCursors = _.map(modifiedInsertions, ins => {
-      if (ins.notAdjustedByOwnText) { return ins.associatedCursor; }
-
-      if (ins.text === "\n") {
-        return ins.associatedCursor.getDownByCount(1, { boundsCheck: false })
-          .getLineBegin();
-      } else {
-        return ins.associatedCursor.getRight(ins.text.length);
-      }
-    });
-
-    // TODO - this is broken! We aren't preserving all transformations.
-    vimState.recordedState.transformations = modifiedInsertions as any;
-
-    // TODO - this is also broken! (what if we didnt return all cursors?)
-    if (newCursors.length > 0) {
-      vimState.allCursors = newCursors.map(x => new Range(x, x));
     }
 
     return vimState;
@@ -392,6 +326,11 @@ export abstract class BaseCommand extends BaseAction {
 
 export class BaseOperator extends BaseAction {
     canBeRepeatedWithDot = true;
+
+    /**
+     * If this is being run in multi cursor mode, the index of the cursor
+     * this operator is being applied to.
+     */
     multicursorIndex: number | undefined = undefined;
 
     /**
