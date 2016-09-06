@@ -113,8 +113,8 @@ Status | Command | Description | Note
 ---|--------|------------|------------------
 :warning: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
 :warning: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
-:white_check_mark: | `/<CR>` | repeat last search, in the forward direction
-:white_check_mark: | :1234: `?<CR>` | repeat last search, in the backward direction
+:warning: | :1234: `/<CR>` | repeat last search, in the forward direction | {count} is not supported yet.
+:warning: | :1234: `?<CR>` | repeat last search, in the backward direction | {count} is not supported yet.
 :warning: :red_circle: | :1234: n | repeat last search
 :warning: :red_circle: | :1234: N | repeat last search, in opposite direction
 :white_check_mark: | :1234: * | search forward for the identifier under the cursor
@@ -219,8 +219,8 @@ in Visual block mode:
 
 Status | Command | Description
 ---|--------|------------------------------
-:red_circle:| I	| insert the same text in front of all the selected lines
-:red_circle:| A	| append the same text after all the selected lines
+:white_check_mark:| I	| insert the same text in front of all the selected lines
+:white_check_mark:| A	| append the same text after all the selected lines
 
 ## Insert mode keys
 
@@ -383,7 +383,7 @@ Status | Command | Description
 :arrow_down: | gv		| start highlighting on previous visual area
 :white_check_mark:   | v		| highlight characters or stop highlighting
 :white_check_mark:   | V		| highlight linewise or stop highlighting
-:red_circle: | CTRL-V	| highlight blockwise or stop highlighting
+:white_check_mark: | CTRL-V	| highlight blockwise or stop highlighting
 
 ## Text objects (only in Visual mode or after an operator)
 
