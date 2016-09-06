@@ -368,10 +368,10 @@ Status | Command | Description | Note
 :white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
 :arrow_down:| :1234:  ==	                 |    filter N lines through 'equalprg'
 :white_check_mark:  |    {visual}=                | filter the highlighted lines through 'equalprg'
-:warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement |
+:warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement | Currently we only support JavaScript Regex and only options `gi` are implemented
 :arrow_down:| :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
 :arrow_down:|    &		| Repeat previous ":s" on current line without options
- :arrow_down:  | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
+:arrow_down:| :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
 
 ## Visual mode
 
@@ -458,7 +458,7 @@ Since the list is too long, now we just put those already supported options here
 Status | Command | Default Value | Description
 ---|--------|-------|------------------------------
 :white_check_mark:| tabstop (ts) | 4. we use Code's default value `tabSize` instead of Vim | number of spaces that &lt;Tab&gt; in file uses
-:white_check_mark:| :white_check_mark:| hlsearch (hls) | false | When there is a previous search pattern, highlight all its matches.
+:white_check_mark:| hlsearch (hls) | false | When there is a previous search pattern, highlight all its matches.
 :white_check_mark:| ignorecase (ic) | true | Ignore case in search patterns.
 :white_check_mark:| smartcase (scs) | true | Override the 'ignorecase' option if the search pattern contains upper case characters.
 :white_check_mark:| iskeyword (isk) | `@,48-57,_,128-167,224-235` | keywords contain alphanumeric characters and '_'. If there is no user setting for `iskeyword`, we use `editor.wordSeparators` properties.
@@ -470,42 +470,42 @@ Status | Command | Default Value | Description
 
 ## Undo/Redo commands
 
-Status | Command | Default Value | Description
+Status | Command | Description | Note
 ---|--------|-------|------------------------------
-:warning: | :1234: u | undo last N changes
-:warning: | :1234: CTRL-R |	redo last N undone changes
-| U | restore last changed line
+:warning: | :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
+:warning: | :1234: CTRL-R |	redo last N undone changes | As above.
+    | U | restore last changed line
 
 ## External commands
 
-Status | Command | Default Value | Description
----|--------|-------|------------------------------
+Status | Command | Description
+---|--------|-----------------
 :arrow_down: | :sh[ell] | start a shell
 :arrow_down: | :!{command} | execute {command} with a shell
 :arrow_down: | K | lookup keyword under the cursor with 'keywordprg' program (default: "man")
 
 ## Ex rangs
 
-Status | Command | Default Value | Description
+Status | Command | Description
 ---|--------|-------|------------------------------
-:white_check_mark: | , | separates two line numbers
-| | ; | idem, set cursor to the first line number before interpreting the second one
+:white_check_mark: | , | separates two line numbers|
+   | ; | idem, set cursor to the first line number before interpreting the second one
 :white_check_mark: | {number} | an absolute line number
 :white_check_mark: | . | the current line
 :white_check_mark: | $ | the last line in the file
 :white_check_mark: | % | equal to 1,$ (the entire file)
-| | * | equal to '<,'> (visual area)
-| | 't | position of mark t
-| |	/{pattern}[/] |	the next line where {pattern} matches
-| |	?{pattern}[?] | the previous line where {pattern} matches
+    | * | equal to '<,'> (visual area)
+    | 't | position of mark t
+    |	/{pattern}[/] |	the next line where {pattern} matches
+    |	?{pattern}[?] | the previous line where {pattern} matches
 :white_check_mark: | +[num] | add [num] to the preceding line number (default: 1)
 :white_check_mark: | -[num] | subtract [num] from the preceding line number (default: 1)
 
 ## Editing a file
 
-Status | Command | Description
----|--------|------------------------------
-:warning:   | :e[dit] {file}  | Edit {file}. We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
+Status | Command | Description | Note
+---|--------|------------------|-----------
+:warning:   | :e[dit] {file}  | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
 
 ## Multi-window commands
 
@@ -513,9 +513,9 @@ Status | Command | Description | Note
 ---|--------|-----------------|-------------
 :warning: | :e[dit] {file}  | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
 :warning: | &lt;ctrl-w&gt; hl  | Switching between windows. | As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
-:x:   | :sp {file}  | Split current window in two. VS Code doesn't support split Window horizontally.
+:x:   | :sp {file}  | Split current window in two. | VS Code doesn't support split Window horizontally.
 :warning: | :vsp {file}  | Split vertically current window in two. | VS Code only supports three vertical window at most and that's the limitation of this command.
-:x:   | :new | Create a new window horizontally and start editing an empty file in it.
+:x:   | :new | Create a new window horizontally and start editing an empty file in it. | VS Code doesn't support split Window horizontally.
 :warning:   | :vne[w] | Create a new window vertically and start editing an empty file in it. | VS Code only supports three vertical window at most and that's the limitation of this command.
 
 
@@ -531,13 +531,13 @@ Status | Command | Description | Note
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
 :warning:  | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
-    | :[count]tabe[dit], :[count]tabnew | Same as above
+:warning:  | :[count]tabe[dit], :[count]tabnew | Same as above | [count] is not supported yet.
 :warning:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
-    | :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
+:arrow_down:| :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
 :warning:  | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}. | `!` is not supported yet.
 :warning:  | :tabo[nly][!] | Close all other tab pages. | `!` is not supported yet.
 :white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
-:x:   | :tabs	 | List the tab pages and the windows they contain.
+:arrow_down:| :tabs	 | List the tab pages and the windows they contain. | You can always use Code's built-in shortcut: `cmd/ctrl+p`
 :arrow_down:| :tabd[o] {cmd} | Execute {cmd} in each tab page.
 
 ## Folding
@@ -576,17 +576,4 @@ Status | Command | Description
 
 ### Fold options
 
-Status | Command | Description
----|--------|------------------------------
-:x: | foldlevel | 'foldlevel' is a number option: The higher the more folded regions are open.
-:x: | foldtext | 'foldtext' is a string option that specifies an expression. This expression is evaluated to obtain the text displayed for a closed fold.
-:x: | foldcolumn | 'foldcolumn' is a number, which sets the width for a column on the side of the window to indicate folds.
-    | foldenable fen | Open all folds while not set.
-:x: | foldexpr fde | Expression used for "expr" folding.
-:x: | foldignore fdi | Characters used for "indent" folding.
-:x: | foldmarker fmr | Defined markers used for "marker" folding.
-:x: | foldmethod fdm | Name of the current folding method.
-:x: | foldminlines fml | Minimum number of screen lines for a fold to be displayed closed.
-:x: | foldnestmax fdn | Maximum nesting for "indent" and "syntax" folding.
-:x: | foldopen fdo | Which kinds of commands open closed folds.
-:x: | foldclose fcl | When the folds not under the cursor are closed.
+Currently we don't support any fold option and we are following Code configurations.
