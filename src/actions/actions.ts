@@ -94,6 +94,8 @@ export class BaseAction {
 
   canBeRepeatedWithDot = false;
 
+  private _keys : string[] = [];
+
   /**
    * Modes that this action can be run in.
    */
@@ -102,7 +104,15 @@ export class BaseAction {
   /**
    * The sequence of keys you use to trigger the action.
    */
-  public keys: string[];
+  public set keys(arr: string[]) {
+    for (var i = 0; i < arr.length; i++) {
+      this._keys[i] = arr[i].toLocaleLowerCase();
+    }
+  }
+
+  public get keys() : string[] {
+    return this._keys;
+  }
 
   public mustBeFirstKey = false;
 
