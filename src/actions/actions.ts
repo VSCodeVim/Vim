@@ -90,9 +90,9 @@ export class BaseAction {
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
    */
-  isMotion = false;
+  public isMotion = false;
 
-  canBeRepeatedWithDot = false;
+  public canBeRepeatedWithDot = false;
 
   /**
    * Modes that this action can be run in.
