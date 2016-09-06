@@ -10,7 +10,7 @@
 
 :1234: - command accepts numeric prefix
 
-:red_circle: - command accessment needs review
+:red_circle: - command assessment needs review
 
 ## Roadmap
 
@@ -113,8 +113,8 @@ Status | Command | Description | Note
 ---|--------|------------|------------------
 :warning: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
 :warning: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
- | :1234: `/<CR>` | repeat last search, in the forward direction
- | :1234: `?<CR>` | repeat last search, in the backward direction
+:white_check_mark: | `/<CR>` | repeat last search, in the forward direction
+:white_check_mark: | :1234: `?<CR>` | repeat last search, in the backward direction
 :warning: :red_circle: | :1234: n | repeat last search
 :warning: :red_circle: | :1234: N | repeat last search, in opposite direction
 :white_check_mark: | :1234: * | search forward for the identifier under the cursor
