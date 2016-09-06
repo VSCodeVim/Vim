@@ -115,8 +115,8 @@ Status | Command | Description | Note
 :warning: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
 :warning: | :1234: `/<CR>` | repeat last search, in the forward direction | {count} is not supported yet.
 :warning: | :1234: `?<CR>` | repeat last search, in the backward direction | {count} is not supported yet.
-:warning: :red_circle: | :1234: n | repeat last search
-:warning: :red_circle: | :1234: N | repeat last search, in opposite direction
+:warning: | :1234: n | repeat last search | {count} is not supported yet.
+:warning: | :1234: N | repeat last search, in opposite direction | {count} is not supported yet.
 :white_check_mark: | :1234: * | search forward for the identifier under the cursor
 :white_check_mark: | :1234: # | search backward for the identifier under the cursor
 :arrow_down: | :1234: g* | like "*", but also find partial matches
@@ -129,9 +129,9 @@ Status | Command | Description | Note
 Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark: |    m{a-zA-Z}	       |  mark current position with mark {a-zA-Z}
-:red_circle:|   `{a-z}	       |  go to mark {a-z} within current file
-:red_circle:|    `{A-Z}	       |  go to mark {A-Z} in any file
-:red_circle:|    `{0-9}	       |  go to the position where Vim was previously exited
+:white_check_mark:|   `{a-z}	       |  go to mark {a-z} within current file
+:white_check_mark:|    `{A-Z}	       |  go to mark {A-Z} in any file
+:white_check_mark:|    `{0-9}	       |  go to the position where Vim was previously exited
 :arrow_down:|    ``		       |  go to the position before the last jump
 :arrow_down:|    `"		       |  go to the position when last editing this file
 :arrow_down:|    `[		       |  go to the start of the previously operated or put text
@@ -244,13 +244,13 @@ Status | Command | Description
 
 ## Special keys in Insert mode
 
-Status | Command | Description
+Status | Command | Description | Note
 ---|--------|------------------------------
-:red_circle:| CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
+:warning:    |CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
 :warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line
 :white_check_mark: | CTRL-E		                 |  insert the character from below the cursor
 :white_check_mark: | CTRL-Y		                 |  insert the character from above the cursor
-    | CTRL-A		                 |  insert previously inserted text
+   | CTRL-A		                 |  insert previously inserted text
     | CTRL-@		                 |  insert previously inserted text and stop Insert mode
 :white_check_mark: | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
     | CTRL-N		                 |  insert next match of identifier before the cursor
@@ -307,7 +307,7 @@ Status | Command | Description
 :white_check_mark:   | :1234:  y{motion}	| yank the text moved over with {motion} into a register
 :white_check_mark:   |    {visual}y	| yank the highlighted text into a register
 :white_check_mark:   | :1234:  yy		| yank N lines into a register
-:warning: :red_circle:   | :1234:  Y		| yank N lines into a register
+:white_check_mark:   | :1234:  Y		| yank N lines into a register
 :white_check_mark:   | :1234:  p		| put a register after the cursor position (N times)
 :white_check_mark:   | :1234:  P		| put a register before the cursor position (N times)
 :white_check_mark:   | :1234:  ]p		| like p, but adjust indent to current line
@@ -337,8 +337,7 @@ Status | Command | Description
     | :1234:  s		| change N characters
     |    {visual}c	| in Visual block mode: Change each of the selected lines with the entered text
     |    {visual}C	| in Visual block mode: Change each of the selected lines until end-of-line with the entered text
-:warning:  :red_circle:  | :1234:  ~		| switch case for N characters and advance cursor
-:white_check_mark:  |    {visual}~	| switch case for highlighted text
+:white_check_mark:	| switch case for highlighted text
 :white_check_mark:  |    {visual}u	| make highlighted text lowercase
 :white_check_mark:  |    {visual}U	| make highlighted text uppercase
 :white_check_mark:  |    g~{motion}     | switch case for the text that is moved over with {motion}
