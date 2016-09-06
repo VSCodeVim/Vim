@@ -164,6 +164,11 @@ export abstract class BaseMovement extends BaseAction {
   }
 
   /**
+   * Whether this action has violated general principal doing no real movement.
+   */
+  public hasUpdatedView = false;
+
+  /**
    * Whether we should change desiredColumn in VimState.
    */
   public doesntChangeDesiredColumn = false;
@@ -1842,6 +1847,15 @@ class MoveUp extends BaseMovement {
     });
     const nextLine = vscode.window.activeTextEditor.selection.active.line;
     const nextLineLength = Position.getLineLength(nextLine);
+    const desiredColumn = Math.min(nextLineLength, vimState.desiredColumn);
+    const currentColumn = vscode.window.activeTextEditor.selection.active.character;
+    // await vscode.commands.executeCommand("cursorMove", {
+    //   to: "left",
+    //   by: "character",
+    //   select: select,
+    //   value: currentColumn
+    // });
+    this.hasUpdatedView = true;
     return new Position(nextLine, Math.min(nextLineLength, vimState.desiredColumn));
   }
 }
@@ -1869,6 +1883,7 @@ class MoveDown extends BaseMovement {
       select: select,
       value: count
     });
+    this.hasUpdatedView = true;
     const nextLine = vscode.window.activeTextEditor.selection.active.line;
     const nextLineLength = Position.getLineLength(nextLine);
     return new Position(nextLine, Math.min(nextLineLength, vimState.desiredColumn));

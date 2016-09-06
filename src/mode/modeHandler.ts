@@ -697,8 +697,10 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // Update view
-    await this.updateView(vimState);
+    if (!(movement && movement.hasUpdatedView)) {
+      // Update view
+      await this.updateView(vimState);
+    }
 
     return vimState;
   }
