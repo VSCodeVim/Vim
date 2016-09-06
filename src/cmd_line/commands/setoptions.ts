@@ -80,6 +80,12 @@ export class SetOptionsCommand extends node.CommandBase {
       case SetOptionOperator.Invert:
         Configuration.getInstance()[this._arguments.name] = !Configuration.getInstance()[this._arguments.name];
         break;
+      case SetOptionOperator.Append:
+        Configuration.getInstance()[this._arguments.name] += this._arguments.value!;
+        break;
+      case SetOptionOperator.Subtract:
+        Configuration.getInstance()[this._arguments.name] -= this._arguments.value! as number;
+        break;
       default:
         break;
     }

@@ -434,22 +434,22 @@ Status | Command | Description
 
 ## options
 
-Status | Command | Description
----|--------|------------------------------
+Status | Command | Description | Note
+---|--------|---------|---------------------
     | :se[t]              | show all modified options
     | :se[t] all		  | show all non-termcap options
     | :se[t] termcap      | show all termcap options
 :white_check_mark: | :se[t] {option}	  | set boolean option (switch it on), show string or number option
 :white_check_mark: | :se[t] no{option}	  | reset boolean option (switch it off)
-    | :se[t] inv{option}  |invert boolean option
+:white_check_mark: | :se[t] inv{option}  |invert boolean option
 :white_check_mark: | :se[t] {option}={value} | set string/number option to {value}
-    | :se[t] {option}+={value} | append {value} to string option, add {value} to number option
-    | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option
+:white_check_mark: | :se[t] {option}+={value} | append {value} to string option, add {value} to number option
+:warning: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here yet.
     | :se[t] {option}?	  | show value of {option}
     | :se[t] {option}&	  | reset {option} to its default value
     | :setl[ocal]		  | like ":set" but set the local value for options that have one
     | :setg[lobal]		  | like ":set" but set the global value of a local option
-    | :fix[del]		      | set value of 't_kD' according to value of 't_kb'
+:arrow_down: | :fix[del]		      | set value of 't_kD' according to value of 't_kb'
     | :opt[ions]		  | open a new window to view and set options, grouped by functionality, a one line explanation and links to the help
 
 Since the list is too long, now we just put those already supported options here.
