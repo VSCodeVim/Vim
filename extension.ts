@@ -132,6 +132,11 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
 
+    if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
+      await vscode.commands.executeCommand("default:type", args);
+      return;
+    }
+
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -148,6 +153,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerCommand(context, 'replacePreviousChar', async (args) => {
     if (!vscode.window.activeTextEditor) {
+      return;
+    }
+
+    if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
+      await vscode.commands.executeCommand("default:replacePreviousChar", args);
       return;
     }
 
@@ -175,6 +185,11 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
 
+    if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
+      await vscode.commands.executeCommand("default:compositionStart", args);
+      return;
+    }
+
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -186,6 +201,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerCommand(context, 'compositionEnd', async (args) => {
     if (!vscode.window.activeTextEditor) {
+      return;
+    }
+
+    if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
+      await vscode.commands.executeCommand("default:compositionEnd", args);
       return;
     }
 
@@ -244,16 +264,23 @@ async function handleActiveEditorChange(): Promise<void> {
     return;
   }
 
-  taskQueue.enqueueTask({
-    promise: async () => {
-      if (vscode.window.activeTextEditor !== undefined) {
-        const mh = await getAndUpdateModeHandler();
+  if (vscode.window.activeTextEditor !== undefined) {
+    if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
+      vscode.commands.executeCommand('setContext', 'vim.debugInput', true);
+    } else {
+      vscode.commands.executeCommand("setContext", "vim.debugInput", false);
+      taskQueue.enqueueTask({
+        promise: async () => {
+          if (vscode.window.activeTextEditor !== undefined) {
+            const mh = await getAndUpdateModeHandler();
 
-        mh.updateView(mh.vimState, false);
-      }
-    },
-    isRunning: false
-  });
+            mh.updateView(mh.vimState, false);
+          }
+        },
+        isRunning: false
+      });
+    }
+  }
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
