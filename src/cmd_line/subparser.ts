@@ -2,6 +2,7 @@
 
 import {parseQuitCommandArgs} from './subparsers/quit';
 import {parseWriteCommandArgs} from './subparsers/write';
+import {parseWallCommandArgs} from './subparsers/wall';
 import {parseWriteQuitCommandArgs} from './subparsers/writequit';
 import * as tabCmd from './subparsers/tab';
 import * as fileCmd from './subparsers/file';
@@ -12,6 +13,9 @@ import {parseSubstituteCommandArgs} from './subparsers/substitute';
 export const commandParsers = {
   w: parseWriteCommandArgs,
   write: parseWriteCommandArgs,
+
+  wa: parseWallCommandArgs,
+  wall: parseWallCommandArgs,
 
   quit: parseQuitCommandArgs,
   q: parseQuitCommandArgs,
