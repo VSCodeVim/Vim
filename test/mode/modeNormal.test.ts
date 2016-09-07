@@ -213,6 +213,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'cw' without removing EOL",
+      start: ['|text;', 'text'],
+      keysPressed: 'llllcw',
+      end: ['text|', 'text'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 's'",
       start: ['tex|t'],
       keysPressed: '^sk',

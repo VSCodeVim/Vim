@@ -90,9 +90,9 @@ export class BaseAction {
    * Can this action be paired with an operator (is it like w in dw)? All
    * BaseMovements can be, and some more sophisticated commands also can be.
    */
-  isMotion = false;
+  public isMotion = false;
 
-  canBeRepeatedWithDot = false;
+  public canBeRepeatedWithDot = false;
 
   /**
    * Modes that this action can be run in.
@@ -2156,18 +2156,15 @@ class MoveLineBegin extends BaseMovement {
 abstract class MoveByScreenLine extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   movementType: string;
-  /**
-   * This parameter is used only when to is lineUp or lineDown.
-   * For other screen line movements, we are always operating on the same screen line.
-   * So we make its default value as 0.
-   */
-  noOfLines = 0;
+  by: string;
+  value: number = 1;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
       select: vimState.currentMode !== ModeName.Normal,
-      noOfLines: this.noOfLines
+      by: this.by,
+      value: this.value
     });
 
     if (vimState.currentMode === ModeName.Normal) {
@@ -2187,8 +2184,9 @@ abstract class MoveByScreenLine extends BaseMovement {
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
-      inSelectionMode: true,
-      noOfLines: this.noOfLines
+      select: true,
+      by: this.by,
+      value: this.value
     });
 
     return {
@@ -2240,7 +2238,8 @@ class MoveUpByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "k"];
   movementType = "up";
-  noOfLines = 1;
+  by = "wrappedLine";
+  value = 1;
 }
 
 @RegisterAction
@@ -2248,18 +2247,20 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "j"];
   movementType = "down";
-  noOfLines = 1;
+  by = "wrappedLine";
+  value = 1;
 }
 
 @RegisterAction
 class MoveToLineFromViewPortTop extends MoveByScreenLine {
   keys = ["H"];
   movementType = "viewPortTop";
-  noOfLines = 1;
+  by = "line";
+  value = 1;
   canBePrefixedWithCount = true;
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    this.noOfLines = count < 1 ? 1 : count;
+    this.value = count < 1 ? 1 : count;
     return await this.execAction(position, vimState);
   }
 }
@@ -2268,20 +2269,21 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
 class MoveToLineFromViewPortBottom extends MoveByScreenLine {
   keys = ["L"];
   movementType = "viewPortBottom";
-  noOfLines = 1;
+  by = "line";
+  value = 1;
   canBePrefixedWithCount = true;
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    this.noOfLines = count < 1 ? 1 : count;
+    this.value = count < 1 ? 1 : count;
     return await this.execAction(position, vimState);
   }
 }
 
 @RegisterAction
-class MoveToViewPortCenter extends MoveScreenLineBegin {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+class MoveToMiddleLineInViewPort extends MoveByScreenLine {
   keys = ["M"];
   movementType = "viewPortCenter";
+  by = "line";
 }
 
 @RegisterAction
@@ -2357,7 +2359,7 @@ export class MoveWordBegin extends BaseMovement {
       on a non-blank.  This is because "cw" is interpreted as change-word, and a
       word does not include the following white space.
       */
-      return position.getCurrentWordEnd().getRight();
+      return position.getCurrentWordEnd(true).getRight();
     } else {
       return position.getWordRight();
     }
@@ -2742,9 +2744,13 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
   keys = ["I"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
+      vimState.cursorPosition = vimState.cursorPosition.getRight();
+    }
+
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
-
+    vimState.cursorPosition = vimState.cursorPosition.getLeft();
     return vimState;
   }
 }
@@ -2799,14 +2805,13 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   keys = ["A"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.cursorPosition.character >= vimState.cursorStartPosition.character) {
+    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
       vimState.cursorPosition = vimState.cursorPosition.getRight();
-    } else {
-      vimState.cursorStartPosition = vimState.cursorStartPosition.getRight();
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Append;
+    vimState.cursorPosition = vimState.cursorPosition.getRight();
 
     return vimState;
   }
@@ -2860,7 +2865,11 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 
         posChange = -1;
       } else {
-        await TextEditor.insert(this.keysPressed[0], insertPos);
+        if (vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Append) {
+          await TextEditor.insert(this.keysPressed[0], insertPos.getLeft());
+        } else {
+          await TextEditor.insert(this.keysPressed[0], insertPos);
+        }
 
         posChange = 1;
       }
