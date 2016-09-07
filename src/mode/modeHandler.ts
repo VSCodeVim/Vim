@@ -1020,7 +1020,7 @@ export class ModeHandler implements vscode.Disposable {
             break;
 
           case "deleteText":
-            edit.delete(new vscode.Range(command.position, command.position.getLeft()));
+            edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
             break;
         }
       }
