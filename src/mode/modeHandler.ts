@@ -101,7 +101,7 @@ export class VimState {
    */
   public allCursors: Range[] = [ new Range(new Position(0, 0), new Position(0, 0)) ];
 
-  public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
+  public cursorPositionJustBeforeAnythingHappened = [ new Position(0, 0) ];
 
   public searchState: SearchState | undefined = undefined;
 
@@ -680,7 +680,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   async handleKeyEvent(key: string): Promise<Boolean> {
-    this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
+    this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
 
     try {
       let handled = false;
@@ -763,6 +763,10 @@ export class ModeHandler implements vscode.Disposable {
 
     // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
     // this needs to happen before any changes are made
+
+    /*
+    TODO
+
     let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
     if (prevPos !== undefined) {
       if (vimState.cursorPositionJustBeforeAnythingHappened.line !== prevPos.line ||
@@ -771,6 +775,7 @@ export class ModeHandler implements vscode.Disposable {
         vimState.historyTracker.finishCurrentStep();
       }
     }
+    */
 
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
@@ -876,7 +881,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Update the current history step to have the latest cursor position incase it is needed
-    vimState.historyTracker.setLastHistoryEndPosition(vimState.cursorPosition);
+    vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
 
     return vimState;
   }
@@ -1003,6 +1008,10 @@ export class ModeHandler implements vscode.Disposable {
 
   private async executeCommand(vimState: VimState): Promise<VimState> {
     const transformations = vimState.recordedState.transformations;
+
+    if (transformations.length === 0) {
+      return vimState;
+    }
 
     const isTextTransformation = (x: string) => {
       return x === 'insertText' ||

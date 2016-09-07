@@ -1032,7 +1032,7 @@ export class YankOperator extends BaseOperator {
         vimState.cursorStartPosition = start;
 
       if (originalMode === ModeName.Normal) {
-        vimState.cursorPosition = vimState.cursorPositionJustBeforeAnythingHappened;
+        vimState.allCursors = vimState.cursorPositionJustBeforeAnythingHappened.map(x => new Range(x, x));
       } else {
         vimState.cursorPosition = start;
       }
@@ -1604,13 +1604,15 @@ class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
 class CommandUndo extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["u"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const newPosition = await vimState.historyTracker.goBackHistoryStep();
+    const newPositions = await vimState.historyTracker.goBackHistoryStep();
 
-    if (newPosition !== undefined) {
-      vimState.cursorPosition = newPosition;
+    if (newPositions !== undefined) {
+      vimState.allCursors = newPositions.map(x => new Range(x, x));
     }
+
     vimState.alteredHistory = true;
     return vimState;
   }
@@ -1620,13 +1622,15 @@ class CommandUndo extends BaseCommand {
 class CommandRedo extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["<C-r>"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const newPosition = await vimState.historyTracker.goForwardHistoryStep();
+    const newPositions = await vimState.historyTracker.goForwardHistoryStep();
 
-    if (newPosition !== undefined) {
-      vimState.cursorPosition = newPosition;
+    if (newPositions !== undefined) {
+      vimState.allCursors = newPositions.map(x => new Range(x, x));
     }
+
     vimState.alteredHistory = true;
     return vimState;
   }
