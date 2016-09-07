@@ -551,10 +551,11 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
     const tabSize = Configuration.getInstance().tabstop;
     const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
-    const result = TextEditor.setIndentationLevel(originalText, newIndentationWidth);
-    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()), TextEditor.setIndentationLevel(originalText, newIndentationWidth));
+    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
+      TextEditor.setIndentationLevel(originalText, newIndentationWidth));
 
-    const cursorPosition = Position.FromVSCodePosition(position.with(position.line, position.character + (newIndentationWidth - indentationWidth) / tabSize));
+    const cursorPosition = Position.FromVSCodePosition(position.with(position.line,
+      position.character + (newIndentationWidth - indentationWidth) / tabSize));
     vimState.cursorPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     vimState.currentMode = ModeName.Insert;
@@ -577,9 +578,11 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
 
     const tabSize = Configuration.getInstance().tabstop;
     const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
-    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()), TextEditor.setIndentationLevel(originalText, newIndentationWidth < 0 ? 0: newIndentationWidth));
+    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
+      TextEditor.setIndentationLevel(originalText, newIndentationWidth < 0 ? 0 : newIndentationWidth));
 
-    const cursorPosition = Position.FromVSCodePosition(position.with(position.line, position.character + (newIndentationWidth - indentationWidth) / tabSize ));
+    const cursorPosition = Position.FromVSCodePosition(position.with(position.line,
+      position.character + (newIndentationWidth - indentationWidth) / tabSize ));
     vimState.cursorPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     vimState.currentMode = ModeName.Insert;
