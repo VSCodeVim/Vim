@@ -1,6 +1,5 @@
 import { VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
-import { processInsertionsAndDeletions, InsertTextTransformation } from './../transformations/transformations';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
 import { TextEditor } from './../textEditor';
 import { Range } from './../motion/range';
@@ -311,14 +310,7 @@ export abstract class BaseCommand extends BaseAction {
       ));
     }
 
-    let result = processInsertionsAndDeletions(vimState.recordedState.transformations);
-
-    if (result) {
-      vimState.recordedState.transformations = result.modifiedTransformations;
-      vimState.allCursors = result.newCursorPositions;
-    } else {
-      vimState.allCursors = resultingCursors;
-    }
+    vimState.allCursors = resultingCursors;
 
     return vimState;
   }

@@ -1002,20 +1002,37 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async executeCommand(vimState: VimState): Promise<VimState> {
-    for (const command of vimState.recordedState.transformations) {
-      switch (command.type) {
-        case "insertText":
-          await TextEditor.insert(command.text, command.associatedCursor, false);
-          break;
+    const transformations = vimState.recordedState.transformations;
 
+    const isTextTransformation = (x: string) => {
+      return x === 'insertText' ||
+             x === 'deleteText';
+    };
+
+    const textTransformations  = transformations.filter(x => isTextTransformation(x.type));
+    const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
+
+    await vscode.window.activeTextEditor.edit(edit => {
+      for (const command of transformations) {
+        switch (command.type) {
+          case "insertText":
+            edit.insert(command.associatedCursor, command.text);
+            break;
+
+          case "deleteText":
+            edit.delete(new vscode.Range(command.position, command.position.getLeft()));
+            break;
+        }
+      }
+    });
+
+    for (const command of otherTransformations) {
+      switch (command.type) {
         case "insertTextVSCode":
           await TextEditor.insert(command.text);
 
           vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
           vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
-          break;
-        case "deleteText":
-          await TextEditor.backspace(command.position);
           break;
 
         case "showCommandLine":
@@ -1037,6 +1054,11 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vimState.recordedState.transformations = [];
+    vimState.allCursors = [];
+
+    for (const sel of vscode.window.activeTextEditor.selections) {
+      vimState.allCursors.push(Range.FromVSCodeSelection(sel));
+    }
 
     return vimState;
   }
