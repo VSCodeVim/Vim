@@ -42,7 +42,7 @@ export class Register {
    * register ".
    */
   public static put(content: string | string[], vimState: VimState): void {
-    const register = vimState.recordedState.registerName;
+    let register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
@@ -50,6 +50,27 @@ export class Register {
 
     if (register === '*') {
       clipboard.copy(content);
+    }
+
+    // Upper-case register name denotes append.
+    if (/^[A-Z]$/.test(register)) {
+     register = register.toLowerCase();
+     let existingText = Register.registers[register] && Register.registers[register].text;
+     if (existingText) {
+      if (typeof content === 'string') {
+        if (typeof existingText === 'string') {
+          content = existingText + (existingText.endsWith('\n') ? '' : '\n') + content;
+        } else {
+          content = existingText.join('\n') + '\n' + content;
+        }
+      } else {
+        if (typeof existingText === 'string') {
+          content = existingText.split('\n').concat(content);
+        } else {
+          content = existingText.concat(content);
+        }
+      }
+     }
     }
 
     Register.registers[register] = {
@@ -63,10 +84,15 @@ export class Register {
    * register ".
    */
   public static async get(vimState: VimState): Promise<IRegisterContent> {
-    const register = vimState.recordedState.registerName;
+    let register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
+    }
+
+    // Register names are case-insensitive.
+    if (/^[A-Z]$/.test(register)) {
+      register = register.toLowerCase();
     }
 
     if (!Register.registers[register]) {

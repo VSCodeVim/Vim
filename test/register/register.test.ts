@@ -48,4 +48,18 @@ suite("register", () => {
     end: ["one", "two", "one", "|two"],
   });
 
+  newTest({
+    title: "Can append content to register",
+    start: ['|one', "two"],
+    keysPressed: '"ayyj"Ayy$"ap',
+    end: ["one", "two", "|one", "two"],
+  });
+
+  newTest({
+    title: "Can replace register contents after append",
+    start: ['|one', "two", "three"],
+    keysPressed: '"ayyj"Ayyj"ayy$"ap',
+    end: ["one", "two", "three", "|three"],
+  });
+
 });
