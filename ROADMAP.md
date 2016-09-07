@@ -14,8 +14,6 @@
 
 :1234: - command accepts numeric prefix
 
-:red_circle: - command assessment needs review
-
 ## Roadmap
 
 These are the big Vim features, put generally in the order in which we plan to implement them.
@@ -332,14 +330,14 @@ Status | Command | Description | Note
 
 Status | Command | Description
 ---|--------|------------------------------
-:warning: :red_circle:   | :1234:  c{motion}	| change the text that is moved over with {motion}
-:white_check_mark:    |    {visual}c	| change the highlighted text
-:warning: :red_circle:   | :1234:  cc	| 	change N lines
-:warning: :red_circle:   | :1234:  S		| change N lines
-:warning:  :red_circle:  | :1234:  C		| change to the end of the line (and N-1 more lines)
-    | :1234:  s		| change N characters
-    |    {visual}c	| in Visual block mode: Change each of the selected lines with the entered text
-    |    {visual}C	| in Visual block mode: Change each of the selected lines until end-of-line with the entered text
+:white_check_mark:  | :1234:  c{motion}	| change the text that is moved over with {motion}
+:white_check_mark:  | {visual}c	| change the highlighted text
+:white_check_mark:  | :1234:  cc	| 	change N lines
+:white_check_mark:  | :1234:  S		| change N lines
+:white_check_mark:  | :1234:  C		| change to the end of the line (and N-1 more lines)
+:white_check_mark:  | :1234:  s		| change N characters
+:white_check_mark:  | {visual}c	| in Visual block mode: Change each of the selected lines with the entered text
+:white_check_mark:  |    {visual}C	| in Visual block mode: Change each of the selected lines until end-of-line with the entered text
 :white_check_mark:	| switch case for highlighted text
 :white_check_mark:  |    {visual}u	| make highlighted text lowercase
 :white_check_mark:  |    {visual}U	| make highlighted text uppercase
@@ -357,7 +355,7 @@ Status | Command | Description
 :arrow_down:| :1234:  gq{motion}|	format the lines that are moved over with {motion} to 'textwidth' length
 :arrow_down:| :[range]ce[nter] [width] | center the lines in [range]
 :arrow_down:| :[range]le[ft] [indent]  | left-align the lines in [range] (with [indent])
-:arrow_down:| :[range]ri[ght] [width]  | right-align the lines in [range]
+:arrow_down:| :[ranee]ri[ght] [width]  | right-align the lines in [range]
 
 ## Complex changes
 
@@ -439,19 +437,19 @@ Status | Command | Description
 
 Status | Command | Description | Note
 ---|--------|---------|---------------------
-:red_circle:    | :se[t]              | show all modified options
-:red_circle:    | :se[t] all		  | show all non-termcap options
-:red_circle:    | :se[t] termcap      | show all termcap options
+:arrow_down:    | :se[t]              | show all modified options
+:arrow_down:    | :se[t] all		  | show all non-termcap options
+:arrow_down:    | :se[t] termcap      | show all termcap options
 :white_check_mark: | :se[t] {option}	  | set boolean option (switch it on), show string or number option
 :white_check_mark: | :se[t] no{option}	  | reset boolean option (switch it off)
 :white_check_mark: | :se[t] inv{option}  |invert boolean option
 :white_check_mark: | :se[t] {option}={value} | set string/number option to {value}
 :white_check_mark: | :se[t] {option}+={value} | append {value} to string option, add {value} to number option
 :running: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here yet.
-:red_circle:    | :se[t] {option}?	  | show value of {option}
-:red_circle:    | :se[t] {option}&	  | reset {option} to its default value
-:red_circle:    | :setl[ocal]		  | like ":set" but set the local value for options that have one
-:red_circle:    | :setg[lobal]		  | like ":set" but set the global value of a local option
+    | :se[t] {option}?	  | show value of {option}
+:arrow_down:    | :se[t] {option}&	  | reset {option} to its default value
+:arrow_down:    | :setl[ocal]		  | like ":set" but set the local value for options that have one
+:arrow_down:    | :setg[lobal]		  | like ":set" but set the global value of a local option
 :arrow_down: | :fix[del]		      | set value of 't_kD' according to value of 't_kb'
 :arrow_down:    | :opt[ions]		  | open a new window to view and set options, grouped by functionality, a one line explanation and links to the help
 

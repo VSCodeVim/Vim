@@ -2953,7 +2953,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 @RegisterAction
 class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ["C"];
+keys = ["C"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const deleteOperator = new DeleteOperator();
