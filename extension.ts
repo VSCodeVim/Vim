@@ -265,21 +265,16 @@ async function handleActiveEditorChange(): Promise<void> {
   }
 
   if (vscode.window.activeTextEditor !== undefined) {
-    if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
-      vscode.commands.executeCommand('setContext', 'vim.debugInput', true);
-    } else {
-      vscode.commands.executeCommand("setContext", "vim.debugInput", false);
-      taskQueue.enqueueTask({
-        promise: async () => {
-          if (vscode.window.activeTextEditor !== undefined) {
-            const mh = await getAndUpdateModeHandler();
+    taskQueue.enqueueTask({
+      promise: async () => {
+        if (vscode.window.activeTextEditor !== undefined) {
+          const mh = await getAndUpdateModeHandler();
 
-            mh.updateView(mh.vimState, false);
-          }
-        },
-        isRunning: false
-      });
-    }
+          mh.updateView(mh.vimState, false);
+        }
+      },
+      isRunning: false
+    });
   }
 }
 
