@@ -597,9 +597,6 @@ export class ModeHandler implements vscode.Disposable {
           }
         } else {
           if (this._vimState.currentMode !== ModeName.Insert) {
-            // Clear out the actions that were run that caused this mode to transition.
-            // This is mostly for commands that need to be the first key (i, a, etc.) will get triggered properly after this
-            this._vimState.recordedState.actionsRun = [];
             this._vimState.currentMode = ModeName.Normal;
             this.setCurrentModeByName(this._vimState);
           }
@@ -617,10 +614,16 @@ export class ModeHandler implements vscode.Disposable {
     return this._modes.find(mode => mode.isActive);
   }
 
-  setCurrentModeByName(vimState: VimState) {
+  setCurrentModeByName(vimState: VimState, resetActions: boolean = true) {
     let activeMode: Mode;
 
     this._vimState.currentMode = vimState.currentMode;
+
+    // Clear out the actions that were run that caused this mode to transition.
+    // This is mostly for commands that need to be the first key (i, a, etc.) will get triggered properly after this
+    if (resetActions) {
+      this._vimState.recordedState.actionsRun = [];
+    }
 
     for (let mode of this._modes) {
       if (mode.name === vimState.currentMode) {
@@ -748,8 +751,7 @@ export class ModeHandler implements vscode.Disposable {
     // then return and have the motion immediately applied to an operator).
 
     if (vimState.currentMode !== this.currentModeName) {
-      this.setCurrentModeByName(vimState);
-
+      this.setCurrentModeByName(vimState, false);
       if (vimState.currentMode === ModeName.Normal) {
         ranRepeatableAction = true;
       }
@@ -767,8 +769,7 @@ export class ModeHandler implements vscode.Disposable {
     // have changed it as well. (TODO: do you even decomposition bro)
 
     if (vimState.currentMode !== this.currentModeName) {
-      this.setCurrentModeByName(vimState);
-
+      this.setCurrentModeByName(vimState, false);
       if (vimState.currentMode === ModeName.Normal) {
         ranRepeatableAction = true;
       }
