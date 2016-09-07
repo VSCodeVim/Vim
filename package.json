@@ -206,7 +206,13 @@
                     "type": "boolean",
                     "description": "When there is a previous search pattern, highlight all its matches.",
                     "default": false
+                },
+                "vim.autoindent": {
+                    "type": "boolean",
+                    "description": "Copy indent from current line when starting a new line.",
+                    "default": true
                 }
+
             }
         }
     },
