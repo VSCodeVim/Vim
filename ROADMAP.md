@@ -2,7 +2,11 @@
 
 :white_check_mark: - command done
 
-:warning: - command partially implemented
+:white_check_mark: :star: - command done with VS Code specific customization
+
+:warning: - some variations of the command are not supported
+
+:running: work in progress
 
 :arrow_down: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
 
@@ -111,12 +115,12 @@ Status | Command | Description
 
 Status | Command | Description | Note
 ---|--------|------------|------------------
-:warning: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
-:warning: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
-:warning: | :1234: `/<CR>` | repeat last search, in the forward direction | {count} is not supported yet.
-:warning: | :1234: `?<CR>` | repeat last search, in the backward direction | {count} is not supported yet.
-:warning: | :1234: n | repeat last search | {count} is not supported yet.
-:warning: | :1234: N | repeat last search, in opposite direction | {count} is not supported yet.
+:white_check_mark: :star: | :1234: `/{pattern}[/[offset]]<CR>` | search forward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
+:white_check_mark: :star: | :1234: `?{pattern}[?[offset]]<CR>` | search backward for the Nth occurrence of {pattern} | Currently we only support JavaScript Regex but not Vim's in-house Regex engine.
+:warning: | :1234: `/<CR>` | repeat last search, in the forward direction | {count} is not supported.
+:warning: | :1234: `?<CR>` | repeat last search, in the backward direction | {count} is not supported.
+:warning: | :1234: n | repeat last search | {count} is not supported.
+:warning: | :1234: N | repeat last search, in opposite direction | {count} is not supported.
 :white_check_mark: | :1234: * | search forward for the identifier under the cursor
 :white_check_mark: | :1234: # | search backward for the identifier under the cursor
 :arrow_down: | :1234: g* | like "*", but also find partial matches
@@ -184,24 +188,24 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:x:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
-:warning:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
-:x:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
-  :x:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
-:warning:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
-:x:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
-:x:    |    z CR or zt	| redraw, current line at top of window
-:warning: |    z.	 or zz	| redraw, current line at center of window
-:x:    |    z-	 or zb	| redraw, current line at bottom of window
+:running:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
+:running:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
+:running:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
+:running:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
+:running:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
+:running:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
+:running:    |    z CR or zt	| redraw, current line at top of window
+:running: |    z.	 or zz	| redraw, current line at center of window
+:running:    |    z-	 or zb	| redraw, current line at bottom of window
 
 These only work when 'wrap' is off:
 
 Status | Command | Description
 ---|--------|------------------------------
-  :x:  | :1234:  zh	|	scroll screen N characters to the right
- :x:   | :1234:  zl	|	scroll screen N characters to the left
-  :x:  | :1234:  zH	|	scroll screen half a screenwidth to the right
-:x:   | :1234:  zL	|	scroll screen half a screenwidth to the left
+  :running:  | :1234:  zh	|	scroll screen N characters to the right
+ :running:   | :1234:  zl	|	scroll screen N characters to the left
+  :running:  | :1234:  zH	|	scroll screen half a screenwidth to the right
+:running:   | :1234:  zL	|	scroll screen half a screenwidth to the left
 
 ## Inserting text
 
@@ -245,7 +249,6 @@ Status | Command | Description
 ## Special keys in Insert mode
 
 Status | Command | Description | Note
----|--------|------------|------------------
 :warning:    |CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
 :warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line
 :white_check_mark: | CTRL-E		                 |  insert the character from below the cursor
@@ -253,9 +256,9 @@ Status | Command | Description | Note
    | CTRL-A		                 |  insert previously inserted text
     | CTRL-@		                 |  insert previously inserted text and stop Insert mode
 :white_check_mark: | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
-    | CTRL-N		                 |  insert next match of identifier before the cursor
-    | CTRL-P		                 |  insert previous match of identifier before the cursor
-    | CTRL-X ...	                 |  complete the word before the cursor in various ways
+:arrow_down:| CTRL-N		                 |  insert next match of identifier before the cursor
+:arrow_down:| CTRL-P		                 |  insert previous match of identifier before the cursor
+:arrow_down:| CTRL-X ...	                 |  complete the word before the cursor in various ways
 :white_check_mark: | BS or CTRL-H	                 |  delete the character before the cursor
 :white_check_mark: | Del		                 |  delete the character under the cursor
 :white_check_mark: | CTRL-W		                 |  delete word before the cursor
@@ -263,7 +266,7 @@ Status | Command | Description | Note
 :white_check_mark: | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
 :white_check_mark: | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
    | 0 CTRL-D	                 |  delete all indent in the current line
-    | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
+   | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
 
 ## Digraphs
 
@@ -300,7 +303,7 @@ Status | Command | Description
 
 Status | Command | Description | Note
 ---|--------|-------------|-----------------
-:warning:  | "{char}	        | use register {char} for the next delete, yank, or put | read only registers are not supported yet
+:running:  | "{char}	        | use register {char} for the next delete, yank, or put | read only registers are not supported yet
 :white_check_mark:   | "*	        | use register `*` to access system clipboard
    | :reg		| show the contents of all registers
    | :reg {arg}	        | show the contents of registers mentioned in {arg}
@@ -319,9 +322,9 @@ Status | Command | Description | Note
 
 Status | Command | Description | Note
 ---|--------|------------|------------------
-:warning: | :1234:  r{char}	| replace N characters with {char} | {count} is not supported yet
+:running: | :1234:  r{char}	| replace N characters with {char} | {count} is not supported yet
 :arrow_down:| :1234:  gr{char}	| replace N characters without affecting layout
-:warning: | :1234:  R		| enter Replace mode (repeat the entered text N times) | {count} is not supported yet
+:running: | :1234:  R		| enter Replace mode (repeat the entered text N times) | {count} is not supported yet
 :arrow_down:| :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
 :arrow_down:|  {visual}r{char} | in Visual block mode: Replace each char of the selected text with {char}
 
@@ -367,7 +370,7 @@ Status | Command | Description | Note
 :white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
 :arrow_down:| :1234:  ==	                 |    filter N lines through 'equalprg'
 :white_check_mark:  |    {visual}=                | filter the highlighted lines through 'equalprg'
-:warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement | Currently we only support JavaScript Regex and only options `gi` are implemented
+:white_check_mark: :star: :warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement | Currently we only support JavaScript Regex and only options `gi` are implemented
 :arrow_down:| :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
 :arrow_down:|    &		| Repeat previous ":s" on current line without options
 :arrow_down:| :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
@@ -436,21 +439,21 @@ Status | Command | Description
 
 Status | Command | Description | Note
 ---|--------|---------|---------------------
-    | :se[t]              | show all modified options
-    | :se[t] all		  | show all non-termcap options
-    | :se[t] termcap      | show all termcap options
+:red_circle:    | :se[t]              | show all modified options
+:red_circle:    | :se[t] all		  | show all non-termcap options
+:red_circle:    | :se[t] termcap      | show all termcap options
 :white_check_mark: | :se[t] {option}	  | set boolean option (switch it on), show string or number option
 :white_check_mark: | :se[t] no{option}	  | reset boolean option (switch it off)
 :white_check_mark: | :se[t] inv{option}  |invert boolean option
 :white_check_mark: | :se[t] {option}={value} | set string/number option to {value}
 :white_check_mark: | :se[t] {option}+={value} | append {value} to string option, add {value} to number option
-:warning: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here yet.
-    | :se[t] {option}?	  | show value of {option}
-    | :se[t] {option}&	  | reset {option} to its default value
-    | :setl[ocal]		  | like ":set" but set the local value for options that have one
-    | :setg[lobal]		  | like ":set" but set the global value of a local option
+:running: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here yet.
+:red_circle:    | :se[t] {option}?	  | show value of {option}
+:red_circle:    | :se[t] {option}&	  | reset {option} to its default value
+:red_circle:    | :setl[ocal]		  | like ":set" but set the local value for options that have one
+:red_circle:    | :setg[lobal]		  | like ":set" but set the global value of a local option
 :arrow_down: | :fix[del]		      | set value of 't_kD' according to value of 't_kb'
-    | :opt[ions]		  | open a new window to view and set options, grouped by functionality, a one line explanation and links to the help
+:arrow_down:    | :opt[ions]		  | open a new window to view and set options, grouped by functionality, a one line explanation and links to the help
 
 Since the list is too long, now we just put those already supported options here.
 
@@ -471,8 +474,8 @@ Status | Command | Default Value | Description
 
 Status | Command | Description | Note
 ---|--------|-------|------------------------------
-:warning: | :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
-:warning: | :1234: CTRL-R |	redo last N undone changes | As above.
+:running: | :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
+:running: | :1234: CTRL-R |	redo last N undone changes | As above.
     | U | restore last changed line
 
 ## External commands
@@ -504,18 +507,18 @@ Status | Command | Description
 
 Status | Command | Description | Note
 ---|--------|------------------|-----------
-:warning:   | :e[dit] {file}  | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
+:white_check_mark: :star:   | :e[dit] {file}  | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
 
 ## Multi-window commands
 
 Status | Command | Description | Note
 ---|--------|-----------------|-------------
-:warning: | :e[dit] {file}  | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
-:warning: | &lt;ctrl-w&gt; hl  | Switching between windows. | As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
+:white_check_mark: :star: | :e[dit] {file}  | Edit {file}. | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.
+:white_check_mark: :star: | &lt;ctrl-w&gt; hl  | Switching between windows. | As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors.
 :x:   | :sp {file}  | Split current window in two. | VS Code doesn't support split Window horizontally.
-:warning: | :vsp {file}  | Split vertically current window in two. | VS Code only supports three vertical window at most and that's the limitation of this command.
+:white_check_mark: :star: | :vsp {file}  | Split vertically current window in two. | VS Code only supports three vertical window at most and that's the limitation of this command.
 :x:   | :new | Create a new window horizontally and start editing an empty file in it. | VS Code doesn't support split Window horizontally.
-:warning:   | :vne[w] | Create a new window vertically and start editing an empty file in it. | VS Code only supports three vertical window at most and that's the limitation of this command.
+:white_check_mark: :star:  | :vne[w] | Create a new window vertically and start editing an empty file in it. | VS Code only supports three vertical window at most and that's the limitation of this command.
 
 
 ## Tabs
@@ -529,12 +532,12 @@ Status | Command | Description | Note
     | {count}&lt;C-PageUp&gt;, {count}gT | Same as above
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
-:warning:  | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
-:warning:  | :[count]tabe[dit], :[count]tabnew | Same as above | [count] is not supported yet.
-:warning:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
+:running:  | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
+:running:  | :[count]tabe[dit], :[count]tabnew | Same as above | [count] is not supported yet.
+:running:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
 :arrow_down:| :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
-:warning:  | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}. | `!` is not supported yet.
-:warning:  | :tabo[nly][!] | Close all other tab pages. | `!` is not supported yet.
+:running:  | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}. | `!` is not supported yet.
+:running:  | :tabo[nly][!] | Close all other tab pages. | `!` is not supported yet.
 :white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
 :arrow_down:| :tabs	 | List the tab pages and the windows they contain. | You can always use Code's built-in shortcut: `cmd/ctrl+p`
 :arrow_down:| :tabd[o] {cmd} | Execute {cmd} in each tab page.
@@ -547,31 +550,31 @@ The folding method can be set with the 'foldmethod' option. This is currently no
 
 Status | Command | Description
 ---|--------|------------------------------
-:x: | zf{motion} or {Visual}zf | Operator to create a fold.
-:x: | zF | Create a fold for [count] lines.  Works like "zf".
-:x: | zd | Delete one fold at the cursor.
-:x: | zD | Delete folds recursively at the cursor.
-:x: | zE | Eliminate all folds in the window.
+:arrow_down: | zf{motion} or {Visual}zf | Operator to create a fold.
+:arrow_down: | zF | Create a fold for [count] lines.  Works like "zf".
+:arrow_down: | zd | Delete one fold at the cursor.
+:arrow_down: | zD | Delete folds recursively at the cursor.
+:arrow_down: | zE | Eliminate all folds in the window.
 :white_check_mark: | zo | Open one fold under the cursor.When a count is given, that many folds deep will be opened.
 :white_check_mark: | zO | Open all folds under the cursor recursively.
 :white_check_mark: | zc | Close one fold under the cursor.  When a count is given, that many folds deep are closed.
 :white_check_mark:| zC | Close all folds under the cursor recursively.
-:x: | za | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.
-:x: | zA | When on a closed fold: open it recursively. When on an open fold: close it recursively and set 'foldenable'.
-:x: | zv | View cursor line: Open just enough folds to make the line in which the cursor is located not folded.
-:x: | zx | Update folds: Undo manually opened and closed folds: re-apply 'foldlevel', then do "zv": View cursor line.
-:x: | zX | Undo manually opened and closed folds
-:x: | zm | Fold more: Subtract one from 'foldlevel'.
+:arrow_down: | za | When on a closed fold: open it. When on an open fold: close it and set 'foldenable'.
+:arrow_down: | zA | When on a closed fold: open it recursively. When on an open fold: close it recursively and set 'foldenable'.
+:arrow_down: | zv | View cursor line: Open just enough folds to make the line in which the cursor is located not folded.
+:arrow_down: | zx | Update folds: Undo manually opened and closed folds: re-apply 'foldlevel', then do "zv": View cursor line.
+:arrow_down: | zX | Undo manually opened and closed folds
+:arrow_down: | zm | Fold more: Subtract one from 'foldlevel'.
 :white_check_mark: | zM | Close all folds: set 'foldlevel' to 0. 'foldenable' will be set.
-:x: | zr | Reduce folding: Add one to 'foldlevel'.
+:arrow_down: | zr | Reduce folding: Add one to 'foldlevel'.
 :white_check_mark: | zR | Open all folds.  This sets 'foldlevel' to highest fold level.
- | zn | Fold none: reset 'foldenable'.  All folds will be open.
- | zN | Fold normal: set 'foldenable'.  All folds will be as they were before.
- | zi | Invert 'foldenable'.
-:x: | [z | Move to the start of the current open fold.
-:x: | ]z | Move to the end of the current open fold.
-:x: | zj | Move downwards to the start of the next fold.
-:x: | zk | Move upwards to the end of the previous fold.
+:arrow_down: | zn | Fold none: reset 'foldenable'.  All folds will be open.
+:arrow_down: | zN | Fold normal: set 'foldenable'.  All folds will be as they were before.
+:arrow_down: | zi | Invert 'foldenable'.
+:arrow_down: | [z | Move to the start of the current open fold.
+:arrow_down: | ]z | Move to the end of the current open fold.
+:arrow_down: | zj | Move downwards to the start of the next fold.
+:arrow_down: | zk | Move upwards to the end of the previous fold.
 
 ### Fold options
 
