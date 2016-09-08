@@ -1038,8 +1038,6 @@ export class YankOperator extends BaseOperator {
         vimState.cursorPosition = start;
       }
 
-      console.log('actions', start.toString());
-
       return vimState;
     }
 }
@@ -1926,7 +1924,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
     vimState.currentMode = ModeName.Insert;
     vimState.cursorPosition = new Position(
       position.line + 1,
-      TextEditor.getLineAt(new Position(position.line + 1, 0)).text.length);
+      0);
 
     return vimState;
   }
