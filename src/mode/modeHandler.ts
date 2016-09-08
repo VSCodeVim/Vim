@@ -568,8 +568,6 @@ export class ModeHandler implements vscode.Disposable {
       e.selections.length > this._vimState.allCursors.length) {
       // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
 
-      console.log('Changed number of cursors?');
-
       if (e.selections.length >= 2) {
         this._vimState.currentMode = ModeName.Visual;
         this._vimState.isMultiCursor = true;
@@ -860,8 +858,6 @@ export class ModeHandler implements vscode.Disposable {
       vimState.historyTracker.finishCurrentStep();
     }
 
-    // console.log(vimState.historyTracker.toString());
-
     recordedState.actionKeys = [];
     vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
@@ -870,6 +866,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Ensure cursor is within bounds
+
     for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
       if (stop.line >= TextEditor.getLineCount()) {
         vimState.allCursors[i].stop = vimState.cursorPosition.getDocumentEnd();
@@ -880,7 +877,7 @@ export class ModeHandler implements vscode.Disposable {
       if (vimState.currentMode === ModeName.Normal &&
           stop.character >= currentLineLength && currentLineLength > 0) {
 
-        vimState.allCursors[i].stop = stop.getLineEnd();
+        vimState.allCursors[i].stop = stop.getLineEnd().getLeft();
       }
     }
 
