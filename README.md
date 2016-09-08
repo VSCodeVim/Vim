@@ -124,7 +124,8 @@ The following is a subset of the supported configurations; the full list is desc
 On OS X, open Terminal and run the following command:
 
 ```
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false // For VSCode
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VSCode Insider
 ```
 
 ## Contributing
