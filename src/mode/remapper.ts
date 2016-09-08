@@ -77,6 +77,12 @@ class Remapper {
 
         vimState.isCurrentlyPreformingRemapping = false;
 
+        // Clear extra keys that were picked up by the remapper from the action recording
+        if (vimState.previousFullAction) {
+          let numToRemove = remapping.before.length - 1;
+          vimState.previousFullAction.actionsRun.splice(vimState.previousFullAction.actionsRun.length - numToRemove - 1, numToRemove);
+        }
+
         this._mostRecentKeys = [];
 
         return true;
