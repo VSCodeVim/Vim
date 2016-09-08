@@ -415,6 +415,49 @@ class CommandRegister extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertRegisterContent extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+r", "<character>"];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.registerName = this.keysPressed[1];
+    const register = await Register.get(vimState);
+    let text: string;
+
+    if (register.text instanceof Array) {
+       text = (register.text as string []).join("\n");
+    } else {
+       text = register.text;
+    }
+
+    if (register.registerMode === RegisterMode.LineWise) {
+      text += "\n";
+    }
+
+    await TextEditor.insertAt(text, position);
+    vimState.currentMode = ModeName.Insert;
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
+  }
+
+}
+
+@RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [
     ModeName.Insert,
@@ -478,12 +521,113 @@ class CommandCtrlE extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertBelowChar extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+e"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (TextEditor.isLastLine(position)) {
+      return vimState;
+    }
+
+    const charBelowCursorPosition = position.getDownByCount(1);
+
+    if (charBelowCursorPosition.isLineEnd()) {
+      return vimState;
+    }
+
+    const char = TextEditor.getText(new vscode.Range(charBelowCursorPosition, charBelowCursorPosition.getRight()));
+    await TextEditor.insert(char, position);
+
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandInsertIndentInCurrentLine extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<C-t>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const originalText = TextEditor.getLineAt(position).text;
+    const indentationWidth = TextEditor.getIndentationLevel(originalText);
+    const tabSize = Configuration.getInstance().tabstop;
+    const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
+    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
+      TextEditor.setIndentationLevel(originalText, newIndentationWidth));
+
+    const cursorPosition = Position.FromVSCodePosition(position.with(position.line,
+      position.character + (newIndentationWidth - indentationWidth) / tabSize));
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Insert;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandDeleteIndentInCurrentLine extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<C-d>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const originalText = TextEditor.getLineAt(position).text;
+    const indentationWidth = TextEditor.getIndentationLevel(originalText);
+
+    if (indentationWidth === 0) {
+      return vimState;
+    }
+
+    const tabSize = Configuration.getInstance().tabstop;
+    const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
+    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
+      TextEditor.setIndentationLevel(originalText, newIndentationWidth < 0 ? 0 : newIndentationWidth));
+
+    const cursorPosition = Position.FromVSCodePosition(position.with(position.line,
+      position.character + (newIndentationWidth - indentationWidth) / tabSize ));
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Insert;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandCtrlY extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["<C-y>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("scrollLineUp");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandInsertAboveChar extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+y"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (TextEditor.isFirstLine(position)) {
+      return vimState;
+    }
+
+    const charAboveCursorPosition = position.getUpByCount(1);
+
+    if (charAboveCursorPosition.isLineEnd()) {
+      return vimState;
+    }
+
+    const char = TextEditor.getText(new vscode.Range(charAboveCursorPosition, charAboveCursorPosition.getRight()));
+    await TextEditor.insert(char, position);
+
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
     return vimState;
   }
@@ -748,7 +892,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   // The hard case is . where we have to track cursor pos since we don't
   // update the view
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char   = this.keysPressed[this.keysPressed.length - 1];
+    const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<BS>") {
       const newPosition = await TextEditor.backspace(position);
@@ -768,6 +912,34 @@ class CommandInsertInInsertMode extends BaseCommand {
 
   public toString(): string {
     return this.keysPressed[this.keysPressed.length - 1];
+  }
+}
+
+@RegisterAction
+class CommandCtrlHInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+h"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const newPosition = await TextEditor.backspace(position);
+    vimState.cursorPosition = newPosition;
+    vimState.cursorStartPosition = newPosition;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlUInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+u"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const start = position.getLineBegin();
+    const stop = position.getLineEnd();
+    await TextEditor.delete(new vscode.Range(start, stop));
+    vimState.cursorPosition = start;
+    vimState.cursorStartPosition = start;
+    return vimState;
   }
 }
 
@@ -2190,18 +2362,15 @@ class MoveLineBegin extends BaseMovement {
 abstract class MoveByScreenLine extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   movementType: string;
-  /**
-   * This parameter is used only when to is lineUp or lineDown.
-   * For other screen line movements, we are always operating on the same screen line.
-   * So we make its default value as 0.
-   */
-  noOfLines = 0;
+  by: string;
+  value: number = 1;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
       select: vimState.currentMode !== ModeName.Normal,
-      noOfLines: this.noOfLines
+      by: this.by,
+      value: this.value
     });
 
     if (vimState.currentMode === ModeName.Normal) {
@@ -2221,8 +2390,9 @@ abstract class MoveByScreenLine extends BaseMovement {
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
-      inSelectionMode: true,
-      noOfLines: this.noOfLines
+      select: true,
+      by: this.by,
+      value: this.value
     });
 
     return {
@@ -2274,7 +2444,8 @@ class MoveUpByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "k"];
   movementType = "up";
-  noOfLines = 1;
+  by = "wrappedLine";
+  value = 1;
 }
 
 @RegisterAction
@@ -2282,18 +2453,20 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "j"];
   movementType = "down";
-  noOfLines = 1;
+  by = "wrappedLine";
+  value = 1;
 }
 
 @RegisterAction
 class MoveToLineFromViewPortTop extends MoveByScreenLine {
   keys = ["H"];
   movementType = "viewPortTop";
-  noOfLines = 1;
+  by = "line";
+  value = 1;
   canBePrefixedWithCount = true;
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    this.noOfLines = count < 1 ? 1 : count;
+    this.value = count < 1 ? 1 : count;
     return await this.execAction(position, vimState);
   }
 }
@@ -2302,20 +2475,21 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
 class MoveToLineFromViewPortBottom extends MoveByScreenLine {
   keys = ["L"];
   movementType = "viewPortBottom";
-  noOfLines = 1;
+  by = "line";
+  value = 1;
   canBePrefixedWithCount = true;
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    this.noOfLines = count < 1 ? 1 : count;
+    this.value = count < 1 ? 1 : count;
     return await this.execAction(position, vimState);
   }
 }
 
 @RegisterAction
-class MoveToViewPortCenter extends MoveScreenLineBegin {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+class MoveToMiddleLineInViewPort extends MoveByScreenLine {
   keys = ["M"];
   movementType = "viewPortCenter";
+  by = "line";
 }
 
 @RegisterAction
