@@ -248,8 +248,8 @@ Status | Command | Description
 
 Status | Command | Description | Note
 ---|--------|-----------|-------------------
-:warning:    |CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
-:warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line
+:arrow_down:    |CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
+:warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line | CTRL-M and CTRL-J are not supported yet
 :white_check_mark: | CTRL-E		                 |  insert the character from below the cursor
 :white_check_mark: | CTRL-Y		                 |  insert the character from above the cursor
    | CTRL-A		                 |  insert previously inserted text
