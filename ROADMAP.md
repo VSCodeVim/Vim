@@ -531,7 +531,7 @@ Status | Command | Description | Note
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
 :running:  | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
-:running:  | :[count]tabe[dit], :[count]tabnew | Same as above | [count] is not supported yet.
+:arrow_down:  | :[count]tabe[dit], :[count]tabnew | Same as above | [count] is not supported yet.
 :running:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
 :arrow_down:| :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
 :running:  | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}. | `!` is not supported yet.
