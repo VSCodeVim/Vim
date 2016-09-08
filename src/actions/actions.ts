@@ -2768,6 +2768,7 @@ class ActionReplaceCharacter extends BaseCommand {
 class ActionReplaceCharacterVisualBlock extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["r", "<character>"];
+  runsOnceForEveryCursor() { return false; }
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -2788,6 +2789,7 @@ class ActionXVisualBlock extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["x"];
   canBeRepeatedWithDot = true;
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
 
@@ -2796,7 +2798,8 @@ class ActionXVisualBlock extends BaseCommand {
       vimState = await new DeleteOperator().run(vimState, start, new Position(end.line, end.character - 1));
     }
 
-    vimState.cursorPosition = vimState.cursorStartPosition;
+    vimState.allCursors = [ new Range(position, position) ];
+
     return vimState;
   }
 }
@@ -2806,12 +2809,14 @@ class ActionDVisualBlock extends ActionXVisualBlock {
   modes = [ModeName.VisualBlock];
   keys = ["d"];
   canBeRepeatedWithDot = true;
+  runsOnceForEveryCursor() { return false; }
 }
 
 @RegisterAction
 class ActionGoToInsertVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["I"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.VisualBlockInsertMode;
@@ -2825,6 +2830,7 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 class ActionChangeInVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["c"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const deleteOperator = new DeleteOperator();
@@ -2846,6 +2852,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["C"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const deleteOperator = new DeleteOperator();
@@ -2867,6 +2874,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
 class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["A"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.cursorPosition.character >= vimState.cursorStartPosition.character) {
@@ -2887,6 +2895,7 @@ export class YankVisualBlockMode extends BaseOperator {
     public keys = ["y"];
     public modes = [ModeName.VisualBlock];
     canBeRepeatedWithDot = false;
+    runsOnceForEveryCursor() { return false; }
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
       let toCopy: string[] = [];
@@ -2908,6 +2917,7 @@ export class YankVisualBlockMode extends BaseOperator {
 class InsertInInsertVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlockInsertMode];
   keys = ["<any>"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let char = this.keysPressed[0];

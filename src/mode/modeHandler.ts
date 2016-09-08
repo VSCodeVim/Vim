@@ -559,6 +559,10 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+    if (!e.kind) {
+      return;
+    }
+
     if (this._vimState.currentMode !== ModeName.VisualBlock           &&
         this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
       e.selections.length > this._vimState.allCursors.length) {
