@@ -410,6 +410,49 @@ class CommandRegister extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertRegisterContent extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+r", "<character>"];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.registerName = this.keysPressed[1];
+    const register = await Register.get(vimState);
+    let text: string;
+
+    if (register.text instanceof Array) {
+       text = (register.text as string []).join("\n");
+    } else {
+       text = register.text;
+    }
+
+    if (register.registerMode === RegisterMode.LineWise) {
+      text += "\n";
+    }
+
+    await TextEditor.insertAt(text, position);
+    vimState.currentMode = ModeName.Insert;
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegister(register);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
+  }
+
+}
+
+@RegisterAction
 class CommandEsc extends BaseCommand {
   modes = [
     ModeName.Insert,
@@ -473,12 +516,113 @@ class CommandCtrlE extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertBelowChar extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+e"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (TextEditor.isLastLine(position)) {
+      return vimState;
+    }
+
+    const charBelowCursorPosition = position.getDownByCount(1);
+
+    if (charBelowCursorPosition.isLineEnd()) {
+      return vimState;
+    }
+
+    const char = TextEditor.getText(new vscode.Range(charBelowCursorPosition, charBelowCursorPosition.getRight()));
+    await TextEditor.insert(char, position);
+
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandInsertIndentInCurrentLine extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<C-t>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const originalText = TextEditor.getLineAt(position).text;
+    const indentationWidth = TextEditor.getIndentationLevel(originalText);
+    const tabSize = Configuration.getInstance().tabstop;
+    const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
+    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
+      TextEditor.setIndentationLevel(originalText, newIndentationWidth));
+
+    const cursorPosition = Position.FromVSCodePosition(position.with(position.line,
+      position.character + (newIndentationWidth - indentationWidth) / tabSize));
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Insert;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandDeleteIndentInCurrentLine extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<C-d>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const originalText = TextEditor.getLineAt(position).text;
+    const indentationWidth = TextEditor.getIndentationLevel(originalText);
+
+    if (indentationWidth === 0) {
+      return vimState;
+    }
+
+    const tabSize = Configuration.getInstance().tabstop;
+    const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
+    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
+      TextEditor.setIndentationLevel(originalText, newIndentationWidth < 0 ? 0 : newIndentationWidth));
+
+    const cursorPosition = Position.FromVSCodePosition(position.with(position.line,
+      position.character + (newIndentationWidth - indentationWidth) / tabSize ));
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Insert;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandCtrlY extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["<C-y>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand("scrollLineUp");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandInsertAboveChar extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+y"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (TextEditor.isFirstLine(position)) {
+      return vimState;
+    }
+
+    const charAboveCursorPosition = position.getUpByCount(1);
+
+    if (charAboveCursorPosition.isLineEnd()) {
+      return vimState;
+    }
+
+    const char = TextEditor.getText(new vscode.Range(charAboveCursorPosition, charAboveCursorPosition.getRight()));
+    await TextEditor.insert(char, position);
+
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
     return vimState;
   }
@@ -743,7 +887,7 @@ class CommandInsertInInsertMode extends BaseCommand {
   // The hard case is . where we have to track cursor pos since we don't
   // update the view
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char   = this.keysPressed[this.keysPressed.length - 1];
+    const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<BS>") {
       const newPosition = await TextEditor.backspace(position);
@@ -763,6 +907,34 @@ class CommandInsertInInsertMode extends BaseCommand {
 
   public toString(): string {
     return this.keysPressed[this.keysPressed.length - 1];
+  }
+}
+
+@RegisterAction
+class CommandCtrlHInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+h"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const newPosition = await TextEditor.backspace(position);
+    vimState.cursorPosition = newPosition;
+    vimState.cursorStartPosition = newPosition;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlUInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["ctrl+u"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const start = position.getLineBegin();
+    const stop = position.getLineEnd();
+    await TextEditor.delete(new vscode.Range(start, stop));
+    vimState.cursorPosition = start;
+    vimState.cursorStartPosition = start;
+    return vimState;
   }
 }
 
