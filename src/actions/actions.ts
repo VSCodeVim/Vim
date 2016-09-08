@@ -1000,36 +1000,37 @@ export class YankOperator extends BaseOperator {
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
       const originalMode = vimState.currentMode;
-        if (start.compareTo(end) <= 0) {
-          end = new Position(end.line, end.character + 1);
-        } else {
-          const tmp = start;
-          start = end;
-          end = tmp;
 
-          end = new Position(end.line, end.character + 1);
+      if (start.compareTo(end) <= 0) {
+        end = new Position(end.line, end.character + 1);
+      } else {
+        const tmp = start;
+        start = end;
+        end = tmp;
+
+        end = new Position(end.line, end.character + 1);
+      }
+
+      let text = TextEditor.getText(new vscode.Range(start, end));
+
+      // If we selected the newline character, add it as well.
+      if (vimState.currentMode === ModeName.Visual &&
+          end.character === TextEditor.getLineAt(end).text.length + 1) {
+        text = text + "\n";
+      }
+
+      if (!vimState.isMultiCursor) {
+        Register.put(text, vimState);
+      } else {
+        if (this.multicursorIndex === 0) {
+          Register.put([], vimState);
         }
 
-        let text = TextEditor.getText(new vscode.Range(start, end));
+        Register.add(text, vimState);
+      }
 
-        // If we selected the newline character, add it as well.
-        if (vimState.currentMode === ModeName.Visual &&
-            end.character === TextEditor.getLineAt(end).text.length + 1) {
-          text = text + "\n";
-        }
-
-        if (!vimState.isMultiCursor) {
-          Register.put(text, vimState);
-        } else {
-          if (this.multicursorIndex === 0) {
-            Register.put([], vimState);
-          }
-
-          Register.add(text, vimState);
-        }
-
-        vimState.currentMode = ModeName.Normal;
-        vimState.cursorStartPosition = start;
+      vimState.currentMode = ModeName.Normal;
+      vimState.cursorStartPosition = start;
 
       if (originalMode === ModeName.Normal) {
         vimState.allCursors = vimState.cursorPositionJustBeforeAnythingHappened.map(x => new Range(x, x));
@@ -1037,7 +1038,9 @@ export class YankOperator extends BaseOperator {
         vimState.cursorPosition = start;
       }
 
-        return vimState;
+      console.log('actions', start.toString());
+
+      return vimState;
     }
 }
 
@@ -1193,24 +1196,29 @@ export class PutCommand extends BaseCommand {
     public async exec(position: Position, vimState: VimState, after: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
         const register = await Register.get(vimState);
         const dest = after ? position : position.getRight();
-        let text = register.text;
+        let text: string | undefined;
 
         // TODO(johnfn): This is really bad - see if I can
         // do this in in a better way.
-        if (vimState.isMultiCursor && this.multicursorIndex === undefined) {
-          console.log("ERROR: no multi cursor index when calling PutCommand#exec");
-        }
 
-        if (!vimState.isMultiCursor && typeof text === "object") {
-          return await this.execVisualBlockPaste(text, position, vimState, after);
-        }
+        if (vimState.isMultiCursor) {
+          if (this.multicursorIndex === undefined) {
+            console.log("ERROR: no multi cursor index when calling PutCommand#exec");
 
-        if (vimState.isMultiCursor && typeof text === "object") {
-          text = text[this.multicursorIndex!];
+            throw new Error("Bad!");
+          }
 
-          console.log('index is ', this.multicursorIndex, 'text obj', JSON.stringify(text));
+          if (vimState.isMultiCursor && typeof register.text === "object") {
+            text = register.text[this.multicursorIndex!];
+          }
         } else {
-          throw new Error("Bad...");
+          if (typeof register.text === "object") {
+            return await this.execVisualBlockPaste(register.text, position, vimState, after);
+          }
+        }
+
+        if (!text) {
+          text = register.text as string;
         }
 
         if (register.registerMode === RegisterMode.CharacterWise) {

@@ -958,6 +958,9 @@ export class ModeHandler implements vscode.Disposable {
     const resultingCursors: Range[] = [];
     let i = 0;
 
+    let resultingModeName: ModeName;
+    let startingModeName = vimState.currentMode;
+
     for (let { start, stop } of vimState.allCursors) {
       if (start.compareTo(stop) > 0) {
         [start, stop] = [stop, start];
@@ -980,7 +983,11 @@ export class ModeHandler implements vscode.Disposable {
 
       recordedState.operator.multicursorIndex = i++;
 
+      resultVimState.currentMode = startingModeName;
+
       resultVimState = await recordedState.operator.run(resultVimState, start, stop);
+
+      resultingModeName = resultVimState.currentMode;
 
       resultingCursors.push(new Range(
         resultVimState.cursorStartPosition,
