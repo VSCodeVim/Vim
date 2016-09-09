@@ -61,7 +61,7 @@ export class Register {
         if (typeof existingText === 'string') {
           content = existingText + (existingText.endsWith('\n') ? '' : '\n') + content;
         } else {
-          content = existingText.concat(content.split('\n'))
+          content = existingText.concat(content.split('\n'));
         }
       } else {
         if (typeof existingText === 'string') {
