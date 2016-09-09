@@ -13,6 +13,7 @@ export function parseReadCommandArgs(args : string) : ReadCommand {
 
   scanner.skipWhiteSpace();
   let c = scanner.next();
+  // read command has 2 forms - 'read <file-path>' and 'read! <shell-command>'
   if (c === '!') {
     scanner.ignore();
     scanner.skipWhiteSpace();
