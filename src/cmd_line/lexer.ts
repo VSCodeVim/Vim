@@ -68,6 +68,12 @@ module LexerFunctions {
         case "-":
           tokens.push(emitToken(TokenType.Minus, state)!);
           continue;
+        case "*":
+          state.emit();
+          tokens.push(new Token(TokenType.SelectionFirstLine, '<')!);
+          tokens.push(new Token(TokenType.Comma, ',')!);
+          tokens.push(new Token(TokenType.SelectionLastLine, '>')!);
+          continue;
         case "'":
           return lexMark;
         default:
