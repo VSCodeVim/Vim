@@ -15,9 +15,9 @@ suite("read", () => {
   teardown(cleanUpWorkspace);
 
   test("Can read shell command output", async () => {
-    await runCmdLine('r! echo "hey ho"', modeHandler);
+    await runCmdLine('r! echo heyho', modeHandler);
     assertEqualLines([
-      'hey ho',
+      'heyho',
       ''
     ]);
   });
