@@ -90,7 +90,7 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
-    // Register names are case-insensitive.
+    // Retrieving register content is case-insensitive
     if (/^[A-Z]$/.test(register)) {
       register = register.toLowerCase();
     }
