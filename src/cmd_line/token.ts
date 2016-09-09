@@ -22,7 +22,8 @@ export enum TokenType {
    *
    */
   SelectionFirstLine,
-  SelectionLastLine
+  SelectionLastLine,
+  Mark
 }
 
 export class Token {
