@@ -447,7 +447,7 @@ Status | Command | Description | Note
 :white_check_mark: | :se[t] {option}={value} | set string/number option to {value}
 :white_check_mark: | :se[t] {option}+={value} | append {value} to string option, add {value} to number option
 :white_check_mark: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here yet.
-    | :se[t] {option}?	  | show value of {option}
+:white_check_mark: | :se[t] {option}?	  | show value of {option}
 :arrow_down:    | :se[t] {option}&	  | reset {option} to its default value
 :arrow_down:    | :setl[ocal]		  | like ":set" but set the local value for options that have one
 :arrow_down:    | :setg[lobal]		  | like ":set" but set the global value of a local option
@@ -531,12 +531,12 @@ Status | Command | Description | Note
     | {count}&lt;C-PageUp&gt;, {count}gT | Same as above
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
-:running:  | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
-:arrow_down:  | :[count]tabe[dit], :[count]tabnew | Same as above | [count] is not supported yet.
-:running:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page | {file} is not supported yet.
+:white_check_mark:  | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page
+:arrow_down:  | :[count]tabe[dit], :[count]tabnew | Same as above | [count] is not supported.
+:white_check_mark:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page
 :arrow_down:| :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
-:running:  | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}. | `!` is not supported yet.
-:running:  | :tabo[nly][!] | Close all other tab pages. | `!` is not supported yet.
+:white_check_mark: :star:  | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}. | Code will close tab directly without saving.
+:white_check_mark: :star:  | :tabo[nly][!] | Close all other tab pages. | `!` is not supported yet. | Code will close tab directly without saving.
 :white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
 :arrow_down:| :tabs	 | List the tab pages and the windows they contain. | You can always use Code's built-in shortcut: `cmd/ctrl+p`
 :arrow_down:| :tabd[o] {cmd} | Execute {cmd} in each tab page.

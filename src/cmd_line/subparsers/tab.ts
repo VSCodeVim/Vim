@@ -74,9 +74,16 @@ export function parseTabLastCommandArgs(args : string) : node.TabCommand {
  * :tabnew Open a new tab page with an empty window, after the current tab page.
  */
 export function parseTabNewCommandArgs(args: string) : node.TabCommand {
-  // TODO: Tab New takes parameter file name.
+  let name = "";
+
+  if (args) {
+    let scanner = new Scanner(args);
+    name = scanner.nextWord();
+  }
+
   return new node.TabCommand({
-    tab: node.Tab.New
+    tab: node.Tab.New,
+    file: name
   });
 }
 
@@ -85,6 +92,9 @@ export function parseTabNewCommandArgs(args: string) : node.TabCommand {
  * :tabc[lose][!] {count}. Close tab page {count}.
  */
 export function parseTabCloseCommandArgs(args: string) : node.TabCommand {
+  if (args && args !== "" && args.startsWith("!")) {
+    
+  }
   return new node.TabCommand({
     tab: node.Tab.Close,
     count: parseCount(args)
