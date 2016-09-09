@@ -446,7 +446,7 @@ Status | Command | Description | Note
 :white_check_mark: | :se[t] inv{option}  |invert boolean option
 :white_check_mark: | :se[t] {option}={value} | set string/number option to {value}
 :white_check_mark: | :se[t] {option}+={value} | append {value} to string option, add {value} to number option
-:running: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here yet.
+:white_check_mark: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here yet.
     | :se[t] {option}?	  | show value of {option}
 :arrow_down:    | :se[t] {option}&	  | reset {option} to its default value
 :arrow_down:    | :setl[ocal]		  | like ":set" but set the local value for options that have one
