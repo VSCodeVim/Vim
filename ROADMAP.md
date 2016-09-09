@@ -487,16 +487,16 @@ Status | Command | Description
 
 ## Ex ranges
 
-Status | Command | Description
----|--------|-------|------------------------------
+Status | Command | Description | Note
+---|--------|-------|------------|------------------
 :white_check_mark: | , | separates two line numbers|
-   | ; | idem, set cursor to the first line number before interpreting the second one
+:white_check_mark: :star: :warning: | ; | idem, set cursor to the first line number before interpreting the second one | The cursor movement is not included.
 :white_check_mark: | {number} | an absolute line number
 :white_check_mark: | . | the current line
 :white_check_mark: | $ | the last line in the file
 :white_check_mark: | % | equal to 1,$ (the entire file)
 :white_check_mark: | * | equal to '<,'> (visual area)
-    | 't | position of mark t
+:white_check_mark: | 't | position of mark t
 :arrow_down: |	/{pattern}[/] |	the next line where {pattern} matches
 :arrow_down: |	?{pattern}[?] | the previous line where {pattern} matches
 :white_check_mark: | +[num] | add [num] to the preceding line number (default: 1)

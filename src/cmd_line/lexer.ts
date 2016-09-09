@@ -36,6 +36,7 @@ module LexerFunctions {
       var c = state.next();
       switch (c) {
         case ",":
+        case ";":
           tokens.push(emitToken(TokenType.Comma, state)!);
           continue;
         case "%":
