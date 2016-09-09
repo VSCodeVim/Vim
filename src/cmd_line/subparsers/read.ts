@@ -13,17 +13,17 @@ export function parseReadCommandArgs(args : string) : ReadCommand {
 
   scanner.skipWhiteSpace();
   let c = scanner.next();
-  if (c == '!') {
+  if (c === '!') {
     scanner.ignore();
     scanner.skipWhiteSpace();
     scannedArgs.cmd = scanner.remaining();
-    if(!scannedArgs.cmd || scannedArgs.cmd.length == 0) {
-      throw Error('Expected shell command.')
+    if (!scannedArgs.cmd || scannedArgs.cmd.length === 0) {
+      throw Error('Expected shell command.');
     }
   } else {
     scannedArgs.file = scanner.remaining();
-    if(!scannedArgs.file || scannedArgs.file.length == 0) {
-      throw Error('Expected file path.')
+    if (!scannedArgs.file || scannedArgs.file.length === 0) {
+      throw Error('Expected file path.');
     }
   }
 
