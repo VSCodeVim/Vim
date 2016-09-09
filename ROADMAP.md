@@ -274,8 +274,8 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-   | :r [file]	    | insert the contents of [file] below the cursor
-   | :r! {command}  | insert the standard output of {command} below the cursor
+:warning:   | :r [file]	    | insert the contents of [file] below the cursor
+:warning:   | :r! {command}  | insert the standard output of {command} below the cursor
 
 ## Deleting text
 
@@ -482,7 +482,6 @@ Status | Command | Default Value | Description
 :arrow_down: | :sh[ell] | start a shell
 :arrow_down: | :!{command} | execute {command} with a shell
 :arrow_down: | K | lookup keyword under the cursor with 'keywordprg' program (default: "man")
-:warning: | r[ead][!] {file/shell command} | insert file contents or output from shell command
 
 ## Ex rangs
 
