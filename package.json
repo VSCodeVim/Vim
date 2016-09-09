@@ -138,6 +138,16 @@
                 "when": "editorTextFocus && vim.useCtrlKeys"
             },
             {
+                "key": "ctrl+pagedown",
+                "command": "extension.vim_ctrl+pagedown",
+                "when": "editorTextFocus && vim.useCtrlKeys"
+            },
+            {
+                "key": "ctrl+pageup",
+                "command": "extension.vim_ctrl+pageup",
+                "when": "editorTextFocus && vim.useCtrlKeys"
+            },
+            {
                 "key": "left",
                 "command": "extension.vim_left",
                 "when": "editorTextFocus && vim.mode != 'Insert Mode'"

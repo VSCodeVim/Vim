@@ -92,9 +92,6 @@ export function parseTabNewCommandArgs(args: string) : node.TabCommand {
  * :tabc[lose][!] {count}. Close tab page {count}.
  */
 export function parseTabCloseCommandArgs(args: string) : node.TabCommand {
-  if (args && args !== "" && args.startsWith("!")) {
-    
-  }
   return new node.TabCommand({
     tab: node.Tab.Close,
     count: parseCount(args)

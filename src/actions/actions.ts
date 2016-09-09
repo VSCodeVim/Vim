@@ -2102,6 +2102,11 @@ class CommandTabNext extends BaseTabCommand {
 }
 
 @RegisterAction
+class CommandCtrlPagedown extends CommandTabNext {
+  keys = ["<C-pagedown>"];
+}
+
+@RegisterAction
 class CommandTabPrevious extends BaseTabCommand {
   keys = ["g", "T"];
 
@@ -2113,6 +2118,11 @@ class CommandTabPrevious extends BaseTabCommand {
 
     return vimState;
   }
+}
+
+@RegisterAction
+class CommandCtrlPageup extends CommandTabPrevious {
+  keys = ["<C-pageup>"];
 }
 
 @RegisterAction
