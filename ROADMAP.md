@@ -482,6 +482,7 @@ Status | Command | Default Value | Description
 :arrow_down: | :sh[ell] | start a shell
 :arrow_down: | :!{command} | execute {command} with a shell
 :arrow_down: | K | lookup keyword under the cursor with 'keywordprg' program (default: "man")
+:warning: | r[ead][!] {file/shell command} | insert file contents or output from shell command
 
 ## Ex rangs
 
