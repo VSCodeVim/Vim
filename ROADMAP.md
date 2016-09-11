@@ -485,20 +485,20 @@ Status | Command | Description
 :arrow_down: | :!{command} | execute {command} with a shell
 :arrow_down: | K | lookup keyword under the cursor with 'keywordprg' program (default: "man")
 
-## Ex rangs
+## Ex ranges
 
-Status | Command | Description
----|--------|-------|------------------------------
+Status | Command | Description | Note
+---|--------|-------|------------|------------------
 :white_check_mark: | , | separates two line numbers|
-   | ; | idem, set cursor to the first line number before interpreting the second one
+:white_check_mark: :star: :warning: | ; | idem, set cursor to the first line number before interpreting the second one | The cursor movement is not included.
 :white_check_mark: | {number} | an absolute line number
 :white_check_mark: | . | the current line
 :white_check_mark: | $ | the last line in the file
 :white_check_mark: | % | equal to 1,$ (the entire file)
-    | * | equal to '<,'> (visual area)
-    | 't | position of mark t
-    |	/{pattern}[/] |	the next line where {pattern} matches
-    |	?{pattern}[?] | the previous line where {pattern} matches
+:white_check_mark: | * | equal to '<,'> (visual area)
+:white_check_mark: | 't | position of mark t
+:arrow_down: |	/{pattern}[/] |	the next line where {pattern} matches
+:arrow_down: |	?{pattern}[?] | the previous line where {pattern} matches
 :white_check_mark: | +[num] | add [num] to the preceding line number (default: 1)
 :white_check_mark: | -[num] | subtract [num] from the preceding line number (default: 1)
 
@@ -528,7 +528,7 @@ Status | Command | Description | Note
 :white_check_mark:   | {count}&lt;C-PageDown&gt;, {count}gt | Same as above
 :white_check_mark:   | :tabp[revious]	:1234:  | Go to the previous tab page.  Wraps around from the first one to the last one.
 :white_check_mark:   | :tabN[ext]	:1234:  | Same as above
-    | {count}&lt;C-PageUp&gt;, {count}gT | Same as above
+:white_check_mark:   | {count}&lt;C-PageUp&gt;, {count}gT | Same as above
 :white_check_mark:   | :tabfir[st]	 | Go to the first tab page.
 :white_check_mark:   | :tabl[ast]	 | Go to the last tab page.
 :white_check_mark:  | :tabe[dit] {file} | Open a new tab page with an empty window, after the current tab page
