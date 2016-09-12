@@ -666,7 +666,7 @@ class CommandInsertAtCursor extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReplacecAtCursor extends BaseCommand {
+class CommandReplaceAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["R"];
   canBePrefixedWithCount = true;
