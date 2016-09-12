@@ -316,8 +316,14 @@ export class ReplaceState {
 
   public originalChars: string[] = [];
 
-  constructor(startPosition: Position) {
+  public newChars: string[] = [];
+
+  public timesToRepeat: number;
+
+  constructor(startPosition: Position, timesToRepeat: number = 1) {
     this._replaceCursorStartPosition = startPosition;
+    this.timesToRepeat = timesToRepeat;
+
     let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
     for (let [key, value] of text.split("").entries()) {
       this.originalChars[key + startPosition.character] = value;
