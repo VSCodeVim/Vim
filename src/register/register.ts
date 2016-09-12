@@ -67,7 +67,7 @@ export class Register {
     return Register.getByKey(register);
   }
 
-  public static async getByKey(register: string): Promise<IRegisterContent>{
+  public static async getByKey(register: string): Promise<IRegisterContent> {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }

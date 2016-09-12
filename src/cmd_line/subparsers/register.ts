@@ -3,7 +3,7 @@
 import * as node from "../commands/register";
 import {Scanner} from '../scanner';
 
-export function parseRegisterCommandArgs(args: string): node.RegisterCommand{
+export function parseRegisterCommandArgs(args: string): node.RegisterCommand {
   if (!args) {
     return new node.RegisterCommand({});
   }
