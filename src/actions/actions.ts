@@ -2863,6 +2863,7 @@ class ActionReplaceCharacter extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["r", "<character>"];
   canBeRepeatedWithDot = true;
+  canBePrefixedWithCount = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toReplace = this.keysPressed[1];
@@ -2873,6 +2874,21 @@ class ActionReplaceCharacter extends BaseCommand {
     state.cursorPosition = position;
 
     return state;
+  }
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+
+    if (position.character + timesToRepeat > position.getLineEnd().character) {
+      return vimState;
+    }
+
+    for (let i = 0; i < timesToRepeat; i++) {
+      vimState = await this.exec(position, vimState);
+      position = position.getRight();
+    }
+
+    return vimState;
   }
 }
 

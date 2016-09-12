@@ -321,7 +321,7 @@ Status | Command | Description | Note
 
 Status | Command | Description | Note
 ---|--------|------------|------------------
-:running: | :1234:  r{char}	| replace N characters with {char} | {count} is not supported yet
+:white_check_mark: | :1234:  r{char}	| replace N characters with {char}
 :arrow_down:| :1234:  gr{char}	| replace N characters without affecting layout
 :running: | :1234:  R		| enter Replace mode (repeat the entered text N times) | {count} is not supported yet
 :arrow_down:| :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
