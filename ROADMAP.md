@@ -304,8 +304,8 @@ Status | Command | Description | Note
 ---|--------|-------------|-----------------
 :running:  | "{char}	        | use register {char} for the next delete, yank, or put | read only registers are not supported yet
 :white_check_mark:   | "*	        | use register `*` to access system clipboard
-   | :reg		| show the contents of all registers
-   | :reg {arg}	        | show the contents of registers mentioned in {arg}
+:white_check_mark:   | :reg		| show the contents of all registers
+:white_check_mark:   | :reg {arg}	        | show the contents of registers mentioned in {arg}
 :white_check_mark:   | :1234:  y{motion}	| yank the text moved over with {motion} into a register
 :white_check_mark:   |    {visual}y	| yank the highlighted text into a register
 :white_check_mark:   | :1234:  yy		| yank N lines into a register

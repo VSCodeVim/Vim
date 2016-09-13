@@ -8,6 +8,7 @@ import * as tabCmd from './subparsers/tab';
 import * as fileCmd from './subparsers/file';
 import {parseOptionsCommandArgs} from './subparsers/setoptions';
 import {parseSubstituteCommandArgs} from './subparsers/substitute';
+import {parseRegisterCommandArgs} from './subparsers/register';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -58,5 +59,7 @@ export const commandParsers = {
   vnew: fileCmd.parseEditNewFileInNewWindowCommandArgs,
 
   set: parseOptionsCommandArgs,
-  se: parseOptionsCommandArgs
+  se: parseOptionsCommandArgs,
+
+  reg: parseRegisterCommandArgs
 };
