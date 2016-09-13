@@ -163,11 +163,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'compositionStart', async (args) => {
-    if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
-      await vscode.commands.executeCommand("default:compositionStart", args);
-      return;
-    }
-
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -244,18 +239,16 @@ async function handleActiveEditorChange(): Promise<void> {
     return;
   }
 
-  if (vscode.window.activeTextEditor !== undefined) {
-    taskQueue.enqueueTask({
-      promise: async () => {
-        if (vscode.window.activeTextEditor !== undefined) {
-          const mh = await getAndUpdateModeHandler();
+  taskQueue.enqueueTask({
+    promise: async () => {
+      if (vscode.window.activeTextEditor !== undefined) {
+        const mh = await getAndUpdateModeHandler();
 
-          mh.updateView(mh.vimState, false);
-        }
-      },
-      isRunning: false
-    });
-  }
+        mh.updateView(mh.vimState, false);
+      }
+    },
+    isRunning: false
+  });
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
