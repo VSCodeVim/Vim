@@ -1062,7 +1062,8 @@ export class DeleteOperator extends BaseOperator {
         let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
 
         if (registerMode === RegisterMode.LineWise) {
-          text = text.slice(0, -1); // slice final newline in linewise mode - linewise put will add it back.
+          // slice final newline in linewise mode - linewise put will add it back.
+          text = text[text.length - 2] === '\r' ? text.slice(0, -2) : text.slice(0, -1);
         }
 
         if (yank) {
