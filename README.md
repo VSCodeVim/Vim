@@ -1,3 +1,4 @@
+[![Version](http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
 [![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim) [![Slack Status](https://vscodevim-slackin.azurewebsites.net/badge.svg)](https://vscodevim-slackin.azurewebsites.net)
 
 # Vim
@@ -46,7 +47,7 @@ Due to overlap between VSCode and VIm, options are loaded slightly different fro
 
 Vim options can be added to your user or workspace settings (open Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
 
-The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L155):
+The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
 
 * insertModeKeyBindings/otherModesKeyBindings
   * Keybinding overrides to use for insert and other (non-insert) modes

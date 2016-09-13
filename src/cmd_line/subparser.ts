@@ -9,6 +9,7 @@ import * as fileCmd from './subparsers/file';
 import {parseOptionsCommandArgs} from './subparsers/setoptions';
 import {parseSubstituteCommandArgs} from './subparsers/substitute';
 import {parseReadCommandArgs} from './subparsers/read';
+import {parseRegisterCommandArgs} from './subparsers/register';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -62,5 +63,7 @@ export const commandParsers = {
   se: parseOptionsCommandArgs,
 
   read: parseReadCommandArgs,
-  r: parseReadCommandArgs
+  r: parseReadCommandArgs,
+
+  reg: parseRegisterCommandArgs
 };

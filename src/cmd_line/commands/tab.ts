@@ -2,6 +2,7 @@
 
 import * as vscode from "vscode";
 import * as node from "../node";
+import * as path from "path";
 
 export enum Tab {
   Next,
@@ -17,6 +18,7 @@ export enum Tab {
 export interface ITabCommandArguments extends node.ICommandArgs {
   tab: Tab;
   count?: number;
+  file?: string;
 }
 
 //
@@ -67,7 +69,17 @@ export class TabCommand extends node.CommandBase {
         this.executeCommandWithCount(1, "workbench.action.openLastEditorInGroup");
         break;
       case Tab.New:
-        this.executeCommandWithCount(1, "workbench.action.files.newUntitledFile");
+        if (this.arguments.file) {
+          let currentFilePath = vscode.window.activeTextEditor.document.uri.path;
+          let newFilePath = path.join(path.dirname(currentFilePath), this._arguments.file);
+
+          if (newFilePath !== currentFilePath) {
+            let folder = vscode.Uri.file(newFilePath);
+            vscode.commands.executeCommand("vscode.open", folder);
+          }
+        } else {
+          this.executeCommandWithCount(1, "workbench.action.files.newUntitledFile");
+        }
         break;
       case Tab.Close:
         // Navigate the correct position

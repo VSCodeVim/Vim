@@ -460,8 +460,7 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualLine,
     ModeName.VisualBlockInsertMode,
     ModeName.VisualBlock,
-    ModeName.SearchInProgressMode,
-    ModeName.Replace
+    ModeName.SearchInProgressMode
   ];
   keys = ["<Esc>"];
 
@@ -479,6 +478,26 @@ class CommandEsc extends BaseCommand {
 
     vimState.currentMode = ModeName.Normal;
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandEscReplaceMode extends BaseCommand {
+  modes = [ModeName.Replace];
+  keys = ["<Esc>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const timesToRepeat = vimState.replaceState!.timesToRepeat;
+
+    for (let i = 1; i < timesToRepeat; i++) {
+      await TextEditor.insert(vimState.replaceState!.newChars.join(""), position);
+      position = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+
+    vimState.cursorStartPosition = position.getLeft();
+    vimState.cursorPosition = position.getLeft();
+    vimState.currentMode = ModeName.Normal;
     return vimState;
   }
 }
@@ -647,14 +666,22 @@ class CommandInsertAtCursor extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReplacecAtCursor extends BaseCommand {
+class CommandReplaceAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["R"];
-  mustBeFirstKey = true;
+  canBePrefixedWithCount = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Replace;
     vimState.replaceState = new ReplaceState(position);
+
+    return vimState;
+  }
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    vimState.currentMode = ModeName.Replace;
+    vimState.replaceState = new ReplaceState(position, timesToRepeat);
 
     return vimState;
   }
@@ -686,11 +713,15 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState.cursorPosition = leftPosition;
         vimState.cursorStartPosition = leftPosition;
       }
+
+      replaceState.newChars.pop();
     } else {
       if (!position.isLineEnd()) {
         vimState = await new DeleteOperator().run(vimState, position, position);
       }
+
       await TextEditor.insertAt(char, position);
+      replaceState.newChars.push(char);
 
       vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
       vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
@@ -1736,6 +1767,7 @@ class CommandMoveHalfPageUp extends BaseMovement {
 class CommandDeleteToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["D"];
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
@@ -2102,6 +2134,11 @@ class CommandTabNext extends BaseTabCommand {
 }
 
 @RegisterAction
+class CommandCtrlPagedown extends CommandTabNext {
+  keys = ["<C-pagedown>"];
+}
+
+@RegisterAction
 class CommandTabPrevious extends BaseTabCommand {
   keys = ["g", "T"];
 
@@ -2113,6 +2150,11 @@ class CommandTabPrevious extends BaseTabCommand {
 
     return vimState;
   }
+}
+
+@RegisterAction
+class CommandCtrlPageup extends CommandTabPrevious {
+  keys = ["<C-pageup>"];
 }
 
 @RegisterAction
@@ -2853,6 +2895,7 @@ class ActionReplaceCharacter extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["r", "<character>"];
   canBeRepeatedWithDot = true;
+  canBePrefixedWithCount = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toReplace = this.keysPressed[1];
@@ -2863,6 +2906,21 @@ class ActionReplaceCharacter extends BaseCommand {
     state.cursorPosition = position;
 
     return state;
+  }
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+
+    if (position.character + timesToRepeat > position.getLineEnd().character) {
+      return vimState;
+    }
+
+    for (let i = 0; i < timesToRepeat; i++) {
+      vimState = await this.exec(position, vimState);
+      position = position.getRight();
+    }
+
+    return vimState;
   }
 }
 
@@ -2953,7 +3011,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 @RegisterAction
 class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ["C"];
+keys = ["C"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const deleteOperator = new DeleteOperator();
@@ -3412,6 +3470,66 @@ class SelectInnerSentence extends TextObjectMovement {
     };
   }
 }
+
+@RegisterAction
+class SelectParagraph extends TextObjectMovement {
+  keys = ["a", "p"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    const currentParagraphBegin = position.getCurrentParagraphBeginning();
+
+    if (position.isLineBeginning() && position.isLineEnd()) {
+      // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
+      start = position.getCurrentParagraphBeginning().getCurrentParagraphEnd();
+    } else {
+      if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
+        start = currentParagraphBegin.getRightThroughLineBreaks();
+      } else {
+        start = currentParagraphBegin;
+      }
+    }
+
+    return {
+      start: start,
+      stop: position.getCurrentParagraphEnd()
+    };
+  }
+}
+
+@RegisterAction
+class SelectInnerParagraph extends TextObjectMovement {
+  keys = ["i", "p"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    let stop: Position = position.getCurrentParagraphEnd();
+
+    if (stop.isLineBeginning() && stop.isLineEnd()) {
+      stop = stop.getLeftThroughLineBreaks();
+    }
+
+    const currentParagraphBegin = position.getCurrentParagraphBeginning();
+
+    if (position.isLineBeginning() && position.isLineEnd()) {
+      // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
+      start = position.getCurrentParagraphBeginning().getCurrentParagraphEnd();
+      stop = position.getCurrentParagraphEnd().getCurrentParagraphBeginning();
+    } else {
+      if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
+        start = currentParagraphBegin.getRightThroughLineBreaks();
+      } else {
+        start = currentParagraphBegin;
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
+  }
+}
+
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   keys = ["%"];
