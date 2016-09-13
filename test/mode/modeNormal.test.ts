@@ -79,14 +79,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle dw across lines",
+      title: "Can handle dw across lines (1)",
       start: ['one |two', '  three'],
       keysPressed: 'dw',
       end: ["one| ", "  three"]
     });
 
     newTest({
-      title: "Can handle dw across lines",
+      title: "Can handle dw across lines (2)",
       start: ['one |two', '', 'three'],
       keysPressed: 'dw',
       end: ["one| ", "", "three"]

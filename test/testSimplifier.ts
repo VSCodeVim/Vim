@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { ModeName } from '../src/mode/mode';
 import { Position } from '../src/motion/position';
 import { ModeHandler } from '../src/mode/modeHandler';
@@ -49,7 +50,14 @@ interface ITestObject {
 }
 
 class TestObjectHelper {
+  /**
+   * Position that the test says that the cursor starts at.
+   */
   startPosition = new Position(0, 0);
+
+  /**
+   * Position that the test says that the cursor ends at.
+   */
   endPosition = new Position(0, 0);
 
   private _isValid = false;
@@ -120,14 +128,13 @@ class TestObjectHelper {
    */
   public getKeyPressesToMoveToStartPosition(): string[] {
     let ret = '';
-    let linesToMove = this.startPosition.line - (this._testObject.start.length - 1);
+    let linesToMove = this.startPosition.line;
 
     let cursorPosAfterEsc =
       this._testObject.start[this._testObject.start.length - 1].replace('|', '').length - 1;
     let numCharsInCursorStartLine =
       this._testObject.start[this.startPosition.line].replace('|', '').length - 1;
-    let columnOnStartLine = Math.min(cursorPosAfterEsc, numCharsInCursorStartLine);
-    let charactersToMove = this.startPosition.character - columnOnStartLine;
+    let charactersToMove = this.startPosition.character;
 
     if (linesToMove > 0) {
       ret += Array(linesToMove + 1).join('j');
@@ -175,8 +182,23 @@ function tokenizeKeySequence(sequence: string): string[] {
   return result;
 }
 
+/**
+ * This is certainly quite janky! The problem we're trying to solve
+ * is that writing editor.selection = new Position() won't immediately
+ * update the position of the cursor. So we have to wait!
+ */
+async function waitForCursorUpdatesToHappen(): Promise<void> {
+  await new Promise((resolve, reject) => {
+    setTimeout(resolve, 100);
+    vscode.window.onDidChangeTextEditorSelection(x => {
+      resolve();
+    });
+  });
+}
+
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
   let helper = new TestObjectHelper(testObj);
+  let editor = vscode.window.activeTextEditor;
 
   // Don't try this at home, kids.
   (modeHandler as any)._vimState.cursorPosition = new Position(0, 0);
@@ -185,13 +207,21 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // start:
   //
-  await modeHandler.handleMultipleKeyEvents(helper.asVimInputText());
+
+  await editor.edit(builder => {
+    builder.insert(new Position(0, 0), testObj.start.join("\n").replace("|", ""));
+  });
 
   // keysPressed:
   //
-  await modeHandler.handleKeyEvent('<Esc>');
+  await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+
+  await waitForCursorUpdatesToHappen();
+
   // move cursor to start position using 'hjkl'
   await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
+
+  await waitForCursorUpdatesToHappen();
 
   // assumes key presses are single characters for now
   await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
