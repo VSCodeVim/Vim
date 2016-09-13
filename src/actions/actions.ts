@@ -1767,6 +1767,7 @@ class CommandMoveHalfPageUp extends BaseMovement {
 class CommandDeleteToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["D"];
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
