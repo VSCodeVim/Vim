@@ -396,8 +396,8 @@ Status | Command | Description
 :white_check_mark:    | :1234:  iW	| Select "inner |WORD|"
 :white_check_mark:    | :1234:  as	| Select "a sentence"
 :white_check_mark:    | :1234:  is	| Select "inner sentence"
-    | :1234:  ap	| Select "a paragraph"
-    | :1234:  ip	| Select "inner paragraph"
+:white_check_mark:    | :1234:  ap	| Select "a paragraph"
+:white_check_mark:    | :1234:  ip	| Select "inner paragraph"
 :white_check_mark:    | :1234:  a], a[    | select '[' ']' blocks
 :white_check_mark:    | :1234:  i], i[    | select inner  '[' ']' blocks
 :white_check_mark:    | :1234:  ab, a(, a)	| Select "a block" (from "[(" to "])")

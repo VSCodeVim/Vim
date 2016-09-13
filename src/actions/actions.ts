@@ -3469,6 +3469,66 @@ class SelectInnerSentence extends TextObjectMovement {
     };
   }
 }
+
+@RegisterAction
+class SelectParagraph extends TextObjectMovement {
+  keys = ["a", "p"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    const currentParagraphBegin = position.getCurrentParagraphBeginning();
+
+    if (position.isLineBeginning() && position.isLineEnd()) {
+      // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
+      start = position.getCurrentParagraphBeginning().getCurrentParagraphEnd();
+    } else {
+      if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
+        start = currentParagraphBegin.getRightThroughLineBreaks();
+      } else {
+        start = currentParagraphBegin;
+      }
+    }
+
+    return {
+      start: start,
+      stop: position.getCurrentParagraphEnd()
+    };
+  }
+}
+
+@RegisterAction
+class SelectInnerParagraph extends TextObjectMovement {
+  keys = ["i", "p"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start: Position;
+    let stop: Position = position.getCurrentParagraphEnd();
+
+    if (stop.isLineBeginning() && stop.isLineEnd()) {
+      stop = stop.getLeftThroughLineBreaks();
+    }
+
+    const currentParagraphBegin = position.getCurrentParagraphBeginning();
+
+    if (position.isLineBeginning() && position.isLineEnd()) {
+      // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
+      start = position.getCurrentParagraphBeginning().getCurrentParagraphEnd();
+      stop = position.getCurrentParagraphEnd().getCurrentParagraphBeginning();
+    } else {
+      if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
+        start = currentParagraphBegin.getRightThroughLineBreaks();
+      } else {
+        start = currentParagraphBegin;
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop
+    };
+  }
+}
+
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   keys = ["%"];
