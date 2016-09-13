@@ -26,13 +26,6 @@ suite("register", () => {
     end: ["two", "|one"],
   });
 
-  newTest({
-    title: "Can copy to a register",
-    start: ['|one', 'two'],
-    keysPressed: '"add"ap',
-    end: ["two", "|one"],
-  });
-
   clipboard.copy("12345");
   newTest({
     title: "Can access '*' (clipboard) register",
