@@ -47,7 +47,7 @@ export class ReadCommand extends node.CommandBase {
   }
 
   async getTextToInsertFromFile() : Promise<string> {
-    // TODO: Substitute utf8 with current file encoding, couldn't find this anywhere in vscode's api.
+    // TODO: Read encoding from ++opt argument.
     return new Promise<string>((resolve, reject) => {
       try {
         readFile(this.arguments.file as string, 'utf8', (err, data) => {
