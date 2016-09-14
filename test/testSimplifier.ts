@@ -5,6 +5,7 @@ import { Position } from '../src/motion/position';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
+import { waitForCursorUpdatesToHappen } from '../src/util';
 
 export function getTestingFunctions(modeHandler: ModeHandler) {
   let testWithObject = testIt.bind(null, modeHandler);
@@ -180,20 +181,6 @@ function tokenizeKeySequence(sequence: string): string[] {
   }
 
   return result;
-}
-
-/**
- * This is certainly quite janky! The problem we're trying to solve
- * is that writing editor.selection = new Position() won't immediately
- * update the position of the cursor. So we have to wait!
- */
-async function waitForCursorUpdatesToHappen(): Promise<void> {
-  await new Promise((resolve, reject) => {
-    setTimeout(resolve, 100);
-    vscode.window.onDidChangeTextEditorSelection(x => {
-      resolve();
-    });
-  });
 }
 
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {

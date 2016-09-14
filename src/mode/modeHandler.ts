@@ -4,7 +4,11 @@ import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
 import { getAndUpdateModeHandler } from './../../extension';
-import { Transformation } from './../transformations/transformations';
+import {
+  Transformation,
+  InsertTextTransformation,
+  DeleteTextTransformation
+} from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
@@ -1026,14 +1030,22 @@ export class ModeHandler implements vscode.Disposable {
              x === 'deleteText';
     };
 
-    const textTransformations  = transformations.filter(x => isTextTransformation(x.type));
+    const textTransformations: (InsertTextTransformation | DeleteTextTransformation)[] =
+      transformations.filter(x => isTextTransformation(x.type)) as any;
+
     const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
+
+    // TODO
+    await new Promise((resolve, reject) => {
+      setTimeout(resolve, 5);
+    });
 
     await vscode.window.activeTextEditor.edit(edit => {
       for (const command of transformations) {
         switch (command.type) {
           case "insertText":
-            edit.insert(command.associatedCursor, command.text);
+            edit.insert(command.position, command.text);
+            console.log(command.position.toString());
             break;
 
           case "deleteText":

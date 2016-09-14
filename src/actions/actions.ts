@@ -5,12 +5,13 @@ import { TextEditor } from './../textEditor';
 import { Range } from './../motion/range';
 import { Register, RegisterMode } from './../register/register';
 import { NumericString } from './../number/numericString';
-import { Position } from './../motion/position';
+import { Position, PositionDiff } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
+import { waitForCursorUpdatesToHappen } from '../util';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 import * as clipboard from 'copy-paste';
@@ -833,7 +834,7 @@ class CommandInsertInInsertMode extends BaseCommand {
         vimState.recordedState.transformations.push({
           type            : "insertText",
           text            : char,
-          associatedCursor: vimState.cursorPosition,
+          position: vimState.cursorPosition,
         });
       } else {
         vimState.recordedState.transformations.push({
@@ -1893,17 +1894,16 @@ class CommandInsertAtLineEnd extends BaseCommand {
 class CommandInsertNewLineAbove extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["O"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.recordedState.transformations.push({
-      type                : "insertText",
-      text                : "\n",
-      associatedCursor    : vimState.cursorPosition.getLineBegin(),
-      notAdjustedByOwnText: true,
-    });
-
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = vimState.cursorPosition.getLineBegin();
+    vscode.commands.executeCommand('editor.action.insertLineBefore');
+
+    await waitForCursorUpdatesToHappen();
+
+    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
+      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
 
     return vimState;
   }
@@ -1913,18 +1913,16 @@ class CommandInsertNewLineAbove extends BaseCommand {
 class CommandInsertNewLineBefore extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["o"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.recordedState.transformations.push({
-      type            : "insertText",
-      text            : "\n",
-      associatedCursor: vimState.cursorPosition.getLineEnd(),
-    });
-
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorPosition = new Position(
-      position.line + 1,
-      0);
+    vscode.commands.executeCommand('editor.action.insertLineAfter');
+
+    await waitForCursorUpdatesToHappen();
+
+    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
+      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
 
     return vimState;
   }

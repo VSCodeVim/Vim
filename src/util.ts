@@ -31,3 +31,19 @@ export function translateToAngleBracketNotation(key: string): string {
 
     return key;
 }
+
+/**
+ * This is certainly quite janky! The problem we're trying to solve
+ * is that writing editor.selection = new Position() won't immediately
+ * update the position of the cursor. So we have to wait!
+ */
+export async function waitForCursorUpdatesToHappen(): Promise<void> {
+  // TODO - dispose!
+
+  await new Promise((resolve, reject) => {
+    setTimeout(resolve, 100);
+    vscode.window.onDidChangeTextEditorSelection(x => {
+      resolve();
+    });
+  });
+}

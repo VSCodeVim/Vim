@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 import * as vscode from 'vscode'
-import { Position } from "./../motion/position";
+import { Position, PositionDiff } from "./../motion/position";
 import { Range } from "./../motion/range";
 
 /**
@@ -19,19 +19,9 @@ export interface InsertTextTransformation {
   text                 : string;
 
   /**
-   * The cursor that triggered this insertion.
+   * The location to insert the text.
    */
-  associatedCursor     : Position;
-
-  /**
-   * Whether the associatedCursor should be adjusted by the contents of text.
-   * E.g., if text === 'a', you just inserted an 'a', so the cursor will
-   * be bumped one to the right after the insertion, unless notAdjustedByOwnText
-   * is set to true.
-   *
-   * If you're confused by this, just ignore it.
-   */
-  notAdjustedByOwnText?: boolean;
+  position     : Position;
 }
 
 export interface InsertTextVSCodeTransformation {
@@ -43,8 +33,8 @@ export interface InsertTextVSCodeTransformation {
  * Represents deleting text at a position in the document.
  */
 export interface DeleteTextTransformation {
-  type    : "deleteText";
-  position: Position;
+  type         : "deleteText";
+  position     : Position;
 }
 
 /**
