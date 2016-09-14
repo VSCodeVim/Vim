@@ -1128,6 +1128,11 @@ export class YankOperator extends BaseOperator {
           end = new Position(end.line, end.character + 1);
         }
 
+        if (vimState.currentRegisterMode === RegisterMode.LineWise) {
+          start = start.getLineBegin();
+          end = end.getLineEnd();
+        }
+
         let text = TextEditor.getText(new vscode.Range(start, end));
 
         // If we selected the newline character, add it as well.
