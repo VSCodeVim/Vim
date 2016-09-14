@@ -2553,7 +2553,7 @@ class MoveNonBlankLast extends BaseMovement {
     if (count === 0) {
       stop = new Position(TextEditor.getLineCount() - 1, 0);
     } else {
-      stop = new Position(count - 1, 0);
+      stop = new Position(Math.min(count, TextEditor.getLineCount()) - 1, 0);
     }
 
     return {
