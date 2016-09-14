@@ -530,16 +530,32 @@ abstract class CommandEditorScroll extends BaseCommand {
   by: string;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editorScroll", {to: this.to, by: this.by, value: 1, revealCursor: true});
-    vimState.cursorRevealed = true;
+    vimState.postponedCodeViewChanges.push({
+      name: "editorScroll",
+      args: {
+        to: this.to,
+        by: this.by,
+        value: 1,
+        revealCursor: true
+      }
+    });
+
     return vimState;
   }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
 
-    await vscode.commands.executeCommand("editorScroll", {to: this.to, by: this.by, value: timesToRepeat, revealCursor: true});
-    vimState.cursorRevealed = true;
+    vimState.postponedCodeViewChanges.push({
+      name: "editorScroll",
+      args: {
+        to: this.to,
+        by: this.by,
+        value: timesToRepeat,
+        revealCursor: true
+      }
+    });
+
     return vimState;
   }
 }
@@ -1729,7 +1745,14 @@ class CommandTopScroll extends BaseCommand {
   keys = ["z", "t"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand('revealLine', {lineNumber: position.line, at: 'top'});
+    vimState.postponedCodeViewChanges.push({
+      name: "revealLine",
+      args: {
+        lineNumber: position.line,
+        at: 'top'
+      }
+    });
+
     return vimState;
   }
 }
@@ -1740,7 +1763,14 @@ class CommandBottomScroll extends BaseCommand {
   keys = ["z", "b"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand('revealLine', {lineNumber: position.line, at: 'bottom'});
+    vimState.postponedCodeViewChanges.push({
+      name: "revealLine",
+      args: {
+        lineNumber: position.line,
+        at: 'bottom'
+      }
+    });
+
     return vimState;
   }
 }
