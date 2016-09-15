@@ -1187,14 +1187,14 @@ suite("Mode Normal", () => {
     newTest({
       title: "/ does not affect mark",
       start: ["|one", "twooo", "thurr"],
-      keysPressed: "ma/two<enter>'a",
+      keysPressed: "ma/two\n'a",
       end: ["|one", "twooo", "thurr"]
     });
 
     newTest({
       title: "/ can search with regex",
       start: ["|", "one two2o"],
-      keysPressed: "/o\\do",
+      keysPressed: "/o\\do\n",
       end: ["", "one tw|o2o"]
     });
 

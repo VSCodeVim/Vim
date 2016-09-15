@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { ModeName } from '../src/mode/mode';
+import { HistoryTracker } from '../src/history/historyTracker';
 import { Position } from '../src/motion/position';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
@@ -204,6 +205,10 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
 
   await waitForCursorUpdatesToHappen();
+
+  modeHandler.vimState.historyTracker = new HistoryTracker();
+  modeHandler.vimState.historyTracker.addChange();
+  modeHandler.vimState.historyTracker.finishCurrentStep();
 
   // move cursor to start position using 'hjkl'
   await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
