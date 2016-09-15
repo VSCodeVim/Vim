@@ -186,15 +186,15 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:running:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
-:running:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
-:running:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
-:running:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
-:running:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
-:running:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
-:running:    |    z CR or zt	| redraw, current line at top of window
-:running: |    z.	 or zz	| redraw, current line at center of window
-:running:    |    z-	 or zb	| redraw, current line at bottom of window
+:white_check_mark:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
+:white_check_mark:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
+:white_check_mark:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
+:white_check_mark:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
+:white_check_mark:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
+:white_check_mark:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
+:white_check_mark:    |    z CR or zt	| redraw, current line at top of window
+:white_check_mark: |    z.	 or zz	| redraw, current line at center of window
+:white_check_mark:    |    z-	 or zb	| redraw, current line at bottom of window
 
 These only work when 'wrap' is off:
 
