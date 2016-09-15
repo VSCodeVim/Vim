@@ -22,7 +22,6 @@ import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
-import { wait, waitForCursorUpdatesToHappen } from './../util';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
   BaseOperator, isIMovement,
@@ -956,8 +955,6 @@ export class ModeHandler implements vscode.Disposable {
 
     vimState.recordedState.count = 0;
 
-    let stop = vimState.cursorPosition;
-
     // Keep the cursor within bounds
 
     if (vimState.currentMode === ModeName.Normal && !recordedState.operator) {
@@ -967,6 +964,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
     } else {
+      let stop = vimState.cursorPosition;
 
       // Vim does this weird thing where it allows you to select and delete
       // the newline character, which it places 1 past the last character
@@ -1200,15 +1198,15 @@ export class ModeHandler implements vscode.Disposable {
         if (vimState.currentMode === ModeName.Visual) {
           selections = [];
 
-          for (const { start, stop } of vimState.allCursors) {
-            selections.push(new vscode.Selection(start, stop));
+          for (const { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
+            selections.push(new vscode.Selection(cursorStart, cursorStop));
           }
         } else if (vimState.currentMode === ModeName.Normal ||
                    vimState.currentMode === ModeName.Insert) {
           selections = [];
 
-          for (const { stop } of vimState.allCursors) {
-            selections.push(new vscode.Selection(stop, stop));
+          for (const { stop: cursorStop } of vimState.allCursors) {
+            selections.push(new vscode.Selection(cursorStop, cursorStop));
           }
         } else {
           console.error("This is pretty bad!");
@@ -1231,8 +1229,8 @@ export class ModeHandler implements vscode.Disposable {
 
     if (Configuration.getInstance().useSolidBlockCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
-        for (const { stop } of vimState.allCursors) {
-          rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
+        for (const { stop: cursorStop } of vimState.allCursors) {
+          rangesToDraw.push(new vscode.Range(cursorStop, cursorStop.getRight()));
         }
       }
     } else {

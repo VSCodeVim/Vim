@@ -1,12 +1,11 @@
 import { VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
-import { TextEditor } from './../textEditor';
 import { Range } from './../motion/range';
 import { TextEditor, EditorScrollByUnit, EditorScrollDirection, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { NumericString } from './../number/numericString';
-import { Position, PositionDiff } from './../motion/position';
+import { Position } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
@@ -14,7 +13,6 @@ import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
 import { waitForCursorUpdatesToHappen } from '../util';
 import * as vscode from 'vscode';
-import * as _ from 'lodash';
 import * as clipboard from 'copy-paste';
 
 const controlKeys: string[] = [

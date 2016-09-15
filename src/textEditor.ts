@@ -1,7 +1,6 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { ModeHandler } from './mode/modeHandler';
 import { Position } from './motion/position';
 import { Configuration } from './configuration/configuration';
 import { Globals } from './globals';

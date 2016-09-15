@@ -12,10 +12,13 @@ import { Configuration } from "./../configuration/configuration";
  * to get another position.
  */
 export class PositionDiff {
-  constructor(
-    public line: number,
-    public character: number
-  ) { }
+  public line: number;
+  public character: number;
+
+  constructor(line: number, character: number) {
+    this.line = line;
+    this.character = character;
+  }
 
   public add(other: PositionDiff) {
     return new PositionDiff(

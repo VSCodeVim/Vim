@@ -51,5 +51,5 @@ export async function waitForCursorUpdatesToHappen(): Promise<void> {
 export async function wait(time: number): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(resolve, time);
-  })
+  });
 }

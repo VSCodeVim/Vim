@@ -1,7 +1,4 @@
-import * as _ from 'lodash'
-import * as vscode from 'vscode'
-import { Position, PositionDiff } from "./../motion/position";
-import { Range } from "./../motion/range";
+import { Position } from "./../motion/position";
 
 /**
  * Represents inserting text at a position in the document.
