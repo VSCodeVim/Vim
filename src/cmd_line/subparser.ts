@@ -1,6 +1,6 @@
 "use strict";
 
-import {parseQuitCommandArgs} from './subparsers/quit';
+import {parseQuitCommandArgs, parseQuitAllCommandArgs} from './subparsers/quit';
 import {parseWriteCommandArgs} from './subparsers/write';
 import {parseWallCommandArgs} from './subparsers/wall';
 import {parseWriteQuitCommandArgs} from './subparsers/writequit';
@@ -21,6 +21,9 @@ export const commandParsers = {
 
   quit: parseQuitCommandArgs,
   q: parseQuitCommandArgs,
+
+  qa: parseQuitAllCommandArgs,
+  qall: parseQuitAllCommandArgs,
 
   wq: parseWriteQuitCommandArgs,
   writequit: parseWriteQuitCommandArgs,
