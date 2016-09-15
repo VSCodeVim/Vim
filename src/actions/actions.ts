@@ -1063,7 +1063,7 @@ export class DeleteOperator extends BaseOperator {
 
         if (registerMode === RegisterMode.LineWise) {
           // slice final newline in linewise mode - linewise put will add it back.
-          text = text[text.length - 2] === '\r' ? text.slice(0, -2) : text.slice(0, -1);
+          text = text.endsWith("\r\n") ? text.slice(0, -2) : text.slice(0, -1);
         }
 
         if (yank) {
