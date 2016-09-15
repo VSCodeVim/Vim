@@ -2488,7 +2488,7 @@ class MoveScreenLineEnd extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveScreenLienEndNonBlank extends MoveByScreenLine {
+class MoveScreenLineEndNonBlank extends MoveByScreenLine {
   keys = ["g", "_"];
   movementType: CursorMovePosition = "wrappedLineLastNonWhitespaceCharacter";
   canBePrefixedWithCount = true;
@@ -2521,6 +2521,42 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   keys = ["g", "j"];
   movementType: CursorMovePosition = "down";
   by: CursorMoveByUnit = "wrappedLine";
+  value = 1;
+}
+
+@RegisterAction
+class MoveScreenToRight extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["z", "h"];
+  movementType: CursorMovePosition = "right";
+  by: CursorMoveByUnit = "character";
+  value = 1;
+}
+
+@RegisterAction
+class MoveScreenToLeft extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["z", "l"];
+  movementType: CursorMovePosition = "left";
+  by: CursorMoveByUnit = "character";
+  value = 1;
+}
+
+@RegisterAction
+class MoveScreenToRightHalf extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["z", "h"];
+  movementType: CursorMovePosition = "right";
+  by: CursorMoveByUnit = "halfLine";
+  value = 1;
+}
+
+@RegisterAction
+class MoveScreenToLeftHalf extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["z", "l"];
+  movementType: CursorMovePosition = "left";
+  by: CursorMoveByUnit = "halfLine";
   value = 1;
 }
 
