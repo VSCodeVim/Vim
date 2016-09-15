@@ -34,7 +34,7 @@ export enum VimSpecialCommands {
 }
 
 export class ViewChange {
-  public name: string;
+  public command: string;
   public args: any;
 }
 
@@ -1100,14 +1100,12 @@ export class ModeHandler implements vscode.Disposable {
 
     vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
 
-    if (this.vimState.postponedCodeViewChanges.length > 0) {
-      for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
-        let viewChange = this.vimState.postponedCodeViewChanges[i];
-        await vscode.commands.executeCommand(viewChange.name, viewChange.args);
-      }
-
-      this.vimState.postponedCodeViewChanges = [];
+    for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
+      let viewChange = this.vimState.postponedCodeViewChanges[i];
+      await vscode.commands.executeCommand(viewChange.command, viewChange.args);
     }
+
+    this.vimState.postponedCodeViewChanges = [];
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);

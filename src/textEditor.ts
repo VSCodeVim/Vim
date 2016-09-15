@@ -224,3 +224,29 @@ export class TextEditor {
   }
 }
 
+/**
+ * Directions in the view for editor scroll command.
+ */
+export type EditorScrollDirection = 'up' | 'down';
+
+/**
+ * Units for editor scroll 'by' argument
+ */
+export type EditorScrollByUnit = 'line' | 'wrappedLine' | 'page' | 'halfPage';
+
+/**
+ * Values for reveal line 'at' argument
+ */
+export type RevealLineAtArgument = 'top' | 'center' | 'bottom';
+/**
+ * Positions in the view for cursor move command.
+ */
+export type CursorMovePosition = 'left' | 'right' | 'up' | 'down' |
+  'wrappedLineStart' |'wrappedLineFirstNonWhitespaceCharacter' |
+  'wrappedLineColumnCenter' | 'wrappedLineEnd' | 'wrappedLineLastNonWhitespaceCharacter' |
+  'viewPortTop' | 'viewPortCenter' | 'viewPortBottom' | 'viewPortIfOutside';
+
+/**
+ * Units for Cursor move 'by' argument
+ */
+export type CursorMoveByUnit = 'line' | 'wrappedLine' | 'character' | 'halfLine';
