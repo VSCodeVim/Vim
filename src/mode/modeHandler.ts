@@ -563,7 +563,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (!e.kind) {
+    if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
       return;
     }
 
@@ -1035,20 +1035,29 @@ export class ModeHandler implements vscode.Disposable {
 
     const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
 
+    vscode.window.activeTextEditor.selections = vimState.allCursors.map((x, i) => {
+      return new vscode.Selection(
+        vimState.allCursors[i].start,
+        vimState.allCursors[i].stop
+      );
+    });
+
     // TODO
     await new Promise((resolve, reject) => {
       setTimeout(resolve, 5);
     });
 
+    // batch all text operations together as a single operation
+    // (this is primarily necessary for multi-cursor mode).
     await vscode.window.activeTextEditor.edit(edit => {
-      for (const command of transformations) {
+      for (const command of textTransformations) {
         switch (command.type) {
           case "insertText":
             edit.insert(command.position, command.text);
-            console.log(command.position.toString());
             break;
 
           case "deleteText":
+            console.log(command.position.toString());
             edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
             break;
         }
