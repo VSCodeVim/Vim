@@ -1,7 +1,7 @@
 import { VimSpecialCommands, VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
-import { TextEditor } from './../textEditor';
+import { TextEditor, EditorScrollByUnit, EditorScrollDirection, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { NumericString } from './../number/numericString';
 import { Position } from './../motion/position';
@@ -522,13 +522,39 @@ class CommandCtrlW extends BaseCommand {
   }
 }
 
-@RegisterAction
-class CommandCtrlE extends BaseCommand {
+abstract class CommandEditorScroll extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ["<C-e>"];
+  canBePrefixedWithCount = true;
+  keys: string[];
+  to: EditorScrollDirection;
+  by: EditorScrollByUnit;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("scrollLineDown");
+    vimState.postponedCodeViewChanges.push({
+      command: "editorScroll",
+      args: {
+        to: this.to,
+        by: this.by,
+        value: 1,
+        revealCursor: true
+      }
+    });
+
+    return vimState;
+  }
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+
+    vimState.postponedCodeViewChanges.push({
+      command: "editorScroll",
+      args: {
+        to: this.to,
+        by: this.by,
+        value: timesToRepeat,
+        revealCursor: true
+      }
+    });
 
     return vimState;
   }
@@ -537,7 +563,7 @@ class CommandCtrlE extends BaseCommand {
 @RegisterAction
 class CommandInsertBelowChar extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ["ctrl+e"];
+  keys = ["<C-e>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (TextEditor.isLastLine(position)) {
@@ -610,15 +636,49 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlY extends BaseCommand {
-  modes = [ModeName.Normal];
+class CommandCtrlE extends CommandEditorScroll {
+  keys = ["<C-e>"];
+  to: EditorScrollDirection = "down";
+  by: EditorScrollByUnit = "line";
+}
+
+@RegisterAction
+class CommandCtrlY extends CommandEditorScroll {
   keys = ["<C-y>"];
+  to: EditorScrollDirection = "up";
+  by: EditorScrollByUnit = "line";
+}
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("scrollLineUp");
+@RegisterAction
+class CommandMoveFullPageUp extends CommandEditorScroll {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<C-b>"];
+  to: EditorScrollDirection = "up";
+  by: EditorScrollByUnit = "page";
+}
 
-    return vimState;
-  }
+@RegisterAction
+class CommandMoveFullPageDown extends CommandEditorScroll {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<C-f>"];
+  to: EditorScrollDirection = "down";
+  by: EditorScrollByUnit = "page";
+}
+
+@RegisterAction
+class CommandMoveHalfPageDown extends CommandEditorScroll {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<C-d>"];
+  to: EditorScrollDirection = "down";
+  by: EditorScrollByUnit = "halfPage";
+}
+
+@RegisterAction
+class CommandMoveHalfPageUp extends CommandEditorScroll {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<C-u>"];
+  to: EditorScrollDirection = "up";
+  by: EditorScrollByUnit = "halfPage";
 }
 
 @RegisterAction
@@ -1681,6 +1741,42 @@ class CommandCenterScroll extends BaseCommand {
 }
 
 @RegisterAction
+class CommandTopScroll extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["z", "t"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "revealLine",
+      args: {
+        lineNumber: position.line,
+        at: "top"
+      }
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandBottomScroll extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["z", "b"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "revealLine",
+      args: {
+        lineNumber: position.line,
+        at: "bottom"
+      }
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
   modes = [ModeName.Visual, ModeName.VisualLine];
   keys = ["o"];
@@ -1722,49 +1818,6 @@ class CommandRedo extends BaseCommand {
     }
     vimState.alteredHistory = true;
     return vimState;
-  }
-}
-
-@RegisterAction
-class CommandMoveFullPageDown extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["<C-f>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("cursorPageDown");
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandMoveFullPageUp extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["<C-b>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("cursorPageUp");
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandMoveHalfPageDown extends BaseMovement {
-  keys = ["<C-d>"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(
-      Math.min(TextEditor.getLineCount() - 1, position.line + Configuration.getInstance().scroll),
-      position.character
-    );
-  }
-}
-
-@RegisterAction
-class CommandMoveHalfPageUp extends BaseMovement {
-  keys = ["<C-u>"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(Math.max(0, position.line - Configuration.getInstance().scroll), position.character);
   }
 }
 
@@ -2374,8 +2427,8 @@ class MoveLineBegin extends BaseMovement {
 
 abstract class MoveByScreenLine extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  movementType: string;
-  by: string;
+  movementType: CursorMovePosition;
+  by: CursorMoveByUnit;
   value: number = 1;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
@@ -2418,25 +2471,25 @@ abstract class MoveByScreenLine extends BaseMovement {
 @RegisterAction
 class MoveScreenLineBegin extends MoveByScreenLine {
   keys = ["g", "0"];
-  movementType = "wrappedLineStart";
+  movementType: CursorMovePosition = "wrappedLineStart";
 }
 
 @RegisterAction
 class MoveScreenNonBlank extends MoveByScreenLine {
   keys = ["g", "^"];
-  movementType = "wrappedLineFirstNonWhitespaceCharacter";
+  movementType: CursorMovePosition = "wrappedLineFirstNonWhitespaceCharacter";
 }
 
 @RegisterAction
 class MoveScreenLineEnd extends MoveByScreenLine {
   keys = ["g", "$"];
-  movementType = "wrappedLineEnd";
+  movementType: CursorMovePosition = "wrappedLineEnd";
 }
 
 @RegisterAction
 class MoveScreenLienEndNonBlank extends MoveByScreenLine {
   keys = ["g", "_"];
-  movementType = "wrappedLineLastNonWhitespaceCharacter";
+  movementType: CursorMovePosition = "wrappedLineLastNonWhitespaceCharacter";
   canBePrefixedWithCount = true;
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -2449,15 +2502,15 @@ class MoveScreenLienEndNonBlank extends MoveByScreenLine {
 @RegisterAction
 class MoveScreenLineCenter extends MoveByScreenLine {
   keys = ["g", "m"];
-  movementType = "wrappedLineColumnCenter";
+  movementType: CursorMovePosition = "wrappedLineColumnCenter";
 }
 
 @RegisterAction
 class MoveUpByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "k"];
-  movementType = "up";
-  by = "wrappedLine";
+  movementType: CursorMovePosition = "up";
+  by: CursorMoveByUnit = "wrappedLine";
   value = 1;
 }
 
@@ -2465,16 +2518,16 @@ class MoveUpByScreenLine extends MoveByScreenLine {
 class MoveDownByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "j"];
-  movementType = "down";
-  by = "wrappedLine";
+  movementType: CursorMovePosition = "down";
+  by: CursorMoveByUnit = "wrappedLine";
   value = 1;
 }
 
 @RegisterAction
 class MoveToLineFromViewPortTop extends MoveByScreenLine {
   keys = ["H"];
-  movementType = "viewPortTop";
-  by = "line";
+  movementType: CursorMovePosition = "viewPortTop";
+  by: CursorMoveByUnit = "line";
   value = 1;
   canBePrefixedWithCount = true;
 
@@ -2487,8 +2540,8 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
 @RegisterAction
 class MoveToLineFromViewPortBottom extends MoveByScreenLine {
   keys = ["L"];
-  movementType = "viewPortBottom";
-  by = "line";
+  movementType: CursorMovePosition = "viewPortBottom";
+  by: CursorMoveByUnit = "line";
   value = 1;
   canBePrefixedWithCount = true;
 
@@ -2501,8 +2554,8 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
 @RegisterAction
 class MoveToMiddleLineInViewPort extends MoveByScreenLine {
   keys = ["M"];
-  movementType = "viewPortCenter";
-  by = "line";
+  movementType: CursorMovePosition = "viewPortCenter";
+  by: CursorMoveByUnit = "line";
 }
 
 @RegisterAction
