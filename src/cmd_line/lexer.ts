@@ -36,6 +36,7 @@ module LexerFunctions {
       var c = state.next();
       switch (c) {
         case ",":
+        case ";":
           tokens.push(emitToken(TokenType.Comma, state)!);
           continue;
         case "%":
@@ -68,6 +69,12 @@ module LexerFunctions {
         case "-":
           tokens.push(emitToken(TokenType.Minus, state)!);
           continue;
+        case "*":
+          state.emit();
+          tokens.push(new Token(TokenType.SelectionFirstLine, '<')!);
+          tokens.push(new Token(TokenType.Comma, ',')!);
+          tokens.push(new Token(TokenType.SelectionLastLine, '>')!);
+          continue;
         case "'":
           return lexMark;
         default:
@@ -80,24 +87,29 @@ module LexerFunctions {
 
   function lexMark(state: Scanner, tokens: Token[]): ILexFunction | null {
     // The first token has already been lexed.
-    while (true) {
-      if (state.isAtEof) {
-        return null;
-      }
-
-      var c = state.next();
-      switch (c) {
-        case '<':
-          tokens.push(emitToken(TokenType.SelectionFirstLine, state)!);
-          break;
-        case '>':
-          tokens.push(emitToken(TokenType.SelectionLastLine, state)!);
-          break;
-        default:
-          state.backup();
-          return lexRange;
-      }
+    if (state.isAtEof) {
+      return null;
     }
+
+    var c = state.next();
+    switch (c) {
+      case '<':
+        tokens.push(emitToken(TokenType.SelectionFirstLine, state) !);
+        break;
+      case '>':
+        tokens.push(emitToken(TokenType.SelectionLastLine, state) !);
+        break;
+      default:
+        if (/[a-zA-Z]/.test(c)) {
+          state.emit();
+          tokens.push(new Token(TokenType.Mark, c) !);
+        } else {
+          state.backup();
+        }
+        break;
+    }
+
+    return lexRange;
   }
 
   function lexLineRef(state : Scanner, tokens: Token[]): ILexFunction | null {

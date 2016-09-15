@@ -71,4 +71,15 @@ suite("Basic substitute", () => {
       "db"
     ]);
   });
+
+  test("Substitute support marks", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'c', '<Esc>', 'y', 'y', '2', 'p', 'g', 'g', 'm', 'a', 'j', 'm', 'b']);
+    await runCmdLine("'a,'bs/a/d/g", modeHandler);
+
+    assertEqualLines([
+      "dbc",
+      "dbc",
+      "abc"
+    ]);
+  });
 });

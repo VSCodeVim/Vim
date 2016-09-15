@@ -34,10 +34,31 @@ suite("Mode Replace", () => {
     });
 
     newTest({
+      title: "Can handle R and quit Replace Mode",
+      start: ['|123456'],
+      keysPressed: 'Rabc<Esc>',
+      end: ["ab|c456"]
+    });
+
+    newTest({
       title: "Can handle R across lines",
       start: ['123|456', '789'],
       keysPressed: 'Rabcd\nefg',
       end: ["123abcd", "efg|", "789"]
+    });
+
+    newTest({
+      title: "Can handle R across lines and quite Replace Mode",
+      start: ['123|456', '789'],
+      keysPressed: 'Rabcd\nefg<Esc>',
+      end: ["123abcd", "ef|g", "789"]
+    });
+
+    newTest({
+      title: "Can handle R with {count}",
+      start: ['123|456', '789'],
+      keysPressed: '3Rabc\ndef<Esc>',
+      end: ['123abc', 'defabc', 'defabc', 'de|f', '789']
     });
 
     newTest({

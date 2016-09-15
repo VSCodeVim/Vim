@@ -43,16 +43,16 @@ export class LineRange {
     return this.left.toString() + this.separator.content + this.right.toString();
   }
 
-  execute(document : vscode.TextEditor) : void {
+  execute(document : vscode.TextEditor, modeHandler: ModeHandler) : void {
     if (this.isEmpty) {
       return;
     }
     var lineRef = this.right.length === 0 ? this.left : this.right;
-    var pos = this.lineRefToPosition(document, lineRef);
+    var pos = this.lineRefToPosition(document, lineRef, modeHandler);
     document.selection = new vscode.Selection(pos, pos);
   }
 
-  lineRefToPosition(doc : vscode.TextEditor, toks : token.Token[]) : vscode.Position {
+  lineRefToPosition(doc : vscode.TextEditor, toks : token.Token[], modeHandler: ModeHandler) : vscode.Position {
     var first = toks[0];
     switch (first.type) {
       case token.TokenType.Dollar:
@@ -71,6 +71,8 @@ export class LineRange {
       case token.TokenType.SelectionLastLine:
         let end = doc.selection.start.isAfter(doc.selection.end) ? doc.selection.start : doc.selection.end;
         return new vscode.Position(end.line, 0);
+      case token.TokenType.Mark:
+        return modeHandler.vimState.historyTracker.getMark(first.content).position;
       default:
         throw new Error("not implemented");
     }
@@ -95,7 +97,7 @@ export class CommandLine {
 
   async execute(document : vscode.TextEditor, modeHandler : ModeHandler) : Promise<void> {
     if (!this.command) {
-      this.range.execute(document);
+      this.range.execute(document, modeHandler);
       return;
     }
 

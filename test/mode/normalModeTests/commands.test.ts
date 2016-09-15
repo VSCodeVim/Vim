@@ -135,6 +135,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle '<Count>r'",
+      start: ['123|456', '789'],
+      keysPressed: '2ra',
+      end: ['123a|a6', '789']
+    });
+
+    newTest({
+      title: "Can handle '<Count>r'",
+      start: ['123|456', '789'],
+      keysPressed: '4ra',
+      end: ['123|456', '789']
+    });
+
+    newTest({
       title: "Can handle 'r' after 'dd'",
       start: ['one', 'two', 'thre|e'],
       keysPressed: 'kddrT',

@@ -84,8 +84,11 @@ export class Register {
    * register ".
    */
   public static async get(vimState: VimState): Promise<IRegisterContent> {
-    let register = vimState.recordedState.registerName;
+    const register = vimState.recordedState.registerName;
+    return Register.getByKey(register);
+  }
 
+  public static async getByKey(register: string): Promise<IRegisterContent> {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
@@ -114,5 +117,9 @@ export class Register {
     }
 
     return Register.registers[register];
+  }
+
+  public static getKeys(): string[] {
+    return Object.keys(Register.registers);
   }
 }
