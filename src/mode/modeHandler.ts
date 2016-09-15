@@ -22,6 +22,7 @@ import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
+import { wait, waitForCursorUpdatesToHappen } from './../util';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
   BaseOperator, isIMovement,
@@ -740,23 +741,6 @@ export class ModeHandler implements vscode.Disposable {
 
     vimState = await this.runAction(vimState, recordedState, action);
 
-    // Updated desired column
-
-    const movement = action instanceof BaseMovement ? action : undefined;
-
-    if ((movement && !movement.doesntChangeDesiredColumn) ||
-        (recordedState.command &&
-         vimState.currentMode !== ModeName.VisualBlock &&
-         vimState.currentMode !== ModeName.VisualBlockInsertMode)) {
-      // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
-
-      if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
-        vimState.desiredColumn = Number.POSITIVE_INFINITY;
-      } else {
-        vimState.desiredColumn = vimState.cursorPosition.character;
-      }
-    }
-
     // Update view
     await this.updateView(vimState);
 
@@ -885,8 +869,26 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // Update the current history step to have the latest cursor position incase it is needed
+    // Update the current history step to have the latest cursor position
+
     vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
+
+    // Updated desired column
+
+    const movement = action instanceof BaseMovement ? action : undefined;
+
+    if ((movement && !movement.doesntChangeDesiredColumn) ||
+        (recordedState.command &&
+         vimState.currentMode !== ModeName.VisualBlock &&
+         vimState.currentMode !== ModeName.VisualBlockInsertMode)) {
+      // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
+
+      if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
+        vimState.desiredColumn = Number.POSITIVE_INFINITY;
+      } else {
+        vimState.desiredColumn = vimState.cursorPosition.character;
+      }
+    }
 
     return vimState;
   }
@@ -1035,18 +1037,6 @@ export class ModeHandler implements vscode.Disposable {
 
     const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
 
-    vscode.window.activeTextEditor.selections = vimState.allCursors.map((x, i) => {
-      return new vscode.Selection(
-        vimState.allCursors[i].start,
-        vimState.allCursors[i].stop
-      );
-    });
-
-    // TODO
-    await new Promise((resolve, reject) => {
-      setTimeout(resolve, 5);
-    });
-
     // batch all text operations together as a single operation
     // (this is primarily necessary for multi-cursor mode).
     await vscode.window.activeTextEditor.edit(edit => {
@@ -1057,7 +1047,6 @@ export class ModeHandler implements vscode.Disposable {
             break;
 
           case "deleteText":
-            console.log(command.position.toString());
             edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
             break;
         }
@@ -1112,6 +1101,8 @@ export class ModeHandler implements vscode.Disposable {
     for (let action of actions) {
       recordedState.actionsRun = actions.slice(0, ++i);
       vimState = await this.runAction(vimState, recordedState, action);
+
+      await this.updateView(vimState, true);
     }
 
     recordedState.actionsRun = actions;
