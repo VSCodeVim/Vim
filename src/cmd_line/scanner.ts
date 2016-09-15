@@ -69,6 +69,14 @@ export class Scanner {
     return s;
   }
 
+  // Returns the text from the current position to the end.
+  remaining() : string {
+    while (!this.isAtEof) {
+      this.next();
+    }
+    return this.emit();
+  }
+
   backup(): void {
     this.pos--;
   }

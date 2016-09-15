@@ -278,8 +278,8 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:arrow_down:| :r [file]	    | insert the contents of [file] below the cursor
-:arrow_down:| :r! {command}  | insert the standard output of {command} below the cursor
+:warning:   | :r [file]	    | insert the contents of [file] below the cursor
+:warning:   | :r! {command}  | insert the standard output of {command} below the cursor
 
 ## Deleting text
 
