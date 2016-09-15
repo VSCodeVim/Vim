@@ -41,7 +41,7 @@ export async function waitForCursorUpdatesToHappen(): Promise<void> {
   // TODO - dispose!
 
   await new Promise((resolve, reject) => {
-    setTimeout(resolve, 10);
+    setTimeout(resolve, 100);
     vscode.window.onDidChangeTextEditorSelection(x => {
       resolve();
     });
