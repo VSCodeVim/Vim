@@ -1,6 +1,5 @@
 "use strict";
 
-// The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
 import {VimError, ErrorCode} from '../src/error';
 
@@ -8,6 +7,8 @@ suite("ErrorCode", () => {
   test("contains known errors", () => {
     assert.equal(ErrorCode.E32, 32);
     assert.equal(ErrorCode.E37, 37);
+    assert.equal(ErrorCode.E208, 208);
+    assert.equal(ErrorCode.E348, 348);
     assert.equal(ErrorCode.E488, 488);
   });
 });

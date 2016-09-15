@@ -1,14 +1,14 @@
 "use strict";
 
-import * as node from "../commands/quit";
+import * as node from "../commands/wall";
 import {Scanner} from '../scanner';
 import {VimError, ErrorCode} from '../../error';
 
-export function parseQuitCommandArgs(args : string) : node.QuitCommand {
+export function parseWallCommandArgs(args : string) : node.WallCommand {
   if (!args) {
-    return new node.QuitCommand({});
+    return new node.WallCommand({});
   }
-  var scannedArgs : node.IQuitCommandArguments = {};
+  var scannedArgs : node.IWallCommandArguments = {};
   var scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {
@@ -21,11 +21,5 @@ export function parseQuitCommandArgs(args : string) : node.QuitCommand {
   if (!scanner.isAtEof) {
     throw VimError.fromCode(ErrorCode.E488);
   }
-  return new node.QuitCommand(scannedArgs);
-}
-
-export function parseQuitAllCommandArgs(args: string): node.QuitCommand {
-  let command = parseQuitCommandArgs(args);
-  command.arguments.quitAll = true;
-  return command;
+  return new node.WallCommand(scannedArgs);
 }

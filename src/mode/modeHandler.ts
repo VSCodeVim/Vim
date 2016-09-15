@@ -36,6 +36,11 @@ import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
 
+export class ViewChange {
+  public command: string;
+  public args: any;
+}
+
 /**
  * The VimState class holds permanent state that carries over from action
  * to action.
@@ -57,7 +62,12 @@ export class VimState {
 
   public historyTracker: HistoryTracker;
 
+  /**
+   * Are multiple cursors currently present?
+   */
   public isMultiCursor = false;
+
+  public static lastRepeatableMovement : BaseMovement | undefined = undefined;
 
   /**
    * The keystroke sequence that made up our last complete action (that can be
@@ -67,7 +77,16 @@ export class VimState {
 
   public alteredHistory = false;
 
+  public isRunningDotCommand = false;
+
   public focusChanged = false;
+
+  /**
+   * Every time we invoke a VS Code command which might trigger Code's view update,
+   * we should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
+   * This array is used to cache every VS Code view updating event and they will be triggered once we run the inhouse `viewUpdate`.
+   */
+  public postponedCodeViewChanges: ViewChange[] = [];
 
   /**
    * Used to prevent non-recursive remappings from looping.
@@ -324,8 +343,14 @@ export class ReplaceState {
 
   public originalChars: string[] = [];
 
-  constructor(startPosition: Position) {
+  public newChars: string[] = [];
+
+  public timesToRepeat: number;
+
+  constructor(startPosition: Position, timesToRepeat: number = 1) {
     this._replaceCursorStartPosition = startPosition;
+    this.timesToRepeat = timesToRepeat;
+
     let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
     for (let [key, value] of text.split("").entries()) {
       this.originalChars[key + startPosition.character] = value;
@@ -472,7 +497,7 @@ export class ModeHandler implements vscode.Disposable {
   /**
    * Filename associated with this ModeHandler. Only used for debugging.
    */
-  public filename: string;
+  public fileName: string;
 
   private _caretDecoration = vscode.window.createTextEditorDecorationType(
   {
@@ -505,7 +530,7 @@ export class ModeHandler implements vscode.Disposable {
   constructor(filename = "") {
     ModeHandler.IsTesting = Globals.isTesting;
 
-    this.filename = filename;
+    this.fileName = filename;
 
     this._vimState = new VimState();
     this._insertModeRemapper = new InsertModeRemapper(true);
@@ -554,7 +579,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (e.textEditor.document.fileName !== this.filename) {
+    if (e.textEditor.document.fileName !== this.fileName) {
       return;
     }
 
@@ -727,8 +752,6 @@ export class ModeHandler implements vscode.Disposable {
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
     if (result === KeypressState.NoPossibleMatch) {
-      console.log("Nothing matched!");
-
       vimState.recordedState = new RecordedState();
       return vimState;
     } else if (result === KeypressState.WaitingOnKeys) {
@@ -757,10 +780,14 @@ export class ModeHandler implements vscode.Disposable {
     /*
     TODO
 
+    // If arrow keys or mouse were in insert mode, create an undo point.
+    // This needs to happen before any changes are made
+
     let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
-    if (prevPos !== undefined) {
+    if (prevPos !== undefined && !vimState.isRunningDotCommand) {
       if (vimState.cursorPositionJustBeforeAnythingHappened.line !== prevPos.line ||
-        vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
+          vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
+
         vimState.previousFullAction = recordedState;
         vimState.historyTracker.finishCurrentStep();
       }
@@ -920,6 +947,10 @@ export class ModeHandler implements vscode.Disposable {
         if (result.registerMode) {
           vimState.currentRegisterMode = result.registerMode;
         }
+      }
+
+      if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
+        VimState.lastRepeatableMovement = movement;
       }
     }
 
@@ -1095,6 +1126,7 @@ export class ModeHandler implements vscode.Disposable {
 
     recordedState = new RecordedState();
     vimState.recordedState = recordedState;
+    vimState.isRunningDotCommand = true;
 
     let i = 0;
 
@@ -1104,6 +1136,8 @@ export class ModeHandler implements vscode.Disposable {
 
       await this.updateView(vimState, true);
     }
+
+    vimState.isRunningDotCommand = false;
 
     recordedState.actionsRun = actions;
 
@@ -1251,6 +1285,13 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
+
+    for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
+      let viewChange = this.vimState.postponedCodeViewChanges[i];
+      await vscode.commands.executeCommand(viewChange.command, viewChange.args);
+    }
+
+    this.vimState.postponedCodeViewChanges = [];
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);

@@ -193,19 +193,17 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   await modeHandler.handleKeyEvent('<Esc>');
 
-  // start:
-  //
-
+  // Insert all the text as a single action.
   await editor.edit(builder => {
     builder.insert(new Position(0, 0), testObj.start.join("\n").replace("|", ""));
   });
 
-  // keysPressed:
-  //
   await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
 
   await waitForCursorUpdatesToHappen();
 
+  // Since we bypassed VSCodeVim to add text, we need to tell the history tracker
+  // that we added it.
   modeHandler.vimState.historyTracker = new HistoryTracker();
   modeHandler.vimState.historyTracker.addChange();
   modeHandler.vimState.historyTracker.finishCurrentStep();

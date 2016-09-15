@@ -135,6 +135,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle ddp",
+      start: ['|one', 'two'],
+      keysPressed: 'ddp',
+      end: ["two", "|one"],
+    });
+
+    newTest({
       title: "Can handle 'de'",
       start: ['text tex|t'],
       keysPressed: '^de',
@@ -209,6 +216,14 @@ suite("Mode Normal", () => {
       start: ['text text tex|t'],
       keysPressed: '^lllllllcw',
       end: ['text te| text'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'cw' without removing EOL",
+      start: ['|text;', 'text'],
+      keysPressed: 'llllcw',
+      end: ['text|', 'text'],
       endMode: ModeName.Insert
     });
 
@@ -916,7 +931,6 @@ suite("Mode Normal", () => {
       keysPressed: '2yyk[p',
       end: [' |one', 'two', ' three', '    one', ' two']
     });
-
 
     newTest({
       title: "Can repeat w",

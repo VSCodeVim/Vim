@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { ModeHandler } from './mode/modeHandler';
 import { Position } from './motion/position';
 import { Configuration } from './configuration/configuration';
+import { Globals } from './globals';
 
 export class TextEditor {
   // TODO: Refactor args
@@ -155,6 +156,31 @@ export class TextEditor {
     return vscode.window.activeTextEditor.document.getText(selection);
   }
 
+  /**
+   *  Retrieves the current word at position.
+   *  If current position is whitespace, selects the right-closest word
+   */
+  static getWord(position: Position) : string | undefined {
+    let start = position;
+    let end = position.getRight();
+
+    const char = TextEditor.getText(new vscode.Range(start, end));
+    if (Globals.WhitespaceRegExp.test(char)) {
+      start = position.getWordRight();
+    } else {
+      start = position.getWordLeft(true);
+    }
+    end = start.getCurrentWordEnd(true).getRight();
+
+    const word = TextEditor.getText(new vscode.Range(start, end));
+
+    if (Globals.WhitespaceRegExp.test(word)) {
+      return undefined;
+    }
+
+    return word;
+  }
+
   static isFirstLine(position : vscode.Position): boolean {
     return position.line === 0;
   }
@@ -213,3 +239,29 @@ export class TextEditor {
   }
 }
 
+/**
+ * Directions in the view for editor scroll command.
+ */
+export type EditorScrollDirection = 'up' | 'down';
+
+/**
+ * Units for editor scroll 'by' argument
+ */
+export type EditorScrollByUnit = 'line' | 'wrappedLine' | 'page' | 'halfPage';
+
+/**
+ * Values for reveal line 'at' argument
+ */
+export type RevealLineAtArgument = 'top' | 'center' | 'bottom';
+/**
+ * Positions in the view for cursor move command.
+ */
+export type CursorMovePosition = 'left' | 'right' | 'up' | 'down' |
+  'wrappedLineStart' |'wrappedLineFirstNonWhitespaceCharacter' |
+  'wrappedLineColumnCenter' | 'wrappedLineEnd' | 'wrappedLineLastNonWhitespaceCharacter' |
+  'viewPortTop' | 'viewPortCenter' | 'viewPortBottom' | 'viewPortIfOutside';
+
+/**
+ * Units for Cursor move 'by' argument
+ */
+export type CursorMoveByUnit = 'line' | 'wrappedLine' | 'character' | 'halfLine';

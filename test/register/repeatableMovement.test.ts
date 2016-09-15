@@ -3,7 +3,6 @@
 import { ModeHandler } from "../../src/mode/modeHandler";
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
-import * as clipboard from 'copy-paste';
 
 suite("register", () => {
   let modeHandler: ModeHandler = new ModeHandler();
@@ -20,25 +19,31 @@ suite("register", () => {
   suiteTeardown(cleanUpWorkspace);
 
   newTest({
-    title: "Can copy to a register",
-    start: ['|one', 'two'],
-    keysPressed: '"add"ap',
-    end: ["two", "|one"],
-  });
-
-  clipboard.copy("12345");
-  newTest({
-    title: "Can access '*' (clipboard) register",
-    start: ['|one'],
-    keysPressed: '"*P',
-    end: ["1234|5one"],
+    title: "Can repeat f<character>",
+    start: ['|abc abc abc'],
+    keysPressed: 'fa;',
+    end: ['abc abc |abc'],
   });
 
   newTest({
-    title: "Can use two registers together",
-    start: ['|one', "two"],
-    keysPressed: '"ayyj"byy"ap"bp',
-    end: ["one", "two", "one", "|two"],
+    title: "Can repeat reversed F<character>",
+    start: ['|abc abc abc'],
+    keysPressed: 'fa$,',
+    end: ['abc abc |abc'],
+  });
+
+  newTest({
+    title: "Can repeat t<character>",
+    start: ['|abc abc abc'],
+    keysPressed: 'tc;',
+    end: ['abc a|bc abc'],
+  });
+
+  newTest({
+    title: "Can repeat N times reversed t<character>",
+    start: ['|abc abc abc abc'],
+    keysPressed: 'tc$3,',
+    end: ['abc| abc abc abc'],
   });
 
 });

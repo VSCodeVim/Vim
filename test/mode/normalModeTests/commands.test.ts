@@ -41,6 +41,22 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'Ns'",
+      start: ['|text'],
+      keysPressed: '3s',
+      end: ['|t'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'Ns' at end of line",
+      start: ['te|xt'],
+      keysPressed: '3s',
+      end: ['te|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle '<Del>'",
       start: ['te|xt'],
       keysPressed: '<Del>',
@@ -117,6 +133,20 @@ suite("Mode Normal", () => {
       start: ['tex|t'],
       keysPressed: 'hrs',
       end: ['te|st']
+    });
+
+    newTest({
+      title: "Can handle '<Count>r'",
+      start: ['123|456', '789'],
+      keysPressed: '2ra',
+      end: ['123a|a6', '789']
+    });
+
+    newTest({
+      title: "Can handle '<Count>r'",
+      start: ['123|456', '789'],
+      keysPressed: '4ra',
+      end: ['123|456', '789']
     });
 
     newTest({
