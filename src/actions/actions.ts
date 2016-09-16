@@ -1281,19 +1281,13 @@ export class ChangeOperator extends BaseOperator {
         const isEndOfLine = end.character === TextEditor.getLineAt(end).text.length - 1;
         let state = vimState;
 
-        // If only EOL on line do nothing except change to insert
-        if (TextEditor.getLineAt(start).text.length < 1) {
-          vimState.cursorPosition = vimState.cursorStartPosition;
-          vimState.currentMode = ModeName.Insert;
-          return vimState;
-        }
-
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
-        // the line.
-        if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0) {
+        // the line. We do want to run delete if it is a multiline change though ex. c}
+        if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 || (end.line !== start.line)) {
           state = await new DeleteOperator().run(vimState, start, end);
         }
+
         state.currentMode = ModeName.Insert;
 
         if (isEndOfLine) {
@@ -2577,6 +2571,10 @@ export class MoveWordBegin extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (vimState.recordedState.operator instanceof ChangeOperator) {
+
+      if (TextEditor.getLineAt(position).text.length < 1) {
+        return position;
+      }
 
       /*
       From the Vim manual:
