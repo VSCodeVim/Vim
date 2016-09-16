@@ -58,6 +58,23 @@ export class Register {
     };
   }
 
+  public static putByKey(content: string | string[], register?: string, registerMode?: RegisterMode): void {
+    register = register || '"';
+
+    if (!Register.isValidRegister(register)) {
+      throw new Error(`Invalid register ${register}`);
+    }
+
+    if (register === '*') {
+      clipboard.copy(content);
+    }
+
+    Register.registers[register] = {
+      text        : content,
+      registerMode: registerMode || RegisterMode.FigureItOutFromCurrentMode,
+    };
+  }
+
   /**
    * Gets content from a register. If none is specified, uses the default
    * register ".
