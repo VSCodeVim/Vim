@@ -2955,6 +2955,32 @@ class ActionJoin extends BaseCommand {
 }
 
 @RegisterAction
+class ActionJoinVisualMode extends BaseCommand {
+  modes = [ModeName.Visual];
+  keys = ["J"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let actionJoin = new ActionJoin();
+    let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    let end = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+
+    if (start.line === end.line) {
+      return vimState;
+    }
+
+    if (start.isAfter(end)) {
+      [start, end] = [end, start];
+    }
+
+    for (let i = start.line; i < end.line; i++) {
+      vimState = await actionJoin.exec(start, vimState);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionJoinNoWhitespace extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["g", "J"];
