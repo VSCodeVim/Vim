@@ -2545,7 +2545,7 @@ class MoveScreenToLeft extends MoveByScreenLine {
 @RegisterAction
 class MoveScreenToRightHalf extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["z", "h"];
+  keys = ["z", "H"];
   movementType: CursorMovePosition = "right";
   by: CursorMoveByUnit = "halfLine";
   value = 1;
@@ -2554,7 +2554,7 @@ class MoveScreenToRightHalf extends MoveByScreenLine {
 @RegisterAction
 class MoveScreenToLeftHalf extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["z", "l"];
+  keys = ["z", "L"];
   movementType: CursorMovePosition = "left";
   by: CursorMoveByUnit = "halfLine";
   value = 1;

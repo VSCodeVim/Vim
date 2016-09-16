@@ -198,12 +198,12 @@ Status | Command | Description
 
 These only work when 'wrap' is off:
 
-Status | Command | Description
----|--------|------------------------------
-  :running:  | :1234:  zh	|	scroll screen N characters to the right
- :running:   | :1234:  zl	|	scroll screen N characters to the left
-  :running:  | :1234:  zH	|	scroll screen half a screenwidth to the right
-:running:   | :1234:  zL	|	scroll screen half a screenwidth to the left
+Status | Command | Description | Note
+---|--------|------------------|------------
+:white_check_mark: :star: | :1234:  zh	|	scroll screen N characters to the right | In Code, the cursor wil always move when you run this command, whether the horizontal scrollbar moves or not.
+:white_check_mark: :star: | :1234:  zl	|	scroll screen N characters to the left | As above
+:white_check_mark: :star: | :1234:  zH	|	scroll screen half a screenwidth to the right | As above
+:white_check_mark: :star: | :1234:  zL	|	scroll screen half a screenwidth to the left | As above
 
 ## Inserting text
 
