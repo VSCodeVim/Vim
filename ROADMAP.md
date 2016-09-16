@@ -295,7 +295,7 @@ Status | Command | Description
 :white_check_mark:    | :1234:  J		| join N-1 lines (delete EOLs)
 :white_check_mark:    |    {visual}J	| join the highlighted lines
 :white_check_mark:    | :1234:  gJ	| 	like "J", but without inserting spaces
-    |    {visual}gJ	| like "{visual}J", but without inserting spaces
+:white_check_mark:|   {visual}gJ	| like "{visual}J", but without inserting spaces
     | :[range]d [x]	| delete [range] lines [into register x]
 
 ## Copying and moving text
