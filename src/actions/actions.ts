@@ -513,7 +513,6 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.Normal,
     ModeName.SearchInProgressMode,
-    ModeName.Replace,
     ModeName.SearchInProgressMode
   ];
   keys = ["<Esc>"];
@@ -810,7 +809,8 @@ class CommandReplaceAtCursor extends BaseCommand {
   }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let timesToRepeat = vimState.recordedState.count || 1;
+
     vimState.currentMode = ModeName.Replace;
     vimState.replaceState = new ReplaceState(position, timesToRepeat);
 
