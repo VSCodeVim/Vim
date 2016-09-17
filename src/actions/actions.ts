@@ -304,10 +304,10 @@ export abstract class BaseCommand extends BaseAction {
     for (const { start, stop } of cursorsToIterateOver) {
       this.multicursorIndex = i++;
 
-      for (let j = 0; j < timesToRepeat; j++) {
-        vimState.cursorPosition      = stop;
-        vimState.cursorStartPosition = start;
+      vimState.cursorPosition      = stop;
+      vimState.cursorStartPosition = start;
 
+      for (let j = 0; j < timesToRepeat; j++) {
         vimState = await this.exec(stop, vimState);
       }
 
