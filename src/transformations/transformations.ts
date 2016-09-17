@@ -8,17 +8,17 @@ export interface InsertTextTransformation {
    * Type of this insertion (used for type checking with discriminated
    * union types).
    */
-  type                 : "insertText";
+  type    : "insertText";
 
   /**
    * Text content of this insertion.
    */
-  text                 : string;
+  text    : string;
 
   /**
    * The location to insert the text.
    */
-  position     : Position;
+  position: Position;
 }
 
 export interface InsertTextVSCodeTransformation {

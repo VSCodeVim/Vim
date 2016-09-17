@@ -2020,7 +2020,6 @@ class CommandVisualBlockMode extends BaseCommand {
   keys = ["<C-v>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-
     if (vimState.currentMode === ModeName.VisualBlock) {
       vimState.currentMode = ModeName.Normal;
     } else {
@@ -3293,15 +3292,26 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
       const insertPos = insertAtStart ? start : end;
 
       if (char === '<BS>') {
-        await TextEditor.backspace(insertPos.getLeft());
+        vimState.recordedState.transformations.push({
+          type           : "deleteText",
+          position       : insertPos.getLeft(),
+        });
 
         posChange = -1;
       } else {
+        let positionToInsert: Position;
+
         if (vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Append) {
-          await TextEditor.insert(this.keysPressed[0], insertPos.getLeft());
+          positionToInsert = insertPos.getLeft();
         } else {
-          await TextEditor.insert(this.keysPressed[0], insertPos);
+          positionToInsert = insertPos;
         }
+
+        vimState.recordedState.transformations.push({
+          type    : "insertText",
+          text    : char,
+          position: positionToInsert
+        });
 
         posChange = 1;
       }

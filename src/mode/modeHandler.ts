@@ -588,10 +588,6 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
-      return;
-    }
-
     if (this._vimState.currentMode !== ModeName.VisualBlock           &&
         this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
       e.selections.length > this._vimState.allCursors.length) {
@@ -620,6 +616,10 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+    if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
+      return;
+    }
+
     if (this._vimState.isMultiCursor && e.selections.length === 1) {
       this._vimState.isMultiCursor = false;
     }
@@ -628,7 +628,8 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (this.currentModeName === ModeName.VisualBlock) {
+    if (this.currentModeName === ModeName.VisualBlock ||
+        this.currentModeName === ModeName.VisualBlockInsertMode) {
       // Not worth it until we get a better API for this stuff.
 
       return;
@@ -1110,10 +1111,15 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vimState.recordedState.transformations = [];
-    vimState.allCursors = [];
 
-    for (const sel of vscode.window.activeTextEditor.selections) {
-      vimState.allCursors.push(Range.FromVSCodeSelection(sel));
+    // We handle multiple cursors in a different way in visual block mode, unfortunately.
+    // TODO - refactor that out!
+    if (vimState.currentMode !== ModeName.VisualBlockInsertMode) {
+      vimState.allCursors = [];
+
+      for (const sel of vscode.window.activeTextEditor.selections) {
+        vimState.allCursors.push(Range.FromVSCodeSelection(sel));
+      }
     }
 
     return vimState;
