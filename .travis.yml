@@ -4,34 +4,56 @@ notifications:
 sudo: false
 
 os:
-  - osx
-  - linux
+- osx
+- linux
 
 addons:
   apt:
     packages:
-      - xclip
+    - xclip
 
 language: node_js
 
 node_js:
-  - "6.3.1"
+- 6.3.1
 
 env:
-  - GITHUB_TOKEN=1b17d62d38a4846efa7ea4de4b773b581787b0f1
+  global:
+    secure: F3+6ObO8G2XDTXXSWizxdV4YzjWWwFKfISwYnKTwnAy4LXLPzcHnrh31rFmKeXSddZmWiVMhy++a4Y9IOTi0DrSnUYaaIP35zMIvMYIqdSa6v3b93Z0fwZmniXe0e4EBIhcdnMOz1fdxGhd0oWP/YyywOm32TjymhqbApT9AzqUodpGqRmA30B1tOFr09K+A2EiIr+4QGsB/a3VUv24zWWUHtkXaJ6tQ7rqt6944tGK4RtjAIzXLoePjJ+kmTqY6fMk/sPmYxHXnzjaEsIFBd5dYDCFtjR0oqjdq2OXc+bwIjl4t3Wh4RwE8bUEcUSnkPRqlJH5Hni5vfPRirb4qH4uoFmLNa8Pg2dPI44cYBvWVGSJ5GqXD5jV64waR3CM3VC2Ll76KWdlqdUo0cNIV75ul+UdieuNghTnw3OTYIWyhvrLqfnabOG81z09brNapZuCPj3rZ+sjTWf7beRoH877UGH0C6jimxNk0syjGL0+pXH0UR0dI+7RWaNyPAMfvjz3m9UpDw3NtdDGNMT1D3VgZz+INwU6XMUSpg36S1BzMTfi6NJm+srA5BDHyC/MuYjO+l/1gaj0+dvkpMyyj9btotYFmfemEFlm2AHGMkITaucUrmCQKIM9ZL7l/fZfvPkUGbaaLH7EONL7KLLaj6pk2z7na91/3I1pWg4yJDPE=
 
 before_install:
-  - if [ $TRAVIS_OS_NAME == "linux" ]; then
-      export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
-      sh -e /etc/init.d/xvfb start;
-      sleep 3;
-    fi
+- if [ $TRAVIS_OS_NAME == "linux" ]; then
+    export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
+    sh -e /etc/init.d/xvfb start; sleep 3;
+  fi
 
 install:
-  - npm install
-  - npm run vscode:prepublish
+- npm install;
 
 script:
-  - npm install -g gulp
-  - gulp
-  - npm test --silent
+- npm install -g gulp;
+- gulp;
+- npm test --silent;
+
+after_success:
+- npm install -g vsce;
+- vsce package;
+
+deploy:
+- provider: releases
+  api_key:
+    secure: UTXZhDpOsvVIrGZY0GCk2EtAPOOjWBXfrgrNsLVZLsN6R/jLlAIjjO652DLpMuGwSrxPP8NZUCwLaOPfPL+xjK52trHZaAFjOrD+myieTPeF2zIvb26OEdfzvXMmDEP8oGxrC7WNohN/dWpP4/P2kAQ/XQoWwa0EbxqB+hReM3mqHUfEHUwrHg7eJmcDHdUbeukDV6g1mm54cQtNmCSZRqd9iihO9N2lNaZrd+7u06dLeu2Jw1tz+kFTEB9y2FqIGOr/KZt2z+ZJXDW3O4a8IFgTF4njfyXh9RW3UpiTE1cSwbWkL9PLHpg6RDWnTj8Bmf3B3P3UKgGHWczHoxNNAAEYziur4aZU9Gk0Q34uhmB1hiKmMZkq2Wt0wwb512y+xEcZE2F48STiES/HRGvk8/k5xE4iBPwvl+w/MdpVGKccQB5hVejSOpJHauxO6Uqw0ThEqR7QtHG6bRiBD049KmEvbhEYVnIJx/8HvjKLHF0ZAVeP1ZPSYRdn9GOUF91wA="
+  file_glob: true
+  file: "*.vsix"
+  skip_cleanup: true
+  on:
+    repo: vscodevim/vim
+    tags: true
+    condition: "$TRAVIS_OS_NAME = linux"
+- provider: script
+  script: vsce publish -p $VS_TOKEN
+  skip_cleanup: true
+  on:
+    repo: vscodevim/vim
+    tags: true
+    condition: "$TRAVIS_OS_NAME = linux"
