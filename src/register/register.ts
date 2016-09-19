@@ -1,5 +1,6 @@
 import { VimState } from './../mode/modeHandler';
 import * as clipboard from 'copy-paste';
+
 /**
  * There are two different modes of copy/paste in Vim - copy by character
  * and copy by line. Copy by line typically happens in Visual Line mode, but
@@ -21,7 +22,7 @@ export interface IRegisterContent {
 export class Register {
   /**
    * The '"' is the unnamed register.
-   * The '*' is the special register for stroing into system clipboard.
+   * The '*' and '+' are special registers for accessing the system clipboard.
    * TODO: Read-Only registers
    *  '.' register has the last inserted text.
    *  '%' register has the current file path.
@@ -30,8 +31,15 @@ export class Register {
    */
   private static registers: { [key: string]: IRegisterContent } = {
     '"': { text: "", registerMode: RegisterMode.CharacterWise },
-    '*': { text: "", registerMode: RegisterMode.CharacterWise }
+    '*': { text: "", registerMode: RegisterMode.CharacterWise },
+    '+': { text: "", registerMode: RegisterMode.CharacterWise }
   };
+
+  private static systemClipboardRegisters: string[] = ["*", "+"];
+
+  public static isSystemClipboardRegister(register: string): boolean {
+    return Register.systemClipboardRegisters.indexOf(register) !== -1;
+  }
 
   public static isValidRegister(register: string): boolean {
     return register in Register.registers || /^[a-z0-9]+$/i.test(register);
@@ -48,7 +56,7 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
-    if (register === '*') {
+    if (Register.isSystemClipboardRegister(register)) {
       clipboard.copy(content);
     }
 
@@ -65,7 +73,7 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
-    if (register === '*') {
+    if (Register.isSystemClipboardRegister(register)) {
       clipboard.copy(content);
     }
 
@@ -94,7 +102,7 @@ export class Register {
     }
 
     /* Read from system clipboard */
-    if (register === '*') {
+    if (Register.isSystemClipboardRegister(register)) {
       const text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => {
           if (err) {
