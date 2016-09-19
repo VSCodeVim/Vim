@@ -2155,10 +2155,11 @@ class MoveToRightPane extends BaseCommand {
   keys = ["<C-w>", "l"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.focusChanged = true;
-    await vscode.commands.executeCommand("workbench.action.focusNextGroup");
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.anchor);
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.focusNextGroup",
+      args: {}
+    });
+
     return vimState;
   }
 }
@@ -2169,10 +2170,11 @@ class MoveToLeftPane  extends BaseCommand {
   keys = ["<C-w>", "h"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.focusChanged = true;
-    await vscode.commands.executeCommand("workbench.action.focusPreviousGroup");
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.anchor);
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.focusPreviousGroup",
+      args: {}
+    });
+
     return vimState;
   }
 }
