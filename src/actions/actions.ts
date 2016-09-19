@@ -22,7 +22,10 @@ const controlKeys: string[] = [
   "left",
   "right",
   "up",
-  "down"
+  "down",
+  "<Esc>",
+  "<BS>",
+  "<Del>"
 ];
 
 const compareKeypressSequence = function (one: string[], two: string[]): boolean {
