@@ -22,7 +22,10 @@ const controlKeys: string[] = [
   "left",
   "right",
   "up",
-  "down"
+  "down",
+  "<Esc>",
+  "<BS>",
+  "<Del>"
 ];
 
 const compareKeypressSequence = function (one: string[], two: string[]): boolean {
@@ -755,38 +758,49 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[0];
-
     const replaceState = vimState.replaceState!;
 
-    if (char === "<BS>") {
-      if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
-        vimState.cursorPosition = position.getLeft();
-        vimState.cursorStartPosition = position.getLeft();
-      } else if (position.line > replaceState.replaceCursorStartPosition.line ||
-                 position.character > replaceState.originalChars.length) {
-        const newPosition = await TextEditor.backspace(position);
-        vimState.cursorPosition = newPosition;
-        vimState.cursorStartPosition = newPosition;
-      } else {
-        await TextEditor.replace(new vscode.Range(position.getLeft(), position), replaceState.originalChars[position.character - 1]);
-        const leftPosition = position.getLeft();
-        vimState.cursorPosition = leftPosition;
-        vimState.cursorStartPosition = leftPosition;
-      }
-
-      replaceState.newChars.pop();
-    } else {
-      if (!position.isLineEnd()) {
-        vimState = await new DeleteOperator().run(vimState, position, position);
-      }
-
-      await TextEditor.insertAt(char, position);
-      replaceState.newChars.push(char);
-
-      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    if (!position.isLineEnd()) {
+      vimState = await new DeleteOperator().run(vimState, position, position);
     }
 
+    await TextEditor.insertAt(char, position);
+    replaceState.newChars.push(char);
+
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    vimState.currentMode = ModeName.Replace;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandBackspaceInReplaceMode extends BaseCommand {
+  modes = [ModeName.Replace];
+  keys = ["<BS>"];
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const char = this.keysPressed[0];
+    const replaceState = vimState.replaceState!;
+
+    if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
+      vimState.cursorPosition = position.getLeft();
+      vimState.cursorStartPosition = position.getLeft();
+    } else if (position.line > replaceState.replaceCursorStartPosition.line ||
+      position.character > replaceState.originalChars.length) {
+      const newPosition = await TextEditor.backspace(position);
+      vimState.cursorPosition = newPosition;
+      vimState.cursorStartPosition = newPosition;
+    } else {
+      await TextEditor.replace(new vscode.Range(position.getLeft(), position), replaceState.originalChars[position.character - 1]);
+      const leftPosition = position.getLeft();
+      vimState.cursorPosition = leftPosition;
+      vimState.cursorStartPosition = leftPosition;
+    }
+
+    replaceState.newChars.pop();
     vimState.currentMode = ModeName.Replace;
     return vimState;
   }
@@ -979,28 +993,32 @@ class CommandInsertInInsertMode extends BaseCommand {
   // update the view
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
-
-    if (char === "<BS>") {
-      const newPosition = await TextEditor.backspace(position);
-
-      vimState.cursorPosition = newPosition;
-      vimState.cursorStartPosition = newPosition;
-    } else {
-      await TextEditor.insert(char, vimState.cursorPosition);
-
-      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    }
+    await TextEditor.insert(char, vimState.cursorPosition);
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
     return vimState;
   }
-
 
   public toString(): string {
     return this.keysPressed[this.keysPressed.length - 1];
   }
 }
 
+@RegisterAction
+class CommandBackspaceinInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<BS>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const char = this.keysPressed[this.keysPressed.length - 1];
+    const newPosition = await TextEditor.backspace(position);
+    vimState.cursorPosition = newPosition;
+    vimState.cursorStartPosition = newPosition;
+
+    return vimState;
+  }
+}
 @RegisterAction
 class CommandCtrlHInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
