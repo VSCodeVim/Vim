@@ -1089,15 +1089,15 @@ export class ModeHandler implements vscode.Disposable {
 
           case "replaceText":
             edit.replace(new vscode.Selection(command.end, command.start), command.text);
-
-            if (command.diff) {
-              accumulatedPositionDifferences.push(command.diff);
-            }
             break;
 
           case "deleteText":
             edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
             break;
+        }
+
+        if (command.diff) {
+          accumulatedPositionDifferences.push(command.diff);
         }
       }
     });

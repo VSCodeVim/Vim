@@ -199,10 +199,18 @@ export class Position extends vscode.Position {
    * Adds a PositionDiff to this position, returning a new
    * position.
    */
-  public add(other: PositionDiff): Position {
+  public add(other: PositionDiff, { boundsCheck = true } = { } ): Position {
+    let resultChar = this.character + other.character;
+    let resultLine = this.line + other.line;
+
+    if (boundsCheck) {
+      if (resultChar < 0) { resultChar = 0; }
+      if (resultLine < 0) { resultLine = 0; }
+    }
+
     return new Position(
-      this.line + other.line,
-      this.character + other.character
+      resultLine,
+      resultChar
     );
   }
 

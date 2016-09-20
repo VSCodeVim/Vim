@@ -569,11 +569,11 @@ class CommandEscReplaceMode extends BaseCommand {
       type    : "insertText",
       text    : textToAdd,
       position: position,
+      diff    : new PositionDiff(0, -1),
     });
 
-    vimState.cursorStartPosition = position.getLeft();
-    vimState.cursorPosition = position.getLeft();
     vimState.currentMode = ModeName.Normal;
+
     return vimState;
   }
 }
