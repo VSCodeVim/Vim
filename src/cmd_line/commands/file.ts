@@ -71,7 +71,9 @@ export class FileCommand extends node.CommandBase {
     }
 
     let currentFilePath = vscode.window.activeTextEditor.document.uri.path;
-    let newFilePath = path.join(path.dirname(currentFilePath), this._arguments.name);
+    let newFilePath = path.isAbsolute(this._arguments.name) ?
+      this._arguments.name :
+      path.join(path.dirname(currentFilePath), this._arguments.name);
 
     if (newFilePath !== currentFilePath) {
       let folder = vscode.Uri.file(newFilePath);
