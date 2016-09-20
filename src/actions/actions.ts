@@ -1484,9 +1484,6 @@ export class PutCommand extends BaseCommand {
         const dest = after ? position : position.getRight();
         let text: string | undefined;
 
-        // TODO(johnfn): This is really bad - see if I can
-        // do this in in a better way.
-
         if (vimState.isMultiCursor) {
           if (this.multicursorIndex === undefined) {
             console.log("ERROR: no multi cursor index when calling PutCommand#exec");
