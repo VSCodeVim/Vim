@@ -47,13 +47,13 @@ deploy:
   file: "*.vsix"
   skip_cleanup: true
   on:
-    repo: vscodevim/vim
+    repo: VSCodeVim/Vim
     tags: true
     condition: "$TRAVIS_OS_NAME = linux"
 - provider: script
   script: vsce publish -p $VS_TOKEN
   skip_cleanup: true
   on:
-    repo: vscodevim/vim
+    repo: VSCodeVim/Vim
     tags: true
     condition: "$TRAVIS_OS_NAME = linux"
