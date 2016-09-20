@@ -2305,8 +2305,11 @@ class MoveToRightPane extends BaseCommand {
   keys = ["<C-w>", "l"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.focusChanged = true;
-    await vscode.commands.executeCommand("workbench.action.focusNextGroup");
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.focusNextGroup",
+      args: {}
+    });
+
     return vimState;
   }
 }
@@ -2317,8 +2320,11 @@ class MoveToLeftPane  extends BaseCommand {
   keys = ["<C-w>", "h"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.focusChanged = true;
-    await vscode.commands.executeCommand("workbench.action.focusPreviousGroup");
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.focusPreviousGroup",
+      args: {}
+    });
+
     return vimState;
   }
 }
@@ -2638,7 +2644,7 @@ class MoveScreenLineEnd extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveScreenLienEndNonBlank extends MoveByScreenLine {
+class MoveScreenLineEndNonBlank extends MoveByScreenLine {
   keys = ["g", "_"];
   movementType: CursorMovePosition = "wrappedLineLastNonWhitespaceCharacter";
   canBePrefixedWithCount = true;
@@ -2671,6 +2677,42 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   keys = ["g", "j"];
   movementType: CursorMovePosition = "down";
   by: CursorMoveByUnit = "wrappedLine";
+  value = 1;
+}
+
+@RegisterAction
+class MoveScreenToRight extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["z", "h"];
+  movementType: CursorMovePosition = "right";
+  by: CursorMoveByUnit = "character";
+  value = 1;
+}
+
+@RegisterAction
+class MoveScreenToLeft extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["z", "l"];
+  movementType: CursorMovePosition = "left";
+  by: CursorMoveByUnit = "character";
+  value = 1;
+}
+
+@RegisterAction
+class MoveScreenToRightHalf extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["z", "H"];
+  movementType: CursorMovePosition = "right";
+  by: CursorMoveByUnit = "halfLine";
+  value = 1;
+}
+
+@RegisterAction
+class MoveScreenToLeftHalf extends MoveByScreenLine {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["z", "L"];
+  movementType: CursorMovePosition = "left";
+  by: CursorMoveByUnit = "halfLine";
   value = 1;
 }
 
@@ -3069,6 +3111,32 @@ class ActionJoin extends BaseCommand {
 }
 
 @RegisterAction
+class ActionJoinVisualMode extends BaseCommand {
+  modes = [ModeName.Visual];
+  keys = ["J"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let actionJoin = new ActionJoin();
+    let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    let end = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+
+    if (start.line === end.line) {
+      return vimState;
+    }
+
+    if (start.isAfter(end)) {
+      [start, end] = [end, start];
+    }
+
+    for (let i = start.line; i < end.line; i++) {
+      vimState = await actionJoin.exec(start, vimState);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionJoinNoWhitespace extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["g", "J"];
@@ -3102,6 +3170,32 @@ class ActionJoinNoWhitespace extends BaseCommand {
     newState.cursorPosition = new Position(position.line, lineOne.length);
 
     return newState;
+  }
+}
+
+@RegisterAction
+class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
+  modes = [ModeName.Visual];
+  keys = ["g", "J"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let actionJoin = new ActionJoinNoWhitespace();
+    let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    let end = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+
+    if (start.line === end.line) {
+      return vimState;
+    }
+
+    if (start.isAfter(end)) {
+      [start, end] = [end, start];
+    }
+
+    for (let i = start.line; i < end.line; i++) {
+      vimState = await actionJoin.exec(start, vimState);
+    }
+
+    return vimState;
   }
 }
 

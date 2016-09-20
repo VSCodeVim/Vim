@@ -58,6 +58,21 @@ export class Register {
     };
   }
 
+  public static putByKey(content: string | string[], register = '"', registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
+    if (!Register.isValidRegister(register)) {
+      throw new Error(`Invalid register ${register}`);
+    }
+
+    if (register === '*') {
+      clipboard.copy(content);
+    }
+
+    Register.registers[register] = {
+      text        : content,
+      registerMode: registerMode,
+    };
+  }
+
   public static add(content: string, vimState: VimState): void {
     const register = vimState.recordedState.registerName;
 
@@ -71,6 +86,7 @@ export class Register {
       (Register.registers[register].text as string[]).push(content);
     }
   }
+
 
   /**
    * Gets content from a register. If none is specified, uses the default

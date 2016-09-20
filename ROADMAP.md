@@ -198,12 +198,12 @@ Status | Command | Description
 
 These only work when 'wrap' is off:
 
-Status | Command | Description
----|--------|------------------------------
-  :running:  | :1234:  zh	|	scroll screen N characters to the right
- :running:   | :1234:  zl	|	scroll screen N characters to the left
-  :running:  | :1234:  zH	|	scroll screen half a screenwidth to the right
-:running:   | :1234:  zL	|	scroll screen half a screenwidth to the left
+Status | Command | Description | Note
+---|--------|------------------|------------
+:white_check_mark: :star: | :1234:  zh	|	scroll screen N characters to the right | In Code, the cursor wil always move when you run this command, whether the horizontal scrollbar moves or not.
+:white_check_mark: :star: | :1234:  zl	|	scroll screen N characters to the left | As above
+:white_check_mark: :star: | :1234:  zH	|	scroll screen half a screenwidth to the right | As above
+:white_check_mark: :star: | :1234:  zL	|	scroll screen half a screenwidth to the left | As above
 
 ## Inserting text
 
@@ -252,8 +252,8 @@ Status | Command | Description | Note
 :warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line | CTRL-M and CTRL-J are not supported yet
 :white_check_mark: | CTRL-E		                 |  insert the character from below the cursor
 :white_check_mark: | CTRL-Y		                 |  insert the character from above the cursor
-   | CTRL-A		                 |  insert previously inserted text
-    | CTRL-@		                 |  insert previously inserted text and stop Insert mode
+:running: | CTRL-A		                 |  insert previously inserted text
+:running: | CTRL-@		                 |  insert previously inserted text and stop Insert mode
 :white_check_mark: | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
 :arrow_down:| CTRL-N		                 |  insert next match of identifier before the cursor
 :arrow_down:| CTRL-P		                 |  insert previous match of identifier before the cursor
@@ -293,10 +293,10 @@ Status | Command | Description
 :white_check_mark:    | :1234:  dd	| 	delete N lines
 :white_check_mark:    | :1234:  D		| delete to the end of the line (and N-1 more lines)
 :white_check_mark:    | :1234:  J		| join N-1 lines (delete EOLs)
-    |    {visual}J	| join the highlighted lines
+:white_check_mark:    |    {visual}J	| join the highlighted lines
 :white_check_mark:    | :1234:  gJ	| 	like "J", but without inserting spaces
-    |    {visual}gJ	| like "{visual}J", but without inserting spaces
-    | :[range]d [x]	| delete [range] lines [into register x]
+:white_check_mark:|   {visual}gJ	| like "{visual}J", but without inserting spaces
+:white_check_mark:| :[range]d [x]	| delete [range] lines [into register x]
 
 ## Copying and moving text
 

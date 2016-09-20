@@ -160,12 +160,12 @@
       {
         "key": "up",
         "command": "extension.vim_up",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl && !suggestWidgetVisible"
       },
       {
         "key": "down",
         "command": "extension.vim_down",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl && !suggestWidgetVisible"
       }
     ],
     "configuration": {
