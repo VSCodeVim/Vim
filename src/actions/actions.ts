@@ -2954,7 +2954,8 @@ class ActionJoin extends BaseCommand {
 
     await TextEditor.insert(resultLine, position);
 
-    newState.cursorPosition = new Position(position.line, lineOne.length + (addSpace ? 1 : 0) + (isParenthesisPair ? 1 : 0) - 1);
+    newState.cursorPosition = new Position(position.line,
+      lineOne.length + (addSpace ? 1 : 0) + (isParenthesisPair ? 1 : 0) - 1 + (oneEndsWithWhitespace ? 1 : 0));
 
     return newState;
   }
