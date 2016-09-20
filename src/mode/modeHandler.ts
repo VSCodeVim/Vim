@@ -933,8 +933,24 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     for (let i = 0; i < vimState.allCursors.length; i++) {
+      /**
+       * Essentially what we're doing here is pretending like the
+       * current VimState only has one cursor (the cursor that we just
+       * iterated to).
+       *
+       * We set the cursor position to be equal to the iterated one,
+       * and then set it back immediately after we're done.
+       *
+       * The slightly more complicated logic here allows us to write
+       * Action definitions without having to think about multiple
+       * cursors in almost all cases.
+       */
       const cursorPosition = vimState.allCursors[i].stop;
+      const old = vimState.cursorPosition;
+
+      vimState.cursorPosition = cursorPosition;
       const result = await movement.execActionWithCount(cursorPosition, vimState, recordedState.count);
+      vimState.cursorPosition = old;
 
       if (result instanceof Position) {
         vimState.allCursors[i].stop = result;
@@ -1240,7 +1256,8 @@ export class ModeHandler implements vscode.Disposable {
             selections.push(new vscode.Selection(cursorStart, cursorStop));
           }
         } else if (vimState.currentMode === ModeName.Normal ||
-                   vimState.currentMode === ModeName.Insert) {
+                   vimState.currentMode === ModeName.Insert ||
+                   vimState.currentMode === ModeName.SearchInProgressMode) {
           selections = [];
 
           for (const { stop: cursorStop } of vimState.allCursors) {
