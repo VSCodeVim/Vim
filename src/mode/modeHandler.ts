@@ -7,6 +7,7 @@ import { getAndUpdateModeHandler } from './../../extension';
 import {
   Transformation,
   InsertTextTransformation,
+  ReplaceTextTransformation,
   DeleteTextTransformation
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
@@ -27,7 +28,7 @@ import {
   BaseOperator, isIMovement,
   KeypressState
 } from './../actions/actions';
-import { Position } from './../motion/position';
+import { Position, PositionDiff } from './../motion/position';
 import { Range } from './../motion/range';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
@@ -334,20 +335,26 @@ export class SearchState {
 }
 
 export class ReplaceState {
-  private _replaceCursorStartPosition: Position;
-
-  public get replaceCursorStartPosition() {
-    return this._replaceCursorStartPosition;
-  }
+  /**
+   * The location of the cursor where you begun to replace characters.
+   */
+  public replaceCursorStartPosition: Position;
 
   public originalChars: string[] = [];
 
+  /**
+   * The characters the user inserted in replace mode. Useful for when
+   * we repeat a replace action with .
+   */
   public newChars: string[] = [];
 
+  /**
+   * Number of times we're going to repeat this replace action.
+   */
   public timesToRepeat: number;
 
   constructor(startPosition: Position, timesToRepeat: number = 1) {
-    this._replaceCursorStartPosition = startPosition;
+    this.replaceCursorStartPosition = startPosition;
     this.timesToRepeat = timesToRepeat;
 
     let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
@@ -1059,21 +1066,33 @@ export class ModeHandler implements vscode.Disposable {
 
     const isTextTransformation = (x: string) => {
       return x === 'insertText' ||
+             x === 'replaceText' ||
              x === 'deleteText';
     };
 
-    const textTransformations: (InsertTextTransformation | DeleteTextTransformation)[] =
+    const textTransformations: (InsertTextTransformation | DeleteTextTransformation | ReplaceTextTransformation)[] =
       transformations.filter(x => isTextTransformation(x.type)) as any;
 
     const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
 
+    let accumulatedPositionDifferences: PositionDiff[] = [];
+
     // batch all text operations together as a single operation
-    // (this is primarily necessary for multi-cursor mode).
+    // (this is primarily necessary for multi-cursor mode, since most
+    // actions will trigger at most one text operation).
     await vscode.window.activeTextEditor.edit(edit => {
       for (const command of textTransformations) {
         switch (command.type) {
           case "insertText":
             edit.insert(command.position, command.text);
+            break;
+
+          case "replaceText":
+            edit.replace(new vscode.Selection(command.end, command.start), command.text);
+
+            if (command.diff) {
+              accumulatedPositionDifferences.push(command.diff);
+            }
             break;
 
           case "deleteText":
@@ -1117,7 +1136,20 @@ export class ModeHandler implements vscode.Disposable {
     if (vimState.currentMode !== ModeName.VisualBlockInsertMode) {
       vimState.allCursors = [];
 
-      for (const sel of vscode.window.activeTextEditor.selections) {
+      const selections = vscode.window.activeTextEditor.selections;
+
+      for (let i = 0; i < selections.length; i++) {
+        let sel = selections[i];
+
+        if (accumulatedPositionDifferences.length > 0) {
+          const diff = accumulatedPositionDifferences[i];
+
+          sel = new vscode.Selection(
+            Position.FromVSCodePosition(sel.start).add(diff),
+            Position.FromVSCodePosition(sel.end).add(diff)
+          );
+        }
+
         vimState.allCursors.push(Range.FromVSCodeSelection(sel));
       }
     }

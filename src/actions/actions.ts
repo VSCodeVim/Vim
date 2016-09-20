@@ -5,7 +5,7 @@ import { Range } from './../motion/range';
 import { TextEditor, EditorScrollByUnit, EditorScrollDirection, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
 import { Register, RegisterMode } from './../register/register';
 import { NumericString } from './../number/numericString';
-import { Position } from './../motion/position';
+import { Position, PositionDiff } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
@@ -559,11 +559,17 @@ class CommandEscReplaceMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const timesToRepeat = vimState.replaceState!.timesToRepeat;
+    let textToAdd = "";
 
     for (let i = 1; i < timesToRepeat; i++) {
-      await TextEditor.insert(vimState.replaceState!.newChars.join(""), position);
-      position = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      textToAdd += vimState.replaceState!.newChars.join("");
     }
+
+    vimState.recordedState.transformations.push({
+      type    : "insertText",
+      text    : textToAdd,
+      position: position,
+    });
 
     vimState.cursorStartPosition = position.getLeft();
     vimState.cursorPosition = position.getLeft();
@@ -826,23 +832,36 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[0];
-
     const replaceState = vimState.replaceState!;
 
     if (char === "<BS>") {
       if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
+        // If you backspace before the beginning of where you started to replace,
+        // just move the cursor back.
+
         vimState.cursorPosition = position.getLeft();
         vimState.cursorStartPosition = position.getLeft();
       } else if (position.line > replaceState.replaceCursorStartPosition.line ||
                  position.character > replaceState.originalChars.length) {
-        const newPosition = await TextEditor.backspace(position);
-        vimState.cursorPosition = newPosition;
-        vimState.cursorStartPosition = newPosition;
+
+        vimState.recordedState.transformations.push({
+          type           : "deleteText",
+          position       : position,
+        });
+
+        vimState.cursorPosition = position.getLeft();
+        vimState.cursorStartPosition = position.getLeft();
       } else {
-        await TextEditor.replace(new vscode.Range(position.getLeft(), position), replaceState.originalChars[position.character - 1]);
-        const leftPosition = position.getLeft();
-        vimState.cursorPosition = leftPosition;
-        vimState.cursorStartPosition = leftPosition;
+        vimState.recordedState.transformations.push({
+          type  : "replaceText",
+          text  : replaceState.originalChars[position.character - 1],
+          start : position.getLeft(),
+          end   : position,
+          diff  : new PositionDiff(0, -1),
+        });
+
+        vimState.cursorPosition = position.getLeft();
+        vimState.cursorStartPosition = position.getLeft();
       }
 
       replaceState.newChars.pop();
@@ -851,7 +870,12 @@ class CommandReplaceInReplaceMode extends BaseCommand {
         vimState = await new DeleteOperator().run(vimState, position, position);
       }
 
-      await TextEditor.insertAt(char, position);
+      vimState.recordedState.transformations.push({
+        type    : "insertText",
+        text    : char,
+        position: position,
+      });
+
       replaceState.newChars.push(char);
 
       vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);

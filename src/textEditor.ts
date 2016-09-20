@@ -9,14 +9,8 @@ export class TextEditor {
   // TODO: Refactor args
 
   /**
-   * Insert text in the document.
-   *
-   * If letVSCodeHandleKeystrokes is true, then we will insert the text at the
-   * position of the cursor, and allow VSCode to expand abbreviations, etc. (For example,
-   * in some contexts, if you type "("" VSCode will insert a matching )" automatically, etc.)
-   *
-   * If letVSCodeHandleKeystrokes is false, directly insert the character at all cursor positions,
-   * without expanding abbreviations.
+   * Do not use this method! It has been deprecated. Use InsertTextTransformation
+   * (or possibly InsertTextVSCodeTransformation) instead.
    */
   static async insert(text: string, at: Position | undefined = undefined,
             letVSCodeHandleKeystrokes: boolean | undefined = undefined): Promise<boolean> {
@@ -58,6 +52,10 @@ export class TextEditor {
     });
   }
 
+  /**
+   * Do not use this method! It has been deprecated. Use DeleteTextTransformation
+   * instead.
+   */
   static async backspace(position: Position): Promise<Position> {
     if (position.character === 0) {
       if (position.line > 0) {
@@ -107,6 +105,10 @@ export class TextEditor {
     });
   }
 
+  /**
+   * Do not use this method! It has been deprecated. Use ReplaceTextTransformation.
+   * instead.
+   */
   static async replace(range: vscode.Range, text: string): Promise<boolean> {
     return vscode.window.activeTextEditor.edit(editBuilder => {
       editBuilder.replace(range, text);

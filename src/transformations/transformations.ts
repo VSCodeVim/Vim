@@ -1,4 +1,4 @@
-import { Position } from "./../motion/position";
+import { Position, PositionDiff } from "./../motion/position";
 
 /**
  * Represents inserting text at a position in the document.
@@ -19,6 +19,33 @@ export interface InsertTextTransformation {
    * The location to insert the text.
    */
   position: Position;
+}
+
+export interface ReplaceTextTransformation {
+  type: "replaceText";
+
+  /**
+   * Text to insert.
+   */
+  text: string;
+
+  /**
+   * Start of location to replace.
+   */
+  start: Position;
+
+  /**
+   * End of location to replace.
+   */
+  end: Position;
+
+  /**
+   * A position diff that will be added to the position of the cursor after
+   * the replace transformation has been applied.
+   *
+   * If you don't know what this is, just ignore it. You probably don't need it.
+   */
+  diff?: PositionDiff;
 }
 
 export interface InsertTextVSCodeTransformation {
@@ -51,6 +78,7 @@ export interface Dot {
 export type Transformation
   = InsertTextTransformation
   | InsertTextVSCodeTransformation
+  | ReplaceTextTransformation
   | ShowCommandLine
   | Dot
   | DeleteTextTransformation;

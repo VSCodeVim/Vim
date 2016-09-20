@@ -48,7 +48,7 @@ suite("Mode Replace", () => {
     });
 
     newTest({
-      title: "Can handle R across lines and quite Replace Mode",
+      title: "Can handle R across lines and quit Replace Mode",
       start: ['123|456', '789'],
       keysPressed: 'Rabcd\nefg<Esc>',
       end: ["123abcd", "ef|g", "789"]
