@@ -66,11 +66,13 @@ export class LineRange {
         line = Math.min(doc.document.lineCount, line);
         return new vscode.Position(line, 0);
       case token.TokenType.SelectionFirstLine:
-        let start = doc.selection.start.isBeforeOrEqual(doc.selection.end) ? doc.selection.start : doc.selection.end;
-        return new vscode.Position(start.line, 0);
+        let startLine = Math.min.apply(null, doc.selections.map(selection =>
+          selection.start.isBeforeOrEqual(selection.end) ? selection.start.line : selection.end.line));
+        return new vscode.Position(startLine, 0);
       case token.TokenType.SelectionLastLine:
-        let end = doc.selection.start.isAfter(doc.selection.end) ? doc.selection.start : doc.selection.end;
-        return new vscode.Position(end.line, 0);
+        let endLine = Math.max.apply(null, doc.selections.map(selection =>
+          selection.start.isAfter(selection.end) ? selection.start.line : selection.end.line));
+        return new vscode.Position(endLine, 0);
       case token.TokenType.Mark:
         return modeHandler.vimState.historyTracker.getMark(first.content).position;
       default:
