@@ -15,8 +15,9 @@ export enum RegisterMode {
 };
 
 export interface IRegisterContent {
-  text        : string | string[];
-  registerMode: RegisterMode;
+  text                : string | string[];
+  registerMode        : RegisterMode;
+  isClipboardRegister?: boolean;
 }
 
 export class Register {
@@ -31,14 +32,18 @@ export class Register {
    */
   private static registers: { [key: string]: IRegisterContent } = {
     '"': { text: "", registerMode: RegisterMode.CharacterWise },
-    '*': { text: "", registerMode: RegisterMode.CharacterWise },
-    '+': { text: "", registerMode: RegisterMode.CharacterWise }
+    '*': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
+    '+': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true }
   };
 
-  private static systemClipboardRegisters: string[] = ["*", "+"];
+  public static isClipboardRegister(registerName: string): boolean {
+    const register = Register.registers[registerName];
 
-  public static isSystemClipboardRegister(register: string): boolean {
-    return Register.systemClipboardRegisters.indexOf(register) !== -1;
+    if (register && register.isClipboardRegister) {
+      return true;
+    }
+
+    return false;
   }
 
   public static isValidRegister(register: string): boolean {
@@ -56,13 +61,14 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
-    if (Register.isSystemClipboardRegister(register)) {
+    if (Register.isClipboardRegister(register)) {
       clipboard.copy(content);
     }
 
     Register.registers[register] = {
-      text        : content,
-      registerMode: vimState.effectiveRegisterMode(),
+      text               : content,
+      registerMode       : vimState.effectiveRegisterMode(),
+      isClipboardRegister: Register.isClipboardRegister(register),
     };
   }
 
@@ -73,13 +79,14 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
-    if (Register.isSystemClipboardRegister(register)) {
+    if (Register.isClipboardRegister(register)) {
       clipboard.copy(content);
     }
 
     Register.registers[register] = {
-      text        : content,
-      registerMode: registerMode || RegisterMode.FigureItOutFromCurrentMode,
+      text               : content,
+      registerMode       : registerMode || RegisterMode.FigureItOutFromCurrentMode,
+      isClipboardRegister: Register.isClipboardRegister(register),
     };
   }
 
@@ -102,7 +109,7 @@ export class Register {
     }
 
     /* Read from system clipboard */
-    if (Register.isSystemClipboardRegister(register)) {
+    if (Register.isClipboardRegister(register)) {
       const text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => {
           if (err) {
