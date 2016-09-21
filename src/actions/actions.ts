@@ -1066,9 +1066,6 @@ class CommandInsertInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
   keys = ["<character>"];
 
-  // TODO - I am sure this can be improved.
-  // The hard case is . where we have to track cursor pos since we don't
-  // update the view
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
@@ -1768,6 +1765,7 @@ export class PutBeforeWithIndentCommand extends BaseCommand {
 class CommandShowCommandLine extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [":"];
+  runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.transformations.push({
