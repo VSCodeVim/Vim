@@ -3205,9 +3205,12 @@ class ActionReplaceCharacter extends BaseCommand {
     const toReplace = this.keysPressed[1];
     const state = await new DeleteOperator().run(vimState, position, position);
 
-    await TextEditor.insertAt(toReplace, position);
-
-    state.cursorPosition = position;
+    vimState.recordedState.transformations.push({
+      type    : "insertText",
+      text    : toReplace,
+      diff    : new PositionDiff(0, -1),
+      position: position,
+    });
 
     return state;
   }
@@ -3219,12 +3222,7 @@ class ActionReplaceCharacter extends BaseCommand {
       return vimState;
     }
 
-    for (let i = 0; i < timesToRepeat; i++) {
-      vimState = await this.exec(position, vimState);
-      position = position.getRight();
-    }
-
-    return vimState;
+    return super.execCount(position, vimState);
   }
 }
 
