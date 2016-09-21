@@ -4,6 +4,12 @@ import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
 import { getAndUpdateModeHandler } from './../../extension';
+import {
+  Transformation,
+  InsertTextTransformation,
+  ReplaceTextTransformation,
+  DeleteTextTransformation
+} from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
@@ -11,6 +17,7 @@ import { InsertMode } from './modeInsert';
 import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
 import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
+import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
@@ -19,19 +26,15 @@ import { HistoryTracker } from './../history/historyTracker';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
   BaseOperator, isIMovement,
-  KeypressState } from './../actions/actions';
-import { Position } from './../motion/position';
+  KeypressState
+} from './../actions/actions';
+import { Position, PositionDiff } from './../motion/position';
+import { Range } from './../motion/range';
 import { RegisterMode } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
-
-export enum VimSpecialCommands {
-  Nothing,
-  ShowCommandLine,
-  Dot
-}
 
 export class ViewChange {
   public command: string;
@@ -58,6 +61,11 @@ export class VimState {
   public desiredColumn = 0;
 
   public historyTracker: HistoryTracker;
+
+  /**
+   * Are multiple cursors currently present?
+   */
+  public isMultiCursor = false;
 
   public static lastRepeatableMovement : BaseMovement | undefined = undefined;
 
@@ -93,11 +101,11 @@ export class VimState {
   /**
    * The position the cursor will be when this action finishes.
    */
-  // public cursorPosition = new Position(0, 0);
-  private _cursorPosition = new Position(0, 0);
-  public get cursorPosition(): Position { return this._cursorPosition; }
-  public set cursorPosition(v: Position) {
-    this._cursorPosition = v;
+  public get cursorPosition(): Position {
+    return this.allCursors[0].stop;
+  }
+  public set cursorPosition(value: Position) {
+    this.allCursors[0].stop = value;
   }
 
   /**
@@ -105,9 +113,19 @@ export class VimState {
    * the range over which to run an Operator. May rarely be different than where the cursor
    * actually starts e.g. if you use the "aw" text motion in the middle of a word.
    */
-  public cursorStartPosition = new Position(0, 0);
+  public get cursorStartPosition(): Position {
+    return this.allCursors[0].start;
+  }
+  public set cursorStartPosition(value: Position) {
+    this.allCursors[0].start = value;
+  }
 
-  public cursorPositionJustBeforeAnythingHappened = new Position(0, 0);
+  /**
+   * In Multi Cursor Mode, the position of every cursor.
+   */
+  public allCursors: Range[] = [ new Range(new Position(0, 0), new Position(0, 0)) ];
+
+  public cursorPositionJustBeforeAnythingHappened = [ new Position(0, 0) ];
 
   public searchState: SearchState | undefined = undefined;
 
@@ -154,10 +172,7 @@ export class VimState {
     return VisualBlockMode.getBottomRightPosition(this.cursorStartPosition, this.cursorPosition);
   }
 
-  /**
-   * This is for oddball commands that don't manipulate text in any way.
-   */
-  public commandAction = VimSpecialCommands.Nothing;
+  public registerName = '"';
 
   public commandInitialText = "";
 
@@ -320,20 +335,26 @@ export class SearchState {
 }
 
 export class ReplaceState {
-  private _replaceCursorStartPosition: Position;
-
-  public get replaceCursorStartPosition() {
-    return this._replaceCursorStartPosition;
-  }
+  /**
+   * The location of the cursor where you begun to replace characters.
+   */
+  public replaceCursorStartPosition: Position;
 
   public originalChars: string[] = [];
 
+  /**
+   * The characters the user inserted in replace mode. Useful for when
+   * we repeat a replace action with .
+   */
   public newChars: string[] = [];
 
+  /**
+   * Number of times we're going to repeat this replace action.
+   */
   public timesToRepeat: number;
 
   constructor(startPosition: Position, timesToRepeat: number = 1) {
-    this._replaceCursorStartPosition = startPosition;
+    this.replaceCursorStartPosition = startPosition;
     this.timesToRepeat = timesToRepeat;
 
     let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
@@ -382,6 +403,8 @@ export class RecordedState {
   public hasRunOperator = false;
 
   public visualBlockInsertionType = VisualBlockInsertionType.Insert;
+
+  public transformations: Transformation[] = [];
 
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
@@ -435,7 +458,7 @@ export class RecordedState {
       mode !== ModeName.SearchInProgressMode &&
       (this.hasRunAMovement || (
       mode === ModeName.Visual ||
-      mode === ModeName.VisualLine));
+      mode === ModeName.VisualLine ));
   }
 
   public get isInInitialState(): boolean {
@@ -547,82 +570,131 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Handle scenarios where mouse used to change current position.
-    vscode.window.onDidChangeTextEditorSelection(async (e) => {
-      let selection = e.selections[0];
-
-      if (ModeHandler.IsTesting) {
-        return;
-      }
-
-      if (e.textEditor.document.fileName !== this.fileName) {
-        return;
-      }
-
-      if (this.currentModeName === ModeName.VisualBlock) {
-        // Not worth it until we get a better API for this stuff.
-
-        return;
-      }
-
-      if (this._vimState.focusChanged) {
-        this._vimState.focusChanged = false;
-        return;
-      }
-
-      // See comment about whatILastSetTheSelectionTo.
-      if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
-        return;
-      }
-
-      if (this._vimState.currentMode === ModeName.SearchInProgressMode ||
-          this._vimState.currentMode === ModeName.VisualBlockInsertMode) {
-        return;
-      }
-
-      if (selection) {
-        var newPosition = new Position(selection.active.line, selection.active.character);
-
-        if (newPosition.character >= newPosition.getLineEnd().character) {
-           newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character, 0));
-        }
-
-        this._vimState.cursorPosition    = newPosition;
-        this._vimState.cursorStartPosition = newPosition;
-
-        this._vimState.desiredColumn     = newPosition.character;
-
-        // start visual mode?
-
-        if (!selection.anchor.isEqual(selection.active)) {
-          var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
-
-          if (selectionStart.character > selectionStart.getLineEnd().character) {
-            selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
-          }
-
-          this._vimState.cursorStartPosition = selectionStart;
-
-          if (selectionStart.compareTo(newPosition) > 0) {
-            this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
-          }
-
-          if (!this._vimState.getModeObject(this).isVisualMode) {
-            this._vimState.currentMode = ModeName.Visual;
-            this.setCurrentModeByName(this._vimState);
-
-            // double click mouse selection causes an extra character to be selected so take one less character
-            this._vimState.cursorPosition = this._vimState.cursorPosition.getLeft();
-          }
-        } else {
-          if (this._vimState.currentMode !== ModeName.Insert) {
-            this._vimState.currentMode = ModeName.Normal;
-            this.setCurrentModeByName(this._vimState);
-          }
-        }
-
-        await this.updateView(this._vimState, false);
-      }
+    vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
+      taskQueue.enqueueTask({
+        promise: () => this.handleSelectionChange(e),
+        isRunning: false,
+      });
     });
+  }
+
+  private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
+    let selection = e.selections[0];
+
+    if (ModeHandler.IsTesting) {
+      return;
+    }
+
+    if (e.textEditor.document.fileName !== this.fileName) {
+      return;
+    }
+
+    if (this._vimState.focusChanged) {
+      this._vimState.focusChanged = false;
+
+      return;
+    }
+
+    if (this._vimState.currentMode !== ModeName.VisualBlock           &&
+        this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
+      e.selections.length > this._vimState.allCursors.length) {
+      // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
+
+      if (e.selections.length >= 2) {
+        this._vimState.currentMode = ModeName.Visual;
+        this._vimState.isMultiCursor = true;
+
+        this.setCurrentModeByName(this._vimState);
+      } else {
+        // The selections ran together - go back to visual mode.
+        this._vimState.currentMode = ModeName.Visual;
+        this.setCurrentModeByName(this._vimState);
+        this._vimState.isMultiCursor = false;
+      }
+
+      this._vimState.allCursors = [];
+
+      for (const sel of e.selections) {
+        this._vimState.allCursors.push(Range.FromVSCodeSelection(sel));
+      }
+
+      await this.updateView(this._vimState);
+
+      return;
+    }
+
+    if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
+      return;
+    }
+
+    if (this._vimState.isMultiCursor && e.selections.length === 1) {
+      this._vimState.isMultiCursor = false;
+    }
+
+    if (this._vimState.isMultiCursor) {
+      return;
+    }
+
+    if (this.currentModeName === ModeName.VisualBlock ||
+        this.currentModeName === ModeName.VisualBlockInsertMode) {
+      // Not worth it until we get a better API for this stuff.
+
+      return;
+    }
+
+    // See comment about whatILastSetTheSelectionTo.
+    if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
+      return;
+    }
+
+    if (this._vimState.currentMode === ModeName.SearchInProgressMode ||
+        this._vimState.currentMode === ModeName.VisualBlockInsertMode) {
+      return;
+    }
+
+    if (selection) {
+      var newPosition = new Position(selection.active.line, selection.active.character);
+
+      if (newPosition.character >= newPosition.getLineEnd().character) {
+          newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character, 0));
+      }
+
+      this._vimState.cursorPosition    = newPosition;
+      this._vimState.cursorStartPosition = newPosition;
+
+      this._vimState.desiredColumn     = newPosition.character;
+
+      // start visual mode?
+
+      if (!selection.anchor.isEqual(selection.active)) {
+        var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
+
+        if (selectionStart.character > selectionStart.getLineEnd().character) {
+          selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
+        }
+
+        this._vimState.cursorStartPosition = selectionStart;
+
+        if (selectionStart.compareTo(newPosition) > 0) {
+          this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
+        }
+
+        if (!this._vimState.getModeObject(this).isVisualMode) {
+          this._vimState.currentMode = ModeName.Visual;
+          this.setCurrentModeByName(this._vimState);
+
+          // double click mouse selection causes an extra character to be selected so take one less character
+          this._vimState.cursorPosition = this._vimState.cursorPosition.getLeft();
+        }
+      } else {
+        if (this._vimState.currentMode !== ModeName.Insert) {
+          this._vimState.currentMode = ModeName.Normal;
+          this.setCurrentModeByName(this._vimState);
+        }
+      }
+
+      await this.updateView(this._vimState, false);
+    }
   }
 
   /**
@@ -647,7 +719,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   async handleKeyEvent(key: string): Promise<Boolean> {
-    this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.cursorPosition;
+    this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
 
     try {
       let handled = false;
@@ -699,23 +771,6 @@ export class ModeHandler implements vscode.Disposable {
 
     vimState = await this.runAction(vimState, recordedState, action);
 
-    // Updated desired column
-
-    const movement = action instanceof BaseMovement ? action : undefined;
-
-    if ((movement && !movement.doesntChangeDesiredColumn) ||
-        (recordedState.command &&
-         vimState.currentMode !== ModeName.VisualBlock &&
-         vimState.currentMode !== ModeName.VisualBlockInsertMode)) {
-      // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
-
-      if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
-        vimState.desiredColumn = Number.POSITIVE_INFINITY;
-      } else {
-        vimState.desiredColumn = vimState.cursorPosition.character;
-      }
-    }
-
     // Update view
     await this.updateView(vimState);
 
@@ -726,8 +781,15 @@ export class ModeHandler implements vscode.Disposable {
     let ranRepeatableAction = false;
     let ranAction = false;
 
+    // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
+    // this needs to happen before any changes are made
+
+    /*
+    TODO
+
     // If arrow keys or mouse were in insert mode, create an undo point.
     // This needs to happen before any changes are made
+
     let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
     if (prevPos !== undefined && !vimState.isRunningDotCommand) {
       if (vimState.cursorPositionJustBeforeAnythingHappened.line !== prevPos.line ||
@@ -737,6 +799,7 @@ export class ModeHandler implements vscode.Disposable {
         vimState.historyTracker.finishCurrentStep();
       }
     }
+    */
 
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
@@ -746,9 +809,7 @@ export class ModeHandler implements vscode.Disposable {
     if (action instanceof BaseCommand) {
       vimState = await action.execCount(vimState.cursorPosition, vimState);
 
-      if (vimState.commandAction !== VimSpecialCommands.Nothing) {
-        await this.executeCommand(vimState);
-      }
+      await this.executeCommand(vimState);
 
       if (action.isCompleteAction) {
         ranAction = true;
@@ -819,8 +880,6 @@ export class ModeHandler implements vscode.Disposable {
       vimState.historyTracker.finishCurrentStep();
     }
 
-    //  console.log(vimState.historyTracker.toString());
-
     recordedState.actionKeys = [];
     vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
@@ -830,23 +889,40 @@ export class ModeHandler implements vscode.Disposable {
 
     // Ensure cursor is within bounds
 
-    if (vimState.cursorPosition.line >= TextEditor.getLineCount()) {
-      vimState.cursorPosition = vimState.cursorPosition.getDocumentEnd();
+    for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
+      if (stop.line >= TextEditor.getLineCount()) {
+        vimState.allCursors[i].stop = vimState.cursorPosition.getDocumentEnd();
+      }
+
+      const currentLineLength = TextEditor.getLineAt(stop).text.length;
+
+      if (vimState.currentMode === ModeName.Normal &&
+          stop.character >= currentLineLength && currentLineLength > 0) {
+
+        vimState.allCursors[i].stop = stop.getLineEnd().getLeft();
+      }
     }
 
-    const currentLineLength = TextEditor.getLineAt(vimState.cursorPosition).text.length;
+    // Update the current history step to have the latest cursor position
 
-    if (vimState.currentMode === ModeName.Normal &&
-      vimState.cursorPosition.character >= currentLineLength &&
-      currentLineLength > 0) {
-      vimState.cursorPosition = new Position(
-        vimState.cursorPosition.line,
-        currentLineLength - 1
-      );
+    vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
+
+    // Updated desired column
+
+    const movement = action instanceof BaseMovement ? action : undefined;
+
+    if ((movement && !movement.doesntChangeDesiredColumn) ||
+        (recordedState.command &&
+         vimState.currentMode !== ModeName.VisualBlock &&
+         vimState.currentMode !== ModeName.VisualBlockInsertMode)) {
+      // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
+
+      if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
+        vimState.desiredColumn = Number.POSITIVE_INFINITY;
+      } else {
+        vimState.desiredColumn = vimState.cursorPosition.character;
+      }
     }
-
-    // Update the current history step to have the latest cursor position incase it is needed
-    vimState.historyTracker.setLastHistoryEndPosition(vimState.cursorPosition);
 
     return vimState;
   }
@@ -856,38 +932,63 @@ export class ModeHandler implements vscode.Disposable {
 
     let recordedState = vimState.recordedState;
 
-    const result = await movement.execActionWithCount(vimState.cursorPosition, vimState, recordedState.count);
+    for (let i = 0; i < vimState.allCursors.length; i++) {
+      /**
+       * Essentially what we're doing here is pretending like the
+       * current VimState only has one cursor (the cursor that we just
+       * iterated to).
+       *
+       * We set the cursor position to be equal to the iterated one,
+       * and then set it back immediately after we're done.
+       *
+       * The slightly more complicated logic here allows us to write
+       * Action definitions without having to think about multiple
+       * cursors in almost all cases.
+       */
+      const cursorPosition = vimState.allCursors[i].stop;
+      const old = vimState.cursorPosition;
 
-    if (result instanceof Position) {
-      vimState.cursorPosition = result;
-    } else if (isIMovement(result)) {
-      if (result.failed) {
-        vimState.recordedState = new RecordedState();
+      vimState.cursorPosition = cursorPosition;
+      const result = await movement.execActionWithCount(cursorPosition, vimState, recordedState.count);
+      vimState.cursorPosition = old;
+
+      if (result instanceof Position) {
+        vimState.allCursors[i].stop = result;
+
+        if (!vimState.getModeObject(this).isVisualMode &&
+            !vimState.recordedState.operator) {
+
+          vimState.allCursors[i].start = result;
+        }
+      } else if (isIMovement(result)) {
+        if (result.failed) {
+          vimState.recordedState = new RecordedState();
+        }
+
+        vimState.allCursors[i] = Range.FromIMovement(result);
+
+        if (result.registerMode) {
+          vimState.currentRegisterMode = result.registerMode;
+        }
       }
 
-      vimState.cursorPosition    = result.stop;
-      vimState.cursorStartPosition = result.start;
-
-      if (result.registerMode) {
-        vimState.currentRegisterMode = result.registerMode;
+      if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
+        VimState.lastRepeatableMovement = movement;
       }
-    }
-
-    if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
-      VimState.lastRepeatableMovement = movement;
     }
 
     vimState.recordedState.count = 0;
 
-    let stop = vimState.cursorPosition;
-
     // Keep the cursor within bounds
 
     if (vimState.currentMode === ModeName.Normal && !recordedState.operator) {
-      if (stop.character >= Position.getLineLength(stop.line)) {
-        vimState.cursorPosition = stop.getLineEnd().getLeft();
+      for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
+        if (stop.character >= Position.getLineLength(stop.line)) {
+          vimState.allCursors[i].stop = stop.getLineEnd().getLeft();
+        }
       }
     } else {
+      let stop = vimState.cursorPosition;
 
       // Vim does this weird thing where it allows you to select and delete
       // the newline character, which it places 1 past the last character
@@ -902,58 +1003,171 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async executeOperator(vimState: VimState): Promise<VimState> {
-    let start         = vimState.cursorStartPosition;
-    let stop          = vimState.cursorPosition;
     let recordedState = vimState.recordedState;
 
     if (!recordedState.operator) {
       throw new Error("what in god's name");
     }
 
-    if (start.compareTo(stop) > 0) {
-      [start, stop] = [stop, start];
-    }
+    let resultVimState   = vimState;
 
-    if (!this._vimState.getModeObject(this).isVisualMode &&
-        vimState.currentRegisterMode !== RegisterMode.LineWise) {
+    // TODO - if actions were more pure, this would be unnecessary.
+    const cachedMode     = this._vimState.getModeObject(this);
+    const cachedRegister = vimState.currentRegisterMode;
 
-      if (Position.EarlierOf(start, stop) === start) {
-        stop = stop.getLeft();
-      } else {
-        stop = stop.getRight();
+    const resultingCursors: Range[] = [];
+    let i = 0;
+
+    let resultingModeName: ModeName;
+    let startingModeName = vimState.currentMode;
+
+    for (let { start, stop } of vimState.allCursors) {
+      if (start.compareTo(stop) > 0) {
+        [start, stop] = [stop, start];
       }
+
+      if (!cachedMode.isVisualMode && cachedRegister !== RegisterMode.LineWise) {
+        if (Position.EarlierOf(start, stop) === start) {
+          stop = stop.getLeft();
+        } else {
+          stop = stop.getRight();
+        }
+      }
+
+      if (this.currentModeName === ModeName.VisualLine) {
+        start = start.getLineBegin();
+        stop  = stop.getLineEnd();
+
+        vimState.currentRegisterMode = RegisterMode.LineWise;
+      }
+
+      recordedState.operator.multicursorIndex = i++;
+
+      resultVimState.currentMode = startingModeName;
+
+      resultVimState = await recordedState.operator.run(resultVimState, start, stop);
+
+      resultingModeName = resultVimState.currentMode;
+
+      resultingCursors.push(new Range(
+        resultVimState.cursorStartPosition,
+        resultVimState.cursorPosition
+      ));
     }
 
-    if (this.currentModeName === ModeName.VisualLine) {
-      start = start.getLineBegin();
-      stop  = stop.getLineEnd();
+    // Keep track of all cursors (in the case of multi-cursor).
 
-      vimState.currentRegisterMode = RegisterMode.LineWise;
+    resultVimState.allCursors = resultingCursors;
+
+    const selections: vscode.Selection[] = [];
+
+    for (const cursor of vimState.allCursors) {
+      selections.push(new vscode.Selection(
+        cursor.start,
+        cursor.stop,
+      ));
     }
 
-    return await recordedState.operator.run(vimState, start, stop);
+    vscode.window.activeTextEditor.selections = selections;
+
+    return resultVimState;
   }
 
   private async executeCommand(vimState: VimState): Promise<VimState> {
-    const command = vimState.commandAction;
+    const transformations = vimState.recordedState.transformations;
 
-    vimState.commandAction = VimSpecialCommands.Nothing;
+    if (transformations.length === 0) {
+      return vimState;
+    }
 
-    switch (command) {
-      case VimSpecialCommands.ShowCommandLine:
-        await showCmdLine(vimState.commandInitialText, this);
-      break;
-      case VimSpecialCommands.Dot:
-        if (!vimState.previousFullAction) {
-          return vimState; // TODO(bell)
+    const isTextTransformation = (x: string) => {
+      return x === 'insertText' ||
+             x === 'replaceText' ||
+             x === 'deleteText';
+    };
+
+    const textTransformations: (InsertTextTransformation | DeleteTextTransformation | ReplaceTextTransformation)[] =
+      transformations.filter(x => isTextTransformation(x.type)) as any;
+
+    const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
+
+    let accumulatedPositionDifferences: PositionDiff[] = [];
+
+    // batch all text operations together as a single operation
+    // (this is primarily necessary for multi-cursor mode, since most
+    // actions will trigger at most one text operation).
+    await vscode.window.activeTextEditor.edit(edit => {
+      for (const command of textTransformations) {
+        switch (command.type) {
+          case "insertText":
+            edit.insert(command.position, command.text);
+            break;
+
+          case "replaceText":
+            edit.replace(new vscode.Selection(command.end, command.start), command.text);
+            break;
+
+          case "deleteText":
+            edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
+            break;
         }
 
-        const clonedAction = vimState.previousFullAction.clone();
+        if (command.diff) {
+          accumulatedPositionDifferences.push(command.diff);
+        }
+      }
+    });
 
-        await this.rerunRecordedState(vimState, vimState.previousFullAction);
+    for (const command of otherTransformations) {
+      switch (command.type) {
+        case "insertTextVSCode":
+          await TextEditor.insert(command.text);
 
-        vimState.previousFullAction = clonedAction;
-      break;
+          vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+          vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+          break;
+
+        case "showCommandLine":
+          await showCmdLine(vimState.commandInitialText, this);
+          break;
+
+        case "dot":
+          if (!vimState.previousFullAction) {
+            return vimState; // TODO(bell)
+          }
+
+          const clonedAction = vimState.previousFullAction.clone();
+
+          await this.rerunRecordedState(vimState, vimState.previousFullAction);
+
+          vimState.previousFullAction = clonedAction;
+          break;
+      }
+    }
+
+    vimState.recordedState.transformations = [];
+
+    // We handle multiple cursors in a different way in visual block mode, unfortunately.
+    // TODO - refactor that out!
+    if (vimState.currentMode !== ModeName.VisualBlockInsertMode) {
+      vimState.allCursors = [];
+
+      const selections = vscode.window.activeTextEditor.selections;
+
+      for (let i = 0; i < selections.length; i++) {
+        let sel = selections[i];
+
+        if (accumulatedPositionDifferences.length > 0) {
+          const diff = accumulatedPositionDifferences[i];
+
+          sel = new vscode.Selection(
+            Position.FromVSCodePosition(sel.start).add(diff),
+            Position.FromVSCodePosition(sel.end).add(diff)
+          );
+        }
+
+        vimState.allCursors.push(Range.FromVSCodeSelection(sel));
+      }
     }
 
     return vimState;
@@ -971,6 +1185,8 @@ export class ModeHandler implements vscode.Disposable {
     for (let action of actions) {
       recordedState.actionsRun = actions.slice(0, ++i);
       vimState = await this.runAction(vimState, recordedState, action);
+
+      await this.updateView(vimState, true);
     }
 
     vimState.isRunningDotCommand = false;
@@ -1010,31 +1226,55 @@ export class ModeHandler implements vscode.Disposable {
     if (drawSelection) {
       let selections: vscode.Selection[];
 
-      if (vimState.currentMode === ModeName.Visual) {
-        selections = [ new vscode.Selection(start, stop) ];
-      } else if (vimState.currentMode === ModeName.VisualLine) {
-        selections = [ new vscode.Selection(
-          Position.EarlierOf(start, stop).getLineBegin(),
-          Position.LaterOf(start, stop).getLineEnd()
-        ) ];
-      } else if (vimState.currentMode === ModeName.VisualBlock) {
-        selections = [];
+      if (!vimState.isMultiCursor) {
+        if (vimState.currentMode === ModeName.Visual) {
+          selections = [ new vscode.Selection(start, stop) ];
+        } else if (vimState.currentMode === ModeName.VisualLine) {
+          selections = [ new vscode.Selection(
+            Position.EarlierOf(start, stop).getLineBegin(),
+            Position.LaterOf(start, stop).getLineEnd()
+          ) ];
+        } else if (vimState.currentMode === ModeName.VisualBlock) {
+          selections = [];
 
-        for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
-          selections.push(new vscode.Selection(
-            lineStart,
-            end
-          ));
+          for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
+            selections.push(new vscode.Selection(
+              lineStart,
+              end
+            ));
+          }
+        } else {
+          selections = [ new vscode.Selection(stop, stop) ];
         }
       } else {
-        selections = [ new vscode.Selection(stop, stop) ];
+        // MultiCursor mode is active.
+
+        if (vimState.currentMode === ModeName.Visual) {
+          selections = [];
+
+          for (const { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
+            selections.push(new vscode.Selection(cursorStart, cursorStop));
+          }
+        } else if (vimState.currentMode === ModeName.Normal ||
+                   vimState.currentMode === ModeName.Insert ||
+                   vimState.currentMode === ModeName.SearchInProgressMode) {
+          selections = [];
+
+          for (const { stop: cursorStop } of vimState.allCursors) {
+            selections.push(new vscode.Selection(cursorStop, cursorStop));
+          }
+        } else {
+          console.error("This is pretty bad!");
+
+          selections = [];
+        }
       }
 
       this._vimState.whatILastSetTheSelectionTo = selections[0];
       vscode.window.activeTextEditor.selections = selections;
     }
 
-    // Scroll to position of cursor
+    // Scroll to position of cursor TODO multi
 
     vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
 
@@ -1044,10 +1284,9 @@ export class ModeHandler implements vscode.Disposable {
 
     if (Configuration.getInstance().useSolidBlockCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
-        rangesToDraw.push(new vscode.Range(
-          vimState.cursorPosition,
-          vimState.cursorPosition.getRight()
-        ));
+        for (const { stop: cursorStop } of vimState.allCursors) {
+          rangesToDraw.push(new vscode.Range(cursorStop, cursorStop.getRight()));
+        }
       }
     } else {
       // Use native block cursor if possible.
@@ -1110,7 +1349,7 @@ export class ModeHandler implements vscode.Disposable {
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
     } else {
-      this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } --`);
+      this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } ${ this._vimState.isMultiCursor ? 'MULTI CURSOR' : '' } --`);
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);

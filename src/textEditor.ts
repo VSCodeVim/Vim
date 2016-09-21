@@ -1,7 +1,6 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { ModeHandler } from './mode/modeHandler';
 import { Position } from './motion/position';
 import { Configuration } from './configuration/configuration';
 import { Globals } from './globals';
@@ -9,6 +8,10 @@ import { Globals } from './globals';
 export class TextEditor {
   // TODO: Refactor args
 
+  /**
+   * Do not use this method! It has been deprecated. Use InsertTextTransformation
+   * (or possibly InsertTextVSCodeTransformation) instead.
+   */
   static async insert(text: string, at: Position | undefined = undefined,
             letVSCodeHandleKeystrokes: boolean | undefined = undefined): Promise<boolean> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
@@ -17,14 +20,19 @@ export class TextEditor {
       letVSCodeHandleKeystrokes = text.length === 1;
     }
 
-    if (at) {
-      vscode.window.activeTextEditor.selection = new vscode.Selection(at, at);
-    }
+    if (!letVSCodeHandleKeystrokes) {
+      const selections = vscode.window.activeTextEditor.selections.slice(0);
 
-    if (ModeHandler.IsTesting || !letVSCodeHandleKeystrokes) {
-      return vscode.window.activeTextEditor.edit(editBuilder => {
-        editBuilder.insert(vscode.window.activeTextEditor.selection.active, text);
+      await vscode.window.activeTextEditor.edit(editBuilder => {
+        if (!at) {
+          at = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+        }
+
+        editBuilder.insert(at!, text);
       });
+
+      // maintain all selections in multi-cursor mode.
+      vscode.window.activeTextEditor.selections = selections;
     } else {
       await vscode.commands.executeCommand('default:type', { text });
     }
@@ -44,6 +52,10 @@ export class TextEditor {
     });
   }
 
+  /**
+   * Do not use this method! It has been deprecated. Use DeleteTextTransformation
+   * instead.
+   */
   static async backspace(position: Position): Promise<Position> {
     if (position.character === 0) {
       if (position.line > 0) {
@@ -93,6 +105,10 @@ export class TextEditor {
     });
   }
 
+  /**
+   * Do not use this method! It has been deprecated. Use ReplaceTextTransformation.
+   * instead.
+   */
   static async replace(range: vscode.Range, text: string): Promise<boolean> {
     return vscode.window.activeTextEditor.edit(editBuilder => {
       editBuilder.replace(range, text);

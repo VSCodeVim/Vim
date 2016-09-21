@@ -78,12 +78,12 @@ class HistoryStep {
   /**
    * The cursor position at the start of this history step.
    */
-  cursorStart: Position | undefined;
+  cursorStart: Position[] | undefined;
 
   /**
    * The cursor position at the end of this history step so far.
    */
-  cursorEnd: Position | undefined;
+  cursorEnd: Position[] | undefined;
 
   /**
    * The position of every mark at the start of this history step.
@@ -93,8 +93,8 @@ class HistoryStep {
   constructor(init: {
     changes?: DocumentChange[],
     isFinished?: boolean,
-    cursorStart?: Position | undefined,
-    cursorEnd?: Position | undefined,
+    cursorStart?: Position[] | undefined,
+    cursorEnd?: Position[] | undefined,
     marks?: IMark[]
   }) {
     this.changes   = init.changes = [];
@@ -194,8 +194,8 @@ export class HistoryTracker {
     this.historySteps.push(new HistoryStep({
       changes  : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
       isFinished : true,
-      cursorStart: new Position(0, 0),
-      cursorEnd: new Position(0, 0)
+      cursorStart: [ new Position(0, 0) ],
+      cursorEnd: [ new Position(0, 0) ]
     }));
 
     this.finishCurrentStep();
@@ -336,7 +336,7 @@ export class HistoryTracker {
    * Determines what changed by diffing the document against what it
    * used to look like.
    */
-  addChange(cursorPosition = new Position(0, 0)): void {
+  addChange(cursorPosition = [ new Position(0, 0) ]): void {
     const newText = TextEditor.getAllText();
 
     if (newText === this.oldText) { return; }
@@ -449,7 +449,7 @@ export class HistoryTracker {
    * Essentially Undo or ctrl+z. Returns undefined if there's no more steps
    * back to go.
    */
-  async goBackHistoryStep(): Promise<Position | undefined> {
+  async goBackHistoryStep(): Promise<Position[] | undefined> {
     let step: HistoryStep;
 
     if (this.currentHistoryStepIndex === 0) {
@@ -479,7 +479,7 @@ export class HistoryTracker {
    * Essentially Redo or ctrl+y. Returns undefined if there's no more steps
    * forward to go.
    */
-  async goForwardHistoryStep(): Promise<Position | undefined> {
+  async goForwardHistoryStep(): Promise<Position[] | undefined> {
     let step: HistoryStep;
 
     if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
@@ -497,14 +497,15 @@ export class HistoryTracker {
     return step.cursorStart;
   }
 
-  getLastHistoryEndPosition(): Position | undefined {
+  getLastHistoryEndPosition(): Position[] | undefined {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
+
     return this.historySteps[this.currentHistoryStepIndex].cursorEnd;
   }
 
-  setLastHistoryEndPosition(pos: Position) {
+  setLastHistoryEndPosition(pos: Position[]) {
     this.historySteps[this.currentHistoryStepIndex].cursorEnd = pos;
   }
 
