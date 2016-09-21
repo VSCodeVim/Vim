@@ -15,9 +15,9 @@ export enum RegisterMode {
 };
 
 export interface IRegisterContent {
-  text                : string | string[];
-  registerMode        : RegisterMode;
-  isClipboardRegister?: boolean;
+  text               : string | string[];
+  registerMode       : RegisterMode;
+  isClipboardRegister: boolean;
 }
 
 export class Register {
@@ -31,19 +31,14 @@ export class Register {
    *  '#' is the name of last edited file. (low priority)
    */
   private static registers: { [key: string]: IRegisterContent } = {
-    '"': { text: "", registerMode: RegisterMode.CharacterWise },
+    '"': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '*': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
     '+': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true }
   };
 
   public static isClipboardRegister(registerName: string): boolean {
     const register = Register.registers[registerName];
-
-    if (register && register.isClipboardRegister) {
-      return true;
-    }
-
-    return false;
+    return register && register.isClipboardRegister;
   }
 
   public static isValidRegister(register: string): boolean {
@@ -104,8 +99,14 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
+    // Clipboard registers are always defined, so if a register doesn't already
+    // exist we can be sure it's not a clipboard one
     if (!Register.registers[register]) {
-      Register.registers[register] = { text: "", registerMode: RegisterMode.CharacterWise };
+      Register.registers[register] = {
+        text               : "",
+        registerMode       : RegisterMode.CharacterWise,
+        isClipboardRegister: false
+      };
     }
 
     /* Read from system clipboard */
