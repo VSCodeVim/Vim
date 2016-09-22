@@ -49,7 +49,10 @@ export class LineRange {
     }
     var lineRef = this.right.length === 0 ? this.left : this.right;
     var pos = this.lineRefToPosition(document, lineRef, modeHandler);
-    document.selection = new vscode.Selection(pos, pos);
+    let vimState = modeHandler.vimState;
+    vimState.cursorPosition = vimState.cursorPosition.setLocation(pos.line, pos.character);
+    vimState.cursorStartPosition = vimState.cursorPosition;
+    modeHandler.updateView(modeHandler.vimState);
   }
 
   lineRefToPosition(doc : vscode.TextEditor, toks : token.Token[], modeHandler: ModeHandler) : vscode.Position {
