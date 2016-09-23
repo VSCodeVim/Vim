@@ -116,6 +116,10 @@ The following is a subset of the supported configurations; the full list is desc
 
 * hlsearch
   * When there is a previous search pattern, highlight all its matches
+  * Type: Boolean (Default: `false`)
+
+* autoindent
+  * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
 
 ## F.A.Q.
