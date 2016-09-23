@@ -73,7 +73,7 @@ class Remapper {
           // TODO(johnfn) - study - actions need to be paired up with text changes...
           // this is a complicated problem.
           await vimState.historyTracker.undoAndRemoveChanges(
-            Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.length));
+            Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.size));
         }
 
         if (!this._recursive) {

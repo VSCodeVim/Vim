@@ -3,14 +3,15 @@
 import * as vscode from "vscode";
 import { Position } from "./position";
 import { IMovement } from './../actions/actions';
+import { EqualitySet } from './../misc/equalitySet';
 
 export class Range {
-  public start: Position;
-  public stop: Position;
+  private _start: Position;
+  private _stop: Position;
 
   constructor(start: Position, stop: Position) {
-    this.start = start;
-    this.stop  = stop;
+    this._start = start;
+    this._stop  = stop;
   }
 
   /**
@@ -23,13 +24,15 @@ export class Range {
     );
   }
 
-  public static *IterateRanges(list: Range[]): Iterable<{ start: Position; stop: Position; range: Range, i: number }> {
-    for (let i = 0; i < list.length; i++) {
+  public static *IterateRanges(set: EqualitySet<Range>): Iterable<{ start: Position; stop: Position; range: Range, i: number }> {
+    let i = 0;
+
+    for (const range of set) {
       yield {
-        i,
-        range: list[i],
-        start: list[i].start,
-        stop: list[i].stop,
+        i: i++,
+        range: range,
+        start: range._start,
+        stop: range._stop,
       };
     }
   }
@@ -48,15 +51,50 @@ export class Range {
 
   public getRight(count = 1): Range {
     return new Range(
-      this.start.getRight(count),
-      this.stop.getRight(count)
+      this._start.getRight(count),
+      this._stop.getRight(count)
     );
   }
 
   public getDown(count = 1): Range {
     return new Range(
-      this.start.getDownByCount(count),
-      this.stop.getDownByCount(count),
+      this._start.getDownByCount(count),
+      this._stop.getDownByCount(count),
     );
+  }
+
+  public getLeft(count = 1): Range {
+    return new Range(
+      this._start.getLeftByCount(count),
+      this._stop.getLeftByCount(count)
+    );
+  }
+
+  public getStart(): Position {
+    return this._start;
+  }
+
+  public getStop(): Position {
+    return this._stop;
+  }
+
+  /**
+   * Returns a new range object based on this range object, but with the start
+   * changed to the provided value.
+   */
+  public withNewStart(start: Position): Range {
+    return new Range(start, this._stop);
+  }
+
+  /**
+   * Returns a new range object based on this range object, but with the stop
+   * changed to the provided value.
+   */
+  public withNewStop(stop: Position): Range {
+    return new Range(this._start, stop);
+  }
+
+  public toString(): string {
+    return `[ ${ this._start.toString() }, ${ this._stop.toString() } ]`;
   }
 }

@@ -1,5 +1,8 @@
 "use strict";
 
+import { EqualitySet } from './misc/equalitySet';
+import { Range } from './motion/range';
+import { Position } from './motion/position';
 import * as vscode from 'vscode';
 
 export async function showInfo(message : string): Promise<{}> {
@@ -30,4 +33,11 @@ export async function wait(time: number): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(resolve, time);
   });
+}
+
+export function getAllCursors(): EqualitySet<Range> {
+  const cursorArray = vscode.window.activeTextEditor.selections.map(x =>
+    new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
+
+  return new EqualitySet(cursorArray);
 }
