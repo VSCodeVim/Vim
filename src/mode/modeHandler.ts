@@ -379,16 +379,6 @@ export class ReplaceState {
  *   * copy into q register
  *   * delete operator
  *   * word movement
- *
- *
- * Or imagine the user types:
- *
- * vw$}}d
- *
- * Then the state would be
- *   * Visual mode action
- *   * (a list of all the motions you ran)
- *   * delete operator
  */
 export class RecordedState {
 
@@ -403,6 +393,8 @@ export class RecordedState {
   public actionKeys: string[] = [];
 
   public actionsRun: BaseAction[] = [];
+
+  public operatingRange: Range | undefined = undefined;
 
   public hasRunOperator = false;
 
@@ -1030,6 +1022,9 @@ export class ModeHandler implements vscode.Disposable {
     vimState.allCursors = await vimState.allCursors.asyncMap(async (cursor) => {
       let start = cursor.getStart(), stop = cursor.getStop();
 
+      console.log("Before", start.toString());
+      console.log("Before", stop.toString());
+
       if (start.compareTo(stop) > 0) {
         [start, stop] = [stop, start];
       }
@@ -1057,6 +1052,9 @@ export class ModeHandler implements vscode.Disposable {
       vimState = await recordedState.operator.run(vimState, start, stop);
 
       resultingModeName = vimState.currentMode;
+
+      console.log("After", vimState.cursorPosition.toString());
+      console.log("After", vimState.cursorStartPosition.toString());
 
       return new Range(
         vimState.cursorStartPosition,

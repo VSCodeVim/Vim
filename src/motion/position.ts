@@ -94,6 +94,14 @@ export class PositionDiff {
   public isBOLDiff(): boolean {
     return this._isBOLDiff;
   }
+
+  public toString(): string {
+    if (this._isBOLDiff) {
+      return `[ Diff: BOL ]`;
+    }
+
+    return `[ Diff: ${ this._line } ${ this._character } ]`;
+  }
 }
 
 export class Position extends vscode.Position {

@@ -1059,8 +1059,8 @@ class CommandInsertInInsertMode extends BaseCommand {
 
     if (char === "<BS>") {
       vimState.recordedState.transformations.push({
-        type           : "deleteText",
-        position       : position,
+        type     : "deleteText",
+        position : position,
       });
 
       vimState.cursorPosition      = vimState.cursorPosition.getLeft();
@@ -1068,14 +1068,14 @@ class CommandInsertInInsertMode extends BaseCommand {
     } else {
       if (vimState.isMultiCursor) {
         vimState.recordedState.transformations.push({
-          type            : "insertText",
-          text            : char,
-          position: vimState.cursorPosition,
+          type     : "insertText",
+          text     : char,
+          position : vimState.cursorPosition,
         });
       } else {
         vimState.recordedState.transformations.push({
-          type           : "insertTextVSCode",
-          text           : char,
+          type : "insertTextVSCode",
+          text : char,
         });
       }
     }
@@ -1113,6 +1113,7 @@ class CommandCtrlUInInsertMode extends BaseCommand {
     await TextEditor.delete(new vscode.Range(start, stop));
     vimState.cursorPosition = start;
     vimState.cursorStartPosition = start;
+
     return vimState;
   }
 }
@@ -1224,11 +1225,17 @@ export class DeleteOperator extends BaseOperator {
         diff = PositionDiff.NewBOLDiff();
       }
 
+      const rangeToDelete = new Range(start, end);
+
       vimState.recordedState.transformations.push({
         type  : "deleteRange",
-        range : new Range(start, end),
+        range : rangeToDelete,
         diff  : diff,
       });
+
+      if (!rangeToDelete.contains(vimState.cursorPosition)) {
+        console.log("!!!");
+      }
     }
 
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
@@ -1428,22 +1435,22 @@ export class ChangeOperator extends BaseOperator {
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        const isEndOfLine = end.character === TextEditor.getLineAt(end).text.length - 1;
-        let state = vimState;
+      const isEndOfLine = end.character === TextEditor.getLineAt(end).text.length - 1;
 
-        // If we delete to EOL, the block cursor would end on the final character,
-        // which means the insert cursor would be one to the left of the end of
-        // the line.
-        if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0) {
-          state = await new DeleteOperator().run(vimState, start, end);
-        }
-        state.currentMode = ModeName.Insert;
+      // If we delete to EOL, the block cursor would end on the final character,
+      // which means the insert cursor would be one to the left of the end of
+      // the line.
+      if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0) {
+        vimState = await new DeleteOperator().run(vimState, start, end);
+      }
 
-        if (isEndOfLine) {
-          state.cursorPosition = state.cursorPosition.getRight();
-        }
+      vimState.currentMode = ModeName.Insert;
 
-        return state;
+      if (isEndOfLine) {
+        vimState.cursorPosition = vimState.cursorPosition.getRight();
+      }
+
+      return vimState;
     }
 }
 
@@ -1633,9 +1640,21 @@ export class PutCommandVisual extends BaseCommand {
   canBePrefixedWithDot = true;
 
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
-    const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, false);
+    const positionToPasteAt = Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition);
+    let toPaste = (await Register.get(vimState)).text;
 
-    return await new PutCommand().exec(result.cursorPosition, result, true);
+    if (Array.isArray(toPaste)) {
+      toPaste = toPaste.join("\n");
+    }
+
+    vimState.recordedState.transformations.push({
+      type  : "replaceText",
+      text  : toPaste,
+      start : positionToPasteAt,
+      end   : positionToPasteAt.advancePositionByText(toPaste),
+    });
+
+    return vimState;
   }
 
   // TODO - execWithCount
@@ -4264,6 +4283,21 @@ class ToggleCaseAndMoveForward extends BaseCommand {
     await new ToggleCaseOperator().run(vimState, vimState.cursorPosition, vimState.cursorPosition);
 
     vimState.cursorPosition = vimState.cursorPosition.getRight();
+    return vimState;
+  }
+}
+
+@RegisterAction
+class DebugActionForJohnfn extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Insert];
+  keys = ["\\"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type  : "deleteRange",
+      range : new Range(new Position(0, 1), new Position(0, 5)),
+    });
+
     return vimState;
   }
 }

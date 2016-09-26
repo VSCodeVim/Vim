@@ -291,7 +291,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Insert
     });
 
-    newTest({
+    newTestOnly({
       title: "Can handle 'ci(' with nested parentheses",
       start: ['call|(() => 5)'],
       keysPressed: 'ci(',

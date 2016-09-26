@@ -70,6 +70,14 @@ export class Range {
     );
   }
 
+  /**
+   * Does this range contain the specified position?
+   */
+  public contains(position: Position): boolean {
+    return this._start.isBeforeOrEqual(position) &&
+           this._stop.isAfterOrEqual(position);
+  }
+
   public getStart(): Position {
     return this._start;
   }
