@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#a5c9a2",
@@ -13,8 +13,7 @@
   "keywords": [
     "vim",
     "vi",
-    "vscodevim",
-    "vsc-vim"
+    "vscodevim"
   ],
   "repository": {
     "type": "git",
@@ -45,127 +44,127 @@
       {
         "key": "Escape",
         "command": "extension.vim_escape",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
       },
       {
         "key": "Backspace",
         "command": "extension.vim_backspace",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !inDebugRepl"
       },
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.mode == 'Normal Mode'"
+        "when": "editorTextFocus && vim.mode == 'Normal Mode' && !inDebugRepl"
       },
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.mode == 'Normal Mode'"
+        "when": "editorFocus && vim.mode == 'Normal Mode' && !inDebugRepl"
       },
       {
         "key": "ctrl+r",
         "command": "extension.vim_ctrl+r",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !inDebugRepl"
       },
       {
         "key": "ctrl+f",
         "command": "extension.vim_ctrl+f",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+b",
         "command": "extension.vim_ctrl+b",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
       },
       {
         "key": "ctrl+h",
         "command": "extension.vim_ctrl+h",
-        "when": "editorTextFocus && vim.mode == 'Insert Mode'"
+        "when": "editorTextFocus && vim.mode == 'Insert Mode' && !inDebugRepl"
       },
       {
         "key": "ctrl+e",
         "command": "extension.vim_ctrl+e",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+y",
         "command": "extension.vim_ctrl+y",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+u",
         "command": "extension.vim_ctrl+u",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !inDebugRepl"
       },
       {
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+d",
         "command": "extension.vim_ctrl+d",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+[",
         "command": "extension.vim_ctrl+[",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+w",
         "command": "extension.vim_ctrl+w",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !inDebugRepl"
       },
       {
         "key": "ctrl+c",
         "command": "extension.vim_ctrl+c",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+a",
         "command": "extension.vim_ctrl+a",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+x",
         "command": "extension.vim_ctrl+x",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+t",
         "command": "extension.vim_ctrl+t",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+pagedown",
         "command": "extension.vim_ctrl+pagedown",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+pageup",
         "command": "extension.vim_ctrl+pageup",
-        "when": "editorTextFocus && vim.useCtrlKeys"
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "left",
         "command": "extension.vim_left",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
       },
       {
         "key": "right",
         "command": "extension.vim_right",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
       },
       {
         "key": "up",
         "command": "extension.vim_up",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl && !suggestWidgetVisible"
       },
       {
         "key": "down",
         "command": "extension.vim_down",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl && !suggestWidgetVisible"
       }
     ],
     "configuration": {
@@ -242,6 +241,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
   },
   "dependencies": {
+    "child-process": "^1.0.2",
     "copy-paste": "^1.3.0",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.12.0"

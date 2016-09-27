@@ -135,6 +135,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle ddp",
+      start: ['|one', 'two'],
+      keysPressed: 'ddp',
+      end: ["two", "|one"],
+    });
+
+    newTest({
       title: "Can handle 'de'",
       start: ['text tex|t'],
       keysPressed: '^de',

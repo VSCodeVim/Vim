@@ -33,6 +33,11 @@ export enum VimSpecialCommands {
   Dot
 }
 
+export class ViewChange {
+  public command: string;
+  public args: any;
+}
+
 /**
  * The VimState class holds permanent state that carries over from action
  * to action.
@@ -67,6 +72,13 @@ export class VimState {
   public isRunningDotCommand = false;
 
   public focusChanged = false;
+
+  /**
+   * Every time we invoke a VS Code command which might trigger Code's view update,
+   * we should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
+   * This array is used to cache every VS Code view updating event and they will be triggered once we run the inhouse `viewUpdate`.
+   */
+  public postponedCodeViewChanges: ViewChange[] = [];
 
   /**
    * Used to prevent non-recursive remappings from looping.
@@ -1087,6 +1099,13 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
+
+    for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
+      let viewChange = this.vimState.postponedCodeViewChanges[i];
+      await vscode.commands.executeCommand(viewChange.command, viewChange.args);
+    }
+
+    this.vimState.postponedCodeViewChanges = [];
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);

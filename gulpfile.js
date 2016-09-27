@@ -23,10 +23,6 @@ function versionBump(semver) {
     .pipe(tag_version());
 }
 
-gulp.task('patch', function() { return versionBump('patch'); })
-gulp.task('minor', function() { return versionBump('minor'); })
-gulp.task('major', function() { return versionBump('major'); })
-
 gulp.task('typings', function () {
   return gulp.src('./typings.json')
     .pipe(typings());
@@ -69,8 +65,12 @@ gulp.task('tslint', ['fix-whitespace'], function() {
   return merge(srcs, tests);
 });
 
+gulp.task('default', ['tslint', 'compile']);
+
 gulp.task('compile', shell.task(['npm run vscode:prepublish']));
 gulp.task('watch', shell.task(['npm run compile']));
 gulp.task('init', ['typings']);
-gulp.task('default', ['tslint', 'compile']);
-gulp.task('release', ['default', 'patch']);
+
+gulp.task('patch', ['default'], function() { return versionBump('patch'); })
+gulp.task('minor', ['default'], function() { return versionBump('minor'); })
+gulp.task('major', ['default'], function() { return versionBump('major'); })

@@ -320,6 +320,13 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
+    title: "Can handle G with number prefix",
+    start: ['|one', 'two', 'three'],
+    keysPressed: '5G',
+    end: ['one', 'two', '|three']
+  });
+
+  newTest({
     title: "Can handle gg",
     start: ['one', '|two', 'three'],
     keysPressed: 'gg',

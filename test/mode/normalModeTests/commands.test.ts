@@ -191,6 +191,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'J' with only white space on next line",
+      start: ['on|e', '    '],
+      keysPressed: 'J',
+      end: ['one| ']
+    });
+
+    newTest({
       title: "Can handle 'J' with TWO indented lines",
       start: ['   on|e', '    two'],
       keysPressed: 'kJ',
