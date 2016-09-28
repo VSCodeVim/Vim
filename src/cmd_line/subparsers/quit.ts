@@ -23,3 +23,9 @@ export function parseQuitCommandArgs(args : string) : node.QuitCommand {
   }
   return new node.QuitCommand(scannedArgs);
 }
+
+export function parseQuitAllCommandArgs(args: string): node.QuitCommand {
+  let command = parseQuitCommandArgs(args);
+  command.arguments.quitAll = true;
+  return command;
+}

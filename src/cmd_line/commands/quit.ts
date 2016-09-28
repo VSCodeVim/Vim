@@ -7,6 +7,7 @@ import * as error from '../../error';
 export interface IQuitCommandArguments extends node.ICommandArgs {
   bang?: boolean;
   range?: node.LineRange;
+  quitAll?: boolean;
 }
 
 //
@@ -36,6 +37,10 @@ export class QuitCommand extends node.CommandBase {
       throw error.VimError.fromCode(error.ErrorCode.E37);
     }
 
-    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    if (this._arguments.quitAll) {
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    } else {
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    }
   }
 }

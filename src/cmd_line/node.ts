@@ -43,16 +43,19 @@ export class LineRange {
     return this.left.toString() + this.separator.content + this.right.toString();
   }
 
-  execute(document : vscode.TextEditor) : void {
+  execute(document : vscode.TextEditor, modeHandler: ModeHandler) : void {
     if (this.isEmpty) {
       return;
     }
     var lineRef = this.right.length === 0 ? this.left : this.right;
-    var pos = this.lineRefToPosition(document, lineRef);
-    document.selection = new vscode.Selection(pos, pos);
+    var pos = this.lineRefToPosition(document, lineRef, modeHandler);
+    let vimState = modeHandler.vimState;
+    vimState.cursorPosition = vimState.cursorPosition.setLocation(pos.line, pos.character);
+    vimState.cursorStartPosition = vimState.cursorPosition;
+    modeHandler.updateView(modeHandler.vimState);
   }
 
-  lineRefToPosition(doc : vscode.TextEditor, toks : token.Token[]) : vscode.Position {
+  lineRefToPosition(doc : vscode.TextEditor, toks : token.Token[], modeHandler: ModeHandler) : vscode.Position {
     var first = toks[0];
     switch (first.type) {
       case token.TokenType.Dollar:
@@ -66,11 +69,15 @@ export class LineRange {
         line = Math.min(doc.document.lineCount, line);
         return new vscode.Position(line, 0);
       case token.TokenType.SelectionFirstLine:
-        let start = doc.selection.start.isBeforeOrEqual(doc.selection.end) ? doc.selection.start : doc.selection.end;
-        return new vscode.Position(start.line, 0);
+        let startLine = Math.min.apply(null, doc.selections.map(selection =>
+          selection.start.isBeforeOrEqual(selection.end) ? selection.start.line : selection.end.line));
+        return new vscode.Position(startLine, 0);
       case token.TokenType.SelectionLastLine:
-        let end = doc.selection.start.isAfter(doc.selection.end) ? doc.selection.start : doc.selection.end;
-        return new vscode.Position(end.line, 0);
+        let endLine = Math.max.apply(null, doc.selections.map(selection =>
+          selection.start.isAfter(selection.end) ? selection.start.line : selection.end.line));
+        return new vscode.Position(endLine, 0);
+      case token.TokenType.Mark:
+        return modeHandler.vimState.historyTracker.getMark(first.content).position;
       default:
         throw new Error("not implemented");
     }
@@ -95,7 +102,7 @@ export class CommandLine {
 
   async execute(document : vscode.TextEditor, modeHandler : ModeHandler) : Promise<void> {
     if (!this.command) {
-      this.range.execute(document);
+      this.range.execute(document, modeHandler);
       return;
     }
 

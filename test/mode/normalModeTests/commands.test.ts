@@ -135,6 +135,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle '<Count>r'",
+      start: ['123|456', '789'],
+      keysPressed: '2ra',
+      end: ['123a|a6', '789']
+    });
+
+    newTest({
+      title: "Can handle '<Count>r'",
+      start: ['123|456', '789'],
+      keysPressed: '4ra',
+      end: ['123|456', '789']
+    });
+
+    newTest({
       title: "Can handle 'r' after 'dd'",
       start: ['one', 'two', 'thre|e'],
       keysPressed: 'kddrT',
@@ -174,6 +188,13 @@ suite("Mode Normal", () => {
       start: ['on|e', ' two'],
       keysPressed: 'kJ',
       end: ['one| two']
+    });
+
+    newTest({
+      title: "Can handle 'J' with only white space on next line",
+      start: ['on|e', '    '],
+      keysPressed: 'J',
+      end: ['one| ']
     });
 
     newTest({

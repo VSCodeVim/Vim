@@ -1,6 +1,7 @@
 "use strict";
 
 import * as node from "../node";
+import * as util from '../../util';
 import { Configuration } from '../../configuration/configuration';
 
 export enum SetOptionOperator {
@@ -79,6 +80,25 @@ export class SetOptionsCommand extends node.CommandBase {
         break;
       case SetOptionOperator.Invert:
         Configuration.getInstance()[this._arguments.name] = !Configuration.getInstance()[this._arguments.name];
+        break;
+      case SetOptionOperator.Append:
+        Configuration.getInstance()[this._arguments.name] += this._arguments.value!;
+        break;
+      case SetOptionOperator.Subtract:
+        if (typeof this._arguments.value! === "number") {
+          Configuration.getInstance()[this._arguments.name] -= this._arguments.value! as number;
+        } else {
+          let initialValue = Configuration.getInstance()[this._arguments.name];
+          Configuration.getInstance()[this._arguments.name] = initialValue.split(this._arguments.value! as string).join('');
+        }
+        break;
+      case SetOptionOperator.Info:
+        let value = Configuration.getInstance()[this._arguments.name];
+        if (value === undefined) {
+          await util.showError(`E518 Unknown option: ${this._arguments.name}`);
+        } else {
+          await util.showInfo(`${this._arguments.name}=${value}`);
+        }
         break;
       default:
         break;
