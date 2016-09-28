@@ -59,4 +59,9 @@ export class Range {
       this.stop.getDownByCount(count),
     );
   }
+
+  public equals(other: Range): boolean {
+    return this.start.isEqual(other.start) &&
+           this.stop.isEqual(other.stop);
+  }
 }

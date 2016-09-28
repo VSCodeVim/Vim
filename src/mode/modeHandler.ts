@@ -924,6 +924,30 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
+    // Make sure no two cursors are at the same location.
+    // This is a consequence of the fact that allCursors is not a Set.
+
+    // TODO: It should be a set.
+
+    const resultingList: Range[] = [];
+
+    for (const cursor of vimState.allCursors) {
+      let shouldAddToList = true;
+
+      for (const alreadyAddedCursor of resultingList) {
+        if (cursor.equals(alreadyAddedCursor)) {
+          shouldAddToList = false;
+          break;
+        }
+      }
+
+      if (shouldAddToList) {
+        resultingList.push(cursor);
+      }
+    }
+
+    vimState.allCursors = resultingList;
+
     return vimState;
   }
 
