@@ -5,12 +5,20 @@ import { Position } from "./position";
 import { IMovement } from './../actions/actions';
 
 export class Range {
-  public start: Position;
-  public stop: Position;
+  private _start: Position;
+  private _stop: Position;
+
+  public get start(): Position {
+    return this._start;
+  }
+
+  public get stop(): Position {
+    return this._stop;
+  }
 
   constructor(start: Position, stop: Position) {
-    this.start = start;
-    this.stop  = stop;
+    this._start = start;
+    this._stop  = stop;
   }
 
   /**
@@ -28,8 +36,8 @@ export class Range {
       yield {
         i,
         range: list[i],
-        start: list[i].start,
-        stop: list[i].stop,
+        start: list[i]._start,
+        stop: list[i]._stop,
       };
     }
   }
@@ -48,20 +56,36 @@ export class Range {
 
   public getRight(count = 1): Range {
     return new Range(
-      this.start.getRight(count),
-      this.stop.getRight(count)
+      this._start.getRight(count),
+      this._stop.getRight(count)
     );
   }
 
   public getDown(count = 1): Range {
     return new Range(
-      this.start.getDownByCount(count),
-      this.stop.getDownByCount(count),
+      this._start.getDownByCount(count),
+      this._stop.getDownByCount(count),
     );
   }
 
   public equals(other: Range): boolean {
-    return this.start.isEqual(other.start) &&
-           this.stop.isEqual(other.stop);
+    return this._start.isEqual(other._start) &&
+           this._stop.isEqual(other._stop);
+  }
+
+  /**
+   * Returns a new Range which is the same as this Range, but with the provided
+   * stop value.
+   */
+  public withNewStop(stop: Position): Range {
+    return new Range(this._start, stop);
+  }
+
+  /**
+   * Returns a new Range which is the same as this Range, but with the provided
+   * start value.
+   */
+  public withNewStart(start: Position): Range {
+    return new Range(start, this._stop);
   }
 }

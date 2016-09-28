@@ -5,10 +5,9 @@ import * as _ from 'lodash';
 
 import { getAndUpdateModeHandler } from './../../extension';
 import {
+  isTextTransformation,
+  TextTransformations,
   Transformation,
-  InsertTextTransformation,
-  ReplaceTextTransformation,
-  DeleteTextTransformation
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
@@ -105,7 +104,7 @@ export class VimState {
     return this.allCursors[0].stop;
   }
   public set cursorPosition(value: Position) {
-    this.allCursors[0].stop = value;
+    this.allCursors[0] = this.allCursors[0].withNewStop(value);
   }
 
   /**
@@ -117,7 +116,7 @@ export class VimState {
     return this.allCursors[0].start;
   }
   public set cursorStartPosition(value: Position) {
-    this.allCursors[0].start = value;
+    this.allCursors[0] = this.allCursors[0].withNewStart(value);
   }
 
   /**
@@ -891,15 +890,19 @@ export class ModeHandler implements vscode.Disposable {
 
     for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
       if (stop.line >= TextEditor.getLineCount()) {
-        vimState.allCursors[i].stop = vimState.cursorPosition.getDocumentEnd();
-      }
+        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
+          vimState.cursorPosition.getDocumentEnd()
+        );
+    }
 
       const currentLineLength = TextEditor.getLineAt(stop).text.length;
 
       if (vimState.currentMode === ModeName.Normal &&
           stop.character >= currentLineLength && currentLineLength > 0) {
 
-        vimState.allCursors[i].stop = stop.getLineEnd().getLeft();
+        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
+          stop.getLineEnd().getLeft()
+        );
       }
     }
 
@@ -977,12 +980,12 @@ export class ModeHandler implements vscode.Disposable {
       vimState.cursorPosition = old;
 
       if (result instanceof Position) {
-        vimState.allCursors[i].stop = result;
+        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(result);
 
         if (!vimState.getModeObject(this).isVisualMode &&
             !vimState.recordedState.operator) {
 
-          vimState.allCursors[i].start = result;
+          vimState.allCursors[i] = vimState.allCursors[i].withNewStart(result);
         }
       } else if (isIMovement(result)) {
         if (result.failed) {
@@ -1008,7 +1011,9 @@ export class ModeHandler implements vscode.Disposable {
     if (vimState.currentMode === ModeName.Normal && !recordedState.operator) {
       for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
         if (stop.character >= Position.getLineLength(stop.line)) {
-          vimState.allCursors[i].stop = stop.getLineEnd().getLeft();
+          vimState.allCursors[i].withNewStop(
+            stop.getLineEnd().getLeft()
+          );
         }
       }
     } else {
@@ -1104,13 +1109,7 @@ export class ModeHandler implements vscode.Disposable {
       return vimState;
     }
 
-    const isTextTransformation = (x: string) => {
-      return x === 'insertText' ||
-             x === 'replaceText' ||
-             x === 'deleteText';
-    };
-
-    const textTransformations: (InsertTextTransformation | DeleteTextTransformation | ReplaceTextTransformation)[] =
+    const textTransformations: TextTransformations[] =
       transformations.filter(x => isTextTransformation(x.type)) as any;
 
     const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
@@ -1133,6 +1132,10 @@ export class ModeHandler implements vscode.Disposable {
 
           case "deleteText":
             edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
+            break;
+
+          case "deleteRange":
+            edit.delete(new vscode.Selection(command.range.start, command.range.stop));
             break;
         }
 

@@ -528,7 +528,9 @@ class CommandEsc extends BaseCommand {
       // a special case since runsOnceForEveryCursor is false.
 
       for (let i = 0; i < vimState.allCursors.length; i++) {
-        vimState.allCursors[i].stop = vimState.allCursors[i].stop.getLeft();
+        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
+          vimState.allCursors[i].stop.getLeft()
+        );
       }
     }
 

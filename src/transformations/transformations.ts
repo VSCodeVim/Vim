@@ -1,4 +1,5 @@
 import { Position, PositionDiff } from "./../motion/position";
+import { Range } from "./../motion/range";
 
 /**
  * This file contains definitions of objects that represent text
@@ -108,6 +109,27 @@ export interface DeleteTextTransformation {
   diff?: PositionDiff;
 }
 
+
+/**
+ * Represents deleting a range of characters.
+ */
+export interface DeleteTextRangeTransformation {
+  type         : "deleteRange";
+
+  /**
+   * Range of characters to delete.
+   */
+  range: Range;
+
+  /**
+   * A position diff that will be added to the position of the cursor after
+   * the replace transformation has been applied.
+   *
+   * If you don't know what this is, just ignore it. You probably don't need it.
+   */
+  diff?: PositionDiff;
+}
+
 /**
  * Represents pressing ':'
  */
@@ -126,6 +148,22 @@ export type Transformation
   = InsertTextTransformation
   | InsertTextVSCodeTransformation
   | ReplaceTextTransformation
+  | DeleteTextRangeTransformation
+  | DeleteTextTransformation
   | ShowCommandLine
   | Dot
   | DeleteTextTransformation;
+
+export type TextTransformations
+  = InsertTextTransformation
+  | InsertTextVSCodeTransformation
+  | DeleteTextRangeTransformation
+  | DeleteTextTransformation
+  | ReplaceTextTransformation;
+
+export const isTextTransformation = (x: string) => {
+  return x === 'insertText' ||
+         x === 'replaceText' ||
+         x === 'deleteText' ||
+         x === 'deleteRange';
+};
