@@ -3308,9 +3308,9 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     for (const { start, end } of Position.IterateLine(vimState)) {
       vimState.recordedState.transformations.push({
-        type  : "deleteRange",
-        range : new Range(start, end),
-        diff  : start.subtract(end),
+        type         : "deleteRange",
+        range        : new Range(start, end),
+        collapseRange: true,
       });
     }
 
@@ -3330,12 +3330,11 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const deleteOperator = new DeleteOperator();
-
     for (const { start } of Position.IterateLine(vimState)) {
-      // delete from start up to but not including the newline.
-      await deleteOperator.delete(
-        start, start.getLineEnd().getLeft(), vimState.currentMode, vimState.effectiveRegisterMode(), vimState, true);
+      vimState.recordedState.transformations.push({
+        type: "deleteRange",
+        range: new Range(start, start.getLineEnd()),
+      });
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;

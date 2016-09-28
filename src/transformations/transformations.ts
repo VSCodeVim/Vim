@@ -128,6 +128,8 @@ export interface DeleteTextRangeTransformation {
    * If you don't know what this is, just ignore it. You probably don't need it.
    */
   diff?: PositionDiff;
+
+  collapseRange?: boolean;
 }
 
 /**
@@ -154,6 +156,19 @@ export type Transformation
   | Dot
   | DeleteTextTransformation;
 
+/**
+ * Text Transformations
+ *
+ * Using these indicates that you want Visual Studio Code to execute your text
+ * actions as a batch operation. It's a bit tricky because we defer cursor updating
+ * behavior to whatever the batch operation returns, so if you update the cursor in your
+ * Action, VSCode will override whatever you did.
+ *
+ * If your cursor isn't ending up in the right place, you can adjust it by passing along
+ * a PositionDiff.
+ *
+ * (There are a LOT of weird edge cases with cursor behavior that we don't want to have to reimplement).
+ */
 export type TextTransformations
   = InsertTextTransformation
   | InsertTextVSCodeTransformation

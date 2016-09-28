@@ -594,9 +594,17 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+
+    if (this.currentModeName === ModeName.VisualBlock ||
+        this.currentModeName === ModeName.VisualBlockInsertMode) {
+      // AArrgghhhh - johnfn
+
+      return;
+    }
+
     if (this._vimState.currentMode !== ModeName.VisualBlock           &&
         this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
-      e.selections.length > this._vimState.allCursors.length) {
+        e.selections.length > this._vimState.allCursors.length) {
       // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
 
       if (e.selections.length >= 2) {
@@ -631,13 +639,6 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this._vimState.isMultiCursor) {
-      return;
-    }
-
-    if (this.currentModeName === ModeName.VisualBlock ||
-        this.currentModeName === ModeName.VisualBlockInsertMode) {
-      // Not worth it until we get a better API for this stuff.
-
       return;
     }
 
@@ -1194,6 +1195,20 @@ export class ModeHandler implements vscode.Disposable {
       } else {
         vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0]);
         vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0]);
+      }
+    }
+
+    /**
+     * This is a bit of a hack because Visual Block Mode isn't fully on board with
+     * the new text transformation style yet.
+     *
+     * (TODO)
+     */
+    if (transformations.length > 0) {
+      const firstTransformation = transformations[0];
+
+      if (firstTransformation.type === 'deleteRange' && firstTransformation.collapseRange) {
+        vimState.cursorPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
       }
     }
 
