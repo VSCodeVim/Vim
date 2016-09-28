@@ -1,4 +1,5 @@
 import { VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
+import { VisualBlockMode } from './../mode/modeVisualBlock';
 import { ModeName } from './../mode/mode';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
 import { Range } from './../motion/range';
@@ -3256,13 +3257,17 @@ class ActionXVisualBlock extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-
-    // Iterate in reverse so we don't lose track of indicies
-    for (const { start, end } of Position.IterateLine(vimState, { reverse: true })) {
-      vimState = await new DeleteOperator().run(vimState, start, new Position(end.line, end.character - 1));
+    for (const { start, end } of Position.IterateLine(vimState)) {
+      vimState.recordedState.transformations.push({
+        type  : "deleteRange",
+        range : new Range(start, end),
+      });
     }
 
-    vimState.allCursors = [ new Range(position, position) ];
+    const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
+
+    vimState.allCursors = [ new Range(topLeft, topLeft) ];
+    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }
