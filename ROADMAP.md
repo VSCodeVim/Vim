@@ -6,7 +6,7 @@
 
 :warning: - some variations of the command are not supported
 
-:running: work in progress
+:running: - work in progress
 
 :arrow_down: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
 

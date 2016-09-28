@@ -2,7 +2,7 @@
 
 The following is a set of guidelines for contributing to Vim for VSCode.
 These are just guidelines, not rules, use your best judgment and feel free to propose changes to this document in a pull request.
-If you need help with Vim for VSCode, come visit our [Slack](https://vscodevim-slackin.azurewebsites.net/) community.
+If you need help with Vim for VSCode, drop by on [Slack](https://vscodevim-slackin.azurewebsites.net/).
 Thanks for helping us make Vim for VSCode better!
 
 ## Submitting Issues
@@ -11,7 +11,7 @@ The [GitHub issue tracker](https://github.com/VSCodeVim/Vim/issues) is the prefe
 When creating a new bug report do:
 
 * Search against existing issues to check if somebody else has already reported your problem or requested your idea
-* Include as many details as possible. Include screenshots/gifs and repro steps where applicable.
+* Include as many details as possible -- include screenshots/gifs and repro steps where applicable.
 
 ## Submitting Pull Requests
 
@@ -19,10 +19,10 @@ Pull requests are *awesome*.
 If you're looking to raise a PR for something which doesn't have an open issue, consider creating an issue first.
 When submitting a PR, ensure:
 
-1. Run all the tests and ensure they pass.
-2. If you added a new feature, add at least one more test to test it.
-3. If you've fixed a bug, add at least one test to ensure the bug stays away.
-4. Submit the PR. Pour yourself a glass of champagne and feel good about making contributing to open source!
+1. All tests pass.
+2. If you added a new feature, add tests to exercise the new code path.
+3. If you fixed a bug, add tests to ensure the bug stays away.
+4. Submit the PR. Pour yourself a glass of champagne and feel good about contributing to open source!
 
 ## First Time Setup
 
@@ -42,8 +42,8 @@ When submitting a PR, ensure:
 ## Developing
 
 1. Watch for changes and recompile Typescript files. Run this in the `Vim` directory: `gulp watch`
-2. Open up Visual Studio code and add the `Vim` directory as a folder.
-3. Click on the debugger. You now have two options - Launch Extension (to play around with the extension) and Launch Tests (to run the tests).
+2. Open Visual Studio Code and add the `Vim` directory as a folder.
+3. Click on the debugger. You have two options - Launch Extension (to play around with the extension) and Launch Tests (to run the tests).
 
 ## Code Architecture
 
@@ -51,7 +51,7 @@ The code is split into two parts - ModeHandler (which is essentially the Vim sta
 
 ### Actions
 
-Actions are all currently stuffied into actions.ts (sorry!). There are:
+Actions are all currently stuffed into actions.ts (sorry!). There are:
 * BaseAction - the base Action type that all Actions derive from.
 * BaseMovement - A movement, like `w`, `h`, `{`, etc. ONLY updates the cursor position. At worst, might return an IMovement, which indicates a start and stop. This is used for movements like aw which may actually start before the cursor.
 * BaseCommand - Anything which is not just a movement is a Command. That includes motions which also update the state of Vim in some way, like `*`.
@@ -95,10 +95,10 @@ In addition to building and testing the extension, when a tag is applied to the 
 
 If your autocomplete, your fuzzy file search, or your _everything_ is suddenly running slower, try to recall if you ever ran `npm test` instead of just running tests through Visual Studio Code. This will add a massive folder called `.vscode-test/` to your project, which Visual Studio Code will happily consume all of your CPU cycles indexing.
 
-Long story short, you can speed up VSC by doing this:
+Long story short, you can speed up VS Code by:
 
 `$ rm -rf .vscode-test/`
 
-## Styleguides
+## Styleguide
 
-We are adhering to VSCode's [coding guidelines](https://github.com/Microsoft/vscode/wiki/Coding-Guidelines).
+Please try your best to adhere our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).
