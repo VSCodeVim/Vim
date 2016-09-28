@@ -1172,30 +1172,32 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    vimState.recordedState.transformations = [];
-
-    // We handle multiple cursors in a different way in visual block mode, unfortunately.
-    // TODO - refactor that out!
-    if (vimState.currentMode !== ModeName.VisualBlockInsertMode) {
-      vimState.allCursors = [];
-
+    if (accumulatedPositionDifferences.length > 0) {
       const selections = vscode.window.activeTextEditor.selections;
 
-      for (let i = 0; i < selections.length; i++) {
-        let sel = selections[i];
+      // We handle multiple cursors in a different way in visual block mode, unfortunately.
+      // TODO - refactor that out!
+      if (vimState.currentMode !== ModeName.VisualBlockInsertMode) {
+        vimState.allCursors = [];
 
-        if (accumulatedPositionDifferences.length > 0) {
+        for (let i = 0; i < selections.length; i++) {
+          let sel = selections[i];
           const diff = accumulatedPositionDifferences[i];
 
           sel = new vscode.Selection(
             Position.FromVSCodePosition(sel.start).add(diff),
             Position.FromVSCodePosition(sel.end).add(diff)
           );
-        }
 
-        vimState.allCursors.push(Range.FromVSCodeSelection(sel));
+          vimState.allCursors.push(Range.FromVSCodeSelection(sel));
+        }
+      } else {
+        vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0]);
+        vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0]);
       }
     }
+
+    vimState.recordedState.transformations = [];
 
     return vimState;
   }

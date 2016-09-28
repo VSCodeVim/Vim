@@ -3306,16 +3306,16 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const deleteOperator = new DeleteOperator();
-
     for (const { start, end } of Position.IterateLine(vimState)) {
-      await deleteOperator.delete(start, end.getLeft(), vimState.currentMode, vimState.effectiveRegisterMode(), vimState, true);
+      vimState.recordedState.transformations.push({
+        type  : "deleteRange",
+        range : new Range(start, end),
+        diff  : start.subtract(end),
+      });
     }
 
     vimState.currentMode = ModeName.VisualBlockInsertMode;
     vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
-
-    vimState.cursorPosition = vimState.cursorPosition.getLeft();
 
     return vimState;
   }
