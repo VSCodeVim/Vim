@@ -589,7 +589,8 @@ export class ModeHandler implements vscode.Disposable {
         this._vimState.cursorPosition    = newPosition;
         this._vimState.cursorStartPosition = newPosition;
 
-        this._vimState.desiredColumn     = newPosition.character;
+        // TODO: find a way to update desiredColumn on mouse clicks.
+        // this._vimState.desiredColumn     = newPosition.character;
 
         // start visual mode?
 
@@ -716,8 +717,10 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // Update view
-    await this.updateView(vimState);
+    if (!(movement && movement.hasUpdatedView)) {
+      // Update view
+      await this.updateView(vimState);
+    }
 
     return vimState;
   }

@@ -164,6 +164,11 @@ export abstract class BaseMovement extends BaseAction {
   }
 
   /**
+   * Whether this action has violated general principal doing no real movement.
+   */
+  public hasUpdatedView = false;
+
+  /**
    * Whether we should change desiredColumn in VimState.
    */
   public doesntChangeDesiredColumn = false;
@@ -801,10 +806,10 @@ class ArrowsInReplaceMode extends BaseMovement {
 
     switch (this.keys[0]) {
       case "<up>":
-        newPosition = await new MoveUpArrow().execAction(position, vimState);
+        newPosition = await new MoveUpArrow().execActionWithCount(position, vimState, 1);
         break;
       case "<down>":
-        newPosition = await new MoveDownArrow().execAction(position, vimState);
+        newPosition = await new MoveDownArrow().execActionWithCount(position, vimState, 1);
         break;
       case "<left>":
         newPosition = await new MoveLeftArrow().execAction(position, vimState);
@@ -1680,8 +1685,10 @@ class CommandCloseFold extends CommandFold {
   canBePrefixedWithCount = true;
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    const currentMode = vimState.currentMode;
     let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
     await vscode.commands.executeCommand("editor.fold", {levels: timesToRepeat, direction: "up"});
+    vimState.currentMode = currentMode; // editor.fold activates visual mode!
 
     return vimState;
   }
@@ -2089,13 +2096,31 @@ class MoveUp extends BaseMovement {
   keys = ["k"];
   doesntChangeDesiredColumn = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getUp(vimState.desiredColumn);
-  }
-
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUp(position.getLineEnd().character);
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
+    let select = vimState.currentMode !== ModeName.Normal;
+    if (vimState.recordedState.operator) {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+      select = true;
+    }
+    /* We are not following our design principal (do no real movement inside an action) here. */
+    await vscode.commands.executeCommand("cursorMove", {
+      to: "up",
+      by: "wrappedLine",
+      select: select,
+      value: count
+    });
+    const nextLine = vscode.window.activeTextEditor.selection.active.line;
+    const nextLineLength = Position.getLineLength(nextLine);
+    const desiredColumn = Math.min(nextLineLength, vimState.desiredColumn);
+    const currentColumn = vscode.window.activeTextEditor.selection.active.character;
+    // await vscode.commands.executeCommand("cursorMove", {
+    //   to: "left",
+    //   by: "character",
+    //   select: select,
+    //   value: currentColumn
+    // });
+    this.hasUpdatedView = true;
+    return new Position(nextLine, Math.min(nextLineLength, vimState.desiredColumn));
   }
 }
 
@@ -2110,13 +2135,22 @@ class MoveDown extends BaseMovement {
   keys = ["j"];
   doesntChangeDesiredColumn = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getDown(vimState.desiredColumn);
-  }
-
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDown(position.getLineEnd().character);
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position> {
+    let select = vimState.currentMode !== ModeName.Normal;
+    if (vimState.recordedState.operator) {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+      select = true;
+    }
+    await vscode.commands.executeCommand("cursorMove", {
+      to: "down",
+      by: "wrappedLine",
+      select: select,
+      value: count
+    });
+    this.hasUpdatedView = true;
+    const nextLine = vscode.window.activeTextEditor.selection.active.line;
+    const nextLineLength = Position.getLineLength(nextLine);
+    return new Position(nextLine, Math.min(nextLineLength, vimState.desiredColumn));
   }
 }
 
