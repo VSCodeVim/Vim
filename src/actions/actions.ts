@@ -3334,6 +3334,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: "deleteRange",
         range: new Range(start, start.getLineEnd()),
+        collapseRange: true
       });
     }
 
@@ -3394,7 +3395,6 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let char = this.keysPressed[0];
-    let posChange = 0;
     let insertAtStart = vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Insert;
 
     if (char === '\n') {
@@ -3410,11 +3410,10 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 
       if (char === '<BS>') {
         vimState.recordedState.transformations.push({
-          type           : "deleteText",
-          position       : insertPos.getLeft(),
+          type     : "deleteText",
+          position : insertPos,
+          diff     : new PositionDiff(0, -1),
         });
-
-        posChange = -1;
       } else {
         let positionToInsert: Position;
 
@@ -3427,15 +3426,11 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
         vimState.recordedState.transformations.push({
           type    : "insertText",
           text    : char,
-          position: positionToInsert
+          position: positionToInsert,
+          diff     : new PositionDiff(0, 1),
         });
-
-        posChange = 1;
       }
     }
-
-    vimState.cursorStartPosition = vimState.cursorStartPosition.getRight(posChange);
-    vimState.cursorPosition      = vimState.cursorPosition.getRight(posChange);
 
     return vimState;
   }
