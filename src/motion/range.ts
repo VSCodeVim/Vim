@@ -10,6 +10,9 @@ export class Range {
   private _stop: Position;
 
   constructor(start: Position, stop: Position) {
+    if (start.isAfter(stop)) {
+      [start, stop] = [stop, start];
+    }
     this._start = start;
     this._stop  = stop;
   }
@@ -41,12 +44,7 @@ export class Range {
    * Create a range from an IMovement.
    */
   public static FromIMovement(i: IMovement): Range {
-    // TODO: This shows a very clear need for refactoring after multi-cursor is merged!
-
-    return new Range(
-      i.start,
-      i.stop
-    );
+    return i.operatingRange;
   }
 
   public getRight(count = 1): Range {

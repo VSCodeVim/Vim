@@ -71,8 +71,15 @@ const compareKeypressSequence = function (one: string[], two: string[]): boolean
  * The result of a (more sophisticated) Movement.
  */
 export interface IMovement {
-  start        : Position;
-  stop         : Position;
+  /**
+   * The location the cursor will end up.
+   */
+  cursorPosition : Position;
+
+  /**
+   * The range we will supply to an operator in the future, if one is run.
+   */
+  operatingRange : Range;
 
   /**
    * Whether this motion succeeded. Some commands, like fx when 'x' can't be found,
@@ -86,8 +93,8 @@ export interface IMovement {
 }
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
-    return (o as IMovement).start !== undefined &&
-           (o as IMovement).stop  !== undefined;
+    return (o as IMovement).cursorPosition !== undefined &&
+           (o as IMovement).operatingRange !== undefined;
 }
 
 export class BaseAction {
@@ -225,23 +232,29 @@ export abstract class BaseMovement extends BaseAction {
             position = temporaryResult;
           } else if (isIMovement(temporaryResult)) {
             if (result instanceof Position) {
+
+              // TODO(johnfn): Study - does this code even ever get run..?
               result = {
-                start  : new Position(0, 0),
-                stop   : new Position(0, 0),
-                failed : false
+                cursorPosition : new Position(0, 0),
+                operatingRange : new Range(new Position(0, 0), new Position(0, 0)),
+                failed         : false
               };
+
+              continue;
             }
 
             result.failed = result.failed || temporaryResult.failed;
 
             if (firstIteration) {
-              (result as IMovement).start = temporaryResult.start;
+              result.operatingRange = new Range(result.cursorPosition, result.cursorPosition);
             }
 
             if (lastIteration) {
-              (result as IMovement).stop = temporaryResult.stop;
-            } else {
-              position = temporaryResult.stop.getRightThroughLineBreaks();
+              result.operatingRange = result.operatingRange.withNewStop(temporaryResult.cursorPosition);
+            }
+
+            if (!lastIteration) {
+              position = temporaryResult.cursorPosition.getRightThroughLineBreaks();
             }
           }
       }
@@ -2414,7 +2427,7 @@ class MoveFindForward extends BaseMovement {
     let result = position.findForwards(toFind, count);
 
     if (!result) {
-      return { start: position, stop: position, failed: true };
+      return { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     }
 
     if (vimState.recordedState.operator) {
@@ -2439,7 +2452,7 @@ class MoveFindBackward extends BaseMovement {
     let result = position.findBackwards(toFind, count);
 
     if (!result) {
-      return { start: position, stop: position, failed: true };
+      return { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     }
 
     return result;
@@ -2461,7 +2474,7 @@ class MoveTilForward extends BaseMovement {
     let result = position.tilForwards(toFind, count);
 
     if (!result) {
-      return { start: position, stop: position, failed: true };
+      return { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     }
 
     if (vimState.recordedState.operator) {
@@ -2486,7 +2499,7 @@ class MoveTilBackward extends BaseMovement {
     let result = position.tilBackwards(toFind, count);
 
     if (!result) {
-      return { start: position, stop: position, failed: true };
+      return { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     }
 
     return result;
@@ -2592,13 +2605,12 @@ abstract class MoveByScreenLine extends BaseMovement {
     if (vimState.currentMode === ModeName.Normal) {
       return Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
     } else {
-      /**
-       * cursorMove command is handling the selection for us.
-       * So we are not following our design principal (do no real movement inside an action) here.
-       */
+      let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      let stop = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+
       return {
-        start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
-        stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+        cursorPosition: stop,
+        operatingRange: new Range(start, stop),
       };
     }
   }
@@ -2611,9 +2623,12 @@ abstract class MoveByScreenLine extends BaseMovement {
       value: this.value
     });
 
+    let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    let stop = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+
     return {
-      start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
-      stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -2796,9 +2811,9 @@ class MoveNonBlankLast extends BaseMovement {
     }
 
     return {
-      start: vimState.cursorStartPosition,
-      stop: stop,
-      registerMode: RegisterMode.LineWise
+      cursorPosition: stop,
+      operatingRange: new Range(vimState.cursorStartPosition, stop),
+      registerMode: RegisterMode.LineWise,
     };
   }
 }
@@ -3445,10 +3460,13 @@ class MoveDD extends BaseMovement {
   keys = ["d"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    let start = position.getLineBegin();
+    let stop  = position.getDownByCount(Math.max(0, count - 1)).getLineEnd();
+
     return {
-      start        : position.getLineBegin(),
-      stop         : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
-      registerMode : RegisterMode.LineWise
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
+      registerMode : RegisterMode.LineWise,
     };
   }
 }
@@ -3459,10 +3477,13 @@ class MoveYY extends BaseMovement {
   keys = ["y"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
+    let start = position.getLineBegin();
+    let stop = position.getDownByCount(Math.max(0, count - 1)).getLineEnd();
+
     return {
-      start       : position.getLineBegin(),
-      stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
-      registerMode: RegisterMode.LineWise,
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
+      registerMode  : RegisterMode.LineWise,
     };
   }
 }
@@ -3473,9 +3494,12 @@ class MoveCC extends BaseMovement {
   keys = ["c"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
+    let start = position.getLineBeginRespectingIndent();
+    let stop  = position.getDownByCount(Math.max(0, count - 1)).getLineEnd();
+
     return {
-      start       : position.getLineBeginRespectingIndent(),
-      stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
       registerMode: RegisterMode.CharacterWise
     };
   }
@@ -3487,9 +3511,12 @@ class MoveIndent extends BaseMovement {
   keys = [">"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start = position.getLineBegin();
+    let stop = position.getLineEnd();
+
     return {
-      start       : position.getLineBegin(),
-      stop        : position.getLineEnd(),
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop)
     };
   }
 }
@@ -3500,9 +3527,12 @@ class MoveOutdent extends BaseMovement {
   keys = ["<"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    let start = position.getLineBegin();
+    let stop = position.getLineEnd();
+
     return {
-      start       : position.getLineBegin(),
-      stop        : position.getLineEnd(),
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop)
     };
   }
 }
@@ -3538,10 +3568,14 @@ abstract class TextObjectMovement extends BaseMovement {
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     const res = await this.execAction(position, vimState) as IMovement;
+
     // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
     // In normal mode, the character on the stop position will be the first character after the operator executed
     // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
-    res.stop = new Position(res.stop.line, res.stop.character + 1);
+
+    res.operatingRange = res.operatingRange.withNewStop(
+      new Position(res.operatingRange.getStop().line,
+                   res.operatingRange.getStop().character + 1));
 
     return res;
   }
@@ -3584,8 +3618,8 @@ class SelectWord extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -3601,29 +3635,29 @@ class SelectABigWord extends TextObjectMovement {
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
-        start = position.getLastBigWordEnd().getRight();
-        stop = position.getCurrentBigWordEnd();
+      start = position.getLastBigWordEnd().getRight();
+      stop = position.getCurrentBigWordEnd();
     } else {
-        start = position.getBigWordLeft();
-        stop = position.getBigWordRight().getLeft();
+      start = position.getBigWordLeft();
+      stop = position.getBigWordRight().getLeft();
     }
 
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-        start = vimState.cursorStartPosition;
+      start = vimState.cursorStartPosition;
 
-        if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
-          // If current cursor postion is before cursor start position, we are selecting words in reverser order.
-          if (/\s/.test(currentChar)) {
-            stop = position.getBigWordLeft();
-          } else {
-            stop = position.getLastBigWordEnd().getRight();
-          }
+      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
+        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
+        if (/\s/.test(currentChar)) {
+          stop = position.getBigWordLeft();
+        } else {
+          stop = position.getLastBigWordEnd().getRight();
         }
+      }
     }
 
     return {
-      start: start,
-      stop: stop
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -3660,8 +3694,8 @@ class SelectInnerWord extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -3698,8 +3732,8 @@ class SelectInnerBigWord extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -3746,8 +3780,8 @@ class SelectSentence extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -3786,8 +3820,8 @@ class SelectInnerSentence extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -3811,9 +3845,11 @@ class SelectParagraph extends TextObjectMovement {
       }
     }
 
+    let stop = position.getCurrentParagraphEnd();
+
     return {
-      start: start,
-      stop: position.getCurrentParagraphEnd()
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -3845,8 +3881,8 @@ class SelectInnerParagraph extends TextObjectMovement {
     }
 
     return {
-      start: start,
-      stop: stop
+      cursorPosition: stop,
+      operatingRange: new Range(start, stop),
     };
   }
 }
@@ -3859,7 +3895,7 @@ class MoveToMatchingBracket extends BaseMovement {
     const text = TextEditor.getLineAt(position).text;
     const charToMatch = text[position.character];
     const toFind = PairMatcher.pairings[charToMatch];
-    const failure = { start: position, stop: position, failed: true };
+    const failure = { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
 
     if (!toFind || !toFind.matchesWithPercentageMotion) {
       // If we're not on a match, go right until we find a
@@ -3909,7 +3945,7 @@ abstract class MoveInsideCharacter extends BaseMovement {
   protected includeSurrounding = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    const failure = { start: position, stop: position, failed: true };
+    const failure = { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
     const closedMatch = text[position.character] === closingChar;
@@ -3935,8 +3971,8 @@ abstract class MoveInsideCharacter extends BaseMovement {
     }
 
     return {
-      start : startPos,
-      stop  : endPos,
+      cursorPosition: endPos,
+      operatingRange: new Range(startPos, endPos),
     };
   }
 }
@@ -4084,8 +4120,8 @@ abstract class MoveQuoteMatch extends BaseMovement {
 
     if (start === -1 || end === -1 || end === start || end < position.character) {
       return {
-        start: position,
-        stop: position,
+        cursorPosition: position,
+        operatingRange: new Range(position, position),
         failed: true
       };
     }
@@ -4098,15 +4134,15 @@ abstract class MoveQuoteMatch extends BaseMovement {
     }
 
     return {
-      start: startPos,
-      stop: endPos
+      cursorPosition: endPos,
+      operatingRange: new Range(startPos, endPos),
     };
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     const res = await this.execAction(position, vimState);
 
-    res.stop = res.stop.getRight();
+    res.operatingRange.withNewStop(res.operatingRange.getStop().getRight());
 
     return res;
   }
@@ -4159,7 +4195,7 @@ class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
   keys = ["[", "("];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    const failure = { start: position, stop: position, failed: true };
+    const failure = { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     const charToMatch = ")";
     const result = PairMatcher.nextPairedChar(position.getLeftThroughLineBreaks(), charToMatch, false);
 
@@ -4173,7 +4209,7 @@ class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
   keys = ["]", ")"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    const failure = { start: position, stop: position, failed: true };
+    const failure = { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     const charToMatch = "(";
     const result = PairMatcher.nextPairedChar(position.getRightThroughLineBreaks(), charToMatch, false);
 
@@ -4187,7 +4223,7 @@ class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
   keys = ["[", "{"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    const failure = { start: position, stop: position, failed: true };
+    const failure = { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     const charToMatch = "}";
     const result = PairMatcher.nextPairedChar(position.getLeftThroughLineBreaks(), charToMatch, false);
 
@@ -4201,7 +4237,7 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
   keys = ["]", "}"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    const failure = { start: position, stop: position, failed: true };
+    const failure = { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     const charToMatch = "{";
     const result = PairMatcher.nextPairedChar(position.getRightThroughLineBreaks(), charToMatch, false);
 
@@ -4373,26 +4409,22 @@ abstract class MoveTagMatch extends BaseMovement {
     const end = tagMatcher.findClosing(this.includeTag);
 
     if (start === undefined || end === undefined || end === start) {
-      return {
-        start: position,
-        stop: position,
-        failed: true
-      };
+      return { cursorPosition: position, operatingRange: new Range(position, position), failed: true };
     }
 
     let startPos = new Position(position.line, start);
     let endPos = new Position(position.line, end - 1);
 
     return {
-      start: startPos,
-      stop: endPos
+      cursorPosition: endPos,
+      operatingRange: new Range(startPos, endPos),
     };
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     const res = await this.execAction(position, vimState);
 
-    res.stop = res.stop.getRight();
+    res.operatingRange = res.operatingRange.withNewStop(res.operatingRange.getStop().getRight());
 
     return res;
   }

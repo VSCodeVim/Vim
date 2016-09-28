@@ -41,6 +41,46 @@ export class ViewChange {
   public args: any;
 }
 
+export class VimCursor {
+  private cursor: Range;
+
+  private operatingRange: Range | undefined;
+
+  private constructor(start: Position, stop: Position) {
+    this.cursor = new Range(start, stop);
+  }
+
+  public static NewByPosition(start: Position, stop: Position): VimCursor {
+    return new VimCursor(start, stop);
+  }
+
+  public static NewByRange(range: Range): VimCursor {
+    return new VimCursor(range.getStart(), range.getStop());
+  }
+
+  public getCursor(): Range {
+    return this.cursor;
+  }
+
+  public getOperatingRange(): Range | undefined {
+    return this.operatingRange;
+  }
+
+  public withNewOperatingRange(operatingRange: Range): VimCursor {
+    const result = VimCursor.NewByRange(this.cursor);
+
+    result.operatingRange = operatingRange;
+    return result;
+  }
+
+  public withNewCursor(cursor: Range): VimCursor {
+    const result = VimCursor.NewByRange(cursor);
+
+    result.operatingRange = this.operatingRange;
+    return result;
+  }
+}
+
 /**
  * The VimState class holds permanent state that carries over from action
  * to action.
@@ -102,12 +142,12 @@ export class VimState {
    * The position the cursor will be when this action finishes.
    */
   public get cursorPosition(): Position {
-    return this.allCursors.first().getStop();
+    return this.allCursors.first().getCursor().getStop();
   }
   public set cursorPosition(value: Position) {
-    const oldRange = this.allCursors.delete(this.allCursors.first());
+    const oldCursor = this.allCursors.delete(this.allCursors.first());
 
-    this.allCursors.add(oldRange.withNewStop(value));
+    this.allCursors.add(oldCursor.withNewCursor(oldCursor.getCursor().withNewStop(value)));
   }
 
   /**
@@ -116,18 +156,18 @@ export class VimState {
    * actually starts e.g. if you use the "aw" text motion in the middle of a word.
    */
   public get cursorStartPosition(): Position {
-    return this.allCursors.first().getStart();
+    return this.allCursors.first().getCursor().getStart();
   }
   public set cursorStartPosition(value: Position) {
-    const oldRange = this.allCursors.delete(this.allCursors.first());
+    const oldCursor = this.allCursors.delete(this.allCursors.first());
 
-    this.allCursors.add(oldRange.withNewStart(value));
+    this.allCursors.add(oldCursor.withNewCursor(oldCursor.getCursor().withNewStart(value)));
   }
 
   /**
    * In Multi Cursor Mode, the position of every cursor.
    */
-  public allCursors: EqualitySet<Range> = new EqualitySet([ new Range(new Position(0, 0), new Position(0, 0)) ]);
+  public allCursors: EqualitySet<VimCursor> = new EqualitySet([ VimCursor.NewByPosition(new Position(0, 0), new Position(0, 0)) ]);
 
   public cursorPositionsJustBeforeAnythingHappened = new EqualitySet([ new Position(0, 0) ]);
 
@@ -381,11 +421,11 @@ export class ReplaceState {
  *   * word movement
  */
 export class RecordedState {
-
   constructor() {
     const useClipboard = Configuration.getInstance().useSystemClipboard;
     this.registerName = useClipboard ? '*' : '"';
   }
+
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
    * multiple length movements, e.g. gg.
@@ -611,7 +651,9 @@ export class ModeHandler implements vscode.Disposable {
       this._vimState.allCursors.clear();
 
       for (const sel of e.selections) {
-        this._vimState.allCursors.add(Range.FromVSCodeSelection(sel));
+        this._vimState.allCursors.add(
+          VimCursor.NewByRange(Range.FromVSCodeSelection(sel))
+        );
       }
 
       await this.updateView(this._vimState);
@@ -715,7 +757,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   async handleKeyEvent(key: string): Promise<Boolean> {
-    this._vimState.cursorPositionsJustBeforeAnythingHappened = this._vimState.allCursors.map<Position>(x => x.getStop());
+    this._vimState.cursorPositionsJustBeforeAnythingHappened = this._vimState.allCursors.map<Position>(x => x.getCursor().getStop());
 
     try {
       let handled = false;
@@ -885,17 +927,17 @@ export class ModeHandler implements vscode.Disposable {
 
     // Ensure cursor is within bounds
 
-    vimState.allCursors = vimState.allCursors.map<Range>(cursor => {
-      if (cursor.getStop().line >= TextEditor.getLineCount()) {
-        return cursor.withNewStop(vimState.cursorPosition.getDocumentEnd());
+    vimState.allCursors = vimState.allCursors.map<VimCursor>(cursor => {
+      if (cursor.getCursor().getStop().line >= TextEditor.getLineCount()) {
+        return cursor.withNewCursor(cursor.getCursor().withNewStop(vimState.cursorPosition.getDocumentEnd()))
       }
 
-      const currentLineLength = TextEditor.getLineAt(cursor.getStop()).text.length;
+      const currentLineLength = TextEditor.getLineAt(cursor.getCursor().getStop()).text.length;
 
       if (vimState.currentMode === ModeName.Normal &&
-          cursor.getStop().character >= currentLineLength && currentLineLength > 0) {
+          cursor.getCursor().getStop().character >= currentLineLength && currentLineLength > 0) {
 
-        return cursor.withNewStop(cursor.getStop().getLineEnd().getLeft());
+        return cursor.withNewCursor(cursor.getCursor().withNewStop(cursor.getCursor().getStop().getLineEnd().getLeft()));
       }
 
       return cursor;
@@ -903,7 +945,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Update the current history step to have the latest cursor position
 
-    vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map<Position>(x => x.getStop()));
+    vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map<Position>(x => x.getCursor().getStop()));
 
     // Updated desired column
 
@@ -943,7 +985,7 @@ export class ModeHandler implements vscode.Disposable {
        * Action definitions without having to think about multiple
        * cursors in almost all cases.
        */
-      const cursorPosition = cursor.getStop();
+      const cursorPosition = cursor.getCursor().getStop();
       const old = vimState.cursorPosition;
 
       vimState.cursorPosition = cursorPosition;
@@ -955,7 +997,7 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (result instanceof Position) {
-        let newStart = cursor.getStart();
+        let newStart = cursor.getCursor().getStart();
 
         if (!vimState.getModeObject(this).isVisualMode &&
             !vimState.recordedState.operator) {
@@ -973,7 +1015,7 @@ export class ModeHandler implements vscode.Disposable {
           vimState.currentRegisterMode = result.registerMode;
         }
 
-        return new Range(result.start, result.stop);
+        return result.operatingRange;
       }
     });
 
@@ -983,7 +1025,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (vimState.currentMode === ModeName.Normal && !recordedState.operator) {
       vimState.allCursors = vimState.allCursors.map<Range>(cursor => {
-        if (cursor.getStop().character >= Position.getLineLength(cursor.getStop().line)) {
+        if (cursor.getCursor().getStop().character >= Position.getLineLength(cursor.getCursor().getStop().line)) {
           return cursor.withNewStop(cursor.getStop().getLineEnd().getLeft());
         }
 

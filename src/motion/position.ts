@@ -128,6 +128,10 @@ export class Position extends vscode.Position {
     return new Position(pos.line, pos.character);
   }
 
+  public static IsPosition(x: any): x is Position {
+    return !!x.IsPosition;
+  }
+
   /**
    * Returns which of the 2 provided Positions comes earlier in the document.
    */
