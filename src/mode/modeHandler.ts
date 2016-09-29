@@ -122,7 +122,17 @@ export class VimState {
   /**
    * In Multi Cursor Mode, the position of every cursor.
    */
-  public allCursors: Range[] = [ new Range(new Position(0, 0), new Position(0, 0)) ];
+  private _allCursors: Range[] = [ new Range(new Position(0, 0), new Position(0, 0)) ];
+
+  public get allCursors(): Range[] {
+    return this._allCursors;
+  }
+
+  public set allCursors(value: Range[]) {
+    this._allCursors = value;
+
+    this.isMultiCursor = this._allCursors.length > 1;
+  }
 
   public cursorPositionJustBeforeAnythingHappened = [ new Position(0, 0) ];
 
@@ -594,7 +604,6 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-
     if (this.currentModeName === ModeName.VisualBlock ||
         this.currentModeName === ModeName.VisualBlockInsertMode) {
       // AArrgghhhh - johnfn
@@ -602,18 +611,21 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+    if (this.vimState.isMultiCursor) {
+      // AAAAAARGGHHHHH - johnfn
+
+      return;
+    }
+
+    /*
     if (this._vimState.currentMode !== ModeName.VisualBlock           &&
         this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
         e.selections.length > this._vimState.allCursors.length) {
       // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
 
-      if (e.selections.length >= 2) {
-        this._vimState.currentMode = ModeName.Visual;
-        this._vimState.isMultiCursor = true;
-
-        this.setCurrentModeByName(this._vimState);
-      } else {
+      if (e.selections.length === 2) {
         // The selections ran together - go back to visual mode.
+
         this._vimState.currentMode = ModeName.Visual;
         this.setCurrentModeByName(this._vimState);
         this._vimState.isMultiCursor = false;
@@ -629,6 +641,7 @@ export class ModeHandler implements vscode.Disposable {
 
       return;
     }
+    */
 
     if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
       return;
@@ -1207,8 +1220,10 @@ export class ModeHandler implements vscode.Disposable {
     if (transformations.length > 0) {
       const firstTransformation = transformations[0];
 
-      if (firstTransformation.type === 'deleteRange' && firstTransformation.collapseRange) {
-        vimState.cursorPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
+      if (firstTransformation.type === 'deleteRange') {
+        if (firstTransformation.collapseRange) {
+          vimState.cursorPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
+        }
       }
     }
 

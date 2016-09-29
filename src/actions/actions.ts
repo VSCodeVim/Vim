@@ -258,8 +258,6 @@ export abstract class BaseCommand extends BaseAction {
    */
   isCompleteAction = true;
 
-  supportsMultiCursor = true;
-
   multicursorIndex: number | undefined = undefined;
 
   /**
@@ -1083,21 +1081,21 @@ class CommandInsertInInsertMode extends BaseCommand {
     } else {
       if (vimState.isMultiCursor) {
         vimState.recordedState.transformations.push({
-          type            : "insertText",
-          text            : char,
-          position: vimState.cursorPosition,
+          type     : "insertText",
+          text     : char,
+          position : vimState.cursorPosition,
+          diff     : new PositionDiff(0, 1),
         });
       } else {
         vimState.recordedState.transformations.push({
-          type           : "insertTextVSCode",
-          text           : char,
+          type : "insertTextVSCode",
+          text : char,
         });
       }
     }
 
     return vimState;
   }
-
 
   public toString(): string {
     return this.keysPressed[this.keysPressed.length - 1];
@@ -3237,14 +3235,22 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const toReplace   = this.keysPressed[1];
+    const toInsert   = this.keysPressed[1];
 
     for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
-      vimState = await new DeleteOperator().run(vimState, pos, pos);
-      await TextEditor.insertAt(toReplace, pos);
+      vimState.recordedState.transformations.push({
+        type  : "replaceText",
+        text  : toInsert,
+        start : pos.getLeft(),
+        end   : pos,
+      });
     }
 
-    vimState.cursorPosition = position;
+    const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
+
+    vimState.allCursors = [ new Range(topLeft, topLeft) ];
+    vimState.currentMode = ModeName.Normal;
+
     return vimState;
   }
 }
@@ -4396,4 +4402,22 @@ class MoveInsideTag extends MoveTagMatch {
 class MoveAroundTag extends MoveTagMatch {
   keys = ["a", "t"];
   includeTag = true;
+}
+
+@RegisterAction
+class ActionOverrideCmdD extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["<D-d>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
+    await waitForCursorUpdatesToHappen();
+
+    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
+      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
+    vimState.currentMode = ModeName.Visual;
+
+    return vimState;
+  }
 }

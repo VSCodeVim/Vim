@@ -48,6 +48,11 @@
         "when": "editorTextFocus && !inDebugRepl"
       },
       {
+        "key": "cmd+d",
+        "command": "extension.vim_cmd+d",
+        "when": "editorTextFocus && !inDebugRepl"
+      },
+      {
         "key": "Backspace",
         "command": "extension.vim_backspace",
         "when": "editorTextFocus && !inDebugRepl"
