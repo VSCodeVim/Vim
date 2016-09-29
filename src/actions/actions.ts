@@ -1084,7 +1084,6 @@ class CommandInsertInInsertMode extends BaseCommand {
           type     : "insertText",
           text     : char,
           position : vimState.cursorPosition,
-          diff     : new PositionDiff(0, 1),
         });
       } else {
         vimState.recordedState.transformations.push({
