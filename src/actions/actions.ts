@@ -3240,8 +3240,8 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
       vimState.recordedState.transformations.push({
         type  : "replaceText",
         text  : toInsert,
-        start : pos.getLeft(),
-        end   : pos,
+        start : pos,
+        end   : pos.getRight(),
       });
     }
 
