@@ -130,6 +130,11 @@ export interface DeleteTextRangeTransformation {
   diff?: PositionDiff;
 
   collapseRange?: boolean;
+
+  /**
+   * Please don't use this! It's a hack.
+   */
+  manuallySetCursorPositions?: boolean;
 }
 
 /**

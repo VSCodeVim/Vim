@@ -1188,11 +1188,19 @@ export class ModeHandler implements vscode.Disposable {
 
     const selections = vscode.window.activeTextEditor.selections;
 
+    const firstTransformation = transformations[0];
+
+    const manuallySetCursorPositions = firstTransformation.type === "deleteRange" &&
+                                       firstTransformation.manuallySetCursorPositions;
 
     // We handle multiple cursors in a different way in visual block mode, unfortunately.
     // TODO - refactor that out!
-    if (vimState.currentMode !== ModeName.VisualBlockInsertMode) {
+    if (vimState.currentMode !== ModeName.VisualBlockInsertMode &&
+        vimState.currentMode !== ModeName.VisualBlock &&
+        !manuallySetCursorPositions) {
       vimState.allCursors = [];
+
+      const resultingCursors: Range[] = [];
 
       for (let i = 0; i < selections.length; i++) {
         let sel = selections[i];
@@ -1211,11 +1219,15 @@ export class ModeHandler implements vscode.Disposable {
           );
         }
 
-        vimState.allCursors.push(Range.FromVSCodeSelection(sel));
+        resultingCursors.push(Range.FromVSCodeSelection(sel));
       }
+
+      vimState.allCursors = resultingCursors;
     } else {
-      vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0]);
-      vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0]);
+      if (accumulatedPositionDifferences.length > 0) {
+        vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0]);
+        vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0]);
+      }
     }
 
     /**
@@ -1224,13 +1236,9 @@ export class ModeHandler implements vscode.Disposable {
      *
      * (TODO)
      */
-    if (transformations.length > 0) {
-      const firstTransformation = transformations[0];
-
-      if (firstTransformation.type === 'deleteRange') {
-        if (firstTransformation.collapseRange) {
-          vimState.cursorPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
-        }
+    if (firstTransformation.type === 'deleteRange') {
+      if (firstTransformation.collapseRange) {
+        vimState.cursorPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
       }
     }
 

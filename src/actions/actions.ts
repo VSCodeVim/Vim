@@ -3266,6 +3266,7 @@ class ActionXVisualBlock extends BaseCommand {
       vimState.recordedState.transformations.push({
         type  : "deleteRange",
         range : new Range(start, end),
+        manuallySetCursorPositions: true,
       });
     }
 
