@@ -1,6 +1,7 @@
 export class AngleBracketNotation {
   private static _notationMap : { [key: string] : string[]; } = {
     'C-': ['ctrl\\+', 'c\\-'],
+    'D-': ['cmd\\+',  'd\\-'],
     'Esc': ['escape', 'esc'],
     'BS': ['backspace', 'bs'],
     'Del': ['delete', 'del'],

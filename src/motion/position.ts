@@ -7,6 +7,27 @@ import { VimState } from './../mode/modeHandler';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
 import { Configuration } from "./../configuration/configuration";
 
+/**
+ * Represents a difference between two positions. Add it to a position
+ * to get another position.
+ */
+export class PositionDiff {
+  public line: number;
+  public character: number;
+
+  constructor(line: number, character: number) {
+    this.line = line;
+    this.character = character;
+  }
+
+  public add(other: PositionDiff) {
+    return new PositionDiff(
+      this.line + other.line,
+      this.character + other.character
+    );
+  }
+}
+
 export class Position extends vscode.Position {
   private static NonWordCharacters = Configuration.getInstance().iskeyword!;
   private static NonBigWordCharacters = "";
@@ -23,6 +44,10 @@ export class Position extends vscode.Position {
     this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
   }
 
+  public toString(): string {
+    return `[${ this.line }, ${ this.character }]`;
+  }
+
   public static FromVSCodePosition(pos: vscode.Position): Position {
     return new Position(pos.line, pos.character);
   }
@@ -35,6 +60,13 @@ export class Position extends vscode.Position {
     if (p1.line === p2.line && p1.character < p2.character) { return p1; }
 
     return p2;
+  }
+
+  public isEarlierThan(other: Position): boolean {
+    if (this.line < other.line) { return true; }
+    if (this.line === other.line && this.character < other.character) { return true; }
+
+    return false;
   }
 
   /**
@@ -152,6 +184,36 @@ export class Position extends vscode.Position {
     return p1;
   }
 
+  /**
+   * Subtracts another position from this one, returning the
+   * difference between the two.
+   */
+  public subtract(other: Position): PositionDiff {
+    return new PositionDiff(
+      this.line      - other.line,
+      this.character - other.character,
+    );
+  }
+
+  /**
+   * Adds a PositionDiff to this position, returning a new
+   * position.
+   */
+  public add(other: PositionDiff, { boundsCheck = true } = { } ): Position {
+    let resultChar = this.character + other.character;
+    let resultLine = this.line + other.line;
+
+    if (boundsCheck) {
+      if (resultChar < 0) { resultChar = 0; }
+      if (resultLine < 0) { resultLine = 0; }
+    }
+
+    return new Position(
+      resultLine,
+      resultChar
+    );
+  }
+
   public setLocation(line: number, character: number) : Position {
     let position = new Position(line, character);
     return position;
@@ -247,9 +309,15 @@ export class Position extends vscode.Position {
    * Get the position *count* lines down from this position, but not lower
    * than the end of the document.
    */
-  public getDownByCount(count = 0): Position {
+  public getDownByCount(count = 0, { boundsCheck = true } = {}): Position {
+    console.log(boundsCheck);
+
+    const line = boundsCheck ?
+      Math.min(TextEditor.getLineCount() - 1, this.line + count) :
+      this.line + count;
+
     return new Position(
-      Math.min(TextEditor.getLineCount() - 1, this.line + count),
+      line,
       this.character
     );
   }

@@ -67,9 +67,7 @@ export class Register {
     };
   }
 
-  public static putByKey(content: string | string[], register?: string, registerMode?: RegisterMode): void {
-    register = register || '"';
-
+  public static putByKey(content: string | string[], register = '"', registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
@@ -84,6 +82,21 @@ export class Register {
       isClipboardRegister: Register.isClipboardRegister(register),
     };
   }
+
+  public static add(content: string, vimState: VimState): void {
+    const register = vimState.recordedState.registerName;
+
+    if (!Register.isValidRegister(register)) {
+      throw new Error(`Invalid register ${register}`);
+    }
+
+    if (typeof Register.registers[register].text !== "string") {
+      // TODO - I don't know why this cast is necessary!
+
+      (Register.registers[register].text as string[]).push(content);
+    }
+  }
+
 
   /**
    * Gets content from a register. If none is specified, uses the default
@@ -120,6 +133,7 @@ export class Register {
           }
         })
       );
+
       Register.registers[register].text = text;
     }
 

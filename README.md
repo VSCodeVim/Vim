@@ -21,6 +21,7 @@ We're super friendly people if you want to drop by and talk to us on [Slack](htt
 * Correct undo/redo state
 * Marks
 * Vim Options
+* Multiple Cursor mode (allows multiple simultaneous cursors to receive Vim commands. It's like macros, but in real time. Allows `/` search, has independent clipboards for each cursor, etc.)
 
 ## Roadmap
 

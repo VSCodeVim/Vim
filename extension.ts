@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 import * as _ from "lodash";
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
-import { TaskQueue } from './src/taskQueue';
+import { taskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
@@ -65,8 +65,6 @@ let extensionContext: vscode.ExtensionContext;
  */
 let modeHandlerToEditorIdentity: { [key: string]: ModeHandler } = {};
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
-
-let taskQueue = new TaskQueue();
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
@@ -220,7 +218,7 @@ async function handleKeyEvent(key: string): Promise<void> {
   const mh = await getAndUpdateModeHandler();
 
   taskQueue.enqueueTask({
-    promise   : async () => { await mh.handleKeyEvent(key); },
+    promise   : async () => { console.log(key); await mh.handleKeyEvent(key); },
     isRunning : false
   });
 }
