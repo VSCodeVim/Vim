@@ -6,7 +6,7 @@
 
 :warning: - some variations of the command are not supported
 
-:running: work in progress
+:running: - work in progress
 
 :arrow_down: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
 
@@ -417,9 +417,9 @@ Status | Command | Description
 
 ## Repeating commands
 
-Status | Command | Description
----|--------|------------------------------
-:white_check_mark:   | :1234:  .		 | repeat last change (with count replaced with N)
+Status | Command | Description | Note
+---|--------|--------------|----------------
+:white_check_mark: :star:  | :1234:  .		 | repeat last change (with count replaced with N) | It won't repeat Code's auto-complete change.
 :arrow_down:|    q{a-z}	         | record typed characters into register {a-z}
 :arrow_down:|    q{A-Z}	         | record typed characters, appended to register {a-z}
 :arrow_down:|    q		 | stop recording

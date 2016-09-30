@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#a5c9a2",
@@ -13,8 +13,7 @@
   "keywords": [
     "vim",
     "vi",
-    "vscodevim",
-    "vsc-vim"
+    "vscodevim"
   ],
   "repository": {
     "type": "git",
@@ -45,7 +44,7 @@
       {
         "key": "Escape",
         "command": "extension.vim_escape",
-        "when": "editorTextFocus && !inDebugRepl"
+        "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
       },
       {
         "key": "cmd+d",

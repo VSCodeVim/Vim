@@ -1455,10 +1455,11 @@ export class ChangeOperator extends BaseOperator {
 
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
-        // the line.
-        if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0) {
+        // the line. We do want to run delete if it is a multiline change though ex. c}
+        if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 || (end.line !== start.line)) {
           state = await new DeleteOperator().run(vimState, start, end);
         }
+
         state.currentMode = ModeName.Insert;
 
         if (isEndOfLine) {
@@ -1763,7 +1764,7 @@ export class PutBeforeWithIndentCommand extends BaseCommand {
 
 @RegisterAction
 class CommandShowCommandLine extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = [":"];
   runsOnceForEveryCursor() { return false; }
 
@@ -2812,6 +2813,10 @@ export class MoveWordBegin extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (vimState.recordedState.operator instanceof ChangeOperator) {
 
+      if (TextEditor.getLineAt(position).text.length < 1) {
+        return position;
+      }
+
       /*
       From the Vim manual:
 
@@ -3079,15 +3084,15 @@ class ActionJoin extends BaseCommand {
     let lineOne = TextEditor.getLineAt(position).text;
     let lineTwo = TextEditor.getLineAt(position.getNextLineBegin()).text;
 
-    lineTwo = lineTwo.substring(position.getNextLineBegin().getFirstLineNonBlankChar().character);
+    let lineTwoTrimmedStart = lineTwo.substring(position.getNextLineBegin().getFirstLineNonBlankChar().character);
 
     // TODO(whitespace): need a better way to check for whitespace
     let oneEndsWithWhitespace = lineOne.length > 0 && " \t".indexOf(lineOne[lineOne.length - 1]) > -1;
-    let isParenthesisPair = (lineOne[lineOne.length - 1] === '(' && lineTwo[0] === ')');
+    let isParenthesisPair = (lineOne[lineOne.length - 1] === '(' && lineTwoTrimmedStart[0] === ')');
 
     const addSpace = !oneEndsWithWhitespace && !isParenthesisPair;
 
-    let resultLine = lineOne + (addSpace ? " " : "") + lineTwo;
+    let resultLine = lineOne + (addSpace ? " " : "") + lineTwoTrimmedStart;
 
     let newState = await new DeleteOperator().run(
       vimState,
@@ -3099,7 +3104,8 @@ class ActionJoin extends BaseCommand {
 
     await TextEditor.insert(resultLine, position);
 
-    newState.cursorPosition = new Position(position.line, lineOne.length + (addSpace ? 1 : 0) + (isParenthesisPair ? 1 : 0) - 1);
+    newState.cursorPosition = new Position(position.line,
+      lineOne.length + (addSpace ? 1 : 0) + (isParenthesisPair ? 1 : 0) - 1 + (oneEndsWithWhitespace ? 1 : 0));
 
     return newState;
   }

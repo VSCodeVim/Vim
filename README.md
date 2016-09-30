@@ -5,11 +5,9 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code.
 
-Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**.
+Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favourite obscure command. :wink:
 
-We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
-
-We're super friendly people if you want to drop by and talk to us on our [Slack channel](https://vscodevim-slackin.azurewebsites.net)!
+We're super friendly people if you want to drop by and talk to us on [Slack](https://vscodevim-slackin.azurewebsites.net).
 
 ![Screenshot](images/screen.png)
 
@@ -31,12 +29,11 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 
 ## Install
 
-1. Within Visual Studio Code, open the command palette (`Ctrl-Shift-P` / `Cmd-Shift-P`)
-2. Select `Install Extension` and search for 'vim' *or* run `ext install vim`
+Install the extension through the [VS Code Marketplace](https://code.visualstudio.com/docs/editor/extension-gallery).
 
 ## Configure
 
-Due to overlap between VSCode and VIm, options are loaded slightly different from native Vim. The option loading sequence/priority is
+Due to overlap between VS Code and Vim, options are loaded slightly different from native Vim. The option loading sequence is
 
 1. `:set {option}` on the fly
 2. [TODO] .vimrc.
@@ -46,7 +43,7 @@ Due to overlap between VSCode and VIm, options are loaded slightly different fro
 
 ### Supported Options
 
-Vim options can be added to your user or workspace settings (open Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
+Vim options can be added to your user or workspace settings (open the Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
 
 The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
 
@@ -76,7 +73,7 @@ The following is a subset of the supported configurations; the full list is desc
 
 * insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
   * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
-  * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive/otherModesKeyBindingNonRecursive.
+  * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
     ```
     "vim.otherModesKeyBindingsNonRecursive": [
@@ -87,13 +84,13 @@ The following is a subset of the supported configurations; the full list is desc
     ```
 
 * useCtrlKeys
-  * Enable Vim ctrl keys thus overriding common VSCode operations (eg. copy, paste, find, etc). Setting this option to true will enable:
+  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Page Forward
     * `ctrl+v` => Visual Block Mode
     * etc.
   * Type: Boolean (Default: `false`)
-  * Example:
+  * *Example:*
 
     ```
     "vim.useCtrlKeys": true
@@ -117,6 +114,10 @@ The following is a subset of the supported configurations; the full list is desc
 
 * hlsearch
   * When there is a previous search pattern, highlight all its matches
+  * Type: Boolean (Default: `false`)
+
+* autoindent
+  * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
 
 ## F.A.Q.
@@ -126,20 +127,14 @@ The following is a subset of the supported configurations; the full list is desc
 On OS X, open Terminal and run the following command:
 
 ```
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false // For VSCode
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VSCode Insider
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         // For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VS Code Insider
 ```
 
 ## Contributing
 
-This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP.md).
-
-For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
+This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP.md). For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
 
 ## Changelog
 
 Please see our [list of recent releases and features added.](https://github.com/VSCodeVim/Vim/releases)
-
-## License
-
-MIT, see [License](LICENSE) for more information.
