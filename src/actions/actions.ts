@@ -2112,8 +2112,8 @@ class CommandGoToDefinition extends BaseCommand {
 
 @RegisterAction
 class CommandInsertAtFirstCharacter extends BaseCommand {
-  modes = [ModeName.Normal];
-  mustBeFirstKey = true;
+  modes = [ModeName.Normal, ModeName.Visual];
+  mustBeFirstKey = false;
   keys = ["I"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
