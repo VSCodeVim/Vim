@@ -3358,8 +3358,8 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
 }
 
 @RegisterAction
-class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
-  modes = [ModeName.VisualBlock];
+class ActionGoToInsertVisualModeAppend extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualBlock];
   keys = ["A"];
   runsOnceForEveryCursor() { return false; }
 
