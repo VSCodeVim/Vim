@@ -504,7 +504,6 @@ export class ModeHandler implements vscode.Disposable {
   private _otherModesNonRecursive: OtherModesRemapper;
   private _insertModeNonRecursive: InsertModeRemapper;
 
-
   public get vimState(): VimState {
     return this._vimState;
   }
@@ -616,32 +615,6 @@ export class ModeHandler implements vscode.Disposable {
 
       return;
     }
-
-    /*
-    if (this._vimState.currentMode !== ModeName.VisualBlock           &&
-        this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
-        e.selections.length > this._vimState.allCursors.length) {
-      // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
-
-      if (e.selections.length === 2) {
-        // The selections ran together - go back to visual mode.
-
-        this._vimState.currentMode = ModeName.Visual;
-        this.setCurrentModeByName(this._vimState);
-        this._vimState.isMultiCursor = false;
-      }
-
-      this._vimState.allCursors = [];
-
-      for (const sel of e.selections) {
-        this._vimState.allCursors.push(Range.FromVSCodeSelection(sel));
-      }
-
-      await this.updateView(this._vimState);
-
-      return;
-    }
-    */
 
     if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
       return;
