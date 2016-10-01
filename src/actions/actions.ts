@@ -2599,10 +2599,19 @@ abstract class MoveByScreenLine extends BaseMovement {
        * cursorMove command is handling the selection for us.
        * So we are not following our design principal (do no real movement inside an action) here.
        */
-      return {
-        start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
-        stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
-      };
+
+      let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      let stop = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+
+      // We want to swap the cursor start stop positions based on which direction we are moving, up or down
+      if (start.line < position.line) {
+        let tmp = start;
+        start = stop;
+        stop = tmp;
+        return { start, stop };
+      } else {
+        return { start, stop };
+      }
     }
   }
 
