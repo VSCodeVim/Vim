@@ -99,6 +99,7 @@ The following is a subset of the supported configurations; the full list is desc
 * useSystemClipboard
   * Enable yanking to the system clipboard by default
   * Type: Boolean (Default: `false`)
+  * Note: Linux users must have xclip installed
 
 * useSolidBlockCursor
   * Use a non-blinking block cursor
