@@ -2154,9 +2154,9 @@ class CommandInsertAfterCursor extends BaseCommand {
 
 @RegisterAction
 class CommandInsertAtLineEnd extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual];
   keys = ["A"];
-  mustBeFirstKey = true;
+  mustBeFirstKey = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
@@ -3358,8 +3358,8 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
 }
 
 @RegisterAction
-class ActionGoToInsertVisualModeAppend extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualBlock];
+class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
+  modes = [ModeName.VisualBlock];
   keys = ["A"];
   runsOnceForEveryCursor() { return false; }
 
