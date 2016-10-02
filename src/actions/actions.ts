@@ -2605,13 +2605,10 @@ abstract class MoveByScreenLine extends BaseMovement {
 
       // We want to swap the cursor start stop positions based on which direction we are moving, up or down
       if (start.line < position.line) {
-        let tmp = start;
-        start = stop;
-        stop = tmp;
-        return { start, stop };
-      } else {
-        return { start, stop };
+        [start, stop] = [stop, start];
       }
+
+      return { start, stop };
     }
   }
 
