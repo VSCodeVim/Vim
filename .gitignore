@@ -6,5 +6,5 @@ node_modules
 .DS_Store
 *.vsix
 *.log
+typings
 testing
-test2
