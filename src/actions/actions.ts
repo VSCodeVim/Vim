@@ -2803,10 +2803,12 @@ export class MoveWordBegin extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (vimState.recordedState.operator instanceof ChangeOperator) {
-
       if (TextEditor.getLineAt(position).text.length < 1) {
         return position;
       }
+
+      const line = TextEditor.getLineAt(position).text;
+      const char = line[position.character];
 
       /*
       From the Vim manual:
@@ -2815,7 +2817,12 @@ export class MoveWordBegin extends BaseMovement {
       on a non-blank.  This is because "cw" is interpreted as change-word, and a
       word does not include the following white space.
       */
-      return position.getCurrentWordEnd(true).getRight();
+
+      if (" \t".indexOf(char) >= 0) {
+        return position.getWordRight();
+      } else {
+        return position.getCurrentWordEnd(true).getRight();
+      }
     } else {
       return position.getWordRight();
     }
