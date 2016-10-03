@@ -17,6 +17,7 @@ import { AngleBracketNotation } from './src/notation';
 
 interface VSCodeKeybinding {
   key: string;
+  mac?: string;
   command: string;
   when: string;
 }
@@ -187,13 +188,25 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   for (let keybinding of packagejson.contributes.keybindings) {
-    let bracketedKey = AngleBracketNotation.Normalize(keybinding.key);
+    let keyToBeBound = "";
+
+    /**
+     * On OSX, handle mac keybindings if we specified one.
+     */
+    if (process.platform === "darwin") {
+      keyToBeBound = keybinding.mac || keybinding.key;
+    } else {
+      keyToBeBound = keybinding.key;
+    }
+
+    let bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+
     registerCommand(context, keybinding.command, () => handleKeyEvent(`${ bracketedKey }`));
   }
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
-    let mh = await getAndUpdateModeHandler()
+    let mh = await getAndUpdateModeHandler();
     mh.updateView(mh.vimState, false);
   }
 }

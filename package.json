@@ -47,7 +47,8 @@
         "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
       },
       {
-        "key": "cmd+d",
+        "key": "ctrl+d",
+        "mac": "cmd+d",
         "command": "extension.vim_cmd+d",
         "when": "editorTextFocus && !inDebugRepl"
       },
