@@ -88,4 +88,8 @@ export class Range {
   public withNewStart(start: Position): Range {
     return new Range(start, this._stop);
   }
+
+  public toString(): string {
+    return `[ ${ this.start.toString() } | ${ this.stop.toString() }]`
+  }
 }

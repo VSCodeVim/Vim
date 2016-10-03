@@ -47,10 +47,14 @@
         "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
       },
       {
-        "key": "ctrl+d",
-        "mac": "cmd+d",
+        "key": "cmd+d",
         "command": "extension.vim_cmd+d",
         "when": "editorTextFocus && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+d",
+        "command": "extension.vim_ctrl+d",
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
@@ -120,11 +124,6 @@
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
         "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+d",
-        "command": "extension.vim_ctrl+d",
-        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+[",

@@ -4450,7 +4450,10 @@ class MoveAroundTag extends MoveTagMatch {
 @RegisterAction
 class ActionOverrideCmdD extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
-  keys = ["<D-d>"];
+  keys = [
+    ["<D-d>"],
+    ["g", "c"]
+  ];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {

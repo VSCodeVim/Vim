@@ -1423,6 +1423,7 @@ export class ModeHandler implements vscode.Disposable {
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
