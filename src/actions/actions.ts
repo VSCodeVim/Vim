@@ -537,6 +537,10 @@ class CommandEsc extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.currentMode === ModeName.Normal && !vimState.isMultiCursor) {
+      return vimState;
+    }
+
     if (vimState.currentMode !== ModeName.Visual &&
         vimState.currentMode !== ModeName.VisualLine) {
 
