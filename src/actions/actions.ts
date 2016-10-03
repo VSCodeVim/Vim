@@ -4436,6 +4436,17 @@ class MoveAroundTag extends MoveTagMatch {
   includeTag = true;
 }
 
+/**
+ * Multi-Cursor Command Overrides
+ *
+ * We currently have to override the vscode key commands that get us into multi-cursor mode.
+ *
+ * Normally, we'd just listen for another cursor to be added in order to go into multi-cursor
+ * mode rather than rewriting each keybinding one-by-one. We can't currently do that because
+ * Visual Block Mode also creates additional cursors, but will get confused if you're in
+ * multi-cursor mode.
+ */
+
 @RegisterAction
 class ActionOverrideCmdD extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
