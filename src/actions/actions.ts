@@ -12,7 +12,7 @@ import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
-import { waitForCursorUpdatesToHappen, allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
+import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 

@@ -18,6 +18,7 @@ import { AngleBracketNotation } from './src/notation';
 interface VSCodeKeybinding {
   key: string;
   mac?: string;
+  linux?: string;
   command: string;
   when: string;
 }
@@ -195,6 +196,8 @@ export async function activate(context: vscode.ExtensionContext) {
      */
     if (process.platform === "darwin") {
       keyToBeBound = keybinding.mac || keybinding.key;
+    } else if (process.platform === "linux") {
+      keyToBeBound = keybinding.linux || keybinding.key;
     } else {
       keyToBeBound = keybinding.key;
     }
