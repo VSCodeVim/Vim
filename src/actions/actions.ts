@@ -2000,9 +2000,13 @@ class CommandYankFullLine extends BaseCommand {
   keys = ["Y"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const linesDown = (vimState.recordedState.count || 1) - 1;
+    const start = position.getLineBegin();
+    const end = new Position(position.line + linesDown, 0).getLineEnd().getLeft();
+
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new YankOperator().run(vimState, position.getLineBegin(), position.getLineEnd().getLeft());
+    return await new YankOperator().run(vimState, start, end);
   }
 }
 
