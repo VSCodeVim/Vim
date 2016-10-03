@@ -3935,7 +3935,10 @@ class MoveToMatchingBracket extends BaseMovement {
     }
 
     if (position.compareTo(result) > 0) {
-      return result.getLeft();
+      return {
+        start: result,
+        stop: position.getRight(),
+      };
     } else {
       return result.getRight();
     }
