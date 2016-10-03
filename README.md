@@ -43,7 +43,7 @@ Due to overlap between VS Code and Vim, options are loaded slightly different fr
 
 ## Multi-Cursor Mode
 
-Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread](https://github.com/VSCodeVim/Vim/issues/824).
+Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
 
 #### Getting into multi-cursor mode
 
@@ -55,7 +55,7 @@ You can enter multi-cursor mode by:
 
 #### Doing stuff
 
-Now that you have multiple cursors, you should be able to use Vim commands as you see fit. Most of them should work. There is a list of things I know of which don't [here](https://github.com/VSCodeVim/Vim/pull/587). If you find yourself wanting one of these, please [add it to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824).
+Now that you have multiple cursors, you should be able to use Vim commands as you see fit. Most of them should work. There is a list of things I know of which don't [here](https://github.com/VSCodeVim/Vim/pull/587). If you find yourself wanting one of these, please [add it to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
 
 Each cursor has its own clipboard.
 

@@ -90,6 +90,6 @@ export class Range {
   }
 
   public toString(): string {
-    return `[ ${ this.start.toString() } | ${ this.stop.toString() }]`
+    return `[ ${ this.start.toString() } | ${ this.stop.toString() }]`;
   }
 }
