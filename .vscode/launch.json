@@ -11,7 +11,8 @@
        "stopOnEntry": false,
        "sourceMaps": true,
        "outDir": "${workspaceRoot}/out",
-       "preLaunchTask": "build"
+       "preLaunchTask": "build",
+       "internalConsoleOptions" : "openOnSessionStart"
    },
    {
        "name": "Launch Tests",
@@ -22,7 +23,8 @@
        "stopOnEntry": false,
        "sourceMaps": true,
        "outDir": "${workspaceRoot}/out",
-       "preLaunchTask": "build"
+       "preLaunchTask": "build",
+       "internalConsoleOptions" : "openOnSessionStart"
     }
   ]
 }
