@@ -14,6 +14,7 @@
        "preLaunchTask": "build",
        "internalConsoleOptions" : "openOnSessionStart"
    },
+
    {
        "name": "Launch Tests",
        "type": "extensionHost",
@@ -25,6 +26,17 @@
        "outDir": "${workspaceRoot}/out",
        "preLaunchTask": "build",
        "internalConsoleOptions" : "openOnSessionStart"
-    }
+    },
+
+		{
+			"name": "Yolo Extension (Don't build)",
+			"type": "extensionHost",
+			"request": "launch",
+			"runtimeExecutable": "${execPath}",
+			"args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
+			"stopOnEntry": false,
+			"sourceMaps": true,
+			"outDir": "${workspaceRoot}/out"
+		}
   ]
 }
