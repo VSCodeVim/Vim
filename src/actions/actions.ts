@@ -1,4 +1,5 @@
-import { VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
+import { VimState, ReplaceState } from './../mode/modeHandler';
+import { SearchState, SearchDirection } from './../state/searchState';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
 import { ModeName } from './../mode/mode';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
