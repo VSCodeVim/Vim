@@ -8,14 +8,18 @@ export enum SearchDirection {
   Backward = -1
 }
 
+/**
+ * State involved with beginning a search (/).
+ */
 export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
   private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
+  private _matchRanges: vscode.Range[] = [];
+
   /**
    * Every range in the document that matches the search string.
    */
-  private _matchRanges: vscode.Range[] = [];
   public get matchRanges(): vscode.Range[] {
     return this._matchRanges;
   }
@@ -51,7 +55,8 @@ export class SearchState {
       this._matchesDocVersion = TextEditor.getDocumentVersion();
       this._matchRanges = [];
 
-      /* Decide whether the search is case sensitive.
+      /*
+       * Decide whether the search is case sensitive.
        * If ignorecase is false, the search is case sensitive.
        * If ignorecase is true, the search should be case insensitive.
        * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.

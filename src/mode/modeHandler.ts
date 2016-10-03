@@ -36,6 +36,7 @@ import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from './../util';
 import { SearchState } from './../state/searchState';
+import { ReplaceState } from './../state/replaceState';
 
 export class ViewChange {
   public command: string;
@@ -198,36 +199,6 @@ export class VimState {
    * by us or by a mouse action.
    */
   public whatILastSetTheSelectionTo: vscode.Selection;
-}
-
-export class ReplaceState {
-  /**
-   * The location of the cursor where you begun to replace characters.
-   */
-  public replaceCursorStartPosition: Position;
-
-  public originalChars: string[] = [];
-
-  /**
-   * The characters the user inserted in replace mode. Useful for when
-   * we repeat a replace action with .
-   */
-  public newChars: string[] = [];
-
-  /**
-   * Number of times we're going to repeat this replace action.
-   */
-  public timesToRepeat: number;
-
-  constructor(startPosition: Position, timesToRepeat: number = 1) {
-    this.replaceCursorStartPosition = startPosition;
-    this.timesToRepeat = timesToRepeat;
-
-    let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
-    for (let [key, value] of text.split("").entries()) {
-      this.originalChars[key + startPosition.character] = value;
-    }
-  }
 }
 
 /**
