@@ -12,7 +12,7 @@ import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
-import { waitForCursorUpdatesToHappen } from '../util';
+import { waitForCursorUpdatesToHappen, allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
@@ -2202,10 +2202,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
     vimState.currentMode = ModeName.Insert;
     await vscode.commands.executeCommand('editor.action.insertLineBefore');
 
-    await waitForCursorUpdatesToHappen();
-
-    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
-      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
     return vimState;
   }
@@ -2221,10 +2218,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
     vimState.currentMode = ModeName.Insert;
     await vscode.commands.executeCommand('editor.action.insertLineAfter');
 
-    await waitForCursorUpdatesToHappen();
-
-    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
-      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
     return vimState;
   }
@@ -4450,10 +4444,8 @@ class ActionOverrideCmdD extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    await waitForCursorUpdatesToHappen();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
-    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
-      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
     vimState.currentMode = ModeName.Visual;
 
     return vimState;

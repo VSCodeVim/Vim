@@ -34,6 +34,7 @@ import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
+import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from './../util';
 
 export class ViewChange {
   public command: string;
@@ -1408,7 +1409,11 @@ export class ModeHandler implements vscode.Disposable {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
     }
 
-    this.vimState.postponedCodeViewChanges = [];
+    if (this.vimState.postponedCodeViewChanges.length > 0) {
+      vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+
+      this.vimState.postponedCodeViewChanges = [];
+    }
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
