@@ -1885,13 +1885,14 @@ class CommandOpenAllFoldsRecursively extends CommandFold {
 
 @RegisterAction
 class CommandCenterScroll extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["z", "z"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // In these modes you want to center on the cursor position
     vscode.window.activeTextEditor.revealRange(
       new vscode.Range(vimState.cursorPosition,
-                       vimState.cursorPosition),
+        vimState.cursorPosition),
       vscode.TextEditorRevealType.InCenter);
 
     return vimState;
