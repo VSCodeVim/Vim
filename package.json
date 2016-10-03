@@ -53,6 +53,20 @@
         "when": "editorTextFocus && !inDebugRepl"
       },
       {
+        "key": "ctrl+alt+down",
+        "linux": "shift+alt+down",
+        "mac": "cmd+alt+down",
+        "command": "extension.vim_cmd+alt+down",
+        "when": "editorTextFocus && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+alt+up",
+        "linux": "shift+alt+up",
+        "mac": "cmd+alt+up",
+        "command": "extension.vim_cmd+alt+up",
+        "when": "editorTextFocus && !inDebugRepl"
+      },
+      {
         "key": "Backspace",
         "command": "extension.vim_backspace",
         "when": "editorTextFocus && !inDebugRepl"

@@ -4451,3 +4451,31 @@ class ActionOverrideCmdD extends BaseCommand {
     return vimState;
   }
 }
+
+@RegisterAction
+class ActionOverrideCmdAltDown extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["<D-alt+down>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand('editor.action.insertCursorBelow');
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionOverrideCmdAltUp extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["<D-alt+up>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand('editor.action.insertCursorAbove');
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+
+    return vimState;
+  }
+}
