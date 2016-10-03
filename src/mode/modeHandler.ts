@@ -396,23 +396,36 @@ export class ReplaceState {
  *   * delete operator
  */
 export class RecordedState {
-
   constructor() {
     const useClipboard = Configuration.getInstance().useSystemClipboard;
     this.registerName = useClipboard ? '*' : '"';
   }
+
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
    * multiple length movements, e.g. gg.
    */
   public actionKeys: string[] = [];
 
+  /**
+   * Every action that has been run.
+   */
   public actionsRun: BaseAction[] = [];
 
   public hasRunOperator = false;
 
+  /**
+   * If we're in Visual Block mode, the way in which we're inserting characters (either inserting
+   * at the beginning or appending at the end).
+   */
   public visualBlockInsertionType = VisualBlockInsertionType.Insert;
 
+  /**
+   * The text transformations that we want to run. They will all be run after the action has been processed.
+   *
+   * Running an individual action will generally queue up to one of these, but if you're in
+   * multi-cursor mode, you'll queue one per cursor, or more.
+   */
   public transformations: Transformation[] = [];
 
   /**
@@ -426,6 +439,9 @@ export class RecordedState {
     return list[0] as any;
   }
 
+  /**
+   * The command (e.g. i, ., R, /) the user wants to run, if there is one.
+   */
   public get command(): BaseCommand {
     const list = _.filter(this.actionsRun, a => a instanceof BaseCommand);
 

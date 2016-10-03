@@ -1666,7 +1666,7 @@ export class PutCommandVisual extends BaseCommand {
 
 @RegisterAction
 class IndentOperator extends BaseOperator {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal];
   keys = [">"];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -1674,7 +1674,33 @@ class IndentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand("editor.action.indentLines");
 
-    vimState.currentMode     = ModeName.Normal;
+    vimState.currentMode    = ModeName.Normal;
+    vimState.cursorPosition = start.getFirstLineNonBlankChar();
+
+    return vimState;
+  }
+}
+
+/**
+ * `3>` to indent a line 3 times in visual mode is actually a bit of a special case.
+ *
+ * > is an operator, and generally speaking, you don't run operators multiple times, you run motions multiple times.
+ * e.g. `d3w` runs `w` 3 times, then runs d once.
+ *
+ * Same with literally every other operator motion combination... until `3>`in visual mode
+ * walked into my life.
+ */
+@RegisterAction
+class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = [">"];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    for (let i = 0; i < (vimState.recordedState.count || 1); i++) {
+      await vscode.commands.executeCommand("editor.action.indentLines");
+    }
+
+    vimState.currentMode    = ModeName.Normal;
     vimState.cursorPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
