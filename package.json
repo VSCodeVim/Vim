@@ -261,13 +261,11 @@
     "gulp-soften": "^0.0.1",
     "gulp-tag-version": "^1.3.0",
     "gulp-trimlines": "^1.0.0",
-    "gulp-tslint": "^6.1.1",
-    "gulp-typescript": "^2.13.4",
+    "gulp-tslint": "^6.1.2",
     "gulp-typings": "^2.0.0",
     "merge-stream": "^1.0.0",
     "tslint": "^3.10.2",
     "typescript": "2.0.0",
-    "typings": "^1.0.4",
-    "vscode": "^0.11.16"
+    "typings": "^1.4.0"
   }
 }
