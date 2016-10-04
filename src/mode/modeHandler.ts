@@ -1049,6 +1049,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     const selections = vscode.window.activeTextEditor.selections;
+    const numberOfCursors = vimState.allCursors.length;
 
     const firstTransformation = transformations[0];
 
@@ -1063,16 +1064,25 @@ export class ModeHandler implements vscode.Disposable {
       vimState.allCursors = [];
 
       const resultingCursors: Range[] = [];
+      const transformationsPerCursor = transformations.length / numberOfCursors;
 
       for (let i = 0; i < selections.length; i++) {
         let sel = selections[i];
 
         if (accumulatedPositionDifferences.length > 0) {
-          const diff = accumulatedPositionDifferences[i];
+          let resultStart = Position.FromVSCodePosition(sel.start);
+          let resultEnd   = Position.FromVSCodePosition(sel.end);
+
+          for (let j = 0; j < transformationsPerCursor; j++) {
+            const diff = accumulatedPositionDifferences[i * transformationsPerCursor + j];
+
+            resultStart = resultStart.add(diff);
+            resultEnd   = resultEnd  .add(diff);
+          }
 
           sel = new vscode.Selection(
-            Position.FromVSCodePosition(sel.start).add(diff),
-            Position.FromVSCodePosition(sel.end).add(diff)
+            resultStart,
+            resultEnd
           );
         } else {
           sel = new vscode.Selection(

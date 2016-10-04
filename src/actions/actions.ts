@@ -863,12 +863,9 @@ class CommandReplaceInReplaceMode extends BaseCommand {
                  position.character > replaceState.originalChars.length) {
 
         vimState.recordedState.transformations.push({
-          type           : "deleteText",
-          position       : position,
+          type     : "deleteText",
+          position : position,
         });
-
-        vimState.cursorPosition = position.getLeft();
-        vimState.cursorStartPosition = position.getLeft();
       } else {
         vimState.recordedState.transformations.push({
           type  : "replaceText",
@@ -877,27 +874,27 @@ class CommandReplaceInReplaceMode extends BaseCommand {
           end   : position,
           diff  : new PositionDiff(0, -1),
         });
-
-        vimState.cursorPosition = position.getLeft();
-        vimState.cursorStartPosition = position.getLeft();
       }
 
       replaceState.newChars.pop();
     } else {
       if (!position.isLineEnd()) {
-        vimState = await new DeleteOperator().run(vimState, position, position);
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: char,
+          start: position,
+          end: position.getRight(),
+          diff: new PositionDiff(0, 1),
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type    : "insertText",
+          text    : char,
+          position: position,
+        });
       }
 
-      vimState.recordedState.transformations.push({
-        type    : "insertText",
-        text    : char,
-        position: position,
-      });
-
       replaceState.newChars.push(char);
-
-      vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
 
     vimState.currentMode = ModeName.Replace;
@@ -3156,7 +3153,14 @@ class ActionJoin extends BaseCommand {
         position.getLineEnd()
     );
 
-    await TextEditor.insert(resultLine, position);
+    vimState.recordedState.transformations.push({
+      type    : "insertText",
+      text    : resultLine,
+      position: position,
+      diff    : new PositionDiff(0, -lineTwoTrimmedStart.length - 1),
+    });
+
+    vimState.recordedState.dontParallelizeTransformations = true;
 
     newState.cursorPosition = new Position(position.line,
       lineOne.length + (addSpace ? 1 : 0) + (isParenthesisPair ? 1 : 0) - 1 + (oneEndsWithWhitespace ? 1 : 0));
