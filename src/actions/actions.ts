@@ -1564,7 +1564,9 @@ export class PutCommand extends BaseCommand {
 
             diff = PositionDiff.NewBOLDiff(-numNewlines - 1, numWhitespace);
           } else {
-            diff = PositionDiff.NewBOLDiff(1, numWhitespace);
+            const currentLineLength = TextEditor.getLineAt(position).text.length;
+
+            diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : 0, numWhitespace);
           }
         } else {
           /*
