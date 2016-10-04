@@ -55,7 +55,8 @@ export class RegisterCommand extends node.CommandBase {
       }
 
       vscode.window.showQuickPick(registerKeyAndContent).then(async (val) => {
-        await this.displayRegisterValue(val);
+        let result = val.description;
+        vscode.window.showInformationMessage(`${val.label} ${result}`);
       });
     }
   }
