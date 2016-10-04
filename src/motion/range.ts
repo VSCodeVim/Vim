@@ -92,4 +92,8 @@ export class Range {
   public toString(): string {
     return `[ ${ this.start.toString() } | ${ this.stop.toString() }]`;
   }
+
+  public overlaps(other: Range): boolean {
+    return this.start <= other.stop && other.start <= this.stop;
+  }
 }

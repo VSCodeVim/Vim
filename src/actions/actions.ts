@@ -1683,9 +1683,6 @@ export class PutCommandVisual extends BaseCommand {
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
     const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, false);
 
-    // Our two transformations are overlapping, and VSCode has problems with that.
-    vimState.recordedState.dontParallelizeTransformations = true;
-
     return await new PutCommand().exec(vimState.cursorStartPosition, result, true);
   }
 
@@ -3070,8 +3067,7 @@ class ActionDeleteChar extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-
-    // If only EOL do nothing
+    // If line is empty, do nothing
     if (TextEditor.getLineAt(position).text.length < 1) {
       return vimState;
     }
@@ -3159,8 +3155,6 @@ class ActionJoin extends BaseCommand {
       position: position,
       diff    : new PositionDiff(0, -lineTwoTrimmedStart.length - 1),
     });
-
-    vimState.recordedState.dontParallelizeTransformations = true;
 
     newState.cursorPosition = new Position(position.line,
       lineOne.length + (addSpace ? 1 : 0) + (isParenthesisPair ? 1 : 0) - 1 + (oneEndsWithWhitespace ? 1 : 0));

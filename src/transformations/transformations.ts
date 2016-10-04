@@ -187,3 +187,36 @@ export const isTextTransformation = (x: string) => {
          x === 'deleteText' ||
          x === 'deleteRange';
 };
+
+const getRangeFromTextTransformation = (transformation: TextTransformations) => {
+  switch (transformation.type) {
+    case 'insertText':
+      return new Range(transformation.position, transformation.position);
+    case 'replaceText':
+      return new Range(transformation.start, transformation.end);
+    case 'deleteText':
+      return new Range(transformation.position, transformation.position);
+    case 'deleteRange':
+      return transformation.range;
+  }
+
+  throw new Error("This should never happen!");
+};
+
+export const areAnyTransformationsOverlapping = (transformations: TextTransformations[]) => {
+  for (let i = 0; i < transformations.length; i++) {
+    for (let j = i + 1; j < transformations.length; j++) {
+      const first = transformations[i];
+      const second = transformations[j];
+
+      const firstRange = getRangeFromTextTransformation(first);
+      const secondRange = getRangeFromTextTransformation(second);
+
+      if (firstRange.overlaps(secondRange)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};

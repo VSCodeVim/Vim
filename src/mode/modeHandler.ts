@@ -7,6 +7,7 @@ import { getAndUpdateModeHandler } from './../../extension';
 import {
   isTextTransformation,
   TextTransformations,
+  areAnyTransformationsOverlapping,
   Transformation,
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
@@ -253,14 +254,11 @@ export class RecordedState {
    *
    * Running an individual action will generally queue up to one of these, but if you're in
    * multi-cursor mode, you'll queue one per cursor, or more.
+   *
+   * Note that the text transformations are run in parallel. This is useful in most cases,
+   * but will get you in trouble in others.
    */
   public transformations: Transformation[] = [];
-
-  /**
-   * This turns off transformations running in parallel. It's necessary when
-   * transformations overlap.
-   */
-  public dontParallelizeTransformations = false;
 
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
@@ -958,8 +956,9 @@ export class ModeHandler implements vscode.Disposable {
 
     let accumulatedPositionDifferences: PositionDiff[] = [];
 
-    if (vimState.recordedState.dontParallelizeTransformations) {
-      // This is the rare case.
+    if (areAnyTransformationsOverlapping(textTransformations)) {
+      // TODO: Select one transformation for every cursor and run them all
+      // in parallel. Repeat till there are no more transformations.
 
       for (const command of textTransformations) {
         await vscode.window.activeTextEditor.edit(edit => {
