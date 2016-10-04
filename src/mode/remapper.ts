@@ -61,12 +61,19 @@ class Remapper {
       const remapping = _.find(this._remappings, map => map.before.join("") === slice.join(""));
 
       if (remapping) {
-        // if we remapped e.g. jj to esc, we have to revert the inserted "jj"
+        // If we remapped e.g. jj to esc, we have to revert the inserted "jj"
 
         if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
-          // we subtract 1 because we haven't actually applied the last key.
+          // Revert every single inserted character. This is actually a bit of a
+          // hack since we aren't guaranteed that each insertion inserted only a
+          // single character.
 
-          await vimState.historyTracker.undoAndRemoveChanges(Math.max(0, this._mostRecentKeys.length - 1));
+          // We subtract 1 because we haven't actually applied the last key.
+
+          // TODO(johnfn) - study - actions need to be paired up with text changes...
+          // this is a complicated problem.
+          await vimState.historyTracker.undoAndRemoveChanges(
+            Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.length));
         }
 
         if (!this._recursive) {

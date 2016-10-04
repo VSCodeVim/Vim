@@ -1,6 +1,9 @@
 export class AngleBracketNotation {
+
+  // Mapping from the nomalized string to regex strings that could match it.
   private static _notationMap : { [key: string] : string[]; } = {
     'C-': ['ctrl\\+', 'c\\-'],
+    'D-': ['cmd\\+',  'd\\-'],
     'Esc': ['escape', 'esc'],
     'BS': ['backspace', 'bs'],
     'Del': ['delete', 'del'],

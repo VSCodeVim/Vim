@@ -9,7 +9,8 @@ suite("Mode Normal", () => {
     let modeHandler: ModeHandler = new ModeHandler();
 
     let {
-        newTest
+        newTest,
+        newTestOnly
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
@@ -188,6 +189,13 @@ suite("Mode Normal", () => {
       start: ['on|e', ' two'],
       keysPressed: 'kJ',
       end: ['one| two']
+    });
+
+    newTest({
+      title: "Can handle 'J' with only white space on next line",
+      start: ['on|e', '    '],
+      keysPressed: 'J',
+      end: ['one| ']
     });
 
     newTest({

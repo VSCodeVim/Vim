@@ -10,13 +10,15 @@ import * as vscode from 'vscode';
 import * as _ from "lodash";
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
-import { TaskQueue } from './src/taskQueue';
+import { taskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
 
 interface VSCodeKeybinding {
   key: string;
+  mac?: string;
+  linux?: string;
   command: string;
   when: string;
 }
@@ -65,8 +67,6 @@ let extensionContext: vscode.ExtensionContext;
  */
 let modeHandlerToEditorIdentity: { [key: string]: ModeHandler } = {};
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
-
-let taskQueue = new TaskQueue();
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
@@ -128,10 +128,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'type', async (args) => {
-    if (!vscode.window.activeTextEditor) {
-      return;
-    }
-
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -147,10 +143,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'replacePreviousChar', async (args) => {
-    if (!vscode.window.activeTextEditor) {
-      return;
-    }
-
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -171,10 +163,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'compositionStart', async (args) => {
-    if (!vscode.window.activeTextEditor) {
-      return;
-    }
-
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -185,10 +173,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'compositionEnd', async (args) => {
-    if (!vscode.window.activeTextEditor) {
-      return;
-    }
-
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -204,20 +188,45 @@ export async function activate(context: vscode.ExtensionContext) {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
 
-  for (let { key } of packagejson.contributes.keybindings) {
-    let bracketedKey = AngleBracketNotation.Normalize(key);
-    registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
+  for (let keybinding of packagejson.contributes.keybindings) {
+    let keyToBeBound = "";
+
+    /**
+     * On OSX, handle mac keybindings if we specified one.
+     */
+    if (process.platform === "darwin") {
+      keyToBeBound = keybinding.mac || keybinding.key;
+    } else if (process.platform === "linux") {
+      keyToBeBound = keybinding.linux || keybinding.key;
+    } else {
+      keyToBeBound = keybinding.key;
+    }
+
+    let bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+
+    registerCommand(context, keybinding.command, () => handleKeyEvent(`${ bracketedKey }`));
   }
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
-    let mh = await getAndUpdateModeHandler()
+    let mh = await getAndUpdateModeHandler();
     mh.updateView(mh.vimState, false);
   }
 }
 
 function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
-  let disposable = vscode.commands.registerCommand(command, callback);
+  let disposable = vscode.commands.registerCommand(command, async (args) => {
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
+
+    if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
+      await vscode.commands.executeCommand("default:" + command, args);
+      return;
+    }
+
+    callback(args);
+  });
   context.subscriptions.push(disposable);
 }
 

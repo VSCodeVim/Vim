@@ -1,6 +1,6 @@
 "use strict";
 
-import {parseQuitCommandArgs} from './subparsers/quit';
+import {parseQuitCommandArgs, parseQuitAllCommandArgs} from './subparsers/quit';
 import {parseWriteCommandArgs} from './subparsers/write';
 import {parseWallCommandArgs} from './subparsers/wall';
 import {parseWriteQuitCommandArgs} from './subparsers/writequit';
@@ -8,7 +8,9 @@ import * as tabCmd from './subparsers/tab';
 import * as fileCmd from './subparsers/file';
 import {parseOptionsCommandArgs} from './subparsers/setoptions';
 import {parseSubstituteCommandArgs} from './subparsers/substitute';
+import {parseReadCommandArgs} from './subparsers/read';
 import {parseRegisterCommandArgs} from './subparsers/register';
+import {parseDeleteRangeLinesCommandArgs} from './subparsers/deleteRange';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -20,6 +22,9 @@ export const commandParsers = {
 
   quit: parseQuitCommandArgs,
   q: parseQuitCommandArgs,
+
+  qa: parseQuitAllCommandArgs,
+  qall: parseQuitAllCommandArgs,
 
   wq: parseWriteQuitCommandArgs,
   writequit: parseWriteQuitCommandArgs,
@@ -53,6 +58,7 @@ export const commandParsers = {
   e: fileCmd.parseEditFileCommandArgs,
 
   s: parseSubstituteCommandArgs,
+  vs: fileCmd.parseEditFileInNewWindowCommandArgs,
   vsp: fileCmd.parseEditFileInNewWindowCommandArgs,
   vsplit: fileCmd.parseEditFileInNewWindowCommandArgs,
   vne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
@@ -61,5 +67,11 @@ export const commandParsers = {
   set: parseOptionsCommandArgs,
   se: parseOptionsCommandArgs,
 
-  reg: parseRegisterCommandArgs
+  read: parseReadCommandArgs,
+  r: parseReadCommandArgs,
+
+  reg: parseRegisterCommandArgs,
+
+  d: parseDeleteRangeLinesCommandArgs,
+
 };

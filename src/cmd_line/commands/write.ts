@@ -3,10 +3,10 @@
 // XXX: use graceful-fs ??
 import * as fs from 'fs';
 import * as path from 'path';
+import * as vscode from 'vscode';
 
 import * as node from '../node';
 import * as util from '../../util';
-import * as error from '../../error';
 import {ModeHandler} from "../../mode/modeHandler";
 
 export interface IWriteCommandArguments extends node.ICommandArgs {
@@ -53,7 +53,8 @@ export class WriteCommand extends node.CommandBase {
     }
 
     if (this.activeTextEditor.document.isUntitled) {
-      throw error.VimError.fromCode(error.ErrorCode.E32);
+      await vscode.commands.executeCommand("workbench.action.files.save");
+      return;
     }
 
     try {

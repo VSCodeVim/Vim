@@ -6,7 +6,7 @@
 
 :warning: - some variations of the command are not supported
 
-:running: work in progress
+:running: - work in progress
 
 :arrow_down: - command is low priority; open an issue (or thumbs up the relevant issue) if you want to see it sooner
 
@@ -26,14 +26,14 @@ Status | Command
 :white_check_mark: | Visual Line Mode
 :white_check_mark: | Number Prefixes
 :white_check_mark: | . Operator
-:warning: | Searching with / and ?
+:white_check_mark: | Searching with / and ?
 :white_check_mark: | Correct Undo/Redo
 :warning: | Command Remapping
-:warning:  | Marks
+:warning: | Marks
 :white_check_mark: | Text Objects
 :white_check_mark: | Visual Block Mode
 :warning: | Replace Mode
- | Multiple Select Mode
+:white_check_mark: | Multiple Select Mode
  | Macros
 :warning: | Buffer/Window/Tab
 
@@ -186,24 +186,24 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:running:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
-:running:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
-:running:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
-:running:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
-:running:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
-:running:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
-:running:    |    z CR or zt	| redraw, current line at top of window
-:running: |    z.	 or zz	| redraw, current line at center of window
-:running:    |    z-	 or zb	| redraw, current line at bottom of window
+:white_check_mark:    | :1234:  CTRL-E	| window N lines downwards (default: 1)
+:white_check_mark:   | :1234:  CTRL-D	| window N lines Downwards (default: 1/2 window)
+:white_check_mark:    | :1234:  CTRL-F	| window N pages Forwards (downwards)
+:white_check_mark:  | :1234:  CTRL-Y	| window N lines upwards (default: 1)
+:white_check_mark:   | :1234:  CTRL-U	| window N lines Upwards (default: 1/2 window)
+:white_check_mark:    | :1234:  CTRL-B	| window N pages Backwards (upwards)
+:white_check_mark:    |    z CR or zt	| redraw, current line at top of window
+:white_check_mark: |    z.	 or zz	| redraw, current line at center of window
+:white_check_mark:    |    z-	 or zb	| redraw, current line at bottom of window
 
 These only work when 'wrap' is off:
 
-Status | Command | Description
----|--------|------------------------------
-  :running:  | :1234:  zh	|	scroll screen N characters to the right
- :running:   | :1234:  zl	|	scroll screen N characters to the left
-  :running:  | :1234:  zH	|	scroll screen half a screenwidth to the right
-:running:   | :1234:  zL	|	scroll screen half a screenwidth to the left
+Status | Command | Description | Note
+---|--------|------------------|------------
+:white_check_mark: :star: | :1234:  zh	|	scroll screen N characters to the right | In Code, the cursor wil always move when you run this command, whether the horizontal scrollbar moves or not.
+:white_check_mark: :star: | :1234:  zl	|	scroll screen N characters to the left | As above
+:white_check_mark: :star: | :1234:  zH	|	scroll screen half a screenwidth to the right | As above
+:white_check_mark: :star: | :1234:  zL	|	scroll screen half a screenwidth to the left | As above
 
 ## Inserting text
 
@@ -252,8 +252,8 @@ Status | Command | Description | Note
 :warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line | CTRL-M and CTRL-J are not supported yet
 :white_check_mark: | CTRL-E		                 |  insert the character from below the cursor
 :white_check_mark: | CTRL-Y		                 |  insert the character from above the cursor
-   | CTRL-A		                 |  insert previously inserted text
-    | CTRL-@		                 |  insert previously inserted text and stop Insert mode
+:running: | CTRL-A		                 |  insert previously inserted text
+:running: | CTRL-@		                 |  insert previously inserted text and stop Insert mode
 :white_check_mark: | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
 :arrow_down:| CTRL-N		                 |  insert next match of identifier before the cursor
 :arrow_down:| CTRL-P		                 |  insert previous match of identifier before the cursor
@@ -278,8 +278,8 @@ Status | Command | Description
 
 Status | Command | Description
 ---|--------|------------------------------
-:arrow_down:| :r [file]	    | insert the contents of [file] below the cursor
-:arrow_down:| :r! {command}  | insert the standard output of {command} below the cursor
+:warning:   | :r [file]	    | insert the contents of [file] below the cursor
+:warning:   | :r! {command}  | insert the standard output of {command} below the cursor
 
 ## Deleting text
 
@@ -293,10 +293,10 @@ Status | Command | Description
 :white_check_mark:    | :1234:  dd	| 	delete N lines
 :white_check_mark:    | :1234:  D		| delete to the end of the line (and N-1 more lines)
 :white_check_mark:    | :1234:  J		| join N-1 lines (delete EOLs)
-    |    {visual}J	| join the highlighted lines
+:white_check_mark:    |    {visual}J	| join the highlighted lines
 :white_check_mark:    | :1234:  gJ	| 	like "J", but without inserting spaces
-    |    {visual}gJ	| like "{visual}J", but without inserting spaces
-    | :[range]d [x]	| delete [range] lines [into register x]
+:white_check_mark:|   {visual}gJ	| like "{visual}J", but without inserting spaces
+:white_check_mark:| :[range]d [x]	| delete [range] lines [into register x]
 
 ## Copying and moving text
 
@@ -417,9 +417,9 @@ Status | Command | Description
 
 ## Repeating commands
 
-Status | Command | Description
----|--------|------------------------------
-:white_check_mark:   | :1234:  .		 | repeat last change (with count replaced with N)
+Status | Command | Description | Note
+---|--------|--------------|----------------
+:white_check_mark: :star:  | :1234:  .		 | repeat last change (with count replaced with N) | It won't repeat Code's auto-complete change.
 :arrow_down:|    q{a-z}	         | record typed characters into register {a-z}
 :arrow_down:|    q{A-Z}	         | record typed characters, appended to register {a-z}
 :arrow_down:|    q		 | stop recording

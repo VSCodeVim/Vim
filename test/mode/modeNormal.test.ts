@@ -79,14 +79,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle dw across lines",
+      title: "Can handle dw across lines (1)",
       start: ['one |two', '  three'],
       keysPressed: 'dw',
       end: ["one| ", "  three"]
     });
 
     newTest({
-      title: "Can handle dw across lines",
+      title: "Can handle dw across lines (2)",
       start: ['one |two', '', 'three'],
       keysPressed: 'dw',
       end: ["one| ", "", "three"]
@@ -132,6 +132,13 @@ suite("Mode Normal", () => {
       start: ['one', '|', 'two'],
       keysPressed: 'dd',
       end: ["one", "|two"],
+    });
+
+    newTest({
+      title: "Can handle ddp",
+      start: ['|one', 'two'],
+      keysPressed: 'ddp',
+      end: ["two", "|one"],
     });
 
     newTest({
@@ -1194,14 +1201,14 @@ suite("Mode Normal", () => {
     newTest({
       title: "/ does not affect mark",
       start: ["|one", "twooo", "thurr"],
-      keysPressed: "ma/two<enter>'a",
+      keysPressed: "ma/two\n'a",
       end: ["|one", "twooo", "thurr"]
     });
 
     newTest({
       title: "/ can search with regex",
       start: ["|", "one two2o"],
-      keysPressed: "/o\\do",
+      keysPressed: "/o\\do\n",
       end: ["", "one tw|o2o"]
     });
 

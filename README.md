@@ -5,11 +5,9 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code.
 
-Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**.
+Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favourite obscure command. :wink:
 
-We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favorite obscure command. :wink:
-
-We're super friendly people if you want to drop by and talk to us on our [Slack channel](https://vscodevim-slackin.azurewebsites.net)!
+We're super friendly people if you want to drop by and talk to us on [Slack](https://vscodevim-slackin.azurewebsites.net).
 
 ![Screenshot](images/screen.png)
 
@@ -23,6 +21,7 @@ We're super friendly people if you want to drop by and talk to us on our [Slack 
 * Correct undo/redo state
 * Marks
 * Vim Options
+* Multiple Cursor mode (allows multiple simultaneous cursors to receive Vim commands. It's like macros, but in real time. Allows `/` search, has independent clipboards for each cursor, etc.)
 
 ## Roadmap
 
@@ -30,12 +29,11 @@ See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for
 
 ## Install
 
-1. Within Visual Studio Code, open the command palette (`Ctrl-Shift-P` / `Cmd-Shift-P`)
-2. Select `Install Extension` and search for 'vim' *or* run `ext install vim`
+Install the extension through the [VS Code Marketplace](https://code.visualstudio.com/docs/editor/extension-gallery).
 
 ## Configure
 
-Due to overlap between VSCode and VIm, options are loaded slightly different from native Vim. The option loading sequence/priority is
+Due to overlap between VS Code and Vim, options are loaded slightly different from native Vim. The option loading sequence is
 
 1. `:set {option}` on the fly
 2. [TODO] .vimrc.
@@ -43,9 +41,29 @@ Due to overlap between VSCode and VIm, options are loaded slightly different fro
 4. VSCode configuration
 5. VSCodeVim flavored Vim option default values
 
-### Supported Options
+## Multi-Cursor Mode
 
-Vim options can be added to your user or workspace settings (open Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
+Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
+
+#### Getting into multi-cursor mode
+
+You can enter multi-cursor mode by:
+
+* Pressing cmd-d on OSX.
+* Runing "Add Cursor Above/Below" or the shortcut on any platform.
+* Pressing `gc`, a new shortcut we added which is equivalent to cmd-d on OSX or ctrl-d on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
+
+#### Doing stuff
+
+Now that you have multiple cursors, you should be able to use Vim commands as you see fit. Most of them should work. There is a list of things I know of which don't [here](https://github.com/VSCodeVim/Vim/pull/587). If you find yourself wanting one of these, please [add it to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
+
+Each cursor has its own clipboard.
+
+Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
+
+## Supported Options
+
+Vim options can be added to your user or workspace settings (open the Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
 
 The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
 
@@ -75,7 +93,7 @@ The following is a subset of the supported configurations; the full list is desc
 
 * insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
   * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
-  * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive/otherModesKeyBindingNonRecursive.
+  * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
     ```
     "vim.otherModesKeyBindingsNonRecursive": [
@@ -86,13 +104,13 @@ The following is a subset of the supported configurations; the full list is desc
     ```
 
 * useCtrlKeys
-  * Enable Vim ctrl keys thus overriding common VSCode operations (eg. copy, paste, find, etc). Setting this option to true will enable:
+  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Page Forward
     * `ctrl+v` => Visual Block Mode
     * etc.
   * Type: Boolean (Default: `false`)
-  * Example:
+  * *Example:*
 
     ```
     "vim.useCtrlKeys": true
@@ -101,6 +119,7 @@ The following is a subset of the supported configurations; the full list is desc
 * useSystemClipboard
   * Enable yanking to the system clipboard by default
   * Type: Boolean (Default: `false`)
+  * Note: Linux users must have xclip installed
 
 * useSolidBlockCursor
   * Use a non-blinking block cursor
@@ -116,6 +135,10 @@ The following is a subset of the supported configurations; the full list is desc
 
 * hlsearch
   * When there is a previous search pattern, highlight all its matches
+  * Type: Boolean (Default: `false`)
+
+* autoindent
+  * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
 
 ## F.A.Q.
@@ -125,20 +148,14 @@ The following is a subset of the supported configurations; the full list is desc
 On OS X, open Terminal and run the following command:
 
 ```
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false // For VSCode
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VSCode Insider
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         // For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VS Code Insider
 ```
 
 ## Contributing
 
-This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP.md).
-
-For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
+This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP.md). For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
 
 ## Changelog
 
 Please see our [list of recent releases and features added.](https://github.com/VSCodeVim/Vim/releases)
-
-## License
-
-MIT, see [License](LICENSE) for more information.
