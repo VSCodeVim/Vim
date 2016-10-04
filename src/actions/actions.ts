@@ -1233,8 +1233,7 @@ export class DeleteOperator extends BaseOperator {
           Register.put(text, vimState);
         }
 
-        await TextEditor.delete(new vscode.Range(start, end));
-
+        let diff = new PositionDiff(0, 0);
         let resultingPosition: Position;
 
         if (currentMode === ModeName.Visual) {
@@ -1243,23 +1242,34 @@ export class DeleteOperator extends BaseOperator {
 
         if (start.character > TextEditor.getLineAt(start).text.length) {
           resultingPosition = start.getLeft();
+          diff = new PositionDiff(0, -1);
         } else {
           resultingPosition = start;
         }
 
         if (registerMode === RegisterMode.LineWise) {
           resultingPosition = resultingPosition.getLineBegin();
+          diff = PositionDiff.NewBOLDiff();
         }
+
+        vimState.recordedState.transformations.push({
+          type  : "deleteRange",
+          range : new Range(start, end),
+          diff  : diff,
+        });
 
         return resultingPosition;
     }
 
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
-        const result = await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, yank);
+        await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, yank);
 
         vimState.currentMode = ModeName.Normal;
-        vimState.cursorPosition      = result;
-        vimState.cursorStartPosition = result;
+
+        /*
+          vimState.cursorPosition      = result;
+          vimState.cursorStartPosition = result;
+        */
 
         return vimState;
     }
@@ -1505,8 +1515,13 @@ export class PutCommand extends BaseCommand {
           text = register.text as string;
         }
 
+        let textToAdd: string;
+        let whereToAddText: Position;
+        let diff = new PositionDiff(0, 0);
+
         if (register.registerMode === RegisterMode.CharacterWise) {
-          await TextEditor.insertAt(text, dest);
+          textToAdd = text;
+          whereToAddText = dest;
         } else {
           if (adjustIndent) {
             // Adjust indent to current line
@@ -1522,9 +1537,11 @@ export class PutCommand extends BaseCommand {
           }
 
           if (after) {
-            await TextEditor.insertAt(text + "\n", dest.getLineBegin());
+            textToAdd = text + "\n";
+            whereToAddText = dest.getLineBegin();
           } else {
-            await TextEditor.insertAt("\n" + text, dest.getLineEnd());
+            textToAdd = "\n" + text;
+            whereToAddText = dest.getLineEnd();
           }
         }
 
@@ -1532,14 +1549,21 @@ export class PutCommand extends BaseCommand {
         // stays in the same place. Otherwise, it moves to the end of what you pasted.
 
         if (register.registerMode === RegisterMode.LineWise) {
-          vimState.cursorPosition = new Position(dest.line + 1, 0);
+          diff = new PositionDiff(1, 0);
         } else {
+          /*
           if (text.indexOf("\n") === -1) {
-            vimState.cursorPosition = new Position(dest.line, Math.max(dest.character + text.length - 1, 0));
-          } else {
-            vimState.cursorPosition = dest;
+            diff = new PositionDiff(0, text.length);
           }
+          */
         }
+
+        vimState.recordedState.transformations.push({
+          type    : "insertText",
+          text    : textToAdd,
+          position: whereToAddText,
+          diff    : diff,
+        });
 
         vimState.currentRegisterMode = register.registerMode;
         return vimState;
@@ -1578,13 +1602,7 @@ export class PutCommand extends BaseCommand {
     }
 
     public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-      const result = await super.execCount(position, vimState);
-
-      if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
-        result.cursorPosition = new Position(position.line + 1, 0).getFirstLineNonBlankChar();
-      }
-
-      return result;
+      return await super.execCount(position, vimState);
     }
 }
 
@@ -1664,7 +1682,10 @@ export class PutCommandVisual extends BaseCommand {
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
     const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, false);
 
-    return await new PutCommand().exec(result.cursorPosition, result, true);
+    // Our two transformations are overlapping, and VSCode has problems with that.
+    vimState.recordedState.dontParallelizeTransformations = true;
+
+    return await new PutCommand().exec(vimState.cursorStartPosition, result, true);
   }
 
   // TODO - execWithCount

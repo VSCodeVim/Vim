@@ -9,22 +9,91 @@ import { Configuration } from "./../configuration/configuration";
 
 /**
  * Represents a difference between two positions. Add it to a position
- * to get another position.
+ * to get another position. Create it with the factory methods:
+ *
+ * - NewDiff
+ * - NewBOLDiff
  */
 export class PositionDiff {
-  public line: number;
-  public character: number;
+  private _line: number;
+  private _character: number;
+  private _isBOLDiff: boolean;
 
   constructor(line: number, character: number) {
-    this.line = line;
-    this.character = character;
+    this._line = line;
+    this._character = character;
   }
 
-  public add(other: PositionDiff) {
+  /**
+   * Creates a new PositionDiff that always brings the cursor to the beginning of the line
+   * when applied to a position.
+   */
+  public static NewBOLDiff(): PositionDiff {
+    const result = new PositionDiff(0, 0);
+
+    result._isBOLDiff = true;
+    return result;
+  }
+
+  /**
+   * Add this PositionDiff to another PositionDiff.
+   */
+  public addDiff(other: PositionDiff) {
+    if (this._isBOLDiff || other._isBOLDiff) {
+      throw new Error("johnfn hasn't done this case yet and doesnt want to");
+    }
+
     return new PositionDiff(
-      this.line + other.line,
-      this.character + other.character
+      this._line + other._line,
+      this._character + other._character
     );
+  }
+
+  /**
+   * Adds a Position to this PositionDiff, returning a new PositionDiff.
+   */
+  public addPosition(other: Position, { boundsCheck = true } = { } ): Position {
+    let resultChar = this.isBOLDiff() ? 0 : this.character + other.character;
+    let resultLine = this.line + other.line;
+
+    if (boundsCheck) {
+      if (resultChar < 0) { resultChar = 0; }
+      if (resultLine < 0) { resultLine = 0; }
+    }
+
+    return new Position(
+      resultLine,
+      resultChar
+    );
+  }
+
+  /**
+   * Difference in lines.
+   */
+  public get line(): number {
+    return this._line;
+  }
+
+  /**
+   * Difference in characters.
+   */
+  public get character(): number {
+    return this._character;
+  }
+
+  /**
+   * Does this diff move the position to the beginning of the line?
+   */
+  public isBOLDiff(): boolean {
+    return this._isBOLDiff;
+  }
+
+  public toString(): string {
+    if (this._isBOLDiff) {
+      return `[ Diff: BOL ]`;
+    }
+
+    return `[ Diff: ${ this._line } ${ this._character } ]`;
   }
 }
 
@@ -206,6 +275,10 @@ export class Position extends vscode.Position {
     if (boundsCheck) {
       if (resultChar < 0) { resultChar = 0; }
       if (resultLine < 0) { resultLine = 0; }
+    }
+
+    if (other.isBOLDiff()) {
+      resultChar = 0;
     }
 
     return new Position(

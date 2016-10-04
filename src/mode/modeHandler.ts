@@ -257,6 +257,12 @@ export class RecordedState {
   public transformations: Transformation[] = [];
 
   /**
+   * This turns off transformations running in parallel. It's necessary when
+   * transformations overlap.
+   */
+  public dontParallelizeTransformations = false;
+
+  /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
   public get operator(): BaseOperator {
@@ -299,7 +305,7 @@ export class RecordedState {
 
     res.actionKeys      = this.actionKeys.slice(0);
     res.actionsRun      = this.actionsRun.slice(0);
-    res.hasRunOperator    = this.hasRunOperator;
+    res.hasRunOperator  = this.hasRunOperator;
 
     return res;
   }
@@ -916,20 +922,24 @@ export class ModeHandler implements vscode.Disposable {
       ));
     }
 
-    // Keep track of all cursors (in the case of multi-cursor).
+    if (vimState.recordedState.transformations.length > 0) {
+      await this.executeCommand(vimState);
+    } else {
+      // Keep track of all cursors (in the case of multi-cursor).
 
-    resultVimState.allCursors = resultingCursors;
+      resultVimState.allCursors = resultingCursors;
 
-    const selections: vscode.Selection[] = [];
+      const selections: vscode.Selection[] = [];
 
-    for (const cursor of vimState.allCursors) {
-      selections.push(new vscode.Selection(
-        cursor.start,
-        cursor.stop,
-      ));
+      for (const cursor of vimState.allCursors) {
+        selections.push(new vscode.Selection(
+          cursor.start,
+          cursor.stop,
+        ));
+      }
+
+      vscode.window.activeTextEditor.selections = selections;
     }
-
-    vscode.window.activeTextEditor.selections = selections;
 
     return resultVimState;
   }
@@ -948,34 +958,68 @@ export class ModeHandler implements vscode.Disposable {
 
     let accumulatedPositionDifferences: PositionDiff[] = [];
 
-    // batch all text operations together as a single operation
-    // (this is primarily necessary for multi-cursor mode, since most
-    // actions will trigger at most one text operation).
-    await vscode.window.activeTextEditor.edit(edit => {
+    if (vimState.recordedState.dontParallelizeTransformations) {
+      // This is the rare case.
+
       for (const command of textTransformations) {
-        switch (command.type) {
-          case "insertText":
-            edit.insert(command.position, command.text);
-            break;
+        await vscode.window.activeTextEditor.edit(edit => {
+          switch (command.type) {
+            case "insertText":
+              edit.insert(command.position, command.text);
+              break;
 
-          case "replaceText":
-            edit.replace(new vscode.Selection(command.end, command.start), command.text);
-            break;
+            case "replaceText":
+              edit.replace(new vscode.Selection(command.end, command.start), command.text);
+              break;
 
-          case "deleteText":
-            edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
-            break;
+            case "deleteText":
+              edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
+              break;
 
-          case "deleteRange":
-            edit.delete(new vscode.Selection(command.range.start, command.range.stop));
-            break;
+            case "deleteRange":
+              edit.delete(new vscode.Selection(command.range.start, command.range.stop));
+              break;
+          }
+
+          if (command.diff) {
+            accumulatedPositionDifferences.push(command.diff);
+          }
+        });
+      };
+    } else {
+      // This is the common case!
+
+      /**
+       * batch all text operations together as a single operation
+       * (this is primarily necessary for multi-cursor mode, since most
+       * actions will trigger at most one text operation).
+       */
+      await vscode.window.activeTextEditor.edit(edit => {
+        for (const command of textTransformations) {
+          switch (command.type) {
+            case "insertText":
+              edit.insert(command.position, command.text);
+              break;
+
+            case "replaceText":
+              edit.replace(new vscode.Selection(command.end, command.start), command.text);
+              break;
+
+            case "deleteText":
+              edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
+              break;
+
+            case "deleteRange":
+              edit.delete(new vscode.Selection(command.range.start, command.range.stop));
+              break;
+          }
+
+          if (command.diff) {
+            accumulatedPositionDifferences.push(command.diff);
+          }
         }
-
-        if (command.diff) {
-          accumulatedPositionDifferences.push(command.diff);
-        }
-      }
-    });
+      });
+    }
 
     for (const command of otherTransformations) {
       switch (command.type) {
