@@ -1549,7 +1549,11 @@ export class PutCommand extends BaseCommand {
         // stays in the same place. Otherwise, it moves to the end of what you pasted.
 
         if (register.registerMode === RegisterMode.LineWise) {
-          diff = new PositionDiff(1, 0);
+          if (after) {
+            diff = new PositionDiff(-1, 0);
+          } else {
+            diff = new PositionDiff(1, 0);
+          }
         } else {
           /*
           if (text.indexOf("\n") === -1) {
