@@ -1350,6 +1350,8 @@ export class ShiftYankOperatorVisual extends BaseOperator {
     public modes = [ModeName.Visual];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+
       return await new YankOperator().run(vimState, start, end);
     }
 }

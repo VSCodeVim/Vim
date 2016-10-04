@@ -11,7 +11,8 @@ suite("Mode Visual", () => {
   let modeHandler: ModeHandler = new ModeHandler();
 
   let {
-    newTest
+    newTest,
+    newTestOnly,
   } = getTestingFunctions(modeHandler);
 
   setup(async () => {
