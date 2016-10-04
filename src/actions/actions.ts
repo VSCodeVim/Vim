@@ -96,6 +96,8 @@ export interface IMovement {
    */
   failed?      : boolean;
 
+  diff?        : PositionDiff;
+
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
 }
@@ -1555,10 +1557,14 @@ export class PutCommand extends BaseCommand {
         // stays in the same place. Otherwise, it moves to the end of what you pasted.
 
         if (register.registerMode === RegisterMode.LineWise) {
+          const numWhitespace = text.match(/^\s*/)[0].length;
+
           if (after) {
-            diff = new PositionDiff(-1, 0);
+            let numNewlines = text.split("\n").length - 1;
+
+            diff = PositionDiff.NewBOLDiff(-numNewlines - 1, numWhitespace);
           } else {
-            diff = new PositionDiff(1, 0);
+            diff = PositionDiff.NewBOLDiff(1, numWhitespace);
           }
         } else {
           /*
@@ -1768,10 +1774,6 @@ export class PutBeforeCommand extends BaseCommand {
         command.multicursorIndex = this.multicursorIndex;
 
         const result = await command.exec(position, vimState, true);
-
-        if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
-          result.cursorPosition = result.cursorPosition.getPreviousLineBegin();
-        }
 
         return result;
     }
@@ -4021,6 +4023,7 @@ abstract class MoveInsideCharacter extends BaseMovement {
     return {
       start : startPos,
       stop  : endPos,
+      diff  : new PositionDiff(0, startPos === position ? 1 : 0)
     };
   }
 }

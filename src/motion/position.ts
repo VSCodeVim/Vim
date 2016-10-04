@@ -28,8 +28,8 @@ export class PositionDiff {
    * Creates a new PositionDiff that always brings the cursor to the beginning of the line
    * when applied to a position.
    */
-  public static NewBOLDiff(): PositionDiff {
-    const result = new PositionDiff(0, 0);
+  public static NewBOLDiff(line = 0, character = 0): PositionDiff {
+    const result = new PositionDiff(line, character);
 
     result._isBOLDiff = true;
     return result;
@@ -268,17 +268,17 @@ export class Position extends vscode.Position {
    * Adds a PositionDiff to this position, returning a new
    * position.
    */
-  public add(other: PositionDiff, { boundsCheck = true } = { } ): Position {
-    let resultChar = this.character + other.character;
-    let resultLine = this.line + other.line;
+  public add(diff: PositionDiff, { boundsCheck = true } = { } ): Position {
+    let resultChar = this.character + diff.character;
+    let resultLine = this.line + diff.line;
 
     if (boundsCheck) {
       if (resultChar < 0) { resultChar = 0; }
       if (resultLine < 0) { resultLine = 0; }
     }
 
-    if (other.isBOLDiff()) {
-      resultChar = 0;
+    if (diff.isBOLDiff()) {
+      resultChar = diff.character;
     }
 
     return new Position(

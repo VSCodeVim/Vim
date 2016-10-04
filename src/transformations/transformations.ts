@@ -162,6 +162,17 @@ export interface DeleteTextRangeTransformation {
   manuallySetCursorPositions?: boolean;
 }
 
+export interface MoveCursorTransformation {
+  type: "moveCursor";
+
+  cursorIndex?: number;
+
+  /**
+   * Move the cursor this much.
+   */
+  diff: PositionDiff;
+}
+
 /**
  * Represents pressing ':'
  */
@@ -182,6 +193,7 @@ export type Transformation
   | ReplaceTextTransformation
   | DeleteTextRangeTransformation
   | DeleteTextTransformation
+  | MoveCursorTransformation
   | ShowCommandLine
   | Dot
   | DeleteTextTransformation;
@@ -204,6 +216,7 @@ export type TextTransformations
   = InsertTextTransformation
   | InsertTextVSCodeTransformation
   | DeleteTextRangeTransformation
+  | MoveCursorTransformation
   | DeleteTextTransformation
   | ReplaceTextTransformation;
 
@@ -211,10 +224,11 @@ export const isTextTransformation = (x: Transformation): x is TextTransformation
   return x.type === 'insertText'  ||
          x.type === 'replaceText' ||
          x.type === 'deleteText'  ||
+         x.type === 'moveCursor'  ||
          x.type === 'deleteRange';
 };
 
-const getRangeFromTextTransformation = (transformation: TextTransformations) => {
+const getRangeFromTextTransformation = (transformation: TextTransformations): Range | undefined => {
   switch (transformation.type) {
     case 'insertText':
       return new Range(transformation.position, transformation.position);
@@ -224,6 +238,8 @@ const getRangeFromTextTransformation = (transformation: TextTransformations) => 
       return new Range(transformation.position, transformation.position);
     case 'deleteRange':
       return transformation.range;
+    case 'moveCursor':
+      return undefined;
   }
 
   throw new Error("This should never happen!");
@@ -237,6 +253,8 @@ export const areAnyTransformationsOverlapping = (transformations: TextTransforma
 
       const firstRange = getRangeFromTextTransformation(first);
       const secondRange = getRangeFromTextTransformation(second);
+
+      if (!firstRange || !secondRange) { continue; }
 
       if (firstRange.overlaps(secondRange)) {
         return true;
