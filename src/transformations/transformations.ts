@@ -32,6 +32,11 @@ export interface InsertTextTransformation {
   position: Position;
 
   /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
+
+  /**
    * A position diff that will be added to the position of the cursor after
    * the replace transformation has been applied.
    *
@@ -59,6 +64,11 @@ export interface ReplaceTextTransformation {
   end: Position;
 
   /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
+
+  /**
    * A position diff that will be added to the position of the cursor after
    * the replace transformation has been applied.
    *
@@ -81,6 +91,11 @@ export interface InsertTextVSCodeTransformation {
   text : string;
 
   /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
+
+  /**
    * A position diff that will be added to the position of the cursor after
    * the replace transformation has been applied.
    *
@@ -99,6 +114,11 @@ export interface DeleteTextTransformation {
    * Position at which to delete a character.
    */
   position     : Position;
+
+  /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
 
   /**
    * A position diff that will be added to the position of the cursor after
@@ -130,6 +150,11 @@ export interface DeleteTextRangeTransformation {
   diff?: PositionDiff;
 
   collapseRange?: boolean;
+
+  /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
 
   /**
    * Please don't use this! It's a hack.
@@ -172,7 +197,8 @@ export type Transformation
  * If your cursor isn't ending up in the right place, you can adjust it by passing along
  * a PositionDiff.
  *
- * (There are a LOT of weird edge cases with cursor behavior that we don't want to have to reimplement).
+ * (There are a LOT of weird edge cases with cursor behavior that we don't want to have to reimplement. Trust
+ * me... I tried.)
  */
 export type TextTransformations
   = InsertTextTransformation
@@ -181,11 +207,11 @@ export type TextTransformations
   | DeleteTextTransformation
   | ReplaceTextTransformation;
 
-export const isTextTransformation = (x: string) => {
-  return x === 'insertText' ||
-         x === 'replaceText' ||
-         x === 'deleteText' ||
-         x === 'deleteRange';
+export const isTextTransformation = (x: Transformation): x is TextTransformations => {
+  return x.type === 'insertText'  ||
+         x.type === 'replaceText' ||
+         x.type === 'deleteText'  ||
+         x.type === 'deleteRange';
 };
 
 const getRangeFromTextTransformation = (transformation: TextTransformations) => {

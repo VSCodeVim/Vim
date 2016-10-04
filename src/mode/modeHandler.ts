@@ -912,6 +912,12 @@ export class ModeHandler implements vscode.Disposable {
 
       resultVimState = await recordedState.operator.run(resultVimState, start, stop);
 
+      for (const transformation of resultVimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = recordedState.operator.multicursorIndex;
+        }
+      }
+
       resultingModeName = resultVimState.currentMode;
 
       resultingCursors.push(new Range(
@@ -949,12 +955,10 @@ export class ModeHandler implements vscode.Disposable {
       return vimState;
     }
 
-    const textTransformations: TextTransformations[] =
-      transformations.filter(x => isTextTransformation(x.type)) as any;
+    const textTransformations: TextTransformations[] = transformations.filter(x => isTextTransformation(x)) as any;
+    const otherTransformations = transformations.filter(x => !isTextTransformation(x));
 
-    const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
-
-    let accumulatedPositionDifferences: PositionDiff[] = [];
+    let accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
     if (areAnyTransformationsOverlapping(textTransformations)) {
       // TODO: Select one transformation for every cursor and run them all
@@ -980,8 +984,16 @@ export class ModeHandler implements vscode.Disposable {
               break;
           }
 
+          if (command.cursorIndex === undefined) {
+            throw new Error("No cursor index - this should never ever happen!");
+          }
+
           if (command.diff) {
-            accumulatedPositionDifferences.push(command.diff);
+            if (!accumulatedPositionDifferences[command.cursorIndex]) {
+              accumulatedPositionDifferences[command.cursorIndex] = [];
+            }
+
+            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
           }
         });
       };
@@ -1013,8 +1025,16 @@ export class ModeHandler implements vscode.Disposable {
               break;
           }
 
+          if (command.cursorIndex === undefined) {
+            throw new Error("No cursor index - this should never ever happen!");
+          }
+
           if (command.diff) {
-            accumulatedPositionDifferences.push(command.diff);
+            if (!accumulatedPositionDifferences[command.cursorIndex]) {
+              accumulatedPositionDifferences[command.cursorIndex] = [];
+            }
+
+            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
           }
         }
       });
@@ -1048,10 +1068,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     const selections = vscode.window.activeTextEditor.selections;
-    const numberOfCursors = vimState.allCursors.length;
-
     const firstTransformation = transformations[0];
-
     const manuallySetCursorPositions = firstTransformation.type === "deleteRange" &&
                                        firstTransformation.manuallySetCursorPositions;
 
@@ -1063,18 +1080,15 @@ export class ModeHandler implements vscode.Disposable {
       vimState.allCursors = [];
 
       const resultingCursors: Range[] = [];
-      const transformationsPerCursor = transformations.length / numberOfCursors;
 
       for (let i = 0; i < selections.length; i++) {
         let sel = selections[i];
 
-        if (accumulatedPositionDifferences.length > 0) {
-          let resultStart = Position.FromVSCodePosition(sel.start);
-          let resultEnd   = Position.FromVSCodePosition(sel.end);
+        let resultStart = Position.FromVSCodePosition(sel.start);
+        let resultEnd   = Position.FromVSCodePosition(sel.end);
 
-          for (let j = 0; j < transformationsPerCursor; j++) {
-            const diff = accumulatedPositionDifferences[i * transformationsPerCursor + j];
-
+        if (accumulatedPositionDifferences[i] && accumulatedPositionDifferences[i].length > 0) {
+          for (const diff of accumulatedPositionDifferences[i]) {
             resultStart = resultStart.add(diff);
             resultEnd   = resultEnd  .add(diff);
           }
@@ -1095,9 +1109,9 @@ export class ModeHandler implements vscode.Disposable {
 
       vimState.allCursors = resultingCursors;
     } else {
-      if (accumulatedPositionDifferences.length > 0) {
-        vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0]);
-        vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0]);
+      if (accumulatedPositionDifferences[0].length > 0) {
+        vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0][0]);
+        vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0][0]);
       }
     }
 

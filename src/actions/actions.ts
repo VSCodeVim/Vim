@@ -15,6 +15,7 @@ import { TagMatcher } from './../matching/tagMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
+import { isTextTransformation } from './../transformations/transformations';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
@@ -330,6 +331,12 @@ export abstract class BaseCommand extends BaseAction {
         vimState.cursorStartPosition,
         vimState.cursorPosition,
       ));
+
+      for (const transformation of vimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = this.multicursorIndex;
+        }
+      }
     }
 
     vimState.allCursors = resultingCursors;
