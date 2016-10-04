@@ -3160,7 +3160,7 @@ class ActionJoin extends BaseCommand {
       type    : "insertText",
       text    : resultLine,
       position: position,
-      diff    : new PositionDiff(0, -lineTwoTrimmedStart.length - 1),
+      diff    : new PositionDiff(0, -lineTwoTrimmedStart.length - 1 + (addSpace ? 0 : 1)),
     });
 
     newState.cursorPosition = new Position(position.line,
@@ -3225,7 +3225,12 @@ class ActionJoinNoWhitespace extends BaseCommand {
         position.getLineEnd()
     );
 
-    await TextEditor.insert(resultLine, position);
+    vimState.recordedState.transformations.push({
+      type     : "insertText",
+      text     : resultLine,
+      position : position,
+      diff     : new PositionDiff(0, -lineTwo.length),
+    });
 
     newState.cursorPosition = new Position(position.line, lineOne.length);
 
