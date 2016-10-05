@@ -460,7 +460,9 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
+    // e.kind can sometimes be undefined according to the docs for
+    // TextEditorSelectionChangeKind, so do not check for !e.kind
+    if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
       return;
     }
 
