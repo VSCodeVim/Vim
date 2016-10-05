@@ -286,7 +286,13 @@ export abstract class BaseCommand extends BaseAction {
     return true;
   }
 
-  canBePrefixedWithCount = false;
+  /**
+   * If true, exec() will get called N times where N is the count.
+   *
+   * If false, exec() will only be called once, and you are expected to
+   * handle it yourself.
+   */
+  runsOnceForEachCountPrefix = false;
 
   canBeRepeatedWithDot = false;
 
@@ -302,7 +308,7 @@ export abstract class BaseCommand extends BaseAction {
    */
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     if (!this.runsOnceForEveryCursor()) {
-      let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+      let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
       for (let i = 0; i < timesToRepeat; i++) {
         vimState = await this.exec(position, vimState);
@@ -311,7 +317,7 @@ export abstract class BaseCommand extends BaseAction {
       return vimState;
     }
 
-    let timesToRepeat  = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let timesToRepeat  = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
     let resultingCursors: Range[] = [];
     let i              = 0;
 
@@ -632,27 +638,13 @@ class CommandCtrlW extends BaseCommand {
 
 abstract class CommandEditorScroll extends BaseCommand {
   modes = [ModeName.Normal];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = false;
   keys: string[];
   to: EditorScrollDirection;
   by: EditorScrollByUnit;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.postponedCodeViewChanges.push({
-      command: "editorScroll",
-      args: {
-        to: this.to,
-        by: this.by,
-        value: 1,
-        revealCursor: true
-      }
-    });
-
-    return vimState;
-  }
-
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
     vimState.postponedCodeViewChanges.push({
       command: "editorScroll",
@@ -832,16 +824,9 @@ class CommandInsertAtCursor extends BaseCommand {
 class CommandReplaceAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["R"];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.Replace;
-    vimState.replaceState = new ReplaceState(position);
-
-    return vimState;
-  }
-
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
 
     vimState.currentMode = ModeName.Replace;
@@ -1012,7 +997,7 @@ class CommandStar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["*"];
   isMotion = true;
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const currentWord = TextEditor.getWord(position);
@@ -1035,7 +1020,7 @@ class CommandHash extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["#"];
   isMotion = true;
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const currentWord = TextEditor.getWord(position);
@@ -1495,7 +1480,7 @@ export class ChangeOperator extends BaseOperator {
 export class PutCommand extends BaseCommand {
     keys = ["p"];
     modes = [ModeName.Normal];
-    canBePrefixedWithCount = true;
+    runsOnceForEachCountPrefix = true;
     canBeRepeatedWithDot = true;
 
     public async exec(position: Position, vimState: VimState, after: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
@@ -1618,17 +1603,13 @@ export class PutCommand extends BaseCommand {
       vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
       return vimState;
     }
-
-    public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-      return await super.execCount(position, vimState);
-    }
 }
 
 @RegisterAction
 export class GPutCommand extends BaseCommand {
   keys = ["g", "p"];
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1668,7 +1649,7 @@ export class GPutCommand extends BaseCommand {
 export class PutWithIndentCommand extends BaseCommand {
     keys = ["]", "p"];
     modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-    canBePrefixedWithCount = true;
+    runsOnceForEachCountPrefix = true;
     canBeRepeatedWithDot = true;
 
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1694,7 +1675,7 @@ export class PutCommandVisual extends BaseCommand {
     ["P"],
   ];
   modes = [ModeName.Visual, ModeName.VisualLine];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
   canBePrefixedWithDot = true;
 
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
@@ -1871,10 +1852,10 @@ abstract class CommandFold extends BaseCommand {
 class CommandCloseFold extends CommandFold {
   keys = ["z", "c"];
   commandName = "editor.fold";
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand("editor.fold", {levels: timesToRepeat, direction: "up"});
 
     return vimState;
@@ -1891,10 +1872,10 @@ class CommandCloseAllFolds extends CommandFold {
 class CommandOpenFold extends CommandFold {
   keys = ["z", "o"];
   commandName = "editor.unfold";
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand("editor.unfold", {levels: timesToRepeat, direction: "up"});
 
     return vimState;
@@ -2053,10 +2034,10 @@ class CommandYankFullLine extends BaseCommand {
 class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["C"];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = false;
 
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let count = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
     return new ChangeOperator().run(vimState, position, position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft());
   }
 }
@@ -2065,10 +2046,10 @@ class CommandChangeToLineEnd extends BaseCommand {
 class CommandClearLine extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["S"];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = false;
 
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let count = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let count = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
     let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft();
     return new ChangeOperator().run(vimState, position.getLineBeginRespectingIndent(), end);
   }
@@ -2385,7 +2366,7 @@ class MoveToLeftPane  extends BaseCommand {
 
 class BaseTabCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 }
 
 @RegisterAction
@@ -2394,8 +2375,9 @@ class CommandTabNext extends BaseTabCommand {
     ["g", "t"],
     ["<C-pagedown>"],
   ];
+  runsOnceForEachCountPrefix = true;
 
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     (new TabCommand({
       tab: Tab.Next,
       count: vimState.recordedState.count
@@ -2411,6 +2393,7 @@ class CommandTabPrevious extends BaseTabCommand {
     ["g", "T"],
     ["<C-pageup>"],
   ];
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     (new TabCommand({
@@ -3076,7 +3059,7 @@ class MovePreviousSectionEnd extends MoveSectionBoundary {
 class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["x"];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3097,10 +3080,10 @@ class ActionDeleteChar extends BaseCommand {
 class ActionDeleteCharWithDeleteKey extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["<Del>"];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // N<del> is a no-op in Vim
     if (vimState.recordedState.count !== 0) {
       return vimState;
@@ -3134,7 +3117,7 @@ class ActionJoin extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["J"];
   canBeRepeatedWithDot = true;
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (position.line === TextEditor.getLineCount() - 1) {
@@ -3207,7 +3190,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["g", "J"];
   canBeRepeatedWithDot = true;
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
   // gJ is essentially J without the edge cases. ;-)
 
@@ -3275,7 +3258,7 @@ class ActionReplaceCharacter extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["r", "<character>"];
   canBeRepeatedWithDot = true;
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toReplace = this.keysPressed[1];
@@ -3292,7 +3275,7 @@ class ActionReplaceCharacter extends BaseCommand {
   }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.canBePrefixedWithCount ? vimState.recordedState.count || 1 : 1;
+    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
     if (position.character + timesToRepeat > position.getLineEnd().character) {
       return vimState;
@@ -3606,7 +3589,7 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 class ActionChangeChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["s"];
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const state = await new ChangeOperator().run(vimState, position, position);
@@ -4366,7 +4349,7 @@ class ToggleCaseAndMoveForward extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["~"];
   canBeRepeatedWithDot = true;
-  canBePrefixedWithCount = true;
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await new ToggleCaseOperator().run(vimState, vimState.cursorPosition, vimState.cursorPosition);
