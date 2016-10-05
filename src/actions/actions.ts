@@ -1560,11 +1560,13 @@ export class PutCommand extends BaseCommand {
             diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : 0, numWhitespace);
           }
         } else {
-          /*
-          if (text.indexOf("\n") === -1) {
-            diff = new PositionDiff(0, text.length);
+          if (!position.isLineEnd() && text.indexOf("\n") === -1) {
+            if (after) {
+              diff = new PositionDiff(0, -1);
+            } else {
+              diff = new PositionDiff(0, textToAdd.length);
+            }
           }
-          */
         }
 
         vimState.recordedState.transformations.push({
