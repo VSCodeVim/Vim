@@ -3266,28 +3266,28 @@ class ActionReplaceCharacter extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["r", "<character>"];
   canBeRepeatedWithDot = true;
-  runsOnceForEachCountPrefix = true;
+  runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = vimState.recordedState.count || 1;
     const toReplace = this.keysPressed[1];
-    const state = await new DeleteOperator().run(vimState, position, position);
-
-    vimState.recordedState.transformations.push({
-      type    : "insertText",
-      text    : toReplace,
-      diff    : new PositionDiff(0, -1),
-      position: position,
-    });
-
-    return state;
-  }
-
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
     if (position.character + timesToRepeat > position.getLineEnd().character) {
       return vimState;
     }
+
+    vimState.recordedState.transformations.push({
+      type    : "replaceText",
+      text    : toReplace.repeat(timesToRepeat),
+      start   : position,
+      end     : position.getRightByCount(timesToRepeat),
+      diff    : new PositionDiff(0, timesToRepeat - 1),
+    });
+
+    return vimState;
+  }
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
 
     return super.execCount(position, vimState);
   }
