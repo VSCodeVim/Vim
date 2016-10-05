@@ -878,7 +878,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 
       replaceState.newChars.pop();
     } else {
-      if (!position.isLineEnd()) {
+      if (!position.isLineEnd() && char !== "\n") {
         vimState.recordedState.transformations.push({
           type: "replaceText",
           text: char,
