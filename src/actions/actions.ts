@@ -1,4 +1,6 @@
-import { VimState, SearchState, SearchDirection, ReplaceState } from './../mode/modeHandler';
+import { VimState } from './../mode/modeHandler';
+import { SearchState, SearchDirection } from './../state/searchState';
+import { ReplaceState } from './../state/replaceState';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
 import { ModeName } from './../mode/mode';
 import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
@@ -12,7 +14,7 @@ import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
-import { waitForCursorUpdatesToHappen } from '../util';
+import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
@@ -28,7 +30,21 @@ const controlKeys: string[] = [
   "down"
 ];
 
-const compareKeypressSequence = function (one: string[], two: string[]): boolean {
+const is2DArray = function<T>(x: any): x is T[][] {
+  return Array.isArray(x[0]);
+};
+
+let compareKeypressSequence = function (one: string[] | string[][], two: string[]): boolean {
+  if (is2DArray(one)) {
+    for (const sequence of one) {
+      if (compareKeypressSequence(sequence, two)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   const containsControlKey = (s: string): boolean => {
     for (const controlKey of controlKeys) {
       if (s.indexOf(controlKey!) !== -1) {
@@ -103,9 +119,9 @@ export class BaseAction {
   public modes: ModeName[];
 
   /**
-   * The sequence of keys you use to trigger the action.
+   * The sequence of keys you use to trigger the action, or a list of such sequences.
    */
-  public keys: string[];
+  public keys: string[] | string[][];
 
   public mustBeFirstKey = false;
 
@@ -514,11 +530,19 @@ class CommandEsc extends BaseCommand {
     ModeName.SearchInProgressMode,
     ModeName.SearchInProgressMode
   ];
-  keys = ["<Esc>"];
+  keys = [
+    ["<Esc>"],
+    ["<C-c>"],
+    ["<C-[>"],
+  ];
 
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (vimState.currentMode === ModeName.Normal && !vimState.isMultiCursor) {
+      return vimState;
+    }
+
     if (vimState.currentMode !== ModeName.Visual &&
         vimState.currentMode !== ModeName.VisualLine) {
 
@@ -556,7 +580,10 @@ class CommandEsc extends BaseCommand {
 @RegisterAction
 class CommandEscReplaceMode extends BaseCommand {
   modes = [ModeName.Replace];
-  keys = ["<Esc>"];
+  keys = [
+    ["<Esc>"],
+    ["<C-c>"],
+  ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const timesToRepeat = vimState.replaceState!.timesToRepeat;
@@ -577,11 +604,6 @@ class CommandEscReplaceMode extends BaseCommand {
 
     return vimState;
   }
-}
-
-@RegisterAction
-class CommandCtrlOpenBracket extends CommandEsc {
-  keys = ["<C-[>"];
 }
 
 @RegisterAction
@@ -785,11 +807,6 @@ class CommandInsertAboveChar extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlC extends CommandEsc {
-  keys = ["<C-c>"];
-}
-
-@RegisterAction
 class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["i"];
@@ -888,14 +905,20 @@ class CommandReplaceInReplaceMode extends BaseCommand {
   }
 }
 
+@RegisterAction
 class ArrowsInReplaceMode extends BaseMovement {
   modes = [ModeName.Replace];
-  keys: string[];
+  keys = [
+    ["<up>"],
+    ["<down>"],
+    ["<left>"],
+    ["<right>"],
+  ];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     let newPosition: Position = position;
 
-    switch (this.keys[0]) {
+    switch (this.keysPressed[0]) {
       case "<up>":
         newPosition = await new MoveUpArrow().execAction(position, vimState);
         break;
@@ -914,26 +937,6 @@ class ArrowsInReplaceMode extends BaseMovement {
     vimState.replaceState = new ReplaceState(newPosition);
     return newPosition;
   }
-}
-
-@RegisterAction
-class UpArrowInReplaceMode extends ArrowsInReplaceMode {
-  keys = ["<up>"];
-}
-
-@RegisterAction
-class DownArrowInReplaceMode extends ArrowsInReplaceMode {
-  keys = ["<down>"];
-}
-
-@RegisterAction
-class LeftArrowInReplaceMode extends ArrowsInReplaceMode {
-  keys = ["<left>"];
-}
-
-@RegisterAction
-class RightArrowInReplaceMode extends ArrowsInReplaceMode {
-  keys = ["<right>"];
 }
 
 @RegisterAction
@@ -1650,7 +1653,10 @@ export class PutWithIndentCommand extends BaseCommand {
 
 @RegisterAction
 export class PutCommandVisual extends BaseCommand {
-  keys = ["p"];
+  keys = [
+    ["p"],
+    ["P"],
+  ];
   modes = [ModeName.Visual, ModeName.VisualLine];
   canBePrefixedWithCount = true;
   canBePrefixedWithDot = true;
@@ -1665,13 +1671,8 @@ export class PutCommandVisual extends BaseCommand {
 }
 
 @RegisterAction
-export class PutCommandVisualCapitalP extends PutCommandVisual {
-  keys = ["P"];
-}
-
-@RegisterAction
 class IndentOperator extends BaseOperator {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal];
   keys = [">"];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -1679,7 +1680,33 @@ class IndentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand("editor.action.indentLines");
 
-    vimState.currentMode     = ModeName.Normal;
+    vimState.currentMode    = ModeName.Normal;
+    vimState.cursorPosition = start.getFirstLineNonBlankChar();
+
+    return vimState;
+  }
+}
+
+/**
+ * `3>` to indent a line 3 times in visual mode is actually a bit of a special case.
+ *
+ * > is an operator, and generally speaking, you don't run operators multiple times, you run motions multiple times.
+ * e.g. `d3w` runs `w` 3 times, then runs d once.
+ *
+ * Same with literally every other operator motion combination... until `3>`in visual mode
+ * walked into my life.
+ */
+@RegisterAction
+class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = [">"];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    for (let i = 0; i < (vimState.recordedState.count || 1); i++) {
+      await vscode.commands.executeCommand("editor.action.indentLines");
+    }
+
+    vimState.currentMode    = ModeName.Normal;
     vimState.cursorPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
@@ -1864,13 +1891,14 @@ class CommandOpenAllFoldsRecursively extends CommandFold {
 
 @RegisterAction
 class CommandCenterScroll extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["z", "z"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // In these modes you want to center on the cursor position
     vscode.window.activeTextEditor.revealRange(
       new vscode.Range(vimState.cursorPosition,
-                       vimState.cursorPosition),
+        vimState.cursorPosition),
       vscode.TextEditorRevealType.InCenter);
 
     return vimState;
@@ -1979,9 +2007,13 @@ class CommandYankFullLine extends BaseCommand {
   keys = ["Y"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const linesDown = (vimState.recordedState.count || 1) - 1;
+    const start = position.getLineBegin();
+    const end = new Position(position.line + linesDown, 0).getLineEnd().getLeft();
+
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new YankOperator().run(vimState, position.getLineBegin(), position.getLineEnd().getLeft());
+    return await new YankOperator().run(vimState, start, end);
   }
 }
 
@@ -2175,10 +2207,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
     vimState.currentMode = ModeName.Insert;
     await vscode.commands.executeCommand('editor.action.insertLineBefore');
 
-    await waitForCursorUpdatesToHappen();
-
-    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
-      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
     return vimState;
   }
@@ -2194,10 +2223,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
     vimState.currentMode = ModeName.Insert;
     await vscode.commands.executeCommand('editor.action.insertLineAfter');
 
-    await waitForCursorUpdatesToHappen();
-
-    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
-      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
     return vimState;
   }
@@ -2331,7 +2357,10 @@ class BaseTabCommand extends BaseCommand {
 
 @RegisterAction
 class CommandTabNext extends BaseTabCommand {
-  keys = ["g", "t"];
+  keys = [
+    ["g", "t"],
+    ["<C-pagedown>"],
+  ];
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     (new TabCommand({
@@ -2344,13 +2373,11 @@ class CommandTabNext extends BaseTabCommand {
 }
 
 @RegisterAction
-class CommandCtrlPagedown extends CommandTabNext {
-  keys = ["<C-pagedown>"];
-}
-
-@RegisterAction
 class CommandTabPrevious extends BaseTabCommand {
-  keys = ["g", "T"];
+  keys = [
+    ["g", "T"],
+    ["<C-pageup>"],
+  ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     (new TabCommand({
@@ -2360,11 +2387,6 @@ class CommandTabPrevious extends BaseTabCommand {
 
     return vimState;
   }
-}
-
-@RegisterAction
-class CommandCtrlPageup extends CommandTabPrevious {
-  keys = ["<C-pageup>"];
 }
 
 @RegisterAction
@@ -2535,7 +2557,7 @@ class MoveRepeatReversed extends BaseMovement {
     const movement = VimState.lastRepeatableMovement;
     if (movement) {
       const reverse = MoveRepeatReversed.reverseMotionMapping.get(movement.constructor)();
-      reverse.keysPressed = [reverse.keys[0], movement.keysPressed[1]];
+      reverse.keysPressed = [(reverse.keys as string[])[0], movement.keysPressed[1]];
 
       let result = await reverse.execActionWithCount(position, vimState, count);
       // For t<character> and T<character> commands vim executes ; as 2;
@@ -2811,10 +2833,12 @@ export class MoveWordBegin extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (vimState.recordedState.operator instanceof ChangeOperator) {
-
       if (TextEditor.getLineAt(position).text.length < 1) {
         return position;
       }
+
+      const line = TextEditor.getLineAt(position).text;
+      const char = line[position.character];
 
       /*
       From the Vim manual:
@@ -2823,7 +2847,12 @@ export class MoveWordBegin extends BaseMovement {
       on a non-blank.  This is because "cw" is interpreted as change-word, and a
       word does not include the following white space.
       */
-      return position.getCurrentWordEnd(true).getRight();
+
+      if (" \t".indexOf(char) >= 0) {
+        return position.getWordRight();
+      } else {
+        return position.getCurrentWordEnd(true).getRight();
+      }
     } else {
       return position.getWordRight();
     }
@@ -3910,7 +3939,10 @@ class MoveToMatchingBracket extends BaseMovement {
     }
 
     if (position.compareTo(result) > 0) {
-      return result.getLeft();
+      return {
+        start: result,
+        stop: position.getRight(),
+      };
     } else {
       return result.getRight();
     }
@@ -4409,19 +4441,59 @@ class MoveAroundTag extends MoveTagMatch {
   includeTag = true;
 }
 
+/**
+ * Multi-Cursor Command Overrides
+ *
+ * We currently have to override the vscode key commands that get us into multi-cursor mode.
+ *
+ * Normally, we'd just listen for another cursor to be added in order to go into multi-cursor
+ * mode rather than rewriting each keybinding one-by-one. We can't currently do that because
+ * Visual Block Mode also creates additional cursors, but will get confused if you're in
+ * multi-cursor mode.
+ */
+
 @RegisterAction
 class ActionOverrideCmdD extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
-  keys = ["<D-d>"];
+  keys = [
+    ["<D-d>"],
+    ["g", "c"]
+  ];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    await waitForCursorUpdatesToHappen();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
-    vimState.allCursors = vscode.window.activeTextEditor.selections.map(x =>
-      new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
     vimState.currentMode = ModeName.Visual;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionOverrideCmdAltDown extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["<D-alt+down>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand('editor.action.insertCursorBelow');
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionOverrideCmdAltUp extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["<D-alt+up>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand('editor.action.insertCursorAbove');
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
     return vimState;
   }

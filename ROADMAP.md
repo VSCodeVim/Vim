@@ -26,14 +26,14 @@ Status | Command
 :white_check_mark: | Visual Line Mode
 :white_check_mark: | Number Prefixes
 :white_check_mark: | . Operator
-:warning: | Searching with / and ?
+:white_check_mark: | Searching with / and ?
 :white_check_mark: | Correct Undo/Redo
 :warning: | Command Remapping
-:warning:  | Marks
+:warning: | Marks
 :white_check_mark: | Text Objects
 :white_check_mark: | Visual Block Mode
 :warning: | Replace Mode
- | Multiple Select Mode
+:white_check_mark: | Multiple Select Mode
  | Macros
 :warning: | Buffer/Window/Tab
 
