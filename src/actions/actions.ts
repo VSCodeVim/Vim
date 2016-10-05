@@ -1489,30 +1489,33 @@ export class PutCommand extends BaseCommand {
     runsOnceForEachCountPrefix = true;
     canBeRepeatedWithDot = true;
 
+    public async getText(vimState: VimState): Promise<string> {
+      const register = await Register.get(vimState);
+
+      if (vimState.isMultiCursor) {
+        if (this.multicursorIndex === undefined) {
+          console.log("ERROR: no multi cursor index when calling PutCommand#exec");
+
+          throw new Error("Bad!");
+        }
+
+        if (vimState.isMultiCursor && typeof register.text === "object") {
+          return register.text[this.multicursorIndex!];
+        }
+      }
+
+      return register.text as string;
+    }
+
     public async exec(position: Position, vimState: VimState, after: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
         const register = await Register.get(vimState);
         const dest = after ? position : position.getRight();
-        let text: string | undefined;
 
-        if (vimState.isMultiCursor) {
-          if (this.multicursorIndex === undefined) {
-            console.log("ERROR: no multi cursor index when calling PutCommand#exec");
-
-            throw new Error("Bad!");
-          }
-
-          if (vimState.isMultiCursor && typeof register.text === "object") {
-            text = register.text[this.multicursorIndex!];
-          }
-        } else {
-          if (typeof register.text === "object") {
-            return await this.execVisualBlockPaste(register.text, position, vimState, after);
-          }
+        if (typeof register.text === "object") {
+          return await this.execVisualBlockPaste(register.text, position, vimState, after);
         }
 
-        if (!text) {
-          text = register.text as string;
-        }
+        let text = await this.getText(vimState);
 
         let textToAdd: string;
         let whereToAddText: Position;
@@ -1621,6 +1624,23 @@ export class PutCommand extends BaseCommand {
 
       vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
       return vimState;
+    }
+
+    public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+      const result = await super.execCount(position, vimState);
+
+      if (vimState.effectiveRegisterMode() === RegisterMode.LineWise &&
+          vimState.recordedState.count > 0) {
+        const numNewlines = (await this.getText(vimState)).split("\n").length * vimState.recordedState.count;
+
+        result.recordedState.transformations.push({
+          type       : "moveCursor",
+          diff       : new PositionDiff(-numNewlines + 1, 0),
+          cursorIndex: this.multicursorIndex
+        });
+      }
+
+      return result;
     }
 }
 
