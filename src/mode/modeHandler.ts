@@ -488,7 +488,10 @@ export class ModeHandler implements vscode.Disposable {
       var newPosition = new Position(selection.active.line, selection.active.character);
 
       if (newPosition.character >= newPosition.getLineEnd().character) {
-        newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
+        if (this._vimState.currentMode !== ModeName.Insert) {
+          // This prevents you from mouse clicking past the EOL
+          newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
+        }
       }
 
       this._vimState.cursorPosition    = newPosition;
