@@ -30,8 +30,8 @@ gulp.task('typings', function () {
 
 gulp.task('typings-vscode-definitions', ['typings'], function() {
   // add vscode definitions
-  var vscodeTypings = '/// <reference path="../node_modules/vscode/typings/index.d.ts" />\n';
-  var vscodeNodeTypings = '/// <reference path="../node_modules/vscode/typings/node.d.ts" />\n';
+  var vscodeTypings = '/// <reference path="vscode/index.d.ts" />\n';
+  var vscodeNodeTypings = '/// <reference path="vscode/node.d.ts" />\n';
   return gulp.src('./typings/index.d.ts')
     .pipe(inject.replace(vscodeTypings, ''))
     .pipe(inject.replace(vscodeNodeTypings, ''))
@@ -66,10 +66,11 @@ gulp.task('tslint', ['fix-whitespace'], function() {
 });
 
 gulp.task('default', ['tslint', 'compile']);
+gulp.task('nothing', []);
 
 gulp.task('compile', shell.task(['npm run vscode:prepublish']));
 gulp.task('watch', shell.task(['npm run compile']));
-gulp.task('init', ['typings']);
+gulp.task('init', ['typings', 'typings-vscode-definitions']);
 
 gulp.task('patch', ['default'], function() { return versionBump('patch'); })
 gulp.task('minor', ['default'], function() { return versionBump('minor'); })

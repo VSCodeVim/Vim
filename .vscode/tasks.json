@@ -12,12 +12,21 @@
   "isShellCommand": true,
   "suppressTaskName": true,
   "tasks": [
-  {
+    {
       "taskName": "build",
       "args": [],
       "isBuildCommand": true,
       "isWatching": false,
       "problemMatcher": "$tsc-watch"
+    },
+
+    {
+      "taskName": "yolo",
+      "args": ["nothing"],
+      "isBuildCommand": true,
+      "isWatching": false,
+      "problemMatcher": "$tsc-watch"
     }
+
   ]
 }

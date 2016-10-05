@@ -34,6 +34,9 @@ import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
+import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from './../util';
+import { SearchState } from './../state/searchState';
+import { ReplaceState } from './../state/replaceState';
 
 export class ViewChange {
   public command: string;
@@ -66,6 +69,9 @@ export class VimState {
    */
   public isMultiCursor = false;
 
+  /**
+   * Tracks movements that can be repeated with ; and , (namely t, T, f, and F).
+   */
   public static lastRepeatableMovement : BaseMovement | undefined = undefined;
 
   /**
@@ -195,184 +201,6 @@ export class VimState {
   public whatILastSetTheSelectionTo: vscode.Selection;
 }
 
-export enum SearchDirection {
-  Forward = 1,
-  Backward = -1
-}
-
-export class SearchState {
-  private static readonly MAX_SEARCH_RANGES = 1000;
-  private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
-
-  /**
-   * Every range in the document that matches the search string.
-   */
-  private _matchRanges: vscode.Range[] = [];
-  public get matchRanges(): vscode.Range[] {
-    return this._matchRanges;
-  }
-
-  private _searchCursorStartPosition: Position;
-  public get searchCursorStartPosition(): Position {
-    return this._searchCursorStartPosition;
-  }
-
-  private _matchesDocVersion: number;
-  private _searchDirection: SearchDirection = SearchDirection.Forward;
-  private isRegex: boolean;
-
-  private _searchString = "";
-  public get searchString(): string {
-    return this._searchString;
-  }
-
-  public set searchString(search: string){
-    if (this._searchString !== search) {
-      this._searchString = search;
-      this._recalculateSearchRanges({ forceRecalc: true });
-    }
-  }
-
-  private _recalculateSearchRanges({ forceRecalc }: { forceRecalc?: boolean } = {}): void {
-    const search = this.searchString;
-
-    if (search === "") { return; }
-
-    if (this._matchesDocVersion !== TextEditor.getDocumentVersion() || forceRecalc) {
-      // Calculate and store all matching ranges
-      this._matchesDocVersion = TextEditor.getDocumentVersion();
-      this._matchRanges = [];
-
-      /* Decide whether the search is case sensitive.
-       * If ignorecase is false, the search is case sensitive.
-       * If ignorecase is true, the search should be case insensitive.
-       * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
-       */
-      let ignorecase = Configuration.getInstance().ignorecase;
-
-      if (ignorecase && Configuration.getInstance().smartcase && /[A-Z]/.test(search)) {
-        ignorecase = false;
-      }
-
-      let searchRE = search;
-      if (!this.isRegex) {
-        searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
-      }
-
-      const regexFlags = ignorecase ? 'gi' : 'g';
-
-      let regex: RegExp;
-      try {
-        regex = new RegExp(searchRE, regexFlags);
-      } catch (err) {
-        // Couldn't compile the regexp, try again with special characters escaped
-        searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
-        regex = new RegExp(searchRE, regexFlags);
-      }
-
-      outer:
-      for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
-        const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
-        let result = regex.exec(line);
-
-        while (result) {
-          if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
-            break outer;
-          }
-
-          this.matchRanges.push(new vscode.Range(
-            new Position(lineIdx, result.index),
-            new Position(lineIdx, result.index + result[0].length)
-          ));
-
-          if (result.index === regex.lastIndex) {
-            regex.lastIndex++;
-          }
-
-          result = regex.exec(line);
-        }
-      }
-    }
-  }
-
-  /**
-   * The position of the next search, or undefined if there is no match.
-   *
-   * Pass in -1 as direction to reverse the direction we search.
-   */
-  public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean} {
-    this._recalculateSearchRanges();
-
-    if (this._matchRanges.length === 0) {
-      // TODO(bell)
-      return { pos: startPosition, match: false };
-    }
-
-    const effectiveDirection = direction * this._searchDirection;
-
-    if (effectiveDirection === SearchDirection.Forward) {
-      for (let matchRange of this._matchRanges) {
-        if (matchRange.start.compareTo(startPosition) > 0) {
-          return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
-        }
-      }
-
-      // Wrap around
-      // TODO(bell)
-      return { pos: Position.FromVSCodePosition(this._matchRanges[0].start), match: true };
-    } else {
-      for (let matchRange of this._matchRanges.slice(0).reverse()) {
-        if (matchRange.start.compareTo(startPosition) < 0) {
-          return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
-        }
-      }
-
-      // TODO(bell)
-      return {
-        pos: Position.FromVSCodePosition(this._matchRanges[this._matchRanges.length - 1].start),
-        match: true
-      };
-    }
-  }
-
-  constructor(direction: SearchDirection, startPosition: Position, searchString = "", { isRegex = false } = {}) {
-    this._searchDirection = direction;
-    this._searchCursorStartPosition = startPosition;
-    this.searchString = searchString;
-    this.isRegex = isRegex;
-  }
-}
-
-export class ReplaceState {
-  /**
-   * The location of the cursor where you begun to replace characters.
-   */
-  public replaceCursorStartPosition: Position;
-
-  public originalChars: string[] = [];
-
-  /**
-   * The characters the user inserted in replace mode. Useful for when
-   * we repeat a replace action with .
-   */
-  public newChars: string[] = [];
-
-  /**
-   * Number of times we're going to repeat this replace action.
-   */
-  public timesToRepeat: number;
-
-  constructor(startPosition: Position, timesToRepeat: number = 1) {
-    this.replaceCursorStartPosition = startPosition;
-    this.timesToRepeat = timesToRepeat;
-
-    let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
-    for (let [key, value] of text.split("").entries()) {
-      this.originalChars[key + startPosition.character] = value;
-    }
-  }
-}
-
 /**
  * The RecordedState class holds the current action that the user is
  * doing. Example: Imagine that the user types:
@@ -396,23 +224,36 @@ export class ReplaceState {
  *   * delete operator
  */
 export class RecordedState {
-
   constructor() {
     const useClipboard = Configuration.getInstance().useSystemClipboard;
     this.registerName = useClipboard ? '*' : '"';
   }
+
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
    * multiple length movements, e.g. gg.
    */
   public actionKeys: string[] = [];
 
+  /**
+   * Every action that has been run.
+   */
   public actionsRun: BaseAction[] = [];
 
   public hasRunOperator = false;
 
+  /**
+   * If we're in Visual Block mode, the way in which we're inserting characters (either inserting
+   * at the beginning or appending at the end).
+   */
   public visualBlockInsertionType = VisualBlockInsertionType.Insert;
 
+  /**
+   * The text transformations that we want to run. They will all be run after the action has been processed.
+   *
+   * Running an individual action will generally queue up to one of these, but if you're in
+   * multi-cursor mode, you'll queue one per cursor, or more.
+   */
   public transformations: Transformation[] = [];
 
   /**
@@ -426,6 +267,9 @@ export class RecordedState {
     return list[0] as any;
   }
 
+  /**
+   * The command (e.g. i, ., R, /) the user wants to run, if there is one.
+   */
   public get command(): BaseCommand {
     const list = _.filter(this.actionsRun, a => a instanceof BaseCommand);
 
@@ -503,7 +347,6 @@ export class ModeHandler implements vscode.Disposable {
   private _otherModesRemapper: OtherModesRemapper;
   private _otherModesNonRecursive: OtherModesRemapper;
   private _insertModeNonRecursive: InsertModeRemapper;
-
 
   public get vimState(): VimState {
     return this._vimState;
@@ -617,33 +460,9 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    /*
-    if (this._vimState.currentMode !== ModeName.VisualBlock           &&
-        this._vimState.currentMode !== ModeName.VisualBlockInsertMode &&
-        e.selections.length > this._vimState.allCursors.length) {
-      // Hey, we just added a selection. Either trigger or update Multi Cursor Mode.
-
-      if (e.selections.length === 2) {
-        // The selections ran together - go back to visual mode.
-
-        this._vimState.currentMode = ModeName.Visual;
-        this.setCurrentModeByName(this._vimState);
-        this._vimState.isMultiCursor = false;
-      }
-
-      this._vimState.allCursors = [];
-
-      for (const sel of e.selections) {
-        this._vimState.allCursors.push(Range.FromVSCodeSelection(sel));
-      }
-
-      await this.updateView(this._vimState);
-
-      return;
-    }
-    */
-
-    if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
+    // e.kind can sometimes be undefined according to the docs for
+    // TextEditorSelectionChangeKind, so do not check for !e.kind
+    if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
       return;
     }
 
@@ -669,7 +488,7 @@ export class ModeHandler implements vscode.Disposable {
       var newPosition = new Position(selection.active.line, selection.active.character);
 
       if (newPosition.character >= newPosition.getLineEnd().character) {
-          newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character, 0));
+        newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
       }
 
       this._vimState.cursorPosition    = newPosition;
@@ -692,7 +511,8 @@ export class ModeHandler implements vscode.Disposable {
           this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
         }
 
-        if (!this._vimState.getModeObject(this).isVisualMode) {
+        if (!this._vimState.getModeObject(this).isVisualMode &&
+             this._vimState.getModeObject(this).name !== ModeName.Insert) {
           this._vimState.currentMode = ModeName.Visual;
           this.setCurrentModeByName(this._vimState);
 
@@ -706,7 +526,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      await this.updateView(this._vimState, false);
+      await this.updateView(this._vimState, true);
     }
   }
 
@@ -1418,7 +1238,11 @@ export class ModeHandler implements vscode.Disposable {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
     }
 
-    this.vimState.postponedCodeViewChanges = [];
+    if (this.vimState.postponedCodeViewChanges.length > 0) {
+      vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+
+      this.vimState.postponedCodeViewChanges = [];
+    }
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
@@ -1428,6 +1252,7 @@ export class ModeHandler implements vscode.Disposable {
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {

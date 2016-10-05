@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#a5c9a2",
@@ -49,6 +49,25 @@
       {
         "key": "cmd+d",
         "command": "extension.vim_cmd+d",
+        "when": "editorTextFocus && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+d",
+        "command": "extension.vim_ctrl+d",
+        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+alt+down",
+        "linux": "shift+alt+down",
+        "mac": "cmd+alt+down",
+        "command": "extension.vim_cmd+alt+down",
+        "when": "editorTextFocus && !inDebugRepl"
+      },
+      {
+        "key": "ctrl+alt+up",
+        "linux": "shift+alt+up",
+        "mac": "cmd+alt+up",
+        "command": "extension.vim_cmd+alt+up",
         "when": "editorTextFocus && !inDebugRepl"
       },
       {
@@ -105,11 +124,6 @@
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
         "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+d",
-        "command": "extension.vim_ctrl+d",
-        "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "ctrl+[",
@@ -261,13 +275,11 @@
     "gulp-soften": "^0.0.1",
     "gulp-tag-version": "^1.3.0",
     "gulp-trimlines": "^1.0.0",
-    "gulp-tslint": "^6.1.1",
-    "gulp-typescript": "^2.13.4",
+    "gulp-tslint": "^6.1.2",
     "gulp-typings": "^2.0.0",
     "merge-stream": "^1.0.0",
     "tslint": "^3.10.2",
     "typescript": "2.0.0",
-    "typings": "^1.0.4",
-    "vscode": "^0.11.16"
+    "typings": "^1.4.0"
   }
 }

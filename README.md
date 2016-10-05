@@ -41,7 +41,27 @@ Due to overlap between VS Code and Vim, options are loaded slightly different fr
 4. VSCode configuration
 5. VSCodeVim flavored Vim option default values
 
-### Supported Options
+## Multi-Cursor Mode
+
+Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
+
+#### Getting into multi-cursor mode
+
+You can enter multi-cursor mode by:
+
+* Pressing cmd-d on OSX.
+* Runing "Add Cursor Above/Below" or the shortcut on any platform.
+* Pressing `gc`, a new shortcut we added which is equivalent to cmd-d on OSX or ctrl-d on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
+
+#### Doing stuff
+
+Now that you have multiple cursors, you should be able to use Vim commands as you see fit. Most of them should work. There is a list of things I know of which don't [here](https://github.com/VSCodeVim/Vim/pull/587). If you find yourself wanting one of these, please [add it to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
+
+Each cursor has its own clipboard.
+
+Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
+
+## Supported Options
 
 Vim options can be added to your user or workspace settings (open the Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
 

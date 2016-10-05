@@ -58,6 +58,7 @@ export const commandParsers = {
   e: fileCmd.parseEditFileCommandArgs,
 
   s: parseSubstituteCommandArgs,
+  vs: fileCmd.parseEditFileInNewWindowCommandArgs,
   vsp: fileCmd.parseEditFileInNewWindowCommandArgs,
   vsplit: fileCmd.parseEditFileInNewWindowCommandArgs,
   vne: fileCmd.parseEditNewFileInNewWindowCommandArgs,

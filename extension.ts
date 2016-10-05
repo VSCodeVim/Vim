@@ -17,6 +17,8 @@ import { AngleBracketNotation } from './src/notation';
 
 interface VSCodeKeybinding {
   key: string;
+  mac?: string;
+  linux?: string;
   command: string;
   when: string;
 }
@@ -186,14 +188,28 @@ export async function activate(context: vscode.ExtensionContext) {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
 
-  for (let { key } of packagejson.contributes.keybindings) {
-    let bracketedKey = AngleBracketNotation.Normalize(key);
-    registerCommand(context, `extension.vim_${ key.toLowerCase() }`, () => handleKeyEvent(`${ bracketedKey }`));
+  for (let keybinding of packagejson.contributes.keybindings) {
+    let keyToBeBound = "";
+
+    /**
+     * On OSX, handle mac keybindings if we specified one.
+     */
+    if (process.platform === "darwin") {
+      keyToBeBound = keybinding.mac || keybinding.key;
+    } else if (process.platform === "linux") {
+      keyToBeBound = keybinding.linux || keybinding.key;
+    } else {
+      keyToBeBound = keybinding.key;
+    }
+
+    let bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+
+    registerCommand(context, keybinding.command, () => handleKeyEvent(`${ bracketedKey }`));
   }
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
-    let mh = await getAndUpdateModeHandler()
+    let mh = await getAndUpdateModeHandler();
     mh.updateView(mh.vimState, false);
   }
 }
@@ -218,7 +234,7 @@ async function handleKeyEvent(key: string): Promise<void> {
   const mh = await getAndUpdateModeHandler();
 
   taskQueue.enqueueTask({
-    promise   : async () => { console.log(key); await mh.handleKeyEvent(key); },
+    promise   : async () => { await mh.handleKeyEvent(key); },
     isRunning : false
   });
 }
