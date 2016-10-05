@@ -126,6 +126,13 @@ suite("Mode Visual", () => {
     assertEqualLines(["wo three"]);
   });
 
+  newTest({
+      title: "Can handle H key",
+      start: ['1', '2', '|3', '4', '5'],
+      keysPressed: 'vH',
+      end: ['|1', '2', '3', '4', '5']
+    });
+
   test("handles case where we delete over a newline", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two\n\nthree four".split(""));
     await modeHandler.handleMultipleKeyEvents([
