@@ -2156,7 +2156,6 @@ class CommandInsertAfterCursor extends BaseCommand {
 class CommandInsertAtLineEnd extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["A"];
-  mustBeFirstKey = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
