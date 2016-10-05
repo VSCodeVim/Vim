@@ -644,7 +644,7 @@ abstract class CommandEditorScroll extends BaseCommand {
   by: EditorScrollByUnit;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
+    let timesToRepeat = vimState.recordedState.count || 1;
 
     vimState.postponedCodeViewChanges.push({
       command: "editorScroll",
@@ -2037,7 +2037,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let count = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
+    let count = vimState.recordedState.count || 1;
     return new ChangeOperator().run(vimState, position, position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft());
   }
 }
@@ -2049,7 +2049,7 @@ class CommandClearLine extends BaseCommand {
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let count = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
+    let count = vimState.recordedState.count || 1;
     let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft();
     return new ChangeOperator().run(vimState, position.getLineBeginRespectingIndent(), end);
   }
