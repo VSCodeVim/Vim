@@ -1659,7 +1659,6 @@ export class GPutCommand extends BaseCommand {
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     const register = await Register.get(vimState);
-
     let addedLinesCount: number;
 
     if (typeof register.text === "object") { // visual block mode
@@ -1671,17 +1670,15 @@ export class GPutCommand extends BaseCommand {
     const result = await super.execCount(position, vimState);
 
     if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
-      let lastAddedLine = new Position(position.line + addedLinesCount, 0);
-
-      if (TextEditor.isLastLine(lastAddedLine)) {
-        result.cursorPosition = lastAddedLine.getLineBegin();
-      } else {
-        result.cursorPosition = lastAddedLine.getLineEnd().getRightThroughLineBreaks();
-      }
+      result.recordedState.transformations.push({
+        type       : "moveCursor",
+        diff       : PositionDiff.NewBOLDiff(addedLinesCount, 0),
+        cursorIndex: this.multicursorIndex
+      });
     }
 
-      return result;
-    }
+    return result;
+  }
 }
 
 @RegisterAction

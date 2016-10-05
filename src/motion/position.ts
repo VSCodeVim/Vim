@@ -272,13 +272,14 @@ export class Position extends vscode.Position {
     let resultChar = this.character + diff.character;
     let resultLine = this.line + diff.line;
 
+    if (diff.isBOLDiff()) {
+      resultChar = diff.character;
+    }
+
     if (boundsCheck) {
       if (resultChar < 0) { resultChar = 0; }
       if (resultLine < 0) { resultLine = 0; }
-    }
-
-    if (diff.isBOLDiff()) {
-      resultChar = diff.character;
+      if (resultLine >= TextEditor.getLineCount() - 1) { resultLine = TextEditor.getLineCount() - 1; }
     }
 
     return new Position(
@@ -634,7 +635,7 @@ export class Position extends vscode.Position {
   public isValid(): boolean {
     // line
     let lineCount = TextEditor.getLineCount();
-    if (this.line > lineCount) {
+    if (this.line >= lineCount) {
       return false;
     }
 

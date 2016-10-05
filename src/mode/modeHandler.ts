@@ -136,6 +136,12 @@ export class VimState {
   }
 
   public set allCursors(value: Range[]) {
+    for (const cursor of value) {
+      if (!cursor.start.isValid() || !cursor.stop.isValid()) {
+        throw new Error("Invalid values set for cursor position!");
+      }
+    }
+
     this._allCursors = value;
 
     this.isMultiCursor = this._allCursors.length > 1;
