@@ -290,7 +290,7 @@ export abstract class BaseCommand extends BaseAction {
    * If true, exec() will get called N times where N is the count.
    *
    * If false, exec() will only be called once, and you are expected to
-   * handle it yourself.
+   * handle count prefixes (e.g. the 3 in 3w) yourself.
    */
   runsOnceForEachCountPrefix = false;
 
@@ -1547,24 +1547,35 @@ export class PutCommand extends BaseCommand {
         // More vim weirdness: If the thing you're pasting has a newline, the cursor
         // stays in the same place. Otherwise, it moves to the end of what you pasted.
 
+        const numNewlines = text.split("\n").length - 1;
+        const currentLineLength = TextEditor.getLineAt(position).text.length;
+
         if (register.registerMode === RegisterMode.LineWise) {
           const numWhitespace = text.match(/^\s*/)[0].length;
 
           if (after) {
-            let numNewlines = text.split("\n").length - 1;
-
             diff = PositionDiff.NewBOLDiff(-numNewlines - 1, numWhitespace);
           } else {
-            const currentLineLength = TextEditor.getLineAt(position).text.length;
-
             diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : 0, numWhitespace);
           }
         } else {
-          if (!position.isLineEnd() && text.indexOf("\n") === -1) {
-            if (after) {
-              diff = new PositionDiff(0, -1);
+          if (text.indexOf("\n") === -1) {
+            if (!position.isLineEnd()) {
+              if (after) {
+                diff = new PositionDiff(0, -1);
+              } else {
+                diff = new PositionDiff(0, textToAdd.length);
+              }
+            }
+          } else {
+            if (position.isLineEnd()) {
+              diff = PositionDiff.NewBOLDiff(-numNewlines, position.character);
             } else {
-              diff = new PositionDiff(0, textToAdd.length);
+              if (after) {
+                diff = PositionDiff.NewBOLDiff(-numNewlines, position.character);
+              } else {
+                diff = new PositionDiff(0, 1);
+              }
             }
           }
         }
