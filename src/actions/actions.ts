@@ -314,6 +314,12 @@ export abstract class BaseCommand extends BaseAction {
         vimState = await this.exec(position, vimState);
       }
 
+      for (const transformation of vimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = 0;
+        }
+      }
+
       return vimState;
     }
 
