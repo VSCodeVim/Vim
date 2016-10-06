@@ -53,7 +53,17 @@ export class Register {
   }
 
   public static isValidRegister(register: string): boolean {
-    return register in Register.registers || /^[a-z0-9]+$/i.test(register);
+    return register in Register.registers ||
+      Register.isValidLowercaseRegister(register) ||
+      Register.isValidUppercaseRegister(register);
+  }
+
+  private static isValidLowercaseRegister(register: string): boolean {
+    return /^[a-z]+$/.test(register);
+  }
+
+  private static isValidUppercaseRegister(register: string): boolean {
+    return /^[A-Z]+$/.test(register);
   }
 
   /**
@@ -71,8 +81,28 @@ export class Register {
       clipboard.copy(content);
     }
 
-    Register.registers[register] = {
-      text               : content,
+    let contentToInsert: string | string[];
+    if (Register.isValidUppercaseRegister(register)) {
+      let appendToRegister = Register.registers[register.toLowerCase()];
+
+      // check if there is an existing register to append
+      if (appendToRegister) {
+        // check if both are simple register
+        if (typeof content === "string" && typeof appendToRegister.text === "string") {
+          contentToInsert = appendToRegister.text + content;
+        } else {
+          // TODO: logic for multi cursor register
+          contentToInsert = "";
+        }
+      } else {
+        contentToInsert = content;
+      }
+    } else {
+      contentToInsert = content;
+    }
+
+    Register.registers[register.toLowerCase()] = {
+      text               : contentToInsert,
       registerMode       : vimState.effectiveRegisterMode(),
       isClipboardRegister: Register.isClipboardRegister(register),
     };
@@ -159,10 +189,16 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
+    let lowercaseRegister = register;
+    // check if 'register' is Uppercase and correct
+    if (Register.isValidUppercaseRegister(register)) {
+      lowercaseRegister = register.toLowerCase();
+    }
+
     // Clipboard registers are always defined, so if a register doesn't already
     // exist we can be sure it's not a clipboard one
-    if (!Register.registers[register]) {
-      Register.registers[register] = {
+    if (!Register.registers[lowercaseRegister]) {
+      Register.registers[lowercaseRegister] = {
         text               : "",
         registerMode       : RegisterMode.CharacterWise,
         isClipboardRegister: false
@@ -170,7 +206,7 @@ export class Register {
     }
 
     /* Read from system clipboard */
-    if (Register.isClipboardRegister(register)) {
+    if (Register.isClipboardRegister(lowercaseRegister)) {
       const text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => {
           if (err) {
@@ -181,10 +217,10 @@ export class Register {
         })
       );
 
-      Register.registers[register].text = text;
+      Register.registers[lowercaseRegister].text = text;
     }
 
-    return Register.registers[register];
+    return Register.registers[lowercaseRegister];
   }
 
   public static getKeys(): string[] {
