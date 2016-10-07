@@ -1489,18 +1489,18 @@ export class PutCommand extends BaseCommand {
     runsOnceForEachCountPrefix = true;
     canBeRepeatedWithDot = true;
 
-    public async getText(vimState: VimState): Promise<string> {
+    public static async GetText(vimState: VimState, multicursorIndex: number | undefined = undefined): Promise<string> {
       const register = await Register.get(vimState);
 
       if (vimState.isMultiCursor) {
-        if (this.multicursorIndex === undefined) {
-          console.log("ERROR: no multi cursor index when calling PutCommand#exec");
+        if (multicursorIndex === undefined) {
+          console.log("ERROR: no multi cursor index when calling PutCommand#getText");
 
           throw new Error("Bad!");
         }
 
         if (vimState.isMultiCursor && typeof register.text === "object") {
-          return register.text[this.multicursorIndex!];
+          return register.text[multicursorIndex];
         }
       }
 
@@ -1515,7 +1515,7 @@ export class PutCommand extends BaseCommand {
           return await this.execVisualBlockPaste(register.text, position, vimState, after);
         }
 
-        let text = await this.getText(vimState);
+        let text = await PutCommand.GetText(vimState, this.multicursorIndex);
 
         let textToAdd: string;
         let whereToAddText: Position;
@@ -1631,7 +1631,7 @@ export class PutCommand extends BaseCommand {
 
       if (vimState.effectiveRegisterMode() === RegisterMode.LineWise &&
           vimState.recordedState.count > 0) {
-        const numNewlines = (await this.getText(vimState)).split("\n").length * vimState.recordedState.count;
+        const numNewlines = (await PutCommand.GetText(vimState, this.multicursorIndex)).split("\n").length * vimState.recordedState.count;
 
         result.recordedState.transformations.push({
           type       : "moveCursor",
@@ -1697,13 +1697,7 @@ export class PutWithIndentCommand extends BaseCommand {
     }
 
     public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-      const result = await super.execCount(position, vimState);
-
-      if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
-        result.cursorPosition = new Position(position.line + 1, 0).getFirstLineNonBlankChar();
-      }
-
-      return result;
+      return await super.execCount(position, vimState);
     }
 }
 
