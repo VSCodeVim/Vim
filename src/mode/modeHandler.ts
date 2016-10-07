@@ -1126,6 +1126,8 @@ export class ModeHandler implements vscode.Disposable {
         resultingCursors.push(sel);
       }
 
+      vimState.recordedState.operatorPositionDiff = undefined;
+
       vimState.allCursors = resultingCursors;
     } else {
       if (accumulatedPositionDifferences[0].length > 0) {

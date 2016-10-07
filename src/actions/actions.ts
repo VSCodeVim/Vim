@@ -4489,6 +4489,10 @@ abstract class MoveTagMatch extends BaseMovement {
     let startPos = new Position(position.line, start);
     let endPos = new Position(position.line, end - 1);
 
+    if (position.isBefore(startPos)) {
+      vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
+    }
+
     return {
       start: startPos,
       stop: endPos
