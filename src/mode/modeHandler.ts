@@ -7,6 +7,7 @@ import { getAndUpdateModeHandler } from './../../extension';
 import {
   isTextTransformation,
   TextTransformations,
+  areAnyTransformationsOverlapping,
   Transformation,
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
@@ -135,6 +136,12 @@ export class VimState {
   }
 
   public set allCursors(value: Range[]) {
+    for (const cursor of value) {
+      if (!cursor.start.isValid() || !cursor.stop.isValid()) {
+        throw new Error("Invalid values set for cursor position!");
+      }
+    }
+
     this._allCursors = value;
 
     this.isMultiCursor = this._allCursors.length > 1;
@@ -243,6 +250,13 @@ export class RecordedState {
   public hasRunOperator = false;
 
   /**
+   * This is kind of a hack and should be associated with something like this:
+   *
+   * https://github.com/VSCodeVim/Vim/issues/805
+   */
+  public operatorPositionDiff: PositionDiff | undefined;
+
+  /**
    * If we're in Visual Block mode, the way in which we're inserting characters (either inserting
    * at the beginning or appending at the end).
    */
@@ -253,6 +267,9 @@ export class RecordedState {
    *
    * Running an individual action will generally queue up to one of these, but if you're in
    * multi-cursor mode, you'll queue one per cursor, or more.
+   *
+   * Note that the text transformations are run in parallel. This is useful in most cases,
+   * but will get you in trouble in others.
    */
   public transformations: Transformation[] = [];
 
@@ -299,7 +316,7 @@ export class RecordedState {
 
     res.actionKeys      = this.actionKeys.slice(0);
     res.actionsRun      = this.actionsRun.slice(0);
-    res.hasRunOperator    = this.hasRunOperator;
+    res.hasRunOperator  = this.hasRunOperator;
 
     return res;
   }
@@ -913,28 +930,40 @@ export class ModeHandler implements vscode.Disposable {
 
       resultVimState = await recordedState.operator.run(resultVimState, start, stop);
 
+      for (const transformation of resultVimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = recordedState.operator.multicursorIndex;
+        }
+      }
+
       resultingModeName = resultVimState.currentMode;
 
-      resultingCursors.push(new Range(
+      let resultingRange = new Range(
         resultVimState.cursorStartPosition,
         resultVimState.cursorPosition
-      ));
+      );
+
+      resultingCursors.push(resultingRange);
     }
 
-    // Keep track of all cursors (in the case of multi-cursor).
+    if (vimState.recordedState.transformations.length > 0) {
+      await this.executeCommand(vimState);
+    } else {
+      // Keep track of all cursors (in the case of multi-cursor).
 
-    resultVimState.allCursors = resultingCursors;
+      resultVimState.allCursors = resultingCursors;
 
-    const selections: vscode.Selection[] = [];
+      const selections: vscode.Selection[] = [];
 
-    for (const cursor of vimState.allCursors) {
-      selections.push(new vscode.Selection(
-        cursor.start,
-        cursor.stop,
-      ));
+      for (const cursor of vimState.allCursors) {
+        selections.push(new vscode.Selection(
+          cursor.start,
+          cursor.stop,
+        ));
+      }
+
+      vscode.window.activeTextEditor.selections = selections;
     }
-
-    vscode.window.activeTextEditor.selections = selections;
 
     return resultVimState;
   }
@@ -946,41 +975,90 @@ export class ModeHandler implements vscode.Disposable {
       return vimState;
     }
 
-    const textTransformations: TextTransformations[] =
-      transformations.filter(x => isTextTransformation(x.type)) as any;
+    const textTransformations: TextTransformations[] = transformations.filter(x => isTextTransformation(x)) as any;
+    const otherTransformations = transformations.filter(x => !isTextTransformation(x));
 
-    const otherTransformations = transformations.filter(x => !isTextTransformation(x.type));
+    let accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
-    let accumulatedPositionDifferences: PositionDiff[] = [];
+    if (areAnyTransformationsOverlapping(textTransformations)) {
+      // TODO: Select one transformation for every cursor and run them all
+      // in parallel. Repeat till there are no more transformations.
 
-    // batch all text operations together as a single operation
-    // (this is primarily necessary for multi-cursor mode, since most
-    // actions will trigger at most one text operation).
-    await vscode.window.activeTextEditor.edit(edit => {
       for (const command of textTransformations) {
-        switch (command.type) {
-          case "insertText":
-            edit.insert(command.position, command.text);
-            break;
+        await vscode.window.activeTextEditor.edit(edit => {
+          switch (command.type) {
+            case "insertText":
+              edit.insert(command.position, command.text);
+              break;
 
-          case "replaceText":
-            edit.replace(new vscode.Selection(command.end, command.start), command.text);
-            break;
+            case "replaceText":
+              edit.replace(new vscode.Selection(command.end, command.start), command.text);
+              break;
 
-          case "deleteText":
-            edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
-            break;
+            case "deleteText":
+              edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
+              break;
 
-          case "deleteRange":
-            edit.delete(new vscode.Selection(command.range.start, command.range.stop));
-            break;
+            case "deleteRange":
+              edit.delete(new vscode.Selection(command.range.start, command.range.stop));
+              break;
+          }
+
+          if (command.cursorIndex === undefined) {
+            throw new Error("No cursor index - this should never ever happen!");
+          }
+
+          if (command.diff) {
+            if (!accumulatedPositionDifferences[command.cursorIndex]) {
+              accumulatedPositionDifferences[command.cursorIndex] = [];
+            }
+
+            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+          }
+        });
+      };
+    } else {
+      // This is the common case!
+
+      /**
+       * batch all text operations together as a single operation
+       * (this is primarily necessary for multi-cursor mode, since most
+       * actions will trigger at most one text operation).
+       */
+      await vscode.window.activeTextEditor.edit(edit => {
+        for (const command of textTransformations) {
+          switch (command.type) {
+            case "insertText":
+              edit.insert(command.position, command.text);
+              break;
+
+            case "replaceText":
+              edit.replace(new vscode.Selection(command.end, command.start), command.text);
+              break;
+
+            case "deleteText":
+              edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
+              break;
+
+            case "deleteRange":
+              edit.delete(new vscode.Selection(command.range.start, command.range.stop));
+              break;
+          }
+
+          if (command.cursorIndex === undefined) {
+            throw new Error("No cursor index - this should never ever happen!");
+          }
+
+          if (command.diff) {
+            if (!accumulatedPositionDifferences[command.cursorIndex]) {
+              accumulatedPositionDifferences[command.cursorIndex] = [];
+            }
+
+            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+          }
         }
-
-        if (command.diff) {
-          accumulatedPositionDifferences.push(command.diff);
-        }
-      }
-    });
+      });
+    }
 
     for (const command of otherTransformations) {
       switch (command.type) {
@@ -1010,9 +1088,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     const selections = vscode.window.activeTextEditor.selections;
-
     const firstTransformation = transformations[0];
-
     const manuallySetCursorPositions = firstTransformation.type === "deleteRange" &&
                                        firstTransformation.manuallySetCursorPositions;
 
@@ -1026,30 +1102,42 @@ export class ModeHandler implements vscode.Disposable {
       const resultingCursors: Range[] = [];
 
       for (let i = 0; i < selections.length; i++) {
-        let sel = selections[i];
+        let sel = Range.FromVSCodeSelection(selections[i]);
 
-        if (accumulatedPositionDifferences.length > 0) {
-          const diff = accumulatedPositionDifferences[i];
+        let resultStart = Position.FromVSCodePosition(sel.start);
+        let resultEnd   = Position.FromVSCodePosition(sel.stop);
 
-          sel = new vscode.Selection(
-            Position.FromVSCodePosition(sel.start).add(diff),
-            Position.FromVSCodePosition(sel.end).add(diff)
+        if (accumulatedPositionDifferences[i] && accumulatedPositionDifferences[i].length > 0) {
+          for (const diff of accumulatedPositionDifferences[i]) {
+            resultStart = resultStart.add(diff);
+            resultEnd   = resultEnd  .add(diff);
+          }
+
+          sel = new Range(
+            resultStart,
+            resultEnd
           );
         } else {
-          sel = new vscode.Selection(
+          sel = new Range(
             Position.FromVSCodePosition(sel.start),
-            Position.FromVSCodePosition(sel.end),
+            Position.FromVSCodePosition(sel.stop),
           );
         }
 
-        resultingCursors.push(Range.FromVSCodeSelection(sel));
+        if (vimState.recordedState.operatorPositionDiff) {
+          sel = sel.add(vimState.recordedState.operatorPositionDiff);
+        }
+
+        resultingCursors.push(sel);
       }
+
+      vimState.recordedState.operatorPositionDiff = undefined;
 
       vimState.allCursors = resultingCursors;
     } else {
-      if (accumulatedPositionDifferences.length > 0) {
-        vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0]);
-        vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0]);
+      if (accumulatedPositionDifferences[0].length > 0) {
+        vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0][0]);
+        vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0][0]);
       }
     }
 

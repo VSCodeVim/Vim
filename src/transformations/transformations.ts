@@ -32,6 +32,11 @@ export interface InsertTextTransformation {
   position: Position;
 
   /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
+
+  /**
    * A position diff that will be added to the position of the cursor after
    * the replace transformation has been applied.
    *
@@ -59,6 +64,11 @@ export interface ReplaceTextTransformation {
   end: Position;
 
   /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
+
+  /**
    * A position diff that will be added to the position of the cursor after
    * the replace transformation has been applied.
    *
@@ -81,6 +91,11 @@ export interface InsertTextVSCodeTransformation {
   text : string;
 
   /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
+
+  /**
    * A position diff that will be added to the position of the cursor after
    * the replace transformation has been applied.
    *
@@ -99,6 +114,11 @@ export interface DeleteTextTransformation {
    * Position at which to delete a character.
    */
   position     : Position;
+
+  /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
 
   /**
    * A position diff that will be added to the position of the cursor after
@@ -132,9 +152,25 @@ export interface DeleteTextRangeTransformation {
   collapseRange?: boolean;
 
   /**
+   * The index of the cursor that this transformation applies to.
+   */
+  cursorIndex?: number;
+
+  /**
    * Please don't use this! It's a hack.
    */
   manuallySetCursorPositions?: boolean;
+}
+
+export interface MoveCursorTransformation {
+  type: "moveCursor";
+
+  cursorIndex?: number;
+
+  /**
+   * Move the cursor this much.
+   */
+  diff: PositionDiff;
 }
 
 /**
@@ -157,6 +193,7 @@ export type Transformation
   | ReplaceTextTransformation
   | DeleteTextRangeTransformation
   | DeleteTextTransformation
+  | MoveCursorTransformation
   | ShowCommandLine
   | Dot
   | DeleteTextTransformation;
@@ -172,18 +209,58 @@ export type Transformation
  * If your cursor isn't ending up in the right place, you can adjust it by passing along
  * a PositionDiff.
  *
- * (There are a LOT of weird edge cases with cursor behavior that we don't want to have to reimplement).
+ * (There are a LOT of weird edge cases with cursor behavior that we don't want to have to reimplement. Trust
+ * me... I tried.)
  */
 export type TextTransformations
   = InsertTextTransformation
   | InsertTextVSCodeTransformation
   | DeleteTextRangeTransformation
+  | MoveCursorTransformation
   | DeleteTextTransformation
   | ReplaceTextTransformation;
 
-export const isTextTransformation = (x: string) => {
-  return x === 'insertText' ||
-         x === 'replaceText' ||
-         x === 'deleteText' ||
-         x === 'deleteRange';
+export const isTextTransformation = (x: Transformation): x is TextTransformations => {
+  return x.type === 'insertText'  ||
+         x.type === 'replaceText' ||
+         x.type === 'deleteText'  ||
+         x.type === 'moveCursor'  ||
+         x.type === 'deleteRange';
+};
+
+const getRangeFromTextTransformation = (transformation: TextTransformations): Range | undefined => {
+  switch (transformation.type) {
+    case 'insertText':
+      return new Range(transformation.position, transformation.position);
+    case 'replaceText':
+      return new Range(transformation.start, transformation.end);
+    case 'deleteText':
+      return new Range(transformation.position, transformation.position);
+    case 'deleteRange':
+      return transformation.range;
+    case 'moveCursor':
+      return undefined;
+  }
+
+  throw new Error("This should never happen!");
+};
+
+export const areAnyTransformationsOverlapping = (transformations: TextTransformations[]) => {
+  for (let i = 0; i < transformations.length; i++) {
+    for (let j = i + 1; j < transformations.length; j++) {
+      const first = transformations[i];
+      const second = transformations[j];
+
+      const firstRange = getRangeFromTextTransformation(first);
+      const secondRange = getRangeFromTextTransformation(second);
+
+      if (!firstRange || !secondRange) { continue; }
+
+      if (firstRange.overlaps(secondRange)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 };
