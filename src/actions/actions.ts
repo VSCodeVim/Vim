@@ -4557,7 +4557,10 @@ class ActionOverrideCmdD extends BaseCommand {
 @RegisterAction
 class ActionOverrideCmdAltDown extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
-  keys = ["<D-alt+down>"];
+  keys = [
+    ["<D-alt+down>"], // OSX
+    ["<C-alt+down>"], // Windows
+  ];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -4571,7 +4574,10 @@ class ActionOverrideCmdAltDown extends BaseCommand {
 @RegisterAction
 class ActionOverrideCmdAltUp extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
-  keys = ["<D-alt+up>"];
+  keys = [
+    ["<D-alt+up>"], // OSX
+    ["<C-alt+up>"], // Windows
+  ];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
