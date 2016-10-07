@@ -1686,19 +1686,19 @@ export class GPutCommand extends BaseCommand {
 
 @RegisterAction
 export class PutWithIndentCommand extends BaseCommand {
-    keys = ["]", "p"];
-    modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-    runsOnceForEachCountPrefix = true;
-    canBeRepeatedWithDot = true;
+  keys = ["]", "p"];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
 
-    public async exec(position: Position, vimState: VimState): Promise<VimState> {
-      const result = await new PutCommand().exec(position, vimState, false, true);
-      return result;
-    }
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const result = await new PutCommand().exec(position, vimState, false, true);
+    return result;
+  }
 
-    public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-      return await super.execCount(position, vimState);
-    }
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    return await super.execCount(position, vimState);
+  }
 }
 
 @RegisterAction
@@ -4045,6 +4045,10 @@ abstract class MoveInsideCharacter extends BaseMovement {
       endPos = endPos.getLeftThroughLineBreaks();
     }
 
+    if (position.isBefore(startPos)) {
+      vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
+    }
+
     return {
       start : startPos,
       stop  : endPos,
@@ -4204,9 +4208,14 @@ abstract class MoveQuoteMatch extends BaseMovement {
 
     let startPos = new Position(position.line, start);
     let endPos = new Position(position.line, end);
+
     if (!this.includeSurrounding) {
       startPos = startPos.getRight();
       endPos = endPos.getLeft();
+    }
+
+    if (position.isBefore(startPos)) {
+      vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
     }
 
     return {

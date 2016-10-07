@@ -250,6 +250,13 @@ export class RecordedState {
   public hasRunOperator = false;
 
   /**
+   * This is kind of a hack and should be associated with something like this:
+   *
+   * https://github.com/VSCodeVim/Vim/issues/805
+   */
+  public operatorPositionDiff: PositionDiff | undefined;
+
+  /**
    * If we're in Visual Block mode, the way in which we're inserting characters (either inserting
    * at the beginning or appending at the end).
    */
@@ -926,10 +933,12 @@ export class ModeHandler implements vscode.Disposable {
 
       resultingModeName = resultVimState.currentMode;
 
-      resultingCursors.push(new Range(
+      let resultingRange = new Range(
         resultVimState.cursorStartPosition,
         resultVimState.cursorPosition
-      ));
+      );
+
+      resultingCursors.push(resultingRange);
     }
 
     if (vimState.recordedState.transformations.length > 0) {
@@ -1088,10 +1097,10 @@ export class ModeHandler implements vscode.Disposable {
       const resultingCursors: Range[] = [];
 
       for (let i = 0; i < selections.length; i++) {
-        let sel = selections[i];
+        let sel = Range.FromVSCodeSelection(selections[i]);
 
         let resultStart = Position.FromVSCodePosition(sel.start);
-        let resultEnd   = Position.FromVSCodePosition(sel.end);
+        let resultEnd   = Position.FromVSCodePosition(sel.stop);
 
         if (accumulatedPositionDifferences[i] && accumulatedPositionDifferences[i].length > 0) {
           for (const diff of accumulatedPositionDifferences[i]) {
@@ -1099,18 +1108,22 @@ export class ModeHandler implements vscode.Disposable {
             resultEnd   = resultEnd  .add(diff);
           }
 
-          sel = new vscode.Selection(
+          sel = new Range(
             resultStart,
             resultEnd
           );
         } else {
-          sel = new vscode.Selection(
+          sel = new Range(
             Position.FromVSCodePosition(sel.start),
-            Position.FromVSCodePosition(sel.end),
+            Position.FromVSCodePosition(sel.stop),
           );
         }
 
-        resultingCursors.push(Range.FromVSCodeSelection(sel));
+        if (vimState.recordedState.operatorPositionDiff) {
+          sel = sel.add(vimState.recordedState.operatorPositionDiff);
+        }
+
+        resultingCursors.push(sel);
       }
 
       vimState.allCursors = resultingCursors;

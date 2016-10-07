@@ -1,7 +1,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { Position } from "./position";
+import { Position, PositionDiff } from "./position";
 import { IMovement } from './../actions/actions';
 
 export class Range {
@@ -95,5 +95,12 @@ export class Range {
 
   public overlaps(other: Range): boolean {
     return this.start <= other.stop && other.start <= this.stop;
+  }
+
+  public add(diff: PositionDiff): Range {
+    return new Range(
+      this.start.add(diff),
+      this.stop.add(diff)
+    );
   }
 }
