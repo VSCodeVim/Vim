@@ -156,6 +156,8 @@ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
 
 This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP.md). For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
 
+Thanks to [Kevin Coleman](kevincoleman.io), who created our awesome logo! 
+
 ## Changelog
 
 Please see our [list of recent releases and features added.](https://github.com/VSCodeVim/Vim/releases)
