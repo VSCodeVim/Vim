@@ -634,7 +634,7 @@ export class Position extends vscode.Position {
 
   public isValid(): boolean {
     // line
-    let lineCount = TextEditor.getLineCount();
+    let lineCount = TextEditor.getLineCount() || 1;
     if (this.line >= lineCount) {
       return false;
     }
