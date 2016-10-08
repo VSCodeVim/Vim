@@ -2333,12 +2333,19 @@ class MoveDown extends BaseMovement {
   doesntChangeDesiredColumn = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getDown(vimState.desiredColumn);
+    const { newPosition, newDesiredColumn } = position.getDownWhileObservingTabstops(vimState.desiredColumn);
+
+    vimState.desiredColumn = newDesiredColumn;
+    return newPosition;
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    const { newPosition, newDesiredColumn } = position.getDownWhileObservingTabstops(vimState.desiredColumn);
+
+    vimState.desiredColumn = newDesiredColumn;
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDown(position.getLineEnd().character);
+
+    return newPosition;
   }
 }
 
