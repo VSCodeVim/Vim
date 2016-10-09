@@ -12,14 +12,18 @@
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 
+import { Globals } from '../src/globals';
+
 var testRunner = require('vscode/lib/testrunner');
+
+Globals.isTesting = true;
 
 // You can directly control Mocha options by uncommenting the following lines
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
 testRunner.configure({
   ui: 'tdd',
   useColors: true,
-  timeout: 2500,
+  timeout: 4000,
 });
 
 module.exports = testRunner;

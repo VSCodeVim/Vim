@@ -26,14 +26,8 @@ suite("register", () => {
     end: ["two", "|one"],
   });
 
-  newTest({
-    title: "Can copy to a register",
-    start: ['|one', 'two'],
-    keysPressed: '"add"ap',
-    end: ["two", "|one"],
-  });
-
   clipboard.copy("12345");
+
   newTest({
     title: "Can access '*' (clipboard) register",
     start: ['|one'],
@@ -42,9 +36,16 @@ suite("register", () => {
   });
 
   newTest({
+    title: "Can access '+' (clipboard) register",
+    start: ['|one'],
+    keysPressed: '"+P',
+    end: ["1234|5one"],
+  });
+
+  newTest({
     title: "Can use two registers together",
     start: ['|one', "two"],
-    keysPressed: '"*yyjyy"*pp',
+    keysPressed: '"ayyj"byy"ap"bp',
     end: ["one", "two", "one", "|two"],
   });
 

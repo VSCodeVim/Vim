@@ -3,10 +3,10 @@
 // XXX: use graceful-fs ??
 import * as fs from 'fs';
 import * as path from 'path';
+import * as vscode from 'vscode';
 
 import * as node from '../node';
 import * as util from '../../util';
-import * as error from '../../error';
 import {ModeHandler} from "../../mode/modeHandler";
 
 export interface IWriteCommandArguments extends node.ICommandArgs {
@@ -37,7 +37,7 @@ export class WriteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  execute(modeHandler : ModeHandler) : void {
+  async execute(modeHandler : ModeHandler) : Promise<void> {
     if (this.arguments.opt) {
       util.showError("Not implemented.");
       return;
@@ -53,30 +53,30 @@ export class WriteCommand extends node.CommandBase {
     }
 
     if (this.activeTextEditor.document.isUntitled) {
-      throw error.VimError.fromCode(error.ErrorCode.E32);
+      await vscode.commands.executeCommand("workbench.action.files.save");
+      return;
     }
 
-    fs.access(this.activeTextEditor.document.fileName, fs.W_OK, (accessErr) => {
-      if (accessErr) {
-        if (this.arguments.bang) {
-          fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
-            if (e) {
-              modeHandler.setupStatusBarItem(e.message);
-            } else {
-              this.save(modeHandler);
-            }
-          });
-        } else {
-          modeHandler.setupStatusBarItem(accessErr.message);
-        }
+    try {
+      fs.accessSync(this.activeTextEditor.document.fileName, fs.W_OK);
+      return this.save(modeHandler);
+    } catch (accessErr) {
+      if (this.arguments.bang) {
+        fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
+          if (e) {
+            modeHandler.setupStatusBarItem(e.message);
+          } else {
+            return this.save(modeHandler);
+          }
+        });
       } else {
-        this.save(modeHandler);
+        modeHandler.setupStatusBarItem(accessErr.message);
       }
-    });
+    }
   }
 
-  private save(modeHandler : ModeHandler) {
-    this.activeTextEditor.document.save().then(
+  private async save(modeHandler : ModeHandler) : Promise<void> {
+    await this.activeTextEditor.document.save().then(
       (ok) => {
         modeHandler.setupStatusBarItem('"' + path.basename(this.activeTextEditor.document.fileName) +
         '" ' + this.activeTextEditor.document.lineCount + 'L ' +

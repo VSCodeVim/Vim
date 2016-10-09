@@ -9,7 +9,8 @@ suite("Mode Normal", () => {
     let modeHandler: ModeHandler = new ModeHandler();
 
     let {
-        newTest
+        newTest,
+        newTestOnly
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
@@ -40,44 +41,60 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle '<delete>'",
+      title: "Can handle 'Ns'",
+      start: ['|text'],
+      keysPressed: '3s',
+      end: ['|t'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'Ns' at end of line",
       start: ['te|xt'],
-      keysPressed: '<delete>',
+      keysPressed: '3s',
+      end: ['te|'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle '<Del>'",
+      start: ['te|xt'],
+      keysPressed: '<Del>',
       end: ["te|t"],
     });
 
     newTest({
-      title: "Can handle 'N<delete>', which should be a no-op",
+      title: "Can handle 'N<Del>', which should be a no-op",
       start: ['te|xt'],
-      keysPressed: '2<delete>',
+      keysPressed: '2<Del>',
       end: ["te|xt"],
     });
 
     newTest({
-      title: "Can handle '<delete>' at end of line",
+      title: "Can handle '<Del>' at end of line",
       start: ['one tw|o'],
-      keysPressed: '^ll<delete><delete><delete><delete><delete><delete><delete><delete><delete>',
+      keysPressed: '^ll<Del><Del><Del><Del><Del><Del><Del><Del><Del>',
       end: ['|'],
     });
 
     newTest({
       title: "Can handle 'cc'",
       start: ['one', '|one two', 'three'],
-      keysPressed: 'cca<escape>',
+      keysPressed: 'cca<Esc>',
       end: ["one", "|a", "three"],
     });
 
     newTest({
       title: "Can handle 'Ncc'",
       start: ['one', '|one two', 'three four', 'five'],
-      keysPressed: '2cca<escape>',
+      keysPressed: '2cca<Esc>',
       end: ["one", "|a", "five"]
     });
 
     newTest({
       title: "Can handle 'yy'",
       start: ['|one'],
-      keysPressed: 'yyO<escape>p',
+      keysPressed: 'yyO<Esc>p',
       end: ["", "|one", "one"],
     });
 
@@ -116,6 +133,20 @@ suite("Mode Normal", () => {
       start: ['tex|t'],
       keysPressed: 'hrs',
       end: ['te|st']
+    });
+
+    newTest({
+      title: "Can handle '<Count>r'",
+      start: ['123|456', '789'],
+      keysPressed: '2ra',
+      end: ['123a|a6', '789']
+    });
+
+    newTest({
+      title: "Can handle '<Count>r'",
+      start: ['123|456', '789'],
+      keysPressed: '4ra',
+      end: ['123|456', '789']
     });
 
     newTest({
@@ -161,6 +192,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'J' with only white space on next line",
+      start: ['on|e', '    '],
+      keysPressed: 'J',
+      end: ['one| ']
+    });
+
+    newTest({
       title: "Can handle 'J' with TWO indented lines",
       start: ['   on|e', '    two'],
       keysPressed: 'kJ',
@@ -203,9 +241,9 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle '<backspace>' in insert mode",
+      title: "Can handle '<BS>' in insert mode",
       start: ['one', '|'],
-      keysPressed: 'i<backspace><escape>',
+      keysPressed: 'i<BS><Esc>',
       end: ['on|e']
     });
 

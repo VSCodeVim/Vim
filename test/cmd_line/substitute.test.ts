@@ -15,7 +15,7 @@ suite("Basic substitute", () => {
   teardown(cleanUpWorkspace);
 
   test("Replace single word once", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
     await runCmdLine("%s/a/d", modeHandler);
 
     assertEqualLines([
@@ -24,7 +24,7 @@ suite("Basic substitute", () => {
   });
 
   test("Replace with `g` flag", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
     await runCmdLine("%s/a/d/g", modeHandler);
 
     assertEqualLines([
@@ -33,7 +33,7 @@ suite("Basic substitute", () => {
   });
 
   test("Replace multiple lines", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>', 'o', 'a', 'b']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
     await runCmdLine("%s/a/d/g", modeHandler);
 
     assertEqualLines([
@@ -43,7 +43,7 @@ suite("Basic substitute", () => {
   });
 
   test("Replace across specific lines", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>', 'o', 'a', 'b']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
     await runCmdLine("1,1s/a/d/g", modeHandler);
 
     assertEqualLines([
@@ -53,7 +53,7 @@ suite("Basic substitute", () => {
   });
 
   test("Replace current line with no active selection", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>', 'o', 'a', 'b', '<escape>']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b', '<Esc>']);
     await runCmdLine("s/a/d/g", modeHandler);
 
     assertEqualLines([
@@ -63,12 +63,23 @@ suite("Basic substitute", () => {
   });
 
   test("Replace text in selection", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<escape>', 'o', 'a', 'b', '<escape>', '$', 'v', 'k', '0']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b', '<Esc>', '$', 'v', 'k', '0']);
     await runCmdLine("'<,'>s/a/d/g", modeHandler);
 
     assertEqualLines([
       "dbd",
       "db"
+    ]);
+  });
+
+  test("Substitute support marks", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'c', '<Esc>', 'y', 'y', '2', 'p', 'g', 'g', 'm', 'a', 'j', 'm', 'b']);
+    await runCmdLine("'a,'bs/a/d/g", modeHandler);
+
+    assertEqualLines([
+      "dbc",
+      "dbc",
+      "abc"
     ]);
   });
 });

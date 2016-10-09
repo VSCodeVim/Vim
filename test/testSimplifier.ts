@@ -1,9 +1,12 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { ModeName } from '../src/mode/mode';
+import { HistoryTracker } from '../src/history/historyTracker';
 import { Position } from '../src/motion/position';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
+import { waitForCursorUpdatesToHappen } from '../src/util';
 
 export function getTestingFunctions(modeHandler: ModeHandler) {
   let testWithObject = testIt.bind(null, modeHandler);
@@ -49,7 +52,14 @@ interface ITestObject {
 }
 
 class TestObjectHelper {
+  /**
+   * Position that the test says that the cursor starts at.
+   */
   startPosition = new Position(0, 0);
+
+  /**
+   * Position that the test says that the cursor ends at.
+   */
   endPosition = new Position(0, 0);
 
   private _isValid = false;
@@ -120,14 +130,13 @@ class TestObjectHelper {
    */
   public getKeyPressesToMoveToStartPosition(): string[] {
     let ret = '';
-    let linesToMove = this.startPosition.line - (this._testObject.start.length - 1);
+    let linesToMove = this.startPosition.line;
 
     let cursorPosAfterEsc =
       this._testObject.start[this._testObject.start.length - 1].replace('|', '').length - 1;
     let numCharsInCursorStartLine =
       this._testObject.start[this.startPosition.line].replace('|', '').length - 1;
-    let columnOnStartLine = Math.min(cursorPosAfterEsc, numCharsInCursorStartLine);
-    let charactersToMove = this.startPosition.character - columnOnStartLine;
+    let charactersToMove = this.startPosition.character;
 
     if (linesToMove > 0) {
       ret += Array(linesToMove + 1).join('j');
@@ -146,7 +155,7 @@ class TestObjectHelper {
 }
 
 /**
- * Tokenize a string like "abc<escape>d<c-c>" into ["a", "b", "c", "<escape>", "d", "<c-c>"]
+ * Tokenize a string like "abc<Esc>d<C-c>" into ["a", "b", "c", "<Esc>", "d", "<C-c>"]
  */
 function tokenizeKeySequence(sequence: string): string[] {
   let isBracketedKey = false;
@@ -177,21 +186,32 @@ function tokenizeKeySequence(sequence: string): string[] {
 
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
   let helper = new TestObjectHelper(testObj);
+  let editor = vscode.window.activeTextEditor;
 
   // Don't try this at home, kids.
   (modeHandler as any)._vimState.cursorPosition = new Position(0, 0);
 
-  await modeHandler.handleKeyEvent('<escape>');
+  await modeHandler.handleKeyEvent('<Esc>');
 
-  // start:
-  //
-  await modeHandler.handleMultipleKeyEvents(helper.asVimInputText());
+  // Insert all the text as a single action.
+  await editor.edit(builder => {
+    builder.insert(new Position(0, 0), testObj.start.join("\n").replace("|", ""));
+  });
 
-  // keysPressed:
-  //
-  await modeHandler.handleKeyEvent('<escape>');
+  await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+
+  await waitForCursorUpdatesToHappen();
+
+  // Since we bypassed VSCodeVim to add text, we need to tell the history tracker
+  // that we added it.
+  modeHandler.vimState.historyTracker = new HistoryTracker();
+  modeHandler.vimState.historyTracker.addChange();
+  modeHandler.vimState.historyTracker.finishCurrentStep();
+
   // move cursor to start position using 'hjkl'
   await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
+
+  await waitForCursorUpdatesToHappen();
 
   // assumes key presses are single characters for now
   await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
@@ -203,14 +223,6 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   //
   let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
   let expectedPosition = helper.endPosition;
-
-  /*
-  if (actualPosition.line    !== expectedPosition.line ||
-    actualPosition.character !== expectedPosition.character) {
-
-    debugger;
-  }
-  */
 
   assert.equal(actualPosition.line, expectedPosition.line, "Cursor LINE position is wrong.");
   assert.equal(actualPosition.character, expectedPosition.character, "Cursor CHARACTER position is wrong.");
