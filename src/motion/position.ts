@@ -633,15 +633,19 @@ export class Position extends vscode.Position {
   }
 
   public isValid(): boolean {
-    // line
-    let lineCount = TextEditor.getLineCount();
-    if (this.line >= lineCount) {
-      return false;
-    }
+    try {
+      // line
+      let lineCount = TextEditor.getLineCount() || 1;
+      if (this.line >= lineCount) {
+        return false;
+      }
 
-    // char
-    let charCount = Position.getLineLength(this.line);
-    if (this.character > charCount + 1) {
+      // char
+      let charCount = Position.getLineLength(this.line);
+      if (this.character > charCount + 1) {
+        return false;
+      }
+    } catch (e) {
       return false;
     }
 

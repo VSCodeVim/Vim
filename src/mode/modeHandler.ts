@@ -138,7 +138,7 @@ export class VimState {
   public set allCursors(value: Range[]) {
     for (const cursor of value) {
       if (!cursor.start.isValid() || !cursor.stop.isValid()) {
-        throw new Error("Invalid values set for cursor position!");
+        console.log("invalid value for set cursor position. This is probably bad?");
       }
     }
 
