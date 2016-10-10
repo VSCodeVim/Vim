@@ -19,18 +19,6 @@ import { isTextTransformation } from './../transformations/transformations';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
-const controlKeys: string[] = [
-  "ctrl",
-  "alt",
-  "shift",
-  "esc",
-  "delete",
-  "left",
-  "right",
-  "up",
-  "down"
-];
-
 const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);
 };
@@ -46,23 +34,17 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
     return false;
   }
 
-  const containsControlKey = (s: string): boolean => {
-    for (const controlKey of controlKeys) {
-      if (s.indexOf(controlKey!) !== -1) {
-        return true;
-      }
-    }
-
+  if (one.length !== two.length) {
     return false;
-  };
+  }
 
   const isSingleNumber = (s: string): boolean => {
     return s.length === 1 && "1234567890".indexOf(s) > -1;
   };
 
-  if (one.length !== two.length) {
-    return false;
-  }
+  const containsControlKey = (s: string): boolean => {
+    return s.startsWith("<") && s.length > 1;
+  };
 
   for (let i = 0, j = 0; i < one.length; i++, j++) {
     const left = one[i], right = two[j];
@@ -440,6 +422,45 @@ export function RegisterAction(action: typeof BaseAction): void {
 
 
 
+
+@RegisterAction
+class CommandInsertInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const char = this.keysPressed[this.keysPressed.length - 1];
+
+    if (char === "<BS>") {
+      vimState.recordedState.transformations.push({
+        type           : "deleteText",
+        position       : position,
+      });
+
+      vimState.cursorPosition      = vimState.cursorPosition.getLeft();
+      vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
+    } else {
+      if (vimState.isMultiCursor) {
+        vimState.recordedState.transformations.push({
+          type     : "insertText",
+          text     : char,
+          position : vimState.cursorPosition,
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type : "insertTextVSCode",
+          text : char,
+        });
+      }
+    }
+
+    return vimState;
+  }
+
+  public toString(): string {
+    return this.keysPressed[this.keysPressed.length - 1];
+  }
+}
 
 @RegisterAction
 class CommandNumber extends BaseCommand {
@@ -1063,53 +1084,16 @@ class CommandPreviousSearchMatch extends BaseMovement {
 }
 
 @RegisterAction
-class CommandInsertInInsertMode extends BaseCommand {
-  modes = [ModeName.Insert];
-  keys = ["<character>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char = this.keysPressed[this.keysPressed.length - 1];
-
-    if (char === "<BS>") {
-      vimState.recordedState.transformations.push({
-        type           : "deleteText",
-        position       : position,
-      });
-
-      vimState.cursorPosition      = vimState.cursorPosition.getLeft();
-      vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
-    } else {
-      if (vimState.isMultiCursor) {
-        vimState.recordedState.transformations.push({
-          type     : "insertText",
-          text     : char,
-          position : vimState.cursorPosition,
-        });
-      } else {
-        vimState.recordedState.transformations.push({
-          type : "insertTextVSCode",
-          text : char,
-        });
-      }
-    }
-
-    return vimState;
-  }
-
-  public toString(): string {
-    return this.keysPressed[this.keysPressed.length - 1];
-  }
-}
-
-@RegisterAction
 class CommandCtrlHInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ["ctrl+h"];
+  keys = ["<C-h>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const newPosition = await TextEditor.backspace(position);
-    vimState.cursorPosition = newPosition;
-    vimState.cursorStartPosition = newPosition;
+    vimState.recordedState.transformations.push({
+      type     : "deleteText",
+      position : position,
+    });
+
     return vimState;
   }
 }
@@ -1117,7 +1101,7 @@ class CommandCtrlHInInsertMode extends BaseCommand {
 @RegisterAction
 class CommandCtrlUInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ["ctrl+u"];
+  keys = ["<C-u>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const start = position.getLineBegin();
