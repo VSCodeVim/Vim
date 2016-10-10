@@ -7,6 +7,7 @@ import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
+import { Globals } from '../src/globals';
 
 export function getTestingFunctions(modeHandler: ModeHandler) {
   let testWithObject = testIt.bind(null, modeHandler);
@@ -212,6 +213,8 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
 
   await waitForCursorUpdatesToHappen();
+
+  Globals.modeHandlerForTesting = modeHandler;
 
   // assumes key presses are single characters for now
   await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
