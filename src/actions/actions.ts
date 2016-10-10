@@ -780,7 +780,7 @@ export class CommandInsertPreviousText extends BaseCommand {
     // The first action is entering Insert Mode, which is not necessary in this case
     actions.shift();
     // The last action is leaving Insert Mode, which is not necessary in this case
-    actions.pop();
+    // actions.pop();
 
     if (actions.length > 0 && actions[0] instanceof ArrowsInInsertMode) {
       // Note, arrow keys are the only Insert action command that can't be repeated here as far as @rebornix knows.

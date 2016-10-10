@@ -683,13 +683,6 @@ export class ModeHandler implements vscode.Disposable {
     }
     */
 
-    let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
-    if (prevPos !== undefined && !vimState.isRunningDotCommand) {
-        if (recordedState.isInsertion) {
-          Register.lastContentChange = recordedState;
-        }
-    }
-
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
       ranAction = true;
