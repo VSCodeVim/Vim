@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#e3f4ff",
@@ -157,7 +157,6 @@
             },
             {
                 "key": "ctrl+t",
-
                 "command": "extension.vim_ctrl+t",
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
             },
