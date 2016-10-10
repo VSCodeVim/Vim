@@ -678,15 +678,17 @@ export class ModeHandler implements vscode.Disposable {
           vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
 
         vimState.previousFullAction = recordedState;
-
-        if (recordedState.isInsertion) {
-          Register.lastContentChange = recordedState;
-        }
-
         vimState.historyTracker.finishCurrentStep();
       }
     }
     */
+
+    let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
+    if (prevPos !== undefined && !vimState.isRunningDotCommand) {
+        if (recordedState.isInsertion) {
+          Register.lastContentChange = recordedState;
+        }
+    }
 
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
