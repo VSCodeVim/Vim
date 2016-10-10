@@ -34,7 +34,9 @@ import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from './../util';
+import {
+  allowVSCodeToPropagateCursorUpdatesAndReturnThem
+} from './../util';
 import { SearchState } from './../state/searchState';
 import { ReplaceState } from './../state/replaceState';
 
@@ -548,7 +550,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      await this.updateView(this._vimState, true);
+      await this.updateView(this._vimState, false);
     }
   }
 
