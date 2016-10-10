@@ -43,7 +43,7 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
   };
 
   const containsControlKey = (s: string): boolean => {
-    return s !== "<BS>" && s.startsWith("<") && s.length > 1;
+    return s.toUpperCase() !== "<BS>" && s.startsWith("<") && s.length > 1;
   };
 
   for (let i = 0, j = 0; i < one.length; i++, j++) {
@@ -1018,62 +1018,51 @@ class CommandReplaceInReplaceMode extends BaseCommand {
     const char = this.keysPressed[0];
     const replaceState = vimState.replaceState!;
 
-    if (!position.isLineEnd() && char !== "\n") {
-      vimState.recordedState.transformations.push({
-        type: "replaceText",
-        text: char,
-        start: position,
-        end: position.getRight(),
-        diff: new PositionDiff(0, 1),
-      });
+    if (char === "<BS>") {
+      if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
+        // If you backspace before the beginning of where you started to replace,
+        // just move the cursor back.
+
+        vimState.cursorPosition = position.getLeft();
+        vimState.cursorStartPosition = position.getLeft();
+      } else if (position.line > replaceState.replaceCursorStartPosition.line ||
+        position.character > replaceState.originalChars.length) {
+
+        vimState.recordedState.transformations.push({
+          type: "deleteText",
+          position: position,
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: replaceState.originalChars[position.character - 1],
+          start: position.getLeft(),
+          end: position,
+          diff: new PositionDiff(0, -1),
+        });
+      }
+
+      replaceState.newChars.pop();
     } else {
-      vimState.recordedState.transformations.push({
-        type: "insertText",
-        text: char,
-        position: position,
-      });
+      if (!position.isLineEnd() && char !== "\n") {
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: char,
+          start: position,
+          end: position.getRight(),
+          diff: new PositionDiff(0, 1),
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type: "insertText",
+          text: char,
+          position: position,
+        });
+      }
+
+      replaceState.newChars.push(char);
     }
 
-    replaceState.newChars.push(char);
-
-    vimState.currentMode = ModeName.Replace;
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandBackspaceInReplaceMode extends BaseCommand {
-  modes = [ModeName.Replace];
-  keys = ["<BS>"];
-  canBeRepeatedWithDot = true;
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const replaceState = vimState.replaceState!;
-
-    if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
-      // If you backspace before the beginning of where you started to replace,
-      // just move the cursor back.
-
-      vimState.cursorPosition = position.getLeft();
-      vimState.cursorStartPosition = position.getLeft();
-    } else if (position.line > replaceState.replaceCursorStartPosition.line ||
-      position.character > replaceState.originalChars.length) {
-
-      vimState.recordedState.transformations.push({
-        type: "deleteText",
-        position: position,
-      });
-    } else {
-      vimState.recordedState.transformations.push({
-        type: "replaceText",
-        text: replaceState.originalChars[position.character - 1],
-        start: position.getLeft(),
-        end: position,
-        diff: new PositionDiff(0, -1),
-      });
-    }
-
-    replaceState.newChars.pop();
     vimState.currentMode = ModeName.Replace;
     return vimState;
   }
