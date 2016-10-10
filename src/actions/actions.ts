@@ -1031,7 +1031,6 @@ class CommandBackspaceInReplaceMode extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const char = this.keysPressed[0];
     const replaceState = vimState.replaceState!;
 
     if (position.isBeforeOrEqual(replaceState.replaceCursorStartPosition)) {
@@ -1330,7 +1329,6 @@ class CommandBackspaceinInsertMode extends BaseCommand {
   keys = ["<BS>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const newPosition = await TextEditor.backspace(position);
     vimState.recordedState.transformations.push({
       type: "deleteText",
       position: position,
