@@ -43,7 +43,7 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
   };
 
   const containsControlKey = (s: string): boolean => {
-    return s.startsWith("<") && s.length > 1;
+    return s !== "<BS>" && s.startsWith("<") && s.length > 1;
   };
 
   for (let i = 0, j = 0; i < one.length; i++, j++) {
@@ -638,7 +638,6 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.Normal,
     ModeName.SearchInProgressMode,
-    ModeName.SearchInProgressMode
   ];
   keys = [
     ["<Esc>"],
