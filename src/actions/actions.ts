@@ -493,7 +493,7 @@ export function RegisterAction(action: typeof BaseAction): void {
 
 
 @RegisterAction
-class CommandInsertInInsertMode extends BaseCommand {
+export class CommandInsertInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
   keys = ["<character>"];
 
