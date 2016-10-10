@@ -27,7 +27,7 @@ suite("Mode Normal", () => {
             await modeHandler.handleKeyEvent('i');
             await modeHandler.handleKeyEvent(key!);
 
-            assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+            assertEqual(modeHandler.currentMode.name, ModeName.Normal, `${key} doesn't work.`);
         }
 
         await modeHandler.handleKeyEvent('v');

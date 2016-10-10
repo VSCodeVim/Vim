@@ -14,6 +14,7 @@ import { taskQueue } from './src/taskQueue';
 import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
+import { ModeName } from './src/mode/mode';
 
 interface VSCodeKeybinding {
   key: string;
@@ -120,6 +121,27 @@ export async function activate(context: vscode.ExtensionContext) {
      * There is a timing issue in vscode codebase between when the isDirty flag is set and
      * when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
      */
+
+    let contentChangeHandler = (modeHandler: ModeHandler) => {
+      if (modeHandler.vimState.currentMode === ModeName.Insert) {
+        if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
+          modeHandler.vimState.historyTracker.currentContentChanges = [];
+        }
+
+        modeHandler.vimState.historyTracker.currentContentChanges =
+          modeHandler.vimState.historyTracker.currentContentChanges.concat(event.contentChanges);
+      }
+    }
+
+    if (Globals.isTesting) {
+      contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
+    } else {
+      _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.fileName === event.document.fileName)
+        .forEach(modeHandler => {
+          contentChangeHandler(modeHandler);
+        });
+    }
+
     setTimeout(() => {
       if (!event.document.isDirty && !event.document.isUntitled) {
         handleContentChangedFromDisk(event.document);

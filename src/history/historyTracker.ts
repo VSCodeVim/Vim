@@ -70,6 +70,7 @@ class HistoryStep {
    */
   changes: DocumentChange[];
 
+
   /**
    * Whether the user is still inserting or deleting for this history step.
    */
@@ -152,6 +153,9 @@ class HistoryStep {
 }
 
 export class HistoryTracker {
+  public lastContentChanges: vscode.TextDocumentContentChangeEvent[];
+  public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
+
   /**
    * The entire Undo/Redo stack.
    */
@@ -201,6 +205,8 @@ export class HistoryTracker {
     this.finishCurrentStep();
 
     this.oldText = TextEditor.getAllText();
+    this.currentContentChanges = [];
+    this.lastContentChanges = [];
   }
 
   private _addNewHistoryStep(): void {

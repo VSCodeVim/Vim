@@ -1,4 +1,4 @@
-import { VimState } from './../mode/modeHandler';
+import { VimState, RecordedState } from './../mode/modeHandler';
 import * as clipboard from 'copy-paste';
 
 /**
@@ -36,10 +36,13 @@ export class Register {
     '+': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true }
   };
 
+
   public static isClipboardRegister(registerName: string): boolean {
     const register = Register.registers[registerName];
     return register && register.isClipboardRegister;
   }
+
+  public static lastContentChange: RecordedState;
 
   public static isValidRegister(register: string): boolean {
     return register in Register.registers || /^[a-z0-9]+$/i.test(register);
