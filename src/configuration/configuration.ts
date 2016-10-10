@@ -65,6 +65,57 @@ export class Configuration {
   @overlapSetting({ codeName: "insertSpaces", default: false})
   expandtab: boolean | undefined = undefined;
 
+  private _number: boolean | undefined = undefined;
+  public get number() {
+    if (this._number === undefined) {
+      let lineNumbers = vscode.workspace.getConfiguration("editor").get<vscode.TextEditorLineNumbersStyle>("lineNumbers");
+
+      if (lineNumbers === vscode.TextEditorLineNumbersStyle.Off) {
+        this._number = false;
+      } else {
+        this._number = true;
+      }
+    }
+
+    return this._number;
+  }
+
+  public set number(number: boolean) {
+    this._number = number;
+
+    if (number) {
+      vscode.workspace.getConfiguration("editor").update("lineNumbers", "on", true);
+    } else {
+      vscode.workspace.getConfiguration("editor").update("lineNumbers", "off", true);
+    }
+  }
+
+  private _relativenumber: boolean | undefined = undefined;
+
+  public get relativenumber() {
+    if (this._relativenumber === undefined) {
+      let lineNumbers = vscode.workspace.getConfiguration("editor").get<vscode.TextEditorLineNumbersStyle>("lineNumbers");
+
+      if (lineNumbers === vscode.TextEditorLineNumbersStyle.Relative) {
+        this._relativenumber = true;
+      } else {
+        this._relativenumber = false;
+      }
+    }
+
+    return this._relativenumber;
+  }
+
+  public set relativenumber(relative: boolean) {
+    this._relativenumber = relative;
+
+    if (relative) {
+      vscode.workspace.getConfiguration("editor").update("lineNumbers", "relative", true);
+    } else {
+      vscode.workspace.getConfiguration("editor").update("lineNumbers", "off", true);
+    }
+  }
+
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 }
 
