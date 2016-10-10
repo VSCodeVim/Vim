@@ -50,7 +50,6 @@ interface ITestObject {
   keysPressed: string;
   end: string[];
   endMode?: ModeName;
-  delay?: number;
 }
 
 class TestObjectHelper {
