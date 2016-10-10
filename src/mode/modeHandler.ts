@@ -25,12 +25,11 @@ import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
-  BaseOperator, isIMovement,
-  KeypressState
-} from './../actions/actions';
+  BaseOperator, DocumentContentChangeAction, CommandInsertInInsertMode, CommandInsertPreviousText,
+  isIMovement, KeypressState } from './../actions/actions';
 import { Position, PositionDiff } from './../motion/position';
 import { Range } from './../motion/range';
-import { RegisterMode } from './../register/register';
+import { RegisterMode, Register } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../matching/matcher';
@@ -256,10 +255,13 @@ export class RecordedState {
    */
   public operatorPositionDiff: PositionDiff | undefined;
 
+  public isInsertion = false;
+
   /**
    * If we're in Visual Block mode, the way in which we're inserting characters (either inserting
    * at the beginning or appending at the end).
    */
+
   public visualBlockInsertionType = VisualBlockInsertionType.Insert;
 
   /**
@@ -620,9 +622,36 @@ export class ModeHandler implements vscode.Disposable {
 
     let action = result as BaseAction;
 
-    recordedState.actionsRun.push(action);
+    if (recordedState.actionsRun.length === 0) {
+      recordedState.actionsRun.push(action);
+    } else {
+      let lastAction = recordedState.actionsRun[recordedState.actionsRun.length - 1];
+
+      if (lastAction instanceof DocumentContentChangeAction) {
+        if (action instanceof CommandInsertInInsertMode || action instanceof CommandInsertPreviousText) {
+          // does nothing
+        } else {
+          // Push real document content change to the stack
+          lastAction.contentChanges = lastAction.contentChanges.concat(vimState.historyTracker.currentContentChanges);
+          vimState.historyTracker.currentContentChanges = [];
+          recordedState.actionsRun.push(action);
+        }
+      } else {
+        if (action instanceof CommandInsertInInsertMode || action instanceof CommandInsertPreviousText) {
+          // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
+          vimState.historyTracker.currentContentChanges = [];
+          recordedState.actionsRun.push(new DocumentContentChangeAction());
+        } else {
+          recordedState.actionsRun.push(action);
+        }
+      }
+    }
 
     vimState = await this.runAction(vimState, recordedState, action);
+
+    if (vimState.currentMode === ModeName.Insert) {
+      recordedState.isInsertion = true;
+    }
 
     // Update view
     await this.updateView(vimState);
@@ -673,6 +702,10 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
+    if (action instanceof DocumentContentChangeAction) {
+      vimState = await action.exec(vimState.cursorPosition, vimState);
+    }
+
     // Update mode (note the ordering allows you to go into search mode,
     // then return and have the motion immediately applied to an operator).
 
@@ -709,6 +742,10 @@ export class ModeHandler implements vscode.Disposable {
     // Record down previous action and flush temporary state
     if (ranRepeatableAction) {
       vimState.previousFullAction = vimState.recordedState;
+
+      if (recordedState.isInsertion) {
+        Register.lastContentChange = recordedState;
+      }
     }
 
     if (ranAction) {

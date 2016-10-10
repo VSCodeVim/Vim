@@ -151,7 +151,13 @@
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
             },
             {
+                "key": "ctrl+shift+2",
+                "command": "extension.vim_ctrl+shift+2",
+                "when": "editorTextFocus && vim.useCtrlKeys"
+            },
+            {
                 "key": "ctrl+t",
+
                 "command": "extension.vim_ctrl+t",
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
             },
@@ -168,22 +174,22 @@
             {
                 "key": "left",
                 "command": "extension.vim_left",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
+                "when": "editorTextFocus && !inDebugRepl"
             },
             {
                 "key": "right",
                 "command": "extension.vim_right",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
+                "when": "editorTextFocus && !inDebugRepl"
             },
             {
                 "key": "up",
                 "command": "extension.vim_up",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl && !suggestWidgetVisible"
+                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
             },
             {
                 "key": "down",
                 "command": "extension.vim_down",
-                "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl && !suggestWidgetVisible"
+                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
             }
         ],
         "configuration": {
