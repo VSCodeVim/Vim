@@ -703,7 +703,11 @@ class CommandEscInsertMode extends BaseCommand {
   modes = [
     ModeName.Insert
   ];
-  keys = ["<Esc>"];
+  keys = [
+    ["<Esc>"],
+    ["<C-c>"],
+    ["<C-[>"],
+  ];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.cursorPosition = position.getLeft();
