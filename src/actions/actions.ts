@@ -1557,7 +1557,7 @@ export class YankOperator extends BaseOperator {
 @RegisterAction
 export class ShiftYankOperatorVisual extends BaseOperator {
     public keys = ["Y"];
-    public modes = [ModeName.Visual];
+    public modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
       vimState.currentRegisterMode = RegisterMode.LineWise;
