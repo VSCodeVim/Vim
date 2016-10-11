@@ -561,7 +561,7 @@ export class ModeHandler implements vscode.Disposable {
     return this._modes.find(mode => mode.isActive);
   }
 
-  setCurrentModeByName(vimState: VimState) {
+  setCurrentModeByName(vimState: VimState): void {
     let activeMode: Mode;
 
     this._vimState.currentMode = vimState.currentMode;
@@ -580,6 +580,7 @@ export class ModeHandler implements vscode.Disposable {
 
     try {
       let handled = false;
+
       if (!this._vimState.isCurrentlyPreformingRemapping) {
         // Non-recursive remapping do not allow for further mappings
         handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
@@ -1298,9 +1299,14 @@ export class ModeHandler implements vscode.Disposable {
       vscode.window.activeTextEditor.selections = selections;
     }
 
-    // Scroll to position of cursor TODO multi
+    // Scroll to position of cursor
+    if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
+      const nextMatch = vimState.searchState!.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
-    vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
+      vscode.window.activeTextEditor.revealRange(new vscode.Range(nextMatch, nextMatch));
+    } else {
+      vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
+    }
 
     let rangesToDraw: vscode.Range[] = [];
 
