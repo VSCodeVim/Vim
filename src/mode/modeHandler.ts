@@ -1175,9 +1175,11 @@ export class ModeHandler implements vscode.Disposable {
 
       vimState.allCursors = resultingCursors;
     } else {
-      if (accumulatedPositionDifferences[0].length > 0) {
-        vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0][0]);
-        vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0][0]);
+      if (accumulatedPositionDifferences[0] !== undefined) {
+        if (accumulatedPositionDifferences[0].length > 0) {
+          vimState.cursorPosition = vimState.cursorPosition.add(accumulatedPositionDifferences[0][0]);
+          vimState.cursorStartPosition = vimState.cursorStartPosition.add(accumulatedPositionDifferences[0][0]);
+        }
       }
     }
 
