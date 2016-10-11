@@ -25,7 +25,7 @@ import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
-  BaseOperator, DocumentContentChangeAction, CommandInsertInInsertMode, CommandInsertPreviousText,
+  BaseOperator, DocumentContentChangeAction, CommandInsertInInsertMode, CommandInsertPreviousText, CommandQuitRecordMacro,
   isIMovement, KeypressState } from './../actions/actions';
 import { Position, PositionDiff } from './../motion/position';
 import { Range } from './../motion/range';
@@ -158,6 +158,8 @@ export class VimState {
 
   public searchStatePrevious: SearchState | undefined = undefined;
 
+  public isRecordingMacro: boolean = false;
+
   public replaceState: ReplaceState | undefined = undefined;
 
   /**
@@ -212,6 +214,8 @@ export class VimState {
   public commandInitialText = "";
 
   public recordedState = new RecordedState();
+
+  public recordedMacro = new RecordedState();
 
   /**
    * Programmatically triggering an edit will unfortunately ALSO trigger our mouse update
@@ -651,6 +655,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     let action = result as BaseAction;
+    let actionToRecord: BaseAction | undefined = action;
 
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
@@ -659,7 +664,8 @@ export class ModeHandler implements vscode.Disposable {
 
       if (lastAction instanceof DocumentContentChangeAction) {
         if (action instanceof CommandInsertInInsertMode || action instanceof CommandInsertPreviousText) {
-          // does nothing
+          // delay the macro recording
+          actionToRecord = undefined;
         } else {
           // Push real document content change to the stack
           lastAction.contentChanges = lastAction.contentChanges.concat(vimState.historyTracker.currentContentChanges);
@@ -670,11 +676,17 @@ export class ModeHandler implements vscode.Disposable {
         if (action instanceof CommandInsertInInsertMode || action instanceof CommandInsertPreviousText) {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
           vimState.historyTracker.currentContentChanges = [];
-          recordedState.actionsRun.push(new DocumentContentChangeAction());
+          let newContentChange = new DocumentContentChangeAction();
+          recordedState.actionsRun.push(newContentChange);
+          actionToRecord = newContentChange;
         } else {
           recordedState.actionsRun.push(action);
         }
       }
+    }
+
+    if (vimState.isRecordingMacro && actionToRecord && !(actionToRecord instanceof CommandQuitRecordMacro)) {
+      vimState.recordedMacro.actionsRun.push(actionToRecord);
     }
 
     vimState = await this.runAction(vimState, recordedState, action);
@@ -774,7 +786,8 @@ export class ModeHandler implements vscode.Disposable {
       vimState.previousFullAction = vimState.recordedState;
 
       if (recordedState.isInsertion) {
-        Register.lastContentChange = recordedState;
+        Register.putByKey(recordedState, ".");
+        // Register.lastContentChange = recordedState;
       }
     }
 
@@ -1153,6 +1166,9 @@ export class ModeHandler implements vscode.Disposable {
 
           vimState.previousFullAction = clonedAction;
           break;
+        case "macro":
+          vimState = await this.runMacro(vimState, vimState.recordedMacro);
+          break;
       }
     }
 
@@ -1252,6 +1268,23 @@ export class ModeHandler implements vscode.Disposable {
     return vimState;
   }
 
+  async runMacro(vimState: VimState, recordedMacro: RecordedState): Promise<VimState> {
+    const actions = recordedMacro.actionsRun.slice(0);
+    let recordedState = new RecordedState();
+    vimState.recordedState = recordedState;
+    vimState.isRunningDotCommand = true;
+    let i = 0;
+
+    for (let action of actions) {
+      recordedState.actionsRun = actions.slice(0, ++i);
+      vimState = await this.runAction(vimState, recordedState, action);
+
+      await this.updateView(vimState, true);
+    }
+
+    vimState.isRunningDotCommand = false;
+    return vimState;
+  }
   public async updateView(vimState: VimState, drawSelection = true): Promise<void> {
     // Draw selection (or cursor)
 
@@ -1415,7 +1448,9 @@ export class ModeHandler implements vscode.Disposable {
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
     } else {
-      this.setupStatusBarItem(`-- ${ this.currentMode.text.toUpperCase() } ${ this._vimState.isMultiCursor ? 'MULTI CURSOR' : '' } --`);
+      this.setupStatusBarItem(
+        `-- ${ this.currentMode.text.toUpperCase() } ${ this._vimState.isMultiCursor ? 'MULTI CURSOR' : '' } -- ` +
+        `${this._vimState.isRecordingMacro ? 'Recording' : ''}`);
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);

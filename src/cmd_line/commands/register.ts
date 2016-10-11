@@ -2,7 +2,7 @@
 
 import * as vscode from "vscode";
 import * as node from "../node";
-import {ModeHandler} from "../../mode/modeHandler";
+import {ModeHandler, RecordedState} from "../../mode/modeHandler";
 import { Register} from '../../register/register';
 
 export interface IRegisterCommandArguments extends node.ICommandArgs {
@@ -26,6 +26,8 @@ export class RegisterCommand extends node.CommandBase {
     let result = (await Register.getByKey(register)).text;
     if (result instanceof Array) {
       result = result.join("\n").substr(0, 100);
+    } else if (result instanceof RecordedState) {
+      // TODO
     }
 
     return result;

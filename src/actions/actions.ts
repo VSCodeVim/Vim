@@ -1,4 +1,4 @@
-import { VimState } from './../mode/modeHandler';
+import { VimState, RecordedState } from './../mode/modeHandler';
 import { SearchState, SearchDirection } from './../state/searchState';
 import { ReplaceState } from './../state/replaceState';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
@@ -614,6 +614,9 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     if (register.text instanceof Array) {
        text = (register.text as string []).join("\n");
+    } else if (register.text instanceof RecordedState) {
+      // TODO: Play macro
+      return vimState;
     } else {
        text = register.text;
     }
@@ -642,6 +645,80 @@ class CommandInsertRegisterContent extends BaseCommand {
     return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 
+}
+
+@RegisterAction
+class CommandRecordMacro extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["q", "<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const register = this.keysPressed[1];
+    vimState.recordedMacro.registerName = register;
+    Register.putByKey(new RecordedState(), register);
+    vimState.isRecordingMacro = true;
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = this.keysPressed[1];
+
+    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = this.keysPressed[1];
+
+    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
+}
+
+@RegisterAction
+export class CommandQuitRecordMacro extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["q"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    Register.putByKey(vimState.recordedMacro, vimState.recordedMacro.registerName);
+    vimState.isRecordingMacro = false;
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && vimState.isRecordingMacro;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.couldActionApply(vimState, keysPressed) && vimState.isRecordingMacro;
+  }
+}
+
+@RegisterAction
+class CommandExecuteMacro extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["@", "<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const register = this.keysPressed[1];
+    vimState.recordedState.transformations.push({
+      type: "macro",
+      register: register
+    });
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
 }
 
 @RegisterAction
@@ -812,7 +889,8 @@ export class CommandInsertPreviousText extends BaseCommand {
   keys = ["<C-a>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let actions = Register.lastContentChange.actionsRun.slice(0);
+    let actions = ((await Register.getByKey('.')).text as RecordedState).actionsRun.slice(0);
+    // let actions = Register.lastContentChange.actionsRun.slice(0);
     // The first action is entering Insert Mode, which is not necessary in this case
     actions.shift();
     // The last action is leaving Insert Mode, which is not necessary in this case
@@ -1731,7 +1809,10 @@ export class PutCommand extends BaseCommand {
         const register = await Register.get(vimState);
         const dest = after ? position : position.getRight();
 
-        if (typeof register.text === "object") {
+        if (register.text instanceof RecordedState) {
+          // TODO:w
+          return vimState;
+        } else if (typeof register.text === "object") {
           return await this.execVisualBlockPaste(register.text, position, vimState, after);
         }
 
@@ -1881,6 +1962,10 @@ export class GPutCommand extends BaseCommand {
     const register = await Register.get(vimState);
     let addedLinesCount: number;
 
+    if (register.text instanceof RecordedState) {
+      // TODO: run register recordedState
+      return vimState;
+    }
     if (typeof register.text === "object") { // visual block mode
       addedLinesCount = register.text.length * vimState.recordedState.count;
     } else {
@@ -2025,7 +2110,10 @@ export class GPutBeforeCommand extends BaseCommand {
     const register = await Register.get(vimState);
     let addedLinesCount: number;
 
-    if (typeof register.text === "object") { // visual block mode
+    if (register.text instanceof RecordedState) {
+      // TODO;
+      return vimState;
+    } else if (typeof register.text === "object") { // visual block mode
       addedLinesCount = register.text.length * vimState.recordedState.count;
     } else {
       addedLinesCount = register.text.split('\n').length;
