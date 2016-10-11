@@ -15,7 +15,7 @@ export enum RegisterMode {
 };
 
 export interface IRegisterContent {
-  text               : string | string[];
+  text               : string | string[] | RecordedState;
   registerMode       : RegisterMode;
   isClipboardRegister: boolean;
 }
@@ -42,10 +42,17 @@ export class Register {
     return register && register.isClipboardRegister;
   }
 
+  /**
+   * ". readonly register: last content change.
+   */
   public static lastContentChange: RecordedState;
 
   public static isValidRegister(register: string): boolean {
-    return register in Register.registers || /^[a-z0-9]+$/i.test(register);
+    return register in Register.registers || /^[a-z0-9]+$/i.test(register) || /\./.test(register);
+  }
+
+  public static isValidRegisterForMacro(register: string): boolean {
+    return /^[a-z]+$/i.test(register);
   }
 
   /**
@@ -70,7 +77,8 @@ export class Register {
     };
   }
 
-  public static putByKey(content: string | string[], register = '"', registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
+  public static putByKey(content: string | string[] | RecordedState, register = '"',
+    registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
