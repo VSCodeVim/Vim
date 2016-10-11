@@ -154,7 +154,14 @@ export class DocumentContentChangeAction extends BaseAction {
       return vimState;
     }
 
-    let originalLeftBoundary = this.contentChanges[0].range.start;
+    let originalLeftBoundary: vscode.Position;
+
+    if (this.contentChanges[0].text === "" && this.contentChanges[0].rangeLength === 1) {
+      originalLeftBoundary = this.contentChanges[0].range.end;
+    } else {
+      originalLeftBoundary = this.contentChanges[0].range.start;
+    }
+
     let rightBoundary: vscode.Position = position;
 
     for (let i = 0; i < this.contentChanges.length; i++) {
@@ -193,11 +200,16 @@ export class DocumentContentChangeAction extends BaseAction {
 
       // Calculate new right boundary
       let newLineCount = contentChange.text.split('\n').length;
+      let newRightBoundary: vscode.Position;
 
       if (newLineCount === 1) {
-        rightBoundary = newStart.with(newStart.line, newStart.character + contentChange.text.length);
+        newRightBoundary = newStart.with(newStart.line, newStart.character + contentChange.text.length);
       } else {
-        rightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop().length);
+        newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop().length);
+      }
+
+      if (newRightBoundary.isAfter(rightBoundary)) {
+        rightBoundary = newRightBoundary;
       }
 
       vscode.window.activeTextEditor.selection = new vscode.Selection(newStart, newEnd);
