@@ -14,8 +14,10 @@ export enum RegisterMode {
   BlockWise,
 };
 
+export type RegisterContent = string | string[] | RecordedState;
+
 export interface IRegisterContent {
-  text               : string | string[] | RecordedState;
+  text               : RegisterContent;
   registerMode       : RegisterMode;
   isClipboardRegister: boolean;
 }
@@ -59,7 +61,7 @@ export class Register {
    * Puts content in a register. If none is specified, uses the default
    * register ".
    */
-  public static put(content: string | string[], vimState: VimState): void {
+  public static put(content: RegisterContent, vimState: VimState): void {
     const register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
@@ -77,8 +79,7 @@ export class Register {
     };
   }
 
-  public static putByKey(content: string | string[] | RecordedState, register = '"',
-    registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
+  public static putByKey(content: RegisterContent, register = '"', registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
