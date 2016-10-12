@@ -23,11 +23,18 @@ export class RegisterCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async displayRegisterValue(register: string): Promise<void> {
+  private async getRegisterDisplayValue(register: string) {
     let result = (await Register.getByKey(register)).text;
     if (result instanceof Array) {
       result = result.join("\n").substr(0, 100);
     }
+
+    return result;
+  }
+
+  async displayRegisterValue(register: string): Promise<void> {
+    let result = this.getRegisterDisplayValue(register);
+
     vscode.window.showInformationMessage(`${register} ${result}`);
   }
 
@@ -35,8 +42,23 @@ export class RegisterCommand extends node.CommandBase {
     if (this.arguments.arg !== undefined && this.arguments.arg.length > 0) {
       await this.displayRegisterValue(this.arguments.arg);
     } else {
-      vscode.window.showQuickPick(Register.getKeys()).then(async (val) => {
-        await this.displayRegisterValue(val);
+      const currentRegisterKeys = Register.getKeys();
+      const registerKeyAndContent = new Array<any>();
+
+      for (let registerKey of currentRegisterKeys) {
+        registerKeyAndContent.push(
+          {
+            label: registerKey,
+            description: await this.getRegisterDisplayValue(registerKey)
+          }
+        );
+      }
+
+      vscode.window.showQuickPick(registerKeyAndContent).then(async (val) => {
+        if (val) {
+          let result = val.description;
+          vscode.window.showInformationMessage(`${val.label} ${result}`);
+        }
       });
     }
   }
