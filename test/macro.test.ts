@@ -40,7 +40,7 @@ suite("Record and execute a macro", () => {
       end: ['1) One', '2) Two', '3) Three', '4) F|our']
     });
 
-    newTestOnly({
+    newTest({
       title: "Append command to a macro",
       start: ['1. |one', '2. two', '3. three', '4. four'],
       keysPressed: 'qa0f.r)qqAw~jq3@a',
