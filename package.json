@@ -44,7 +44,7 @@
             {
                 "key": "Escape",
                 "command": "extension.vim_escape",
-                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
+                "when": "editorTextFocus && !inDebugRepl"
             },
             {
                 "key": "cmd+d",
