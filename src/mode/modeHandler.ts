@@ -496,9 +496,8 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    // e.kind can sometimes be undefined according to the docs for
-    // TextEditorSelectionChangeKind, so do not check for !e.kind
-    if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
+    // Only handle mouse selections
+    if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       return;
     }
 
