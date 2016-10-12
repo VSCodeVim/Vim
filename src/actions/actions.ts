@@ -3532,11 +3532,23 @@ class ActionReplaceCharacter extends BaseCommand {
       return vimState;
     }
 
+    let endPos = new Position(position.line, position.character + timesToRepeat);
+
+    // Return if tried to repeat longer than linelength
+    if (endPos.character > TextEditor.getLineAt(endPos).text.length) {
+      return vimState;
+    }
+
+    // If last char (not EOL char), add 1 so that replace selection is complete
+    if (endPos.character > TextEditor.getLineAt(endPos).text.length) {
+      endPos = new Position(endPos.line, endPos.character + 1);
+    }
+
     vimState.recordedState.transformations.push({
       type    : "replaceText",
       text    : toReplace.repeat(timesToRepeat),
       start   : position,
-      end     : position.getRightByCount(timesToRepeat),
+      end     : endPos,
       diff    : new PositionDiff(0, timesToRepeat - 1),
     });
 
