@@ -663,6 +663,8 @@ export class ModeHandler implements vscode.Disposable {
       let lastAction = recordedState.actionsRun[recordedState.actionsRun.length - 1];
 
       if (lastAction instanceof DocumentContentChangeAction) {
+        lastAction.keysPressed.push(key);
+
         if (action instanceof CommandInsertInInsertMode || action instanceof CommandInsertPreviousText) {
           // delay the macro recording
           actionToRecord = undefined;
@@ -677,6 +679,7 @@ export class ModeHandler implements vscode.Disposable {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
           vimState.historyTracker.currentContentChanges = [];
           let newContentChange = new DocumentContentChangeAction();
+          newContentChange.keysPressed.push(key);
           recordedState.actionsRun.push(newContentChange);
           actionToRecord = newContentChange;
         } else {
@@ -786,8 +789,7 @@ export class ModeHandler implements vscode.Disposable {
       vimState.previousFullAction = vimState.recordedState;
 
       if (recordedState.isInsertion) {
-        Register.putByKey(recordedState, ".");
-        // Register.lastContentChange = recordedState;
+        Register.putByKey(recordedState, '.');
       }
     }
 
@@ -1167,7 +1169,18 @@ export class ModeHandler implements vscode.Disposable {
           vimState.previousFullAction = clonedAction;
           break;
         case "macro":
-          vimState = await this.runMacro(vimState, vimState.recordedMacro);
+          let recordedMacro = (await Register.getByKey(command.register)).text as RecordedState;
+
+          if (command.replay === "contentChange") {
+            vimState = await this.runMacro(vimState, recordedMacro);
+          } else {
+            let keyStrokes: string[] = [];
+            for (let action of recordedMacro.actionsRun) {
+              keyStrokes = keyStrokes.concat(action.keysPressed);
+            }
+            this.vimState.recordedState = new RecordedState();
+            await this.handleMultipleKeyEvents(keyStrokes);
+          }
           break;
       }
     }
