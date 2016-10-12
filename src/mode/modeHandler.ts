@@ -53,6 +53,10 @@ export class ViewChange {
  * indicate what they want to do.
  */
 export class VimState {
+  private _id = Math.floor(Math.random() * 10000) % 10000;
+
+  public get id(): number { return this._id; }
+
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
    * be the rightmost column.
@@ -159,7 +163,15 @@ export class VimState {
   /**
    * The mode Vim will be in once this action finishes.
    */
-  public currentMode = ModeName.Normal;
+  private _currentMode = ModeName.Normal;
+
+  public get currentMode(): number {
+    return this._currentMode;
+  }
+
+  public set currentMode(value: number) {
+    this._currentMode = value;
+  }
 
   public getModeObject(modeHandler: ModeHandler): Mode {
     return modeHandler.modeList.find(mode => mode.isActive);
@@ -361,6 +373,7 @@ interface IViewState {
 export class ModeHandler implements vscode.Disposable {
   public static IsTesting = false;
 
+  private _toBeDisposed: vscode.Disposable[] = [];
   private _modes: Mode[];
   private static _statusBarItem: vscode.StatusBarItem;
   private _vimState: VimState;
@@ -443,12 +456,14 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Handle scenarios where mouse used to change current position.
-    vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
+    const disposer = vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
       taskQueue.enqueueTask({
         promise: () => this.handleSelectionChange(e),
         isRunning: false,
       });
     });
+
+    this._toBeDisposed.push(disposer);
   }
 
   private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
@@ -577,6 +592,7 @@ export class ModeHandler implements vscode.Disposable {
 
   async handleKeyEvent(key: string): Promise<Boolean> {
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
+
 
     try {
       let handled = false;
@@ -1438,6 +1454,8 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   dispose() {
-    // do nothing
+    for (const disposable of this._toBeDisposed) {
+      disposable.dispose();
+    }
   }
 }

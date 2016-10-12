@@ -150,8 +150,12 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   vscode.workspace.onDidCloseTextDocument((event) => {
+    const key = event.fileName + vscode.window.activeTextEditor.viewColumn;
+
+    modeHandlerToEditorIdentity[key].dispose();
+
     // Remove modehandler for closed document
-    delete modeHandlerToEditorIdentity[event.fileName + vscode.window.activeTextEditor.viewColumn];
+    delete modeHandlerToEditorIdentity[key];
   });
 
   registerCommand(context, 'type', async (args) => {
