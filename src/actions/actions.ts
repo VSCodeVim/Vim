@@ -703,6 +703,7 @@ export class CommandQuitRecordMacro extends BaseCommand {
 class CommandExecuteMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["@", "<character>"];
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
