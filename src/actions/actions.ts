@@ -43,7 +43,10 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
   };
 
   const containsControlKey = (s: string): boolean => {
-    return s.toUpperCase() !== "<BS>" && s.startsWith("<") && s.length > 1;
+    return s.toUpperCase() !== "<BS>" &&
+           s.toUpperCase() !== "<TAB>" &&
+           s.startsWith("<") &&
+           s.length > 1;
   };
 
   for (let i = 0, j = 0; i < one.length; i++, j++) {
