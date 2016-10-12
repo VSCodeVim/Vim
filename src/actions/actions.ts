@@ -615,7 +615,12 @@ class CommandInsertRegisterContent extends BaseCommand {
     if (register.text instanceof Array) {
        text = (register.text as string []).join("\n");
     } else if (register.text instanceof RecordedState) {
-      // TODO: Play macro
+      vimState.recordedState.transformations.push({
+        type: "macro",
+        register: vimState.recordedState.registerName,
+        replay: "keystrokes"
+      });
+
       return vimState;
     } else {
        text = register.text;
@@ -654,6 +659,7 @@ class CommandRecordMacro extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
+    vimState.recordedMacro = new RecordedState();
     vimState.recordedMacro.registerName = register;
     Register.putByKey(new RecordedState(), register);
     vimState.isRecordingMacro = true;
@@ -702,7 +708,8 @@ class CommandExecuteMacro extends BaseCommand {
     const register = this.keysPressed[1];
     vimState.recordedState.transformations.push({
       type: "macro",
-      register: register
+      register: register,
+      replay: "contentChange"
     });
 
     return vimState;
@@ -1812,7 +1819,17 @@ export class PutCommand extends BaseCommand {
         const dest = after ? position : position.getRight();
 
         if (register.text instanceof RecordedState) {
-          // TODO:w
+          /**
+           *  Paste content from recordedState. This one is actually complex as Vim has internal key code for key strokes.
+           *  For example, Backspace is stored as `<80>kb`. So if you replay a macro, which is stored in a register as `a1<80>kb2`, you
+           *  shall just get `2` inserted as `a` represents entering Insert Mode, `<80>bk` represents Backspace. However here, we shall
+           *  insert the plain text content of the register, which is `a1<80>kb2`.
+           */
+          vimState.recordedState.transformations.push({
+            type: "macro",
+            register: vimState.recordedState.registerName,
+            replay: "keystrokes"
+          });
           return vimState;
         } else if (typeof register.text === "object") {
           return await this.execVisualBlockPaste(register.text, position, vimState, after);
@@ -1965,7 +1982,12 @@ export class GPutCommand extends BaseCommand {
     let addedLinesCount: number;
 
     if (register.text instanceof RecordedState) {
-      // TODO: run register recordedState
+      vimState.recordedState.transformations.push({
+        type: "macro",
+        register: vimState.recordedState.registerName,
+        replay: "keystrokes"
+      });
+
       return vimState;
     }
     if (typeof register.text === "object") { // visual block mode
@@ -2113,7 +2135,12 @@ export class GPutBeforeCommand extends BaseCommand {
     let addedLinesCount: number;
 
     if (register.text instanceof RecordedState) {
-      // TODO;
+      vimState.recordedState.transformations.push({
+        type: "macro",
+        register: vimState.recordedState.registerName,
+        replay: "keystrokes"
+      });
+
       return vimState;
     } else if (typeof register.text === "object") { // visual block mode
       addedLinesCount = register.text.length * vimState.recordedState.count;

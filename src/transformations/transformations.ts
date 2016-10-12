@@ -193,6 +193,7 @@ export interface Dot {
 export interface Macro {
   type: "macro";
   register: string;
+  replay: "contentChange" | "keystrokes";
 }
 
 export type Transformation
