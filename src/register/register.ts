@@ -54,7 +54,7 @@ export class Register {
   }
 
   public static isValidRegisterForMacro(register: string): boolean {
-    return /^[a-z]+$/i.test(register);
+    return /^[a-zA-Z]+$/i.test(register);
   }
 
   /**
@@ -150,6 +150,10 @@ export class Register {
     }
 
     return Register.registers[register];
+  }
+
+  public static has(register: string): boolean {
+    return Register.registers[register] !== undefined;
   }
 
   public static getKeys(): string[] {

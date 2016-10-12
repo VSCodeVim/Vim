@@ -39,4 +39,11 @@ suite("Record and execute a macro", () => {
       keysPressed: 'qa0f.r)w~jq3@a',
       end: ['1) One', '2) Two', '3) Three', '4) F|our']
     });
+
+    newTestOnly({
+      title: "Append command to a macro",
+      start: ['1. |one', '2. two', '3. three', '4. four'],
+      keysPressed: 'qa0f.r)qqAw~jq3@a',
+      end: ['1) One', '2) Two', '3) Three', '4) F|our']
+    });
 });
