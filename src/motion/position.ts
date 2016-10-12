@@ -420,7 +420,12 @@ export class Position extends vscode.Position {
    * than the end of the line
    */
   public getRightByCount(count = 0): Position {
-    return new Position(this.line, Math.min(TextEditor.getLineAt(this).text.length - 1, this.character + count));
+    let lineLength = TextEditor.getLineAt(this).text.length;
+    if (this.character < (lineLength - 1)) {
+      return new Position(this.line, Math.min(lineLength - 1, this.character + count));
+    } else {
+      return new Position(this.line, Math.min(lineLength, this.character + count));
+    }
   }
 
   /**
