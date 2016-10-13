@@ -4,17 +4,12 @@ import {setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from '.
 import {ModeName} from '../../src/mode/mode';
 import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from "../../src/mode/modeHandler";
-import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Insert", () => {
-    let modeHandler = new ModeHandler();
-
-    let {
-        newTest,
-        newTestOnly,
-    } = getTestingFunctions(modeHandler);
+    let modeHandler: ModeHandler;
 
     setup(async () => {
+        modeHandler = new ModeHandler();
         await setupWorkspace();
     });
 
