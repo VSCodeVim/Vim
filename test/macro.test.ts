@@ -46,4 +46,11 @@ suite("Record and execute a macro", () => {
       keysPressed: 'qa0f.r)qqAw~jq3@a',
       end: ['1) One', '2) Two', '3) Three', '4) F|our']
     });
+
+    newTest({
+      title: "Can record Ctrl Keys and repeat",
+      start: ["1|."],
+      keysPressed: 'qayyp<C-a>q4@a',
+      end: ['1.', '2.', '3.', '4.', '5.', '|6.']
+    });
 });
