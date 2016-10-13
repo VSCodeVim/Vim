@@ -1,5 +1,6 @@
 import { VimState, RecordedState } from './../mode/modeHandler';
 import * as clipboard from 'copy-paste';
+import { YankOperator, BaseOperator, CommandRegister, DeleteOperator } from './../actions/actions';
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -33,7 +34,17 @@ export class Register {
   private static registers: { [key: string]: IRegisterContent } = {
     '"': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '*': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
-    '+': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true }
+    '+': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
+    '0': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '1': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '2': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '3': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '4': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '5': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '6': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '7': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '8': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '9': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false }
   };
 
 
@@ -68,6 +79,8 @@ export class Register {
       registerMode       : vimState.effectiveRegisterMode(),
       isClipboardRegister: Register.isClipboardRegister(register),
     };
+
+    Register.ProcessNumberedRegister(content, vimState);
   }
 
   public static putByKey(content: string | string[], register = '"', registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
@@ -84,6 +97,43 @@ export class Register {
       registerMode       : registerMode || RegisterMode.FigureItOutFromCurrentMode,
       isClipboardRegister: Register.isClipboardRegister(register),
     };
+  }
+
+  /**
+   * Handles special cases for Yank- and DeleteOperator.
+   */
+  private static ProcessNumberedRegister(content: string | string[], vimState: VimState): void {
+    // Find the BaseOperator of the current actions
+    const baseOperator = vimState.recordedState.actionsRun.find( (value) => {
+      return value instanceof BaseOperator;
+    });
+
+    if (baseOperator instanceof YankOperator) {
+      // 'yank' to 0 only if no register was specified
+      const registerCommand = vimState.recordedState.actionsRun.find( (value) => {
+        return value instanceof CommandRegister;
+      });
+
+      if (!registerCommand) {
+        Register.registers["0"] = {
+          text               : content,
+          registerMode       : vimState.effectiveRegisterMode(),
+          isClipboardRegister: Register.isClipboardRegister("0"),
+        };
+      }
+    } else if (baseOperator instanceof DeleteOperator) {
+      // shift 'delete-history' register
+      for (let index = 9; index > 1; index--) {
+        Register.registers[String(index)] = Register.registers[String(index - 1)];
+      }
+
+      // Paste last delete into register '1'
+      Register.registers["1"] = {
+        text               : content,
+        registerMode       : vimState.effectiveRegisterMode(),
+        isClipboardRegister: Register.isClipboardRegister("1"),
+      };
+    }
   }
 
   public static add(content: string, vimState: VimState): void {
