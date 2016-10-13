@@ -1307,6 +1307,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vimState.isRunningDotCommand = false;
+    vimState.cursorPositionJustBeforeAnythingHappened = vimState.allCursors.map(x => x.stop);
     return vimState;
   }
   public async updateView(vimState: VimState, drawSelection = true): Promise<void> {
