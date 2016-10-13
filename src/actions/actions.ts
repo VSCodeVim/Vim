@@ -664,7 +664,9 @@ class CommandRecordMacro extends BaseCommand {
 
     if (!/^[A-Z]+$/.test(register) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
-      Register.putByKey(new RecordedState(), register);
+      let newRegister = new RecordedState();
+      newRegister.registerName = register;
+      Register.putByKey(newRegister, register);
     }
 
     vimState.isRecordingMacro = true;
@@ -732,6 +734,27 @@ class CommandExecuteMacro extends BaseCommand {
     const register = keysPressed[1];
 
     return super.couldActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
+}
+
+@RegisterAction
+class CommandExecuteLastMacro extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["@", "@"];
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
+
+    if (lastInvokedMacro) {
+      vimState.recordedState.transformations.push({
+        type: "macro",
+        register: lastInvokedMacro.registerName,
+        replay: "contentChange"
+      });
+    }
+
+    return vimState;
   }
 }
 

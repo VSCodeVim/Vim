@@ -248,7 +248,7 @@ export class VimState {
  *   * delete operator
  */
 export class RecordedState {
-  constructor() {
+constructor() {
     const useClipboard = Configuration.getInstance().useSystemClipboard;
     this.registerName = useClipboard ? '*' : '"';
   }
@@ -1181,6 +1181,8 @@ export class ModeHandler implements vscode.Disposable {
             this.vimState.recordedState = new RecordedState();
             await this.handleMultipleKeyEvents(keyStrokes);
           }
+
+          vimState.historyTracker.lastInvokedMacro = recordedMacro;
           break;
       }
     }

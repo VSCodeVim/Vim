@@ -27,6 +27,13 @@ suite("Record and execute a macro", () => {
     });
 
     newTest({
+      title: "Can repeat last invoked macro",
+      start: ['|foo = 1', "bar = 'a'", "foobar = foo + bar"],
+      keysPressed: 'qaA;<Esc>Ivar <Esc>qj@aj@@',
+      end: ['var foo = 1;', "var bar = 'a';", "var| foobar = foo + bar;"]
+    });
+
+    newTest({
       title: "Can play back with count",
       start: ['|"("+a+","+b+","+c+","+d+","+e+")"'],
       keysPressed: 'f+s + <Esc>qq;.q8@q',
