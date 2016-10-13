@@ -15,6 +15,7 @@ import * as _ from "lodash";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
+import { RecordedState } from './../mode/ModeHandler';
 
 import DiffMatchPatch = require("diff-match-patch");
 
@@ -155,6 +156,8 @@ class HistoryStep {
 export class HistoryTracker {
   public lastContentChanges: vscode.TextDocumentContentChangeEvent[];
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
+
+  public lastInvokedMacro: RecordedState;
 
   /**
    * The entire Undo/Redo stack.
