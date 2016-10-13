@@ -4,14 +4,18 @@ import {setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from '.
 import {ModeName} from '../../src/mode/mode';
 import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from "../../src/mode/modeHandler";
+import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Insert", () => {
-    let modeHandler: ModeHandler;
+    let modeHandler = new ModeHandler();
+
+    let {
+        newTest,
+        newTestOnly,
+    } = getTestingFunctions(modeHandler);
 
     setup(async () => {
         await setupWorkspace();
-
-        modeHandler = new ModeHandler();
     });
 
     teardown(cleanUpWorkspace);
@@ -43,7 +47,18 @@ suite("Mode Insert", () => {
         assertEqual(TextEditor.getSelection().start.character, 4, "<Esc> moved cursor position.");
     });
 
-    test("", async () => {
+   test("<C-c> can exit insert", async () => {
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't',
+            '<C-c>',
+            'o'
+        ]);
+
+        return assertEqualLines(["text", ""]);
+    });
+
+    test("<Esc> can exit insert", async () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't',
@@ -52,6 +67,14 @@ suite("Mode Insert", () => {
         ]);
 
         return assertEqualLines(["text", ""]);
+    });
+
+    test("Stay in insert when entering characters", async () => {
+        await modeHandler.handleKeyEvent('i');
+        for (var i = 0; i < 10; i++) {
+            await modeHandler.handleKeyEvent('1');
+            assertEqual(modeHandler.currentMode.name === ModeName.Insert, true);
+        }
     });
 
     test("Can handle 'O'", async () => {

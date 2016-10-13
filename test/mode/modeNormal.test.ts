@@ -933,6 +933,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'J' followed by x",
+      start: ['tes|t', 'test', 'test'],
+      keysPressed: 'Jx',
+      end: ['test|test', 'test'],
+    });
+
+     newTest({
+      title: "Can handle <Esc> and do nothing",
+      start: ['te|st'],
+      keysPressed: '<Esc>',
+      end: ['te|st'],
+    });
+
+    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',
