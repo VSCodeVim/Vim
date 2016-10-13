@@ -662,7 +662,7 @@ class CommandRecordMacro extends BaseCommand {
     vimState.recordedMacro = new RecordedState();
     vimState.recordedMacro.registerName = register.toLocaleLowerCase();
 
-    if (!/^[A-Z]+$/i.test(register) || !Register.has(register)) {
+    if (!/^[A-Z]+$/.test(register) || !Register.has(register)) {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
       Register.putByKey(new RecordedState(), register);
     }
