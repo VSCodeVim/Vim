@@ -80,6 +80,8 @@ export class VimState {
    */
   public static lastRepeatableMovement : BaseMovement | undefined = undefined;
 
+  public lastMovementFailed: boolean = false;
+
   /**
    * The keystroke sequence that made up our last complete action (that can be
    * repeated with '.').
@@ -893,6 +895,7 @@ export class ModeHandler implements vscode.Disposable {
   private async executeMovement(vimState: VimState, movement: BaseMovement)
     : Promise<{ vimState: VimState, recordedState: RecordedState }> {
 
+    vimState.lastMovementFailed = false;
     let recordedState = vimState.recordedState;
 
     for (let i = 0; i < vimState.allCursors.length; i++) {
@@ -926,6 +929,7 @@ export class ModeHandler implements vscode.Disposable {
       } else if (isIMovement(result)) {
         if (result.failed) {
           vimState.recordedState = new RecordedState();
+          vimState.lastMovementFailed = true;
         }
 
         vimState.allCursors[i] = Range.FromIMovement(result);
@@ -1183,6 +1187,13 @@ export class ModeHandler implements vscode.Disposable {
           }
 
           vimState.historyTracker.lastInvokedMacro = recordedMacro;
+
+          if (vimState.lastMovementFailed) {
+            // movement in last invoked macro failed then we should stop all following repeating macros.
+            // Besides, we should reset `lastMovementFailed`.
+            vimState.lastMovementFailed = false;
+            return vimState;
+          }
           break;
       }
     }
@@ -1272,6 +1283,10 @@ export class ModeHandler implements vscode.Disposable {
     for (let action of actions) {
       recordedState.actionsRun = actions.slice(0, ++i);
       vimState = await this.runAction(vimState, recordedState, action);
+
+      if (vimState.lastMovementFailed) {
+        return vimState;
+      }
 
       await this.updateView(vimState, true);
     }

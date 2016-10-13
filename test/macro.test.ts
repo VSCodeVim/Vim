@@ -41,6 +41,13 @@ suite("Record and execute a macro", () => {
   });
 
   newTest({
+    title: "Can play back with count, abort when a motion fails",
+    start: ['|"("+a+","+b+","+c+","+d+","+e+")"'],
+    keysPressed: 'f+s + <Esc>qq;.q22@q',
+    end: ['"(" + a + "," + b + "," + c + "," + d + "," + e +| ")"']
+  });
+
+  newTest({
     title: "Repeat change on contiguous lines",
     start: ['1. |one', '2. two', '3. three', '4. four'],
     keysPressed: 'qa0f.r)w~jq3@a',
