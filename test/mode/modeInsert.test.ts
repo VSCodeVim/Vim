@@ -9,8 +9,9 @@ suite("Mode Insert", () => {
     let modeHandler: ModeHandler;
 
     setup(async () => {
-        modeHandler = new ModeHandler();
         await setupWorkspace();
+
+        modeHandler = new ModeHandler();
     });
 
     teardown(cleanUpWorkspace);
