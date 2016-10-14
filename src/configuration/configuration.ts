@@ -4,6 +4,10 @@ import * as vscode from 'vscode';
 import { taskQueue } from '../../src/taskQueue';
 
 export type OptionValue = number | string | boolean;
+export type ValueMapping = {
+  [key: number]: OptionValue
+  [key: string]: OptionValue
+}
 
 /**
  * Every Vim option we support should
@@ -69,71 +73,16 @@ export class Configuration {
   @overlapSetting({ codeName: "cursorStyle", default: "block"})
   cursorStyle: string = "block";
 
-  private _number: boolean | undefined = undefined;
-  public get number() {
-    if (this._number === undefined) {
-      let lineNumbers = vscode.workspace.getConfiguration("editor").get<vscode.TextEditorLineNumbersStyle>("lineNumbers");
+  @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: {true: "on", false: "off"}})
+  number: boolean | undefined = undefined;
 
-      if (lineNumbers === vscode.TextEditorLineNumbersStyle.Off) {
-        this._number = false;
-      } else {
-        this._number = true;
-      }
-    }
-
-    return this._number;
-  }
-
-  public set number(number: boolean) {
-    this._number = number;
-
-    taskQueue.enqueueTask({
-      promise: async () => {
-        if (number) {
-          await vscode.workspace.getConfiguration("editor").update("lineNumbers", "on", true);
-        } else {
-          await vscode.workspace.getConfiguration("editor").update("lineNumbers", "off", true);
-        }
-      },
-      isRunning: false
-    });
-  }
-
-  private _relativenumber: boolean | undefined = undefined;
-
-  public get relativenumber() {
-    if (this._relativenumber === undefined) {
-      let lineNumbers = vscode.workspace.getConfiguration("editor").get<vscode.TextEditorLineNumbersStyle>("lineNumbers");
-
-      if (lineNumbers === vscode.TextEditorLineNumbersStyle.Relative) {
-        this._relativenumber = true;
-      } else {
-        this._relativenumber = false;
-      }
-    }
-
-    return this._relativenumber;
-  }
-
-  public set relativenumber(relative: boolean) {
-    this._relativenumber = relative;
-
-    taskQueue.enqueueTask({
-      promise: async () => {
-        if (relative) {
-          await vscode.workspace.getConfiguration("editor").update("lineNumbers", "relative", true);
-        } else {
-          await vscode.workspace.getConfiguration("editor").update("lineNumbers", "off", true);
-        }
-      },
-      isRunning: false
-    });
-  }
+  @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: {true: "relative", false: "off"}})
+  relativenumber: boolean | undefined = undefined;
 
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 }
 
-function overlapSetting(args: {codeName: string, default: OptionValue}) {
+function overlapSetting(args: {codeName: string, default: OptionValue, codeValueMapping?: ValueMapping}) {
   return function (target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
       get: function () {
@@ -141,14 +90,28 @@ function overlapSetting(args: {codeName: string, default: OptionValue}) {
           return this["_" + propertyKey];
         }
 
-        return vscode.workspace.getConfiguration("editor").get(args.codeName, args.default);
+        if (args.codeValueMapping) {
+          let val = vscode.workspace.getConfiguration("editor").get(args.codeName);
+
+          if (val !== undefined) {
+            return args.codeValueMapping[val as string];
+          }
+        } else {
+          return vscode.workspace.getConfiguration("editor").get(args.codeName, args.default);
+        }
       },
       set: function (value) {
         this["_" + propertyKey] = value;
 
         taskQueue.enqueueTask({
           promise: async () => {
-            await vscode.workspace.getConfiguration("editor").update(propertyKey, value, true);
+            let codeValue = value;
+
+            if (args.codeValueMapping) {
+              codeValue = args.codeValueMapping[value];
+            }
+
+            await vscode.workspace.getConfiguration("editor").update(propertyKey, codeValue, true);
           },
           isRunning: false
         });
