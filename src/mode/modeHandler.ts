@@ -1458,7 +1458,7 @@ export class ModeHandler implements vscode.Disposable {
                             this.currentMode.name       !== ModeName.VisualBlockInsertMode &&
                             this.currentMode.name       !== ModeName.Insert ?
         "block" : "line";
-      await vscode.workspace.getConfiguration("editor").update("cursorStyle", cursorStyle, true);
+      Configuration.getInstance().cursorStyle = cursorStyle;
     }
 
     if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
