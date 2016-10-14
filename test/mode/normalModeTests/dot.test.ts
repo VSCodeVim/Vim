@@ -8,7 +8,8 @@ suite("Dot Operator", () => {
     let modeHandler: ModeHandler = new ModeHandler();
 
     let {
-        newTest
+        newTest,
+        newTestOnly
     } = getTestingFunctions(modeHandler);
 
     setup(async () => {
@@ -64,7 +65,7 @@ suite("Dot Operator", () => {
       title: "Can repeat actions that require selections",
       start: ['on|e', 'two'],
       keysPressed: 'Vj>.',
-      end: ['        |one', '        two']
+      end: ['\t\t|one', '\t\ttwo']
     });
 
 });
