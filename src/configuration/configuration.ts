@@ -1,6 +1,7 @@
 "use strict";
 
 import * as vscode from 'vscode';
+import { taskQueue } from '../../src/taskQueue';
 
 export type OptionValue = number | string | boolean;
 
@@ -64,6 +65,9 @@ export class Configuration {
   @overlapSetting({ codeName: "insertSpaces", default: false})
   expandtab: boolean | undefined = undefined;
 
+  @overlapSetting({ codeName: "cursorStyle", default: "block"})
+  cursorStyle: string = "block";
+
   private _number: boolean | undefined = undefined;
   public get number() {
     if (this._number === undefined) {
@@ -82,11 +86,16 @@ export class Configuration {
   public set number(number: boolean) {
     this._number = number;
 
-    if (number) {
-      vscode.workspace.getConfiguration("editor").update("lineNumbers", "on", true);
-    } else {
-      vscode.workspace.getConfiguration("editor").update("lineNumbers", "off", true);
-    }
+    taskQueue.enqueueTask({
+      promise: async () => {
+        if (number) {
+          await vscode.workspace.getConfiguration("editor").update("lineNumbers", "on", true);
+        } else {
+          await vscode.workspace.getConfiguration("editor").update("lineNumbers", "off", true);
+        }
+      },
+      isRunning: false
+    });
   }
 
   private _relativenumber: boolean | undefined = undefined;
@@ -108,11 +117,16 @@ export class Configuration {
   public set relativenumber(relative: boolean) {
     this._relativenumber = relative;
 
-    if (relative) {
-      vscode.workspace.getConfiguration("editor").update("lineNumbers", "relative", true);
-    } else {
-      vscode.workspace.getConfiguration("editor").update("lineNumbers", "off", true);
-    }
+    taskQueue.enqueueTask({
+      promise: async () => {
+        if (relative) {
+          await vscode.workspace.getConfiguration("editor").update("lineNumbers", "relative", true);
+        } else {
+          await vscode.workspace.getConfiguration("editor").update("lineNumbers", "off", true);
+        }
+      },
+      isRunning: false
+    });
   }
 
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
@@ -130,6 +144,13 @@ function overlapSetting(args: {codeName: string, default: OptionValue}) {
       },
       set: function (value) {
         this["_" + propertyKey] = value;
+
+        taskQueue.enqueueTask({
+          promise: async () => {
+            await vscode.workspace.getConfiguration("editor").update(propertyKey, value, true);
+          },
+          isRunning: false
+        });
       },
       enumerable: true,
       configurable: true
