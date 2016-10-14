@@ -1241,37 +1241,32 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   public async updateView(vimState: VimState, drawSelection = true): Promise<void> {
-    // Update cursor position
-
-    let start = vimState.cursorStartPosition;
-    let stop  = vimState.cursorPosition;
-
-    if (vimState.currentMode === ModeName.Visual) {
-
-      /**
-       * Always select the letter that we started visual mode on, no matter
-       * if we are in front or behind it. Imagine that we started visual mode
-       * with some text like this:
-       *
-       *   abc|def
-       *
-       * (The | represents the cursor.) If we now press w, we'll select def,
-       * but if we hit b we expect to select abcd, so we need to getRight() on the
-       * start of the selection when it precedes where we started visual mode.
-       */
-
-      if (start.compareTo(stop) > 0) {
-        start = start.getRight();
-      }
-    }
-
     // Draw selection (or cursor)
 
     if (drawSelection) {
       let selections: vscode.Selection[];
 
       if (!vimState.isMultiCursor) {
+        let start = vimState.cursorStartPosition;
+        let stop = vimState.cursorPosition;
+
         if (vimState.currentMode === ModeName.Visual) {
+          /**
+           * Always select the letter that we started visual mode on, no matter
+           * if we are in front or behind it. Imagine that we started visual mode
+           * with some text like this:
+           *
+           *   abc|def
+           *
+           * (The | represents the cursor.) If we now press w, we'll select def,
+           * but if we hit b we expect to select abcd, so we need to getRight() on the
+           * start of the selection when it precedes where we started visual mode.
+           */
+
+          if (start.compareTo(stop) > 0) {
+            start = start.getRight();
+          }
+
           selections = [ new vscode.Selection(start, stop) ];
         } else if (vimState.currentMode === ModeName.VisualLine) {
           selections = [ new vscode.Selection(
@@ -1296,7 +1291,11 @@ export class ModeHandler implements vscode.Disposable {
         if (vimState.currentMode === ModeName.Visual) {
           selections = [];
 
-          for (const { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
+          for (let { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
+            if (cursorStart.compareTo(cursorStop) > 0) {
+              cursorStart = cursorStart.getRight();
+            }
+
             selections.push(new vscode.Selection(cursorStart, cursorStop));
           }
         } else if (vimState.currentMode === ModeName.Normal ||
@@ -1355,7 +1354,9 @@ export class ModeHandler implements vscode.Disposable {
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
       // in the middle of a selection natively, which is what we need for Visual Mode.
 
-      rangesToDraw.push(new vscode.Range(stop, stop.getRight()));
+      for (const { stop: cursorStop } of vimState.allCursors) {
+        rangesToDraw.push(new vscode.Range(cursorStop, cursorStop.getRight()));
+      }
     }
 
     // Draw marks
