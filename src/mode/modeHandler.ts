@@ -496,6 +496,18 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+    if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
+      // Whether e.kind is undefined or Command, it means the selection change is from Code.
+      if (selection) {
+        this._vimState.cursorPosition = Position.FromVSCodePosition(selection.active);
+        this._vimState.cursorStartPosition = Position.FromVSCodePosition(selection.start);
+
+        this._vimState.desiredColumn = this._vimState.cursorPosition.character;
+      }
+
+      return;
+    }
+
     // Only handle mouse selections
     if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       return;
@@ -520,7 +532,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (selection) {
-      var newPosition = new Position(selection.active.line, selection.active.character);
+      let newPosition = new Position(selection.active.line, selection.active.character);
 
       if (newPosition.character >= newPosition.getLineEnd().character) {
         if (this._vimState.currentMode !== ModeName.Insert) {
