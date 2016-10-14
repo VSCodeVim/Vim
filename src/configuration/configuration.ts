@@ -111,7 +111,7 @@ function overlapSetting(args: {codeName: string, default: OptionValue, codeValue
               codeValue = args.codeValueMapping[value];
             }
 
-            await vscode.workspace.getConfiguration("editor").update(propertyKey, codeValue, true);
+            await vscode.workspace.getConfiguration("editor").update(args.codeName, codeValue, true);
           },
           isRunning: false
         });
