@@ -105,6 +105,10 @@ function overlapSetting(args: {codeName: string, default: OptionValue, codeValue
 
         taskQueue.enqueueTask({
           promise: async () => {
+            if (value === undefined) {
+              return;
+            }
+
             let codeValue = value;
 
             if (args.codeValueMapping) {
@@ -113,7 +117,8 @@ function overlapSetting(args: {codeName: string, default: OptionValue, codeValue
 
             await vscode.workspace.getConfiguration("editor").update(args.codeName, codeValue, true);
           },
-          isRunning: false
+          isRunning: false,
+          queue: "config"
         });
       },
       enumerable: true,

@@ -3,6 +3,7 @@ import * as _ from "lodash";
 export interface IEnqueuedTask {
   promise  : () => Promise<void>;
   isRunning: boolean;
+  queue?: string;
 }
 
 /**
@@ -11,11 +12,13 @@ export interface IEnqueuedTask {
  * Enqueue promises here. They will be run sequentially.
  */
 class TaskQueue {
-  private _tasks: IEnqueuedTask[] = [];
+  private _tasksQueue: {
+    [key: string]: IEnqueuedTask[]
+  } = {};
 
-  private async _runTasks(): Promise<void> {
-    while (this._tasks.length > 0) {
-      let task: IEnqueuedTask = this._tasks[0];
+  private async _runTasks(queueName: string): Promise<void> {
+    while (this._tasksQueue[queueName].length > 0) {
+      let task: IEnqueuedTask = this._tasksQueue[queueName][0];
 
       try {
         task.isRunning = true;
@@ -37,19 +40,25 @@ class TaskQueue {
    * promises don't allow you to stop it.)
    */
   public removeTask(task: IEnqueuedTask): void {
-    this._tasks.splice(_.findIndex(this._tasks, t => t === task), 1);
+    let queueName = task.queue || "default";
+    this._tasksQueue[queueName].splice(_.findIndex(this._tasksQueue[queueName], t => t === task), 1);
   }
 
   /**
    * Adds a task to the task queue.
    */
   public enqueueTask(task: IEnqueuedTask): void {
-    let otherTaskRunning = _.filter(this._tasks, x => x.isRunning).length > 0;
+    let queueName = task.queue || "default";
+    let otherTaskRunning = _.filter(this._tasksQueue[queueName], x => x.isRunning).length > 0;
 
-    this._tasks.push(task);
+    if (this._tasksQueue[queueName]) {
+      this._tasksQueue[queueName].push(task);
+    } else {
+      this._tasksQueue[queueName] = [];
+    }
 
     if (!otherTaskRunning) {
-      this._runTasks();
+      this._runTasks(queueName);
     }
   }
 }
