@@ -1035,84 +1035,86 @@ export class ModeHandler implements vscode.Disposable {
 
     let accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
-    if (areAnyTransformationsOverlapping(textTransformations)) {
-      // TODO: Select one transformation for every cursor and run them all
-      // in parallel. Repeat till there are no more transformations.
+    if (textTransformations.length > 0) {
+      if (areAnyTransformationsOverlapping(textTransformations)) {
+        // TODO: Select one transformation for every cursor and run them all
+        // in parallel. Repeat till there are no more transformations.
 
-      for (const command of textTransformations) {
-        await vscode.window.activeTextEditor.edit(edit => {
-          switch (command.type) {
-            case "insertText":
-              edit.insert(command.position, command.text);
-              break;
+        for (const command of textTransformations) {
+          await vscode.window.activeTextEditor.edit(edit => {
+            switch (command.type) {
+              case "insertText":
+                edit.insert(command.position, command.text);
+                break;
 
-            case "replaceText":
-              edit.replace(new vscode.Selection(command.end, command.start), command.text);
-              break;
+              case "replaceText":
+                edit.replace(new vscode.Selection(command.end, command.start), command.text);
+                break;
 
-            case "deleteText":
-              edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
-              break;
+              case "deleteText":
+                edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
+                break;
 
-            case "deleteRange":
-              edit.delete(new vscode.Selection(command.range.start, command.range.stop));
-              break;
-          }
-
-          if (command.cursorIndex === undefined) {
-            throw new Error("No cursor index - this should never ever happen!");
-          }
-
-          if (command.diff) {
-            if (!accumulatedPositionDifferences[command.cursorIndex]) {
-              accumulatedPositionDifferences[command.cursorIndex] = [];
+              case "deleteRange":
+                edit.delete(new vscode.Selection(command.range.start, command.range.stop));
+                break;
             }
 
-            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+            if (command.cursorIndex === undefined) {
+              throw new Error("No cursor index - this should never ever happen!");
+            }
+
+            if (command.diff) {
+              if (!accumulatedPositionDifferences[command.cursorIndex]) {
+                accumulatedPositionDifferences[command.cursorIndex] = [];
+              }
+
+              accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+            }
+          });
+        };
+      } else {
+        // This is the common case!
+
+        /**
+         * batch all text operations together as a single operation
+         * (this is primarily necessary for multi-cursor mode, since most
+         * actions will trigger at most one text operation).
+         */
+        await vscode.window.activeTextEditor.edit(edit => {
+          for (const command of textTransformations) {
+            switch (command.type) {
+              case "insertText":
+                edit.insert(command.position, command.text);
+                break;
+
+              case "replaceText":
+                edit.replace(new vscode.Selection(command.end, command.start), command.text);
+                break;
+
+              case "deleteText":
+                edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
+                break;
+
+              case "deleteRange":
+                edit.delete(new vscode.Selection(command.range.start, command.range.stop));
+                break;
+            }
+
+            if (command.cursorIndex === undefined) {
+              throw new Error("No cursor index - this should never ever happen!");
+            }
+
+            if (command.diff) {
+              if (!accumulatedPositionDifferences[command.cursorIndex]) {
+                accumulatedPositionDifferences[command.cursorIndex] = [];
+              }
+
+              accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+            }
           }
         });
-      };
-    } else {
-      // This is the common case!
-
-      /**
-       * batch all text operations together as a single operation
-       * (this is primarily necessary for multi-cursor mode, since most
-       * actions will trigger at most one text operation).
-       */
-      await vscode.window.activeTextEditor.edit(edit => {
-        for (const command of textTransformations) {
-          switch (command.type) {
-            case "insertText":
-              edit.insert(command.position, command.text);
-              break;
-
-            case "replaceText":
-              edit.replace(new vscode.Selection(command.end, command.start), command.text);
-              break;
-
-            case "deleteText":
-              edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
-              break;
-
-            case "deleteRange":
-              edit.delete(new vscode.Selection(command.range.start, command.range.stop));
-              break;
-          }
-
-          if (command.cursorIndex === undefined) {
-            throw new Error("No cursor index - this should never ever happen!");
-          }
-
-          if (command.diff) {
-            if (!accumulatedPositionDifferences[command.cursorIndex]) {
-              accumulatedPositionDifferences[command.cursorIndex] = [];
-            }
-
-            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
-          }
-        }
-      });
+      }
     }
 
     for (const command of otherTransformations) {
