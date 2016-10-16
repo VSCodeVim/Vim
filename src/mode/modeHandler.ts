@@ -496,20 +496,14 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (!e.kind || e.kind === vscode.TextEditorSelectionChangeKind.Command) {
-      // Whether e.kind is undefined or Command, it means the selection change is from Code.
+    // Only handle mouse selections
+    if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       if (selection) {
         this._vimState.cursorPosition = Position.FromVSCodePosition(selection.active);
         this._vimState.cursorStartPosition = Position.FromVSCodePosition(selection.start);
 
         this._vimState.desiredColumn = this._vimState.cursorPosition.character;
       }
-
-      return;
-    }
-
-    // Only handle mouse selections
-    if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       return;
     }
 
