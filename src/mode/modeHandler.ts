@@ -453,6 +453,7 @@ export class ModeHandler implements vscode.Disposable {
     if (vscode.window.activeTextEditor) {
       this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
       this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      this._vimState.whatILastSetTheSelectionTo = vscode.window.activeTextEditor.selection;
     }
 
     // Handle scenarios where mouse used to change current position.
@@ -466,6 +467,10 @@ export class ModeHandler implements vscode.Disposable {
     this._toBeDisposed.push(disposer);
   }
 
+  /**
+   * Anyone who wants to change the behavior of this method should make sure all selection related test cases pass.
+   * Follow this spec https://gist.github.com/rebornix/d21d1cc060c009d4430d3904030bd4c1 to perform the manual testing.
+   */
   private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
     let selection = e.selections[0];
 
@@ -496,7 +501,10 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    // Only handle mouse selections
+    /**
+     * We only trigger our view updating process if it's a mouse selection.
+     * Otherwise we only update our internal cursor postions accordingly.
+     */
     if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       if (selection) {
         this._vimState.cursorPosition = Position.FromVSCodePosition(selection.active);
