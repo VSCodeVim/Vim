@@ -509,7 +509,8 @@ export class ModeHandler implements vscode.Disposable {
       if (selection) {
         if (this._vimState.getModeObject(this).isVisualMode) {
           /**
-           * In Visual Mode, our `cursorPosition` and `cursorStartPosition` can not refect `active`, `start`, `end` and `anchor` information in a selection.
+           * In Visual Mode, our `cursorPosition` and `cursorStartPosition` can not refect `active`,
+           * `start`, `end` and `anchor` information in a selection.
            * See `Fake block cursor with text decoration` section of `updateView` method.
            */
           return;
