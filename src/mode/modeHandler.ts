@@ -1309,6 +1309,10 @@ export class ModeHandler implements vscode.Disposable {
       recordedState.actionsRun = actions.slice(0, ++i);
       vimState = await this.runAction(vimState, recordedState, action);
 
+      if (vimState.lastMovementFailed) {
+        break;
+      }
+
       await this.updateView(vimState, true);
     }
 
@@ -1316,6 +1320,7 @@ export class ModeHandler implements vscode.Disposable {
     vimState.cursorPositionJustBeforeAnythingHappened = vimState.allCursors.map(x => x.stop);
     return vimState;
   }
+
   public async updateView(vimState: VimState, drawSelection = true): Promise<void> {
     // Draw selection (or cursor)
 
