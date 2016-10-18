@@ -1,4 +1,4 @@
-*.md
+.github/**
 .vscode/**
 .vscode-test/**
 typings/**
