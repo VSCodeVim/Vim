@@ -66,7 +66,6 @@ suite("Dot Operator", () => {
       keysPressed: 'Vj>.',
       end: ['        |one', '        two']
     });
-
 });
 
 suite("Repeat content change", () => {
