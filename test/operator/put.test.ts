@@ -2,18 +2,23 @@
 
 import { ModeHandler } from "../../src/mode/modeHandler";
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
+import { getTestingFunctions } from '../testSimplifier';
 
 suite("put operator", () => {
 
-  let modeHandler: ModeHandler;
+  let modeHandler: ModeHandler = new ModeHandler();
+
+  let {
+    newTest,
+    newTestOnly,
+  } = getTestingFunctions(modeHandler);
 
   setup(async () => {
     await setupWorkspace();
-
     modeHandler = new ModeHandler();
   });
 
-  suiteTeardown(cleanUpWorkspace);
+  teardown(cleanUpWorkspace);
 
   test("basic put test", async () => {
     await modeHandler.handleMultipleKeyEvents(
@@ -67,4 +72,10 @@ suite("put operator", () => {
     await assertEqualLines(["1", "2", "2", "3"]);
   });
 
+  newTest({
+    title: "test yy with correct positon movement",
+    start: ["o|ne", "two", "three", "four"],
+    keysPressed: '2yyjjpk',
+    end: ["one", "two", "|three", "one", "two", "four"]
+  });
 });
