@@ -10,7 +10,7 @@ export interface IEnqueuedTask {
  *
  * Enqueue promises here. They will be run sequentially.
  */
-export class TaskQueue {
+class TaskQueue {
   private _tasks: IEnqueuedTask[] = [];
 
   private async _runTasks(): Promise<void> {
@@ -53,3 +53,5 @@ export class TaskQueue {
     }
   }
 }
+
+export let taskQueue = new TaskQueue();

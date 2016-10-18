@@ -99,8 +99,8 @@ export class SubstituteCommand extends node.CommandBase {
       startLine = new vscode.Position(0, 0);
       endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
     } else {
-      startLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.left);
-      endLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.right);
+      startLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.left, modeHandler);
+      endLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.right, modeHandler);
     }
 
     if (this._arguments.count && this._arguments.count >= 0) {

@@ -19,10 +19,17 @@ suite("Dot Operator", () => {
     teardown(cleanUpWorkspace);
 
     newTest({
-      title: "Can repeat '~'",
-      start: ['|text'],
+      title: "Can repeat '~' with <num>",
+      start: ['|teXt'],
       keysPressed: '4~',
-      end: ['TEX|T']
+      end: ['TEx|T']
+    });
+
+    newTest({
+      title: "Can repeat '~' with dot",
+      start: ['|teXt'],
+      keysPressed: '~...',
+      end: ['TEx|T']
     });
 
     newTest({
@@ -42,14 +49,14 @@ suite("Dot Operator", () => {
     newTest({
       title: "Can handle dot with A",
       start: ['|one', 'two', 'three'],
-      keysPressed: 'A!<escape>j.j.',
+      keysPressed: 'A!<Esc>j.j.',
       end: ['one!', 'two!', 'three|!']
     });
 
     newTest({
       title: "Can handle dot with I",
       start: ['on|e', 'two', 'three'],
-      keysPressed: 'I!<escape>j.j.',
+      keysPressed: 'I!<Esc>j.j.',
       end: ['!one', '!two', '|!three']
     });
 

@@ -19,7 +19,7 @@ import { TextEditor } from './../textEditor';
 import DiffMatchPatch = require("diff-match-patch");
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
-diffEngine.Diff_Timeout = 1000;
+diffEngine.Diff_Timeout = 1; // 1 second
 
 export class DocumentChange {
   start : Position;
@@ -78,7 +78,12 @@ class HistoryStep {
   /**
    * The cursor position at the start of this history step.
    */
-  cursorStart: Position | undefined;
+  cursorStart: Position[] | undefined;
+
+  /**
+   * The cursor position at the end of this history step so far.
+   */
+  cursorEnd: Position[] | undefined;
 
   /**
    * The position of every mark at the start of this history step.
@@ -88,12 +93,14 @@ class HistoryStep {
   constructor(init: {
     changes?: DocumentChange[],
     isFinished?: boolean,
-    cursorStart?: Position | undefined,
+    cursorStart?: Position[] | undefined,
+    cursorEnd?: Position[] | undefined,
     marks?: IMark[]
   }) {
     this.changes   = init.changes = [];
     this.isFinished  = init.isFinished || false;
     this.cursorStart = init.cursorStart || undefined;
+    this.cursorEnd = init.cursorEnd || undefined;
     this.marks     = init.marks || [];
   }
 
@@ -104,6 +111,7 @@ class HistoryStep {
     if (this.changes.length < 2) {
       return;
     }
+
     // merged will replace this.changes
     var merged: DocumentChange[] = [];
     // manually reduce() this.changes with variables `current` and `next`
@@ -132,7 +140,7 @@ class HistoryStep {
         // collapse add+del into add. this might make current.text.length === 0, see beginning of loop
         current.text = current.text.slice(0, -next.text.length);
       } else {
-        // del+add must be two separate DocumentChanges. e.g. start with "a|b", do `i<backspace>x<escape>` you end up with "|xb"
+        // del+add must be two separate DocumentChanges. e.g. start with "a|b", do `i<BS>x<Esc>` you end up with "|xb"
         // also handles multiple changes in distant locations in the document
         merged.push(current);
         current = next;
@@ -170,13 +178,24 @@ export class HistoryTracker {
   }
 
   constructor() {
-    /**
-     * We add an initial, unrevertable step, which inserts the entire document.
-     */
+    this._initialize();
+  }
+
+  public clear() {
+    this.historySteps = [];
+    this.currentHistoryStepIndex = 0;
+    this._initialize();
+  }
+
+  /**
+   * We add an initial, unrevertable step, which inserts the entire document.
+   */
+  private _initialize() {
     this.historySteps.push(new HistoryStep({
       changes  : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
       isFinished : true,
-      cursorStart: new Position(0, 0)
+      cursorStart: [ new Position(0, 0) ],
+      cursorEnd: [ new Position(0, 0) ]
     }));
 
     this.finishCurrentStep();
@@ -317,7 +336,7 @@ export class HistoryTracker {
    * Determines what changed by diffing the document against what it
    * used to look like.
    */
-  addChange(cursorPosition = new Position(0, 0)): void {
+  addChange(cursorPosition = [ new Position(0, 0) ]): void {
     const newText = TextEditor.getAllText();
 
     if (newText === this.oldText) { return; }
@@ -378,6 +397,7 @@ export class HistoryTracker {
       }
     }
 
+    this.currentHistoryStep.cursorEnd = cursorPosition;
     this.oldText = newText;
   }
 
@@ -429,7 +449,7 @@ export class HistoryTracker {
    * Essentially Undo or ctrl+z. Returns undefined if there's no more steps
    * back to go.
    */
-  async goBackHistoryStep(): Promise<Position | undefined> {
+  async goBackHistoryStep(): Promise<Position[] | undefined> {
     let step: HistoryStep;
 
     if (this.currentHistoryStepIndex === 0) {
@@ -459,7 +479,7 @@ export class HistoryTracker {
    * Essentially Redo or ctrl+y. Returns undefined if there's no more steps
    * forward to go.
    */
-  async goForwardHistoryStep(): Promise<Position | undefined> {
+  async goForwardHistoryStep(): Promise<Position[] | undefined> {
     let step: HistoryStep;
 
     if (this.currentHistoryStepIndex === this.historySteps.length - 1) {
@@ -475,6 +495,18 @@ export class HistoryTracker {
     }
 
     return step.cursorStart;
+  }
+
+  getLastHistoryEndPosition(): Position[] | undefined {
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+
+    return this.historySteps[this.currentHistoryStepIndex].cursorEnd;
+  }
+
+  setLastHistoryEndPosition(pos: Position[]) {
+    this.historySteps[this.currentHistoryStepIndex].cursorEnd = pos;
   }
 
   /**

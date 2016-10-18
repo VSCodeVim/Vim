@@ -7,6 +7,96 @@ import { VimState } from './../mode/modeHandler';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
 import { Configuration } from "./../configuration/configuration";
 
+/**
+ * Represents a difference between two positions. Add it to a position
+ * to get another position. Create it with the factory methods:
+ *
+ * - NewDiff
+ * - NewBOLDiff
+ */
+export class PositionDiff {
+  private _line: number;
+  private _character: number;
+  private _isBOLDiff: boolean;
+
+  constructor(line: number, character: number) {
+    this._line = line;
+    this._character = character;
+  }
+
+  /**
+   * Creates a new PositionDiff that always brings the cursor to the beginning of the line
+   * when applied to a position.
+   */
+  public static NewBOLDiff(line = 0, character = 0): PositionDiff {
+    const result = new PositionDiff(line, character);
+
+    result._isBOLDiff = true;
+    return result;
+  }
+
+  /**
+   * Add this PositionDiff to another PositionDiff.
+   */
+  public addDiff(other: PositionDiff) {
+    if (this._isBOLDiff || other._isBOLDiff) {
+      throw new Error("johnfn hasn't done this case yet and doesnt want to");
+    }
+
+    return new PositionDiff(
+      this._line + other._line,
+      this._character + other._character
+    );
+  }
+
+  /**
+   * Adds a Position to this PositionDiff, returning a new PositionDiff.
+   */
+  public addPosition(other: Position, { boundsCheck = true } = { } ): Position {
+    let resultChar = this.isBOLDiff() ? 0 : this.character + other.character;
+    let resultLine = this.line + other.line;
+
+    if (boundsCheck) {
+      if (resultChar < 0) { resultChar = 0; }
+      if (resultLine < 0) { resultLine = 0; }
+    }
+
+    return new Position(
+      resultLine,
+      resultChar
+    );
+  }
+
+  /**
+   * Difference in lines.
+   */
+  public get line(): number {
+    return this._line;
+  }
+
+  /**
+   * Difference in characters.
+   */
+  public get character(): number {
+    return this._character;
+  }
+
+  /**
+   * Does this diff move the position to the beginning of the line?
+   */
+  public isBOLDiff(): boolean {
+    return this._isBOLDiff;
+  }
+
+  public toString(): string {
+    if (this._isBOLDiff) {
+      return `[ Diff: BOL ]`;
+    }
+
+    return `[ Diff: ${ this._line } ${ this._character } ]`;
+  }
+}
+
 export class Position extends vscode.Position {
   private static NonWordCharacters = Configuration.getInstance().iskeyword!;
   private static NonBigWordCharacters = "";
@@ -23,6 +113,10 @@ export class Position extends vscode.Position {
     this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
   }
 
+  public toString(): string {
+    return `[${ this.line }, ${ this.character }]`;
+  }
+
   public static FromVSCodePosition(pos: vscode.Position): Position {
     return new Position(pos.line, pos.character);
   }
@@ -35,6 +129,13 @@ export class Position extends vscode.Position {
     if (p1.line === p2.line && p1.character < p2.character) { return p1; }
 
     return p2;
+  }
+
+  public isEarlierThan(other: Position): boolean {
+    if (this.line < other.line) { return true; }
+    if (this.line === other.line && this.character < other.character) { return true; }
+
+    return false;
   }
 
   /**
@@ -152,6 +253,41 @@ export class Position extends vscode.Position {
     return p1;
   }
 
+  /**
+   * Subtracts another position from this one, returning the
+   * difference between the two.
+   */
+  public subtract(other: Position): PositionDiff {
+    return new PositionDiff(
+      this.line      - other.line,
+      this.character - other.character,
+    );
+  }
+
+  /**
+   * Adds a PositionDiff to this position, returning a new
+   * position.
+   */
+  public add(diff: PositionDiff, { boundsCheck = true } = { } ): Position {
+    let resultChar = this.character + diff.character;
+    let resultLine = this.line + diff.line;
+
+    if (diff.isBOLDiff()) {
+      resultChar = diff.character;
+    }
+
+    if (boundsCheck) {
+      if (resultChar < 0) { resultChar = 0; }
+      if (resultLine < 0) { resultLine = 0; }
+      if (resultLine >= TextEditor.getLineCount() - 1) { resultLine = TextEditor.getLineCount() - 1; }
+    }
+
+    return new Position(
+      resultLine,
+      resultChar
+    );
+  }
+
   public setLocation(line: number, character: number) : Position {
     let position = new Position(line, character);
     return position;
@@ -191,8 +327,7 @@ export class Position extends vscode.Position {
       return this.getLeft();
     }
 
-    return new Position(this.line - 1, 0)
-      .getLineEnd();
+    return this.getUp(0).getLineEnd();
   }
 
   public getRightThroughLineBreaks(): Position {
@@ -248,15 +383,21 @@ export class Position extends vscode.Position {
    * Get the position *count* lines down from this position, but not lower
    * than the end of the document.
    */
-  public getDownByCount(count = 0): Position {
+  public getDownByCount(count = 0, { boundsCheck = true } = {}): Position {
+    console.log(boundsCheck);
+
+    const line = boundsCheck ?
+      Math.min(TextEditor.getLineCount() - 1, this.line + count) :
+      this.line + count;
+
     return new Position(
-      Math.min(TextEditor.getLineCount() - 1, this.line + count),
+      line,
       this.character
     );
   }
 
   /**
-   * Get the position *count* lines up from this position, but not lower
+   * Get the position *count* lines up from this position, but not higher
    * than the end of the document.
    */
   public getUpByCount(count = 0): Position {
@@ -264,6 +405,22 @@ export class Position extends vscode.Position {
       Math.max(0, this.line - count),
       this.character
     );
+  }
+
+  /**
+   * Get the position *count* lines left from this position, but not farther
+   * than the beginning of the line
+   */
+  public getLeftByCount(count = 0): Position {
+    return new Position(this.line, Math.max(0, this.character - count));
+  }
+
+  /**
+   * Get the position *count* lines right from this position, but not farther
+   * than the end of the line
+   */
+  public getRightByCount(count = 0): Position {
+    return new Position(this.line, Math.min(TextEditor.getLineAt(this).text.length - 1, this.character + count));
   }
 
   /**
@@ -401,7 +558,7 @@ export class Position extends vscode.Position {
 
   /**
    * Get the beginning of the line, excluding preceeding whitespace.
-   * This respects the `noautoindent` setting, and returns `getLineBegin()` if auto-indent
+   * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent
    * is disabled.
    */
   public getLineBeginRespectingIndent(): Position {
@@ -476,15 +633,19 @@ export class Position extends vscode.Position {
   }
 
   public isValid(): boolean {
-    // line
-    let lineCount = TextEditor.getLineCount();
-    if (this.line > lineCount) {
-      return false;
-    }
+    try {
+      // line
+      let lineCount = TextEditor.getLineCount() || 1;
+      if (this.line >= lineCount) {
+        return false;
+      }
 
-    // char
-    let charCount = Position.getLineLength(this.line);
-    if (this.character > charCount + 1) {
+      // char
+      let charCount = Position.getLineLength(this.line);
+      if (this.character > charCount + 1) {
+        return false;
+      }
+    } catch (e) {
       return false;
     }
 
@@ -603,7 +764,7 @@ export class Position extends vscode.Position {
       let positions  = this.getAllPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
       let newCharacter = _.find(positions,
         index => ((index >  this.character && !inclusive)  ||
-              (index >= this.character &&  inclusive)) || currentLine !== this.line);
+              (index >= this.character && inclusive)) || currentLine !== this.line);
 
       if (newCharacter !== undefined) {
         return new Position(currentLine, newCharacter);
