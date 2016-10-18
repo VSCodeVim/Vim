@@ -1208,7 +1208,6 @@ class CommandInsertInSearchMode extends BaseCommand {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
-      vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
@@ -1219,6 +1218,9 @@ class CommandInsertInSearchMode extends BaseCommand {
       }
       // Store this search
       vimState.searchStatePrevious = searchState;
+
+      // Move cursor to next match
+      vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       return vimState;
     } else if (key === "<Esc>") {
