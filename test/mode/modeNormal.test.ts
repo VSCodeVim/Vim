@@ -1267,4 +1267,12 @@ suite("Mode Normal", () => {
       end: ["{", "  |"],
       endMode: ModeName.Insert
     });
+
+    newTest({
+      title: "Indent current line with correct Vim Mode",
+      start: ["|one", "two"],
+      keysPressed: ">>",
+      end: ["\t|one", "two"],
+      endMode: ModeName.Normal
+    });
 });
