@@ -516,10 +516,20 @@ export class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<BS>") {
-      vimState.recordedState.transformations.push({
-        type           : "deleteText",
-        position       : position,
-      });
+      const selection = TextEditor.getSelection();
+
+      // Check if a selection is active
+      if (!selection.isEmpty) {
+        vimState.recordedState.transformations.push({
+          type: "deleteRange",
+          range: new Range(selection.start as Position, selection.end as Position),
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type: "deleteText",
+          position: position,
+        });
+      }
 
       vimState.cursorPosition      = vimState.cursorPosition.getLeft();
       vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
