@@ -64,7 +64,7 @@ suite("Dot Operator", () => {
       title: "Can repeat actions that require selections",
       start: ['on|e', 'two'],
       keysPressed: 'Vj>.',
-      end: ['        |one', '        two']
+      end: ['\t\t|one', '\t\ttwo']
     });
 });
 
