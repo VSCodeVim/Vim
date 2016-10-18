@@ -7,6 +7,7 @@ import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
+import { Globals } from '../src/globals';
 
 export function getTestingFunctions(modeHandler: ModeHandler) {
   let testWithObject = testIt.bind(null, modeHandler);
@@ -213,6 +214,8 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   await waitForCursorUpdatesToHappen();
 
+  Globals.modeHandlerForTesting = modeHandler;
+
   // assumes key presses are single characters for now
   await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
 
@@ -223,7 +226,6 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   //
   let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
   let expectedPosition = helper.endPosition;
-
   assert.equal(actualPosition.line, expectedPosition.line, "Cursor LINE position is wrong.");
   assert.equal(actualPosition.character, expectedPosition.character, "Cursor CHARACTER position is wrong.");
 

@@ -15,6 +15,7 @@ import * as _ from "lodash";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
+import { RecordedState } from './../mode/modeHandler';
 
 import DiffMatchPatch = require("diff-match-patch");
 
@@ -69,6 +70,7 @@ class HistoryStep {
    * The insertions and deletions that occured in this history step.
    */
   changes: DocumentChange[];
+
 
   /**
    * Whether the user is still inserting or deleting for this history step.
@@ -152,6 +154,11 @@ class HistoryStep {
 }
 
 export class HistoryTracker {
+  public lastContentChanges: vscode.TextDocumentContentChangeEvent[];
+  public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
+
+  public lastInvokedMacro: RecordedState;
+
   /**
    * The entire Undo/Redo stack.
    */
@@ -201,6 +208,8 @@ export class HistoryTracker {
     this.finishCurrentStep();
 
     this.oldText = TextEditor.getAllText();
+    this.currentContentChanges = [];
+    this.lastContentChanges = [];
   }
 
   private _addNewHistoryStep(): void {

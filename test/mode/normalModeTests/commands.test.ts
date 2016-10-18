@@ -213,6 +213,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'J' with a following delete",
+      start: ['on|e', 'two'],
+      keysPressed: 'Jx',
+      end: ['one|two']
+    });
+
+    newTest({
       title: "Can handle 'gJ' once",
       start: ['|one', 'two'],
       keysPressed: 'kgJ',
