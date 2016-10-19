@@ -1378,27 +1378,6 @@ export class CommandSearchBackwards extends BaseCommand {
 }
 
 @RegisterAction
-class CommandFormatCode extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
-  keys = ["="];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.format");
-    let line = vimState.cursorStartPosition.line;
-
-    if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
-      line = vimState.cursorPosition.line;
-    }
-
-    let newCursorPosition = new Position(line, 0);
-    vimState.cursorPosition = newCursorPosition;
-    vimState.cursorStartPosition = newCursorPosition;
-    vimState.currentMode = ModeName.Normal;
-    return vimState;
-  }
-}
-
-@RegisterAction
 export class DeleteOperator extends BaseOperator {
     public keys = ["d"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
@@ -1589,6 +1568,27 @@ export class ChangeOperatorSVisual extends BaseOperator {
     }
 }
 
+@RegisterAction
+export class FormatOperator extends BaseOperator {
+  public keys = ["="];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
+    await vscode.commands.executeCommand("editor.action.formatSelection");
+    let line = vimState.cursorStartPosition.line;
+
+    if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
+      line = vimState.cursorPosition.line;
+    }
+
+    let newCursorPosition = new Position(line, 0);
+    vimState.cursorPosition = newCursorPosition;
+    vimState.cursorStartPosition = newCursorPosition;
+    vimState.currentMode = ModeName.Normal;
+    return vimState;
+  }
+}
 
 @RegisterAction
 export class UpperCaseOperator extends BaseOperator {
@@ -3778,7 +3778,7 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 }
 
 // DOUBLE MOTIONS
-// (dd yy cc << >>)
+// (dd yy cc << >> ==)
 // These work because there is a check in does/couldActionApply where
 // you can't run an operator if you already have one going (which is logical).
 // However there is the slightly weird behavior where dy actually deletes the whole
@@ -3842,6 +3842,19 @@ class MoveIndent extends BaseMovement {
 class MoveOutdent extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["<"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start       : position.getLineBegin(),
+      stop        : position.getLineEnd(),
+    };
+  }
+}
+
+@RegisterAction
+class MoveFormat extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["="];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
