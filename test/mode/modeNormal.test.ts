@@ -1185,6 +1185,27 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can ctrl-a on an number with word before ",
+      start: ["|test3"],
+      keysPressed: "<C-a>",
+      end: ["test|4"]
+    });
+
+    newTest({
+      title: "can ctrl-a on an number with word before and after ",
+      start: ["|test3abc"],
+      keysPressed: "<C-a>",
+      end: ["test|4abc"]
+    });
+
+    newTest({
+      title: "can ctrl-x on a negative number with word before and after ",
+      start: ["|test-2abc"],
+      keysPressed: "<C-a><C-a><C-a>",
+      end: ["test|1abc"]
+    });
+
+    newTest({
       title: "can do Y",
       start: ["|blah blah"],
       keysPressed: "Yp",
