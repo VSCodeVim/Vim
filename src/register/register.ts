@@ -54,7 +54,7 @@ export class Register {
   }
 
   public static isValidRegisterForMacro(register: string): boolean {
-    return /^[a-zA-Z]+$/i.test(register);
+    return /^[a-zA-Z0-9]+$/i.test(register);
   }
 
   /**
