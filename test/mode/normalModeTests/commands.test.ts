@@ -106,6 +106,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'D' on empty lines",
+      start: ['text', '|', 'text'],
+      keysPressed: 'D',
+      end: ['text', '|', 'text']
+    });
+
+    newTest({
       title: "Can handle 'DD'",
       start: ['tex|t'],
       keysPressed: '^llDD',
