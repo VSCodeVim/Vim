@@ -5113,6 +5113,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
       if (num !== null) {
         vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+        vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
         return vimState;
       }
     }
