@@ -2427,6 +2427,10 @@ class CommandDeleteToLineEnd extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (position.isLineEnd()) {
+      return vimState;
+    }
+
     return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
   }
 }
