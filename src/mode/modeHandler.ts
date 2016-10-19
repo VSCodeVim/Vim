@@ -1496,8 +1496,8 @@ export class ModeHandler implements vscode.Disposable {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
     } else {
       this.setupStatusBarItem(
-        `-- ${ this.currentMode.text.toUpperCase() } ${ this._vimState.isMultiCursor ? 'MULTI CURSOR' : '' } -- ` +
-        `${this._vimState.isRecordingMacro ? 'Recording' : ''}`);
+        `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''} -- ` +
+        `${this._vimState.isRecordingMacro ? 'Recording @' + this._vimState.recordedMacro.registerName : ''}`);
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
