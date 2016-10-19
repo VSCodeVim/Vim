@@ -4913,6 +4913,19 @@ class MoveAroundTag extends MoveTagMatch {
   includeTag = true;
 }
 
+@RegisterAction
+class ActionTriggerHover extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "h"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.showHover");
+
+    return vimState;
+  }
+}
+
 /**
  * Multi-Cursor Command Overrides
  *
