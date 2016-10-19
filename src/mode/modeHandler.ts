@@ -593,7 +593,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      await this.updateView(this._vimState, false);
+      await this.updateView(this._vimState, {drawSelection: false, revealRange: true});
     }
   }
 
@@ -1299,7 +1299,7 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
       }
 
-      await this.updateView(vimState, true);
+      await this.updateView(vimState);
     }
 
     vimState.isRunningDotCommand = false;
@@ -1324,7 +1324,7 @@ export class ModeHandler implements vscode.Disposable {
         break;
       }
 
-      await this.updateView(vimState, true);
+      await this.updateView(vimState);
     }
 
     vimState.isRunningDotCommand = false;
@@ -1332,10 +1332,11 @@ export class ModeHandler implements vscode.Disposable {
     return vimState;
   }
 
-  public async updateView(vimState: VimState, drawSelection = true): Promise<void> {
+  public async updateView(vimState: VimState,
+    args: {drawSelection: boolean, revealRange: boolean} = {drawSelection: true, revealRange: true}): Promise<void> {
     // Draw selection (or cursor)
 
-    if (drawSelection) {
+    if (args.drawSelection) {
       let selections: vscode.Selection[];
 
       if (!vimState.isMultiCursor) {
@@ -1415,7 +1416,9 @@ export class ModeHandler implements vscode.Disposable {
 
       vscode.window.activeTextEditor.revealRange(new vscode.Range(nextMatch, nextMatch));
     } else {
-      vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
+      if (args.revealRange) {
+        vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
+      }
     }
 
     let rangesToDraw: vscode.Range[] = [];

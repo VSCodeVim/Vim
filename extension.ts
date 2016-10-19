@@ -93,7 +93,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   } else {
     previousActiveEditorId = activeEditorId;
 
-    await handler.updateView(handler.vimState, false);
+    await handler.updateView(handler.vimState, {drawSelection: false, revealRange: false});
   }
 
   if (oldHandler && oldHandler.vimState.focusChanged) {
@@ -242,7 +242,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
-    mh.updateView(mh.vimState, false);
+    mh.updateView(mh.vimState, {drawSelection: false, revealRange: false});
   }
 }
 
@@ -290,7 +290,7 @@ async function handleActiveEditorChange(): Promise<void> {
       if (vscode.window.activeTextEditor !== undefined) {
         const mh = await getAndUpdateModeHandler();
 
-        mh.updateView(mh.vimState, false);
+        mh.updateView(mh.vimState, {drawSelection: false, revealRange: false});
       }
     },
     isRunning: false
