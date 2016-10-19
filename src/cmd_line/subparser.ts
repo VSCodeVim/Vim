@@ -60,8 +60,12 @@ export const commandParsers = {
   s: parseSubstituteCommandArgs,
   vs: fileCmd.parseEditFileInNewWindowCommandArgs,
   vsp: fileCmd.parseEditFileInNewWindowCommandArgs,
+  sp: fileCmd.parseEditFileInNewWindowCommandArgs,
+  split: fileCmd.parseEditFileInNewWindowCommandArgs,
   vsplit: fileCmd.parseEditFileInNewWindowCommandArgs,
+  ne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
   vne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
+  new: fileCmd.parseEditNewFileInNewWindowCommandArgs,
   vnew: fileCmd.parseEditNewFileInNewWindowCommandArgs,
 
   set: parseOptionsCommandArgs,
