@@ -34,7 +34,7 @@ Status | Command
 :white_check_mark: | Visual Block Mode
 :warning: | Replace Mode
 :white_check_mark: | Multiple Select Mode
- | Macros
+:warning: | Macros
 :warning: | Buffer/Window/Tab
 
 
