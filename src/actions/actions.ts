@@ -3258,8 +3258,8 @@ class MoveNonBlankLast extends BaseMovement {
 export class MoveWordBegin extends BaseMovement {
   keys = ["w"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.recordedState.operator instanceof ChangeOperator) {
+  public async execAction(position: Position, vimState: VimState, isLastIteration: boolean = false): Promise<Position> {
+    if (isLastIteration && vimState.recordedState.operator instanceof ChangeOperator) {
       if (TextEditor.getLineAt(position).text.length < 1) {
         return position;
       }
@@ -3286,7 +3286,7 @@ export class MoveWordBegin extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    const result = await this.execAction(position, vimState);
+    const result = await this.execAction(position, vimState, true);
 
     /*
     From the Vim documentation:
