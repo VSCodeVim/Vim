@@ -61,6 +61,11 @@ Each cursor has its own clipboard.
 
 Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
 
+## Additional (Custom) Vim Commands
+
+* `gh` - show the hover tooltip.
+* `gc` - add an additional cursor at the next place that matches `*`.
+
 ## Supported Options
 
 Vim options can be added to your user or workspace settings (open the Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
