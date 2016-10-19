@@ -516,10 +516,20 @@ export class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<BS>") {
-      vimState.recordedState.transformations.push({
-        type           : "deleteText",
-        position       : position,
-      });
+      const selection = TextEditor.getSelection();
+
+      // Check if a selection is active
+      if (!selection.isEmpty) {
+        vimState.recordedState.transformations.push({
+          type: "deleteRange",
+          range: new Range(selection.start as Position, selection.end as Position),
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type: "deleteText",
+          position: position,
+        });
+      }
 
       vimState.cursorPosition      = vimState.cursorPosition.getLeft();
       vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
@@ -3258,8 +3268,8 @@ class MoveNonBlankLast extends BaseMovement {
 export class MoveWordBegin extends BaseMovement {
   keys = ["w"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.recordedState.operator instanceof ChangeOperator) {
+  public async execAction(position: Position, vimState: VimState, isLastIteration: boolean = false): Promise<Position> {
+    if (isLastIteration && vimState.recordedState.operator instanceof ChangeOperator) {
       if (TextEditor.getLineAt(position).text.length < 1) {
         return position;
       }
@@ -3286,7 +3296,7 @@ export class MoveWordBegin extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    const result = await this.execAction(position, vimState);
+    const result = await this.execAction(position, vimState, true);
 
     /*
     From the Vim documentation:

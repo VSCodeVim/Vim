@@ -220,6 +220,22 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'cw' without deleting following white spaces",
+      start: ['|const a = 1;'],
+      keysPressed: 'cw',
+      end: ['| a = 1;'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'c2w'",
+      start: ['|const a = 1;'],
+      keysPressed: 'c2w',
+      end: ['| = 1;'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'cw' without removing EOL",
       start: ['|text;', 'text'],
       keysPressed: 'llllcw',
