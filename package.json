@@ -136,6 +136,11 @@
                 "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys && !inDebugRepl"
             },
             {
+                "key": "cmd+v",
+                "command": "extension.vim_cmd+v",
+                "when": "editorTextFocus && vim.mode == 'Search In Progress' && !inDebugRepl"
+            },
+            {
                 "key": "ctrl+[",
                 "command": "extension.vim_ctrl+[",
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"

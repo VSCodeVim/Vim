@@ -1353,7 +1353,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.searchState = undefined;
 
       return vimState;
-    } else if (key === "<C-v>") {
+    } else if (key === "<C-v>" || key === "<D-v>") {
       const text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => err ? reject(err) : resolve(text))
       );
