@@ -3856,6 +3856,31 @@ class ActionDVisualBlock extends ActionXVisualBlock {
 }
 
 @RegisterAction
+class ActionShiftDVisualBlock extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ["D"];
+  canBeRepeatedWithDot = true;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    for (const { start } of Position.IterateLine(vimState)) {
+      vimState.recordedState.transformations.push({
+        type  : "deleteRange",
+        range : new Range(start, start.getLineEnd()),
+        manuallySetCursorPositions: true,
+      });
+    }
+
+    const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
+
+    vimState.allCursors = [ new Range(topLeft, topLeft) ];
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionSVisualBlock extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = [["s"], ["S"]];
