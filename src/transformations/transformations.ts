@@ -187,6 +187,15 @@ export interface Dot {
   type: "dot";
 }
 
+/**
+ * Represents macro
+ */
+export interface Macro {
+  type: "macro";
+  register: string;
+  replay: "contentChange" | "keystrokes";
+}
+
 export type Transformation
   = InsertTextTransformation
   | InsertTextVSCodeTransformation
@@ -196,6 +205,7 @@ export type Transformation
   | MoveCursorTransformation
   | ShowCommandLine
   | Dot
+  | Macro
   | DeleteTextTransformation;
 
 /**

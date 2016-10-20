@@ -15,8 +15,10 @@ export enum RegisterMode {
   BlockWise,
 };
 
+export type RegisterContent = string | string[] | RecordedState;
+
 export interface IRegisterContent {
-  text               : string | string[];
+  text               : RegisterContent;
   registerMode       : RegisterMode;
   isClipboardRegister: boolean;
 }
@@ -53,17 +55,24 @@ export class Register {
     return register && register.isClipboardRegister;
   }
 
+  /**
+   * ". readonly register: last content change.
+   */
   public static lastContentChange: RecordedState;
 
   public static isValidRegister(register: string): boolean {
-    return register in Register.registers || /^[a-z0-9]+$/i.test(register);
+    return register in Register.registers || /^[a-z0-9]+$/i.test(register) || /\./.test(register);
+  }
+
+  public static isValidRegisterForMacro(register: string): boolean {
+    return /^[a-zA-Z0-9]+$/i.test(register);
   }
 
   /**
    * Puts content in a register. If none is specified, uses the default
    * register ".
    */
-  public static put(content: string | string[], vimState: VimState): void {
+  public static put(content: RegisterContent, vimState: VimState): void {
     const register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
@@ -83,7 +92,7 @@ export class Register {
     Register.ProcessNumberedRegister(content, vimState);
   }
 
-  public static putByKey(content: string | string[], register = '"', registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
+  public static putByKey(content: RegisterContent, register = '"', registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
@@ -191,6 +200,10 @@ export class Register {
     }
 
     return Register.registers[register];
+  }
+
+  public static has(register: string): boolean {
+    return Register.registers[register] !== undefined;
   }
 
   public static getKeys(): string[] {

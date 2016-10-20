@@ -106,6 +106,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'D' on empty lines",
+      start: ['text', '|', 'text'],
+      keysPressed: 'D',
+      end: ['text', '|', 'text']
+    });
+
+    newTest({
       title: "Can handle 'DD'",
       start: ['tex|t'],
       keysPressed: '^llDD',
@@ -210,6 +217,13 @@ suite("Mode Normal", () => {
       start: ['one(', ')tw|o'],
       keysPressed: 'kJ',
       end: ['one(|)two']
+    });
+
+    newTest({
+      title: "Can handle 'J' with a following delete",
+      start: ['on|e', 'two'],
+      keysPressed: 'Jx',
+      end: ['one|two']
     });
 
     newTest({

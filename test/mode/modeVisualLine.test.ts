@@ -5,9 +5,15 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { TextEditor } from '../../src/textEditor';
+import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Visual", () => {
-  let modeHandler: ModeHandler;
+  let modeHandler: ModeHandler = new ModeHandler();
+
+  let {
+    newTest,
+    newTestOnly,
+  } = getTestingFunctions(modeHandler);
 
   setup(async () => {
     await setupWorkspace();
@@ -236,6 +242,23 @@ suite("Mode Visual", () => {
       ]);
 
       assertEqualLines(["two"]);
+    });
+
+  });
+
+  suite("Arrow keys work perfectly in Visual Line Mode", () => {
+    newTest({
+      title: "Can handle <up> key",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'V<up>x',
+      end: ['blah', '|hur']
+    });
+
+    newTest({
+      title: "Can handle <down> key",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'V<down>x',
+      end: ['blah', '|duh']
     });
   });
 });

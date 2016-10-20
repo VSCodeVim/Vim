@@ -1,4 +1,4 @@
-import { VimState } from './../mode/modeHandler';
+import { VimState, RecordedState } from './../mode/modeHandler';
 import { SearchState, SearchDirection } from './../state/searchState';
 import { ReplaceState } from './../state/replaceState';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
@@ -516,10 +516,20 @@ export class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<BS>") {
-      vimState.recordedState.transformations.push({
-        type           : "deleteText",
-        position       : position,
-      });
+      const selection = TextEditor.getSelection();
+
+      // Check if a selection is active
+      if (!selection.isEmpty) {
+        vimState.recordedState.transformations.push({
+          type: "deleteRange",
+          range: new Range(selection.start as Position, selection.end as Position),
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type: "deleteText",
+          position: position,
+        });
+      }
 
       vimState.cursorPosition      = vimState.cursorPosition.getLeft();
       vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
@@ -614,6 +624,14 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     if (register.text instanceof Array) {
        text = (register.text as string []).join("\n");
+    } else if (register.text instanceof RecordedState) {
+      vimState.recordedState.transformations.push({
+        type: "macro",
+        register: vimState.recordedState.registerName,
+        replay: "keystrokes"
+      });
+
+      return vimState;
     } else {
        text = register.text;
     }
@@ -642,6 +660,147 @@ class CommandInsertRegisterContent extends BaseCommand {
     return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 
+}
+
+@RegisterAction
+class CommandInsertRegisterContentInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<C-r>", "<character>"];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.registerName = this.keysPressed[1];
+    const register = await Register.get(vimState);
+    let text: string;
+
+    if (register.text instanceof Array) {
+       text = (register.text as string []).join("\n");
+    } else if (register.text instanceof RecordedState) {
+      let keyStrokes: string[] = [];
+
+      for (let action of register.text.actionsRun) {
+         keyStrokes = keyStrokes.concat(action.keysPressed);
+      }
+
+      text = keyStrokes.join("\n");
+    } else {
+       text = register.text;
+    }
+
+    if (register.registerMode === RegisterMode.LineWise) {
+      text += "\n";
+    }
+
+    const searchState = vimState.searchState!;
+    searchState.searchString += text;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandRecordMacro extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["q", "<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const register = this.keysPressed[1];
+    vimState.recordedMacro = new RecordedState();
+    vimState.recordedMacro.registerName = register.toLocaleLowerCase();
+
+    if (!/^[A-Z]+$/.test(register) || !Register.has(register)) {
+      // If register name is upper case, it means we are appending commands to existing register instead of overriding.
+      let newRegister = new RecordedState();
+      newRegister.registerName = register;
+      Register.putByKey(newRegister, register);
+    }
+
+    vimState.isRecordingMacro = true;
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = this.keysPressed[1];
+
+    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = this.keysPressed[1];
+
+    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
+}
+
+@RegisterAction
+export class CommandQuitRecordMacro extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["q"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let existingMacro = (await Register.getByKey(vimState.recordedMacro.registerName)).text as RecordedState;
+    existingMacro.actionsRun = existingMacro.actionsRun.concat(vimState.recordedMacro.actionsRun);
+    vimState.isRecordingMacro = false;
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && vimState.isRecordingMacro;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.couldActionApply(vimState, keysPressed) && vimState.isRecordingMacro;
+  }
+}
+
+@RegisterAction
+class CommandExecuteMacro extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["@", "<character>"];
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const register = this.keysPressed[1];
+    vimState.recordedState.transformations.push({
+      type: "macro",
+      register: register,
+      replay: "contentChange"
+    });
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.doesActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const register = keysPressed[1];
+
+    return super.couldActionApply(vimState, keysPressed) && Register.isValidRegisterForMacro(register);
+  }
+}
+
+@RegisterAction
+class CommandExecuteLastMacro extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["@", "@"];
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
+
+    if (lastInvokedMacro) {
+      vimState.recordedState.transformations.push({
+        type: "macro",
+        register: lastInvokedMacro.registerName,
+        replay: "contentChange"
+      });
+    }
+
+    return vimState;
+  }
 }
 
 @RegisterAction
@@ -812,7 +971,8 @@ export class CommandInsertPreviousText extends BaseCommand {
   keys = ["<C-a>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let actions = Register.lastContentChange.actionsRun.slice(0);
+    let actions = ((await Register.getByKey('.')).text as RecordedState).actionsRun.slice(0);
+    // let actions = Register.lastContentChange.actionsRun.slice(0);
     // The first action is entering Insert Mode, which is not necessary in this case
     actions.shift();
     // The last action is leaving Insert Mode, which is not necessary in this case
@@ -1196,7 +1356,7 @@ class RightArrowInInsertMode extends ArrowsInInsertMode {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = ["<any>"];
+  keys = ["<character>"];
   runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1208,7 +1368,6 @@ class CommandInsertInSearchMode extends BaseCommand {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
-      vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
@@ -1220,22 +1379,62 @@ class CommandInsertInSearchMode extends BaseCommand {
       // Store this search
       vimState.searchStatePrevious = searchState;
 
-      return vimState;
-    } else if (key === "<Esc>") {
-      vimState.currentMode = ModeName.Normal;
-      vimState.searchState = undefined;
+      // Move cursor to next match
+      vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       return vimState;
-    } else if (key === "<C-v>") {
-      const text = await new Promise<string>((resolve, reject) =>
-        clipboard.paste((err, text) => err ? reject(err) : resolve(text))
-      );
-
-      searchState.searchString += text;
     } else {
       searchState.searchString += this.keysPressed[0];
     }
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandEscInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<Esc>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Normal;
+    vimState.searchState = undefined;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlVInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<C-v>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = vimState.searchState!;
+    const textFromClipboard = await new Promise<string>((resolve, reject) =>
+      clipboard.paste((err, text) => err ? reject(err) : resolve(text))
+    );
+
+    searchState.searchString += textFromClipboard;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCmdVInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<D-v>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = vimState.searchState!;
+    const textFromClipboard = await new Promise<string>((resolve, reject) =>
+      clipboard.paste((err, text) => err ? reject(err) : resolve(text))
+    );
+
+    searchState.searchString += textFromClipboard;
     return vimState;
   }
 }
@@ -1373,27 +1572,6 @@ export class CommandSearchBackwards extends BaseCommand {
     vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
 
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandFormatCode extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
-  keys = ["="];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.format");
-    let line = vimState.cursorStartPosition.line;
-
-    if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
-      line = vimState.cursorPosition.line;
-    }
-
-    let newCursorPosition = new Position(line, 0);
-    vimState.cursorPosition = newCursorPosition;
-    vimState.cursorStartPosition = newCursorPosition;
-    vimState.currentMode = ModeName.Normal;
     return vimState;
   }
 }
@@ -1589,6 +1767,27 @@ export class ChangeOperatorSVisual extends BaseOperator {
     }
 }
 
+@RegisterAction
+export class FormatOperator extends BaseOperator {
+  public keys = ["="];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
+    await vscode.commands.executeCommand("editor.action.formatSelection");
+    let line = vimState.cursorStartPosition.line;
+
+    if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
+      line = vimState.cursorPosition.line;
+    }
+
+    let newCursorPosition = new Position(line, 0);
+    vimState.cursorPosition = newCursorPosition;
+    vimState.cursorStartPosition = newCursorPosition;
+    vimState.currentMode = ModeName.Normal;
+    return vimState;
+  }
+}
 
 @RegisterAction
 export class UpperCaseOperator extends BaseOperator {
@@ -1731,7 +1930,20 @@ export class PutCommand extends BaseCommand {
         const register = await Register.get(vimState);
         const dest = after ? position : position.getRight();
 
-        if (typeof register.text === "object") {
+        if (register.text instanceof RecordedState) {
+          /**
+           *  Paste content from recordedState. This one is actually complex as Vim has internal key code for key strokes.
+           *  For example, Backspace is stored as `<80>kb`. So if you replay a macro, which is stored in a register as `a1<80>kb2`, you
+           *  shall just get `2` inserted as `a` represents entering Insert Mode, `<80>bk` represents Backspace. However here, we shall
+           *  insert the plain text content of the register, which is `a1<80>kb2`.
+           */
+          vimState.recordedState.transformations.push({
+            type: "macro",
+            register: vimState.recordedState.registerName,
+            replay: "keystrokes"
+          });
+          return vimState;
+        } else if (typeof register.text === "object") {
           return await this.execVisualBlockPaste(register.text, position, vimState, after);
         }
 
@@ -1881,6 +2093,15 @@ export class GPutCommand extends BaseCommand {
     const register = await Register.get(vimState);
     let addedLinesCount: number;
 
+    if (register.text instanceof RecordedState) {
+      vimState.recordedState.transformations.push({
+        type: "macro",
+        register: vimState.recordedState.registerName,
+        replay: "keystrokes"
+      });
+
+      return vimState;
+    }
     if (typeof register.text === "object") { // visual block mode
       addedLinesCount = register.text.length * vimState.recordedState.count;
     } else {
@@ -2025,7 +2246,15 @@ export class GPutBeforeCommand extends BaseCommand {
     const register = await Register.get(vimState);
     let addedLinesCount: number;
 
-    if (typeof register.text === "object") { // visual block mode
+    if (register.text instanceof RecordedState) {
+      vimState.recordedState.transformations.push({
+        type: "macro",
+        register: vimState.recordedState.registerName,
+        replay: "keystrokes"
+      });
+
+      return vimState;
+    } else if (typeof register.text === "object") { // visual block mode
       addedLinesCount = register.text.length * vimState.recordedState.count;
     } else {
       addedLinesCount = register.text.split('\n').length;
@@ -2270,6 +2499,10 @@ class CommandDeleteToLineEnd extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (position.isLineEnd()) {
+      return vimState;
+    }
+
     return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
   }
 }
@@ -3111,8 +3344,8 @@ class MoveNonBlankLast extends BaseMovement {
 export class MoveWordBegin extends BaseMovement {
   keys = ["w"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.recordedState.operator instanceof ChangeOperator) {
+  public async execAction(position: Position, vimState: VimState, isLastIteration: boolean = false): Promise<Position> {
+    if (isLastIteration && vimState.recordedState.operator instanceof ChangeOperator) {
       if (TextEditor.getLineAt(position).text.length < 1) {
         return position;
       }
@@ -3139,7 +3372,7 @@ export class MoveWordBegin extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    const result = await this.execAction(position, vimState);
+    const result = await this.execAction(position, vimState, true);
 
     /*
     From the Vim documentation:
@@ -3778,7 +4011,7 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 }
 
 // DOUBLE MOTIONS
-// (dd yy cc << >>)
+// (dd yy cc << >> ==)
 // These work because there is a check in does/couldActionApply where
 // you can't run an operator if you already have one going (which is logical).
 // However there is the slightly weird behavior where dy actually deletes the whole
@@ -3842,6 +4075,19 @@ class MoveIndent extends BaseMovement {
 class MoveOutdent extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["<"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start       : position.getLineBegin(),
+      stop        : position.getLineEnd(),
+    };
+  }
+}
+
+@RegisterAction
+class MoveFormat extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["="];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
@@ -4754,6 +5000,19 @@ class MoveInsideTag extends MoveTagMatch {
 class MoveAroundTag extends MoveTagMatch {
   keys = ["a", "t"];
   includeTag = true;
+}
+
+@RegisterAction
+class ActionTriggerHover extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "h"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.showHover");
+
+    return vimState;
+  }
 }
 
 /**

@@ -4,7 +4,6 @@ notifications:
 sudo: false
 
 os:
-- osx
 - linux
 
 addons:
