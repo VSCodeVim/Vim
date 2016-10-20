@@ -164,6 +164,11 @@ export async function activate(context: vscode.ExtensionContext) {
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
 
+        if (mh.vimState.isMultiCursor && mh.vimState.currentMode === ModeName.Insert) {
+          await vscode.commands.executeCommand('default:type', args);
+          return;
+        }
+
         if (compositionState.isInComposition) {
           compositionState.composingText += args.text;
         } else {
@@ -178,6 +183,11 @@ export async function activate(context: vscode.ExtensionContext) {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
+
+        if (mh.vimState.isMultiCursor && mh.vimState.currentMode === ModeName.Insert) {
+          await vscode.commands.executeCommand('default:replacePreviousChar', args);
+          return;
+        }
 
         if (compositionState.isInComposition) {
           compositionState.composingText = compositionState.composingText.substr(0, compositionState.composingText.length - args.replaceCharCnt) + args.text;

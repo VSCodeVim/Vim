@@ -73,7 +73,7 @@
             {
                 "key": "Backspace",
                 "command": "extension.vim_backspace",
-                "when": "editorTextFocus && !inDebugRepl"
+                "when": "editorTextFocus && !inDebugRepl && !vim.multiCursorSlient"
             },
             {
                 "key": "Delete",
