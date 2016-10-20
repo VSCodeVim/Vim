@@ -663,6 +663,41 @@ class CommandInsertRegisterContent extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertRegisterContentInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<C-r>", "<character>"];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.registerName = this.keysPressed[1];
+    const register = await Register.get(vimState);
+    let text: string;
+
+    if (register.text instanceof Array) {
+       text = (register.text as string []).join("\n");
+    } else if (register.text instanceof RecordedState) {
+      let keyStrokes: string[] = [];
+
+      for (let action of register.text.actionsRun) {
+         keyStrokes = keyStrokes.concat(action.keysPressed);
+      }
+
+      text = keyStrokes.join("\n");
+    } else {
+       text = register.text;
+    }
+
+    if (register.registerMode === RegisterMode.LineWise) {
+      text += "\n";
+    }
+
+    const searchState = vimState.searchState!;
+    searchState.searchString += text;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandRecordMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["q", "<character>"];
@@ -1321,7 +1356,7 @@ class RightArrowInInsertMode extends ArrowsInInsertMode {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = ["<any>"];
+  keys = ["<character>"];
   runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1348,21 +1383,58 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       return vimState;
-    } else if (key === "<Esc>") {
-      vimState.currentMode = ModeName.Normal;
-      vimState.searchState = undefined;
-
-      return vimState;
-    } else if (key === "<C-v>" || key === "<D-v>") {
-      const text = await new Promise<string>((resolve, reject) =>
-        clipboard.paste((err, text) => err ? reject(err) : resolve(text))
-      );
-
-      searchState.searchString += text;
     } else {
       searchState.searchString += this.keysPressed[0];
     }
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandEscInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<Esc>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Normal;
+    vimState.searchState = undefined;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlVInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<C-v>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = vimState.searchState!;
+    const textFromClipboard = await new Promise<string>((resolve, reject) =>
+      clipboard.paste((err, text) => err ? reject(err) : resolve(text))
+    );
+
+    searchState.searchString += textFromClipboard;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCmdVInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<D-v>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = vimState.searchState!;
+    const textFromClipboard = await new Promise<string>((resolve, reject) =>
+      clipboard.paste((err, text) => err ? reject(err) : resolve(text))
+    );
+
+    searchState.searchString += textFromClipboard;
     return vimState;
   }
 }
