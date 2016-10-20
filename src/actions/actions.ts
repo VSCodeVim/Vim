@@ -3723,6 +3723,43 @@ class ActionReplaceCharacter extends BaseCommand {
 }
 
 @RegisterAction
+class ActionReplaceCharacterVisual extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["r", "<character>"];
+  runsOnceForEveryCursor() { return false; }
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const toInsert   = this.keysPressed[1];
+    let textAtPos = "";
+    let newText = "";
+    for (const { pos } of Position.IterateSelection(vimState.topLeft, vimState.bottomRight)) {
+
+      textAtPos = TextEditor.getText(new vscode.Range(pos, pos.getRight()));
+      newText = toInsert;
+
+      // If no character at this position, do not replace with anything
+      if (textAtPos === "") {
+        newText = "";
+      }
+
+      vimState.recordedState.transformations.push({
+        type  : "replaceText",
+        text  : newText,
+        start : pos,
+        end   : pos.getRight(),
+      });
+    }
+
+    const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
+    vimState.allCursors = [ new Range(topLeft, topLeft) ];
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionReplaceCharacterVisualBlock extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["r", "<character>"];
@@ -3731,18 +3768,28 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toInsert   = this.keysPressed[1];
-
+    let textAtPos = "";
+    let newText = "";
     for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
+
+      textAtPos = TextEditor.getText(new vscode.Range(pos, pos.getRight()));
+      newText = toInsert;
+
+      // If no character at this position, do not replace with anything
+      if (textAtPos === "") {
+        newText = "";
+      }
+
       vimState.recordedState.transformations.push({
         type  : "replaceText",
-        text  : toInsert,
+        text  : newText,
         start : pos,
         end   : pos.getRight(),
+        manuallySetCursorPositions : true
       });
     }
 
     const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
-
     vimState.allCursors = [ new Range(topLeft, topLeft) ];
     vimState.currentMode = ModeName.Normal;
 
