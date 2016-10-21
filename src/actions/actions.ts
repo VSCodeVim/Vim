@@ -2153,9 +2153,16 @@ export class PutCommandVisual extends BaseCommand {
   canBePrefixedWithDot = true;
 
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
-    const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, false);
+    let start = vimState.cursorStartPosition;
+    let end = vimState.cursorPosition;
 
-    return await new PutCommand().exec(vimState.cursorStartPosition, result, true);
+    if (start.isAfter(end)) {
+      [start, end] = [end, start];
+    }
+
+    const result = await new DeleteOperator().run(vimState, start, end, false);
+
+    return await new PutCommand().exec(start, result, true);
   }
 
   // TODO - execWithCount
