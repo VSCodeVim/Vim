@@ -49,4 +49,52 @@ suite("register", () => {
     end: ["one", "two", "one", "|two"],
   });
 
+  test("Yank stores text in Register '0'", async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'itest1\ntest2\ntest3'.split('')
+    );
+
+    await modeHandler.handleMultipleKeyEvents([
+      '<Esc>',
+      'g', 'g',
+      'y', 'y',
+      'j',
+      'y', 'y',
+      'g', 'g',
+      'd', 'd',
+      '"', '0',
+      'P'
+    ]);
+
+    assertEqualLines([
+      'test2',
+      'test2',
+      'test3'
+    ]);
+  });
+
+  test("Register '1'-'9' stores delete content", async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'itest1\ntest2\ntest3\n'.split('')
+    );
+
+    await modeHandler.handleMultipleKeyEvents([
+      '<Esc>',
+      'g', 'g',
+      'd', 'd',
+      'd', 'd',
+      'd', 'd',
+      '"', '1', 'p',
+      '"', '2', 'p',
+      '"', '3', 'p'
+    ]);
+
+    assertEqualLines([
+      '',
+      'test3',
+      'test2',
+      'test1'
+    ]);
+  });
+
 });

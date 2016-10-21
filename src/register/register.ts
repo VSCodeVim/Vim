@@ -111,7 +111,7 @@ export class Register {
   /**
    * Handles special cases for Yank- and DeleteOperator.
    */
-  private static ProcessNumberedRegister(content: string | string[], vimState: VimState): void {
+  private static ProcessNumberedRegister(content: RegisterContent, vimState: VimState): void {
     // Find the BaseOperator of the current actions
     const baseOperator = vimState.recordedState.actionsRun.find( (value) => {
       return value instanceof BaseOperator;
