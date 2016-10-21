@@ -1096,6 +1096,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can handle p with selection",
+      start: ["one", "two", "|three"],
+      keysPressed: "yykVkp",
+      end: ["|three", "three"]
+    });
+
+    newTest({
       title: "can handle P with selection",
       start: ["|abc def ghi"],
       keysPressed: "vwywvwP",
