@@ -76,6 +76,11 @@
                 "when": "editorTextFocus && !inDebugRepl"
             },
             {
+                "key": "shift+backspace",
+                "command": "extension.vim_shift+backspace",
+                "when": "editorTextFocus && vim.mode == 'Search In Progress' && !inDebugRepl"
+            },
+            {
                 "key": "Delete",
                 "command": "extension.vim_delete",
                 "when": "editorTextFocus && vim.mode == 'Normal Mode' && !inDebugRepl"

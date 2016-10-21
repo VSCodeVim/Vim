@@ -44,6 +44,7 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
 
   const containsControlKey = (s: string): boolean => {
     return s.toUpperCase() !== "<BS>" &&
+           s.toUpperCase() !== "<SHIFT+BS>" &&
            s.toUpperCase() !== "<TAB>" &&
            s.startsWith("<") &&
            s.length > 1;
@@ -1364,7 +1365,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const searchState = vimState.searchState!;
 
     // handle special keys first
-    if (key === "<BS>") {
+    if (key === "<BS>" || key === "<shift+BS>") {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
