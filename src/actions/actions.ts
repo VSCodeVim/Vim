@@ -1605,23 +1605,29 @@ export class DeleteOperator extends BaseOperator {
           }
         }
 
+        let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+
         // If we delete linewise to the final line of the document, we expect the line
         // to be removed. This is actually a special case because the newline
         // character we've selected to delete is the newline on the end of the document,
         // but we actually delete the newline on the second to last line.
 
         // Just writing about this is making me more confused. -_-
+
+        // rebornix: johnfn's description about this corner case is perfectly correct. The only catch is
+        // that we definitely don't want to put the EOL in the register. So here we run the `getText`
+        // expression first and then update the start position.
+
+        // Now rebornix is confused as well.
         if (isOnLastLine &&
             start.line !== 0 &&
             registerMode === RegisterMode.LineWise) {
           start = start.getPreviousLineBegin().getLineEnd();
         }
 
-        let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
-
         if (registerMode === RegisterMode.LineWise) {
           // slice final newline in linewise mode - linewise put will add it back.
-          text = text.endsWith("\r\n") ? text.slice(0, -2) : text.slice(0, -1);
+          text = text.endsWith("\r\n") ? text.slice(0, -2) : (text.endsWith('\n') ? text.slice(0, -1) : text);
         }
 
         if (yank) {
@@ -1971,9 +1977,11 @@ export class PutCommand extends BaseCommand {
           }
 
           if (after) {
+            // P insert before current line
             textToAdd = text + "\n";
             whereToAddText = dest.getLineBegin();
           } else {
+            // p paste after current line
             textToAdd = "\n" + text;
             whereToAddText = dest.getLineEnd();
           }
@@ -1991,7 +1999,7 @@ export class PutCommand extends BaseCommand {
           if (after) {
             diff = PositionDiff.NewBOLDiff(-numNewlines - 1, numWhitespace);
           } else {
-            diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : 0, numWhitespace);
+            diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : -numNewlines, numWhitespace);
           }
         } else {
           if (text.indexOf("\n") === -1) {
