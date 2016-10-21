@@ -249,7 +249,7 @@ Status | Command | Description
 Status | Command | Description | Note
 ---|--------|-----------|-------------------
 :arrow_down:    |CTRL-V {char}..	                 |  insert character literally, or enter decimal byte value
-:warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line | CTRL-M and CTRL-J are not supported yet
+:warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line | CTRL-M and CTRL-J are not supported
 :white_check_mark: | CTRL-E		                 |  insert the character from below the cursor
 :white_check_mark: | CTRL-Y		                 |  insert the character from above the cursor
 :white_check_mark: :star: | CTRL-A		                 |  insert previously inserted text | We apply previously document change made in previous Insert session and we only apply changes that happen under cursor
@@ -302,7 +302,7 @@ Status | Command | Description
 
 Status | Command | Description | Note
 ---|--------|-------------|-----------------
-:running:  | "{char}	        | use register {char} for the next delete, yank, or put | read only registers are not supported yet
+:warning: | "{char}	        | use register {char} for the next delete, yank, or put | read only registers are not supported
 :white_check_mark:   | "*	        | use register `*` to access system clipboard
 :white_check_mark:   | :reg		| show the contents of all registers
 :white_check_mark:   | :reg {arg}	        | show the contents of registers mentioned in {arg}
@@ -323,7 +323,7 @@ Status | Command | Description | Note
 ---|--------|------------|------------------
 :white_check_mark: | :1234:  r{char}	| replace N characters with {char}
 :arrow_down:| :1234:  gr{char}	| replace N characters without affecting layout
-:white_check_mark: | :1234:  R		| enter Replace mode (repeat the entered text N times) | {count} is not supported yet
+:white_check_mark: :star: | :1234:  R		| enter Replace mode (repeat the entered text N times) | {count} is not supported
 :arrow_down:| :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
 :arrow_down:|  {visual}r{char} | in Visual block mode: Replace each char of the selected text with {char}
 
@@ -419,7 +419,7 @@ Status | Command | Description
 
 Status | Command | Description | Note
 ---|--------|--------------|----------------
-:white_check_mark: :star:  | :1234:  .		 | repeat last change (with count replaced with N) | It won't repeat Code's auto-complete change.
+:white_check_mark: :star:  | :1234:  .		 | repeat last change (with count replaced with N) | Content changes that don't happen under cursor can not be repeated.
 :arrow_down:|    q{a-z}	         | record typed characters into register {a-z}
 :arrow_down:|    q{A-Z}	         | record typed characters, appended to register {a-z}
 :arrow_down:|    q		 | stop recording
@@ -446,7 +446,7 @@ Status | Command | Description | Note
 :white_check_mark: | :se[t] inv{option}  |invert boolean option
 :white_check_mark: | :se[t] {option}={value} | set string/number option to {value}
 :white_check_mark: | :se[t] {option}+={value} | append {value} to string option, add {value} to number option
-:white_check_mark: | :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here yet.
+:white_check_mark: :star:| :se[t] {option}-={value} | remove {value} to string option, subtract {value} from number option | We don't support string option here.
 :white_check_mark: | :se[t] {option}?	  | show value of {option}
 :arrow_down:    | :se[t] {option}&	  | reset {option} to its default value
 :arrow_down:    | :setl[ocal]		  | like ":set" but set the local value for options that have one
@@ -473,9 +473,9 @@ Status | Command | Default Value | Description
 
 Status | Command | Description | Note
 ---|--------|-------|------------------------------
-:running: | :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
-:running: | :1234: CTRL-R |	redo last N undone changes | As above.
-    | U | restore last changed line
+:warning:| :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
+:warning: | :1234: CTRL-R |	redo last N undone changes | As above.
+:arrow_down:| U | restore last changed line
 
 ## External commands
 
@@ -490,7 +490,7 @@ Status | Command | Description
 Status | Command | Description | Note
 ---|--------|-------|------------|------------------
 :white_check_mark: | , | separates two line numbers|
-:white_check_mark: :star: :warning: | ; | idem, set cursor to the first line number before interpreting the second one | The cursor movement is not included.
+:white_check_mark: :star: | ; | idem, set cursor to the first line number before interpreting the second one | The cursor movement is not included.
 :white_check_mark: | {number} | an absolute line number
 :white_check_mark: | . | the current line
 :white_check_mark: | $ | the last line in the file
@@ -536,7 +536,7 @@ Status | Command | Description | Note
 :white_check_mark:  | :tabnew {file}   | Open a new tab page with an empty window, after the current tab page
 :arrow_down:| :[count]tab {cmd} | Execute {cmd} and when it opens a new window open a new tab page instead.
 :white_check_mark: :star:  | :tabc[lose][!] :1234: | Close current tab page or close tab page {count}. | Code will close tab directly without saving.
-:white_check_mark: :star:  | :tabo[nly][!] | Close all other tab pages. | `!` is not supported yet. | Code will close tab directly without saving.
+:white_check_mark: :star:  | :tabo[nly][!] | Close all other tab pages. | `!` is not supported, Code will close tab directly without saving.
 :white_check_mark:   | :tabm[ove] [N] | Move the current tab page to after tab page N.
 :arrow_down:| :tabs	 | List the tab pages and the windows they contain. | You can always use Code's built-in shortcut: `cmd/ctrl+p`
 :arrow_down:| :tabd[o] {cmd} | Execute {cmd} in each tab page.
