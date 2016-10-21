@@ -252,8 +252,8 @@ Status | Command | Description | Note
 :warning:    | NL or CR or CTRL-M or CTRL-J |  begin new line | CTRL-M and CTRL-J are not supported yet
 :white_check_mark: | CTRL-E		                 |  insert the character from below the cursor
 :white_check_mark: | CTRL-Y		                 |  insert the character from above the cursor
-:running: | CTRL-A		                 |  insert previously inserted text
-:running: | CTRL-@		                 |  insert previously inserted text and stop Insert mode
+:white_check_mark: :star: | CTRL-A		                 |  insert previously inserted text | We apply previously document change made in previous Insert session and we only apply changes that happen under cursor
+:white_check_mark: :star: | CTRL-@		                 |  insert previously inserted text and stop Insert mode | As above
 :white_check_mark: | CTRL-R {0-9a-z%#:.-="}           |  insert the contents of a register
 :arrow_down:| CTRL-N		                 |  insert next match of identifier before the cursor
 :arrow_down:| CTRL-P		                 |  insert previous match of identifier before the cursor
@@ -264,8 +264,8 @@ Status | Command | Description | Note
 :white_check_mark: | CTRL-U		                 |  delete all entered characters in the current line
 :white_check_mark: | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
 :white_check_mark: | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
-   | 0 CTRL-D	                 |  delete all indent in the current line
-   | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
+:arrow_down:| 0 CTRL-D	                 |  delete all indent in the current line
+:arrow_down:| ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
 
 ## Digraphs
 
