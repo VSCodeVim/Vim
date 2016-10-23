@@ -3731,28 +3731,62 @@ class ActionReplaceCharacterVisual extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toInsert   = this.keysPressed[1];
-    let textAtPos = "";
-    let newText = "";
-    for (const { pos } of Position.IterateSelection(vimState.topLeft, vimState.bottomRight)) {
 
-      textAtPos = TextEditor.getText(new vscode.Range(pos, pos.getRight()));
-      newText = toInsert;
+    let currentSelection = vscode.window.activeTextEditor.selection;
+    let start = currentSelection.start as Position;
+    let end = currentSelection.end as Position;
 
-      // If no character at this position, do not replace with anything
-      if (textAtPos === "") {
-        newText = "";
-      }
-
-      vimState.recordedState.transformations.push({
-        type  : "replaceText",
-        text  : newText,
-        start : pos,
-        end   : pos.getRight(),
-      });
+    // If selection is reversed, reorganize it
+    if (start.line > end.line || ((start.line === end.line)
+      && (start.character > end.character))) {
+      let tmp = start;
+      start = end;
+      end = tmp;
     }
 
-    const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
-    vimState.allCursors = [ new Range(topLeft, topLeft) ];
+    for (var lineNum = start.line; lineNum <= end.line; lineNum++) {
+
+      const lineText = TextEditor.getLineAt(new Position(lineNum, 0)).text;
+
+      if (currentSelection.isSingleLine) {
+        // This is a visual section all on one line, only replace the part within the selection
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(end.character - start.character + 1).join(toInsert),
+          start: start,
+          end: end
+        });
+      } else if (lineNum === start.line) {
+        // This is the first line of the selection so only replace after the cursor
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(lineText.length - start.character + 1).join(toInsert),
+          start: start,
+          end: new Position(end.line, lineText.length),
+        });
+      } else if (lineNum === end.line) {
+        // This is the last line of the selection so only replace before the cursor
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(end.character + 1).join(toInsert),
+          start: new Position (start.line, 0),
+          end: end,
+        });
+      } else {
+        // Replace the entire line length since it is in the middle of the selection
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(lineText.length + 1).join(toInsert),
+          start: new Position(lineNum, 0),
+          end: new Position(lineNum, lineText.length),
+        });
+      }
+    }
+
+    vimState.allCursors = [new Range(vimState.cursorPosition, vimState.cursorPosition)];
+    vimState.whatILastSetTheSelectionTo = new vscode.Selection(vimState.cursorPosition, vimState.cursorPosition);
+    vimState.cursorStartPosition = vimState.cursorPosition;
+
     vimState.currentMode = ModeName.Normal;
 
     return vimState;
