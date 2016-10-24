@@ -1866,6 +1866,10 @@ export class MarkMovementBOL extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
+    if (vimState.recordedState.operator instanceof YankOperator) {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+    }
+
     return mark.position.getFirstLineNonBlankChar();
   }
 }
@@ -1877,6 +1881,10 @@ export class MarkMovement extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
+
+    if (vimState.recordedState.operator instanceof YankOperator) {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+    }
 
     return mark.position;
   }
