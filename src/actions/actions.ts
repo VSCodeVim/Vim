@@ -588,7 +588,7 @@ class CommandNumber extends BaseCommand {
 }
 
 @RegisterAction
-class CommandRegister extends BaseCommand {
+export class CommandRegister extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["\"", "<character>"];
   isCompleteAction = false;
