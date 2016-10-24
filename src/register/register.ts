@@ -262,11 +262,8 @@ export class Register {
       });
 
       if (!registerCommand) {
-        Register.registers["0"] = {
-          text               : content,
-          registerMode       : vimState.effectiveRegisterMode(),
-          isClipboardRegister: Register.isClipboardRegister("0"),
-        };
+        Register.registers['0'].text = content;
+        Register.registers['0'].registerMode = vimState.effectiveRegisterMode();
       }
     } else if (baseOperator instanceof DeleteOperator) {
       // shift 'delete-history' register
@@ -275,11 +272,8 @@ export class Register {
       }
 
       // Paste last delete into register '1'
-      Register.registers["1"] = {
-        text               : content,
-        registerMode       : vimState.effectiveRegisterMode(),
-        isClipboardRegister: Register.isClipboardRegister("1"),
-      };
+      Register.registers['1'].text = content;
+      Register.registers['1'].registerMode = vimState.effectiveRegisterMode();
     }
   }
 
