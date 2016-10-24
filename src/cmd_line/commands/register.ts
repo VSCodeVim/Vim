@@ -28,6 +28,7 @@ export class RegisterCommand extends node.CommandBase {
       result = result.join("\n").substr(0, 100);
     } else if (result instanceof RecordedState) {
       // TODO
+      result = "";
     }
 
     return result;

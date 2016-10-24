@@ -35,6 +35,7 @@ export class Register {
    */
   private static registers: { [key: string]: IRegisterContent } = {
     '"': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    '.': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '*': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
     '+': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
     '0': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
@@ -61,35 +62,172 @@ export class Register {
   public static lastContentChange: RecordedState;
 
   public static isValidRegister(register: string): boolean {
-    return register in Register.registers || /^[a-z0-9]+$/i.test(register) || /\./.test(register);
+    return register in Register.registers ||
+      Register.isValidLowercaseRegister(register) ||
+      Register.isValidUppercaseRegister(register);
   }
 
   public static isValidRegisterForMacro(register: string): boolean {
-    return /^[a-zA-Z0-9]+$/i.test(register);
+    return /^[a-zA-Z0-9]+$/.test(register);
+  }
+
+  private static isValidLowercaseRegister(register: string): boolean {
+    return /^[a-z]+$/.test(register);
+  }
+
+  private static isValidUppercaseRegister(register: string): boolean {
+    return /^[A-Z]+$/.test(register);
   }
 
   /**
    * Puts content in a register. If none is specified, uses the default
    * register ".
    */
-  public static put(content: RegisterContent, vimState: VimState): void {
+  public static put(content: RegisterContent, vimState: VimState, multicursorIndex?: number): void {
     const register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
 
+    if (vimState.isMultiCursor) {
+      if (Register.isValidUppercaseRegister(register)) {
+        Register.appendMulticursorRegister(content, register, vimState, multicursorIndex as number);
+      } else {
+        Register.putMulticursorRegister(content, register, vimState, multicursorIndex as number);
+      }
+    } else {
+      if (Register.isValidUppercaseRegister(register)) {
+        Register.appendNormalRegister(content, register, vimState);
+      } else {
+        Register.putNormalRegister(content, register, vimState);
+      }
+    }
+  }
+
+  /**
+   * Puts the content at the specified index of the multicursor Register.
+   *
+   * `REMARKS:` This Procedure asume that you pass an valid register.
+   */
+  private static putMulticursorRegister(content: RegisterContent, register: string, vimState: VimState, multicursorIndex: number): void {
+    if (multicursorIndex === 0) {
+      Register.registers[register.toLowerCase()] = {
+        text               : [],
+        registerMode       : vimState.effectiveRegisterMode(),
+        isClipboardRegister: Register.isClipboardRegister(register),
+      };
+    }
+
+    let registerContent = Register.registers[register.toLowerCase()];
+
+    (registerContent.text as string[]).push(content as string);
+
+    if (multicursorIndex === vimState.allCursors.length - 1) {
+      if (registerContent.isClipboardRegister) {
+        let clipboardText: string = "";
+
+        for ( const line of (registerContent.text as string[])) {
+          clipboardText += line + "\n";
+        }
+        clipboardText = clipboardText.replace(/\n$/, "");
+
+        clipboard.copy(clipboardText);
+      }
+
+      Register.ProcessNumberedRegister(registerContent.text, vimState);
+    }
+  }
+
+  /**
+   * Appends the content at the specified index of the multicursor Register.
+   *
+   * `REMARKS:` This Procedure asume that you pass an valid uppercase register.
+   */
+  private static appendMulticursorRegister(content: RegisterContent, register: string, vimState: VimState, multicursorIndex: number): void {
+    let appendToRegister = Register.registers[register.toLowerCase()];
+
+    // Only append if appendToRegister is multicursor register
+    // and line count match, otherwise replace register
+    if (multicursorIndex === 0) {
+      let createEmptyRegister: boolean = false;
+
+      if (typeof appendToRegister.text === 'string') {
+        createEmptyRegister = true;
+      } else {
+        if ((appendToRegister.text as string[]).length !== vimState.allCursors.length) {
+          createEmptyRegister = true;
+        }
+      }
+
+      if (createEmptyRegister) {
+        Register.registers[register.toLowerCase()] = {
+          text               : Array<string>(vimState.allCursors.length).fill(''),
+          registerMode       : vimState.effectiveRegisterMode(),
+          isClipboardRegister: Register.isClipboardRegister(register),
+        };
+
+        appendToRegister = Register.registers[register.toLowerCase()];
+      }
+    }
+
+    let currentRegisterMode = vimState.effectiveRegisterMode();
+    if (appendToRegister.registerMode === RegisterMode.CharacterWise && currentRegisterMode === RegisterMode.CharacterWise) {
+      appendToRegister.text[multicursorIndex] += content;
+    } else {
+      appendToRegister.text[multicursorIndex] += '\n' + content;
+      appendToRegister.registerMode = currentRegisterMode;
+    }
+  }
+
+  /**
+   * Puts the content in the specified Register.
+   *
+   * `REMARKS:` This Procedure asume that you pass an valid register.
+   */
+  private static putNormalRegister(content: RegisterContent, register: string, vimState: VimState): void {
     if (Register.isClipboardRegister(register)) {
       clipboard.copy(content);
     }
 
-    Register.registers[register] = {
+    Register.registers[register.toLowerCase()] = {
       text               : content,
       registerMode       : vimState.effectiveRegisterMode(),
       isClipboardRegister: Register.isClipboardRegister(register),
     };
 
     Register.ProcessNumberedRegister(content, vimState);
+  }
+
+  /**
+   * Appends the content at the specified index of the multicursor Register.
+   *
+   * `REMARKS:` This Procedure asume that you pass an valid uppercase register.
+   */
+  private static appendNormalRegister(content: RegisterContent, register: string, vimState: VimState): void {
+    let appendToRegister = Register.registers[register.toLowerCase()];
+    let currentRegisterMode = vimState.effectiveRegisterMode();
+
+    // Check if appending to a multicursor register or normal
+    if (typeof appendToRegister.text === "object") {
+      if (appendToRegister.registerMode === RegisterMode.CharacterWise && currentRegisterMode === RegisterMode.CharacterWise) {
+        (appendToRegister.text as string[]).forEach(element => {
+          element += '\n' + content;
+        });
+      } else {
+        (appendToRegister.text as string[]).forEach(element => {
+          element += '\n' + content;
+        });
+        appendToRegister.registerMode = currentRegisterMode;
+      }
+    } else {
+      if (appendToRegister.registerMode === RegisterMode.CharacterWise && currentRegisterMode === RegisterMode.CharacterWise) {
+        appendToRegister.text = appendToRegister.text + content;
+      } else {
+        appendToRegister.text += '\n' + content;
+        appendToRegister.registerMode = currentRegisterMode;
+      }
+    }
   }
 
   public static putByKey(content: RegisterContent, register = '"', registerMode = RegisterMode.FigureItOutFromCurrentMode): void {
@@ -145,39 +283,26 @@ export class Register {
     }
   }
 
-  public static add(content: string, vimState: VimState): void {
-    const register = vimState.recordedState.registerName;
-
-    if (!Register.isValidRegister(register)) {
-      throw new Error(`Invalid register ${register}`);
-    }
-
-    if (typeof Register.registers[register].text !== "string") {
-      // TODO - I don't know why this cast is necessary!
-
-      (Register.registers[register].text as string[]).push(content);
-    }
-  }
-
-
   /**
    * Gets content from a register. If none is specified, uses the default
    * register ".
    */
   public static async get(vimState: VimState): Promise<IRegisterContent> {
     const register = vimState.recordedState.registerName;
-    return Register.getByKey(register);
+    return Register.getByKey(register, vimState);
   }
 
-  public static async getByKey(register: string): Promise<IRegisterContent> {
+  public static async getByKey(register: string, vimState?: VimState): Promise<IRegisterContent> {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
 
+    let lowercaseRegister = register.toLowerCase();
+
     // Clipboard registers are always defined, so if a register doesn't already
     // exist we can be sure it's not a clipboard one
-    if (!Register.registers[register]) {
-      Register.registers[register] = {
+    if (!Register.registers[lowercaseRegister]) {
+      Register.registers[lowercaseRegister] = {
         text               : "",
         registerMode       : RegisterMode.CharacterWise,
         isClipboardRegister: false
@@ -186,7 +311,7 @@ export class Register {
 
     /* Read from system clipboard */
     if (Register.isClipboardRegister(register)) {
-      const text = await new Promise<string>((resolve, reject) =>
+      let text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => {
           if (err) {
             reject(err);
@@ -196,10 +321,49 @@ export class Register {
         })
       );
 
-      Register.registers[register].text = text;
-    }
+      // Harmonize newline character
+      text = text.replace(/\r\n/g, '\n');
 
-    return Register.registers[register];
+      let registerText: string | string[];
+      if (vimState && vimState.isMultiCursor) {
+        registerText = text.split('\n');
+        if (registerText.length !== vimState.allCursors.length) {
+          registerText = text;
+        }
+      } else {
+        registerText = text;
+      }
+
+      Register.registers[lowercaseRegister].text = registerText;
+      return Register.registers[register];
+    } else {
+      let text = Register.registers[lowercaseRegister].text;
+
+      let registerText: RegisterContent;
+      if (text instanceof RecordedState) {
+        registerText = text;
+      } else {
+        if (vimState && vimState.isMultiCursor && (typeof text === 'object')) {
+          if ((text as string[]).length === vimState.allCursors.length) {
+            registerText = text;
+          } else {
+            registerText = (text as string[]).join('\n');
+          }
+        } else {
+          if (typeof text === 'object') {
+            registerText = (text as string[]).join('\n');
+          } else {
+            registerText = text;
+          }
+        }
+      }
+
+      return {
+        text               : registerText,
+        registerMode       : Register.registers[lowercaseRegister].registerMode,
+        isClipboardRegister: Register.registers[lowercaseRegister].isClipboardRegister
+      };
+    }
   }
 
   public static has(register: string): boolean {
@@ -210,3 +374,4 @@ export class Register {
     return Object.keys(Register.registers);
   }
 }
+

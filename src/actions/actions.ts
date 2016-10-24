@@ -1712,15 +1712,7 @@ export class YankOperator extends BaseOperator {
         text = text + "\n";
       }
 
-      if (!vimState.isMultiCursor) {
-        Register.put(text, vimState);
-      } else {
-        if (this.multicursorIndex === 0) {
-          Register.put([], vimState);
-        }
-
-        Register.add(text, vimState);
-      }
+      Register.put(text, vimState, this.multicursorIndex);
 
       vimState.currentMode = ModeName.Normal;
       vimState.cursorStartPosition = start;
@@ -1943,7 +1935,7 @@ export class PutCommand extends BaseCommand {
             replay: "keystrokes"
           });
           return vimState;
-        } else if (typeof register.text === "object") {
+        } else if (typeof register.text === "object" && vimState.currentMode === ModeName.VisualBlock) {
           return await this.execVisualBlockPaste(register.text, position, vimState, after);
         }
 
@@ -3973,10 +3965,10 @@ export class YankVisualBlockMode extends BaseOperator {
     runsOnceForEveryCursor() { return false; }
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      let toCopy: string[] = [];
+      let toCopy: string = "";
 
       for ( const { line } of Position.IterateLine(vimState)) {
-        toCopy.push(line);
+        toCopy += line + '\n';
       }
 
       Register.put(toCopy, vimState);
