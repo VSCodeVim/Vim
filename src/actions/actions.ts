@@ -5152,3 +5152,64 @@ class ActionOverrideCmdAltUp extends BaseCommand {
     return vimState;
   }
 }
+
+function getEasyMotionSvgDataUri(code: string, backgroundColor: string, fontColor: string) {
+    const width = code.length * 7;
+    return vscode.Uri.parse(
+      `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
+      `13" height="13" width="${width}"><rect width="${width}" height="13" rx="2" ry="2" ` +
+      `style="fill: ${backgroundColor};"></rect><text font-family="Consolas" font-size="11px" ` +
+      `fill="${fontColor}" x="1" y="10">${code}</text></svg>`);
+}
+
+@RegisterAction
+class ActionEasyMove extends BaseMovement {
+  keys = ["\\", "\\", "s", "<character>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const searchChar = this.keysPressed[3];
+    var searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, searchChar);
+
+    var codeArray = new Array(26 * 26);
+    let codeIndex = 0;
+
+    var ranges = searchState.matchRanges;
+
+    var decorationTypes = vscode.window.createTextEditorDecorationType({
+      before: {
+        margin: `0 0 0 -8px`,
+        height: `13px`,
+        width: `8px`
+      }
+    });
+
+    var decorations = new Array(ranges.length);
+
+    var index = 0;
+    for (let range of ranges) {
+      let line = range.start.line;
+
+      let chr = String.fromCharCode(97 + index);
+      decorations[index++] = {
+        range: new vscode.Range(line, range.start.character + 1, line, range.start.character + 1),
+        renderOptions: {
+          dark: {
+            before: {
+              contentIconPath: getEasyMotionSvgDataUri(chr, "white", "black")
+            }
+          },
+          light: {
+            before: {
+              contentIconPath: getEasyMotionSvgDataUri(chr, "black", "white")
+            }
+          }
+        }
+      }
+    }
+
+    var editor = vscode.window.activeTextEditor;
+    editor.setDecorations(decorationTypes, decorations)
+
+    return position.getDocumentStart();
+  }
+}
