@@ -268,7 +268,8 @@ export class Register {
     } else if (baseOperator instanceof DeleteOperator) {
       // shift 'delete-history' register
       for (let index = 9; index > 1; index--) {
-        Register.registers[String(index)] = Register.registers[String(index - 1)];
+        Register.registers[String(index)].text = Register.registers[String(index - 1)].text;
+        Register.registers[String(index)].registerMode = Register.registers[String(index - 1)].registerMode;
       }
 
       // Paste last delete into register '1'
