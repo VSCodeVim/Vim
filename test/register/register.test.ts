@@ -97,4 +97,54 @@ suite("register", () => {
     ]);
   });
 
+  test("\"A appends linewise text to \"a", async() => {
+    await modeHandler.handleMultipleKeyEvents(
+      'itest1\ntest2\ntest3'.split('')
+    );
+
+    await modeHandler.handleMultipleKeyEvents([
+      '<Esc>',
+      'g', 'g',
+      'v', 'l', 'l',
+      '"', 'a', 'y',
+      'j',
+      'V',
+      '"', 'A', 'y',
+      'j',
+      '"', 'a', 'p'
+    ]);
+
+    assertEqualLines([
+    'test1',
+    'test2',
+    'test3',
+    'tes',
+    'test2'
+    ]);
+  });
+
+  test("\"A appends character wise text to \"a", async() => {
+    await modeHandler.handleMultipleKeyEvents(
+      'itest1\ntest2\n'.split('')
+    );
+
+    await modeHandler.handleMultipleKeyEvents([
+      '<Esc>',
+      'g', 'g',
+      'v', 'l', 'l', 'l', 'l',
+      '"', 'a', 'y',
+      'j',
+      'v', 'l', 'l', 'l', 'l',
+      '"', 'A', 'y',
+      'j',
+      '"', 'a', 'p'
+    ]);
+
+    assertEqualLines([
+    'test1',
+    'test2',
+    'test1test2',
+    ]);
+  });
+
 });
