@@ -3838,6 +3838,80 @@ class ActionReplaceCharacter extends BaseCommand {
 }
 
 @RegisterAction
+class ActionReplaceCharacterVisual extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["r", "<character>"];
+  runsOnceForEveryCursor() { return false; }
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const toInsert = this.keysPressed[1];
+
+    let visualSelectionOffset = 1;
+    let start = vimState.cursorStartPosition;
+    let end = vimState.cursorPosition;
+
+    // If selection is reversed, reorganize it so that the text replace logic always works
+    if (end.isBeforeOrEqual(start)) {
+      [start, end] = [end, start];
+    }
+
+    // Limit to not replace EOL
+    end = new Position(end.line, Math.min(end.character, TextEditor.getLineAt(end).text.length - 1));
+
+    // Iterate over every line in the current selection
+    for (var lineNum = start.line; lineNum <= end.line; lineNum++) {
+
+      // Get line of text
+      const lineText = TextEditor.getLineAt(new Position(lineNum, 0)).text;
+
+      if (start.line === end.line) {
+        // This is a visual section all on one line, only replace the part within the selection
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(end.character - start.character + 2).join(toInsert),
+          start: start,
+          end: new Position(end.line, end.character + 1),
+          manuallySetCursorPositions : true
+        });
+      } else if (lineNum === start.line) {
+        // This is the first line of the selection so only replace after the cursor
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(lineText.length - start.character + 1).join(toInsert),
+          start: start,
+          end: new Position(start.line, lineText.length),
+          manuallySetCursorPositions : true
+        });
+      } else if (lineNum === end.line) {
+        // This is the last line of the selection so only replace before the cursor
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(end.character + 1 + visualSelectionOffset).join(toInsert),
+          start: new Position(end.line, 0),
+          end: new Position(end.line, end.character + visualSelectionOffset),
+          manuallySetCursorPositions : true
+        });
+      } else {
+        // Replace the entire line length since it is in the middle of the selection
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(lineText.length + 1).join(toInsert),
+          start: new Position(lineNum, 0),
+          end: new Position(lineNum, lineText.length),
+          manuallySetCursorPositions : true
+        });
+      }
+    }
+
+    vimState.cursorPosition = start;
+    vimState.cursorStartPosition = start;
+    vimState.currentMode = ModeName.Normal;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionReplaceCharacterVisualBlock extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["r", "<character>"];
@@ -3846,18 +3920,28 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toInsert   = this.keysPressed[1];
-
+    let textAtPos = "";
+    let newText = "";
     for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
+
+      textAtPos = TextEditor.getText(new vscode.Range(pos, pos.getRight()));
+      newText = toInsert;
+
+      // If no character at this position, do not replace with anything
+      if (textAtPos === "") {
+        newText = "";
+      }
+
       vimState.recordedState.transformations.push({
         type  : "replaceText",
-        text  : toInsert,
+        text  : newText,
         start : pos,
         end   : pos.getRight(),
+        manuallySetCursorPositions : true
       });
     }
 
     const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
-
     vimState.allCursors = [ new Range(topLeft, topLeft) ];
     vimState.currentMode = ModeName.Normal;
 
