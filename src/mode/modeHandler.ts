@@ -19,10 +19,12 @@ import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
 import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
+import { EasyMotionMode } from './modeEasyMotion';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
+import { EasyMotion } from './../easymotion/easymotion';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
   BaseOperator, DocumentContentChangeAction, CommandInsertInInsertMode, CommandInsertPreviousText, CommandQuitRecordMacro,
@@ -69,6 +71,8 @@ export class VimState {
   public desiredColumn = 0;
 
   public historyTracker: HistoryTracker;
+
+  public easyMotion: EasyMotion;
 
   /**
    * Are multiple cursors currently present?
@@ -445,8 +449,10 @@ export class ModeHandler implements vscode.Disposable {
       new VisualLineMode(),
       new SearchInProgressMode(),
       new ReplaceMode(),
+      new EasyMotionMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
+    this.vimState.easyMotion = new EasyMotion(this.vimState);
 
     this._vimState.currentMode = ModeName.Normal;
 
@@ -587,7 +593,7 @@ export class ModeHandler implements vscode.Disposable {
           this._vimState.cursorPosition = this._vimState.cursorPosition.getLeft();
         }
       } else {
-        if (this._vimState.currentMode !== ModeName.Insert) {
+        if (this._vimState.currentMode !== ModeName.Insert && this._vimState.currentMode !== ModeName.EasyMotionMode) {
           this._vimState.currentMode = ModeName.Normal;
           this.setCurrentModeByName(this._vimState);
         }
