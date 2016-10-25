@@ -629,7 +629,7 @@ export class Position extends vscode.Position {
    * Returns a new position at the end of this position's line.
    */
   public getLineEnd(): Position {
-    return new Position(this.line, Position.getLineLength(this.line));
+  return new Position(this.line, Position.getLineLength(this.line));
   }
 
   /**

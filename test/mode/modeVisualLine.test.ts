@@ -262,7 +262,7 @@ suite("Mode Visual", () => {
     });
   });
 
-   suite("handles replace in visual line mode", () => {
+  suite("handles replace in visual line mode", () => {
     newTest({
       title: "Can do a single line replace",
       start: ["one |two three four five", "one two three four five"],
@@ -277,6 +277,36 @@ suite("Mode Visual", () => {
       keysPressed: "Vjr1",
       end: ["|11111111111111111111111", "11111111111111111111111"],
       endMode: ModeName.Normal
+    });
+
+    suite("Can handle d correctly in Visual Line Mode", () => {
+      newTest({
+        title: "Can handle d key",
+        start: ['|{', '  a = 1;', '}'],
+        keysPressed: 'VGdp',
+        end: ['', '|{', '  a = 1;', '}']
+      });
+
+      newTest({
+        title: "Can handle d key",
+        start: ['|{', '  a = 1;', '}'],
+        keysPressed: 'VGdP',
+        end: ['|{', '  a = 1;', '}', '']
+      });
+
+      newTest({
+        title: "Can handle d key",
+        start: ['1', '2', '|{', '  a = 1;', '}'],
+        keysPressed: 'VGdp',
+        end: ['1', '2', '|{', '  a = 1;', '}']
+      });
+
+      newTest({
+        title: "Can handle d key",
+        start: ['1', '2', '|{', '  a = 1;', '}'],
+        keysPressed: 'VGdP',
+        end: ['1', '|{', '  a = 1;', '}', '2']
+      });
     });
   });
 });

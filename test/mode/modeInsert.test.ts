@@ -139,4 +139,14 @@ suite("Mode Insert", () => {
 
         assertEqual(TextEditor.getSelection().start.character, 3, "<BS> moved cursor to correct position");
     });
+
+    test("will not remove leading spaces input by user", async() => {
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            ' ', ' ',
+            '<Esc>'
+        ]);
+
+        assertEqualLines(["  "]);
+    });
 });
