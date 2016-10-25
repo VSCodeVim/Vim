@@ -44,6 +44,7 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
 
   const containsControlKey = (s: string): boolean => {
     return s.toUpperCase() !== "<BS>" &&
+           s.toUpperCase() !== "<SHIFT+BS>" &&
            s.toUpperCase() !== "<TAB>" &&
            s.startsWith("<") &&
            s.length > 1;
@@ -516,10 +517,20 @@ export class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
 
     if (char === "<BS>") {
-      vimState.recordedState.transformations.push({
-        type           : "deleteText",
-        position       : position,
-      });
+      const selection = TextEditor.getSelection();
+
+      // Check if a selection is active
+      if (!selection.isEmpty) {
+        vimState.recordedState.transformations.push({
+          type: "deleteRange",
+          range: new Range(selection.start as Position, selection.end as Position),
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type: "deleteText",
+          position: position,
+        });
+      }
 
       vimState.cursorPosition      = vimState.cursorPosition.getLeft();
       vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
@@ -650,6 +661,41 @@ class CommandInsertRegisterContent extends BaseCommand {
     return super.couldActionApply(vimState, keysPressed) && Register.isValidRegister(register);
   }
 
+}
+
+@RegisterAction
+class CommandInsertRegisterContentInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<C-r>", "<character>"];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.registerName = this.keysPressed[1];
+    const register = await Register.get(vimState);
+    let text: string;
+
+    if (register.text instanceof Array) {
+       text = (register.text as string []).join("\n");
+    } else if (register.text instanceof RecordedState) {
+      let keyStrokes: string[] = [];
+
+      for (let action of register.text.actionsRun) {
+         keyStrokes = keyStrokes.concat(action.keysPressed);
+      }
+
+      text = keyStrokes.join("\n");
+    } else {
+       text = register.text;
+    }
+
+    if (register.registerMode === RegisterMode.LineWise) {
+      text += "\n";
+    }
+
+    const searchState = vimState.searchState!;
+    searchState.searchString += text;
+    return vimState;
+  }
 }
 
 @RegisterAction
@@ -828,6 +874,21 @@ class CommandEscInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.cursorPosition = position.getLeft();
+
+    // only remove leading spaces inserted by vscode.
+    // vscode only inserts them when user enter a new line,
+    // ie, o/O in Normal mode or \n in Insert mode.
+    const lastActionBeforeEsc = vimState.currentFullAction[vimState.currentFullAction.length - 2];
+    if (['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
+        vscode.window.activeTextEditor.document.languageId !== 'plaintext' &&
+        /^\s+$/.test(TextEditor.getLineAt(position).text)) {
+      vimState.recordedState.transformations.push({
+        type: "deleteRange",
+        range: new Range(position.getLineBegin(), position.getLineEnd())
+      });
+      vimState.cursorPosition = position.getLineBegin();
+    }
+
     vimState.currentMode = ModeName.Normal;
 
     if (vimState.historyTracker.currentContentChanges.length > 0) {
@@ -1311,7 +1372,7 @@ class RightArrowInInsertMode extends ArrowsInInsertMode {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = ["<any>"];
+  keys = ["<character>"];
   runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1319,7 +1380,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const searchState = vimState.searchState!;
 
     // handle special keys first
-    if (key === "<BS>") {
+    if (key === "<BS>" || key === "<shift+BS>") {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
       vimState.currentMode = ModeName.Normal;
@@ -1338,21 +1399,58 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       return vimState;
-    } else if (key === "<Esc>") {
-      vimState.currentMode = ModeName.Normal;
-      vimState.searchState = undefined;
-
-      return vimState;
-    } else if (key === "<C-v>") {
-      const text = await new Promise<string>((resolve, reject) =>
-        clipboard.paste((err, text) => err ? reject(err) : resolve(text))
-      );
-
-      searchState.searchString += text;
     } else {
       searchState.searchString += this.keysPressed[0];
     }
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandEscInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<Esc>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Normal;
+    vimState.searchState = undefined;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlVInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<C-v>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = vimState.searchState!;
+    const textFromClipboard = await new Promise<string>((resolve, reject) =>
+      clipboard.paste((err, text) => err ? reject(err) : resolve(text))
+    );
+
+    searchState.searchString += textFromClipboard;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCmdVInSearchMode extends BaseCommand {
+  modes = [ModeName.SearchInProgressMode];
+  keys = ["<D-v>"];
+  runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = vimState.searchState!;
+    const textFromClipboard = await new Promise<string>((resolve, reject) =>
+      clipboard.paste((err, text) => err ? reject(err) : resolve(text))
+    );
+
+    searchState.searchString += textFromClipboard;
     return vimState;
   }
 }
@@ -1495,27 +1593,6 @@ export class CommandSearchBackwards extends BaseCommand {
 }
 
 @RegisterAction
-class CommandFormatCode extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
-  keys = ["="];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand("editor.action.format");
-    let line = vimState.cursorStartPosition.line;
-
-    if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
-      line = vimState.cursorPosition.line;
-    }
-
-    let newCursorPosition = new Position(line, 0);
-    vimState.cursorPosition = newCursorPosition;
-    vimState.cursorStartPosition = newCursorPosition;
-    vimState.currentMode = ModeName.Normal;
-    return vimState;
-  }
-}
-
-@RegisterAction
 export class DeleteOperator extends BaseOperator {
     public keys = ["d"];
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
@@ -1544,23 +1621,29 @@ export class DeleteOperator extends BaseOperator {
           }
         }
 
+        let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+
         // If we delete linewise to the final line of the document, we expect the line
         // to be removed. This is actually a special case because the newline
         // character we've selected to delete is the newline on the end of the document,
         // but we actually delete the newline on the second to last line.
 
         // Just writing about this is making me more confused. -_-
+
+        // rebornix: johnfn's description about this corner case is perfectly correct. The only catch is
+        // that we definitely don't want to put the EOL in the register. So here we run the `getText`
+        // expression first and then update the start position.
+
+        // Now rebornix is confused as well.
         if (isOnLastLine &&
             start.line !== 0 &&
             registerMode === RegisterMode.LineWise) {
           start = start.getPreviousLineBegin().getLineEnd();
         }
 
-        let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
-
         if (registerMode === RegisterMode.LineWise) {
           // slice final newline in linewise mode - linewise put will add it back.
-          text = text.endsWith("\r\n") ? text.slice(0, -2) : text.slice(0, -1);
+          text = text.endsWith("\r\n") ? text.slice(0, -2) : (text.endsWith('\n') ? text.slice(0, -1) : text);
         }
 
         if (yank) {
@@ -1706,6 +1789,27 @@ export class ChangeOperatorSVisual extends BaseOperator {
     }
 }
 
+@RegisterAction
+export class FormatOperator extends BaseOperator {
+  public keys = ["="];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
+    await vscode.commands.executeCommand("editor.action.formatSelection");
+    let line = vimState.cursorStartPosition.line;
+
+    if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
+      line = vimState.cursorPosition.line;
+    }
+
+    let newCursorPosition = new Position(line, 0);
+    vimState.cursorPosition = newCursorPosition;
+    vimState.cursorStartPosition = newCursorPosition;
+    vimState.currentMode = ModeName.Normal;
+    return vimState;
+  }
+}
 
 @RegisterAction
 export class UpperCaseOperator extends BaseOperator {
@@ -1777,6 +1881,10 @@ export class MarkMovementBOL extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
+    if (vimState.recordedState.operator instanceof YankOperator) {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+    }
+
     return mark.position.getFirstLineNonBlankChar();
   }
 }
@@ -1789,6 +1897,10 @@ export class MarkMovement extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
+    if (vimState.recordedState.operator instanceof YankOperator) {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+    }
+
     return mark.position;
   }
 }
@@ -1799,14 +1911,18 @@ export class ChangeOperator extends BaseOperator {
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        const isEndOfLine = end.character === TextEditor.getLineAt(end).text.length - 1;
+        const isEndOfLine = end.character === end.getLineEnd().character;
         let state = vimState;
 
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
         // the line. We do want to run delete if it is a multiline change though ex. c}
         if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 || (end.line !== start.line)) {
-          state = await new DeleteOperator().run(vimState, start, end);
+          if (isEndOfLine) {
+            state = await new DeleteOperator().run(vimState, start, end.getLeftThroughLineBreaks());
+          } else {
+            state = await new DeleteOperator().run(vimState, start, end);
+          }
         }
 
         state.currentMode = ModeName.Insert;
@@ -1889,9 +2005,11 @@ export class PutCommand extends BaseCommand {
           }
 
           if (after) {
+            // P insert before current line
             textToAdd = text + "\n";
             whereToAddText = dest.getLineBegin();
           } else {
+            // p paste after current line
             textToAdd = "\n" + text;
             whereToAddText = dest.getLineEnd();
           }
@@ -1909,7 +2027,7 @@ export class PutCommand extends BaseCommand {
           if (after) {
             diff = PositionDiff.NewBOLDiff(-numNewlines - 1, numWhitespace);
           } else {
-            diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : 0, numWhitespace);
+            diff = PositionDiff.NewBOLDiff(currentLineLength > 0 ? 1 : -numNewlines, numWhitespace);
           }
         } else {
           if (text.indexOf("\n") === -1) {
@@ -2071,9 +2189,16 @@ export class PutCommandVisual extends BaseCommand {
   canBePrefixedWithDot = true;
 
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
-    const result = await new DeleteOperator().run(vimState, vimState.cursorStartPosition, vimState.cursorPosition, false);
+    let start = vimState.cursorStartPosition;
+    let end = vimState.cursorPosition;
 
-    return await new PutCommand().exec(vimState.cursorStartPosition, result, true);
+    if (start.isAfter(end)) {
+      [start, end] = [end, start];
+    }
+
+    const result = await new DeleteOperator().run(vimState, start, end, false);
+
+    return await new PutCommand().exec(start, result, true);
   }
 
   // TODO - execWithCount
@@ -2417,6 +2542,10 @@ class CommandDeleteToLineEnd extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (position.isLineEnd()) {
+      return vimState;
+    }
+
     return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
   }
 }
@@ -3258,8 +3387,8 @@ class MoveNonBlankLast extends BaseMovement {
 export class MoveWordBegin extends BaseMovement {
   keys = ["w"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.recordedState.operator instanceof ChangeOperator) {
+  public async execAction(position: Position, vimState: VimState, isLastIteration: boolean = false): Promise<Position> {
+    if (isLastIteration && vimState.recordedState.operator instanceof ChangeOperator) {
       if (TextEditor.getLineAt(position).text.length < 1) {
         return position;
       }
@@ -3286,7 +3415,7 @@ export class MoveWordBegin extends BaseMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    const result = await this.execAction(position, vimState);
+    const result = await this.execAction(position, vimState, true);
 
     /*
     From the Vim documentation:
@@ -3770,6 +3899,58 @@ class ActionDVisualBlock extends ActionXVisualBlock {
 }
 
 @RegisterAction
+class ActionShiftDVisualBlock extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ["D"];
+  canBeRepeatedWithDot = true;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    for (const { start } of Position.IterateLine(vimState)) {
+      vimState.recordedState.transformations.push({
+        type  : "deleteRange",
+        range : new Range(start, start.getLineEnd()),
+        manuallySetCursorPositions: true,
+      });
+    }
+
+    const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
+
+    vimState.allCursors = [ new Range(topLeft, topLeft) ];
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionSVisualBlock extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = [["s"], ["S"]];
+  canBeRepeatedWithDot = true;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    for (const { start, end } of Position.IterateLine(vimState)) {
+      vimState.recordedState.transformations.push({
+        type  : "deleteRange",
+        range : new Range(start, end),
+        manuallySetCursorPositions: true,
+      });
+    }
+
+    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
+      vimState.cursorPosition = vimState.cursorPosition.getRight();
+    }
+
+    vimState.currentMode = ModeName.VisualBlockInsertMode;
+    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
+    vimState.cursorPosition = vimState.cursorPosition.getLeft();
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionGoToInsertVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["I"];
@@ -3925,7 +4106,7 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
 }
 
 // DOUBLE MOTIONS
-// (dd yy cc << >>)
+// (dd yy cc << >> ==)
 // These work because there is a check in does/couldActionApply where
 // you can't run an operator if you already have one going (which is logical).
 // However there is the slightly weird behavior where dy actually deletes the whole
@@ -3989,6 +4170,19 @@ class MoveIndent extends BaseMovement {
 class MoveOutdent extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["<"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start       : position.getLineBegin(),
+      stop        : position.getLineEnd(),
+    };
+  }
+}
+
+@RegisterAction
+class MoveFormat extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["="];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
@@ -4412,7 +4606,13 @@ abstract class MoveInsideCharacter extends BaseMovement {
     let startPos = PairMatcher.nextPairedChar(position, closingChar, closedMatch);
     if (startPos === undefined) { return failure; }
 
-    const startPlusOne = new Position(startPos.line, startPos.character + 1);
+    let startPlusOne: Position;
+
+    if (startPos.isAfterOrEqual(startPos.getLineEnd().getLeft())) {
+      startPlusOne = new Position(startPos.line + 1, 0);
+    } else {
+      startPlusOne = new Position(startPos.line, startPos.character + 1);
+    }
 
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
     if (endPos === undefined) { return failure; }
@@ -4426,6 +4626,8 @@ abstract class MoveInsideCharacter extends BaseMovement {
     // If the closing character is the first on the line, don't swallow it.
     if (endPos.character === 0) {
       endPos = endPos.getLeftThroughLineBreaks();
+    } else if (/^\s+$/.test(TextEditor.getText(new vscode.Range(endPos.getLineBegin(), endPos.getLeft())))) {
+      endPos = endPos.getPreviousLineBegin().getLineEnd();
     }
 
     if (position.isBefore(startPos)) {
@@ -4903,6 +5105,19 @@ class MoveAroundTag extends MoveTagMatch {
   includeTag = true;
 }
 
+@RegisterAction
+class ActionTriggerHover extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "h"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("editor.action.showHover");
+
+    return vimState;
+  }
+}
+
 /**
  * Multi-Cursor Command Overrides
  *
@@ -4926,6 +5141,12 @@ class ActionOverrideCmdD extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+
+    // If this is the first cursor, select 1 character less
+    // so that only the word is selected, no extra character
+    if (vimState.allCursors.length === 1) {
+      vimState.allCursors[0] = vimState.allCursors[0].withNewStop(vimState.allCursors[0].stop.getLeft());
+    }
 
     vimState.currentMode = ModeName.Visual;
 

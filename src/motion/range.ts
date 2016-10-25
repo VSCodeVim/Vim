@@ -94,7 +94,7 @@ export class Range {
   }
 
   public overlaps(other: Range): boolean {
-    return this.start <= other.stop && other.start <= this.stop;
+    return this.start.isBeforeOrEqual(other.stop) && other.start.isBeforeOrEqual(this.stop);
   }
 
   public add(diff: PositionDiff): Range {
