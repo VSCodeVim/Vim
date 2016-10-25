@@ -16,6 +16,7 @@ import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
+import { EasyMotion } from "./../easymotion/easymotion";
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
@@ -5188,63 +5189,137 @@ class ActionOverrideCmdAltUp extends BaseCommand {
   }
 }
 
-function getEasyMotionSvgDataUri(code: string, backgroundColor: string, fontColor: string) {
-    const width = code.length * 7;
-    return vscode.Uri.parse(
-      `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
-      `13" height="13" width="${width}"><rect width="${width}" height="13" rx="2" ry="2" ` +
-      `style="fill: ${backgroundColor};"></rect><text font-family="Consolas" font-size="11px" ` +
-      `fill="${fontColor}" x="1" y="10">${code}</text></svg>`);
-}
-
 @RegisterAction
-class ActionEasyMove extends BaseMovement {
+class ActionEasyMotionCommand extends BaseCommand {
+  modes = [ModeName.Normal];
   keys = ["\\", "\\", "s", "<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchChar = this.keysPressed[3];
     var searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, searchChar);
 
-    var codeArray = new Array(26 * 26);
-    let codeIndex = 0;
-
     var ranges = searchState.matchRanges;
-
-    var decorationTypes = vscode.window.createTextEditorDecorationType({
-      before: {
-        margin: `0 0 0 -8px`,
-        height: `13px`,
-        width: `8px`
-      }
-    });
-
-    var decorations = new Array(ranges.length);
-
-    var index = 0;
-    for (let range of ranges) {
-      let line = range.start.line;
-
-      let chr = String.fromCharCode(97 + index);
-      decorations[index++] = {
-        range: new vscode.Range(line, range.start.character + 1, line, range.start.character + 1),
-        renderOptions: {
-          dark: {
-            before: {
-              contentIconPath: getEasyMotionSvgDataUri(chr, "white", "black")
-            }
-          },
-          light: {
-            before: {
-              contentIconPath: getEasyMotionSvgDataUri(chr, "black", "white")
-            }
-          }
-        }
-      }
+    if (ranges.length === 0) {
+      return vimState;
     }
 
-    var editor = vscode.window.activeTextEditor;
-    editor.setDecorations(decorationTypes, decorations)
+    var filtered: EasyMotion.Match[] = [];
 
-    return position.getDocumentStart();
+    var totalLineLength = 0;
+    var prevLine = -1;
+    var cursorIndex = 0;
+    for (var i = 0; i < ranges.length; i++) {
+      var range = ranges[i];
+      var pos = Position.FromVSCodePosition(range.start);
+
+      if (pos.isEqual(position)) {
+        continue;
+      }
+
+      if (prevLine === -1) {
+        prevLine = pos.line;
+      }
+      if (pos.line !== prevLine) {
+        const line = TextEditor.getLineAt(new Position(prevLine, 0)).text;
+        totalLineLength += line.length;
+      }
+
+      prevLine = pos.line;
+
+      if (position.line >= pos.line) {
+        cursorIndex = totalLineLength + position.character;
+      }
+
+      filtered.push(new EasyMotion.Match(pos, totalLineLength + pos.character));
+    }
+
+    filtered.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
+      var diffA = cursorIndex - a.index;
+      var diffB = cursorIndex - b.index;
+
+      var absDiffA = Math.abs(diffA);
+      var absDiffB = Math.abs(diffB);
+
+      if (a.index > cursorIndex) {
+        absDiffA -= 0.5;
+      }
+      if (b.index > cursorIndex) {
+        absDiffB -= 0.5;
+      }
+
+      return absDiffA - absDiffB;
+    });
+
+    vimState.easyMotion.clearMarkers();
+
+    var index = 0;
+    for (var j = 0; j < filtered.length; j++) {
+      var match = filtered[j];
+
+      if (match.position.isEqual(position)) {
+        continue;
+      }
+
+      let marker = EasyMotion.generateMarker(index++, filtered.length, position, match.position);
+      vimState.easyMotion.addMarker(marker);
+    }
+
+    vimState.easyMotion.updateDecorations(position);
+    vimState.easyMotion.enterMode();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandEscEasyMotionMode extends BaseCommand {
+  modes = [
+    ModeName.EasyMotionMode
+  ];
+  keys = [
+    ["<Esc>"],
+    ["<C-c>"],
+    ["<C-[>"],
+  ];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Normal;
+    vimState.easyMotion.exitMode();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveEasyMotion extends BaseMovement {
+  modes = [ModeName.EasyMotionMode];
+  keys = ["<character>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    var key = this.keysPressed[0];
+    if (!key) {
+      return position;
+    }
+
+    var nail = vimState.easyMotion.accumulation + key;
+    vimState.easyMotion.accumulation = nail;
+
+    var markers = vimState.easyMotion.findMarkers(nail);
+    if (markers.length === 1) {
+      var marker = markers[0];
+
+      vimState.easyMotion.exitMode();
+
+      return marker.position;
+    } else {
+      if (markers.length === 0) {
+        vimState.easyMotion.exitMode();
+        return position;
+      }
+
+      vimState.easyMotion.updateDecorations(position);
+    }
+
+    return position;
   }
 }
