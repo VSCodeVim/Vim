@@ -56,4 +56,12 @@ suite("Mode Visual Block", () => {
     end: ['t123est', 't123|est'],
   });
 
+   newTest({
+      title: "Can do a multi line replace",
+      start: ["one |two three four five", "one two three four five"],
+      keysPressed: "<C-v>jeer1",
+      end: ["one |111111111 four five", "one 111111111 four five"],
+      endMode: ModeName.Normal
+    });
+
 });
