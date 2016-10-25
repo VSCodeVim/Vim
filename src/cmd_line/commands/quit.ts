@@ -37,6 +37,7 @@ export class QuitCommand extends node.CommandBase {
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     } else {
       await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      await vscode.commands.executeCommand('workbench.action.previousEditor');
     }
   }
 }

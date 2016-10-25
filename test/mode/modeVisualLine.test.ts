@@ -261,4 +261,34 @@ suite("Mode Visual", () => {
       end: ['blah', '|duh']
     });
   });
+
+  suite("Can handle d correctly in Visual Line Mode", () => {
+    newTest({
+      title: "Can handle d key",
+      start: ['|{', '  a = 1;', '}'],
+      keysPressed: 'VGdp',
+      end: ['', '|{', '  a = 1;', '}']
+    });
+
+    newTest({
+      title: "Can handle d key",
+      start: ['|{', '  a = 1;', '}'],
+      keysPressed: 'VGdP',
+      end: ['|{', '  a = 1;', '}', '']
+    });
+
+    newTest({
+      title: "Can handle d key",
+      start: ['1', '2', '|{', '  a = 1;', '}'],
+      keysPressed: 'VGdp',
+      end: ['1', '2', '|{', '  a = 1;', '}']
+    });
+
+    newTest({
+      title: "Can handle d key",
+      start: ['1', '2', '|{', '  a = 1;', '}'],
+      keysPressed: 'VGdP',
+      end: ['1', '|{', '  a = 1;', '}', '2']
+    });
+  });
 });
