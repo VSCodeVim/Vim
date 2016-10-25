@@ -5218,6 +5218,10 @@ if (Configuration.getInstance().easymotion) {
           continue;
         }
 
+        if (Math.abs(pos.line - position.line) > 100) {
+          continue;
+        }
+
         if (prevLine === -1) {
           prevLine = pos.line;
         }
