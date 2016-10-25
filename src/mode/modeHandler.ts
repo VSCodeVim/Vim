@@ -501,7 +501,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.currentModeName === ModeName.VisualBlock ||
-        this.currentModeName === ModeName.VisualBlockInsertMode) {
+        this.currentModeName === ModeName.VisualBlockInsertMode ||
+        this.currentModeName === ModeName.EasyMotionMode) {
       // AArrgghhhh - johnfn
 
       return;
@@ -593,7 +594,7 @@ export class ModeHandler implements vscode.Disposable {
           this._vimState.cursorPosition = this._vimState.cursorPosition.getLeft();
         }
       } else {
-        if (this._vimState.currentMode !== ModeName.Insert && this._vimState.currentMode !== ModeName.EasyMotionMode) {
+        if (this._vimState.currentMode !== ModeName.Insert) {
           this._vimState.currentMode = ModeName.Normal;
           this.setCurrentModeByName(this._vimState);
         }
