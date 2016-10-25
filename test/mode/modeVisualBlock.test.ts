@@ -56,4 +56,11 @@ suite("Mode Visual Block", () => {
     end: ['t123est', 't123|est'],
   });
 
+  newTest({
+    title: "Can handle 'D'",
+    start: ['tes|t', 'test'],
+    keysPressed: '<C-v>hjD',
+    end: ['t|e', 'te'],
+  });
+
 });
