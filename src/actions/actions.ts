@@ -3845,7 +3845,7 @@ class ActionReplaceCharacterVisual extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const toInsert   = this.keysPressed[1];
+    const toInsert = this.keysPressed[1];
 
     let visualSelectionOffset = 1;
     let start = vimState.cursorStartPosition;
