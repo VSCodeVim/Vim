@@ -3852,18 +3852,12 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     let end = vimState.cursorPosition;
 
     // If selection is reversed, reorganize it so that the text replace logic always works
-    if (start.line > end.line || ((start.line === end.line)
-      && (start.character > end.character))) {
-      let tmp = start;
-      start = end;
-      end = tmp;
-      visualSelectionOffset = 0;
+    if (end.isBeforeOrEqual(start)) {
+      [start, end] = [end, start];
     }
 
-    // Visual line includes EOL so we do not want to modify the selection at all
-    if (vimState.currentMode === ModeName.VisualLine) {
-      visualSelectionOffset = 0;
-    }
+    // Limit to not replace EOL
+    end = new Position(end.line, Math.min(end.character, TextEditor.getLineAt(end).text.length - 1));
 
     // Iterate over every line in the current selection
     for (var lineNum = start.line; lineNum <= end.line; lineNum++) {

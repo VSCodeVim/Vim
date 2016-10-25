@@ -297,7 +297,7 @@ suite("Mode Visual", () => {
       title: "Can do a single line replace",
       start: ["one |two three four five", "one two three four five"],
       keysPressed: "Vr1",
-      end: ["|111111111111111111111111", "one two three four five"],
+      end: ["|11111111111111111111111", "one two three four five"],
       endMode: ModeName.Normal
     });
 
