@@ -351,7 +351,23 @@ suite("Mode Normal", () => {
       title: "Can handle 'ci{' spanning multiple lines",
       start: ['one {', '|', '}'],
       keysPressed: 'ci{',
-      end: ['one {|}'],
+      end: ['one {', '|', '}'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci{' spanning multiple lines and handle whitespaces correctly",
+      start: ['one {  ', '|', '}'],
+      keysPressed: 'ci{',
+      end: ['one {|', '}'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci{' spanning multiple lines and handle whitespaces correctly",
+      start: ['one {', '|', '  }'],
+      keysPressed: 'ci{',
+      end: ['one {', '|', '  }'],
       endMode: ModeName.Insert
     });
 
@@ -367,7 +383,7 @@ suite("Mode Normal", () => {
       title: "Can handle 'ciB' spanning multiple lines",
       start: ['one {', '|', '}'],
       keysPressed: 'ciB',
-      end: ['one {|}'],
+      end: ['one {', '|', '}'],
       endMode: ModeName.Insert
     });
 
@@ -399,7 +415,7 @@ suite("Mode Normal", () => {
       title: "Can handle 'ci[' spanning multiple lines",
       start: ['one [', '|', ']'],
       keysPressed: 'ci[',
-      end: ['one [|]'],
+      end: ['one [', '|', ']'],
       endMode: ModeName.Insert
     });
 

@@ -1896,14 +1896,18 @@ export class ChangeOperator extends BaseOperator {
     public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-        const isEndOfLine = end.character === TextEditor.getLineAt(end).text.length - 1;
+        const isEndOfLine = end.character === end.getLineEnd().character;
         let state = vimState;
 
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
         // the line. We do want to run delete if it is a multiline change though ex. c}
         if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 || (end.line !== start.line)) {
-          state = await new DeleteOperator().run(vimState, start, end);
+          if (isEndOfLine) {
+            state = await new DeleteOperator().run(vimState, start, end.getLeftThroughLineBreaks());
+          } else {
+            state = await new DeleteOperator().run(vimState, start, end);
+          }
         }
 
         state.currentMode = ModeName.Insert;
@@ -4587,7 +4591,13 @@ abstract class MoveInsideCharacter extends BaseMovement {
     let startPos = PairMatcher.nextPairedChar(position, closingChar, closedMatch);
     if (startPos === undefined) { return failure; }
 
-    const startPlusOne = new Position(startPos.line, startPos.character + 1);
+    let startPlusOne: Position;
+
+    if (startPos.isAfterOrEqual(startPos.getLineEnd().getLeft())) {
+      startPlusOne = new Position(startPos.line + 1, 0);
+    } else {
+      startPlusOne = new Position(startPos.line, startPos.character + 1);
+    }
 
     let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
     if (endPos === undefined) { return failure; }
@@ -4601,6 +4611,8 @@ abstract class MoveInsideCharacter extends BaseMovement {
     // If the closing character is the first on the line, don't swallow it.
     if (endPos.character === 0) {
       endPos = endPos.getLeftThroughLineBreaks();
+    } else if (/^\s+$/.test(TextEditor.getText(new vscode.Range(endPos.getLineBegin(), endPos.getLeft())))) {
+      endPos = endPos.getPreviousLineBegin().getLineEnd();
     }
 
     if (position.isBefore(startPos)) {
