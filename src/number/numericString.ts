@@ -8,7 +8,7 @@ export class NumericString {
     { regex: /^([-+])?0([0-7]+)$/, base: 8, prefix: "0" },
     { regex: /^([-+])?(\d+)$/, base: 10, prefix: "" },
     { regex: /^([-+])?0x([\da-fA-F]+)$/, base: 16, prefix: "0x" },
-    { regex: /\d/i, base: 10, prefix: "" }
+    { regex: /\d/, base: 10, prefix: "" }
   ];
 
   static parse(input: string): NumericString | null {
