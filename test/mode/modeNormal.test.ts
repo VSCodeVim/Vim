@@ -1321,4 +1321,11 @@ suite("Mode Normal", () => {
       end: ["\t|one", "two"],
       endMode: ModeName.Normal
     });
+
+    newTest({
+      title: "Can handle <Esc> and do nothing",
+      start: ['te|st'],
+      keysPressed: '<Esc>',
+      end: ['te|st'],
+    });
 });

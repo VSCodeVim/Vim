@@ -43,7 +43,18 @@ suite("Mode Insert", () => {
         assertEqual(TextEditor.getSelection().start.character, 4, "<Esc> moved cursor position.");
     });
 
-    test("", async () => {
+   test("<C-c> can exit insert", async () => {
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            't', 'e', 'x', 't',
+            '<C-c>',
+            'o'
+        ]);
+
+        return assertEqualLines(["text", ""]);
+    });
+
+    test("<Esc> can exit insert", async () => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
             't', 'e', 'x', 't',
@@ -52,6 +63,14 @@ suite("Mode Insert", () => {
         ]);
 
         return assertEqualLines(["text", ""]);
+    });
+
+    test("Stay in insert when entering characters", async () => {
+        await modeHandler.handleKeyEvent('i');
+        for (var i = 0; i < 10; i++) {
+            await modeHandler.handleKeyEvent('1');
+            assertEqual(modeHandler.currentMode.name === ModeName.Insert, true);
+        }
     });
 
     test("Can handle 'O'", async () => {

@@ -4724,6 +4724,17 @@ abstract class MoveInsideCharacter extends BaseMovement {
       diff  : new PositionDiff(0, startPos === position ? 1 : 0)
     };
   }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const result = await this.execAction(position, vimState);
+    if (isIMovement(result)) {
+      if (result.failed) {
+        vimState.recordedState.hasRunOperator = false;
+        vimState.recordedState.actionsRun = [];
+      }
+    }
+    return result;
+  }
 }
 
 @RegisterAction
@@ -4893,12 +4904,17 @@ abstract class MoveQuoteMatch extends BaseMovement {
     };
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState);
-
-    res.stop = res.stop.getRight();
-
-    return res;
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const result = await this.execAction(position, vimState);
+    if (isIMovement(result)) {
+      if (result.failed) {
+        vimState.recordedState.hasRunOperator = false;
+        vimState.recordedState.actionsRun = [];
+      } else {
+        result.stop = result.stop.getRight();
+      }
+    }
+    return result;
   }
 }
 
@@ -5168,12 +5184,17 @@ abstract class MoveTagMatch extends BaseMovement {
     };
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState);
-
-    res.stop = res.stop.getRight();
-
-    return res;
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const result = await this.execAction(position, vimState);
+    if (isIMovement(result)) {
+      if (result.failed) {
+        vimState.recordedState.hasRunOperator = false;
+        vimState.recordedState.actionsRun = [];
+      } else {
+        result.stop = result.stop.getRight();
+      }
+    }
+    return result;
   }
 }
 
