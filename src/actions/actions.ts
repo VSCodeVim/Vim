@@ -5198,9 +5198,16 @@ if (Configuration.getInstance().easymotion) {
 
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
       const searchChar = this.keysPressed[3];
-      var searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, searchChar);
+      var searchState: SearchState;
+      if (searchChar === " ") {
+        searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, " {1,}", { isRegex: true });
+      }
+      else {
+        searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, searchChar);
+      }
 
       var ranges = searchState.matchRanges;
+      console.log("ranges: " + ranges.length);
       if (ranges.length === 0) {
         return vimState;
       }
