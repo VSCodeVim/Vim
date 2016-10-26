@@ -3,6 +3,8 @@ import * as vscode from "vscode";
 import { Position } from './../motion/position';
 import { VimState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
+import { Configuration } from '../../src/configuration/configuration';
+import { TextEditor } from './../textEditor';
 
 export class EasyMotion {
   private _vimState: VimState;
@@ -12,6 +14,7 @@ export class EasyMotion {
   private markers: EasyMotion.Marker[];
   private decorations: any[][] = [];
 
+  private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
   private static svgCache: { [code: string] : vscode.Uri } = {};
 
@@ -29,10 +32,11 @@ export class EasyMotion {
     let keyTable = EasyMotion.keyTable;
     var availableKeyTable = keyTable.slice();
     var keyDepthTable = [";"];
+    var totalSteps = 0;
 
     if (length >= keyTable.length) {
         var totalRemainder = Math.max(length - keyTable.length, 0);
-        var totalSteps = Math.floor(totalRemainder / keyTable.length);
+        totalSteps = Math.floor(totalRemainder / keyTable.length);
 
         for (var i = 0; i < totalSteps; i++) {
             keyDepthTable.push(availableKeyTable.pop());
@@ -52,12 +56,12 @@ export class EasyMotion {
 
         prefix += keyDepthTable[steps];
 
-        if (steps > 0) {
+        if (steps >= totalSteps) {
             return new EasyMotion.Marker(prefix + availableKeyTable[remainder % availableKeyTable.length], markerPosition);
         }
 
-        var idx = (availableKeyTable.length - 1 - inverted) % availableKeyTable.length;
-        return new EasyMotion.Marker(prefix + availableKeyTable[idx], markerPosition);
+        var num = (availableKeyTable.length - 1 - inverted % availableKeyTable.length) % availableKeyTable.length;
+        return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
     }
 
     return new EasyMotion.Marker(prefix + availableKeyTable[index % availableKeyTable.length], markerPosition);
@@ -147,6 +151,87 @@ export class EasyMotion {
     return markers;
   }
 
+  public sortedSearch(position: Position, searchString = "", options: EasyMotion.SearchOptions = {}): EasyMotion.Match[] {
+    let searchRE = searchString;
+    if (!options.isRegex) {
+      searchRE = searchString.replace(EasyMotion.specialCharactersRegex, "\\$&");
+    }
+
+    const regexFlags = "g";
+    let regex: RegExp;
+    try {
+      regex = new RegExp(searchRE, regexFlags);
+    } catch (err) {
+      // Couldn't compile the regexp, try again with special characters escaped
+      searchRE = searchString.replace(EasyMotion.specialCharactersRegex, "\\$&");
+      regex = new RegExp(searchRE, regexFlags);
+    }
+
+    var matches: EasyMotion.Match[] = [];
+
+    var cursorIndex = position.character;
+    var prevMatch: EasyMotion.Match | undefined;
+
+    var lineCount = TextEditor.getLineCount();
+    var lineMin = options.min ? Math.max(options.min.line, 0) : 0;
+    var lineMax = options.max ? Math.min(options.max.line + 1, lineCount) : lineCount;
+
+    outer:
+    for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
+      const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+      var result: RegExpExecArray;
+
+      while (result = regex.exec(line)) {
+        if (matches.length >= 100) {
+          break outer;
+        }
+
+        var matchIndex = result.index;
+        if (options.useEnd) {
+          matchIndex += result[0].length - 1;
+        }
+        let pos = new Position(lineIdx, matchIndex);
+
+        if ((options.min && pos.isBefore(options.min)) ||
+            (options.max && pos.isAfter(options.max)) ||
+            Math.abs(pos.line - position.line) > 100) {
+
+          continue;
+        }
+
+        if (!prevMatch || prevMatch.position.isBefore(position)) {
+          cursorIndex = matches.length;
+        }
+
+        prevMatch = new EasyMotion.Match(
+          pos,
+          matches.length
+        );
+
+        if (pos.isEqual(position)) {
+          continue;
+        }
+
+        matches.push(prevMatch);
+      }
+    }
+
+    matches.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
+      var diffA = cursorIndex - a.index;
+      var diffB = cursorIndex - b.index;
+
+      var absDiffA = Math.abs(diffA);
+      var absDiffB = Math.abs(diffB);
+
+      if (a.index < cursorIndex) absDiffA -= 0.5;
+      if (b.index < cursorIndex) absDiffB -= 0.5;
+
+      return absDiffA - absDiffB;
+    });
+
+    return matches;
+  }
+
 
   public updateDecorations(position: Position) {
     this.clearDecorations();
@@ -228,5 +313,12 @@ export module EasyMotion {
     public get index(): number {
       return this._index;
     }
+  }
+
+  export interface SearchOptions {
+    min?: Position;
+    max?: Position;
+    isRegex?: boolean;
+    useEnd?: boolean;
   }
 }

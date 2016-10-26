@@ -5198,81 +5198,116 @@ if (Configuration.getInstance().easymotion) {
 
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
       const searchChar = this.keysPressed[3];
-      var searchState: SearchState;
-      if (searchChar === " ") {
-        searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, " {1,}", { isRegex: true });
-      }
-      else {
-        searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, searchChar);
-      }
-
-      var ranges = searchState.matchRanges;
-      if (ranges.length === 0) {
-        return vimState;
-      }
-
-      var filtered: EasyMotion.Match[] = [];
-
-      var totalLineLength = 0;
-      var prevLine = -1;
-      var cursorIndex = 0;
-      for (var i = 0; i < ranges.length; i++) {
-        var range = ranges[i];
-        var pos = Position.FromVSCodePosition(range.start);
-
-        if (pos.isEqual(position)) {
-          continue;
-        }
-
-        if (Math.abs(pos.line - position.line) > 100) {
-          continue;
-        }
-
-        if (prevLine === -1) {
-          prevLine = pos.line;
-        }
-        if (pos.line !== prevLine) {
-          const line = TextEditor.getLineAt(new Position(prevLine, 0)).text;
-          totalLineLength += line.length;
-        }
-
-        prevLine = pos.line;
-
-        if (position.line >= pos.line) {
-          cursorIndex = totalLineLength + position.character;
-        }
-
-        filtered.push(new EasyMotion.Match(pos, totalLineLength + pos.character));
-      }
-
-      filtered.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
-        var diffA = cursorIndex - a.index;
-        var diffB = cursorIndex - b.index;
-
-        var absDiffA = Math.abs(diffA);
-        var absDiffB = Math.abs(diffB);
-
-        if (a.index > cursorIndex) {
-          absDiffA -= 0.5;
-        }
-        if (b.index > cursorIndex) {
-          absDiffB -= 0.5;
-        }
-
-        return absDiffA - absDiffB;
-      });
+      let matches = vimState.easyMotion.sortedSearch(position, searchChar);
 
       vimState.easyMotion.clearMarkers();
 
       var index = 0;
-      for (var j = 0; j < filtered.length; j++) {
-        var match = filtered[j];
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
 
         if (match.position.isEqual(position)) {
           continue;
         }
 
-        let marker = EasyMotion.generateMarker(index++, filtered.length, position, match.position);
+        let marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
+        vimState.easyMotion.addMarker(marker);
+      }
+
+      vimState.easyMotion.updateDecorations(position);
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionWordCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "w"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      let matches = vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+        isRegex: true,
+        min: position
+       });
+
+      vimState.easyMotion.clearMarkers();
+
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        let marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
+        vimState.easyMotion.addMarker(marker);
+      }
+
+      vimState.easyMotion.updateDecorations(position);
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionEndCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "e"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      let matches = vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+        isRegex: true,
+        min: position,
+        useEnd: true
+       });
+
+      vimState.easyMotion.clearMarkers();
+
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        let marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
+        vimState.easyMotion.addMarker(marker);
+      }
+
+      vimState.easyMotion.updateDecorations(position);
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionBeginningWordCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "b"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      let matches = vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+        isRegex: true,
+        max: position
+       });
+
+      vimState.easyMotion.clearMarkers();
+
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        let marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
         vimState.easyMotion.addMarker(marker);
       }
 
