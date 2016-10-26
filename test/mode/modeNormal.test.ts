@@ -965,6 +965,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'p' after y'a",
+      start: ['|one', 'two', 'three'],
+      keysPressed: "majjy'ap",
+      end: ['one', 'two', 'three', '|one', 'two', 'three']
+    });
+
+    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',
