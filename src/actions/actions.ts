@@ -16,6 +16,7 @@ import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
+import { EasyMotion } from "./../easymotion/easymotion";
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
@@ -5290,5 +5291,188 @@ class ActionOverrideCmdAltUp extends BaseCommand {
     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
     return vimState;
+  }
+}
+
+
+if (Configuration.getInstance().easymotion) {
+  @RegisterAction
+  class ActionEasyMotionCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "s", "<character>"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      const searchChar = this.keysPressed[3];
+      let matches = vimState.easyMotion.sortedSearch(position, searchChar);
+
+      vimState.easyMotion.clearMarkers();
+
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        let marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
+        vimState.easyMotion.addMarker(marker);
+      }
+
+      vimState.easyMotion.updateDecorations(position);
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionWordCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "w"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      let matches = vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+        isRegex: true,
+        min: position
+       });
+
+      vimState.easyMotion.clearMarkers();
+
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        let marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
+        vimState.easyMotion.addMarker(marker);
+      }
+
+      vimState.easyMotion.updateDecorations(position);
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionEndCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "e"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      let matches = vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+        isRegex: true,
+        min: position,
+        useEnd: true
+       });
+
+      vimState.easyMotion.clearMarkers();
+
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        let marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
+        vimState.easyMotion.addMarker(marker);
+      }
+
+      vimState.easyMotion.updateDecorations(position);
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionBeginningWordCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "b"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      let matches = vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+        isRegex: true,
+        max: position
+       });
+
+      vimState.easyMotion.clearMarkers();
+
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        let marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
+        vimState.easyMotion.addMarker(marker);
+      }
+
+      vimState.easyMotion.updateDecorations(position);
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class CommandEscEasyMotionMode extends BaseCommand {
+    modes = [
+      ModeName.EasyMotionMode
+    ];
+    keys = [
+      ["<Esc>"],
+      ["<C-c>"],
+      ["<C-[>"],
+    ];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      vimState.currentMode = ModeName.Normal;
+      vimState.easyMotion.exitMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class MoveEasyMotion extends BaseMovement {
+    modes = [ModeName.EasyMotionMode];
+    keys = ["<character>"];
+
+    public async execAction(position: Position, vimState: VimState): Promise<Position> {
+      var key = this.keysPressed[0];
+      if (!key) {
+        return position;
+      }
+
+      var nail = vimState.easyMotion.accumulation + key;
+      vimState.easyMotion.accumulation = nail;
+
+      var markers = vimState.easyMotion.findMarkers(nail);
+      if (markers.length === 1) {
+        var marker = markers[0];
+
+        vimState.easyMotion.exitMode();
+
+        return marker.position;
+      } else {
+        if (markers.length === 0) {
+          vimState.easyMotion.exitMode();
+          return position;
+        }
+
+        vimState.easyMotion.updateDecorations(position);
+      }
+
+      return position;
+    }
   }
 }
