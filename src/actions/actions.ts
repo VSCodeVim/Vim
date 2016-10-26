@@ -5308,7 +5308,9 @@ if (Configuration.getInstance().easymotion) {
       let matches = vimState.easyMotion.sortedSearch(position, searchChar);
 
       // Stop if there are no matches
-      if (matches.length == 0) return vimState;
+      if (matches.length === 0) {
+        return vimState;
+      }
 
       // Clear existing markers, just in case
       vimState.easyMotion.clearMarkers();
@@ -5347,7 +5349,9 @@ if (Configuration.getInstance().easymotion) {
       });
 
       // Stop if there are no matches
-      if (matches.length == 0) return vimState;
+      if (matches.length === 0) {
+        return vimState;
+      }
 
       // Clear existing markers, just in case
       vimState.easyMotion.clearMarkers();
@@ -5387,7 +5391,9 @@ if (Configuration.getInstance().easymotion) {
       });
 
       // Stop if there are no matches
-      if (matches.length == 0) return vimState;
+      if (matches.length === 0) {
+        return vimState;
+      }
 
       // Clear existing markers, just in case
       vimState.easyMotion.clearMarkers();
@@ -5426,7 +5432,9 @@ if (Configuration.getInstance().easymotion) {
       });
 
       // Stop if there are no matches
-      if (matches.length == 0) return vimState;
+      if (matches.length === 0) {
+        return vimState;
+      }
 
       // Clear existing markers, just in case
       vimState.easyMotion.clearMarkers();
