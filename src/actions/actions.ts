@@ -5305,7 +5305,13 @@ if (Configuration.getInstance().easymotion) {
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
       const searchChar = this.keysPressed[3];
       // Search all occurences of the character pressed
-      let matches = vimState.easyMotion.sortedSearch(position, searchChar);
+      let matches: EasyMotion.Match[];
+      if (searchChar === " ") { // Searching for space should only find the first space
+        matches = vimState.easyMotion.sortedSearch(position, " {1,}", { isRegex: true });
+      }
+      else {
+        matches = vimState.easyMotion.sortedSearch(position, searchChar);
+      }
 
       // Stop if there are no matches
       if (matches.length === 0) {
@@ -5344,9 +5350,18 @@ if (Configuration.getInstance().easymotion) {
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
       const searchChar = this.keysPressed[3];
       // Search all occurences of the character pressed
-      let matches = vimState.easyMotion.sortedSearch(position, searchChar, {
-        min: position
-      });
+      let matches: EasyMotion.Match[];
+      if (searchChar === " ") { // Searching for space should only find the first space
+        matches = vimState.easyMotion.sortedSearch(position, " {1,}", {
+          isRegex: true,
+          min: position
+        });
+      }
+      else {
+        matches = vimState.easyMotion.sortedSearch(position, searchChar, {
+          min: position
+        });
+      }
 
       // Stop if there are no matches
       if (matches.length === 0) {
@@ -5385,9 +5400,18 @@ if (Configuration.getInstance().easymotion) {
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
       const searchChar = this.keysPressed[3];
       // Search all occurences of the character pressed
-      let matches = vimState.easyMotion.sortedSearch(position, searchChar, {
-        max: position
-      });
+      let matches: EasyMotion.Match[];
+      if (searchChar === " ") { // Searching for space should only find the first space
+        matches = vimState.easyMotion.sortedSearch(position, " {1,}", {
+          isRegex: true,
+          max: position
+        });
+      }
+      else {
+        matches = vimState.easyMotion.sortedSearch(position, searchChar, {
+          max: position
+        });
+      }
 
       // Stop if there are no matches
       if (matches.length === 0) {
@@ -5426,9 +5450,18 @@ if (Configuration.getInstance().easymotion) {
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
       const searchChar = this.keysPressed[3];
       // Search all occurences of the character pressed
-      let matches = vimState.easyMotion.sortedSearch(position, searchChar, {
-        min: position
-      });
+      let matches: EasyMotion.Match[];
+      if (searchChar === " ") { // Searching for space should only find the first space
+        matches = vimState.easyMotion.sortedSearch(position, " {1,}", {
+          isRegex: true,
+          min: position
+        });
+      }
+      else {
+        matches = vimState.easyMotion.sortedSearch(position, searchChar, {
+          min: position
+        });
+      }
 
       // Stop if there are no matches
       if (matches.length === 0) {
@@ -5468,9 +5501,18 @@ if (Configuration.getInstance().easymotion) {
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
       const searchChar = this.keysPressed[3];
       // Search all occurences of the character pressed
-      let matches = vimState.easyMotion.sortedSearch(position, searchChar, {
-        max: position
-      });
+      let matches: EasyMotion.Match[];
+      if (searchChar === " ") { // Searching for space should only find the first space
+        matches = vimState.easyMotion.sortedSearch(position, " {1,}", {
+          isRegex: true,
+          min: position
+        });
+      }
+      else {
+        matches = vimState.easyMotion.sortedSearch(position, searchChar, {
+          min: position
+        });
+      }
 
       // Stop if there are no matches
       if (matches.length === 0) {
