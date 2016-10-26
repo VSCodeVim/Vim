@@ -5305,6 +5305,8 @@ if (Configuration.getInstance().easymotion) {
       const searchChar = this.keysPressed[3];
       let matches = vimState.easyMotion.sortedSearch(position, searchChar);
 
+      if (matches.length == 0) return vimState;
+
       vimState.easyMotion.clearMarkers();
 
       var index = 0;
@@ -5336,6 +5338,8 @@ if (Configuration.getInstance().easymotion) {
         isRegex: true,
         min: position
       });
+
+      if (matches.length == 0) return vimState;
 
       vimState.easyMotion.clearMarkers();
 
@@ -5370,6 +5374,8 @@ if (Configuration.getInstance().easymotion) {
         useEnd: true
       });
 
+      if (matches.length == 0) return vimState;
+
       vimState.easyMotion.clearMarkers();
 
       var index = 0;
@@ -5402,6 +5408,7 @@ if (Configuration.getInstance().easymotion) {
         max: position
       });
 
+      if (matches.length == 0) return vimState;
 
       vimState.easyMotion.clearMarkers();
 
