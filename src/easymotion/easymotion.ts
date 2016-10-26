@@ -8,15 +8,21 @@ import { TextEditor } from './../textEditor';
 export class EasyMotion {
   private _vimState: VimState;
 
+  // Refers to the accumulated keys for depth navigation
   public accumulation = "";
 
+  // Array of all markers and decorations
   private markers: EasyMotion.Marker[];
   private decorations: any[][] = [];
 
+  // TODO: For future motions.
   private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
+
+  // Caches for decorations
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
   private static svgCache: { [code: string] : vscode.Uri } = {};
 
+  // The key sequence for marker name generation
   public static keyTable = [
     "a", "s", "d", "g", "h", "k", "l", "q", "w", "e",
     "r", "t", "y", "u", "i", "o", "p", "z", "x", "c",
@@ -27,9 +33,12 @@ export class EasyMotion {
     this._vimState = vimState;
   }
 
+  // Generate a marker following a sequence for the name and depth levels
   public static generateMarker(index: number, length: number, position: Position, markerPosition: Position): EasyMotion.Marker {
     let keyTable = EasyMotion.keyTable;
     var availableKeyTable = keyTable.slice();
+
+    // Depth table should always include a ;
     var keyDepthTable = [";"];
     var totalSteps = 0;
 
@@ -44,28 +53,38 @@ export class EasyMotion {
 
     var prefix = "";
     if (index >= availableKeyTable.length) {
+        // Length of available keys before reset and ";"
         var oldLength = availableKeyTable.length;
+        // The index that remains after taking away the first-level depth markers
         var remainder = index - availableKeyTable.length;
 
+        // ";" can be used as the last marker key, when inside a marker with depth. Reset to available keys and add ";"
         availableKeyTable = keyTable.slice();
         availableKeyTable.push(";");
 
+        // Depth index counts down instead of up
         var inverted = (length - oldLength - 1 - remainder);
         var steps = Math.floor((inverted) / availableKeyTable.length);
 
+        // Add the key to the prefix
         prefix += keyDepthTable[steps];
 
+        // Check if we're on the last depth level
         if (steps >= totalSteps) {
+            // Return the proper key for this index
             return new EasyMotion.Marker(prefix + availableKeyTable[remainder % availableKeyTable.length], markerPosition);
         }
 
+        // Return the proper index for depths earlier than the last one, including prefix
         var num = (availableKeyTable.length - 1 - inverted % availableKeyTable.length) % availableKeyTable.length;
         return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
     }
 
+    // Return the last key in the marker, including prefix
     return new EasyMotion.Marker(prefix + availableKeyTable[index % availableKeyTable.length], markerPosition);
   }
 
+  // Create and cache decoration types for different marker lengths
   public static getDecorationType(length: number): vscode.TextEditorDecorationType {
     var cache = this.decorationTypeCache[length];
     if (cache) {
@@ -86,6 +105,7 @@ export class EasyMotion {
     return type;
   }
 
+  // Create and cache the SVG data URI for different marker codes and colors
   private static getSvgDataUri(code: string, backgroundColor: string, fontColor: string): vscode.Uri {
       var cache = this.svgCache[code];
       if (cache) {
@@ -104,12 +124,13 @@ export class EasyMotion {
       return uri;
   }
 
-
+  // Enter EasyMotion mode
   public enterMode() {
     this.accumulation = "";
     this._vimState.currentMode = ModeName.EasyMotionMode;
   }
 
+  // Exit EasyMotion mode and clean up
   public exitMode() {
     this._vimState.currentMode = ModeName.Normal;
 
@@ -118,6 +139,7 @@ export class EasyMotion {
     this.clearDecorations();
   }
 
+  // Clear all decorations
   public clearDecorations() {
     var editor = vscode.window.activeTextEditor;
     for (var i = 1; i <= this.decorations.length; i++) {
@@ -125,6 +147,7 @@ export class EasyMotion {
     }
   }
 
+  // Clear all markers
   public clearMarkers() {
     this.markers = [];
   }
@@ -137,6 +160,7 @@ export class EasyMotion {
     return this.markers[index];
   }
 
+  // Find markers beginning with a string
   public findMarkers(nail: string): EasyMotion.Marker[] {
     var markers: EasyMotion.Marker[] = [];
     for (var i = 0; i < this.markers.length; i++) {
@@ -150,8 +174,10 @@ export class EasyMotion {
     return markers;
   }
 
+  // Search and sort using the index of a match compared to the index of position (usually the cursor)
   public sortedSearch(position: Position, searchString = "", options: EasyMotion.SearchOptions = {}): EasyMotion.Match[] {
     let searchRE = searchString;
+    // Regex needs to be escaped
     if (!options.isRegex) {
       searchRE = searchString.replace(EasyMotion.specialCharactersRegex, "\\$&");
     }
@@ -168,9 +194,11 @@ export class EasyMotion {
 
     var matches: EasyMotion.Match[] = [];
 
+    // Cursor index refers to the index of the marker that is on or to the right of the cursor
     var cursorIndex = position.character;
     var prevMatch: EasyMotion.Match | undefined;
 
+    // Calculate the min/max bounds for the search
     var lineCount = TextEditor.getLineCount();
     var lineMin = options.min ? Math.max(options.min.line, 0) : 0;
     var lineMax = options.max ? Math.min(options.max.line + 1, lineCount) : lineCount;
@@ -186,19 +214,21 @@ export class EasyMotion {
         }
 
         var matchIndex = result.index;
-        if (options.useEnd) {
+        if (options.useEnd) { // Return the end of the result rather than the start
           matchIndex += result[0].length - 1;
         }
         let pos = new Position(lineIdx, matchIndex);
 
+        // Check if match is within bounds
         if ((options.min && pos.isBefore(options.min)) ||
             (options.max && pos.isAfter(options.max)) ||
-            Math.abs(pos.line - position.line) > 100) {
+            Math.abs(pos.line - position.line) > 100) { // Stop searching after 100 lines in both directions
 
           result = regex.exec(line);
           continue;
         }
 
+        // Update cursor index to the marker on the right side of the cursor
         if (!prevMatch || prevMatch.position.isBefore(position)) {
           cursorIndex = matches.length;
         }
@@ -208,6 +238,7 @@ export class EasyMotion {
           matches.length
         );
 
+        // Matches on the cursor position should be ignored
         if (pos.isEqual(position)) {
           result = regex.exec(line);
           continue;
@@ -219,6 +250,7 @@ export class EasyMotion {
       }
     }
 
+    // Sort by the index distance from the cursor index
     matches.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
       var diffA = cursorIndex - a.index;
       var diffB = cursorIndex - b.index;
@@ -226,6 +258,7 @@ export class EasyMotion {
       var absDiffA = Math.abs(diffA);
       var absDiffB = Math.abs(diffB);
 
+      // Prioritize the matches on the right side of the cursor index
       if (a.index < cursorIndex) {
         absDiffA -= 0.5;
       }
@@ -247,11 +280,13 @@ export class EasyMotion {
     for (var i = 0; i < this.markers.length; i++) {
       var marker = this.getMarker(i);
 
+      // Ignore markers that do not start with the accumulated depth level
       if (!marker.name.startsWith(this.accumulation)) {
         continue;
       }
 
       var pos = marker.position;
+      // Get keys after the depth we're at
       var keystroke = marker.name.substr(this.accumulation.length);
 
       let fontColor = keystroke.length > 1 ? "orange" : "red";
@@ -260,6 +295,7 @@ export class EasyMotion {
         this.decorations[keystroke.length] = [];
       }
 
+      // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
       var charPos = pos.character + 1 + (keystroke.length - 1);
       this.decorations[keystroke.length].push({
         range: new vscode.Range(pos.line, charPos, pos.line, charPos),
@@ -278,6 +314,7 @@ export class EasyMotion {
       });
     }
 
+    // Set the decorations for all the different marker lengths
     var editor = vscode.window.activeTextEditor;
     for (var j = 1; j < this.decorations.length; j++) {
       editor.setDecorations(EasyMotion.getDecorationType(j), this.decorations[j]);
@@ -323,9 +360,9 @@ export module EasyMotion {
   }
 
   export interface SearchOptions {
-    min?: Position;
-    max?: Position;
-    isRegex?: boolean;
-    useEnd?: boolean;
+    min?: Position; // The minimum bound of the search
+    max?: Position; // The maximum bound of the search
+    isRegex?: boolean; // Is the search string a regular expression?
+    useEnd?: boolean; // Use the end of the match rather than start
   }
 }
