@@ -308,6 +308,14 @@ suite("Mode Visual", () => {
       end: ["|11111111111111111111111", "11111111111111111111111"],
       endMode: ModeName.Normal
     });
+
+    newTestOnly({
+      title: "Can do a multi visual line replace from the bottom up",
+      start: ["test", "test", "test", "|test", "test"],
+      keysPressed: "Vkkr1",
+      end: ["test", "|1111", "1111", "1111", "test"],
+      endMode: ModeName.Normal
+    });
   });
 
 });

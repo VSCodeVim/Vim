@@ -1362,13 +1362,19 @@ export class ModeHandler implements vscode.Disposable {
 
           selections = [ new vscode.Selection(start, stop) ];
         } else if (vimState.currentMode === ModeName.VisualLine) {
-          selections = [ new vscode.Selection(
+          selections = [new vscode.Selection(
             Position.EarlierOf(start, stop).getLineBegin(),
             Position.LaterOf(start, stop).getLineEnd()
-          ) ];
-          vimState.cursorStartPosition = selections[0].start as Position;
-          vimState.cursorPosition = selections[0].end as Position;
+          )];
 
+          // Maintain cursor position based on which direction the selection is going
+          if (start.line <= stop.line) {
+            vimState.cursorStartPosition = selections[0].start as Position;
+            vimState.cursorPosition = selections[0].end as Position;
+          } else {
+            vimState.cursorStartPosition = selections[0].end as Position;
+            vimState.cursorPosition = selections[0].start as Position;
+          }
         } else if (vimState.currentMode === ModeName.VisualBlock) {
           selections = [];
 
