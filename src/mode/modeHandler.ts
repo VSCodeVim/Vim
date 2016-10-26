@@ -449,6 +449,7 @@ export class ModeHandler implements vscode.Disposable {
       new VisualLineMode(),
       new SearchInProgressMode(),
       new ReplaceMode(),
+      new EasyMotionMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
     this.vimState.easyMotion = new EasyMotion(this.vimState);
