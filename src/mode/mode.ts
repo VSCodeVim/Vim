@@ -9,6 +9,7 @@ export enum ModeName {
   VisualBlockInsertMode,
   SearchInProgressMode,
   Replace,
+  EasyMotionMode,
 }
 
 export enum VSCodeVimCursorType {

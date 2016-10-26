@@ -266,6 +266,11 @@
                     "description": "Override the 'ignorecase' option if the search pattern contains upper case characters.",
                     "default": true
                 },
+                "vim.easymotion": {
+                    "type": "boolean",
+                    "description": "Enabled functionality of the EasyMotion plugin for Vim.",
+                    "default": false
+                },
                 "vim.hlsearch": {
                     "type": "boolean",
                     "description": "When there is a previous search pattern, highlight all its matches.",

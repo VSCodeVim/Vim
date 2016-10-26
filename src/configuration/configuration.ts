@@ -57,6 +57,7 @@ export class Configuration {
   ignorecase: boolean = true;
   smartcase: boolean = true;
   autoindent: boolean = true;
+  easymotion: boolean = false;
 
   @overlapSetting({ codeName: "tabSize", default: 8})
   tabstop: number | undefined = undefined;
