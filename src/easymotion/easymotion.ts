@@ -8,21 +8,31 @@ import { TextEditor } from './../textEditor';
 export class EasyMotion {
   private _vimState: VimState;
 
-  // Refers to the accumulated keys for depth navigation
+  /**
+   * Refers to the accumulated keys for depth navigation
+   */
   public accumulation = "";
 
-  // Array of all markers and decorations
+  /**
+   * Array of all markers and decorations
+   */
   private markers: EasyMotion.Marker[];
   private decorations: any[][] = [];
 
-  // TODO: For future motions.
+  /**
+   * TODO: For future motions
+   */
   private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
 
-  // Caches for decorations
+  /**
+   * Caches for decorations
+   */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
   private static svgCache: { [code: string] : vscode.Uri } = {};
 
-  // The key sequence for marker name generation
+  /**
+   * The key sequence for marker name generation
+   */
   public static keyTable = [
     "a", "s", "d", "g", "h", "k", "l", "q", "w", "e",
     "r", "t", "y", "u", "i", "o", "p", "z", "x", "c",
@@ -33,7 +43,9 @@ export class EasyMotion {
     this._vimState = vimState;
   }
 
-  // Generate a marker following a sequence for the name and depth levels
+  /**
+   * Generate a marker following a sequence for the name and depth levels
+   */
   public static generateMarker(index: number, length: number, position: Position, markerPosition: Position): EasyMotion.Marker {
     let keyTable = EasyMotion.keyTable;
     var availableKeyTable = keyTable.slice();
@@ -84,7 +96,9 @@ export class EasyMotion {
     return new EasyMotion.Marker(prefix + availableKeyTable[index % availableKeyTable.length], markerPosition);
   }
 
-  // Create and cache decoration types for different marker lengths
+  /**
+   * Create and cache decoration types for different marker lengths
+   */
   public static getDecorationType(length: number): vscode.TextEditorDecorationType {
     var cache = this.decorationTypeCache[length];
     if (cache) {
@@ -105,7 +119,9 @@ export class EasyMotion {
     return type;
   }
 
-  // Create and cache the SVG data URI for different marker codes and colors
+  /**
+   * Create and cache the SVG data URI for different marker codes and colors
+   */
   private static getSvgDataUri(code: string, backgroundColor: string, fontColor: string): vscode.Uri {
       var cache = this.svgCache[code];
       if (cache) {
@@ -124,13 +140,17 @@ export class EasyMotion {
       return uri;
   }
 
-  // Enter EasyMotion mode
+  /**
+   * Enter EasyMotion mode
+   */
   public enterMode() {
     this.accumulation = "";
     this._vimState.currentMode = ModeName.EasyMotionMode;
   }
 
-  // Exit EasyMotion mode and clean up
+  /**
+   * Exit EasyMotion mode and clean up
+   */
   public exitMode() {
     this._vimState.currentMode = ModeName.Normal;
 
@@ -139,7 +159,9 @@ export class EasyMotion {
     this.clearDecorations();
   }
 
-  // Clear all decorations
+  /**
+   * Clear all decorations
+   */
   public clearDecorations() {
     var editor = vscode.window.activeTextEditor;
     for (var i = 1; i <= this.decorations.length; i++) {
@@ -147,7 +169,9 @@ export class EasyMotion {
     }
   }
 
-  // Clear all markers
+  /**
+   * Clear all markers
+   */
   public clearMarkers() {
     this.markers = [];
   }
@@ -160,7 +184,9 @@ export class EasyMotion {
     return this.markers[index];
   }
 
-  // Find markers beginning with a string
+  /**
+   * Find markers beginning with a string
+   */
   public findMarkers(nail: string): EasyMotion.Marker[] {
     var markers: EasyMotion.Marker[] = [];
     for (var i = 0; i < this.markers.length; i++) {
@@ -174,7 +200,9 @@ export class EasyMotion {
     return markers;
   }
 
-  // Search and sort using the index of a match compared to the index of position (usually the cursor)
+  /**
+   * Search and sort using the index of a match compared to the index of position (usually the cursor)
+   */
   public sortedSearch(position: Position, searchString = "", options: EasyMotion.SearchOptions = {}): EasyMotion.Match[] {
     let searchRE = searchString;
     // Regex needs to be escaped
