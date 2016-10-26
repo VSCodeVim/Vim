@@ -5308,8 +5308,7 @@ if (Configuration.getInstance().easymotion) {
       let matches: EasyMotion.Match[];
       if (searchChar === " ") { // Searching for space should only find the first space
         matches = vimState.easyMotion.sortedSearch(position, " {1,}", { isRegex: true });
-      }
-      else {
+      } else {
         matches = vimState.easyMotion.sortedSearch(position, searchChar);
       }
 
@@ -5356,8 +5355,7 @@ if (Configuration.getInstance().easymotion) {
           isRegex: true,
           min: position
         });
-      }
-      else {
+      } else {
         matches = vimState.easyMotion.sortedSearch(position, searchChar, {
           min: position
         });
@@ -5406,8 +5404,7 @@ if (Configuration.getInstance().easymotion) {
           isRegex: true,
           max: position
         });
-      }
-      else {
+      } else {
         matches = vimState.easyMotion.sortedSearch(position, searchChar, {
           max: position
         });
@@ -5456,8 +5453,7 @@ if (Configuration.getInstance().easymotion) {
           isRegex: true,
           min: position
         });
-      }
-      else {
+      } else {
         matches = vimState.easyMotion.sortedSearch(position, searchChar, {
           min: position
         });
@@ -5507,8 +5503,7 @@ if (Configuration.getInstance().easymotion) {
           isRegex: true,
           min: position
         });
-      }
-      else {
+      } else {
         matches = vimState.easyMotion.sortedSearch(position, searchChar, {
           min: position
         });
