@@ -204,12 +204,12 @@
             {
                 "key": "up",
                 "command": "extension.vim_up",
-                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
+                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
             },
             {
                 "key": "down",
                 "command": "extension.vim_down",
-                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible"
+                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
             }
         ],
         "configuration": {
