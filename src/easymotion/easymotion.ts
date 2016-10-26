@@ -237,7 +237,7 @@ export class EasyMotion {
       var result = regex.exec(line);
 
       while (result) {
-        if (matches.length >= 100) {
+        if (matches.length >= 1000) {
           break outer;
         }
 
@@ -345,7 +345,9 @@ export class EasyMotion {
     // Set the decorations for all the different marker lengths
     var editor = vscode.window.activeTextEditor;
     for (var j = 1; j < this.decorations.length; j++) {
-      editor.setDecorations(EasyMotion.getDecorationType(j), this.decorations[j]);
+      if (this.decorations[j]) {
+        editor.setDecorations(EasyMotion.getDecorationType(j), this.decorations[j]);
+      }
     }
   }
 }
