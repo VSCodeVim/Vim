@@ -5337,6 +5337,172 @@ if (Configuration.getInstance().easymotion) {
   }
 
   @RegisterAction
+  class ActionEasyMotionFindForwardCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "f", "<character>"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      const searchChar = this.keysPressed[3];
+      // Search all occurences of the character pressed
+      let matches = vimState.easyMotion.sortedSearch(position, searchChar, {
+        min: position
+      });
+
+      // Stop if there are no matches
+      if (matches.length === 0) {
+        return vimState;
+      }
+
+      // Clear existing markers, just in case
+      vimState.easyMotion.clearMarkers();
+
+      // TODO: Implement this in EasyMotion class to help out with DRY
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        vimState.easyMotion.addMarker(EasyMotion.generateMarker(index++, matches.length, position, match.position));
+      }
+
+      // Let EasyMotion update all decorations
+      vimState.easyMotion.updateDecorations(position);
+      // Enter the EasyMotion mode and await further keys
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionFindBackwardCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "F", "<character>"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      const searchChar = this.keysPressed[3];
+      // Search all occurences of the character pressed
+      let matches = vimState.easyMotion.sortedSearch(position, searchChar, {
+        max: position
+      });
+
+      // Stop if there are no matches
+      if (matches.length === 0) {
+        return vimState;
+      }
+
+      // Clear existing markers, just in case
+      vimState.easyMotion.clearMarkers();
+
+      // TODO: Implement this in EasyMotion class to help out with DRY
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        vimState.easyMotion.addMarker(EasyMotion.generateMarker(index++, matches.length, position, match.position));
+      }
+
+      // Let EasyMotion update all decorations
+      vimState.easyMotion.updateDecorations(position);
+      // Enter the EasyMotion mode and await further keys
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionTilForwardCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "t", "<character>"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      const searchChar = this.keysPressed[3];
+      // Search all occurences of the character pressed
+      let matches = vimState.easyMotion.sortedSearch(position, searchChar, {
+        min: position
+      });
+
+      // Stop if there are no matches
+      if (matches.length === 0) {
+        return vimState;
+      }
+
+      // Clear existing markers, just in case
+      vimState.easyMotion.clearMarkers();
+
+      // TODO: Implement this in EasyMotion class to help out with DRY
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+        var matchPos = new Position(match.position.line, Math.max(0, match.position.character - 1));
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        vimState.easyMotion.addMarker(EasyMotion.generateMarker(index++, matches.length, position, matchPos));
+      }
+
+      // Let EasyMotion update all decorations
+      vimState.easyMotion.updateDecorations(position);
+      // Enter the EasyMotion mode and await further keys
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionTilBackwardCommand extends BaseCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "T", "<character>"];
+
+    public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      const searchChar = this.keysPressed[3];
+      // Search all occurences of the character pressed
+      let matches = vimState.easyMotion.sortedSearch(position, searchChar, {
+        max: position
+      });
+
+      // Stop if there are no matches
+      if (matches.length === 0) {
+        return vimState;
+      }
+
+      // Clear existing markers, just in case
+      vimState.easyMotion.clearMarkers();
+
+      // TODO: Implement this in EasyMotion class to help out with DRY
+      var index = 0;
+      for (var j = 0; j < matches.length; j++) {
+        var match = matches[j];
+        var matchPos = new Position(match.position.line, Math.max(0, match.position.character + 1));
+
+        if (match.position.isEqual(position)) {
+          continue;
+        }
+
+        vimState.easyMotion.addMarker(EasyMotion.generateMarker(index++, matches.length, position, matchPos));
+      }
+
+      // Let EasyMotion update all decorations
+      vimState.easyMotion.updateDecorations(position);
+      // Enter the EasyMotion mode and await further keys
+      vimState.easyMotion.enterMode();
+
+      return vimState;
+    }
+  }
+
+  @RegisterAction
   class ActionEasyMotionWordCommand extends BaseCommand {
     modes = [ModeName.Normal];
     keys = ["\\", "\\", "w"];
