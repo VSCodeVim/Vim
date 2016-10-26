@@ -5207,7 +5207,6 @@ if (Configuration.getInstance().easymotion) {
       }
 
       var ranges = searchState.matchRanges;
-      console.log("ranges: " + ranges.length);
       if (ranges.length === 0) {
         return vimState;
       }
