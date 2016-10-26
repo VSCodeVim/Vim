@@ -5335,7 +5335,7 @@ if (Configuration.getInstance().easymotion) {
       let matches = vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
         isRegex: true,
         min: position
-       });
+      });
 
       vimState.easyMotion.clearMarkers();
 
@@ -5368,7 +5368,7 @@ if (Configuration.getInstance().easymotion) {
         isRegex: true,
         min: position,
         useEnd: true
-       });
+      });
 
       vimState.easyMotion.clearMarkers();
 
@@ -5400,7 +5400,8 @@ if (Configuration.getInstance().easymotion) {
       let matches = vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
         isRegex: true,
         max: position
-       });
+      });
+
 
       vimState.easyMotion.clearMarkers();
 
