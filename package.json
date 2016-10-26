@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.3.7",
+    "version": "0.4.0",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#e3f4ff",
@@ -27,7 +27,8 @@
         "vscode": "^1.5.0"
     },
     "categories": [
-        "Other"
+        "Other",
+        "Keymaps"
     ],
     "activationEvents": [
         "*"
@@ -74,6 +75,11 @@
                 "key": "Backspace",
                 "command": "extension.vim_backspace",
                 "when": "editorTextFocus && !inDebugRepl"
+            },
+            {
+                "key": "shift+backspace",
+                "command": "extension.vim_shift+backspace",
+                "when": "editorTextFocus && vim.mode == 'Search In Progress' && !inDebugRepl"
             },
             {
                 "key": "Delete",
@@ -134,6 +140,11 @@
                 "key": "ctrl+v",
                 "command": "extension.vim_ctrl+v",
                 "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys && !inDebugRepl"
+            },
+            {
+                "key": "cmd+v",
+                "command": "extension.vim_cmd+v",
+                "when": "editorTextFocus && vim.mode == 'Search In Progress' && !inDebugRepl"
             },
             {
                 "key": "ctrl+[",

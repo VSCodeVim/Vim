@@ -220,6 +220,22 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'cw' without deleting following white spaces",
+      start: ['|const a = 1;'],
+      keysPressed: 'cw',
+      end: ['| a = 1;'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'c2w'",
+      start: ['|const a = 1;'],
+      keysPressed: 'c2w',
+      end: ['| = 1;'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'cw' without removing EOL",
       start: ['|text;', 'text'],
       keysPressed: 'llllcw',
@@ -335,7 +351,23 @@ suite("Mode Normal", () => {
       title: "Can handle 'ci{' spanning multiple lines",
       start: ['one {', '|', '}'],
       keysPressed: 'ci{',
-      end: ['one {|}'],
+      end: ['one {', '|', '}'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci{' spanning multiple lines and handle whitespaces correctly",
+      start: ['one {  ', '|', '}'],
+      keysPressed: 'ci{',
+      end: ['one {|', '}'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci{' spanning multiple lines and handle whitespaces correctly",
+      start: ['one {', '|', '  }'],
+      keysPressed: 'ci{',
+      end: ['one {', '|', '  }'],
       endMode: ModeName.Insert
     });
 
@@ -351,7 +383,7 @@ suite("Mode Normal", () => {
       title: "Can handle 'ciB' spanning multiple lines",
       start: ['one {', '|', '}'],
       keysPressed: 'ciB',
-      end: ['one {|}'],
+      end: ['one {', '|', '}'],
       endMode: ModeName.Insert
     });
 
@@ -383,7 +415,7 @@ suite("Mode Normal", () => {
       title: "Can handle 'ci[' spanning multiple lines",
       start: ['one [', '|', ']'],
       keysPressed: 'ci[',
-      end: ['one [|]'],
+      end: ['one [', '|', ']'],
       endMode: ModeName.Insert
     });
 
@@ -933,20 +965,6 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle 'J' followed by x",
-      start: ['tes|t', 'test', 'test'],
-      keysPressed: 'Jx',
-      end: ['test|test', 'test'],
-    });
-
-     newTest({
-      title: "Can handle <Esc> and do nothing",
-      start: ['te|st'],
-      keysPressed: '<Esc>',
-      end: ['te|st'],
-    });
-
-    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',
@@ -1091,6 +1109,13 @@ suite("Mode Normal", () => {
       start: ["|abc def ghi"],
       keysPressed: "vwywvwp",
       end: ["abc abc |dhi"]
+    });
+
+    newTest({
+      title: "can handle p with selection",
+      start: ["one", "two", "|three"],
+      keysPressed: "yykVkp",
+      end: ["|three", "three"]
     });
 
     newTest({
@@ -1280,5 +1305,20 @@ suite("Mode Normal", () => {
       keysPressed: "cc",
       end: ["{", "  |"],
       endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Indent current line with correct Vim Mode",
+      start: ["|one", "two"],
+      keysPressed: ">>",
+      end: ["\t|one", "two"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle <Esc> and do nothing",
+      start: ['te|st'],
+      keysPressed: '<Esc>',
+      end: ['te|st'],
     });
 });

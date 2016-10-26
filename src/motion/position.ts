@@ -192,6 +192,41 @@ export class Position extends vscode.Position {
   }
 
   /**
+   * Iterate over every position in the selection defined by the two positions passed in.
+   */
+  public static *IterateSelection(topLeft: Position, bottomRight: Position): Iterable<{ line: string, char: string, pos: Position }> {
+    for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
+      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+
+      if (lineIndex === topLeft.line) {
+        for (let charIndex = topLeft.character; charIndex < line.length + 1; charIndex++) {
+          yield {
+            line: line,
+            char: line[charIndex],
+            pos: new Position(lineIndex, charIndex)
+          };
+        }
+      } else if (lineIndex === bottomRight.line) {
+        for (let charIndex = 0; charIndex < bottomRight.character + 1; charIndex++) {
+          yield {
+            line: line,
+            char: line[charIndex],
+            pos: new Position(lineIndex, charIndex)
+          };
+        }
+      } else {
+        for (let charIndex = 0; charIndex < line.length + 1; charIndex++) {
+          yield {
+            line: line,
+            char: line[charIndex],
+            pos: new Position(lineIndex, charIndex)
+          };
+        }
+      }
+    }
+  }
+
+  /**
    * Iterate over every line in the block defined by the two positions passed in.
    *
    * This is intended for visual block mode.
@@ -594,7 +629,7 @@ export class Position extends vscode.Position {
    * Returns a new position at the end of this position's line.
    */
   public getLineEnd(): Position {
-    return new Position(this.line, Position.getLineLength(this.line));
+  return new Position(this.line, Position.getLineLength(this.line));
   }
 
   /**

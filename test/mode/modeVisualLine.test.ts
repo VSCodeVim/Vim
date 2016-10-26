@@ -5,9 +5,15 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { TextEditor } from '../../src/textEditor';
+import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Visual", () => {
-  let modeHandler: ModeHandler;
+  let modeHandler: ModeHandler = new ModeHandler();
+
+  let {
+    newTest,
+    newTestOnly,
+  } = getTestingFunctions(modeHandler);
 
   setup(async () => {
     await setupWorkspace();
@@ -237,5 +243,71 @@ suite("Mode Visual", () => {
 
       assertEqualLines(["two"]);
     });
+
   });
+
+  suite("Arrow keys work perfectly in Visual Line Mode", () => {
+    newTest({
+      title: "Can handle <up> key",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'V<up>x',
+      end: ['blah', '|hur']
+    });
+
+    newTest({
+      title: "Can handle <down> key",
+      start: ['blah', 'duh', '|dur', 'hur'],
+      keysPressed: 'V<down>x',
+      end: ['blah', '|duh']
+    });
+  });
+
+  suite("Can handle d correctly in Visual Line Mode", () => {
+    newTest({
+      title: "Can handle d key",
+      start: ['|{', '  a = 1;', '}'],
+      keysPressed: 'VGdp',
+      end: ['', '|{', '  a = 1;', '}']
+    });
+
+    newTest({
+      title: "Can handle d key",
+      start: ['|{', '  a = 1;', '}'],
+      keysPressed: 'VGdP',
+      end: ['|{', '  a = 1;', '}', '']
+    });
+
+    newTest({
+      title: "Can handle d key",
+      start: ['1', '2', '|{', '  a = 1;', '}'],
+      keysPressed: 'VGdp',
+      end: ['1', '2', '|{', '  a = 1;', '}']
+    });
+
+    newTest({
+      title: "Can handle d key",
+      start: ['1', '2', '|{', '  a = 1;', '}'],
+      keysPressed: 'VGdP',
+      end: ['1', '|{', '  a = 1;', '}', '2']
+    });
+  });
+
+  suite("handles replace in visual line mode", () => {
+    newTest({
+      title: "Can do a single line replace",
+      start: ["one |two three four five", "one two three four five"],
+      keysPressed: "Vr1",
+      end: ["|11111111111111111111111", "one two three four five"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do a multi visual line replace",
+      start: ["one |two three four five", "one two three four five"],
+      keysPressed: "Vjr1",
+      end: ["|11111111111111111111111", "11111111111111111111111"],
+      endMode: ModeName.Normal
+    });
+  });
+
 });

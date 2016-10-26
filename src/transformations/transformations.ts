@@ -75,6 +75,11 @@ export interface ReplaceTextTransformation {
    * If you don't know what this is, just ignore it. You probably don't need it.
    */
   diff?: PositionDiff;
+
+  /**
+   * Please don't use this! It's a hack.
+   */
+  manuallySetCursorPositions?: boolean;
 }
 
 /**
@@ -187,6 +192,15 @@ export interface Dot {
   type: "dot";
 }
 
+/**
+ * Represents macro
+ */
+export interface Macro {
+  type: "macro";
+  register: string;
+  replay: "contentChange" | "keystrokes";
+}
+
 export type Transformation
   = InsertTextTransformation
   | InsertTextVSCodeTransformation
@@ -196,6 +210,7 @@ export type Transformation
   | MoveCursorTransformation
   | ShowCommandLine
   | Dot
+  | Macro
   | DeleteTextTransformation;
 
 /**

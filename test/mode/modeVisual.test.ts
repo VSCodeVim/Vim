@@ -549,4 +549,23 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
   });
+
+  suite("handles replace in visual mode", () => {
+    newTest({
+      title: "Can do a single line replace",
+      start: ["one |two three four five"],
+      keysPressed: "vwwer1",
+      end: ["one |11111111111111 five"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do a multi line replace",
+      start: ["one |two three four five", "one two three four five"],
+      keysPressed: "vjer1",
+      end: ["one |1111111111111111111", "1111111 three four five"],
+      endMode: ModeName.Normal
+    });
+  });
+
 });

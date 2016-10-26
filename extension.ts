@@ -93,7 +93,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   } else {
     previousActiveEditorId = activeEditorId;
 
-    await handler.updateView(handler.vimState);
+    await handler.updateView(handler.vimState, {drawSelection: false, revealRange: false});
   }
 
   if (oldHandler && oldHandler.vimState.focusChanged) {
@@ -147,15 +147,6 @@ export async function activate(context: vscode.ExtensionContext) {
         handleContentChangedFromDisk(event.document);
       }
     }, 0);
-  });
-
-  vscode.workspace.onDidCloseTextDocument((event) => {
-    const key = event.fileName + vscode.window.activeTextEditor.viewColumn;
-
-    modeHandlerToEditorIdentity[key].dispose();
-
-    // Remove modehandler for closed document
-    delete modeHandlerToEditorIdentity[key];
   });
 
   registerCommand(context, 'type', async (args) => {
@@ -241,7 +232,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
-    mh.updateView(mh.vimState, false);
+    mh.updateView(mh.vimState, {drawSelection: false, revealRange: false});
   }
 }
 
@@ -289,7 +280,7 @@ async function handleActiveEditorChange(): Promise<void> {
       if (vscode.window.activeTextEditor !== undefined) {
         const mh = await getAndUpdateModeHandler();
 
-        mh.updateView(mh.vimState, false);
+        mh.updateView(mh.vimState, {drawSelection: false, revealRange: false});
       }
     },
     isRunning: false
