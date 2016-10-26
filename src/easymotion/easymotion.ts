@@ -3,7 +3,6 @@ import * as vscode from "vscode";
 import { Position } from './../motion/position';
 import { VimState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
-import { Configuration } from '../../src/configuration/configuration';
 import { TextEditor } from './../textEditor';
 
 export class EasyMotion {
@@ -179,9 +178,9 @@ export class EasyMotion {
     outer:
     for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
       const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
-      var result: RegExpExecArray;
+      var result = regex.exec(line);
 
-      while (result = regex.exec(line)) {
+      while (result) {
         if (matches.length >= 100) {
           break outer;
         }
@@ -196,6 +195,7 @@ export class EasyMotion {
             (options.max && pos.isAfter(options.max)) ||
             Math.abs(pos.line - position.line) > 100) {
 
+          result = regex.exec(line);
           continue;
         }
 
@@ -209,10 +209,13 @@ export class EasyMotion {
         );
 
         if (pos.isEqual(position)) {
+          result = regex.exec(line);
           continue;
         }
 
         matches.push(prevMatch);
+
+        result = regex.exec(line);
       }
     }
 
@@ -223,8 +226,12 @@ export class EasyMotion {
       var absDiffA = Math.abs(diffA);
       var absDiffB = Math.abs(diffB);
 
-      if (a.index < cursorIndex) absDiffA -= 0.5;
-      if (b.index < cursorIndex) absDiffB -= 0.5;
+      if (a.index < cursorIndex) {
+        absDiffA -= 0.5;
+      }
+      if (b.index < cursorIndex) {
+        absDiffB -= 0.5;
+      }
 
       return absDiffA - absDiffB;
     });
