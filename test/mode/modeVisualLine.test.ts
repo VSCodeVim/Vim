@@ -309,7 +309,7 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can do a multi visual line replace from the bottom up",
       start: ["test", "test", "test", "|test", "test"],
       keysPressed: "Vkkr1",
