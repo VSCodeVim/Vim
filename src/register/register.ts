@@ -108,7 +108,7 @@ export class Register {
   /**
    * Puts the content at the specified index of the multicursor Register.
    *
-   * `REMARKS:` This Procedure asume that you pass an valid register.
+   * `REMARKS:` This Procedure assume that you pass an valid register.
    */
   private static putMulticursorRegister(content: RegisterContent, register: string, vimState: VimState, multicursorIndex: number): void {
     if (multicursorIndex === 0) {
@@ -142,7 +142,7 @@ export class Register {
   /**
    * Appends the content at the specified index of the multicursor Register.
    *
-   * `REMARKS:` This Procedure asume that you pass an valid uppercase register.
+   * `REMARKS:` This Procedure assume that you pass an valid uppercase register.
    */
   private static appendMulticursorRegister(content: RegisterContent, register: string, vimState: VimState, multicursorIndex: number): void {
     let appendToRegister = Register.registers[register.toLowerCase()];
@@ -183,7 +183,7 @@ export class Register {
   /**
    * Puts the content in the specified Register.
    *
-   * `REMARKS:` This Procedure asume that you pass an valid register.
+   * `REMARKS:` This Procedure assume that you pass an valid register.
    */
   private static putNormalRegister(content: RegisterContent, register: string, vimState: VimState): void {
     if (Register.isClipboardRegister(register)) {
@@ -202,7 +202,7 @@ export class Register {
   /**
    * Appends the content at the specified index of the multicursor Register.
    *
-   * `REMARKS:` This Procedure asume that you pass an valid uppercase register.
+   * `REMARKS:` This Procedure assume that you pass an valid uppercase register.
    */
   private static appendNormalRegister(content: RegisterContent, register: string, vimState: VimState): void {
     let appendToRegister = Register.registers[register.toLowerCase()];
