@@ -325,7 +325,7 @@ Status | Command | Description | Note
 :arrow_down:| :1234:  gr{char}	| replace N characters without affecting layout
 :white_check_mark: :star: | :1234:  R		| enter Replace mode (repeat the entered text N times) | {count} is not supported
 :arrow_down:| :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
-:arrow_down:|  {visual}r{char} | in Visual block mode: Replace each char of the selected text with {char}
+:white_check_mark:|  {visual}r{char} | in Visual block, visual, or visual line modes: Replace each char of the selected text with {char}
 
 (change = delete text and enter Insert mode)
 

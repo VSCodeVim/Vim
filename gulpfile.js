@@ -4,11 +4,9 @@ var gulp = require('gulp'),
     inject = require('gulp-inject-string'),
     merge = require('merge-stream'),
     tag_version = require('gulp-tag-version'),
-    trimlines = require('gulp-trimlines'),
     tslint = require('gulp-tslint'),
     typings = require('gulp-typings'),
-    shell = require('gulp-shell'),
-    soften = require('gulp-soften');
+    shell = require('gulp-shell');
 
 var paths = {
   src_ts: "src/**/*.ts",
@@ -40,18 +38,7 @@ gulp.task('typings-vscode-definitions', ['typings'], function() {
     .pipe(gulp.dest('./typings'));
 })
 
-gulp.task('fix-whitespace', function() {
-  // 1. change tabs to spaces
-  // 2. trim trailing whitespace
-  return gulp.src([paths.src_ts, paths.tests_ts], { base: "./" })
-    .pipe(soften(2))
-    .pipe(trimlines({
-      leading: false
-    }))
-    .pipe(gulp.dest('./'));
-});
-
-gulp.task('tslint', ['fix-whitespace'], function() {
+gulp.task('tslint', function() {
   var tslintOptions = {
     summarizeFailureOutput: true
   };
