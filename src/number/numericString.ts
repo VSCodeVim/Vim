@@ -64,6 +64,13 @@ export class NumericString {
   }
 
   public toString(): string {
+    // Allow signed hex represented as twos complement
+    if (this.radix === 16) {
+      if (this.value < 0) {
+        this.value = 0xFFFFFFFF + this.value + 1;
+      }
+    }
+
     return this.prefix + this.value.toString(this.radix) + this.suffix;
   }
 }
