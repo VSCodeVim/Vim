@@ -814,6 +814,7 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.Normal,
     ModeName.SearchInProgressMode,
+    ModeName.EasyMotionMode
   ];
   keys = [
     ["<Esc>"],
@@ -829,7 +830,8 @@ class CommandEsc extends BaseCommand {
     }
 
     if (vimState.currentMode !== ModeName.Visual &&
-        vimState.currentMode !== ModeName.VisualLine) {
+        vimState.currentMode !== ModeName.VisualLine &&
+        vimState.currentMode !== ModeName.EasyMotionMode) {
 
       // Normally, you don't have to iterate over all cursors,
       // as that is handled for you by the state machine. ESC is
@@ -850,6 +852,11 @@ class CommandEsc extends BaseCommand {
 
     if (vimState.currentMode === ModeName.Normal && vimState.isMultiCursor) {
       vimState.isMultiCursor = false;
+    }
+
+    if (vimState.currentMode === ModeName.EasyMotionMode) {
+      // Escape or other termination keys were pressed, exit mode
+      vimState.easyMotion.exitMode();
     }
 
     vimState.currentMode = ModeName.Normal;
@@ -5295,285 +5302,267 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 }
 
 
-// Only register the EasyMotion actions if the configuration is set
-if (Configuration.getInstance().easymotion) {
-  class BaseEasyMotionCommand extends BaseCommand {
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      throw new Error("Not implemented!");
-    }
+abstract class BaseEasyMotionCommand extends BaseCommand {
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    throw new Error("Not implemented!");
+  }
 
-    public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
-      return match.position;
-    }
+  public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
+    return match.position;
+  }
 
-    public processMarkers(matches: EasyMotion.Match[], position: Position, vimState: VimState) {
-      var index = 0;
-      for (var j = 0; j < matches.length; j++) {
-        var match = matches[j];
-        var pos = this.getMatchPosition(match, position, vimState);
+  public processMarkers(matches: EasyMotion.Match[], position: Position, vimState: VimState) {
+    // Clear existing markers, just in case
+    vimState.easyMotion.clearMarkers();
 
-        if (match.position.isEqual(position)) {
-          continue;
-        }
+    var index = 0;
+    for (var j = 0; j < matches.length; j++) {
+      var match = matches[j];
+      var pos = this.getMatchPosition(match, position, vimState);
 
-        vimState.easyMotion.addMarker(EasyMotion.generateMarker(index++, matches.length, position, pos));
-      }
-    }
-
-    public async exec(position: Position, vimState: VimState): Promise<VimState> {
-      // Search all occurences of the character pressed
-      let matches = this.getMatches(position, vimState);
-
-      // Stop if there are no matches
-      if (matches.length === 0) {
-        return vimState;
+      if (match.position.isEqual(position)) {
+        continue;
       }
 
-      // Clear existing markers, just in case
-      vimState.easyMotion.clearMarkers();
+      vimState.easyMotion.addMarker(EasyMotion.generateMarker(index++, matches.length, position, pos));
+    }
+  }
 
-      this.processMarkers(matches, position, vimState);
-
-      // Let EasyMotion update all decorations
-      vimState.easyMotion.updateDecorations(position);
-      // Enter the EasyMotion mode and await further keys
-      vimState.easyMotion.enterMode();
-
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Only execute the action if the configuration is set
+    if (!Configuration.getInstance().easymotion) {
       return vimState;
     }
-  }
 
-  @RegisterAction
-  class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "s", "<character>"];
+    // Search all occurences of the character pressed
+    let matches = this.getMatches(position, vimState);
 
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      const searchChar = this.keysPressed[3];
-
-      // Search all occurences of the character pressed
-      if (searchChar === " ") { // Searching for space should only find the first space
-        return vimState.easyMotion.sortedSearch(position, " {1,}", { isRegex: true });
-      } else {
-        return vimState.easyMotion.sortedSearch(position, searchChar);
-      }
+    // Stop if there are no matches
+    if (matches.length === 0) {
+      return vimState;
     }
+
+    this.processMarkers(matches, position, vimState);
+
+    // Let EasyMotion update all decorations
+    vimState.easyMotion.updateDecorations(position);
+    // Enter the EasyMotion mode and await further keys
+    vimState.easyMotion.enterMode();
+
+    return vimState;
   }
+}
 
-  @RegisterAction
-  class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "f", "<character>"];
+@RegisterAction
+class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "s", "<character>"];
 
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      const searchChar = this.keysPressed[3];
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    const searchChar = this.keysPressed[3];
 
-      // Search all occurences of the character pressed after the cursor
-      if (searchChar === " ") { // Searching for space should only find the first space
-        return vimState.easyMotion.sortedSearch(position, " {1,}", {
-          isRegex: true,
-          min: position
-        });
-      } else {
-        return vimState.easyMotion.sortedSearch(position, searchChar, {
-          min: position
-        });
-      }
+    // Search all occurences of the character pressed
+    if (searchChar === " ") { // Searching for space should only find the first space
+      return vimState.easyMotion.sortedSearch(position, " {1,}", { isRegex: true });
+    } else {
+      return vimState.easyMotion.sortedSearch(position, searchChar);
     }
   }
+}
 
-  @RegisterAction
-  class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "F", "<character>"];
+@RegisterAction
+class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "f", "<character>"];
 
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      const searchChar = this.keysPressed[3];
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    const searchChar = this.keysPressed[3];
 
-      // Search all occurences of the character pressed after the cursor
-      if (searchChar === " ") { // Searching for space should only find the first space
-        return vimState.easyMotion.sortedSearch(position, " {1,}", {
-          isRegex: true,
-          max: position
-        });
-      } else {
-        return vimState.easyMotion.sortedSearch(position, searchChar, {
-          max: position
-        });
-      }
-    }
-  }
-
-  @RegisterAction
-  class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "t", "<character>"];
-
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      const searchChar = this.keysPressed[3];
-
-      // Search all occurences of the character pressed after the cursor
-      if (searchChar === " ") { // Searching for space should only find the first space
-        return vimState.easyMotion.sortedSearch(position, " {1,}", {
-          isRegex: true,
-          min: position
-        });
-      } else {
-        return vimState.easyMotion.sortedSearch(position, searchChar, {
-          min: position
-        });
-      }
-    }
-
-    public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
-        return new Position(match.position.line, Math.max(0, match.position.character - 1));
-    }
-  }
-
-  @RegisterAction
-  class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "T", "<character>"];
-
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      const searchChar = this.keysPressed[3];
-
-      // Search all occurences of the character pressed after the cursor
-      if (searchChar === " ") { // Searching for space should only find the first space
-        return vimState.easyMotion.sortedSearch(position, " {1,}", {
-          isRegex: true,
-          max: position
-        });
-      } else {
-        return vimState.easyMotion.sortedSearch(position, searchChar, {
-          max: position
-        });
-      }
-    }
-
-    public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
-        return new Position(match.position.line, Math.max(0, match.position.character + 1));
-    }
-  }
-
-  @RegisterAction
-  class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "w"];
-
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      // Search for the beginning of all words after the cursor
-      return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+    // Search all occurences of the character pressed after the cursor
+    if (searchChar === " ") { // Searching for space should only find the first space
+      return vimState.easyMotion.sortedSearch(position, " {1,}", {
         isRegex: true,
+        min: position
+      });
+    } else {
+      return vimState.easyMotion.sortedSearch(position, searchChar, {
+        min: position
+      });
+    }
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "F", "<character>"];
+
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    const searchChar = this.keysPressed[3];
+
+    // Search all occurences of the character pressed after the cursor
+    if (searchChar === " ") { // Searching for space should only find the first space
+      return vimState.easyMotion.sortedSearch(position, " {1,}", {
+        isRegex: true,
+        max: position
+      });
+    } else {
+      return vimState.easyMotion.sortedSearch(position, searchChar, {
+        max: position
+      });
+    }
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "t", "<character>"];
+
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    const searchChar = this.keysPressed[3];
+
+    // Search all occurences of the character pressed after the cursor
+    if (searchChar === " ") { // Searching for space should only find the first space
+      return vimState.easyMotion.sortedSearch(position, " {1,}", {
+        isRegex: true,
+        min: position
+      });
+    } else {
+      return vimState.easyMotion.sortedSearch(position, searchChar, {
         min: position
       });
     }
   }
 
-  @RegisterAction
-  class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "e"];
-
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      // Search for the end of all words after the cursor
-      return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
-        isRegex: true,
-        min: position
-      });
-    }
-
-    public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
-        return new Position(match.position.line, match.position.character + match.text.length - 1);
-    }
+  public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
+      return new Position(match.position.line, Math.max(0, match.position.character - 1));
   }
+}
 
-  @RegisterAction
-  class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "g", "e"];
+@RegisterAction
+class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "T", "<character>"];
 
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      // Search for the beginning of all words before the cursor
-      return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    const searchChar = this.keysPressed[3];
+
+    // Search all occurences of the character pressed after the cursor
+    if (searchChar === " ") { // Searching for space should only find the first space
+      return vimState.easyMotion.sortedSearch(position, " {1,}", {
         isRegex: true,
-        max: position,
+        max: position
       });
-    }
-
-    public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
-        return new Position(match.position.line, match.position.character + match.text.length - 1);
-    }
-  }
-
-  @RegisterAction
-  class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
-    modes = [ModeName.Normal];
-    keys = ["\\", "\\", "b"];
-
-    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-      // Search for the beginning of all words before the cursor
-      return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
-        isRegex: true,
-        max: position,
+    } else {
+      return vimState.easyMotion.sortedSearch(position, searchChar, {
+        max: position
       });
     }
   }
 
-  @RegisterAction
-  class CommandEscEasyMotionMode extends BaseCommand {
-    modes = [
-      ModeName.EasyMotionMode
-    ];
-    keys = [
-      ["<Esc>"],
-      ["<C-c>"],
-      ["<C-[>"],
-    ];
+  public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
+      return new Position(match.position.line, Math.max(0, match.position.character + 1));
+  }
+}
 
-    public async exec(position: Position, vimState: VimState): Promise<VimState> {
-      // Escape or other termination keys were pressed, exit mode
-      vimState.currentMode = ModeName.Normal;
+@RegisterAction
+class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "w"];
+
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    // Search for the beginning of all words after the cursor
+    return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+      isRegex: true,
+      min: position
+    });
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "e"];
+
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    // Search for the end of all words after the cursor
+    return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+      isRegex: true,
+      min: position
+    });
+  }
+
+  public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
+      return new Position(match.position.line, match.position.character + match.text.length - 1);
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "g", "e"];
+
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    // Search for the beginning of all words before the cursor
+    return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+      isRegex: true,
+      max: position,
+    });
+  }
+
+  public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
+      return new Position(match.position.line, match.position.character + match.text.length - 1);
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal];
+  keys = ["\\", "\\", "b"];
+
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    // Search for the beginning of all words before the cursor
+    return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+      isRegex: true,
+      max: position,
+    });
+  }
+}
+
+@RegisterAction
+class MoveEasyMotion extends BaseMovement {
+  modes = [ModeName.EasyMotionMode];
+  keys = ["<character>"];
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    var key = this.keysPressed[0];
+    if (!key) {
+      return position;
+    }
+
+    // "nail" refers to the accumulated depth keys
+    var nail = vimState.easyMotion.accumulation + key;
+    vimState.easyMotion.accumulation = nail;
+
+    // Find markers starting with "nail"
+    var markers = vimState.easyMotion.findMarkers(nail);
+    if (markers.length === 1) { // Only one found, navigate to it
+      var marker = markers[0];
+
       vimState.easyMotion.exitMode();
 
-      return vimState;
-    }
-  }
-
-  @RegisterAction
-  class MoveEasyMotion extends BaseMovement {
-    modes = [ModeName.EasyMotionMode];
-    keys = ["<character>"];
-
-    public async execAction(position: Position, vimState: VimState): Promise<Position> {
-      var key = this.keysPressed[0];
-      if (!key) {
+      return marker.position;
+    } else {
+      if (markers.length === 0) { // None found, exit mode
+        vimState.easyMotion.exitMode();
         return position;
       }
 
-      // "nail" refers to the accumulated depth keys
-      var nail = vimState.easyMotion.accumulation + key;
-      vimState.easyMotion.accumulation = nail;
-
-      // Find markers starting with "nail"
-      var markers = vimState.easyMotion.findMarkers(nail);
-      if (markers.length === 1) { // Only one found, navigate to it
-        var marker = markers[0];
-
-        vimState.easyMotion.exitMode();
-
-        return marker.position;
-      } else {
-        if (markers.length === 0) { // None found, exit mode
-          vimState.easyMotion.exitMode();
-          return position;
-        }
-
-        // Update decorations with new markers at a different depth level
-        vimState.easyMotion.updateDecorations(position);
-      }
-
-      return position;
+      // Update decorations with new markers at a different depth level
+      vimState.easyMotion.updateDecorations(position);
     }
+
+    return position;
   }
 }
