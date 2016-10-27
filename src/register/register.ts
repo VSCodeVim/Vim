@@ -209,18 +209,18 @@ export class Register {
     let currentRegisterMode = vimState.effectiveRegisterMode();
 
     // Check if appending to a multicursor register or normal
-    if (typeof appendToRegister.text === "object") {
+    if (appendToRegister.text instanceof Array) {
       if (appendToRegister.registerMode === RegisterMode.CharacterWise && currentRegisterMode === RegisterMode.CharacterWise) {
-        (appendToRegister.text as string[]).forEach(element => {
-          element += '\n' + content;
-        });
+        for (let i = 0; i < appendToRegister.text.length; i++) {
+          appendToRegister.text[i] += content;
+        }
       } else {
-        (appendToRegister.text as string[]).forEach(element => {
-          element += '\n' + content;
-        });
+        for (let i = 0; i < appendToRegister.text.length; i++) {
+          appendToRegister.text[i] += '\n' + content;
+        }
         appendToRegister.registerMode = currentRegisterMode;
       }
-    } else {
+    } else if (typeof appendToRegister.text === 'string') {
       if (appendToRegister.registerMode === RegisterMode.CharacterWise && currentRegisterMode === RegisterMode.CharacterWise) {
         appendToRegister.text = appendToRegister.text + content;
       } else {
