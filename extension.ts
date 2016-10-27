@@ -149,16 +149,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }, 0);
   });
 
-  vscode.workspace.onDidCloseTextDocument((event) => {
-    const key = event.fileName + vscode.window.activeTextEditor.viewColumn;
-
-    if (modeHandlerToEditorIdentity[key] !== undefined) {
-      modeHandlerToEditorIdentity[key].dispose();
-      // Remove modehandler for closed document
-      delete modeHandlerToEditorIdentity[key];
-    }
-  });
-
   registerCommand(context, 'type', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
