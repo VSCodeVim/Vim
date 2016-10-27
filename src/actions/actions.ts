@@ -5237,6 +5237,7 @@ class ActionOverrideCmdD extends BaseCommand {
     ["g", "c"]
   ];
   runsOnceForEveryCursor() { return false; }
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
@@ -5262,6 +5263,7 @@ class ActionOverrideCmdAltDown extends BaseCommand {
     ["<C-alt+down>"], // Windows
   ];
   runsOnceForEveryCursor() { return false; }
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorBelow');
@@ -5279,6 +5281,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
     ["<C-alt+up>"], // Windows
   ];
   runsOnceForEveryCursor() { return false; }
+  runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorAbove');
