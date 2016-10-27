@@ -5471,7 +5471,7 @@ if (Configuration.getInstance().easymotion) {
   }
 
   @RegisterAction
-  class ActionEasyMotionEndCommand extends BaseEasyMotionCommand {
+  class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
     modes = [ModeName.Normal];
     keys = ["\\", "\\", "e"];
 
@@ -5480,6 +5480,24 @@ if (Configuration.getInstance().easymotion) {
       return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
         isRegex: true,
         min: position
+      });
+    }
+
+    public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
+        return new Position(match.position.line, match.position.character + match.text.length - 1);
+    }
+  }
+
+  @RegisterAction
+  class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
+    modes = [ModeName.Normal];
+    keys = ["\\", "\\", "g", "e"];
+
+    public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+      // Search for the beginning of all words before the cursor
+      return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
+        isRegex: true,
+        max: position,
       });
     }
 
