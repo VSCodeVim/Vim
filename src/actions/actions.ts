@@ -3920,24 +3920,18 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toInsert   = this.keysPressed[1];
-    let textAtPos = "";
-    let newText = "";
-    for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
+    for (const { start, end } of Position.IterateLine(vimState)) {
 
-      textAtPos = TextEditor.getText(new vscode.Range(pos, pos.getRight()));
-      newText = toInsert;
-
-      // If no character at this position, do not replace with anything
-      if (textAtPos === "") {
-        newText = "";
+      if (end.isBeforeOrEqual(start)) {
+        continue;
       }
 
       vimState.recordedState.transformations.push({
-        type  : "replaceText",
-        text  : newText,
-        start : pos,
-        end   : pos.getRight(),
-        manuallySetCursorPositions : true
+        type: "replaceText",
+        text: Array(end.character - start.character + 1).join(toInsert),
+        start: start,
+        end: end,
+        manuallySetCursorPositions: true
       });
     }
 
