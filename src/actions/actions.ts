@@ -1513,7 +1513,7 @@ class CommandHash extends BaseCommand {
       // use getWordLeft() on position to start at the beginning of the word.
       // this ensures that any matches happen ounside of the word currently selected,
       // which are the desired semantics for this motion.
-      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft()).pos;
+      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
     return vimState;
@@ -3921,24 +3921,18 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toInsert   = this.keysPressed[1];
-    let textAtPos = "";
-    let newText = "";
-    for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
+    for (const { start, end } of Position.IterateLine(vimState)) {
 
-      textAtPos = TextEditor.getText(new vscode.Range(pos, pos.getRight()));
-      newText = toInsert;
-
-      // If no character at this position, do not replace with anything
-      if (textAtPos === "") {
-        newText = "";
+      if (end.isBeforeOrEqual(start)) {
+        continue;
       }
 
       vimState.recordedState.transformations.push({
-        type  : "replaceText",
-        text  : newText,
-        start : pos,
-        end   : pos.getRight(),
-        manuallySetCursorPositions : true
+        type: "replaceText",
+        text: Array(end.character - start.character + 1).join(toInsert),
+        start: start,
+        end: end,
+        manuallySetCursorPositions: true
       });
     }
 
@@ -5114,6 +5108,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
       if (num !== null) {
         vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+        vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
         return vimState;
       }
     }
