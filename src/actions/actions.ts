@@ -5356,7 +5356,7 @@ class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
 
     // Search all occurences of the character pressed
     if (searchChar === " ") { // Searching for space should only find the first space
-      return vimState.easyMotion.sortedSearch(position, " {1,}", { isRegex: true });
+      return vimState.easyMotion.sortedSearch(position, new RegExp(" {1,}", "g"));
     } else {
       return vimState.easyMotion.sortedSearch(position, searchChar);
     }
@@ -5373,8 +5373,7 @@ class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
 
     // Search all occurences of the character pressed after the cursor
     if (searchChar === " ") { // Searching for space should only find the first space
-      return vimState.easyMotion.sortedSearch(position, " {1,}", {
-        isRegex: true,
+      return vimState.easyMotion.sortedSearch(position, new RegExp(" {1,}", "g"), {
         min: position
       });
     } else {
@@ -5395,8 +5394,7 @@ class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
 
     // Search all occurences of the character pressed after the cursor
     if (searchChar === " ") { // Searching for space should only find the first space
-      return vimState.easyMotion.sortedSearch(position, " {1,}", {
-        isRegex: true,
+      return vimState.easyMotion.sortedSearch(position, new RegExp(" {1,}", "g"), {
         max: position
       });
     } else {
@@ -5417,8 +5415,7 @@ class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
 
     // Search all occurences of the character pressed after the cursor
     if (searchChar === " ") { // Searching for space should only find the first space
-      return vimState.easyMotion.sortedSearch(position, " {1,}", {
-        isRegex: true,
+      return vimState.easyMotion.sortedSearch(position, new RegExp(" {1,}", "g"), {
         min: position
       });
     } else {
@@ -5443,8 +5440,7 @@ class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
 
     // Search all occurences of the character pressed after the cursor
     if (searchChar === " ") { // Searching for space should only find the first space
-      return vimState.easyMotion.sortedSearch(position, " {1,}", {
-        isRegex: true,
+      return vimState.easyMotion.sortedSearch(position, new RegExp(" {1,}"), {
         max: position
       });
     } else {
@@ -5466,8 +5462,7 @@ class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words after the cursor
-    return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
-      isRegex: true,
+    return vimState.easyMotion.sortedSearch(position, new RegExp("\\w{1,}", "g"), {
       min: position
     });
   }
@@ -5480,8 +5475,7 @@ class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the end of all words after the cursor
-    return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
-      isRegex: true,
+    return vimState.easyMotion.sortedSearch(position, new RegExp("\\w{1,}", "g"), {
       min: position
     });
   }
@@ -5498,8 +5492,7 @@ class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words before the cursor
-    return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
-      isRegex: true,
+    return vimState.easyMotion.sortedSearch(position, new RegExp("\\w{1,}", "g"), {
       max: position,
     });
   }
@@ -5516,8 +5509,7 @@ class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words before the cursor
-    return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
-      isRegex: true,
+    return vimState.easyMotion.sortedSearch(position, new RegExp("\\w{1,}", "g"), {
       max: position,
     });
   }

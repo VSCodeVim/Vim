@@ -208,21 +208,13 @@ export class EasyMotion {
   /**
    * Search and sort using the index of a match compared to the index of position (usually the cursor)
    */
-  public sortedSearch(position: Position, searchString = "", options: EasyMotion.SearchOptions = {}): EasyMotion.Match[] {
-    let searchRE = searchString;
-    // Regex needs to be escaped
-    if (!options.isRegex) {
-      searchRE = searchString.replace(EasyMotion.specialCharactersRegex, "\\$&");
-    }
-
-    const regexFlags = "g";
+  public sortedSearch(position: Position, search: string | RegExp = "", options: EasyMotion.SearchOptions = {}): EasyMotion.Match[] {
     let regex: RegExp;
-    try {
-      regex = new RegExp(searchRE, regexFlags);
-    } catch (err) {
-      // Couldn't compile the regexp, try again with special characters escaped
-      searchRE = searchString.replace(EasyMotion.specialCharactersRegex, "\\$&");
-      regex = new RegExp(searchRE, regexFlags);
+    if (typeof search === "string") {
+      // Regex needs to be escaped
+      regex = new RegExp(search.replace(EasyMotion.specialCharactersRegex, "\\$&"), "g");
+    } else {
+      regex = search;
     }
 
     var matches: EasyMotion.Match[] = [];
@@ -403,6 +395,5 @@ export module EasyMotion {
   export interface SearchOptions {
     min?: Position; // The minimum bound of the search
     max?: Position; // The maximum bound of the search
-    isRegex?: boolean; // Is the search string a regular expression?
   }
 }
