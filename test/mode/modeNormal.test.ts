@@ -1349,4 +1349,18 @@ suite("Mode Normal", () => {
       keysPressed: '<Esc>',
       end: ['te|st'],
     });
+
+    newTest({
+      title: "Can handle # on consecutive words",
+      start: ['test test test test |test'],
+      keysPressed: '#',
+      end: ['test test test |test test'],
+    });
+
+    newTest({
+      title: "Can handle # on skipped words",
+      start: ['test aaa test aaa test aaa test aaa |test'],
+      keysPressed: '#',
+      end: ['test aaa test aaa test aaa |test aaa test'],
+    });
 });
