@@ -124,8 +124,6 @@ export class BaseAction {
    * Is this action valid in the current Vim state?
    */
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    console.log(this);
-
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys, keysPressed)) { return false; }
     if (vimState.recordedState.actionsRun.length > 0 &&
