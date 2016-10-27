@@ -1513,6 +1513,8 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
+    } else if (this.currentMode.name === ModeName.EasyMotionMode) {
+      this.setupStatusBarItem(`Current depth: ${ this.vimState.easyMotion.accumulation }`);
     } else {
       this.setupStatusBarItem(
         `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''} -- ` +
