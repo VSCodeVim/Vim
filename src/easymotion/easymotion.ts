@@ -17,6 +17,7 @@ export class EasyMotion {
    * Array of all markers and decorations
    */
   private markers: EasyMotion.Marker[];
+  private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
   private decorations: any[][] = [];
 
   /**
@@ -41,6 +42,8 @@ export class EasyMotion {
 
   constructor(vimState: VimState) {
     this._vimState = vimState;
+
+    this.visibleMarkers = [];
   }
 
   /**
@@ -174,6 +177,7 @@ export class EasyMotion {
    */
   public clearMarkers() {
     this.markers = [];
+    this.visibleMarkers = [];
   }
 
   public addMarker(marker: EasyMotion.Marker) {
@@ -187,13 +191,14 @@ export class EasyMotion {
   /**
    * Find markers beginning with a string
    */
-  public findMarkers(nail: string): EasyMotion.Marker[] {
+  public findMarkers(nail: string, visible = true): EasyMotion.Marker[] {
+    var arr = visible ? this.visibleMarkers : this.markers;
     var markers: EasyMotion.Marker[] = [];
-    for (var i = 0; i < this.markers.length; i++) {
-      var marker = this.getMarker(i);
+    for (var i = 0; i < arr.length; i++) {
+      var marker = arr[i];
 
       if (marker.name.startsWith(nail)) {
-        markers.push(this.getMarker(i));
+        markers.push(marker);
       }
     }
 
@@ -304,6 +309,7 @@ export class EasyMotion {
   public updateDecorations(position: Position) {
     this.clearDecorations();
 
+    this.visibleMarkers = [];
     this.decorations = [];
     for (var i = 0; i < this.markers.length; i++) {
       var marker = this.getMarker(i);
@@ -340,6 +346,8 @@ export class EasyMotion {
           }
         }
       });
+
+      this.visibleMarkers.push(marker);
     }
 
     // Set the decorations for all the different marker lengths
