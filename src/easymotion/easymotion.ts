@@ -246,11 +246,7 @@ export class EasyMotion {
           break outer;
         }
 
-        var matchIndex = result.index;
-        if (options.useEnd) { // Return the end of the result rather than the start
-          matchIndex += result[0].length - 1;
-        }
-        let pos = new Position(lineIdx, matchIndex);
+        let pos = new Position(lineIdx, result.index);
 
         // Check if match is within bounds
         if ((options.min && pos.isBefore(options.min)) ||
@@ -268,6 +264,7 @@ export class EasyMotion {
 
         prevMatch = new EasyMotion.Match(
           pos,
+          result[0],
           matches.length
         );
 
@@ -381,15 +378,21 @@ export module EasyMotion {
 
   export class Match {
     private _position: Position;
+    private _text: string;
     private _index: number;
 
-    constructor(position: Position, index: number) {
+    constructor(position: Position, text: string, index: number) {
       this._position = position;
+      this._text = text;
       this._index = index;
     }
 
     public get position(): Position {
       return this._position;
+    }
+
+    public get text(): string {
+      return this._text;
     }
 
     public get index(): number {
@@ -401,6 +404,5 @@ export module EasyMotion {
     min?: Position; // The minimum bound of the search
     max?: Position; // The maximum bound of the search
     isRegex?: boolean; // Is the search string a regular expression?
-    useEnd?: boolean; // Use the end of the match rather than start
   }
 }

@@ -5479,9 +5479,12 @@ if (Configuration.getInstance().easymotion) {
       // Search for the end of all words after the cursor
       return vimState.easyMotion.sortedSearch(position, "\\w{1,}", {
         isRegex: true,
-        min: position,
-        useEnd: true
+        min: position
       });
+    }
+
+    public getMatchPosition(match: EasyMotion.Match, position: Position, vimState: VimState): Position {
+        return new Position(match.position.line, match.position.character + match.text.length - 1);
     }
   }
 
