@@ -303,7 +303,7 @@ export class EasyMotion {
   }
 
 
-  public updateDecorations(position: Position) {
+  public updateDecorations() {
     this.clearDecorations();
 
     this.visibleMarkers = [];

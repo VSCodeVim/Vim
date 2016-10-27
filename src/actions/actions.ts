@@ -5344,8 +5344,6 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
     this.processMarkers(matches, position, vimState);
 
-    // Let EasyMotion update all decorations
-    vimState.easyMotion.updateDecorations(position);
     // Enter the EasyMotion mode and await further keys
     vimState.easyMotion.enterMode();
 
@@ -5558,9 +5556,6 @@ class MoveEasyMotion extends BaseMovement {
         vimState.easyMotion.exitMode();
         return position;
       }
-
-      // Update decorations with new markers at a different depth level
-      vimState.easyMotion.updateDecorations(position);
     }
 
     return position;

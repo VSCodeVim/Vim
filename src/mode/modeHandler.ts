@@ -1514,6 +1514,9 @@ export class ModeHandler implements vscode.Disposable {
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
     } else if (this.currentMode.name === ModeName.EasyMotionMode) {
+      // Update all EasyMotion decorations
+      this._vimState.easyMotion.updateDecorations();
+
       this.setupStatusBarItem(`Current depth: ${ this.vimState.easyMotion.accumulation }`);
     } else {
       this.setupStatusBarItem(
