@@ -291,4 +291,31 @@ suite("Mode Visual", () => {
       end: ['1', '|{', '  a = 1;', '}', '2']
     });
   });
+
+  suite("handles replace in visual line mode", () => {
+    newTest({
+      title: "Can do a single line replace",
+      start: ["one |two three four five", "one two three four five"],
+      keysPressed: "Vr1",
+      end: ["|11111111111111111111111", "one two three four five"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do a multi visual line replace",
+      start: ["one |two three four five", "one two three four five"],
+      keysPressed: "Vjr1",
+      end: ["|11111111111111111111111", "11111111111111111111111"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do a multi visual line replace from the bottom up",
+      start: ["test", "test", "test", "|test", "test"],
+      keysPressed: "Vkkr1",
+      end: ["test", "|1111", "1111", "1111", "test"],
+      endMode: ModeName.Normal
+    });
+  });
+
 });

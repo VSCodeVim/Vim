@@ -1211,14 +1211,14 @@ export class ModeHandler implements vscode.Disposable {
 
     const selections = vscode.window.activeTextEditor.selections;
     const firstTransformation = transformations[0];
-    const manuallySetCursorPositions = firstTransformation.type === "deleteRange" &&
-                                       firstTransformation.manuallySetCursorPositions;
+    const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange" || firstTransformation.type === "replaceText")
+      && firstTransformation.manuallySetCursorPositions);
 
     // We handle multiple cursors in a different way in visual block mode, unfortunately.
     // TODO - refactor that out!
     if (vimState.currentMode !== ModeName.VisualBlockInsertMode &&
-        vimState.currentMode !== ModeName.VisualBlock &&
-        !manuallySetCursorPositions) {
+      vimState.currentMode !== ModeName.VisualBlock &&
+      !manuallySetCursorPositions) {
       vimState.allCursors = [];
 
       const resultingCursors: Range[] = [];
@@ -1362,10 +1362,19 @@ export class ModeHandler implements vscode.Disposable {
 
           selections = [ new vscode.Selection(start, stop) ];
         } else if (vimState.currentMode === ModeName.VisualLine) {
-          selections = [ new vscode.Selection(
+          selections = [new vscode.Selection(
             Position.EarlierOf(start, stop).getLineBegin(),
             Position.LaterOf(start, stop).getLineEnd()
-          ) ];
+          )];
+
+          // Maintain cursor position based on which direction the selection is going
+          if (start.line <= stop.line) {
+            vimState.cursorStartPosition = selections[0].start as Position;
+            vimState.cursorPosition = selections[0].end as Position;
+          } else {
+            vimState.cursorStartPosition = selections[0].end as Position;
+            vimState.cursorPosition = selections[0].start as Position;
+          }
         } else if (vimState.currentMode === ModeName.VisualBlock) {
           selections = [];
 

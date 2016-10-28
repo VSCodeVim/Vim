@@ -1512,7 +1512,7 @@ class CommandHash extends BaseCommand {
       // use getWordLeft() on position to start at the beginning of the word.
       // this ensures that any matches happen ounside of the word currently selected,
       // which are the desired semantics for this motion.
-      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft()).pos;
+      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
     return vimState;
@@ -3830,6 +3830,80 @@ class ActionReplaceCharacter extends BaseCommand {
 }
 
 @RegisterAction
+class ActionReplaceCharacterVisual extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["r", "<character>"];
+  runsOnceForEveryCursor() { return false; }
+  canBeRepeatedWithDot = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const toInsert = this.keysPressed[1];
+
+    let visualSelectionOffset = 1;
+    let start = vimState.cursorStartPosition;
+    let end = vimState.cursorPosition;
+
+    // If selection is reversed, reorganize it so that the text replace logic always works
+    if (end.isBeforeOrEqual(start)) {
+      [start, end] = [end, start];
+    }
+
+    // Limit to not replace EOL
+    end = new Position(end.line, Math.min(end.character, TextEditor.getLineAt(end).text.length - 1));
+
+    // Iterate over every line in the current selection
+    for (var lineNum = start.line; lineNum <= end.line; lineNum++) {
+
+      // Get line of text
+      const lineText = TextEditor.getLineAt(new Position(lineNum, 0)).text;
+
+      if (start.line === end.line) {
+        // This is a visual section all on one line, only replace the part within the selection
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(end.character - start.character + 2).join(toInsert),
+          start: start,
+          end: new Position(end.line, end.character + 1),
+          manuallySetCursorPositions : true
+        });
+      } else if (lineNum === start.line) {
+        // This is the first line of the selection so only replace after the cursor
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(lineText.length - start.character + 1).join(toInsert),
+          start: start,
+          end: new Position(start.line, lineText.length),
+          manuallySetCursorPositions : true
+        });
+      } else if (lineNum === end.line) {
+        // This is the last line of the selection so only replace before the cursor
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(end.character + 1 + visualSelectionOffset).join(toInsert),
+          start: new Position(end.line, 0),
+          end: new Position(end.line, end.character + visualSelectionOffset),
+          manuallySetCursorPositions : true
+        });
+      } else {
+        // Replace the entire line length since it is in the middle of the selection
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: Array(lineText.length + 1).join(toInsert),
+          start: new Position(lineNum, 0),
+          end: new Position(lineNum, lineText.length),
+          manuallySetCursorPositions : true
+        });
+      }
+    }
+
+    vimState.cursorPosition = start;
+    vimState.cursorStartPosition = start;
+    vimState.currentMode = ModeName.Normal;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionReplaceCharacterVisualBlock extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["r", "<character>"];
@@ -3838,18 +3912,22 @@ class ActionReplaceCharacterVisualBlock extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const toInsert   = this.keysPressed[1];
+    for (const { start, end } of Position.IterateLine(vimState)) {
 
-    for (const { pos } of Position.IterateBlock(vimState.topLeft, vimState.bottomRight)) {
+      if (end.isBeforeOrEqual(start)) {
+        continue;
+      }
+
       vimState.recordedState.transformations.push({
-        type  : "replaceText",
-        text  : toInsert,
-        start : pos,
-        end   : pos.getRight(),
+        type: "replaceText",
+        text: Array(end.character - start.character + 1).join(toInsert),
+        start: start,
+        end: end,
+        manuallySetCursorPositions: true
       });
     }
 
     const topLeft = VisualBlockMode.getTopLeftPosition(vimState.cursorPosition, vimState.cursorStartPosition);
-
     vimState.allCursors = [ new Range(topLeft, topLeft) ];
     vimState.currentMode = ModeName.Normal;
 
@@ -4632,6 +4710,17 @@ abstract class MoveInsideCharacter extends BaseMovement {
       diff  : new PositionDiff(0, startPos === position ? 1 : 0)
     };
   }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const result = await this.execAction(position, vimState);
+    if (isIMovement(result)) {
+      if (result.failed) {
+        vimState.recordedState.hasRunOperator = false;
+        vimState.recordedState.actionsRun = [];
+      }
+    }
+    return result;
+  }
 }
 
 @RegisterAction
@@ -4801,12 +4890,17 @@ abstract class MoveQuoteMatch extends BaseMovement {
     };
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState);
-
-    res.stop = res.stop.getRight();
-
-    return res;
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const result = await this.execAction(position, vimState);
+    if (isIMovement(result)) {
+      if (result.failed) {
+        vimState.recordedState.hasRunOperator = false;
+        vimState.recordedState.actionsRun = [];
+      } else {
+        result.stop = result.stop.getRight();
+      }
+    }
+    return result;
   }
 }
 
@@ -5005,6 +5099,7 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
       if (num !== null) {
         vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+        vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
         return vimState;
       }
     }
@@ -5076,12 +5171,17 @@ abstract class MoveTagMatch extends BaseMovement {
     };
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState);
-
-    res.stop = res.stop.getRight();
-
-    return res;
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    const result = await this.execAction(position, vimState);
+    if (isIMovement(result)) {
+      if (result.failed) {
+        vimState.recordedState.hasRunOperator = false;
+        vimState.recordedState.actionsRun = [];
+      } else {
+        result.stop = result.stop.getRight();
+      }
+    }
+    return result;
   }
 }
 

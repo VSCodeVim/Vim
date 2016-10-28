@@ -192,6 +192,41 @@ export class Position extends vscode.Position {
   }
 
   /**
+   * Iterate over every position in the selection defined by the two positions passed in.
+   */
+  public static *IterateSelection(topLeft: Position, bottomRight: Position): Iterable<{ line: string, char: string, pos: Position }> {
+    for (let lineIndex = topLeft.line; lineIndex <= bottomRight.line; lineIndex++) {
+      const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
+
+      if (lineIndex === topLeft.line) {
+        for (let charIndex = topLeft.character; charIndex < line.length + 1; charIndex++) {
+          yield {
+            line: line,
+            char: line[charIndex],
+            pos: new Position(lineIndex, charIndex)
+          };
+        }
+      } else if (lineIndex === bottomRight.line) {
+        for (let charIndex = 0; charIndex < bottomRight.character + 1; charIndex++) {
+          yield {
+            line: line,
+            char: line[charIndex],
+            pos: new Position(lineIndex, charIndex)
+          };
+        }
+      } else {
+        for (let charIndex = 0; charIndex < line.length + 1; charIndex++) {
+          yield {
+            line: line,
+            char: line[charIndex],
+            pos: new Position(lineIndex, charIndex)
+          };
+        }
+      }
+    }
+  }
+
+  /**
    * Iterate over every line in the block defined by the two positions passed in.
    *
    * This is intended for visual block mode.
@@ -215,7 +250,7 @@ export class Position extends vscode.Position {
 
     for (let lineIndex = itrStart; reverse ? lineIndex >= itrEnd : lineIndex <= itrEnd; reverse ? lineIndex-- : lineIndex++) {
       const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
-      const endCharacter = runToLineEnd ? line.length + 1 : bottomRight.character + 1;
+      const endCharacter = runToLineEnd ? line.length + 1 : Math.min(line.length, bottomRight.character + 1);
 
       yield {
         line  : line.substring(topLeft.character, endCharacter),
