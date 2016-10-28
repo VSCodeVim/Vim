@@ -1471,6 +1471,20 @@ class CommandNextSearchMatch extends BaseMovement {
 }
 
 @RegisterAction
+class CommandCmdA extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<D-a>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.cursorStartPosition = new Position(0, vimState.desiredColumn);
+    vimState.cursorPosition = new Position(TextEditor.getLineCount() - 1, vimState.desiredColumn);
+    vimState.currentMode = ModeName.VisualLine;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandStar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["*"];
@@ -3857,7 +3871,8 @@ class ActionReplaceCharacterVisual extends BaseCommand {
     }
 
     // Limit to not replace EOL
-    end = new Position(end.line, Math.min(end.character, TextEditor.getLineAt(end).text.length - 1));
+    const textLength = TextEditor.getLineAt(end).text.length;
+    end = new Position(end.line, Math.min(end.character, textLength > 0 ? textLength - 1 : 0));
 
     // Iterate over every line in the current selection
     for (var lineNum = start.line; lineNum <= end.line; lineNum++) {
