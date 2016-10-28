@@ -40,6 +40,11 @@ Status | Command
 
 Now follows an exhaustive list of every known Vim command that we could find.
 
+## Custom commands
+
+* `gh` - show the hover tooltip.
+* `gc` - add an additional cursor at the next place that matches `*`.
+
 ## Left-right motions
 
 Status | Command | Description
