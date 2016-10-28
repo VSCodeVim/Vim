@@ -3872,6 +3872,9 @@ class ActionReplaceCharacterVisual extends BaseCommand {
 
     // Limit to not replace EOL
     const textLength = TextEditor.getLineAt(end).text.length;
+    if (textLength <= 0) {
+      visualSelectionOffset = 0;
+    }
     end = new Position(end.line, Math.min(end.character, textLength > 0 ? textLength - 1 : 0));
 
     // Iterate over every line in the current selection
