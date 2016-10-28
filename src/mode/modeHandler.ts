@@ -548,6 +548,8 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+    let toDraw = false;
+
     if (selection) {
       let newPosition = new Position(selection.active.line, selection.active.character);
 
@@ -555,6 +557,7 @@ export class ModeHandler implements vscode.Disposable {
         if (this._vimState.currentMode !== ModeName.Insert) {
           // This prevents you from mouse clicking past the EOL
           newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
+          toDraw = true;
         }
       }
 
@@ -593,7 +596,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      await this.updateView(this._vimState, {drawSelection: false, revealRange: true});
+      await this.updateView(this._vimState, {drawSelection: toDraw, revealRange: true});
     }
   }
 
