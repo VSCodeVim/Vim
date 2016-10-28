@@ -48,6 +48,16 @@
                 "when": "editorTextFocus && !inDebugRepl"
             },
             {
+                "key": "End",
+                "command": "extension.vim_end",
+                "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+            },
+            {
+                "key": "cmd+right",
+                "command": "extension.vim_cmd+right",
+                "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+            },
+            {
                 "key": "cmd+d",
                 "command": "extension.vim_cmd+d",
                 "when": "editorTextFocus && !inDebugRepl"

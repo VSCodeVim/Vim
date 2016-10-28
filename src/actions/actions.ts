@@ -3122,7 +3122,10 @@ class MoveRepeatReversed extends BaseMovement {
 
 @RegisterAction
 class MoveLineEnd extends BaseMovement {
-  keys = ["$"];
+  keys = [
+    ["$"],
+    ["<end>"],
+    ["<D-right>"]];
   setsDesiredColumnToEOL = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
