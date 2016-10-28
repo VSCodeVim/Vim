@@ -524,8 +524,6 @@ export class ModeHandler implements vscode.Disposable {
 
         this._vimState.cursorPosition = Position.FromVSCodePosition(selection.active);
         this._vimState.cursorStartPosition = Position.FromVSCodePosition(selection.start);
-
-        this._vimState.desiredColumn = this._vimState.cursorPosition.character;
       }
       return;
     }
