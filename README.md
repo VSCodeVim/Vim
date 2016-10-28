@@ -1,78 +1,33 @@
-[![Version](http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
-[![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim) [![Slack Status](https://vscodevim-slackin.azurewebsites.net/badge.svg)](https://vscodevim-slackin.azurewebsites.net)
+# Vim [![Version](http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim) [![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim) [![Slack Status](https://vscodevim-slackin.azurewebsites.net/badge.svg)](https://vscodevim-slackin.azurewebsites.net)
 
-# Vim
+A [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vim keybindings including:
 
-VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that provides Vim keybindings within Visual Studio Code.
-
-Please **[report missing or buggy features on GitHub](https://github.com/VSCodeVim/Vim/issues)**. We've added a lot of functionality, but everyone uses Vim in their own special way, so let us know if we're missing your favourite obscure command. :wink:
-
-We're super friendly people if you want to drop by and talk to us on [Slack](https://vscodevim-slackin.azurewebsites.net).
-
-![Screenshot](images/screen.png)
-
-## Features We Support
-
-* All modes (including visual block mode!)
-* Most typical commands, including command combinations like `c3w`, `daw`, `2dd`, etc. (Check the [roadmap](ROADMAP.md) for details.)
-* Command remapping (jj to esc)
-* Repeating actions with `.`
-* Incremental search with `/` and `?` that works like Vim (doesn't just open the search box!)
-* Correct undo/redo state
+* Modes (normal, insert, command, visual block)
+* Command combinations (`c3w`, `daw`, `2dd`, etc) and remapping (jj to esc)
+* Incremental search with `/` and `?`
 * Marks
-* Vim Options
-* Multiple Cursor mode (allows multiple simultaneous cursors to receive Vim commands. It's like macros, but in real time. Allows `/` search, has independent clipboards for each cursor, etc.)
+* Vim options
+* Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
+* And many more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
-## Roadmap
-
-See our [Github Milestone page](https://github.com/VSCodeVim/Vim/milestones) for an idea of what we plan to implement next.
-
-## Install
-
-Install the extension through the [VS Code Marketplace](https://code.visualstudio.com/docs/editor/extension-gallery).
+Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues). Everyone uses Vim in their own special way, let us know if we're missing your favourite command. Drop by and say hi on [Slack](https://vscodevim-slackin.azurewebsites.net).
 
 ## Configure
 
-Due to overlap between VS Code and Vim, options are loaded slightly different from native Vim. The option loading sequence is
+Vim options are loaded in the following sequence:
 
-1. `:set {option}` on the fly
-2. [TODO] .vimrc.
-3. `vim.{option}` from user settings or workspace settings.
-4. VSCode configuration
-5. VSCodeVim flavored Vim option default values
+1. `:set {option}`
+2. `vim.{option}` from user/workspace settings.
+3. VSCode configuration
+4. VSCodeVim default values
 
-## Multi-Cursor Mode
+**Note:** changes to the user/workspace settings require  a restart of VS Code to take effect.
 
-Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
-
-#### Getting into multi-cursor mode
-
-You can enter multi-cursor mode by:
-
-* Pressing cmd-d on OSX.
-* Runing "Add Cursor Above/Below" or the shortcut on any platform.
-* Pressing `gc`, a new shortcut we added which is equivalent to cmd-d on OSX or ctrl-d on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
-
-#### Doing stuff
-
-Now that you have multiple cursors, you should be able to use Vim commands as you see fit. Most of them should work. There is a list of things I know of which don't [here](https://github.com/VSCodeVim/Vim/pull/587). If you find yourself wanting one of these, please [add it to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
-
-Each cursor has its own clipboard.
-
-Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
-
-## Additional (Custom) Vim Commands
-
-* `gh` - show the hover tooltip.
-* `gc` - add an additional cursor at the next place that matches `*`.
-
-## Supported Options
-
-Vim options can be added to your user or workspace settings (open the Command Pallete and search for "User Settings" or "Workspace Settings"). Changes require restarting of VSCode to take effect.
+### Supported Options
 
 The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
 
-* insertModeKeyBindings/otherModesKeyBindings
+#### insertModeKeyBindings/otherModesKeyBindings
   * Keybinding overrides to use for insert and other (non-insert) modes
   * *Example:* Bind `jj` to `<Esc>` while in insert mode
 
@@ -96,7 +51,7 @@ The following is a subset of the supported configurations; the full list is desc
       ]
     ```
 
-* insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
+#### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
   * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
   * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
@@ -108,7 +63,7 @@ The following is a subset of the supported configurations; the full list is desc
     }]
     ```
 
-* useCtrlKeys
+#### useCtrlKeys
   * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Page Forward
@@ -121,30 +76,50 @@ The following is a subset of the supported configurations; the full list is desc
     "vim.useCtrlKeys": true
     ```
 
-* useSystemClipboard
+#### useSystemClipboard
   * Enable yanking to the system clipboard by default
   * Type: Boolean (Default: `false`)
   * Note: Linux users must have xclip installed
 
-* useSolidBlockCursor
+#### useSolidBlockCursor
   * Use a non-blinking block cursor
   * Type: Boolean (Default: `false`)
 
-* ignorecase
+#### ignorecase
   * Ignore case in search patterns
   * Type: Boolean (Default: `true`)
 
-* smartcase
+#### smartcase
   * Override the 'ignorecase' option if the search pattern contains upper case characters
   * Type: Boolean (Default: `true`)
 
-* hlsearch
+#### hlsearch
   * When there is a previous search pattern, highlight all its matches
   * Type: Boolean (Default: `false`)
 
-* autoindent
+#### autoindent
   * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
+
+## Multi-Cursor Mode
+
+Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
+
+#### Getting into multi-cursor mode
+
+You can enter multi-cursor mode by:
+
+* Pressing cmd-d on OSX.
+* Runing "Add Cursor Above/Below" or the shortcut on any platform.
+* Pressing `gc`, a new shortcut we added which is equivalent to cmd-d on OSX or ctrl-d on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
+
+#### Doing stuff
+
+Now that you have multiple cursors, you should be able to use Vim commands as you see fit. Most of them should work. There is a list of things I know of which don't [here](https://github.com/VSCodeVim/Vim/pull/587). If you find yourself wanting one of these, please [add it to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
+
+Each cursor has its own clipboard.
+
+Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
 
 ## F.A.Q.
 
@@ -157,12 +132,16 @@ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false        
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VS Code Insider
 ```
 
+#### Halp! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
+
+Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkeys)) to true.
+
 ## Contributing
 
-This project is maintained by a group of awesome [contributors](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. If you are having trouble thinking of how you can help, check out our [roadmap](ROADMAP.md). For a quick tutorial on how to get started, see our [contributing guide](/.github/CONTRIBUTING.md).
+This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
 
-Thanks to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo! 
+Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
 
-## Changelog
+## Release Notes
 
-Please see our [list of recent releases and features added.](https://github.com/VSCodeVim/Vim/releases)
+Our recent releases and update notes are available [here](https://github.com/VSCodeVim/Vim/releases).
