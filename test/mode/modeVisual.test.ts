@@ -550,6 +550,22 @@ suite("Mode Visual", () => {
     });
   });
 
+  newTest({
+    title: "Can do vi) on a matching parenthesis",
+    start: ["test(te|st)"],
+    keysPressed: "vi)d",
+    end: ["test(|)"],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Can do va) on a matching parenthesis",
+    start: ["test(te|st)"],
+    keysPressed: "va)d",
+    end: ["tes|t"],
+    endMode: ModeName.Normal
+  });
+
   suite("handles replace in visual mode", () => {
     newTest({
       title: "Can do a single line replace",
