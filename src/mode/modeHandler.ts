@@ -566,7 +566,11 @@ export class ModeHandler implements vscode.Disposable {
 
       // start visual mode?
 
-      if (!selection.anchor.isEqual(selection.active)) {
+      if (selection.anchor.line === selection.active.line
+        && selection.anchor.character >= newPosition.getLineEnd().character - 1
+        && selection.active.character >= newPosition.getLineEnd().character - 1) {
+         // This prevents you from selecting EOL
+      } else if (!selection.anchor.isEqual(selection.active)) {
         var selectionStart = new Position(selection.anchor.line, selection.anchor.character);
 
         if (selectionStart.character > selectionStart.getLineEnd().character) {
