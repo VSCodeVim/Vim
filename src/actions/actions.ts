@@ -4709,7 +4709,9 @@ abstract class MoveInsideCharacter extends BaseMovement {
     if (endPos === undefined) { return failure; }
 
     if (this.includeSurrounding) {
-      endPos = new Position(endPos.line, endPos.character + 1);
+      if (vimState.currentMode !== ModeName.Visual) {
+        endPos = new Position(endPos.line, endPos.character + 1);
+      }
     } else {
       startPos = startPlusOne;
       if (vimState.currentMode === ModeName.Visual) {

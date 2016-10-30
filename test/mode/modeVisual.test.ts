@@ -560,9 +560,9 @@ suite("Mode Visual", () => {
 
   newTest({
     title: "Can do va) on a matching parenthesis",
-    start: ["test(te|st)"],
+    start: ["test(te|st);"],
     keysPressed: "va)d",
-    end: ["tes|t"],
+    end: ["tes|t;"],
     endMode: ModeName.Normal
   });
 
