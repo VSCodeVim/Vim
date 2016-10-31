@@ -1621,7 +1621,18 @@ export class DeleteOperator extends BaseOperator {
           end   = end.getLineEnd();
         }
 
-        end = new Position(end.line, end.character + 1);
+        // Idea here is to make sure that one character delete in these cases
+        // - 'cc' on empty line
+        // - 'dl' on empty line
+        // won't delete current line.
+        if (registerMode === RegisterMode.CharacterWise
+          && end.getLineEnd().character === end.character
+          && start.line === end.line
+          && start.character === end.character) {
+          end = new Position(end.line, end.character);
+        } else {
+          end = new Position(end.line, end.character + 1);
+        }
 
         const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
 
