@@ -227,6 +227,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'J' in Visual Line mode",
+      start: ['on|e', 'two'],
+      keysPressed: 'VjJ',
+      end: ['one| two']
+    });
+
+    newTest({
       title: "Can handle 'gJ' once",
       start: ['|one', 'two'],
       keysPressed: 'kgJ',

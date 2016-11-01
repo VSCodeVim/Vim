@@ -3710,7 +3710,7 @@ class ActionJoin extends BaseCommand {
 
 @RegisterAction
 class ActionJoinVisualMode extends BaseCommand {
-  modes = [ModeName.Visual];
+  modes = [ModeName.Visual, ModeName.VisualLine];
   keys = ["J"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
