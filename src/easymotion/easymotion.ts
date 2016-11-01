@@ -1,13 +1,9 @@
 import * as vscode from "vscode";
 
 import { Position } from './../motion/position';
-import { VimState } from './../mode/modeHandler';
-import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 
 export class EasyMotion {
-  private _vimState: VimState;
-
   /**
    * Refers to the accumulated keys for depth navigation
    */
@@ -18,7 +14,7 @@ export class EasyMotion {
    */
   private markers: EasyMotion.Marker[];
   private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
-  private decorations: any[][] = [];
+  private decorations: any[][];
 
   /**
    * TODO: For future motions
@@ -40,10 +36,10 @@ export class EasyMotion {
     "v", "b", "n", "m", "f", "j"
   ];
 
-  constructor(vimState: VimState) {
-    this._vimState = vimState;
-
+  constructor() {
+    this.markers = [];
     this.visibleMarkers = [];
+    this.decorations = [];
   }
 
   /**
@@ -141,25 +137,6 @@ export class EasyMotion {
       this.svgCache[code] = uri;
 
       return uri;
-  }
-
-  /**
-   * Enter EasyMotion mode
-   */
-  public enterMode() {
-    this.accumulation = "";
-    this._vimState.currentMode = ModeName.EasyMotionMode;
-  }
-
-  /**
-   * Exit EasyMotion mode and clean up
-   */
-  public exitMode() {
-    this._vimState.currentMode = ModeName.Normal;
-
-    this.accumulation = "";
-    this.clearMarkers();
-    this.clearDecorations();
   }
 
   /**

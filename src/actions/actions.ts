@@ -856,7 +856,8 @@ class CommandEsc extends BaseCommand {
 
     if (vimState.currentMode === ModeName.EasyMotionMode) {
       // Escape or other termination keys were pressed, exit mode
-      vimState.easyMotion.exitMode();
+      vimState.easyMotion.clearDecorations();
+      vimState.currentMode = ModeName.Normal;
     }
 
     vimState.currentMode = ModeName.Normal;
@@ -5337,10 +5338,11 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
       return vimState;
     }
 
-    this.processMarkers(matches, position, vimState);
-
     // Enter the EasyMotion mode and await further keys
-    vimState.easyMotion.enterMode();
+    vimState.currentMode = ModeName.EasyMotionMode;
+    vimState.easyMotion = new EasyMotion();
+
+    this.processMarkers(matches, position, vimState);
 
     return vimState;
   }
@@ -5535,12 +5537,15 @@ class MoveEasyMotion extends BaseMovement {
     if (markers.length === 1) { // Only one found, navigate to it
       var marker = markers[0];
 
-      vimState.easyMotion.exitMode();
+      vimState.easyMotion.clearDecorations();
+      vimState.currentMode = ModeName.Normal;
 
       return marker.position;
     } else {
       if (markers.length === 0) { // None found, exit mode
-        vimState.easyMotion.exitMode();
+        vimState.easyMotion.clearDecorations();
+        vimState.currentMode = ModeName.Normal;
+
         return position;
       }
     }
