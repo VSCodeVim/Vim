@@ -6,11 +6,11 @@ A [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vi
 * Command combinations (`c3w`, `daw`, `2dd`, etc) and remapping (jj to esc)
 * Incremental search with `/` and `?`
 * Marks
-* Vim options
+* Vim settings (like .vimrc)
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
-* And many more! Refer to the [roadmap](ROADMAP.md) or everything we support.
+* And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
-Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues). Everyone uses Vim in their own special way, let us know if we're missing your favourite command. Drop by and say hi on [Slack](https://vscodevim-slackin.azurewebsites.net).
+Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues). Everyone uses Vim in their own special way, so let us know if we're missing your favourite command. Drop by and say hi on [Slack](https://vscodevim-slackin.azurewebsites.net).
 
 ## Configure
 
@@ -21,7 +21,7 @@ Vim options are loaded in the following sequence:
 3. VSCode configuration
 4. VSCodeVim default values
 
-**Note:** changes to the user/workspace settings require  a restart of VS Code to take effect.
+**Note:** changes to the user/workspace settings require a restart of VS Code to take effect.
 
 ### Supported Options
 
