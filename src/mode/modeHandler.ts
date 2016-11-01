@@ -19,10 +19,12 @@ import { InsertVisualBlockMode } from './modeInsertVisualBlock';
 import { VisualMode } from './modeVisual';
 import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
+import { EasyMotionMode } from './modeEasyMotion';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
+import { EasyMotion } from './../easymotion/easymotion';
 import {
   BaseMovement, BaseCommand, Actions, BaseAction,
   BaseOperator, DocumentContentChangeAction, CommandInsertInInsertMode, CommandInsertPreviousText, CommandQuitRecordMacro,
@@ -69,6 +71,8 @@ export class VimState {
   public desiredColumn = 0;
 
   public historyTracker: HistoryTracker;
+
+  public easyMotion: EasyMotion;
 
   /**
    * Are multiple cursors currently present?
@@ -445,8 +449,10 @@ export class ModeHandler implements vscode.Disposable {
       new VisualLineMode(),
       new SearchInProgressMode(),
       new ReplaceMode(),
+      new EasyMotionMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
+    this.vimState.easyMotion = new EasyMotion();
 
     this._vimState.currentMode = ModeName.Normal;
 
@@ -495,7 +501,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.currentModeName === ModeName.VisualBlock ||
-        this.currentModeName === ModeName.VisualBlockInsertMode) {
+        this.currentModeName === ModeName.VisualBlockInsertMode ||
+        this.currentModeName === ModeName.EasyMotionMode) {
       // AArrgghhhh - johnfn
 
       return;
@@ -1511,6 +1518,11 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
       this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
+    } else if (this.currentMode.name === ModeName.EasyMotionMode) {
+      // Update all EasyMotion decorations
+      this._vimState.easyMotion.updateDecorations();
+
+      this.setupStatusBarItem(`Current depth: ${ this.vimState.easyMotion.accumulation }`);
     } else {
       this.setupStatusBarItem(
         `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''} -- ` +
