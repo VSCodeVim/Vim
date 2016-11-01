@@ -1802,7 +1802,7 @@ export class FormatOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
-    await vscode.commands.executeCommand("editor.action.formatSelection");
+    await vscode.commands.executeCommand("editor.action.format");
     let line = vimState.cursorStartPosition.line;
 
     if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
