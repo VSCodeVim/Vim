@@ -3727,15 +3727,16 @@ class ActionJoinVisualMode extends BaseCommand {
     let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     let end = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
 
-    if (start.line === end.line) {
-      return vimState;
-    }
-
     if (start.isAfter(end)) {
       [start, end] = [end, start];
     }
 
-    for (let i = start.line; i < end.line; i++) {
+    /**
+     * For joining lines, Visual Line behaves the same as Visual so we align the register mode here.
+     */
+    vimState.currentRegisterMode = RegisterMode.CharacterWise;
+
+    for (let i = start.line; i <= end.line; i++) {
       vimState = await actionJoin.exec(start, vimState);
     }
 

@@ -229,7 +229,7 @@ suite("Mode Normal", () => {
     newTest({
       title: "Can handle 'J' in Visual Line mode",
       start: ['on|e', 'two'],
-      keysPressed: 'VjJ',
+      keysPressed: 'VJ',
       end: ['one| two']
     });
 
