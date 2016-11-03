@@ -1670,7 +1670,7 @@ export class DeleteOperator extends BaseOperator {
         }
 
         if (yank) {
-          Register.put(text, vimState);
+          Register.put(text, vimState, this.multicursorIndex);
         }
 
         let diff = new PositionDiff(0, 0);
@@ -2555,13 +2555,16 @@ class CommandDeleteToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["D"];
   canBeRepeatedWithDot = true;
+  runsOnceForEveryCursor() { return true; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (position.isLineEnd()) {
       return vimState;
     }
+    let deleteOperator = new DeleteOperator();
+    deleteOperator.multicursorIndex = this.multicursorIndex;
 
-    return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
+    return await deleteOperator.run(vimState, position, position.getLineEnd().getLeft());
   }
 }
 
@@ -4148,7 +4151,7 @@ export class YankVisualBlockMode extends BaseOperator {
         toCopy += line + '\n';
       }
 
-      Register.put(toCopy, vimState);
+      Register.put(toCopy, vimState, this.multicursorIndex);
 
       vimState.currentMode = ModeName.Normal;
       vimState.cursorPosition = start;
