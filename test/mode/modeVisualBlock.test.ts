@@ -32,28 +32,70 @@ suite("Mode Visual Block", () => {
     title: "Can handle A forward select",
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljA123',
-    end: ['tes123t', 'tes123|t'],
+    end: ['tes123|t', 'tes123t'],
   });
 
   newTest({
     title: "Can handle A backwards select",
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjA123',
-    end: ['tes123t', 'tes123|t'],
+    end: ['tes123|t', 'tes123t'],
   });
 
   newTest({
     title: "Can handle I forward select",
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljI123',
-    end: ['t123est', 't123|est'],
+    end: ['t123|est', 't123est'],
   });
 
   newTest({
     title: "Can handle I backwards select",
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjI123',
-    end: ['t123est', 't123|est'],
+    end: ['t123|est', 't123est'],
+  });
+
+  newTest({
+    title: "Can handle I with empty lines on first character (inserts on empty line)",
+    start: ['|test', '', 'test'],
+    keysPressed: '<C-v>lljjI123',
+    end: ['123|test', '123', '123test'],
+  });
+
+  newTest({
+    title: "Can handle I with empty lines on non-first character (does not insert on empty line)",
+    start: ['t|est', '', 'test'],
+    keysPressed: '<C-v>lljjI123',
+    end: ['t123|est', '', 't123est'],
+  });
+
+  newTest({
+    title: "Can handle c forward select",
+    start: ['|test', 'test'],
+    keysPressed: 'l<C-v>ljc123',
+    end: ['t123|t', 't123t'],
+  });
+
+  newTest({
+    title: "Can handle c backwards select",
+    start: ['tes|t', 'test'],
+    keysPressed: 'h<C-v>hjc123',
+    end: ['t123|t', 't123t'],
+  });
+
+  newTest({
+    title: "Can handle s backwards select",
+    start: ['tes|t', 'test'],
+    keysPressed: 'h<C-v>hjs123',
+    end: ['t123|t', 't123t'],
+  });
+
+  newTest({
+    title: "Can handle C",
+    start: ['tes|t', 'test'],
+    keysPressed: 'h<C-v>hjC123',
+    end: ['t123|', 't123'],
   });
 
   newTest({
