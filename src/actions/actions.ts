@@ -4178,6 +4178,11 @@ class InsertInInsertVisualBlockMode extends BaseCommand {
     for (const { start, end } of Position.IterateLine(vimState)) {
       const insertPos = insertAtStart ? start : end;
 
+      // Skip line if starting position does not have content (don't insert on blank lines for example)
+      if (end.isBefore(start)) {
+        continue;
+      }
+
       if (char === '<BS>') {
         vimState.recordedState.transformations.push({
           type     : "deleteText",
