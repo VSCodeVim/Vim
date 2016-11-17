@@ -54,7 +54,6 @@ export class Configuration {
     return Configuration._instance;
   }
 
-  useSolidBlockCursor: boolean = false;
   useSystemClipboard: boolean = false;
   useCtrlKeys: boolean = false;
   scroll: number = 20;

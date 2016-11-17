@@ -1455,10 +1455,12 @@ export class ModeHandler implements vscode.Disposable {
     } else {
       // Use native block cursor if possible.
       let cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-                            this.currentMode.name       !== ModeName.VisualBlockInsertMode &&
-                            this.currentMode.name       !== ModeName.Insert ?
-        "block" : "line";
-      Configuration.getInstance().cursorStyle = cursorStyle;
+        this.currentMode.name !== ModeName.VisualBlockInsertMode &&
+        this.currentMode.name !== ModeName.Insert ?
+        vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+      let options = vscode.window.activeTextEditor.options;
+      options.cursorStyle = cursorStyle;
+      vscode.window.activeTextEditor.options = options;
     }
 
     if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
