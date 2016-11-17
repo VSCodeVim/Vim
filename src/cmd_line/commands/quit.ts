@@ -43,5 +43,4 @@ export class QuitCommand extends node.CommandBase {
         await vscode.commands.executeCommand('workbench.action.previousEditor');
       }
     }
-  }
-}
+  }}
