@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { taskQueue } from '../../src/taskQueue';
+import { Globals } from '../../src/globals';
 
 export type OptionValue = number | string | boolean;
 export type ValueMapping = {
@@ -105,7 +106,7 @@ function overlapSetting(args: {codeName: string, default: OptionValue, codeValue
 
         taskQueue.enqueueTask({
           promise: async () => {
-            if (value === undefined) {
+            if (value === undefined || Globals.isTesting) {
               return;
             }
 
