@@ -2886,7 +2886,8 @@ class MoveRightWithSpace extends BaseMovement {
 @RegisterAction
 class MoveToRightPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<C-w>", "l"];
+  keys = [["<C-w>", "l"],
+  ["<C-w>", "<right>"]];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2901,11 +2902,27 @@ class MoveToRightPane extends BaseCommand {
 @RegisterAction
 class MoveToLeftPane  extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<C-w>", "h"];
+  keys = [["<C-w>", "h"],
+  ["<C-w>", "<left>"]];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
       command: "workbench.action.focusPreviousGroup",
+      args: {}
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CycleThroughPanes extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<C-w>", "<C-w>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.navigateEditorGroups",
       args: {}
     });
 
