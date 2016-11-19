@@ -2913,6 +2913,21 @@ class MoveToLeftPane  extends BaseCommand {
   }
 }
 
+@RegisterAction
+class CycleThroughPanes extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<C-w>", "<C-w>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.navigateEditorGroups",
+      args: {}
+    });
+
+    return vimState;
+  }
+}
+
 class BaseTabCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   runsOnceForEachCountPrefix = true;
