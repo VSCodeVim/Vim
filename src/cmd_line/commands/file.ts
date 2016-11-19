@@ -63,8 +63,6 @@ export class FileCommand extends node.CommandBase {
         await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
       } else {
         await vscode.commands.executeCommand("workbench.action.splitEditor");
-        await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
-        await vscode.commands.executeCommand("workbench.action.closeOtherEditors");
       }
 
       return;
