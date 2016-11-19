@@ -4808,7 +4808,7 @@ abstract class MoveInsideCharacter extends BaseMovement {
     }
 
     // If the closing character is the first on the line, don't swallow it.
-    if (endPos.character === 0) {
+    if (endPos.character === 0 && !this.includeSurrounding) {
       endPos = endPos.getLeftThroughLineBreaks();
     } else if (/^\s+$/.test(TextEditor.getText(new vscode.Range(endPos.getLineBegin(), endPos.getLeft())))) {
       endPos = endPos.getPreviousLineBegin().getLineEnd();

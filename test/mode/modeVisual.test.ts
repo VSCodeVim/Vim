@@ -566,6 +566,14 @@ suite("Mode Visual", () => {
     endMode: ModeName.Normal
   });
 
+  newTest({
+    title: "Can do va} on a matching bracket as first character",
+    start: ["1|{", "test", "}1"],
+    keysPressed: "va}d",
+    end: ["1|1"],
+    endMode: ModeName.Normal
+  });
+
   suite("handles replace in visual mode", () => {
     newTest({
       title: "Can do a single line replace",
