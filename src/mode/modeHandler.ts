@@ -558,10 +558,12 @@ export class ModeHandler implements vscode.Disposable {
     if (selection) {
       let newPosition = new Position(selection.active.line, selection.active.character);
 
-      if (newPosition.character >= newPosition.getLineEnd().character) {
+      // Only check on a click, not a full selection (to prevent clicking past EOL)
+      if (newPosition.character >= newPosition.getLineEnd().character && selection.isEmpty) {
         if (this._vimState.currentMode !== ModeName.Insert) {
           // This prevents you from mouse clicking past the EOL
           newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
+
           toDraw = true;
         }
       }
