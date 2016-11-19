@@ -182,6 +182,11 @@
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
             },
             {
+                "key": "ctrl+o",
+                "command": "extension.vim_ctrl+o",
+                "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
+            },
+            {
                 "key": "ctrl+x",
                 "command": "extension.vim_ctrl+x",
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"

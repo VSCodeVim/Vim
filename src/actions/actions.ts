@@ -665,6 +665,17 @@ class CommandInsertRegisterContent extends BaseCommand {
 }
 
 @RegisterAction
+export class CommandOneNormalCommandInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<C-o>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.returnToInsertAfterCommand = true;
+    return await new CommandEscInsertMode().exec(position, vimState);
+  }
+}
+
+@RegisterAction
 class CommandInsertRegisterContentInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
   keys = ["<C-r>", "<character>"];
