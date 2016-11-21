@@ -3273,7 +3273,8 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 @RegisterAction
 class MoveUpByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["g", "k"];
+  keys = [["g", "k"],
+  ["g", "<up>"]];
   movementType: CursorMovePosition = "up";
   by: CursorMoveByUnit = "wrappedLine";
   value = 1;
@@ -3282,7 +3283,8 @@ class MoveUpByScreenLine extends MoveByScreenLine {
 @RegisterAction
 class MoveDownByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["g", "j"];
+  keys = [["g", "j"],
+  ["g", "<down>"]];
   movementType: CursorMovePosition = "down";
   by: CursorMoveByUnit = "wrappedLine";
   value = 1;
