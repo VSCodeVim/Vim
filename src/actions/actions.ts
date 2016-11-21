@@ -2707,6 +2707,28 @@ class CommandExitVisualLineMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandOpenFile extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["g", "f"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+
+    if (vimState.currentMode === ModeName.Visual) {
+      const selection = TextEditor.getSelection();
+      const end = new Position(selection.end.line, selection.end.character + 1);
+
+      const filePath = TextEditor.getText(selection.with(selection.start, end));
+
+      await vscode.workspace.openTextDocument(filePath).then((document) => {
+        vscode.window.showTextDocument(document);
+      });
+    };
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandGoToDefinition extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["g", "d"];
