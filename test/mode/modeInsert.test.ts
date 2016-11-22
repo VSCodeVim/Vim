@@ -4,13 +4,18 @@ import {setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from '.
 import {ModeName} from '../../src/mode/mode';
 import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from "../../src/mode/modeHandler";
+import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Insert", () => {
-    let modeHandler: ModeHandler;
+    let modeHandler: ModeHandler = new ModeHandler();
+
+    let {
+        newTest,
+        newTestOnly,
+    } = getTestingFunctions(modeHandler);
 
     setup(async () => {
         await setupWorkspace();
-
         modeHandler = new ModeHandler();
     });
 
@@ -168,4 +173,12 @@ suite("Mode Insert", () => {
 
         assertEqualLines(["  "]);
     });
+
+    newTest({
+      title: "Can perform <ctrl+o> to exit and perform one command in normal",
+      start: ['testtest|'],
+      keysPressed: 'a123<C-o>b123',
+      end: ['123|testtest123']
+    });
+
 });

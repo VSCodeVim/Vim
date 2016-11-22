@@ -99,6 +99,12 @@ export class VimState {
   public focusChanged = false;
 
   /**
+   * Used for command like <C-o> which allows you to return to insert after a command
+   */
+  public returnToInsertAfterCommand = false;
+  public actionCount = 0;
+
+  /**
    * Every time we invoke a VS Code command which might trigger Code's view update,
    * we should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
    * This array is used to cache every VS Code view updating event and they will be triggered once we run the inhouse `viewUpdate`.
@@ -822,6 +828,18 @@ export class ModeHandler implements vscode.Disposable {
 
     if (ranAction) {
       vimState.recordedState = new RecordedState();
+
+      // Return to insert mode after 1 command in this case for <C-o>
+      if (vimState.returnToInsertAfterCommand) {
+        if (vimState.actionCount > 0) {
+          vimState.currentMode = ModeName.Insert;
+          vimState.returnToInsertAfterCommand = false;
+          vimState.actionCount = 0;
+          this.setCurrentModeByName(vimState);
+        } else {
+          vimState.actionCount++;
+        }
+      }
     }
 
     // track undo history
