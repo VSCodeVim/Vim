@@ -72,6 +72,12 @@ class Remapper {
 
           // TODO(johnfn) - study - actions need to be paired up with text changes...
           // this is a complicated problem.
+
+          // Update most recent keys to be the correct length based on the remap length
+          if (remapping.before.length < longestKeySequence) {
+            this._mostRecentKeys = this._mostRecentKeys.slice(longestKeySequence - remapping.before.length);
+          }
+
           await vimState.historyTracker.undoAndRemoveChanges(
             Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.length));
         }
