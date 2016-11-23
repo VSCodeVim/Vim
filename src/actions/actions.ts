@@ -3705,45 +3705,152 @@ class ActionJoin extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["J"];
   canBeRepeatedWithDot = true;
-  runsOnceForEachCountPrefix = true;
+  runsOnceForEachCountPrefix = false;
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (position.line === TextEditor.getLineCount() - 1) {
-      return vimState; // TODO: bell
+  private firstNonWhitespaceIndex(str: string): number {
+    for (let i = 0, len = str.length; i < len; i++) {
+      let chCode = str.charCodeAt(i);
+      if (chCode !== 32 /** space */ && chCode !== 9 /** tab */) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  public async execJoinLines(startPosition: Position, position: Position, vimState: VimState, count: number): Promise<VimState> {
+    count = count - 1 || 1;
+
+    let startLineNumber: number,
+      startColumn: number,
+      endLineNumber: number,
+      endColumn: number,
+      columnDeltaOffset: number = 0;
+
+    let selectionEndPositionOffset = TextEditor.getLineAt(position).text.length - position.character;
+
+    if (startPosition.isEqual(position) || startPosition.line === position.line) {
+      if (position.line + 1 < TextEditor.getLineCount()) {
+        startLineNumber = position.line;
+        startColumn = 0;
+        endLineNumber = startLineNumber + count;
+        endColumn = TextEditor.getLineMaxColumn(endLineNumber);
+      } else {
+        startLineNumber = position.line;
+        startColumn = 0;
+        endLineNumber = position.line;
+        endColumn = TextEditor.getLineMaxColumn(endLineNumber);
+      }
+    } else {
+      startLineNumber = startPosition.line;
+      startColumn = 0;
+      endLineNumber = position.line;
+      endColumn = TextEditor.getLineMaxColumn(endLineNumber);
     }
 
-    let lineOne = TextEditor.getLineAt(position).text;
-    let lineTwo = TextEditor.getLineAt(position.getNextLineBegin()).text;
+    let trimmedLinesContent = TextEditor.getLineAt(startPosition).text;
 
-    let lineTwoTrimmedStart = lineTwo.substring(position.getNextLineBegin().getFirstLineNonBlankChar().character);
+    for (let i = startLineNumber + 1; i <= endLineNumber; i++) {
+      let lineText = TextEditor.getLineAt(new Position(i, 0)).text;
 
-    // TODO(whitespace): need a better way to check for whitespace
-    let oneEndsWithWhitespace = lineOne.length > 0 && " \t".indexOf(lineOne[lineOne.length - 1]) > -1;
-    let isParenthesisPair = (lineOne[lineOne.length - 1] === '(' && lineTwoTrimmedStart[0] === ')');
+      let firstNonWhitespaceIdx = this.firstNonWhitespaceIndex(lineText);
 
-    const addSpace = !oneEndsWithWhitespace && !isParenthesisPair;
+      if (firstNonWhitespaceIdx >= 0) {
+        let insertSpace = true;
 
-    let resultLine = lineOne + (addSpace ? " " : "") + lineTwoTrimmedStart;
+        if (trimmedLinesContent === '' ||
+            trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
+            trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t') {
+          insertSpace = false;
+        }
 
-    let newState = await new DeleteOperator().run(
-      vimState,
-      position.getLineBegin(),
-      lineTwo.length > 0 ?
-        position.getNextLineBegin().getLineEnd().getLeft() :
-        position.getLineEnd()
-    );
+        let lineTextWithoutIndent = lineText.substr(firstNonWhitespaceIdx);
 
-    vimState.recordedState.transformations.push({
-      type    : "insertText",
-      text    : resultLine,
-      position: position,
-      diff    : new PositionDiff(0, -lineTwoTrimmedStart.length - 1 + (addSpace ? 0 : 1)),
-    });
+        if (lineTextWithoutIndent.charAt(0) === ')') {
+          insertSpace = false;
+        }
 
-    newState.cursorPosition = new Position(position.line,
-      lineOne.length + (addSpace ? 1 : 0) + (isParenthesisPair ? 1 : 0) - 1 + (oneEndsWithWhitespace ? 1 : 0));
+        trimmedLinesContent += (insertSpace ? ' ' : '') + lineTextWithoutIndent;
 
-    return newState;
+        if (insertSpace) {
+          columnDeltaOffset = lineTextWithoutIndent.length + 1;
+        } else {
+          columnDeltaOffset = lineTextWithoutIndent.length;
+        }
+      } else {
+        columnDeltaOffset = 0;
+      }
+    }
+
+    let deleteStartPosition = new Position(startLineNumber, startColumn);
+    let deleteEndPosition = new Position(endLineNumber, endColumn);
+
+    if (!deleteStartPosition.isEqual(deleteEndPosition)) {
+      if (startPosition.isEqual(position)) {
+        vimState.recordedState.transformations.push({
+          type    : "replaceText",
+          text    : trimmedLinesContent,
+          start   : deleteStartPosition,
+          end     : deleteEndPosition,
+          diff    : new PositionDiff(0, trimmedLinesContent.length - columnDeltaOffset - position.character),
+        });
+      } else {
+        if (startPosition.line === position.line) {
+          vimState.recordedState.transformations.push({
+            type    : "replaceText",
+            text    : trimmedLinesContent,
+            start   : deleteStartPosition,
+            end     : deleteEndPosition
+          });
+        } else {
+          vimState.recordedState.transformations.push({
+            type    : "replaceText",
+            text    : trimmedLinesContent,
+            start   : deleteStartPosition,
+            end     : deleteEndPosition,
+            manuallySetCursorPositions: true
+          });
+
+          vimState.cursorStartPosition = startPosition;
+          vimState.cursorPosition = new Position(startPosition.line, trimmedLinesContent.length - selectionEndPositionOffset);
+        }
+      }
+    }
+
+    return vimState;
+  }
+
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat  = vimState.recordedState.count || 1;
+    let resultingCursors: Range[] = [];
+    let i              = 0;
+
+    const cursorsToIterateOver = vimState.allCursors
+      .map(x => new Range(x.start, x.stop))
+      .sort((a, b) => a.start.line > b.start.line || (a.start.line === b.start.line && a.start.character > b.start.character) ? 1 : -1);
+
+    for (const { start, stop } of cursorsToIterateOver) {
+      this.multicursorIndex = i++;
+
+      vimState.cursorPosition      = stop;
+      vimState.cursorStartPosition = start;
+
+      vimState = await this.execJoinLines(start, stop, vimState, timesToRepeat);
+
+      resultingCursors.push(new Range(
+        vimState.cursorStartPosition,
+        vimState.cursorPosition,
+      ));
+
+      for (const transformation of vimState.recordedState.transformations) {
+        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
+          transformation.cursorIndex = this.multicursorIndex;
+        }
+      }
+    }
+
+    vimState.allCursors = resultingCursors;
+
+    return vimState;
   }
 }
 
@@ -3765,10 +3872,7 @@ class ActionJoinVisualMode extends BaseCommand {
      * For joining lines, Visual Line behaves the same as Visual so we align the register mode here.
      */
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
-
-    for (let i = start.line; i <= end.line; i++) {
-      vimState = await actionJoin.exec(start, vimState);
-    }
+    vimState = await actionJoin.execJoinLines(start, end, vimState, 1);
 
     return vimState;
   }

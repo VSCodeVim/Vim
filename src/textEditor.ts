@@ -114,6 +114,14 @@ export class TextEditor {
     return vscode.window.activeTextEditor.document.lineAt(position);
   }
 
+  static getLineMaxColumn(lineNumber: number): number {
+    if (lineNumber < 1 || lineNumber > TextEditor.getLineCount()) {
+      throw new Error('Illegal value ' + lineNumber + ' for `lineNumber`');
+    }
+
+    return TextEditor.readLineAt(lineNumber).length;
+  }
+
   static getSelection(): vscode.Range {
     return vscode.window.activeTextEditor.selection;
   }
