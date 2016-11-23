@@ -237,7 +237,7 @@ Status | Command | Description
 ---|--------|------------------------------
 :white_check_mark:   | Esc		 | end Insert mode, back to Normal mode
 :white_check_mark:   | CTRL-C		 | like Esc, but do not use an abbreviation
-:arrow_down:   | CTRL-O {command}    | execute {command} and return to Insert mode
+:white_check_mark:   | CTRL-O {command}    | execute {command} and return to Insert mode
 
 moving around:
 
