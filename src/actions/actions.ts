@@ -3726,8 +3726,6 @@ class ActionJoin extends BaseCommand {
       endColumn: number,
       columnDeltaOffset: number = 0;
 
-    let selectionEndPositionOffset = TextEditor.getLineAt(position).text.length - position.character;
-
     if (startPosition.isEqual(position) || startPosition.line === position.line) {
       if (position.line + 1 < TextEditor.getLineCount()) {
         startLineNumber = position.line;
@@ -3777,7 +3775,14 @@ class ActionJoin extends BaseCommand {
           columnDeltaOffset = lineTextWithoutIndent.length;
         }
       } else {
-        columnDeltaOffset = 0;
+        if (trimmedLinesContent === '' ||
+            trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === ' ' ||
+            trimmedLinesContent.charAt(trimmedLinesContent.length - 1) === '\t') {
+              columnDeltaOffset += 0;
+        } else {
+          trimmedLinesContent += ' ';
+          columnDeltaOffset += 1;
+        }
       }
     }
 
@@ -3794,25 +3799,17 @@ class ActionJoin extends BaseCommand {
           diff    : new PositionDiff(0, trimmedLinesContent.length - columnDeltaOffset - position.character),
         });
       } else {
-        if (startPosition.line === position.line) {
-          vimState.recordedState.transformations.push({
-            type    : "replaceText",
-            text    : trimmedLinesContent,
-            start   : deleteStartPosition,
-            end     : deleteEndPosition
-          });
-        } else {
-          vimState.recordedState.transformations.push({
-            type    : "replaceText",
-            text    : trimmedLinesContent,
-            start   : deleteStartPosition,
-            end     : deleteEndPosition,
-            manuallySetCursorPositions: true
-          });
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: trimmedLinesContent,
+          start: deleteStartPosition,
+          end: deleteEndPosition,
+          manuallySetCursorPositions: true
+        });
 
-          vimState.cursorStartPosition = startPosition;
-          vimState.cursorPosition = new Position(startPosition.line, trimmedLinesContent.length - selectionEndPositionOffset);
-        }
+        vimState.cursorPosition = new Position(startPosition.line, trimmedLinesContent.length - columnDeltaOffset);
+        vimState.cursorStartPosition = vimState.cursorPosition;
+        vimState.currentMode = ModeName.Normal;
       }
     }
 
