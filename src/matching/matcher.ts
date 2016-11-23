@@ -16,6 +16,8 @@ export class PairMatcher {
     // useful for text objects.
     "<" : { match: ">",  nextMatchIsForward: true },
     ">" : { match: "<",  nextMatchIsForward: false },
+    "\"" : { match: "\"",  nextMatchIsForward: true },
+    "\'" : { match: "\'",  nextMatchIsForward: true },
   };
 
   static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true): Position | undefined {

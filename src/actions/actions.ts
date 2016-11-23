@@ -527,6 +527,20 @@ export class CommandInsertInInsertMode extends BaseCommand {
           range: new Range(selection.start as Position, selection.end as Position),
         });
       } else {
+        // Check for matching character that was auto inserted ("" or [] and delete the closing char if the opening char is deleted)
+        const text = TextEditor.getLineAt(position).text;
+        const charToMatch = text[position.character - 1];
+        const toFind = PairMatcher.pairings[charToMatch];
+
+        if (toFind !== undefined) {
+          if (text[position.character] === toFind.match) {
+            vimState.recordedState.transformations.push({
+              type: "deleteRange",
+              range: new Range(position, new Position(position.line, position.character + 1)),
+            });
+          }
+        }
+
         vimState.recordedState.transformations.push({
           type: "deleteText",
           position: position,
