@@ -17,6 +17,7 @@ import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
 import { EasyMotion } from './../easymotion/easymotion';
+import { FileCommand } from './../cmd_line/commands/file';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
@@ -2713,16 +2714,18 @@ class CommandOpenFile extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
 
+    let filePath: string = "";
+
     if (vimState.currentMode === ModeName.Visual) {
       const selection = TextEditor.getSelection();
       const end = new Position(selection.end.line, selection.end.character + 1);
+      filePath = TextEditor.getText(selection.with(selection.start, end));
+    } else {
+      let NOOP = 0;
+    }
 
-      const filePath = TextEditor.getText(selection.with(selection.start, end));
-
-      await vscode.workspace.openTextDocument(filePath).then((document) => {
-        vscode.window.showTextDocument(document);
-      });
-    };
+    const fileCommand = new FileCommand({name: filePath});
+    fileCommand.execute();
 
     return vimState;
   }
