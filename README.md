@@ -97,6 +97,10 @@ The following is a subset of the supported configurations; the full list is desc
   * When there is a previous search pattern, highlight all its matches
   * Type: Boolean (Default: `false`)
 
+#### incsearch
+  * Show the next search match while you're searching.
+  * Type: Boolean (Default: `true`)
+
 #### autoindent
   * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
