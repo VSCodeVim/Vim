@@ -55,15 +55,16 @@ export class Configuration {
     return Configuration._instance;
   }
 
-  useSolidBlockCursor: boolean = false;
-  useSystemClipboard: boolean = false;
-  useCtrlKeys: boolean = false;
-  scroll: number = 20;
-  hlsearch: boolean = false;
-  ignorecase: boolean = true;
-  smartcase: boolean = true;
-  autoindent: boolean = true;
-  easymotion: boolean = false;
+  useSolidBlockCursor = false;
+  useSystemClipboard = false;
+  useCtrlKeys = false;
+  scroll = 20;
+  hlsearch = false;
+  ignorecase = true;
+  smartcase = true;
+  autoindent = true;
+  easymotion = false;
+  incsearch = true;
 
   @overlapSetting({ codeName: "tabSize", default: 8})
   tabstop: number | undefined = undefined;

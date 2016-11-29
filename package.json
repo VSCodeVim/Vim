@@ -289,17 +289,22 @@
                 },
                 "vim.easymotion": {
                     "type": "boolean",
-                    "description": "Enabled functionality of the EasyMotion plugin for Vim.",
+                    "description": "Enable the EasyMotion plugin for Vim.",
                     "default": false
                 },
                 "vim.hlsearch": {
                     "type": "boolean",
-                    "description": "When there is a previous search pattern, highlight all its matches.",
+                    "description": "Show all matches of the most recent search pattern",
                     "default": false
+                },
+                "vim.incsearch": {
+                    "type": "boolean",
+                    "description": "Show where a / search matches as you type it.",
+                    "default": true
                 },
                 "vim.autoindent": {
                     "type": "boolean",
-                    "description": "Copy indent from current line when starting a new line.",
+                    "description": "Indent code automatically.",
                     "default": true
                 }
             }

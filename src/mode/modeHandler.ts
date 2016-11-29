@@ -1507,7 +1507,10 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw search highlight
 
-    if (Configuration.getInstance().hlsearch && (this.currentMode.name === ModeName.SearchInProgressMode || vimState.searchState)) {
+    if (
+      (Configuration.getInstance().incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
+      (Configuration.getInstance().hlsearch && vimState.searchState)) {
+
       const searchState = vimState.searchState!;
 
       rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
