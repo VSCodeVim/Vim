@@ -1598,6 +1598,31 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   }
 }
 
+
+@RegisterAction
+class CommandCtrlN extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<C-n>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("selectNextSuggestion");
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlP extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<C-p>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    await vscode.commands.executeCommand("selectPrevSuggestion");
+
+    return vimState;
+  }
+}
+
 @RegisterAction
 export class CommandSearchForwards extends BaseCommand {
   modes = [ModeName.Normal];

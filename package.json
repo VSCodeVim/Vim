@@ -187,6 +187,16 @@
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
             },
             {
+                "key": "ctrl+n",
+                "command": "extension.vim_ctrl+n",
+                "when": "suggestWidgetVisible"
+            },
+            {
+                "key": "ctrl+p",
+                "command": "extension.vim_ctrl+p",
+                "when": "suggestWidgetVisible"
+            },
+            {
                 "key": "ctrl+x",
                 "command": "extension.vim_ctrl+x",
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
@@ -224,7 +234,7 @@
             {
                 "key": "up",
                 "command": "extension.vim_up",
-                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
+                "when": "editorTextFocus && !inDebugRepl && suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
             },
             {
                 "key": "down",
