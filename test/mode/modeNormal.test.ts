@@ -1342,6 +1342,38 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can do cit on a multiline tag",
+      start: [" <blink>\nhe|llo\n </blink>"],
+      keysPressed: "cit",
+      end: [" <blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit inside of a tag with another non closing tag inside tags",
+      start: ["<blink>hello<br>wo|rld</blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit inside of a tag with another empty closing tag inside tags",
+      start: ["<blink>hel|lo</h1>world</blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit on empty tag block, cursor moves to inside",
+      start: ["<bli|nk></blink>"],
+      keysPressed: "dit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Respects indentation with cc",
       start: ["{", "  int| a;"],
       keysPressed: "cc",

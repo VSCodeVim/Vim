@@ -88,6 +88,10 @@ export class TextEditor {
     return "";
   }
 
+  static getDocument(): vscode.TextDocument {
+      return vscode.window.activeTextEditor.document;
+  }
+
   static readLine(): string {
     const lineNo = vscode.window.activeTextEditor.selection.active.line;
 
