@@ -1,29 +1,22 @@
 # Vim [![Version](http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim) [![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim) [![Slack Status](https://vscodevim-slackin.azurewebsites.net/badge.svg)](https://vscodevim-slackin.azurewebsites.net)
 
-A [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vim keybindings including:
+VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vim keybindings, including:
 
-* Modes (normal, insert, command, visual block)
-* Command combinations (`c3w`, `daw`, `2dd`, etc) and remapping (jj to esc)
+* Modes (normal, insert, command, visual, visual line, visual block)
+* Command combinations (`c3w`, `daw`, `2dd`, etc)
+* Command remapping (jj to esc)
 * Incremental search with `/` and `?`
 * Marks
 * Vim settings (like .vimrc)
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
+* The EasyMotion plugin!
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
-Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues). Everyone uses Vim in their own special way, so let us know if we're missing your favourite command. Drop by and say hi on [Slack](https://vscodevim-slackin.azurewebsites.net).
+Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
 
-## Configure
+Ask us questions, talk about contributing, or just say hi on [Slack](https://vscodevim-slackin.azurewebsites.net)!
 
-Vim options are loaded in the following sequence:
-
-1. `:set {option}`
-2. `vim.{option}` from user/workspace settings.
-3. VSCode configuration
-4. VSCodeVim default values
-
-**Note:** changes to the user/workspace settings require a restart of VS Code to take effect.
-
-### Supported Options
+## Supported Options
 
 The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
 
@@ -66,7 +59,9 @@ The following is a subset of the supported configurations; the full list is desc
 #### useCtrlKeys
   * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
-    * `ctrl+f` => Page Forward
+    * `ctrl+f` => Full Page Forward
+    * `ctrl+d` => Half Page Back
+    * `ctrl+b` => Half Page Forward
     * `ctrl+v` => Visual Block Mode
     * etc.
   * Type: Boolean (Default: `false`)
@@ -84,6 +79,8 @@ The following is a subset of the supported configurations; the full list is desc
 #### useSolidBlockCursor
   * Use a non-blinking block cursor
   * Type: Boolean (Default: `false`)
+
+### Vim settings we support
 
 #### ignorecase
   * Ignore case in search patterns
@@ -105,6 +102,17 @@ The following is a subset of the supported configurations; the full list is desc
   * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
 
+## Configure
+
+Vim options are loaded in the following sequence:
+
+1. `:set {option}`
+2. `vim.{option}` from user/workspace settings.
+3. VSCode configuration
+4. VSCodeVim default values
+
+**Note:** changes to the user/workspace settings require a restart of VS Code to take effect.
+
 ## Multi-Cursor Mode
 
 Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
@@ -114,7 +122,7 @@ Multi-Cursor mode is currently in beta. Please report things you expected to wor
 You can enter multi-cursor mode by:
 
 * Pressing cmd-d on OSX.
-* Runing "Add Cursor Above/Below" or the shortcut on any platform.
+* Running "Add Cursor Above/Below" or the shortcut on any platform.
 * Pressing `gc`, a new shortcut we added which is equivalent to cmd-d on OSX or ctrl-d on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
 
 #### Doing stuff
