@@ -3232,7 +3232,9 @@ class MoveLineEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLineBegin extends BaseMovement {
-  keys = ["0"];
+  keys = [["0"],
+          ["<home>"],
+          ["<D-left>"]];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLineBegin();
