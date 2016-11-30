@@ -234,7 +234,7 @@
             {
                 "key": "up",
                 "command": "extension.vim_up",
-                "when": "editorTextFocus && !inDebugRepl && suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
+                "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
             },
             {
                 "key": "down",
