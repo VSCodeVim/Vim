@@ -100,10 +100,12 @@ export class PositionDiff {
 export class Position extends vscode.Position {
   private static NonWordCharacters = Configuration.getInstance().iskeyword!;
   private static NonBigWordCharacters = "";
+  private static NonFileCharacters = "\"'`;<>{}[]()";
 
   private _nonWordCharRegex : RegExp;
   private _nonBigWordCharRegex : RegExp;
   private _sentenceEndRegex: RegExp;
+  private _nonFileNameRegex: RegExp;
 
   constructor(line: number, character: number) {
     super(line, character);
@@ -111,6 +113,7 @@ export class Position extends vscode.Position {
     this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
     this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
     this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
+    this._nonFileNameRegex = this.makeWordRegex(Position.NonFileCharacters);
   }
 
   public toString(): string {
@@ -467,6 +470,10 @@ export class Position extends vscode.Position {
     return this.getWordLeftWithRegex(this._nonBigWordCharRegex);
   }
 
+  public getFilePathLeft(inclusive: boolean = false): Position {
+    return this.getWordLeftWithRegex(this._nonFileNameRegex, inclusive);
+  }
+
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
@@ -476,6 +483,10 @@ export class Position extends vscode.Position {
 
   public getBigWordRight() : Position {
     return this.getWordRightWithRegex(this._nonBigWordCharRegex);
+  }
+
+  public getFilePathRight(inclusive: boolean = false): Position {
+    return this.getWordRightWithRegex(this._nonFileNameRegex, inclusive);
   }
 
   public getLastWordEnd(): Position {

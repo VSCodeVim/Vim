@@ -2721,7 +2721,11 @@ class CommandOpenFile extends BaseCommand {
       const end = new Position(selection.end.line, selection.end.character + 1);
       filePath = TextEditor.getText(selection.with(selection.start, end));
     } else {
-      let NOOP = 0;
+      const start = position.getFilePathLeft(true);
+      const end = position.getFilePathRight();
+      const range = new vscode.Range(start, end);
+
+      filePath = TextEditor.getText(range).trim();
     }
 
     const fileCommand = new FileCommand({name: filePath});
