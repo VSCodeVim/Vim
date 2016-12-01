@@ -17,6 +17,7 @@ import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
 import { EasyMotion } from './../easymotion/easymotion';
+import { FileCommand } from './../cmd_line/commands/file';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
@@ -2707,6 +2708,34 @@ class CommandExitVisualLineMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandOpenFile extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual];
+  keys = ["g", "f"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+
+    let filePath: string = "";
+
+    if (vimState.currentMode === ModeName.Visual) {
+      const selection = TextEditor.getSelection();
+      const end = new Position(selection.end.line, selection.end.character + 1);
+      filePath = TextEditor.getText(selection.with(selection.start, end));
+    } else {
+      const start = position.getFilePathLeft(true);
+      const end = position.getFilePathRight();
+      const range = new vscode.Range(start, end);
+
+      filePath = TextEditor.getText(range).trim();
+    }
+
+    const fileCommand = new FileCommand({name: filePath});
+    fileCommand.execute();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandGoToDefinition extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["g", "d"];
@@ -3203,7 +3232,9 @@ class MoveLineEnd extends BaseMovement {
 
 @RegisterAction
 class MoveLineBegin extends BaseMovement {
-  keys = ["0"];
+  keys = [["0"],
+          ["<home>"],
+          ["<D-left>"]];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLineBegin();

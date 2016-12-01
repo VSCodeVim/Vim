@@ -72,9 +72,6 @@ export class Configuration {
   @overlapSetting({ codeName: "insertSpaces", default: false})
   expandtab: boolean | undefined = undefined;
 
-  @overlapSetting({ codeName: "cursorStyle", default: "block"})
-  cursorStyle: string = "block";
-
   @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: {true: "on", false: "off"}})
   number: boolean | undefined = undefined;
 
