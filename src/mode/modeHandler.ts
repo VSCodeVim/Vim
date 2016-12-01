@@ -177,7 +177,7 @@ export class VimState {
   /**
    * The mode Vim will be in once this action finishes.
    */
-  private _currentMode = ModeName.Normal;
+  private _currentMode: ModeName;
 
   public get currentMode(): number {
     return this._currentMode;
@@ -460,7 +460,11 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.historyTracker = new HistoryTracker();
     this.vimState.easyMotion = new EasyMotion();
 
-    this._vimState.currentMode = ModeName.Normal;
+    if (Configuration.getInstance().startInInsertMode) {
+      this._vimState.currentMode = ModeName.Insert;
+    } else {
+      this._vimState.currentMode = ModeName.Normal;
+    }
 
     this.setCurrentModeByName(this._vimState);
 

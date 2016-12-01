@@ -326,6 +326,10 @@
                     "type": "boolean",
                     "description": "Indent code automatically.",
                     "default": true
+                },
+                "vim.startInInsertMode": {
+                    "type": "boolean",
+                    "description": "Start in Insert Mode."
                 }
             }
         }

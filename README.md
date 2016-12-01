@@ -56,6 +56,9 @@ The following is a subset of the supported configurations; the full list is desc
     }]
     ```
 
+#### startInInsertMode
+  * Have VSCodeVim start in Insert Mode rather than Normal Mode.
+
 #### useCtrlKeys
   * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
