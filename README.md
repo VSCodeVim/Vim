@@ -18,7 +18,7 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 ## Supported Options
 
-The following is a subset of the supported configurations; the full list is described in [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
+The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
 
 #### insertModeKeyBindings/otherModesKeyBindings
   * Keybinding overrides to use for insert and other (non-insert) modes
