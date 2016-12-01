@@ -48,8 +48,18 @@
                 "when": "editorTextFocus && !inDebugRepl"
             },
             {
+                "key": "Home",
+                "command": "extension.vim_home",
+                "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+            },
+            {
                 "key": "End",
                 "command": "extension.vim_end",
+                "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+            },
+            {
+                "key": "cmd+left",
+                "command": "extension.vim_cmd+left",
                 "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
             },
             {
