@@ -1,5 +1,6 @@
 "use strict";
 
+import * as _ from "lodash";
 import * as vscode from 'vscode';
 import { Range } from './motion/range';
 import { Position } from './motion/position';
@@ -39,4 +40,10 @@ export async function wait(time: number): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(resolve, time);
   });
+}
+
+export function betterEscapeRegex(str: string): string {
+  let result = _.escapeRegExp(str);
+
+  return result.replace(/-/g, "\\-");
 }
