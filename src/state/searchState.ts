@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as _ from 'lodash';
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
 import { Configuration } from '../../src/configuration/configuration';
