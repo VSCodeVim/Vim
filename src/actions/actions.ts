@@ -3937,27 +3937,62 @@ class ActionVisualReflowParagraph extends BaseCommand {
   keys = ["g", "q"];
 
   public getIndentationLevel(s: string): number {
-    for (const line in s.split("\n")) {
+    for (const line of s.split("\n")) {
+      const result = line.match(/\s+/g);
+      const indentLevel = result ? result[0].length : 0;
 
+      if (indentLevel !== line.length) {
+        return indentLevel;
+      }
     }
 
     return 0;
   }
 
+  public reflowSingleLineComments(s: string, indentLevel: number, commentStyle: string): string {
+    let maximumLineLength = 80;
+    let textWithoutComments = "";
+    const indent = Array(indentLevel).join(" ");
+
+    for (const line of s.split("\n")) {
+      const match = /\s*\/\/(.*)/g.exec(line);
+
+      if (match.length < 2) { break; }
+
+      textWithoutComments += match[1];
+    }
+
+    const lines = [`${ indent }${ commentStyle }`];
+
+    for (const word of textWithoutComments.split(/\s+/)) {
+      if (word === "") { continue; }
+
+      if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
+        lines[lines.length - 1] += " " + word;
+      } else {
+        lines.push(`${ indent }${ commentStyle } ${ word }`);
+      }
+    }
+
+    return lines.join("\n");
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let textToReflow = TextEditor.getText(
-      new vscode.Range(vimState.cursorStartPosition.getLineBegin(),
-                       vimState.cursorPosition.getLineEnd())
-      );
+    const rangeStart = Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition);
+    const rangeStop  = Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition);
 
-
-
+    let textToReflow = TextEditor.getText(new vscode.Range(rangeStart, rangeStop));
+    let indentLevel = this.getIndentationLevel(textToReflow);
 
     textToReflow = textToReflow.trim();
 
+    if (textToReflow.startsWith("//")) {
+      textToReflow = this.reflowSingleLineComments(textToReflow, indentLevel, "//");
+    }
+
     vimState.recordedState.transformations.push({
       type: "replaceText",
-      text: textToReflow.toUpperCase(),
+      text: textToReflow,
       start: vimState.cursorStartPosition,
       end: vimState.cursorPosition,
     });
