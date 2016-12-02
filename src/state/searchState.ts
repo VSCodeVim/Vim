@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as _ from 'lodash';
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
 import { Configuration } from '../../src/configuration/configuration';
@@ -29,7 +30,7 @@ export class SearchState {
     return this._searchCursorStartPosition;
   }
 
-  private _matchesDocVersion: number;
+  private _cachedDocumentVersion: number;
   private _searchDirection: SearchDirection = SearchDirection.Forward;
   private isRegex: boolean;
 
@@ -47,12 +48,14 @@ export class SearchState {
 
   private _recalculateSearchRanges({ forceRecalc }: { forceRecalc?: boolean } = {}): void {
     const search = this.searchString;
+    const selection = vscode.window.activeTextEditor.selection;
+    const lineToStartAt = Math.min(selection.start.line, selection.end.line);
 
     if (search === "") { return; }
 
-    if (this._matchesDocVersion !== TextEditor.getDocumentVersion() || forceRecalc) {
+    if (this._cachedDocumentVersion !== TextEditor.getDocumentVersion() || forceRecalc) {
       // Calculate and store all matching ranges
-      this._matchesDocVersion = TextEditor.getDocumentVersion();
+      this._cachedDocumentVersion = TextEditor.getDocumentVersion();
       this._matchRanges = [];
 
       /*
@@ -83,8 +86,12 @@ export class SearchState {
         regex = new RegExp(searchRE, regexFlags);
       }
 
+      // Start at the current line and wrap the document if we hit the end.
       outer:
-      for (let lineIdx = 0; lineIdx < TextEditor.getLineCount(); lineIdx++) {
+      for (let lineIdx = lineToStartAt;
+           lineIdx !== lineToStartAt - 1;
+           lineIdx === TextEditor.getLineCount() - 1 ? lineIdx = 0 : lineIdx++) {
+
         const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
         let result = regex.exec(line);
 
@@ -105,6 +112,10 @@ export class SearchState {
           result = regex.exec(line);
         }
       }
+
+      this._matchRanges.sort((x, y) =>
+        x.start.line < y.start.line ||
+        x.start.line === y.start.line && x.start.character < y.start.character ? -1 : 1);
     }
   }
 
@@ -113,7 +124,7 @@ export class SearchState {
    *
    * Pass in -1 as direction to reverse the direction we search.
    */
-  public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean} {
+  public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean } {
     this._recalculateSearchRanges();
 
     if (this._matchRanges.length === 0) {
