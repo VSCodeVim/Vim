@@ -1518,7 +1518,7 @@ export class ModeHandler implements vscode.Disposable {
 
       rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
 
-      const { pos, match } =  searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+      const { pos, match } = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
 
       if (match) {
         rangesToDraw.push(new vscode.Range(

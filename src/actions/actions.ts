@@ -3932,6 +3932,41 @@ class ActionJoinVisualMode extends BaseCommand {
 }
 
 @RegisterAction
+class ActionVisualReflowParagraph extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "q"];
+
+  public getIndentationLevel(s: string): number {
+    for (const line in s.split("\n")) {
+
+    }
+
+    return 0;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let textToReflow = TextEditor.getText(
+      new vscode.Range(vimState.cursorStartPosition.getLineBegin(),
+                       vimState.cursorPosition.getLineEnd())
+      );
+
+
+
+
+    textToReflow = textToReflow.trim();
+
+    vimState.recordedState.transformations.push({
+      type: "replaceText",
+      text: textToReflow.toUpperCase(),
+      start: vimState.cursorStartPosition,
+      end: vimState.cursorPosition,
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class ActionJoinNoWhitespace extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["g", "J"];
