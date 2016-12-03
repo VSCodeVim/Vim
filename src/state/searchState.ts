@@ -85,12 +85,11 @@ export class SearchState {
         regex = new RegExp(searchRE, regexFlags);
       }
 
+      let lineIdx = lineToStartAt;
+
       // Start at the current line and wrap the document if we hit the end.
       outer:
-      for (let lineIdx = lineToStartAt;
-           lineIdx !== lineToStartAt - 1;
-           lineIdx === TextEditor.getLineCount() - 1 ? lineIdx = 0 : lineIdx++) {
-
+      do {
         const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
         let result = regex.exec(line);
 
@@ -110,7 +109,9 @@ export class SearchState {
 
           result = regex.exec(line);
         }
-      }
+
+        lineIdx === TextEditor.getLineCount() - 1 ? lineIdx = 0 : lineIdx++;
+      } while (lineIdx !== lineToStartAt);
 
       this._matchRanges.sort((x, y) =>
         x.start.line < y.start.line ||
