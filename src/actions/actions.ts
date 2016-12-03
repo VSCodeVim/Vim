@@ -3936,6 +3936,14 @@ class ActionVisualReflowParagraph extends BaseCommand {
   modes = [ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "q"];
 
+  public static CommentTypes = [
+    { singleLine: true, commentType: "//" },
+    { singleLine: true, commentType: "#" },
+
+    // Needs to come last, since everything starts with the emtpy string!
+    { singleLine: true, commentType: "" },
+  ];
+
   public getIndentationLevel(s: string): number {
     for (const line of s.split("\n")) {
       const result = line.match(/\s+/g);
@@ -3949,32 +3957,61 @@ class ActionVisualReflowParagraph extends BaseCommand {
     return 0;
   }
 
-  public reflowSingleLineComments(s: string, indentLevel: number, commentStyle: string): string {
+  public reflowSingleLineComments(s: string, indentLevel: number): string {
     let maximumLineLength = 80;
-    let textWithoutComments = "";
-    const indent = Array(indentLevel).join(" ");
+    const indent = Array(indentLevel + 1).join(" ");
+
+    // Chunk the lines in the string by their commenting style.
+
+    let chunksToReflow: {
+      commentType: string;
+      content: string;
+    }[] = [];
 
     for (const line of s.split("\n")) {
-      const match = /\s*\/\/(.*)/g.exec(line);
+      let commentType = "";
 
-      if (match.length < 2) { break; }
+      for (const { /* singleLine, */ commentType: type } of ActionVisualReflowParagraph.CommentTypes) {
+        if (line.trim().startsWith(type)) {
+          commentType = type;
 
-      textWithoutComments += match[1];
-    }
+          break;
+        }
+      }
 
-    const lines = [`${ indent }${ commentStyle }`];
+      const strippedLine = line.trim().substr(commentType.length);
 
-    for (const word of textWithoutComments.split(/\s+/)) {
-      if (word === "") { continue; }
-
-      if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-        lines[lines.length - 1] += " " + word;
+      if (chunksToReflow.length === 0 || chunksToReflow[chunksToReflow.length - 1].commentType !== commentType) {
+        chunksToReflow.push({
+          commentType,
+          content: strippedLine.trim()
+        });
       } else {
-        lines.push(`${ indent }${ commentStyle } ${ word }`);
+        chunksToReflow[chunksToReflow.length - 1].content += `\n${ strippedLine.trim() }`;
       }
     }
 
-    return lines.join("\n");
+    // Reflow each chunk.
+
+    let result: string[] = [];
+
+    for (const { commentType, content } of chunksToReflow) {
+      const lines = [`${ indent }${ commentType }`];
+
+      for (const word of content.split(/\s+/)) {
+        if (word === "") { continue; }
+
+        if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
+          lines[lines.length - 1] += " " + word;
+        } else {
+          lines.push(`${ indent }${ commentType } ${ word }`);
+        }
+      }
+
+      result = result.concat(lines);
+    }
+
+    return result.join("\n");
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3984,11 +4021,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
     let textToReflow = TextEditor.getText(new vscode.Range(rangeStart, rangeStop));
     let indentLevel = this.getIndentationLevel(textToReflow);
 
-    textToReflow = textToReflow.trim();
-
-    if (textToReflow.startsWith("//")) {
-      textToReflow = this.reflowSingleLineComments(textToReflow, indentLevel, "//");
-    }
+    textToReflow = this.reflowSingleLineComments(textToReflow, indentLevel);
 
     vimState.recordedState.transformations.push({
       type: "replaceText",
