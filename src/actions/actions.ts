@@ -3956,6 +3956,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
     { singleLine: true, start: "//" },
     { singleLine: true, start: "#" },
     { singleLine: false, start: "/**", inner: "*", final: "*/" },
+    { singleLine: false, start: "/*", inner: "*", final: "*/" },
 
     // Needs to come last, since everything starts with the emtpy string!
     { singleLine: true, start: "" },
@@ -3974,7 +3975,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
     return 0;
   }
 
-  public reflowSingleLineComments(s: string, indentLevel: number): string {
+  public reflowParagraph(s: string, indentLevel: number): string {
     let maximumLineLength = 80;
     const indent = Array(indentLevel + 1).join(" ");
 
@@ -4034,7 +4035,6 @@ class ActionVisualReflowParagraph extends BaseCommand {
     }
 
     // Reflow each chunk.
-
     let result: string[] = [];
 
     for (const { commentType, content } of chunksToReflow) {
@@ -4049,19 +4049,36 @@ class ActionVisualReflowParagraph extends BaseCommand {
         ];
       }
 
-      for (const word of content.split(/\s+/)) {
-        if (word === "") { continue; }
+      for (const line of content.trim().split("\n")) {
 
-        if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-          lines[lines.length - 1] += " " + word;
+        // Preserve newlines.
+        if (line.trim() === "") {
+          for (let i = 0; i < 2; i++) {
+            if (commentType.singleLine) {
+              lines.push(`${ indent }${ commentType.start }`);
+            } else {
+              lines.push(`${ indent } ${ commentType.inner }`);
+            }
+          }
 
           continue;
         }
 
-        if (commentType.singleLine) {
-          lines.push(`${ indent }${ commentType.start } ${ word }`);
-        } else {
-          lines.push(`${ indent } ${ commentType.inner } ${ word }`);
+        // Add word by word, wrapping when necessary.
+        for (const word of line.split(/\s+/)) {
+          if (word === "") { continue; }
+
+          if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
+            lines[lines.length - 1] += " " + word;
+
+            continue;
+          }
+
+          if (commentType.singleLine) {
+            lines.push(`${ indent }${ commentType.start } ${ word }`);
+          } else {
+            lines.push(`${ indent } ${ commentType.inner } ${ word }`);
+          }
         }
       }
 
@@ -4082,7 +4099,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
     let textToReflow = TextEditor.getText(new vscode.Range(rangeStart, rangeStop));
     let indentLevel = this.getIndentationLevel(textToReflow);
 
-    textToReflow = this.reflowSingleLineComments(textToReflow, indentLevel);
+    textToReflow = this.reflowParagraph(textToReflow, indentLevel);
 
     vimState.recordedState.transformations.push({
       type: "replaceText",
