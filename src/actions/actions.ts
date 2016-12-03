@@ -3931,17 +3931,34 @@ class ActionJoinVisualMode extends BaseCommand {
   }
 }
 
+interface CommentTypeSingle {
+  singleLine: true;
+
+  start: string;
+}
+
+interface CommentTypeMultiLine {
+  singleLine: false;
+
+  start: string;
+  inner: string;
+  final: string;
+}
+
+type CommentType = CommentTypeSingle | CommentTypeMultiLine;
+
 @RegisterAction
 class ActionVisualReflowParagraph extends BaseCommand {
   modes = [ModeName.Visual, ModeName.VisualLine];
   keys = ["g", "q"];
 
-  public static CommentTypes = [
-    { singleLine: true, commentType: "//" },
-    { singleLine: true, commentType: "#" },
+  public static CommentTypes: CommentType[] = [
+    { singleLine: true, start: "//" },
+    { singleLine: true, start: "#" },
+    { singleLine: false, start: "/**", inner: "*", final: "*/" },
 
     // Needs to come last, since everything starts with the emtpy string!
-    { singleLine: true, commentType: "" },
+    { singleLine: true, start: "" },
   ];
 
   public getIndentationLevel(s: string): number {
@@ -3961,34 +3978,59 @@ class ActionVisualReflowParagraph extends BaseCommand {
     let maximumLineLength = 80;
     const indent = Array(indentLevel + 1).join(" ");
 
-    // Chunk the lines in the string by their commenting style.
+    // Chunk the lines by commenting style.
 
     let chunksToReflow: {
-      commentType: string;
+      commentType: CommentType;
       content: string;
     }[] = [];
 
     for (const line of s.split("\n")) {
-      let commentType = "";
+      const lastChunk: { commentType: CommentType; content: string} | undefined = chunksToReflow[chunksToReflow.length - 1];
+      const trimmedLine = line.trim();
 
-      for (const { /* singleLine, */ commentType: type } of ActionVisualReflowParagraph.CommentTypes) {
-        if (line.trim().startsWith(type)) {
+      // See if the last comment type we were in continues to the next line
+
+      let leadingComment: string | undefined;
+
+      if (lastChunk) {
+        if (lastChunk.commentType.singleLine) { // is it a continuation of a comment like "//"
+          lastChunk.content += `\n${ trimmedLine.substr(lastChunk.commentType.start.length).trim() }`;
+
+          continue;
+        } else { // are we in the middle of a comment like "/*"
+          if (trimmedLine.endsWith(lastChunk.commentType.final)) {
+            leadingComment = lastChunk.commentType.final;
+
+            continue;
+          } else if (trimmedLine.startsWith(lastChunk.commentType.inner)) {
+            lastChunk.content += `\n${ trimmedLine.substr(lastChunk.commentType.inner.length).trim() }`;
+
+            continue;
+          }
+        }
+      }
+
+      // They have started a new type of comment type. Figure out which one.
+
+      let commentType: CommentType | undefined = undefined;
+
+      for (const type of ActionVisualReflowParagraph.CommentTypes) {
+        if (line.trim().startsWith(type.start)) {
           commentType = type;
 
           break;
         }
       }
 
-      const strippedLine = line.trim().substr(commentType.length);
-
-      if (chunksToReflow.length === 0 || chunksToReflow[chunksToReflow.length - 1].commentType !== commentType) {
-        chunksToReflow.push({
-          commentType,
-          content: strippedLine.trim()
-        });
-      } else {
-        chunksToReflow[chunksToReflow.length - 1].content += `\n${ strippedLine.trim() }`;
+      if (!commentType) {
+        continue;
       }
+
+      chunksToReflow.push({
+        commentType,
+        content: line.trim().substr(commentType.start.length).trim()
+      });
     }
 
     // Reflow each chunk.
@@ -3996,16 +4038,35 @@ class ActionVisualReflowParagraph extends BaseCommand {
     let result: string[] = [];
 
     for (const { commentType, content } of chunksToReflow) {
-      const lines = [`${ indent }${ commentType }`];
+      let lines: string[];
+
+      if (commentType.singleLine) {
+        lines = [`${ indent }${ commentType.start }`];
+      } else {
+        lines = [
+          `${ indent }${ commentType.start }`,
+          `${ indent } ${ commentType.inner }`,
+        ];
+      }
 
       for (const word of content.split(/\s+/)) {
         if (word === "") { continue; }
 
         if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
           lines[lines.length - 1] += " " + word;
-        } else {
-          lines.push(`${ indent }${ commentType } ${ word }`);
+
+          continue;
         }
+
+        if (commentType.singleLine) {
+          lines.push(`${ indent }${ commentType.start } ${ word }`);
+        } else {
+          lines.push(`${ indent } ${ commentType.inner } ${ word }`);
+        }
+      }
+
+      if (!commentType.singleLine) {
+        lines.push(`${ indent } ${ commentType.final }`);
       }
 
       result = result.concat(lines);
