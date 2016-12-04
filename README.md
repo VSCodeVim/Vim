@@ -135,6 +135,10 @@ Bind `ZZ` to save and close the current file:
   * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
 
+#### showcmd
+  * Show the text of any command you are in the middle of writing.
+  * Type: Boolean (Default: `true`)
+
 #### textwidth
   * Width to word-wrap to when using `gq`.
   * Type: number (Default: `80`)

@@ -297,6 +297,11 @@
           "description": "Number of lines to scroll with CTRL-U and CTRL-D commands.",
           "default": 20
         },
+        "vim.showcmd": {
+          "type": "boolean",
+          "description": "Show the text of any command you are in the middle of writing.",
+          "default": true
+        },
         "vim.iskeyword": {
           "type": "string",
           "description": "keywords contain alphanumeric characters and '_'",

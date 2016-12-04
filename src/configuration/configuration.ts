@@ -65,6 +65,7 @@ export class Configuration {
   smartcase = true;
   autoindent = true;
   easymotion = false;
+  showcmd = true;
   incsearch = true;
   startInInsertMode = false;
 

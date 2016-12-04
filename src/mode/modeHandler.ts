@@ -260,10 +260,15 @@ export class VimState {
  *   * delete operator
  */
 export class RecordedState {
-constructor() {
+  constructor() {
     const useClipboard = Configuration.getInstance().useSystemClipboard;
     this.registerName = useClipboard ? '*' : '"';
   }
+
+  /**
+   * The exact keys that the used entered. Used for showcmd.
+   */
+  public commandString = "";
 
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
@@ -367,16 +372,6 @@ constructor() {
     return this.operator  === undefined &&
          this.actionsRun.length === 0   &&
          this.count     === 1;
-  }
-
-  public toString(): string {
-    let res = "";
-
-    for (const action of this.actionsRun) {
-      res += action!.toString();
-    }
-
-    return res;
   }
 }
 
@@ -669,10 +664,13 @@ export class ModeHandler implements vscode.Disposable {
       await getAndUpdateModeHandler();
     }
 
+    this._renderStatusBar();
+
     return true;
   }
 
   async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
+
     // Catch any text change not triggered by us (example: tab completion).
     vimState.historyTracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
 
@@ -683,10 +681,15 @@ export class ModeHandler implements vscode.Disposable {
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
+    vimState.recordedState.commandString += key;
+
     if (result === KeypressState.NoPossibleMatch) {
       vimState.recordedState = new RecordedState();
+      vimState.recordedState.commandString = "";
+
       return vimState;
     } else if (result === KeypressState.WaitingOnKeys) {
+
       return vimState;
     }
 
@@ -815,6 +818,10 @@ export class ModeHandler implements vscode.Disposable {
       if (vimState.currentMode === ModeName.Normal) {
         ranRepeatableAction = true;
       }
+    }
+
+    if (ranAction) {
+      vimState.recordedState.commandString = "";
     }
 
     ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) || this.createUndoPointForBrackets(vimState);
@@ -1545,21 +1552,27 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
-      this.setupStatusBarItem(`Searching for: ${ this.vimState.searchState!.searchString }`);
+      this.setStatusBarText(`Searching for: ${ this.vimState.searchState!.searchString }`);
     } else if (this.currentMode.name === ModeName.EasyMotionMode) {
       // Update all EasyMotion decorations
       this._vimState.easyMotion.updateDecorations();
 
-      this.setupStatusBarItem(`Current depth: ${ this.vimState.easyMotion.accumulation }`);
+      this.setStatusBarText(`Current depth: ${ this.vimState.easyMotion.accumulation }`);
     } else {
-      this.setupStatusBarItem(
-        `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''} -- ` +
-        `${this._vimState.isRecordingMacro ? 'Recording @' + this._vimState.recordedMacro.registerName : ''}`);
+      this._renderStatusBar();
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
+  }
+
+  private _renderStatusBar(): void {
+      const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''} --`;
+      const macroText = ` ${this._vimState.isRecordingMacro ? 'Recording @' + this._vimState.recordedMacro.registerName : ''}`;
+      const currentCommandText = ` ${ this._vimState.recordedState.commandString }`;
+
+      this.setStatusBarText(`${ modeText }${ currentCommandText}${ macroText }`);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
@@ -1568,7 +1581,10 @@ export class ModeHandler implements vscode.Disposable {
     }
   }
 
-  setupStatusBarItem(text: string): void {
+  /**
+   * Set the text in the status bar on the bottom of the screen.
+   */
+  setStatusBarText(text: string): void {
     if (!ModeHandler._statusBarItem) {
       ModeHandler._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     }
