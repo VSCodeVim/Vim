@@ -18,6 +18,11 @@ export class AngleBracketNotation {
       key = `<${ key.toLocaleLowerCase() }>`;
     }
 
+    // We special case this one (because we don't handle it correctly...)
+    if (key.toLowerCase() === "<space>") {
+      return " ";
+    }
+
     for (const notationMapKey in this._notationMap) {
       if (this._notationMap.hasOwnProperty(notationMapKey)) {
         const regex = new RegExp(this._notationMap[notationMapKey].join('|'), 'gi');
