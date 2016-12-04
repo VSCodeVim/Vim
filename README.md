@@ -4,7 +4,7 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 
 * Modes (normal, insert, command, visual, visual line, visual block)
 * Command combinations (`c3w`, `daw`, `2dd`, etc)
-* Command remapping (jj to esc)
+* Highly versatile command remapping (`jj` to esc, `:` to command panel, etc.)
 * Incremental search with `/` and `?`
 * Marks
 * Vim settings (like .vimrc)
@@ -21,28 +21,55 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
 
 #### insertModeKeyBindings/otherModesKeyBindings
-  * Keybinding overrides to use for insert and other (non-insert) modes
-  * *Example:* Bind `jj` to `<Esc>` while in insert mode
+  * Keybinding overrides to use for insert and other (non-insert) modes.
+  
+##### Examples of the above
 
-    ```
-      "vim.insertModeKeyBindings": [
-           {
-               "before": ["j", "j"],
-               "after": ["<Esc>"]
-           }
-      ]
-    ```
+Bind `jj` to `<Esc>` in insert mode:
 
-    Similarly for `otherModesKeyBindings`, bind `jj` to `<Esc>` for modes which are not insert mode
+```
+  "vim.insertModeKeyBindings": [
+       {
+           "before": ["j", "j"],
+           "after": ["<Esc>"]
+       }
+  ]
+```
+Bind `:` to show the command palette:
 
-    ```
-      "vim.otherModesKeyBindings": [
-           {
-               "before": ["j", "j"],
-               "after": ["<Esc>"]
-           }
-      ]
-    ```
+```
+{
+    "before": [":"],
+    "commands": [
+        {
+            "command": "workbench.action.showCommands",
+            "args": []
+        }
+    ]
+}
+```
+
+Bind `ZZ` to save and close the current file:
+
+```
+    "vim.otherModesKeyBindingsNonRecursive": [
+        {
+            "before": ["Z", "Z"],
+            "commands": [
+                {
+                    "command": "workbench.action.files.save",
+                    "args": []
+                },
+                {
+                    "command": "workbench.action.closeActiveEditor",
+                    "args": []
+                }
+            ]
+        }
+    ]
+````
+
+    
 
 #### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
   * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
