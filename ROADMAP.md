@@ -358,7 +358,7 @@ Status | Command | Description
 :white_check_mark:    | :1234:  <<	|	move N lines one shiftwidth left
 :white_check_mark:    | :1234:  >{motion}	|  move the lines that are moved over with {motion} one shiftwidth right
 :white_check_mark:    | :1234:  >>	|	move N lines one shiftwidth right
-:arrow_down:| :1234:  gq{motion}|	format the lines that are moved over with {motion} to 'textwidth' length
+:white_check_mark:| :1234:  gq{motion}|	format the lines that are moved over with {motion} to 'textwidth' length
 :arrow_down:| :[range]ce[nter] [width] | center the lines in [range]
 :arrow_down:| :[range]le[ft] [indent]  | left-align the lines in [range] (with [indent])
 :arrow_down:| :[ranee]ri[ght] [width]  | right-align the lines in [range]
