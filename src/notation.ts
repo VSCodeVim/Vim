@@ -18,9 +18,13 @@ export class AngleBracketNotation {
       key = `<${ key.toLocaleLowerCase() }>`;
     }
 
-    // We special case this one (because we don't handle it correctly...)
+    // Special cases that we handle incorrectly (internally)
     if (key.toLowerCase() === "<space>") {
       return " ";
+    }
+
+    if (key.toLowerCase() === "<cr>") {
+      return "\n";
     }
 
     for (const notationMapKey in this._notationMap) {
