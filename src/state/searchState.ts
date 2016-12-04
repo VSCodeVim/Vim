@@ -63,9 +63,9 @@ export class SearchState {
        * If ignorecase is true, the search should be case insensitive.
        * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
        */
-      let ignorecase = Configuration.getInstance().ignorecase;
+      let ignorecase = Configuration.ignorecase;
 
-      if (ignorecase && Configuration.getInstance().smartcase && /[A-Z]/.test(search)) {
+      if (ignorecase && Configuration.smartcase && /[A-Z]/.test(search)) {
         ignorecase = false;
       }
 

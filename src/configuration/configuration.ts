@@ -29,8 +29,8 @@ export type ValueMapping = {
  * 4. VSCodeVim flavored Vim option default values
  *
  */
-export class Configuration {
-  private static _instance: Configuration | null;
+class ConfigurationClass {
+  private static _instance: ConfigurationClass | null;
 
   constructor() {
     /**
@@ -47,12 +47,12 @@ export class Configuration {
     }
   }
 
-  public static getInstance(): Configuration {
-    if (Configuration._instance == null) {
-      Configuration._instance = new Configuration();
+  public static getInstance(): ConfigurationClass {
+    if (ConfigurationClass._instance == null) {
+      ConfigurationClass._instance = new ConfigurationClass();
     }
 
-    return Configuration._instance;
+    return ConfigurationClass._instance;
   }
 
   useSolidBlockCursor = false;
@@ -129,3 +129,5 @@ function overlapSetting(args: {codeName: string, default: OptionValue, codeValue
     });
   };
 }
+
+export const Configuration = ConfigurationClass.getInstance();

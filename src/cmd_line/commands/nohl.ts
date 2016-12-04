@@ -19,6 +19,6 @@ export class NohlCommand extends node.CommandBase {
   }
 
   async execute(): Promise<void> {
-    Configuration.getInstance().hl = false;
+    Configuration.hl = false;
   }
 }

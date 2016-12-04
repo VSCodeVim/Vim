@@ -1083,7 +1083,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalText = TextEditor.getLineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
-    const tabSize = Configuration.getInstance().tabstop;
+    const tabSize = Configuration.tabstop;
     const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
     await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
       TextEditor.setIndentationLevel(originalText, newIndentationWidth));
@@ -1110,7 +1110,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
       return vimState;
     }
 
-    const tabSize = Configuration.getInstance().tabstop;
+    const tabSize = Configuration.tabstop;
     const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
     await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
       TextEditor.setIndentationLevel(originalText, newIndentationWidth < 0 ? 0 : newIndentationWidth));
@@ -1634,7 +1634,7 @@ export class CommandSearchForwards extends BaseCommand {
     vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
 
-    Configuration.getInstance().hl = true;
+    Configuration.hl = true;
 
     return vimState;
   }
@@ -1650,7 +1650,7 @@ export class CommandSearchBackwards extends BaseCommand {
     vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
 
-    Configuration.getInstance().hl = true;
+    Configuration.hl = true;
 
     return vimState;
   }
@@ -3977,7 +3977,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
   }
 
   public reflowParagraph(s: string, indentLevel: number): string {
-    const maximumLineLength = Configuration.getInstance().textwidth - indentLevel - 2;
+    const maximumLineLength = Configuration.textwidth - indentLevel - 2;
     const indent = Array(indentLevel + 1).join(" ");
 
     // Chunk the lines by commenting style.
@@ -5822,7 +5822,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Only execute the action if the configuration is set
-    if (!Configuration.getInstance().easymotion) {
+    if (!Configuration.easymotion) {
       return vimState;
     }
 

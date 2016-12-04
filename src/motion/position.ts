@@ -99,7 +99,7 @@ export class PositionDiff {
 }
 
 export class Position extends vscode.Position {
-  private static NonWordCharacters = Configuration.getInstance().iskeyword!;
+  private static NonWordCharacters = Configuration.iskeyword!;
   private static NonBigWordCharacters = "";
   private static NonFileCharacters = "\"'`;<>{}[]()";
 
@@ -607,7 +607,7 @@ export class Position extends vscode.Position {
    * is disabled.
    */
   public getLineBeginRespectingIndent(): Position {
-    if (!Configuration.getInstance().autoindent) {
+    if (!Configuration.autoindent) {
       return this.getLineBegin();
     }
     return this.getFirstLineNonBlankChar();

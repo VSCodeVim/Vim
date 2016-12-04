@@ -261,7 +261,7 @@ export class VimState {
  */
 export class RecordedState {
   constructor() {
-    const useClipboard = Configuration.getInstance().useSystemClipboard;
+    const useClipboard = Configuration.useSystemClipboard;
     this.registerName = useClipboard ? '*' : '"';
   }
 
@@ -455,7 +455,7 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.historyTracker = new HistoryTracker();
     this.vimState.easyMotion = new EasyMotion();
 
-    if (Configuration.getInstance().startInInsertMode) {
+    if (Configuration.startInInsertMode) {
       this._vimState.currentMode = ModeName.Insert;
     } else {
       this._vimState.currentMode = ModeName.Normal;
@@ -1476,7 +1476,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    if (Configuration.getInstance().useSolidBlockCursor) {
+    if (Configuration.useSolidBlockCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
         for (const { stop: cursorStop } of vimState.allCursors) {
           rangesToDraw.push(new vscode.Range(cursorStop, cursorStop.getRight()));
@@ -1522,8 +1522,8 @@ export class ModeHandler implements vscode.Disposable {
     // Draw search highlight
 
     if (
-      (Configuration.getInstance().incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
-      ((Configuration.getInstance().hlsearch && Configuration.getInstance().hl) && vimState.searchState)) {
+      (Configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
+      ((Configuration.hlsearch && Configuration.hl) && vimState.searchState)) {
 
       const searchState = vimState.searchState!;
 
@@ -1563,7 +1563,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
-    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.getInstance().useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 
