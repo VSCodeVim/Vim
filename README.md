@@ -54,6 +54,7 @@ Bind `:` to show the command palette:
 "vim.otherModesKeyBindingsNonRecursive": [
    {
        "before": [":"],
+       "after": [],
        "commands": [
            {
                "command": "workbench.action.showCommands",
@@ -70,6 +71,7 @@ Bind `ZZ` to save and close the current file:
     "vim.otherModesKeyBindingsNonRecursive": [
         {
             "before": ["Z", "Z"],
+            "after": [],
             "commands": [
                 {
                     "command": "workbench.action.files.save",
