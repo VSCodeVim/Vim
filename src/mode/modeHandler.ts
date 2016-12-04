@@ -1474,6 +1474,10 @@ export class ModeHandler implements vscode.Disposable {
         for (const { stop: cursorStop } of vimState.allCursors) {
           rangesToDraw.push(new vscode.Range(cursorStop, cursorStop.getRight()));
         }
+
+        await vscode.workspace.getConfiguration("editor").update("cursorBlinking", "solid", true);
+      } else {
+        await vscode.workspace.getConfiguration("editor").update("cursorBlinking", "blink", true);
       }
     } else {
       // Use native block cursor if possible.
