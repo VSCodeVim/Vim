@@ -5581,14 +5581,19 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 abstract class IncrementDecrementNumberAction extends BaseCommand {
   modes = [ModeName.Normal];
   canBeRepeatedWithDot = true;
-
   offset: number;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const text = TextEditor.getLineAt(position).text;
 
-    for (let { start, end, word } of Position.IterateWords(position.getWordLeft(true))) {
-      // '-' doesn't count as a word, but is important to include in parsing the number
+    // Start looking to the right for the next word to increment, unless we're
+    // already on a word to increment, in which case start at the beginning of
+    // that word.
+    const whereToStart = text[position.character].match(/\s/) ? position : position.getWordLeft(true);
+
+    for (let { start, end, word } of Position.IterateWords(whereToStart)) {
+      // '-' doesn't count as a word, but is important to include in parsing
+      // the number
       if (text[start.character - 1] === '-') {
         start = start.getLeft();
         word = text[start.character] + word;

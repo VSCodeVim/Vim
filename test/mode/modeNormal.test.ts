@@ -1182,6 +1182,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can ctrl-a the right word (always the one AFTER the cursor)",
+      start: ["1 |one 2"],
+      keysPressed: "<C-a>",
+      end: ["1 one |3"]
+    });
+
+    newTest({
       title: "can ctrl-a on word",
       start: ["one -|11"],
       keysPressed: "<C-a>",
@@ -1221,6 +1228,13 @@ suite("Mode Normal", () => {
       start: ["07|"],
       keysPressed: "<C-a>",
       end: ["01|0"]
+    });
+
+    newTest({
+      title: "Correctly increments in the middle of a number",
+      start: ["10|1"],
+      keysPressed: "<C-a>",
+      end: ["10|2"]
     });
 
     newTest({
