@@ -68,16 +68,17 @@ class Remapper {
         // If we remapped e.g. jj to esc, we have to revert the inserted "jj"
 
         if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
-          // Revert every single inserted character. This is actually a bit of a
-          // hack since we aren't guaranteed that each insertion inserted only a
-          // single character.
+          // Revert every single inserted character. This is actually a bit of
+          // a hack since we aren't guaranteed that each insertion inserted
+          // only a single character.
 
           // We subtract 1 because we haven't actually applied the last key.
 
-          // TODO(johnfn) - study - actions need to be paired up with text changes...
-          // this is a complicated problem.
+          // TODO(johnfn) - study - actions need to be paired up with text
+          // changes... this is a complicated problem.
 
-          // Update most recent keys to be the correct length based on the remap length
+          // Update most recent keys to be the correct length based on the
+          // remap length
           if (remapping.before.length < longestKeySequence) {
             this._mostRecentKeys = this._mostRecentKeys.slice(longestKeySequence - remapping.before.length);
           }
@@ -89,6 +90,11 @@ class Remapper {
         if (!this._recursive) {
           vimState.isCurrentlyPreformingRemapping = true;
         }
+
+        // We need to remove the keys that were remapped into different keys
+        // from the state.
+        const numToRemove = remapping.before.length - 1;
+        vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(0, -numToRemove);
 
         if (remapping.after) {
           await modeHandler.handleMultipleKeyEvents(remapping.after);
