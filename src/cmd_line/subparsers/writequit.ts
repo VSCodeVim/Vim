@@ -31,7 +31,7 @@ export function parseWriteQuitCommandArgs(args : string) : WriteQuitCommand {
         scanner.ignore();
         while (!scanner.isAtEof) {
           let c = scanner.next();
-          if (c !== ' ' || c !== '\t') {
+          if (c !== ' ' && c !== '\t') {
             continue;
           }
           scanner.backup();

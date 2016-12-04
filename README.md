@@ -106,6 +106,10 @@ The following is a subset of the supported configurations; the full list is desc
   * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
 
+#### textwidth
+  * Width to word-wrap to when using `gq`.
+  * Type: number (Default: `80`)
+
 ## Configure
 
 Vim options are loaded in the following sequence:

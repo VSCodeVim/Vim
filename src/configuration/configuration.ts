@@ -59,6 +59,7 @@ export class Configuration {
   useSystemClipboard = false;
   useCtrlKeys = false;
   scroll = 20;
+  textwidth = 80;
   hlsearch = false;
   ignorecase = true;
   smartcase = true;
