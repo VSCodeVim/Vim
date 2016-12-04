@@ -17,6 +17,8 @@ export class TagMatcher {
 
     // If we found the closing tag, keep searching back for the opening tag
     if (corpus[opening + 1] === TagMatcher.closeSlash) {
+      position = opening;
+
       opening = corpus.lastIndexOf(TagMatcher.openTag, opening - 1);
       if (opening === -1) {
         return;

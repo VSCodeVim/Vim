@@ -5648,11 +5648,19 @@ abstract class MoveTagMatch extends BaseMovement {
     const start = tagMatcher.findOpening(this.includeTag);
     const end = tagMatcher.findClosing(this.includeTag);
 
-    if (start === undefined || end === undefined || end === start) {
+    if (start === undefined || end === undefined) {
       return {
         start: position,
         stop: position,
         failed: true
+      };
+    }
+
+    if (end === start) {
+      return {
+        start:  new Position(position.line, start),
+        stop:   new Position(position.line, start),
+        failed: true,
       };
     }
 
