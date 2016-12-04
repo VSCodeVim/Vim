@@ -107,6 +107,11 @@ class ConfigurationClass {
   easymotion = false;
 
   /**
+   * Timeout in milliseconds for remapped commands.
+   */
+  timeout = 1000;
+
+  /**
    * Display partial commands on status bar?
    */
   showcmd = true;

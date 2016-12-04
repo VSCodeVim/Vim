@@ -287,6 +287,11 @@
           "description": "Width to word-wrap to when using gq.",
           "default": 80
         },
+        "vim.timeout": {
+          "type": "number",
+          "description": "Timeout in milliseconds for remapped commands",
+          "default": 1000
+        },
         "vim.useSolidBlockCursor": {
           "type": "boolean",
           "description": "Use a non blinking block cursor.",

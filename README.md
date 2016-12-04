@@ -86,7 +86,7 @@ Bind `ZZ` to save and close the current file:
     ]
 ````
 
-    
+
 
 #### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
   * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
@@ -134,6 +134,10 @@ Bind `ZZ` to save and close the current file:
 #### autoindent
   * Copy indent from current line when starting a new line
   * Type: Boolean (Default: `true`)
+
+#### timeout
+  * Timeout in milliseconds for remapped commands
+  * Type: Number (Default: `1000`)
 
 #### showcmd
   * Show the text of any command you are in the middle of writing.

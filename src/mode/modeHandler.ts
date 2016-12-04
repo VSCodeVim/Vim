@@ -75,6 +75,11 @@ export class VimState {
   public easyMotion: EasyMotion;
 
   /**
+   * For timing out remapped keys like jj to esc.
+   */
+  public lastKeyPressedTimestamp = 0;
+
+  /**
    * Are multiple cursors currently present?
    */
   public isMultiCursor = false;
@@ -638,12 +643,14 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   async handleKeyEvent(key: string): Promise<Boolean> {
+    const now = Number(new Date());
+
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
 
     try {
       let handled = false;
 
-      if (!this._vimState.isCurrentlyPreformingRemapping) {
+      if (!this._vimState.isCurrentlyPreformingRemapping && now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout) {
         // Non-recursive remapping do not allow for further mappings
         handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
         handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
@@ -664,6 +671,7 @@ export class ModeHandler implements vscode.Disposable {
       await getAndUpdateModeHandler();
     }
 
+    this._vimState.lastKeyPressedTimestamp = now;
     this._renderStatusBar();
 
     return true;
