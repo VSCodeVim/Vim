@@ -70,6 +70,9 @@ class ConfigurationClass {
   incsearch = true;
   startInInsertMode = false;
 
+  /**
+   * The width of a tab character in spaces.
+   */
   @overlapSetting({ codeName: "tabSize", default: 8})
   tabstop: number | undefined = undefined;
 

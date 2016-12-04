@@ -405,6 +405,62 @@ export class Position extends vscode.Position {
   }
 
   /**
+   * Get the position of the line directly below the current line. The resulting
+   * position will be tabstop and whitespace aware, so that if you've mixed the two,
+   * it will still end up at the right place.
+   */
+  public getDownWhileObservingTabstops(desiredColumn: number): {
+    newPosition: Position;
+    newDesiredColumn: number;
+  } {
+    if (this.getDocumentEnd().line !== this.line) {
+      const nextLine = this.line + 1;
+      const nextLineLength = Position.getLineLength(nextLine);
+      const tabstop = Configuration.getInstance().tabstop;
+
+      const thisLineStr = TextEditor.getLineAt(this).text;
+      const nextLineStr = TextEditor.getLineAt(this.getNextLineBegin()).text;
+
+      const tabsInThisLine = thisLineStr.split("\t").length - 1;
+      const tabsInNextLine = nextLineStr.split("\t").length - 1;
+
+      const thisLineLenSpaceNormalized = thisLineStr.length - tabsInThisLine + tabsInThisLine * tabstop;
+      const nextLineLenSpaceNormalized = nextLineStr.length - tabsInNextLine + tabsInNextLine * tabstop;
+
+      let result = 0;
+
+      let iTabSpacesLeft = 0;
+      let jTabSpacesLeft = 0;
+
+      for (let i = 0, j = 0; i < thisLineLenSpaceNormalized && j < nextLineLenSpaceNormalized;) {
+        if (i === desiredColumn) {
+          result = j;
+          break;
+        }
+
+        if (thisLineStr[i] === "\t" && iTabSpacesLeft === 0) { iTabSpacesLeft = tabstop!; }
+        if (nextLineStr[j] === "\t" && jTabSpacesLeft === 0) { jTabSpacesLeft = tabstop!; }
+
+        if (iTabSpacesLeft > 0) { iTabSpacesLeft--; }
+        if (iTabSpacesLeft === 0) { i++; }
+
+        if (jTabSpacesLeft > 0) { jTabSpacesLeft--; }
+        if (jTabSpacesLeft === 0) { j++; }
+      }
+
+      return {
+        newPosition: new Position(nextLine, Math.min(nextLineLength, result)),
+        newDesiredColumn: result,
+      };
+    }
+
+    return {
+      newPosition: this,
+      newDesiredColumn: desiredColumn,
+    };
+  }
+
+  /**
    * Get the position of the line directly above the current line.
    */
   public getUp(desiredColumn: number) : Position {
