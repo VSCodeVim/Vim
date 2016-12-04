@@ -1634,6 +1634,8 @@ export class CommandSearchForwards extends BaseCommand {
     vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
 
+    Configuration.getInstance().hl = true;
+
     return vimState;
   }
 }
@@ -1647,6 +1649,8 @@ export class CommandSearchBackwards extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
+
+    Configuration.getInstance().hl = true;
 
     return vimState;
   }

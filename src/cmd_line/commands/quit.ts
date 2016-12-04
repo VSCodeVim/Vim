@@ -20,7 +20,6 @@ export class QuitCommand extends node.CommandBase {
   constructor(args : IQuitCommandArguments) {
     super();
     this._name = 'quit';
-    this._shortName = 'q';
     this._arguments = args;
   }
 

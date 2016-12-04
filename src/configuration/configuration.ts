@@ -61,6 +61,7 @@ export class Configuration {
   scroll = 20;
   textwidth = 80;
   hlsearch = false;
+  hl = true;
   ignorecase = true;
   smartcase = true;
   autoindent = true;

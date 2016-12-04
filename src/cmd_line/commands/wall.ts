@@ -19,7 +19,6 @@ export class WallCommand extends node.CommandBase {
     super();
 
     this._name = 'wall';
-    this._shortName = 'wa';
     this._arguments = args;
   }
 
