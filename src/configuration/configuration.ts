@@ -55,30 +55,90 @@ class ConfigurationClass {
     return ConfigurationClass._instance;
   }
 
+  /**
+   * Should the block cursor not blink?
+   */
   useSolidBlockCursor = false;
+
+  /**
+   * Use the system's clipboard when copying.
+   */
   useSystemClipboard = false;
+
+  /**
+   * Enable ctrl- actions that would override existing VSCode actions.
+   */
   useCtrlKeys = false;
-  scroll = 20;
+
+  /**
+   * Width in characters to word-wrap to.
+   */
   textwidth = 80;
+
+  /**
+   * Should we highlight incremental search matches?
+   */
   hlsearch = false;
+
+  /**
+   * Used internally for nohl.
+   */
   hl = true;
+
+  /**
+   * Ignore case when searching with / or ?.
+   */
   ignorecase = true;
+
+  /**
+   * In / or ?, default to ignorecase=true unless the user types a capital
+   * letter.
+   */
   smartcase = true;
+
+  /**
+   * Indent automatically?
+   */
   autoindent = true;
+
+  /**
+   * Use EasyMotion plugin?
+   */
   easymotion = false;
+
+  /**
+   * Display partial commands on status bar?
+   */
   showcmd = true;
+
+  /**
+   * Show results of / or ? search as user is typing?
+   */
   incsearch = true;
+
+  /**
+   * Start in insert mode?
+   */
   startInInsertMode = false;
 
+  /**
+   * Size of a tab character.
+   */
   @overlapSetting({ codeName: "tabSize", default: 8})
   tabstop: number | undefined = undefined;
 
+  /**
+   * Use spaces when the user presses tab?
+   */
   @overlapSetting({ codeName: "insertSpaces", default: false})
   expandtab: boolean | undefined = undefined;
 
   @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: {true: "on", false: "off"}})
   number: boolean | undefined = undefined;
 
+  /**
+   * Show relative line numbers?
+   */
   @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: {true: "relative", false: "off"}})
   relativenumber: boolean | undefined = undefined;
 

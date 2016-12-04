@@ -517,6 +517,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const char = this.keysPressed[this.keysPressed.length - 1];
+    const line = TextEditor.getLineAt(position).text;
 
     if (char === "<BS>") {
       const selection = TextEditor.getSelection();
@@ -528,10 +529,22 @@ export class CommandInsertInInsertMode extends BaseCommand {
           range: new Range(selection.start as Position, selection.end as Position),
         });
       } else {
-        vimState.recordedState.transformations.push({
-          type: "deleteText",
-          position: position,
-        });
+        if (line.length > 0 && line.match(/^\s+$/) && Configuration.expandtab) {
+          // If the line is empty except whitespace, backspace should return to
+          // the next lowest level of indentation.
+
+          const desiredLineLength = Math.floor((line.length - 1) / Configuration.tabstop) * Configuration.tabstop;
+
+          vimState.recordedState.transformations.push({
+            type: "deleteRange",
+            range: new Range(new Position(position.line, desiredLineLength), position)
+          })
+        } else {
+          vimState.recordedState.transformations.push({
+            type: "deleteText",
+            position: position,
+          });
+        }
       }
 
       vimState.cursorPosition      = vimState.cursorPosition.getLeft();
