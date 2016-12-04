@@ -2262,7 +2262,7 @@ class IndentOperator extends BaseOperator {
   keys = [">"];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
+    vscode.window.activeTextEditor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
 
     await vscode.commands.executeCommand("editor.action.indentLines");
 
