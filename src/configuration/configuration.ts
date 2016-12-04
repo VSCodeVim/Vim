@@ -66,7 +66,7 @@ export class Configuration {
   autoindent = true;
   easymotion = false;
   incsearch = true;
-  startInInsertMode = true;
+  startInInsertMode = false;
 
   @overlapSetting({ codeName: "tabSize", default: 8})
   tabstop: number | undefined = undefined;
