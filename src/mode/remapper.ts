@@ -5,8 +5,9 @@ import { ModeHandler, VimState } from './modeHandler';
 import { AngleBracketNotation } from './../notation';
 
 interface IKeybinding {
-  before: string[];
-  after : string[];
+  before   : string[];
+  after?   : string[];
+  commands?: { command: string; args: any[] }[];
 }
 
 class Remapper {
@@ -27,11 +28,14 @@ class Remapper {
       remapping.before.forEach(item => before.push(AngleBracketNotation.Normalize(item)));
 
       let after: string[] = [];
-      remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
+      if (remapping.after) {
+        remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
+      }
 
       this._remappings.push(<IKeybinding> {
         before: before,
         after: after,
+        commands: remapping.commands,
       });
     }
   }
@@ -86,7 +90,15 @@ class Remapper {
           vimState.isCurrentlyPreformingRemapping = true;
         }
 
-        await modeHandler.handleMultipleKeyEvents(remapping.after);
+        if (remapping.after) {
+          await modeHandler.handleMultipleKeyEvents(remapping.after);
+        }
+
+        if (remapping.commands) {
+          for (const command of remapping.commands) {
+            await vscode.commands.executeCommand(command.command, command.args);
+          }
+        }
 
         vimState.isCurrentlyPreformingRemapping = false;
 

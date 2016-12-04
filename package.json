@@ -258,11 +258,11 @@
       "properties": {
         "vim.otherModesKeyBindings": {
           "type": "array",
-          "description": "Keybinding overrides to use for normal mode."
+          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
         "vim.otherModesKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for normal mode."
+          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
@@ -276,11 +276,11 @@
         },
         "vim.insertModeKeyBindings": {
           "type": "array",
-          "description": "Keybinding overrides to use for insert mode."
+          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for insert mode."
+          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
         "vim.textwidth": {
           "type": "number",
