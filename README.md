@@ -2,7 +2,7 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vim keybindings, including:
 
-* Modes (normal, insert, command, visual, visual line, visual block)
+* Modes: normal, insert, command, visual, visual line, visual block (with `useCtrlKeys`, see below)
 * Command combinations (`c3w`, `daw`, `2dd`, etc)
 * Highly versatile command remapping (`jj` to esc, `:` to command panel, etc.)
 * Incremental search with `/` and `?`
@@ -20,10 +20,23 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
 
+#### useCtrlKeys
+  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
+    * `ctrl+c`, `ctrl+[` => `<Esc>`
+    * `ctrl+f` => Full Page Forward
+    * `ctrl+d` => Half Page Back
+    * `ctrl+b` => Half Page Forward
+    * `ctrl+v` => Visual Block Mode
+    * etc.
+  * Type: Boolean (Default: `false`)
+  * *Example:*
+
+    ```
+    "vim.useCtrlKeys": true
+    ```
+
 #### insertModeKeyBindings/otherModesKeyBindings
   * Keybinding overrides to use for insert and other (non-insert) modes.
-  
-##### Examples of the above
 
 Bind `jj` to `<Esc>` in insert mode:
 
@@ -38,15 +51,17 @@ Bind `jj` to `<Esc>` in insert mode:
 Bind `:` to show the command palette:
 
 ```
-{
-    "before": [":"],
-    "commands": [
-        {
-            "command": "workbench.action.showCommands",
-            "args": []
-        }
-    ]
-}
+"vim.otherModesKeyBindingsNonRecursive": [
+   {
+       "before": [":"],
+       "commands": [
+           {
+               "command": "workbench.action.showCommands",
+               "args": []
+           }
+       ]
+   }
+]
 ```
 
 Bind `ZZ` to save and close the current file:
@@ -86,21 +101,6 @@ Bind `ZZ` to save and close the current file:
 #### startInInsertMode
   * Have VSCodeVim start in Insert Mode rather than Normal Mode.
   * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
-
-#### useCtrlKeys
-  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
-    * `ctrl+c`, `ctrl+[` => `<Esc>`
-    * `ctrl+f` => Full Page Forward
-    * `ctrl+d` => Half Page Back
-    * `ctrl+b` => Half Page Forward
-    * `ctrl+v` => Visual Block Mode
-    * etc.
-  * Type: Boolean (Default: `false`)
-  * *Example:*
-
-    ```
-    "vim.useCtrlKeys": true
-    ```
 
 #### useSystemClipboard
   * Enable yanking to the system clipboard by default
