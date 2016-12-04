@@ -297,6 +297,11 @@
           "description": "keywords contain alphanumeric characters and '_'",
           "default": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-"
         },
+        "vim.textwidth": {
+          "type": "number",
+          "description": "Width to word-wrap to when using gq.",
+          "default": 80
+        },
         "vim.ignorecase": {
           "type": "boolean",
           "description": "Ignore case in search patterns.",

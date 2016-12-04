@@ -3979,7 +3979,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
   }
 
   public reflowParagraph(s: string, indentLevel: number): string {
-    let maximumLineLength = 80 - indentLevel - 2;
+    const maximumLineLength = Configuration.getInstance().textwidth - indentLevel - 2;
     const indent = Array(indentLevel + 1).join(" ");
 
     // Chunk the lines by commenting style.
