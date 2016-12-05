@@ -21,6 +21,8 @@ export const commandParsers = {
   wa: parseWallCommandArgs,
   wall: parseWallCommandArgs,
 
+  nohlsearch: parseNohlCommandArgs,
+  noh: parseNohlCommandArgs,
   nohl: parseNohlCommandArgs,
 
   quit: parseQuitCommandArgs,
