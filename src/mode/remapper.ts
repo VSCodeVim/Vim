@@ -114,7 +114,7 @@ class Remapper {
           Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.length));
       }
 
-        vimState.isCurrentlyPerformingRemapping = false;
+      vimState.isCurrentlyPerformingRemapping = false;
 
       // We need to remove the keys that were remapped into different keys
       // from the state.
