@@ -1516,26 +1516,20 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    if (Configuration.useSolidBlockCursor) {
-      if (this.currentMode.name !== ModeName.Insert) {
-        for (const { stop: cursorStop } of vimState.allCursors) {
-          cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
-        }
+    const shouldCursorBeSolid = this.currentMode.name !== ModeName.Insert && Configuration.useSolidBlockCursor;
+    await vscode.workspace
+      .getConfiguration("editor")
+      .update("cursorBlinking", shouldCursorBeSolid ? "solid" : "blink", true);
 
-        await vscode.workspace.getConfiguration("editor").update("cursorBlinking", "solid", true);
-      } else {
-        await vscode.workspace.getConfiguration("editor").update("cursorBlinking", "blink", true);
-      }
-    } else {
-      // Use native block cursor if possible.
-      let cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-        this.currentMode.name !== ModeName.VisualBlockInsertMode &&
-        this.currentMode.name !== ModeName.Insert ?
-        vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
-      let options = vscode.window.activeTextEditor.options;
-      options.cursorStyle = cursorStyle;
-      vscode.window.activeTextEditor.options = options;
-    }
+    // Use native block cursor if possible.
+    let cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
+      this.currentMode.name !== ModeName.VisualBlockInsertMode &&
+      this.currentMode.name !== ModeName.Insert ?
+      vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+
+    let options = vscode.window.activeTextEditor.options;
+    options.cursorStyle = cursorStyle;
+    vscode.window.activeTextEditor.options = options;
 
     if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
       this.currentMode.name !== ModeName.Insert) {
