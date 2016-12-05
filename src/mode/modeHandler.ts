@@ -271,9 +271,27 @@ export class RecordedState {
   }
 
   /**
-   * The exact keys that the used entered. Used for showcmd.
+   * The exact keys that the user entered. Used for showcmd.
    */
-  public commandString = "";
+  public commandList: string[] = [];
+
+  /**
+   * String representation of the exact keys that the user entered. Used for
+   * showcmd.
+   */
+  public get commandString(): string {
+    let result = "";
+
+    for (const key of this.commandList) {
+      if (key === Configuration.leader) {
+        result += "<leader>";
+      } else {
+        result += key;
+      }
+    }
+
+    return result;
+  }
 
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
@@ -703,11 +721,11 @@ export class ModeHandler implements vscode.Disposable {
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
-    vimState.recordedState.commandString += key;
+    vimState.recordedState.commandList.push(key);
 
     if (result === KeypressState.NoPossibleMatch) {
       vimState.recordedState = new RecordedState();
-      vimState.recordedState.commandString = "";
+      vimState.recordedState.commandList = [];
 
       return vimState;
     } else if (result === KeypressState.WaitingOnKeys) {
@@ -843,7 +861,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (ranAction) {
-      vimState.recordedState.commandString = "";
+      vimState.recordedState.commandList = [];
     }
 
     ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) || this.createUndoPointForBrackets(vimState);
@@ -1596,9 +1614,9 @@ export class ModeHandler implements vscode.Disposable {
   private _renderStatusBar(): void {
       const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''} --`;
       const macroText = ` ${this._vimState.isRecordingMacro ? 'Recording @' + this._vimState.recordedMacro.registerName : ''}`;
-      const currentCommandText = ` ${ this._vimState.recordedState.commandString }`;
+      const currentCommandText = " " + this._vimState.recordedState.commandString;
 
-      this.setStatusBarText(`${ modeText }${ currentCommandText}${ macroText }`);
+      this.setStatusBarText(`${ modeText }${ currentCommandText }${ macroText }`);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
