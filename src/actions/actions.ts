@@ -64,6 +64,9 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
     if (left  === "<character>" && !containsControlKey(right)) { continue; }
     if (right === "<character>" && !containsControlKey(left)) { continue; }
 
+    if (left  === "<leader>" && right === Configuration.leader) { continue; }
+    if (right  === "<leader>" && left === Configuration.leader) { continue; }
+
     if (left !== right) { return false; }
   }
 
@@ -5866,7 +5869,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 @RegisterAction
 class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "s", "<character>"];
+  keys = ["<leader>", "<leader>", "s", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -5883,7 +5886,7 @@ class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "f", "<character>"];
+  keys = ["<leader>", "<leader>", "f", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -5904,7 +5907,7 @@ class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "F", "<character>"];
+  keys = ["<leader>", "<leader>", "F", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -5925,7 +5928,7 @@ class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "t", "<character>"];
+  keys = ["<leader>", "<leader>", "t", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -5950,7 +5953,7 @@ class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "T", "<character>"];
+  keys = ["<leader>", "<leader>", "T", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     const searchChar = this.keysPressed[3];
@@ -5975,7 +5978,7 @@ class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "w"];
+  keys = ["<leader>", "<leader>", "w"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words after the cursor
@@ -5988,7 +5991,7 @@ class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "e"];
+  keys = ["<leader>", "<leader>", "e"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the end of all words after the cursor
@@ -6005,7 +6008,7 @@ class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "g", "e"];
+  keys = ["<leader>", "<leader>", "g", "e"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words before the cursor
@@ -6022,7 +6025,7 @@ class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
 @RegisterAction
 class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
   modes = [ModeName.Normal];
-  keys = ["\\", "\\", "b"];
+  keys = ["<leader>", "<leader>", "b"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     // Search for the beginning of all words before the cursor
