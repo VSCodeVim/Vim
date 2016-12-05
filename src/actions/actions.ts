@@ -1500,6 +1500,9 @@ class CommandNextSearchMatch extends BaseMovement {
       return position;
     }
 
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
+
     return searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
   }
 }
@@ -1577,6 +1580,9 @@ class CommandPreviousSearchMatch extends BaseMovement {
     if (!searchState || searchState.searchString === "") {
       return position;
     }
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
 
     return searchState.getNextSearchMatchPosition(vimState.cursorPosition, -1).pos;
   }

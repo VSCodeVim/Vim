@@ -127,9 +127,6 @@ export class SearchState {
   public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean } {
     this._recalculateSearchRanges();
 
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
     if (this._matchRanges.length === 0) {
       // TODO(bell)
       return { pos: startPosition, match: false };
