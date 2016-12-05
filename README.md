@@ -197,9 +197,27 @@ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false        
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VS Code Insider
 ```
 
-#### Halp! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
+#### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
 Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkeys)) to true.
+
+#### How to use easymotion
+
+To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
+Now that easymotion is active, you can initiate motions using the following commands. Once you initiate the motion, text decorators will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
+
+Motion Command | Description
+---|--------
+`<leader> <leader> s <char>`|Search character
+`<leader> <leader> f <char>`|Find character forwards
+`<leader> <leader> F <char>`|Find character backwards
+`<leader> <leader> t <char>`|Til character forwards
+`<leader> <leader> T <char>`|Til character backwards
+`<leader> <leader> w`|Start of word forwards
+`<leader> <leader> e`|End of word forwards
+`<leader> <leader> g e`|End of word backwards
+`<leader> <leader> b`|Start of word backwards
+
 
 ## Contributing
 
