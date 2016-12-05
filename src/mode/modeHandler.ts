@@ -1622,7 +1622,15 @@ export class ModeHandler implements vscode.Disposable {
   private _renderStatusBar(): void {
       const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''} --`;
       const macroText = ` ${this._vimState.isRecordingMacro ? 'Recording @' + this._vimState.recordedMacro.registerName : ''}`;
-      const currentCommandText = " " + this._vimState.recordedState.commandString;
+      let currentCommandText = ` ${ this._vimState.recordedState.commandString }`;
+
+      if (this._vimState.currentMode === ModeName.Insert) {
+        currentCommandText = "";
+      }
+
+      if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
+        currentCommandText = ` ${ this._vimState.searchState!.searchString }`;
+      }
 
       this.setStatusBarText(`${ modeText }${ currentCommandText }${ macroText }`);
   }
