@@ -88,7 +88,7 @@ class Remapper {
         }
 
         if (!this._recursive) {
-          vimState.isCurrentlyPreformingRemapping = true;
+          vimState.isCurrentlyPerformingRemapping = true;
         }
 
         // We need to remove the keys that were remapped into different keys
@@ -106,7 +106,7 @@ class Remapper {
           }
         }
 
-        vimState.isCurrentlyPreformingRemapping = false;
+        vimState.isCurrentlyPerformingRemapping = false;
 
         this._mostRecentKeys = [];
 

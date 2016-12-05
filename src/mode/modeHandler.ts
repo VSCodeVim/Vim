@@ -119,7 +119,7 @@ export class VimState {
   /**
    * Used to prevent non-recursive remappings from looping.
    */
-  public isCurrentlyPreformingRemapping = false;
+  public isCurrentlyPerformingRemapping = false;
 
   /**
    * The current full action we are building up.
@@ -663,7 +663,7 @@ export class ModeHandler implements vscode.Disposable {
        * 3) We are not in the middle of executing another command.
        */
 
-      if (!this._vimState.isCurrentlyPreformingRemapping &&
+      if (!this._vimState.isCurrentlyPerformingRemapping &&
           now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout &&
           this._vimState.recordedState.commandString.length === 0) {
 
