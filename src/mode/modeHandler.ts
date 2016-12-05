@@ -1516,10 +1516,11 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
 
-    const shouldCursorBeSolid = this.currentMode.name !== ModeName.Insert && Configuration.useSolidBlockCursor;
-    await vscode.workspace
-      .getConfiguration("editor")
-      .update("cursorBlinking", shouldCursorBeSolid ? "solid" : "blink", true);
+    if (Configuration.useSolidBlockCursor) {
+      await vscode.workspace
+        .getConfiguration("editor")
+        .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
+    }
 
     // Use native block cursor if possible.
     let cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
