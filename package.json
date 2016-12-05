@@ -269,6 +269,11 @@
           "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c",
           "default": true
         },
+        "vim.leader": {
+          "type": "string",
+          "description": "What key should <leader> map to in remappings?",
+          "default": "\\"
+        },
         "vim.searchHighlightColor": {
           "type": "string",
           "description": "Color of the search highlight.",

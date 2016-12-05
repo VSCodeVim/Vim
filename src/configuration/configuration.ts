@@ -117,6 +117,11 @@ class ConfigurationClass {
   showcmd = true;
 
   /**
+   * What key should <leader> map to in key remappings?
+   */
+  leader = "\\";
+
+  /**
    * Show results of / or ? search as user is typing?
    */
   incsearch = true;

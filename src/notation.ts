@@ -1,3 +1,5 @@
+import { Configuration } from './configuration/configuration';
+
 export class AngleBracketNotation {
 
   // Mapping from the nomalized string to regex strings that could match it.
@@ -25,6 +27,10 @@ export class AngleBracketNotation {
 
     if (key.toLowerCase() === "<cr>") {
       return "\n";
+    }
+
+    if (key.toLowerCase() === "<leader>") {
+      return Configuration.leader;
     }
 
     for (const notationMapKey in this._notationMap) {

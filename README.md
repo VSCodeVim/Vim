@@ -151,6 +151,10 @@ Bind `ZZ` to save and close the current file:
   * Width to word-wrap to when using `gq`.
   * Type: number (Default: `80`)
 
+#### leader
+  * What key should `<leader>` map to in key remappings?
+  * Type: string (Default: `\`)
+
 ## Configure
 
 Vim options are loaded in the following sequence:
