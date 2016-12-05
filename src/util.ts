@@ -19,11 +19,12 @@ export async function showError(message : string): Promise<{}> {
  * update the position of the cursor. So we have to wait!
  */
 export async function waitForCursorUpdatesToHappen(): Promise<void> {
-  // TODO - dispose!
-
   await new Promise((resolve, reject) => {
     setTimeout(resolve, 100);
-    vscode.window.onDidChangeTextEditorSelection(x => {
+
+    const disposer = vscode.window.onDidChangeTextEditorSelection(x => {
+      disposer.dispose();
+
       resolve();
     });
   });
