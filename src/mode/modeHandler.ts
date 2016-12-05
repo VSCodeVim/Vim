@@ -474,9 +474,9 @@ export class ModeHandler implements vscode.Disposable {
     this.setCurrentModeByName(this._vimState);
 
     // Sometimes, Visual Studio Code will start the cursor in a position which
-    // is not (0, 0) - e.g., if you previously edited the file and left the cursor
-    // somewhere else when you closed it. This will set our cursor's position to the position
-    // that VSC set it to.
+    // is not (0, 0) - e.g., if you previously edited the file and left the
+    // cursor somewhere else when you closed it. This will set our cursor's
+    // position to the position that VSC set it to.
     if (vscode.window.activeTextEditor) {
       this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
       this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
@@ -655,8 +655,18 @@ export class ModeHandler implements vscode.Disposable {
     try {
       let handled = false;
 
-      if (!this._vimState.isCurrentlyPreformingRemapping && now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout) {
-        // Non-recursive remapping do not allow for further mappings
+      /**
+       * Check that
+       *
+       * 1) We are not already performing a nonrecursive remapping.
+       * 2) We haven't timed out of our previous remapping.
+       * 3) We are not in the middle of executing another command.
+       */
+
+      if (!this._vimState.isCurrentlyPreformingRemapping &&
+          now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout &&
+          this._vimState.recordedState.commandString.length === 0) {
+
         handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
         handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
         handled = handled || await this._insertModeNonRecursive.sendKey(key, this, this.vimState);
