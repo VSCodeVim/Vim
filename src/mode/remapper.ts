@@ -13,6 +13,10 @@ interface IKeybinding {
 class Remapper {
   private _mostRecentKeys: string[] = [];
   private _remappings: IKeybinding[] = [];
+
+  /**
+   * Modes that this Remapper is active for.
+   */
   private _remappedModes: ModeName[];
   private _recursive: boolean;
 
@@ -60,58 +64,80 @@ class Remapper {
     this._mostRecentKeys.push(key);
     this._mostRecentKeys = this._mostRecentKeys.slice(-longestKeySequence);
 
-    for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
-      const slice = this._mostRecentKeys.slice(-sliceLength);
-      const remapping = _.find(this._remappings, map => map.before.join("") === slice.join(""));
+    let remapping: IKeybinding | undefined;
 
-      if (remapping) {
-        // If we remapped e.g. jj to esc, we have to revert the inserted "jj"
+    /**
+     * Check to see if the keystrokes match any user-specified remapping.
+     *
+     * In non-Insert mode, we have to match precisely the entire keysequence,
+     * but in insert mode, we allow the users to precede the remapped command
+     * with extraneous keystrokes ("hello world jj")
+     */
 
-        if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
-          // Revert every single inserted character. This is actually a bit of
-          // a hack since we aren't guaranteed that each insertion inserted
-          // only a single character.
+    if (this._remappedModes.indexOf(ModeName.Insert) === -1) {
+      remapping = _.find(this._remappings, map => {
+        return map.before.join("") === this._mostRecentKeys.join("");
+      });
+    } else {
+      for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
+        const slice = this._mostRecentKeys.slice(-sliceLength);
+        const result = _.find(this._remappings, map => map.before.join("") === slice.join(""));
 
-          // We subtract 1 because we haven't actually applied the last key.
+        if (result) {
+          remapping = result;
 
-          // TODO(johnfn) - study - actions need to be paired up with text
-          // changes... this is a complicated problem.
-
-          // Update most recent keys to be the correct length based on the
-          // remap length
-          if (remapping.before.length < longestKeySequence) {
-            this._mostRecentKeys = this._mostRecentKeys.slice(longestKeySequence - remapping.before.length);
-          }
-
-          await vimState.historyTracker.undoAndRemoveChanges(
-            Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.length));
+          break;
         }
-
-        if (!this._recursive) {
-          vimState.isCurrentlyPreformingRemapping = true;
-        }
-
-        // We need to remove the keys that were remapped into different keys
-        // from the state.
-        const numToRemove = remapping.before.length - 1;
-        vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(0, -numToRemove);
-
-        if (remapping.after) {
-          await modeHandler.handleMultipleKeyEvents(remapping.after);
-        }
-
-        if (remapping.commands) {
-          for (const command of remapping.commands) {
-            await vscode.commands.executeCommand(command.command, command.args);
-          }
-        }
-
-        vimState.isCurrentlyPreformingRemapping = false;
-
-        this._mostRecentKeys = [];
-
-        return true;
       }
+    }
+
+    if (remapping) {
+      // If we remapped e.g. jj to esc, we have to revert the inserted "jj"
+
+      if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
+        // Revert every single inserted character. This is actually a bit of
+        // a hack since we aren't guaranteed that each insertion inserted
+        // only a single character.
+
+        // We subtract 1 because we haven't actually applied the last key.
+
+        // TODO(johnfn) - study - actions need to be paired up with text
+        // changes... this is a complicated problem.
+
+        // Update most recent keys to be the correct length based on the
+        // remap length
+        if (remapping.before.length < longestKeySequence) {
+          this._mostRecentKeys = this._mostRecentKeys.slice(longestKeySequence - remapping.before.length);
+        }
+
+        await vimState.historyTracker.undoAndRemoveChanges(
+          Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.length));
+      }
+
+      if (!this._recursive) {
+        vimState.isCurrentlyPreformingRemapping = true;
+      }
+
+      // We need to remove the keys that were remapped into different keys
+      // from the state.
+      const numToRemove = remapping.before.length - 1;
+      vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(0, -numToRemove);
+
+      if (remapping.after) {
+        await modeHandler.handleMultipleKeyEvents(remapping.after);
+      }
+
+      if (remapping.commands) {
+        for (const command of remapping.commands) {
+          await vscode.commands.executeCommand(command.command, command.args);
+        }
+      }
+
+      vimState.isCurrentlyPreformingRemapping = false;
+
+      this._mostRecentKeys = [];
+
+      return true;
     }
 
     return false;
