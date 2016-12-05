@@ -187,6 +187,8 @@ export class VimState {
 
   public set currentMode(value: number) {
     this._currentMode = value;
+
+    vscode.commands.executeCommand('setContext', 'vim.mode', ModeName[value]);
   }
 
   public getModeObject(modeHandler: ModeHandler): Mode {
@@ -1613,7 +1615,6 @@ export class ModeHandler implements vscode.Disposable {
       this._renderStatusBar();
     }
 
-    vscode.commands.executeCommand('setContext', 'vim.mode', this.currentMode.text);
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }

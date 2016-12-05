@@ -50,22 +50,22 @@
       {
         "key": "Home",
         "command": "extension.vim_home",
-        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "End",
         "command": "extension.vim_end",
-        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+left",
         "command": "extension.vim_cmd+left",
-        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+right",
         "command": "extension.vim_cmd+right",
-        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+d",
@@ -75,7 +75,7 @@
       {
         "key": "cmd+a",
         "command": "extension.vim_cmd+a",
-        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert Mode'"
+        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "ctrl+d",
@@ -104,17 +104,17 @@
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.mode == 'Search In Progress' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.mode == 'Normal Mode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode == 'Normal' && !inDebugRepl"
       },
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.mode == 'Normal Mode' && !inDebugRepl"
+        "when": "editorFocus && vim.mode == 'Normal' && !inDebugRepl"
       },
       {
         "key": "ctrl+r",
@@ -129,22 +129,22 @@
       {
         "key": "ctrl+b",
         "command": "extension.vim_ctrl+b",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+j",
         "command": "extension.vim_ctrl+j",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+k",
         "command": "extension.vim_ctrl+k",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+h",
         "command": "extension.vim_ctrl+h",
-        "when": "editorTextFocus && vim.mode == 'Insert Mode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode == 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+e",
@@ -164,12 +164,12 @@
       {
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
-        "when": "editorTextFocus && vim.mode != 'Insert Mode' && vim.useCtrlKeys && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode != 'Insert' && vim.useCtrlKeys && !inDebugRepl"
       },
       {
         "key": "cmd+v",
         "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.mode == 'Search In Progress' && !inDebugRepl"
+        "when": "editorTextFocus && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "ctrl+[",
