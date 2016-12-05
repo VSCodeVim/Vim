@@ -52,6 +52,7 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
            s.length > 1;
   };
 
+
   for (let i = 0, j = 0; i < one.length; i++, j++) {
     const left = one[i], right = two[j];
 
@@ -65,7 +66,10 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
     if (right === "<character>" && !containsControlKey(left)) { continue; }
 
     if (left  === "<leader>" && right === Configuration.leader) { continue; }
-    if (right  === "<leader>" && left === Configuration.leader) { continue; }
+    if (right === "<leader>" && left === Configuration.leader) { continue; }
+
+    if (left  === Configuration.leader) { return false; }
+    if (right === Configuration.leader) { return false; }
 
     if (left !== right) { return false; }
   }
