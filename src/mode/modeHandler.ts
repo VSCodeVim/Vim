@@ -271,7 +271,8 @@ export class RecordedState {
   }
 
   /**
-   * The exact keys that the user entered. Used for showcmd.
+   * The keys the user has pressed that have not caused an action to be
+   * executed yet. Used for showcmd and command remapping.
    */
   public commandList: string[] = [];
 
@@ -669,6 +670,7 @@ export class ModeHandler implements vscode.Disposable {
     const now = Number(new Date());
 
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
+    this._vimState.recordedState.commandList.push(key);
 
     try {
       let handled = false;
@@ -684,10 +686,12 @@ export class ModeHandler implements vscode.Disposable {
       if (!this._vimState.isCurrentlyPerformingRemapping &&
           now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout) {
 
-        handled = handled || await this._insertModeRemapper.sendKey(key, this, this.vimState);
-        handled = handled || await this._otherModesRemapper.sendKey(key, this, this.vimState);
-        handled = handled || await this._insertModeNonRecursive.sendKey(key, this, this.vimState);
-        handled = handled || await this._otherModesNonRecursive.sendKey(key, this, this.vimState);
+        const keys = this._vimState.recordedState.commandList;
+
+        handled = handled || await this._insertModeRemapper.sendKey(keys, this, this.vimState);
+        handled = handled || await this._otherModesRemapper.sendKey(keys, this, this.vimState);
+        handled = handled || await this._insertModeNonRecursive.sendKey(keys, this, this.vimState);
+        handled = handled || await this._otherModesNonRecursive.sendKey(keys, this, this.vimState);
       }
 
       if (!handled) {
@@ -720,8 +724,6 @@ export class ModeHandler implements vscode.Disposable {
     vimState.currentFullAction.push(key);
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
-
-    vimState.recordedState.commandList.push(key);
 
     if (result === KeypressState.NoPossibleMatch) {
       vimState.recordedState = new RecordedState();
@@ -860,7 +862,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    if (ranAction) {
+    if (ranAction && vimState.currentMode !== ModeName.Insert) {
       vimState.recordedState.commandList = [];
     }
 

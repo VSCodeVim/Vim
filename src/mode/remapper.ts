@@ -11,7 +11,6 @@ interface IKeybinding {
 }
 
 class Remapper {
-  private _mostRecentKeys: string[] = [];
   private _remappings: IKeybinding[] = [];
 
   /**
@@ -52,35 +51,30 @@ class Remapper {
     }
   }
 
-  public async sendKey(key: string, modeHandler: ModeHandler, vimState: VimState): Promise<boolean> {
+  public async sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean> {
     if (this._remappedModes.indexOf(vimState.currentMode) === -1) {
-      this._reset();
-
       return false;
     }
 
     const longestKeySequence = this._longestKeySequence();
-
-    this._mostRecentKeys.push(key);
-    this._mostRecentKeys = this._mostRecentKeys.slice(-longestKeySequence);
 
     let remapping: IKeybinding | undefined;
 
     /**
      * Check to see if the keystrokes match any user-specified remapping.
      *
-     * In non-Insert mode, we have to match precisely the entire keysequence,
+     * In non-Insert mode, we have to precisely match the entire keysequence,
      * but in insert mode, we allow the users to precede the remapped command
      * with extraneous keystrokes ("hello world jj")
      */
 
     if (this._remappedModes.indexOf(ModeName.Insert) === -1) {
       remapping = _.find(this._remappings, map => {
-        return map.before.join("") === this._mostRecentKeys.join("");
+        return map.before.join("") === keys.join("");
       });
     } else {
       for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
-        const slice = this._mostRecentKeys.slice(-sliceLength);
+        const slice = keys.slice(-sliceLength);
         const result = _.find(this._remappings, map => map.before.join("") === slice.join(""));
 
         if (result) {
@@ -104,14 +98,8 @@ class Remapper {
         // TODO(johnfn) - study - actions need to be paired up with text
         // changes... this is a complicated problem.
 
-        // Update most recent keys to be the correct length based on the
-        // remap length
-        if (remapping.before.length < longestKeySequence) {
-          this._mostRecentKeys = this._mostRecentKeys.slice(longestKeySequence - remapping.before.length);
-        }
-
         await vimState.historyTracker.undoAndRemoveChanges(
-          Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.length));
+          Math.max(0, (remapping.before.length - 1) * vimState.allCursors.length));
       }
 
       vimState.isCurrentlyPerformingRemapping = false;
@@ -133,16 +121,10 @@ class Remapper {
 
       vimState.isCurrentlyPerformingRemapping = false;
 
-      this._mostRecentKeys = [];
-
       return true;
     }
 
     return false;
-  }
-
-  private _reset(): void {
-    this._mostRecentKeys = [];
   }
 }
 
