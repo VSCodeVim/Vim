@@ -114,9 +114,7 @@ class Remapper {
           Math.max(0, (this._mostRecentKeys.length - 1) * vimState.allCursors.length));
       }
 
-      if (!this._recursive) {
-        vimState.isCurrentlyPreformingRemapping = true;
-      }
+        vimState.isCurrentlyPerformingRemapping = false;
 
       // We need to remove the keys that were remapped into different keys
       // from the state.
@@ -133,7 +131,7 @@ class Remapper {
         }
       }
 
-      vimState.isCurrentlyPreformingRemapping = false;
+      vimState.isCurrentlyPerformingRemapping = false;
 
       this._mostRecentKeys = [];
 
