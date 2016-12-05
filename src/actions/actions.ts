@@ -540,7 +540,8 @@ export class CommandInsertInInsertMode extends BaseCommand {
           // If the line is empty except whitespace, backspace should return to
           // the next lowest level of indentation.
 
-          const desiredLineLength = Math.floor((line.length - 1) / Configuration.tabstop) * Configuration.tabstop;
+          const tabSize = vscode.window.activeTextEditor.options.tabSize as number;
+          const desiredLineLength = Math.floor((line.length - 1) / tabSize) * tabSize;
 
           vimState.recordedState.transformations.push({
             type: "deleteRange",
