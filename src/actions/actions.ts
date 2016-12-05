@@ -538,7 +538,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
           vimState.recordedState.transformations.push({
             type: "deleteRange",
             range: new Range(new Position(position.line, desiredLineLength), position)
-          })
+          });
         } else {
           vimState.recordedState.transformations.push({
             type: "deleteText",
