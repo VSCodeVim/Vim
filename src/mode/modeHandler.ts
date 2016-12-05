@@ -407,21 +407,22 @@ export class ModeHandler implements vscode.Disposable {
    */
   public fileName: string;
 
-  private _caretDecoration = vscode.window.createTextEditorDecorationType(
-  {
+  private _caretDecoration = vscode.window.createTextEditorDecorationType({
     dark: {
       // used for dark colored themes
       backgroundColor: 'rgba(224, 224, 224, 0.4)',
-      borderColor: 'rgba(224, 224, 224, 0.4)'
+      borderColor: 'rgba(0, 0, 0, 1.0)'
     },
     light: {
       // used for light colored themes
       backgroundColor: 'rgba(32, 32, 32, 0.4)',
-      borderColor: 'rgba(32, 32, 32, 0.4)'
+      borderColor: 'rgba(0, 0, 0, 1.0)'
     },
     borderStyle: 'solid',
     borderWidth: '1px'
   });
+
+  private _searchHighlightDecoration: vscode.TextEditorDecorationType;
 
   private get currentModeName(): ModeName {
     return this.currentMode.name;
@@ -465,6 +466,10 @@ export class ModeHandler implements vscode.Disposable {
     } else {
       this._vimState.currentMode = ModeName.Normal;
     }
+
+    this._searchHighlightDecoration = vscode.window.createTextEditorDecorationType({
+      backgroundColor: Configuration.searchHighlightColor
+    });
 
     this.setCurrentModeByName(this._vimState);
 
@@ -1480,14 +1485,14 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    let rangesToDraw: vscode.Range[] = [];
+    let cursorRange: vscode.Range[] = [];
 
     // Draw block cursor.
 
     if (Configuration.useSolidBlockCursor) {
       if (this.currentMode.name !== ModeName.Insert) {
         for (const { stop: cursorStop } of vimState.allCursors) {
-          rangesToDraw.push(new vscode.Range(cursorStop, cursorStop.getRight()));
+          cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
         }
 
         await vscode.workspace.getConfiguration("editor").update("cursorBlinking", "solid", true);
@@ -1512,9 +1517,11 @@ export class ModeHandler implements vscode.Disposable {
       // in the middle of a selection natively, which is what we need for Visual Mode.
 
       for (const { stop: cursorStop } of vimState.allCursors) {
-        rangesToDraw.push(new vscode.Range(cursorStop, cursorStop.getRight()));
+        cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
       }
     }
+
+    vscode.window.activeTextEditor.setDecorations(this._caretDecoration, cursorRange);
 
     // Draw marks
     // I should re-enable this with a config setting at some point
@@ -1529,24 +1536,26 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw search highlight
 
+    let searchRanges: vscode.Range[] = [];
+
     if (
       (Configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
       ((Configuration.hlsearch && Configuration.hl) && vimState.searchState)) {
 
       const searchState = vimState.searchState!;
 
-      rangesToDraw.push.apply(rangesToDraw, searchState.matchRanges);
+      searchRanges.push.apply(searchRanges, searchState.matchRanges);
 
       const { pos, match } = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
 
       if (match) {
-        rangesToDraw.push(new vscode.Range(
+        searchRanges.push(new vscode.Range(
           pos,
           pos.getRight(searchState.searchString.length)));
       }
     }
 
-    vscode.window.activeTextEditor.setDecorations(this._caretDecoration, rangesToDraw);
+    vscode.window.activeTextEditor.setDecorations(this._searchHighlightDecoration, searchRanges);
 
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];

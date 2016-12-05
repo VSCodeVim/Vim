@@ -109,6 +109,10 @@ Bind `ZZ` to save and close the current file:
   * Type: Boolean (Default: `false`)
   * Note: Linux users must have xclip installed
 
+#### searchHighlightColor
+  * Set the color of search highlights.
+  * Type: Color String (Default: `rgba(150, 150, 150, 0.3)`)
+
 #### useSolidBlockCursor
   * Use a non-blinking block cursor
   * Type: Boolean (Default: `false`)

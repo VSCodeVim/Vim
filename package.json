@@ -269,6 +269,11 @@
           "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c",
           "default": true
         },
+        "vim.searchHighlightColor": {
+          "type": "string",
+          "description": "Color of the search highlight.",
+          "default": "rgba(150, 150, 255, 0.3)"
+        },
         "vim.useSystemClipboard": {
           "type": "boolean",
           "description": "Use system clipboard for unnamed register.",

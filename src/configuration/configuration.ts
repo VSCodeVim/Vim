@@ -127,6 +127,11 @@ class ConfigurationClass {
   startInInsertMode = false;
 
   /**
+   * Color of search highlights.
+   */
+  searchHighlightColor = "rgba(150, 150, 255, 0.3)";
+
+  /**
    * Size of a tab character.
    */
   @overlapSetting({ codeName: "tabSize", default: 8})
