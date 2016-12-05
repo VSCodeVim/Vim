@@ -507,6 +507,12 @@ export class ModeHandler implements vscode.Disposable {
       taskQueue.enqueueTask({
         promise: () => this.handleSelectionChange(e),
         isRunning: false,
+
+        /**
+         * We don't want these to become backlogged! If they do, we'll update
+         * the selection to an incorrect value and see a jittering cursor.
+         */
+        highPriority: true,
       });
     });
 
@@ -514,8 +520,19 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   /**
-   * Anyone who wants to change the behavior of this method should make sure all selection related test cases pass.
-   * Follow this spec https://gist.github.com/rebornix/d21d1cc060c009d4430d3904030bd4c1 to perform the manual testing.
+   * This is easily the worst function in VSCodeVim.
+   *
+   * We need to know when VSCode has updated our selection, so that we can sync
+   * that internally. Unfortunately, VSCode has a habit of calling this
+   * function at weird times, or or with incomplete information, so we have to
+   * do a lot of voodoo to make sure we're updating the cursors correctly.
+   *
+   * Even worse, we don't even know how to test this stuff.
+   *
+   * Anyone who wants to change the behavior of this method should make sure
+   * all selection related test cases pass. Follow this spec
+   * https://gist.github.com/rebornix/d21d1cc060c009d4430d3904030bd4c1 to
+   * perform the manual testing.
    */
   private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
     let selection = e.selections[0];
