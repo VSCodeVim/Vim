@@ -2794,6 +2794,22 @@ class CommandGoToDefinition extends BaseCommand {
   }
 }
 
+@RegisterAction
+class CommandGoToLastEditLocation extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", ";"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let prevPos = vimState.historyTracker.getLastContentChangePosition();
+
+    if (prevPos !== undefined) {
+      vimState.cursorPosition = prevPos[0];
+    }
+
+    return vimState;
+  }
+}
+
 // begin insert commands
 
 @RegisterAction

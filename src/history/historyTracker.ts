@@ -518,6 +518,26 @@ export class HistoryTracker {
     this.historySteps[this.currentHistoryStepIndex].cursorEnd = pos;
   }
 
+  getLastContentChangePosition(): Position[] | undefined {
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+
+    let prevPos = this.getLastHistoryEndPosition();
+
+    for (var steps of this.historySteps) {
+      if (steps.changes.length > 0) {
+        if (steps.changes[0].isAdd) {
+          prevPos = [steps.changes[0].end()];
+        } else {
+          prevPos = [steps.changes[0].start];
+        }
+      }
+    }
+
+    return prevPos;
+  }
+
   /**
    * Handy for debugging the undo/redo stack. + means our current position, check
    * means active.
