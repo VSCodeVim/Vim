@@ -2795,15 +2795,39 @@ class CommandGoToDefinition extends BaseCommand {
 }
 
 @RegisterAction
-class CommandGoToLastEditLocation extends BaseCommand {
+class CommandGoBackInChangelist extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["g", ";"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let prevPos = vimState.historyTracker.getLastContentChangePosition();
+    const originalIndex = vimState.historyTracker.changelistIndex;
+    const prevPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
 
     if (prevPos !== undefined) {
       vimState.cursorPosition = prevPos[0];
+      if (vimState.historyTracker.getChangePositionAtindex(originalIndex - 1) !== undefined) {
+        vimState.historyTracker.changelistIndex = originalIndex - 1;
+      }
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandGoForwardInChangelist extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", ","];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const originalIndex = vimState.historyTracker.changelistIndex;
+    const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+
+    if (nextPos !== undefined) {
+      vimState.cursorPosition = nextPos[0];
+      if (vimState.historyTracker.getChangePositionAtindex(originalIndex + 1) !== undefined) {
+        vimState.historyTracker.changelistIndex = originalIndex + 1;
+      }
     }
 
     return vimState;

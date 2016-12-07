@@ -157,6 +157,9 @@ export class HistoryTracker {
   public lastContentChanges: vscode.TextDocumentContentChangeEvent[];
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
 
+  // Current index in changelist for navigation, resets when a new change is made
+  public changelistIndex = 0;
+
   public lastInvokedMacro: RecordedState;
 
   /**
@@ -408,6 +411,9 @@ export class HistoryTracker {
 
     this.currentHistoryStep.cursorEnd = cursorPosition;
     this.oldText = newText;
+
+    // A change has been made, reset the changelist navigation index to the end
+    this.changelistIndex = this.historySteps.length - 1;
   }
 
   /**
@@ -518,24 +524,25 @@ export class HistoryTracker {
     this.historySteps[this.currentHistoryStepIndex].cursorEnd = pos;
   }
 
-  getLastContentChangePosition(): Position[] | undefined {
+  getChangePositionAtindex(index: number): Position[] | undefined {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
 
-    let prevPos = this.getLastHistoryEndPosition();
+    let pos = this.getLastHistoryEndPosition();
+    pos = undefined;
 
-    for (var steps of this.historySteps) {
-      if (steps.changes.length > 0) {
-        if (steps.changes[0].isAdd) {
-          prevPos = [steps.changes[0].end()];
+    if (this.historySteps[index] !== undefined) {
+      if (this.historySteps[index].changes.length > 0) {
+        if (this.historySteps[index].changes[0].isAdd) {
+          pos = [this.historySteps[index].changes[0].end()];
         } else {
-          prevPos = [steps.changes[0].start];
+          pos = [this.historySteps[index].changes[0].start];
         }
       }
     }
 
-    return prevPos;
+    return pos;
   }
 
   /**
