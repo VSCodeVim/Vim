@@ -689,6 +689,9 @@ export class ModeHandler implements vscode.Disposable {
     this._vimState.recordedState.commandList.push(key);
 
     try {
+      const keys = this._vimState.recordedState.commandList;
+      const withinTimeout = now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout;
+
       let handled = false;
 
       /**
@@ -700,9 +703,8 @@ export class ModeHandler implements vscode.Disposable {
        */
 
       if (!this._vimState.isCurrentlyPerformingRemapping &&
-          now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout) {
+          (withinTimeout || keys.length === 1)) {
 
-        const keys = this._vimState.recordedState.commandList;
 
         handled = handled || await this._insertModeRemapper.sendKey(keys, this, this.vimState);
         handled = handled || await this._otherModesRemapper.sendKey(keys, this, this.vimState);
