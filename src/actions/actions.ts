@@ -1548,6 +1548,9 @@ class CommandStar extends BaseCommand {
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
+
     return vimState;
   }
 }
@@ -1573,6 +1576,9 @@ class CommandHash extends BaseCommand {
       // which are the desired semantics for this motion.
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
 
     return vimState;
   }
@@ -2789,6 +2795,46 @@ class CommandGoToDefinition extends BaseCommand {
 
     vimState.focusChanged = true;
     vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandGoBackInChangelist extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", ";"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const originalIndex = vimState.historyTracker.changelistIndex;
+    const prevPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+
+    if (prevPos !== undefined) {
+      vimState.cursorPosition = prevPos[0];
+      if (vimState.historyTracker.getChangePositionAtindex(originalIndex - 1) !== undefined) {
+        vimState.historyTracker.changelistIndex = originalIndex - 1;
+      }
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandGoForwardInChangelist extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", ","];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const originalIndex = vimState.historyTracker.changelistIndex;
+    const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+
+    if (nextPos !== undefined) {
+      vimState.cursorPosition = nextPos[0];
+      if (vimState.historyTracker.getChangePositionAtindex(originalIndex + 1) !== undefined) {
+        vimState.historyTracker.changelistIndex = originalIndex + 1;
+      }
+    }
 
     return vimState;
   }
