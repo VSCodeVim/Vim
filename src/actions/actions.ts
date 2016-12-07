@@ -1548,6 +1548,9 @@ class CommandStar extends BaseCommand {
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
+
     return vimState;
   }
 }
@@ -1573,6 +1576,9 @@ class CommandHash extends BaseCommand {
       // which are the desired semantics for this motion.
       vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
 
     return vimState;
   }
