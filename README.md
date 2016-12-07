@@ -28,7 +28,7 @@ The following is a subset of the supported configurations; the full list is desc
     * `ctrl+b` => Half Page Forward
     * `ctrl+v` => Visual Block Mode
     * etc.
-  * Type: Boolean (Default: `false`)
+  * Type: Boolean (Default: `true`)
   * *Example:*
 
     ```
