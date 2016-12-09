@@ -388,7 +388,7 @@ Status | Command | Description
 :white_check_mark:   | v		| start highlighting characters
 :white_check_mark:   | V		| start highlighting linewise
 :white_check_mark:| o		| exchange cursor position with start of highlighting
- | gv		| start highlighting on previous visual area
+:white_check_mark:| gv		| start highlighting on previous visual area
 :white_check_mark:   | v		| highlight characters or stop highlighting
 :white_check_mark:   | V		| highlight linewise or stop highlighting
 :white_check_mark: | CTRL-V	| highlight blockwise or stop highlighting

@@ -177,6 +177,17 @@ export class VimState {
   public replaceState: ReplaceState | undefined = undefined;
 
   /**
+   * Stores last visual mode for gv
+   */
+  public lastVisualMode: ModeName;
+
+  /**
+   * Last selection that was active
+   */
+  public lastVisualSelectionStart: Position;
+  public lastVisualSelectionEnd: Position;
+
+  /**
    * The mode Vim will be in once this action finishes.
    */
   private _currentMode: ModeName;
@@ -961,6 +972,13 @@ export class ModeHandler implements vscode.Disposable {
 
     vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
 
+    if (vimState.getModeObject(this).isVisualMode) {
+      // Store selection for commands like gv
+      this._vimState.lastVisualMode = this._vimState.currentMode;
+      this._vimState.lastVisualSelectionStart = this._vimState.cursorStartPosition;
+      this._vimState.lastVisualSelectionEnd = this._vimState.cursorPosition;
+    }
+
     // Updated desired column
 
     const movement = action instanceof BaseMovement ? action : undefined;
@@ -1035,7 +1053,7 @@ export class ModeHandler implements vscode.Disposable {
         vimState.allCursors[i] = vimState.allCursors[i].withNewStop(result);
 
         if (!vimState.getModeObject(this).isVisualMode &&
-            !vimState.recordedState.operator) {
+          !vimState.recordedState.operator) {
 
           vimState.allCursors[i] = vimState.allCursors[i].withNewStart(result);
         }
