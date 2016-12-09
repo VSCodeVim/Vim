@@ -2699,6 +2699,28 @@ class CommandVisualMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandReselectVisual extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["g", "v"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Try to restore selection only if valid
+    if (vimState.lastVisualSelectionEnd !== undefined &&
+      vimState.lastVisualSelectionStart !== undefined &&
+      vimState.lastVisualMode !== undefined) {
+
+      if (vimState.lastVisualSelectionEnd.line <= (TextEditor.getLineCount() - 1)) {
+        vimState.currentMode = vimState.lastVisualMode;
+        vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
+        vimState.cursorPosition = vimState.lastVisualSelectionEnd;
+      }
+
+    }
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   keys = ["<C-v>"];
