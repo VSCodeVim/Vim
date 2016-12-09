@@ -592,4 +592,12 @@ suite("Mode Visual", () => {
     });
   });
 
+  newTest({
+    title: "Can do gv to reselect previous selection",
+    start: ["tes|ttest"],
+    keysPressed: "vl<Esc>llgvd",
+    end: ["tes|est"],
+    endMode: ModeName.Normal
+  });
+
 });
