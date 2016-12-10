@@ -1446,6 +1446,11 @@ class CommandInsertInSearchMode extends BaseCommand {
         vimState.searchStatePrevious.push(searchState);
       }
 
+      // Make sure search history does not exceed configuration option
+      if (vimState.searchStatePrevious.length > Configuration.history) {
+        vimState.searchStatePrevious.splice(0, 1);
+      }
+
       // Update the index to the end of the search history
       vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
 
