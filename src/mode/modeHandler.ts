@@ -170,7 +170,15 @@ export class VimState {
 
   public searchState: SearchState | undefined = undefined;
 
-  public searchStatePrevious: SearchState | undefined = undefined;
+  /**
+   *  Index used for navigating search history with <up> and <down> when searching
+   */
+  public searchStateIndex: number = 0;
+
+  /**
+   * Previous searches performed
+   */
+  public searchStatePrevious: SearchState[] = [];
 
   public isRecordingMacro: boolean = false;
 

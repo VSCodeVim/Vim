@@ -1414,7 +1414,9 @@ class RightArrowInInsertMode extends ArrowsInInsertMode {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = ["<character>"];
+  keys = [["<character>"],
+  ["<up>"],
+  ["<down>"]];
   runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1429,20 +1431,50 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
-        const prevSearch = vimState.searchStatePrevious!;
-        if (prevSearch) {
-          searchState.searchString = prevSearch.searchString;
+        const prevSearchList = vimState.searchStatePrevious!;
+        if (prevSearchList.length > 0) {
+          searchState.searchString = prevSearchList[prevSearchList.length - 1].searchString;
         }
       }
-      // Store this search
-      vimState.searchStatePrevious = searchState;
+
+      // Store this search if different than previous
+      if (vimState.searchStatePrevious.length !== 0) {
+        if (searchState.searchString !== vimState.searchStatePrevious[vimState.searchStatePrevious.length - 1]!.searchString) {
+          vimState.searchStatePrevious.push(searchState);
+        }
+      } else {
+        vimState.searchStatePrevious.push(searchState);
+      }
+
+      // Update the index to the end of the search history
+      vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
 
       // Move cursor to next match
       vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       return vimState;
+    } else if (key === "<up>") {
+      const prevSearchList = vimState.searchStatePrevious!;
+      if (prevSearchList[vimState.searchStateIndex] !== undefined) {
+        searchState.searchString = prevSearchList[vimState.searchStateIndex].searchString;
+        vimState.searchStateIndex -= 1;
+      }
+    } else if (key === "<down>") {
+      const prevSearchList = vimState.searchStatePrevious!;
+      if (prevSearchList[vimState.searchStateIndex] !== undefined) {
+        searchState.searchString = prevSearchList[vimState.searchStateIndex].searchString;
+        vimState.searchStateIndex += 1;
+      }
     } else {
       searchState.searchString += this.keysPressed[0];
+    }
+
+    // Clamp the history index to stay within bounds of search history length
+    if (vimState.searchStateIndex > vimState.searchStatePrevious.length - 1) {
+      vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
+    }
+    if (vimState.searchStateIndex < 0) {
+      vimState.searchStateIndex = 0;
     }
 
     return vimState;
@@ -1667,6 +1699,9 @@ export class CommandSearchForwards extends BaseCommand {
     vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
 
+    // Reset search history index
+    vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
+
     Configuration.hl = true;
 
     return vimState;
@@ -1682,6 +1717,9 @@ export class CommandSearchBackwards extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
+
+    // Reset search history index
+    vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
 
     Configuration.hl = true;
 
