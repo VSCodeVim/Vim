@@ -561,8 +561,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (this.currentModeName === ModeName.VisualBlock ||
-        this.currentModeName === ModeName.VisualBlockInsertMode ||
+    if (this.currentModeName === ModeName.VisualBlockInsertMode ||
         this.currentModeName === ModeName.EasyMotionMode) {
       // AArrgghhhh - johnfn
 
@@ -624,6 +623,10 @@ export class ModeHandler implements vscode.Disposable {
         if (this._vimState.currentMode !== ModeName.Insert) {
           // This prevents you from mouse clicking past the EOL
           newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
+
+          // Switch back to normal mode since it was a click not a selection
+          this._vimState.currentMode = ModeName.Normal;
+          this.setCurrentModeByName(this._vimState);
 
           toDraw = true;
         }
