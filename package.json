@@ -352,6 +352,11 @@
           "description": "Show where a / search matches as you type it.",
           "default": true
         },
+        "vim.history": {
+          "type": "number",
+          "description": "How much search or command history should be remembered",
+          "default": 50
+        },
         "vim.autoindent": {
           "type": "boolean",
           "description": "Indent code automatically.",

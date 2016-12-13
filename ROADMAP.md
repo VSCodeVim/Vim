@@ -165,7 +165,7 @@ Status | Command | Description
 
 ## Using tags
 
-The following are all marked low priority because VSCode has very good support for tags with ctrl-shift-t (or cmd-t on macOS). If these don't support your use case, please open an issue!
+The following are all marked low priority because VSCode has very good support for tags with Goto Symbol. Try it from the comand palette if you haven't yet!
 
 Status | Command | Description
 ---|--------|------------------------------

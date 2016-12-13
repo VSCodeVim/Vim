@@ -122,6 +122,11 @@ class ConfigurationClass {
   leader = "\\";
 
   /**
+   * How much search or command history should be remembered
+   */
+  history = 50;
+
+  /**
    * Show results of / or ? search as user is typing?
    */
   incsearch = true;
