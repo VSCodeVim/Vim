@@ -157,6 +157,9 @@ export class HistoryTracker {
   public lastContentChanges: vscode.TextDocumentContentChangeEvent[];
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
 
+  // Current index in changelist for navigation, resets when a new change is made
+  public changelistIndex = 0;
+
   public lastInvokedMacro: RecordedState;
 
   /**
@@ -408,6 +411,9 @@ export class HistoryTracker {
 
     this.currentHistoryStep.cursorEnd = cursorPosition;
     this.oldText = newText;
+
+    // A change has been made, reset the changelist navigation index to the end
+    this.changelistIndex = this.historySteps.length - 1;
   }
 
   /**
@@ -516,6 +522,27 @@ export class HistoryTracker {
 
   setLastHistoryEndPosition(pos: Position[]) {
     this.historySteps[this.currentHistoryStepIndex].cursorEnd = pos;
+  }
+
+  getChangePositionAtindex(index: number): Position[] | undefined {
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+
+    let pos = this.getLastHistoryEndPosition();
+    pos = undefined;
+
+    if (this.historySteps[index] !== undefined) {
+      if (this.historySteps[index].changes.length > 0) {
+        if (this.historySteps[index].changes[0].isAdd) {
+          pos = [this.historySteps[index].changes[0].end()];
+        } else {
+          pos = [this.historySteps[index].changes[0].start];
+        }
+      }
+    }
+
+    return pos;
   }
 
   /**

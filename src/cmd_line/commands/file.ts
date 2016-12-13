@@ -21,7 +21,6 @@ export class FileCommand extends node.CommandBase {
   constructor(args : IFileCommandArguments) {
     super();
     this._name = 'file';
-    this._shortName = 'file';
     this._arguments = args;
   }
 
@@ -63,8 +62,6 @@ export class FileCommand extends node.CommandBase {
         await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
       } else {
         await vscode.commands.executeCommand("workbench.action.splitEditor");
-        await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
-        await vscode.commands.executeCommand("workbench.action.closeOtherEditors");
       }
 
       return;

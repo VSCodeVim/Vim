@@ -1,8 +1,8 @@
 "use strict";
 
 import * as node from "../commands/wall";
-import {Scanner} from '../scanner';
-import {VimError, ErrorCode} from '../../error';
+import { Scanner} from '../scanner';
+import { VimError, ErrorCode } from '../../error';
 
 export function parseWallCommandArgs(args : string) : node.WallCommand {
   if (!args) {

@@ -14,7 +14,6 @@ export class RegisterCommand extends node.CommandBase {
   constructor(args : IRegisterCommandArguments) {
     super();
     this._name = 'register';
-    this._shortName = 'reg';
     this._arguments = args;
   }
 

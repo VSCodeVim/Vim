@@ -20,7 +20,6 @@ export class QuitCommand extends node.CommandBase {
   constructor(args : IQuitCommandArguments) {
     super();
     this._name = 'quit';
-    this._shortName = 'q';
     this._arguments = args;
   }
 
@@ -36,8 +35,11 @@ export class QuitCommand extends node.CommandBase {
     if (this._arguments.quitAll) {
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     } else {
+      let oldViewColumn = this.activeTextEditor.viewColumn;
       await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-      await vscode.commands.executeCommand('workbench.action.previousEditor');
+
+      if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.viewColumn === oldViewColumn) {
+        await vscode.commands.executeCommand('workbench.action.previousEditor');
+      }
     }
-  }
-}
+  }}

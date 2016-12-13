@@ -31,7 +31,6 @@ export class TabCommand extends node.CommandBase {
   constructor(args : ITabCommandArguments) {
     super();
     this._name = 'tab';
-    this._shortName = 'tab';
     this._arguments = args;
   }
 

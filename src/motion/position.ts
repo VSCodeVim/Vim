@@ -6,6 +6,7 @@ import { TextEditor } from "./../textEditor";
 import { VimState } from './../mode/modeHandler';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
 import { Configuration } from "./../configuration/configuration";
+import { betterEscapeRegex } from "./../util";
 
 /**
  * Represents a difference between two positions. Add it to a position
@@ -98,12 +99,14 @@ export class PositionDiff {
 }
 
 export class Position extends vscode.Position {
-  private static NonWordCharacters = Configuration.getInstance().iskeyword!;
+  private static NonWordCharacters = Configuration.iskeyword!;
   private static NonBigWordCharacters = "";
+  private static NonFileCharacters = "\"'`;<>{}[]()";
 
   private _nonWordCharRegex : RegExp;
   private _nonBigWordCharRegex : RegExp;
   private _sentenceEndRegex: RegExp;
+  private _nonFileNameRegex: RegExp;
 
   constructor(line: number, character: number) {
     super(line, character);
@@ -111,6 +114,7 @@ export class Position extends vscode.Position {
     this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
     this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
     this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
+    this._nonFileNameRegex = this.makeWordRegex(Position.NonFileCharacters);
   }
 
   public toString(): string {
@@ -419,8 +423,6 @@ export class Position extends vscode.Position {
    * than the end of the document.
    */
   public getDownByCount(count = 0, { boundsCheck = true } = {}): Position {
-    console.log(boundsCheck);
-
     const line = boundsCheck ?
       Math.min(TextEditor.getLineCount() - 1, this.line + count) :
       this.line + count;
@@ -469,6 +471,10 @@ export class Position extends vscode.Position {
     return this.getWordLeftWithRegex(this._nonBigWordCharRegex);
   }
 
+  public getFilePathLeft(inclusive: boolean = false): Position {
+    return this.getWordLeftWithRegex(this._nonFileNameRegex, inclusive);
+  }
+
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
@@ -478,6 +484,10 @@ export class Position extends vscode.Position {
 
   public getBigWordRight() : Position {
     return this.getWordRightWithRegex(this._nonBigWordCharRegex);
+  }
+
+  public getFilePathRight(inclusive: boolean = false): Position {
+    return this.getWordRightWithRegex(this._nonFileNameRegex, inclusive);
   }
 
   public getLastWordEnd(): Position {
@@ -597,7 +607,7 @@ export class Position extends vscode.Position {
    * is disabled.
    */
   public getLineBeginRespectingIndent(): Position {
-    if (!Configuration.getInstance().autoindent) {
+    if (!Configuration.autoindent) {
       return this.getLineBegin();
     }
     return this.getFirstLineNonBlankChar();
@@ -729,8 +739,9 @@ export class Position extends vscode.Position {
   }
 
   private makeWordRegex(characterSet: string) : RegExp {
-    let escaped = characterSet && _.escapeRegExp(characterSet);
+    let escaped = characterSet && betterEscapeRegex(characterSet);
     let segments: string[] = [];
+
     segments.push(`([^\\s${escaped}]+)`);
     segments.push(`[${escaped}]+`);
     segments.push(`$^`);
