@@ -3700,7 +3700,7 @@ class ActionJoin extends BaseCommand {
 
     let resultLine = lineOne + (addSpace ? " " : "") + lineTwoTrimmedStart;
 
-    let newState = await new DeleteOperator(this.multicursorIndex).run(
+    let newState = await new DeleteOperator().run(
       vimState,
       position.getLineBegin(),
       lineTwo.length > 0 ?
