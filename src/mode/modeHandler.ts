@@ -196,6 +196,11 @@ export class VimState {
   public lastVisualSelectionEnd: Position;
 
   /**
+   * Was the previous mouse click past EOL
+   */
+  public lastClickWasPastEol: boolean = false;
+
+  /**
    * The mode Vim will be in once this action finishes.
    */
   private _currentMode: ModeName;
@@ -569,8 +574,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (this.currentModeName === ModeName.VisualBlock ||
-        this.currentModeName === ModeName.VisualBlockInsertMode ||
+    if (this.currentModeName === ModeName.VisualBlockInsertMode ||
         this.currentModeName === ModeName.EasyMotionMode) {
       // AArrgghhhh - johnfn
 
@@ -630,11 +634,20 @@ export class ModeHandler implements vscode.Disposable {
       // Only check on a click, not a full selection (to prevent clicking past EOL)
       if (newPosition.character >= newPosition.getLineEnd().character && selection.isEmpty) {
         if (this._vimState.currentMode !== ModeName.Insert) {
+
+          this._vimState.lastClickWasPastEol = true;
+
           // This prevents you from mouse clicking past the EOL
           newPosition = new Position(newPosition.line, Math.max(newPosition.getLineEnd().character - 1, 0));
 
+          // Switch back to normal mode since it was a click not a selection
+          this._vimState.currentMode = ModeName.Normal;
+          this.setCurrentModeByName(this._vimState);
+
           toDraw = true;
         }
+      } else if (selection.isEmpty) {
+        this._vimState.lastClickWasPastEol = false;
       }
 
       this._vimState.cursorPosition    = newPosition;
@@ -659,6 +672,14 @@ export class ModeHandler implements vscode.Disposable {
 
         if (selectionStart.compareTo(newPosition) > 0) {
           this._vimState.cursorStartPosition = this._vimState.cursorStartPosition.getLeft();
+        }
+
+        // If we prevented from clicking past eol but it is part of this selection, include the last char
+        if (this._vimState.lastClickWasPastEol) {
+          const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
+          vscode.window.activeTextEditor.selection = new vscode.Selection(newStart, selection.end);
+          this._vimState.cursorStartPosition = selectionStart;
+          this._vimState.lastClickWasPastEol = false;
         }
 
         if (!this._vimState.getModeObject(this).isVisualMode &&
