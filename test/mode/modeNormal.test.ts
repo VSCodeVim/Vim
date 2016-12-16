@@ -1000,6 +1000,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "g_ works correctly",
+      start: ['te|sttest'],
+      keysPressed: 'g_',
+      end: ['testtes|t']
+    });
+
+    newTest({
+      title: "3g_ works correctly",
+      start: ['tes|ttest', 'testtest', 'testtest'],
+      keysPressed: '3g_',
+      end: ['testtest', 'testtest', 'testtes|t']
+    });
+
+    newTest({
       title: "Can handle space",
       start: ['|abc', 'def'],
       keysPressed: '  ',

@@ -3467,8 +3467,17 @@ class MoveScreenLineEndNonBlank extends MoveByScreenLine {
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     count = count || 1;
-    const pos = await this.execAction(position, vimState) as Position;
-    return pos.getDownByCount(count - 1);
+    const pos = await this.execAction(position, vimState);
+    const newPos: Position | IMovement = pos as Position;
+
+    // If in visual, return a selection
+    if (pos instanceof Position) {
+      return pos.getDownByCount(count - 1);
+    } else if (isIMovement(pos)) {
+      return { start: pos.start, stop: pos.stop.getDownByCount(count - 1).getLeft()};
+    }
+
+    return newPos.getDownByCount(count - 1);
   }
 }
 
