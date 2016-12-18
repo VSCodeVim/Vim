@@ -436,6 +436,10 @@ export abstract class BaseCommand extends BaseAction {
 }
 
 export class BaseOperator extends BaseAction {
+    constructor(multicursorIndex?: number) {
+      super();
+      this.multicursorIndex = multicursorIndex;
+    }
     canBeRepeatedWithDot = true;
 
     /**
@@ -1787,7 +1791,7 @@ export class DeleteOperator extends BaseOperator {
         }
 
         if (yank) {
-          Register.put(text, vimState);
+          Register.put(text, vimState, this.multicursorIndex);
         }
 
         let diff = new PositionDiff(0, 0);
@@ -1838,7 +1842,7 @@ export class DeleteOperatorVisual extends BaseOperator {
     public modes = [ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      return await new DeleteOperator().run(vimState, start, end);
+      return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
     }
 }
 
@@ -1907,7 +1911,7 @@ export class DeleteOperatorXVisual extends BaseOperator {
     public modes = [ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      return await new DeleteOperator().run(vimState, start, end);
+      return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
     }
 }
 
@@ -2045,9 +2049,9 @@ export class ChangeOperator extends BaseOperator {
         // the line. We do want to run delete if it is a multiline change though ex. c}
         if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 || (end.line !== start.line)) {
           if (isEndOfLine) {
-            state = await new DeleteOperator().run(vimState, start, end.getLeftThroughLineBreaks());
+            state = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end.getLeftThroughLineBreaks());
           } else {
-            state = await new DeleteOperator().run(vimState, start, end);
+            state = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
           }
         }
 
@@ -2322,7 +2326,7 @@ export class PutCommandVisual extends BaseCommand {
       [start, end] = [end, start];
     }
 
-    const result = await new DeleteOperator().run(vimState, start, end, false);
+    const result = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
 
     return await new PutCommand().exec(start, result, true);
   }
@@ -2666,13 +2670,14 @@ class CommandDeleteToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["D"];
   canBeRepeatedWithDot = true;
+  runsOnceForEveryCursor() { return true; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (position.isLineEnd()) {
       return vimState;
     }
 
-    return await new DeleteOperator().run(vimState, position, position.getLineEnd().getLeft());
+    return await new DeleteOperator(this.multicursorIndex).run(vimState, position, position.getLineEnd().getLeft());
   }
 }
 
@@ -3861,7 +3866,7 @@ class ActionDeleteChar extends BaseCommand {
       return vimState;
     }
 
-    const state = await new DeleteOperator().run(vimState, position, position);
+    const state = await new DeleteOperator(this.multicursorIndex).run(vimState, position, position);
 
     state.currentMode = ModeName.Normal;
 
@@ -3882,7 +3887,7 @@ class ActionDeleteCharWithDeleteKey extends BaseCommand {
       return vimState;
     }
 
-    const state = await new DeleteOperator().run(vimState, position, position);
+    const state = await new DeleteOperator(this.multicursorIndex).run(vimState, position, position);
 
     state.currentMode = ModeName.Normal;
 
@@ -3901,7 +3906,7 @@ class ActionDeleteLastChar extends BaseCommand {
       return vimState;
     }
 
-    return await new DeleteOperator().run(vimState, position.getLeft(), position.getLeft());
+    return await new DeleteOperator(this.multicursorIndex).run(vimState, position.getLeft(), position.getLeft());
   }
 }
 
@@ -4314,7 +4319,7 @@ class ActionJoinNoWhitespace extends BaseCommand {
 
     let resultLine = lineOne + lineTwo;
 
-    let newState = await new DeleteOperator().run(
+    let newState = await new DeleteOperator(this.multicursorIndex).run(
       vimState,
       position.getLineBegin(),
       lineTwo.length > 0 ?
@@ -4753,7 +4758,7 @@ export class YankVisualBlockMode extends BaseOperator {
         toCopy += line + '\n';
       }
 
-      Register.put(toCopy, vimState);
+      Register.put(toCopy, vimState, this.multicursorIndex);
 
       vimState.currentMode = ModeName.Normal;
       vimState.cursorPosition = start;
@@ -4909,7 +4914,7 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   keys = ["X"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return await new DeleteOperator().run(vimState, position.getLineBegin(), position.getLineEnd());
+    return await new DeleteOperator(this.multicursorIndex).run(vimState, position.getLineBegin(), position.getLineEnd());
   }
 }
 

@@ -1391,4 +1391,24 @@ suite("Mode Normal", () => {
       keysPressed: '#',
       end: ['test aaa test aaa test aaa |test aaa test'],
     });
+
+    newTest({
+      title: "Can 'D'elete the characters under the cursor until the end of the line",
+      start: ['test aaa test aaa test aaa test |aaa test'],
+      keysPressed: 'D',
+      end: ['test aaa test aaa test aaa test| ']
+    });
+
+    newTest({
+      title: "Can 'D'elete the characters under multiple cursors until the end of the line",
+      start: [
+        'test aaa test aaa test aaa test |aaa test',
+        'test aaa test aaa test aaa test aaa test'
+      ],
+      keysPressed: '<C-alt+down>D<Esc>',
+      end: [
+        'test aaa test aaa test aaa tes|t ',
+        'test aaa test aaa test aaa test '
+      ]
+    });
 });
