@@ -2995,9 +2995,13 @@ class CommandInsertNewLineAbove extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
-    await vscode.commands.executeCommand('editor.action.insertLineBefore');
 
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    vimState.recordedState.transformations.push({
+      type: "insertText",
+      text: "\n",
+      position: new Position(vimState.cursorPosition.line, 0),
+      diff: new PositionDiff(-1, 0),
+    });
 
     return vimState;
   }
