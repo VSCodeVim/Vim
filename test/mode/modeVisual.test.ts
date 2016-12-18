@@ -574,7 +574,7 @@ suite("Mode Visual", () => {
     endMode: ModeName.Normal
   });
 
- newTest({
+  newTest({
     title: "Can do vi( on a matching bracket near first character",
     start: ["test(()=>{", "|", "});"],
     keysPressed: "vi(d",
