@@ -55,7 +55,6 @@ export class SetOptionsCommand extends node.CommandBase {
   constructor(args : IOptionArgs) {
     super();
     this._name = 'setoptions';
-    this._shortName = 'option';
     this._arguments = args;
   }
 
@@ -70,30 +69,30 @@ export class SetOptionsCommand extends node.CommandBase {
 
     switch (this._arguments.operator) {
       case SetOptionOperator.Set:
-        Configuration.getInstance()[this._arguments.name] = true;
+        Configuration[this._arguments.name] = true;
         break;
       case SetOptionOperator.Reset:
-        Configuration.getInstance()[this._arguments.name] = false;
+        Configuration[this._arguments.name] = false;
         break;
       case SetOptionOperator.Equal:
-        Configuration.getInstance()[this._arguments.name] = this._arguments.value!;
+        Configuration[this._arguments.name] = this._arguments.value!;
         break;
       case SetOptionOperator.Invert:
-        Configuration.getInstance()[this._arguments.name] = !Configuration.getInstance()[this._arguments.name];
+        Configuration[this._arguments.name] = !Configuration[this._arguments.name];
         break;
       case SetOptionOperator.Append:
-        Configuration.getInstance()[this._arguments.name] += this._arguments.value!;
+        Configuration[this._arguments.name] += this._arguments.value!;
         break;
       case SetOptionOperator.Subtract:
         if (typeof this._arguments.value! === "number") {
-          Configuration.getInstance()[this._arguments.name] -= this._arguments.value! as number;
+          Configuration[this._arguments.name] -= this._arguments.value! as number;
         } else {
-          let initialValue = Configuration.getInstance()[this._arguments.name];
-          Configuration.getInstance()[this._arguments.name] = initialValue.split(this._arguments.value! as string).join('');
+          let initialValue = Configuration[this._arguments.name];
+          Configuration[this._arguments.name] = initialValue.split(this._arguments.value! as string).join('');
         }
         break;
       case SetOptionOperator.Info:
-        let value = Configuration.getInstance()[this._arguments.name];
+        let value = Configuration[this._arguments.name];
         if (value === undefined) {
           await util.showError(`E518 Unknown option: ${this._arguments.name}`);
         } else {

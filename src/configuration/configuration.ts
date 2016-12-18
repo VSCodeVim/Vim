@@ -29,8 +29,8 @@ export type ValueMapping = {
  * 4. VSCodeVim flavored Vim option default values
  *
  */
-export class Configuration {
-  private static _instance: Configuration | null;
+class ConfigurationClass {
+  private static _instance: ConfigurationClass | null;
 
   constructor() {
     /**
@@ -40,43 +40,125 @@ export class Configuration {
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      const vimOptionValue = vimOptions[option];
+      const vimOptionValue = vimOptions[option] as any;
       if (vimOptionValue !== null && vimOptionValue !== undefined) {
         this[option] = vimOptionValue;
       }
     }
   }
 
-  public static getInstance(): Configuration {
-    if (Configuration._instance == null) {
-      Configuration._instance = new Configuration();
+  public static getInstance(): ConfigurationClass {
+    if (ConfigurationClass._instance == null) {
+      ConfigurationClass._instance = new ConfigurationClass();
     }
 
-    return Configuration._instance;
+    return ConfigurationClass._instance;
   }
 
-  useSolidBlockCursor: boolean = false;
-  useSystemClipboard: boolean = false;
-  useCtrlKeys: boolean = false;
-  scroll: number = 20;
-  hlsearch: boolean = false;
-  ignorecase: boolean = true;
-  smartcase: boolean = true;
-  autoindent: boolean = true;
-  easymotion: boolean = false;
+  /**
+   * Should the block cursor not blink?
+   */
+  useSolidBlockCursor = false;
 
+  /**
+   * Use the system's clipboard when copying.
+   */
+  useSystemClipboard = false;
+
+  /**
+   * Enable ctrl- actions that would override existing VSCode actions.
+   */
+  useCtrlKeys = false;
+
+  /**
+   * Width in characters to word-wrap to.
+   */
+  textwidth = 80;
+
+  /**
+   * Should we highlight incremental search matches?
+   */
+  hlsearch = false;
+
+  /**
+   * Used internally for nohl.
+   */
+  hl = true;
+
+  /**
+   * Ignore case when searching with / or ?.
+   */
+  ignorecase = true;
+
+  /**
+   * In / or ?, default to ignorecase=true unless the user types a capital
+   * letter.
+   */
+  smartcase = true;
+
+  /**
+   * Indent automatically?
+   */
+  autoindent = true;
+
+  /**
+   * Use EasyMotion plugin?
+   */
+  easymotion = false;
+
+  /**
+   * Timeout in milliseconds for remapped commands.
+   */
+  timeout = 1000;
+
+  /**
+   * Display partial commands on status bar?
+   */
+  showcmd = true;
+
+  /**
+   * What key should <leader> map to in key remappings?
+   */
+  leader = "\\";
+
+  /**
+   * How much search or command history should be remembered
+   */
+  history = 50;
+
+  /**
+   * Show results of / or ? search as user is typing?
+   */
+  incsearch = true;
+
+  /**
+   * Start in insert mode?
+   */
+  startInInsertMode = false;
+
+  /**
+   * Color of search highlights.
+   */
+  searchHighlightColor = "rgba(150, 150, 255, 0.3)";
+
+  /**
+   * Size of a tab character.
+   */
   @overlapSetting({ codeName: "tabSize", default: 8})
   tabstop: number | undefined = undefined;
 
+  /**
+   * Use spaces when the user presses tab?
+   */
   @overlapSetting({ codeName: "insertSpaces", default: false})
   expandtab: boolean | undefined = undefined;
-
-  @overlapSetting({ codeName: "cursorStyle", default: "block"})
-  cursorStyle: string = "block";
 
   @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: {true: "on", false: "off"}})
   number: boolean | undefined = undefined;
 
+  /**
+   * Show relative line numbers?
+   */
   @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: {true: "relative", false: "off"}})
   relativenumber: boolean | undefined = undefined;
 
@@ -127,3 +209,5 @@ function overlapSetting(args: {codeName: string, default: OptionValue, codeValue
     });
   };
 }
+
+export const Configuration = ConfigurationClass.getInstance();

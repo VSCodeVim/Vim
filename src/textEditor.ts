@@ -114,6 +114,14 @@ export class TextEditor {
     return vscode.window.activeTextEditor.document.lineAt(position);
   }
 
+  static getLineMaxColumn(lineNumber: number): number {
+    if (lineNumber < 1 || lineNumber > TextEditor.getLineCount()) {
+      throw new Error('Illegal value ' + lineNumber + ' for `lineNumber`');
+    }
+
+    return TextEditor.readLineAt(lineNumber).length;
+  }
+
   static getSelection(): vscode.Range {
     return vscode.window.activeTextEditor.selection;
   }
@@ -156,7 +164,7 @@ export class TextEditor {
   }
 
   static getIndentationLevel(line: string): number {
-    let tabSize = Configuration.getInstance().tabstop;
+    let tabSize = Configuration.tabstop;
     let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
     let visibleColumn: number = 0;
 
@@ -181,8 +189,8 @@ export class TextEditor {
   }
 
   static setIndentationLevel(line: string, screenCharacters: number): string {
-    let tabSize = Configuration.getInstance().tabstop;
-    let insertTabAsSpaces = Configuration.getInstance().expandtab;
+    let tabSize = Configuration.tabstop;
+    let insertTabAsSpaces = Configuration.expandtab;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;

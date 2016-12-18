@@ -29,7 +29,6 @@ export class WriteCommand extends node.CommandBase {
   constructor(args : IWriteCommandArguments) {
     super();
     this._name = 'write';
-    this._shortName = 'w';
     this._arguments = args;
   }
 
@@ -64,13 +63,13 @@ export class WriteCommand extends node.CommandBase {
       if (this.arguments.bang) {
         fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
           if (e) {
-            modeHandler.setupStatusBarItem(e.message);
+            modeHandler.setStatusBarText(e.message);
           } else {
             return this.save(modeHandler);
           }
         });
       } else {
-        modeHandler.setupStatusBarItem(accessErr.message);
+        modeHandler.setStatusBarText(accessErr.message);
       }
     }
   }
@@ -78,11 +77,11 @@ export class WriteCommand extends node.CommandBase {
   private async save(modeHandler : ModeHandler) : Promise<void> {
     await this.activeTextEditor.document.save().then(
       (ok) => {
-        modeHandler.setupStatusBarItem('"' + path.basename(this.activeTextEditor.document.fileName) +
+        modeHandler.setStatusBarText('"' + path.basename(this.activeTextEditor.document.fileName) +
         '" ' + this.activeTextEditor.document.lineCount + 'L ' +
         this.activeTextEditor.document.getText().length + 'C written');
       },
-      (e) => modeHandler.setupStatusBarItem(e)
+      (e) => modeHandler.setStatusBarText(e)
     );
   }
 }

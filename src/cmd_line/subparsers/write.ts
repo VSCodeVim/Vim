@@ -41,7 +41,7 @@ export function parseWriteCommandArgs(args : string) : WriteCommand {
         scanner.ignore();
         while (!scanner.isAtEof) {
           let c = scanner.next();
-          if (c !== ' ' || c !== '\t') {
+          if (c !== ' ' && c !== '\t') {
             continue;
           }
           scanner.backup();

@@ -256,7 +256,9 @@ async function handleKeyEvent(key: string): Promise<void> {
   const mh = await getAndUpdateModeHandler();
 
   taskQueue.enqueueTask({
-    promise   : async () => { await mh.handleKeyEvent(key); },
+    promise   : async () => {
+      await mh.handleKeyEvent(key);
+    },
     isRunning : false
   });
 }

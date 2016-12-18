@@ -592,4 +592,43 @@ suite("Mode Visual", () => {
     });
   });
 
+  newTest({
+    title: "Can do v_x to delete to first char",
+    start: ["", "test te|st test", ""],
+    keysPressed: "v_x",
+    end: ["", "|t test", ""],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Can do vg_x to delete to last char with no EOL",
+    start: ["", "test te|st test", ""],
+    keysPressed: "vg_x",
+    end: ["", "test t|e", ""],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Can do v3g_x to delete to last char with no EOL with count",
+    start: ["te|st", "test", "test", "test"],
+    keysPressed: "v3g_x",
+    end: ["t|e", "test"],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Can do v$x to delete to last char including EOL",
+    start: ["", "test te|st test", ""],
+    keysPressed: "v$x",
+    end: ["", "test t|e"],
+    endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Can do gv to reselect previous selection",
+    start: ["tes|ttest"],
+    keysPressed: "vl<Esc>llgvd",
+    end: ["tes|est"],
+    endMode: ModeName.Normal
+  });
 });

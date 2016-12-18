@@ -131,11 +131,6 @@ export abstract class CommandBase {
   }
   protected _name : string;
 
-  get shortName() : string {
-    return this._shortName;
-  }
-  protected _shortName : string;
-
   get arguments() : ICommandArgs {
     return this._arguments;
   }

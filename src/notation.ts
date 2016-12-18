@@ -1,3 +1,5 @@
+import { Configuration } from './configuration/configuration';
+
 export class AngleBracketNotation {
 
   // Mapping from the nomalized string to regex strings that could match it.
@@ -16,6 +18,19 @@ export class AngleBracketNotation {
   public static Normalize(key: string): string {
     if (!this.isSurroundedByAngleBrackets(key) && key.length > 1) {
       key = `<${ key.toLocaleLowerCase() }>`;
+    }
+
+    // Special cases that we handle incorrectly (internally)
+    if (key.toLowerCase() === "<space>") {
+      return " ";
+    }
+
+    if (key.toLowerCase() === "<cr>") {
+      return "\n";
+    }
+
+    if (key.toLowerCase() === "<leader>") {
+      return Configuration.leader;
     }
 
     for (const notationMapKey in this._notationMap) {

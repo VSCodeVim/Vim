@@ -108,7 +108,7 @@ export class Register {
   /**
    * Puts the content at the specified index of the multicursor Register.
    *
-   * `REMARKS:` This Procedure assume that you pass an valid register.
+   * `REMARKS:` This procedure assumes that you pass an valid register.
    */
   private static putMulticursorRegister(content: RegisterContent, register: string, vimState: VimState, multicursorIndex: number): void {
     if (multicursorIndex === 0) {
@@ -120,6 +120,10 @@ export class Register {
     }
 
     let registerContent = Register.registers[register.toLowerCase()];
+
+    if (!Array.isArray(registerContent.text)) {
+      registerContent.text = [];
+    }
 
     (registerContent.text as string[]).push(content as string);
 

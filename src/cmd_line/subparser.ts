@@ -1,16 +1,17 @@
 "use strict";
 
-import {parseQuitCommandArgs, parseQuitAllCommandArgs} from './subparsers/quit';
-import {parseWriteCommandArgs} from './subparsers/write';
-import {parseWallCommandArgs} from './subparsers/wall';
-import {parseWriteQuitCommandArgs} from './subparsers/writequit';
+import { parseQuitCommandArgs, parseQuitAllCommandArgs } from './subparsers/quit';
+import { parseWriteCommandArgs } from './subparsers/write';
+import { parseWallCommandArgs } from './subparsers/wall';
+import { parseNohlCommandArgs } from './subparsers/nohl';
+import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import * as tabCmd from './subparsers/tab';
 import * as fileCmd from './subparsers/file';
-import {parseOptionsCommandArgs} from './subparsers/setoptions';
-import {parseSubstituteCommandArgs} from './subparsers/substitute';
-import {parseReadCommandArgs} from './subparsers/read';
-import {parseRegisterCommandArgs} from './subparsers/register';
-import {parseDeleteRangeLinesCommandArgs} from './subparsers/deleteRange';
+import { parseOptionsCommandArgs } from './subparsers/setoptions';
+import { parseSubstituteCommandArgs } from './subparsers/substitute';
+import { parseReadCommandArgs } from './subparsers/read';
+import { parseRegisterCommandArgs } from './subparsers/register';
+import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -19,6 +20,10 @@ export const commandParsers = {
 
   wa: parseWallCommandArgs,
   wall: parseWallCommandArgs,
+
+  nohlsearch: parseNohlCommandArgs,
+  noh: parseNohlCommandArgs,
+  nohl: parseNohlCommandArgs,
 
   quit: parseQuitCommandArgs,
   q: parseQuitCommandArgs,

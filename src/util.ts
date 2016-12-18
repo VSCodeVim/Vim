@@ -1,5 +1,6 @@
 "use strict";
 
+import * as _ from "lodash";
 import * as vscode from 'vscode';
 import { Range } from './motion/range';
 import { Position } from './motion/position';
@@ -18,11 +19,12 @@ export async function showError(message : string): Promise<{}> {
  * update the position of the cursor. So we have to wait!
  */
 export async function waitForCursorUpdatesToHappen(): Promise<void> {
-  // TODO - dispose!
-
   await new Promise((resolve, reject) => {
     setTimeout(resolve, 100);
-    vscode.window.onDidChangeTextEditorSelection(x => {
+
+    const disposer = vscode.window.onDidChangeTextEditorSelection(x => {
+      disposer.dispose();
+
       resolve();
     });
   });
@@ -39,4 +41,10 @@ export async function wait(time: number): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(resolve, time);
   });
+}
+
+export function betterEscapeRegex(str: string): string {
+  let result = _.escapeRegExp(str);
+
+  return result.replace(/-/g, "\\-");
 }
