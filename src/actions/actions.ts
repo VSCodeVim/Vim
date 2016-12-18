@@ -5335,13 +5335,13 @@ abstract class MoveInsideCharacter extends BaseMovement {
     } else {
       startPos = startPlusOne;
       if (vimState.currentMode === ModeName.Visual) {
-        endPos = endPos.getLeft();
+        endPos = endPos.getLeftThroughLineBreaks();
       }
     }
 
     // If the closing character is the first on the line, don't swallow it.
     if (!this.includeSurrounding) {
-      if (endPos.character === 0) {
+      if (endPos.character === 0 && vimState.currentMode !== ModeName.Visual) {
         endPos = endPos.getLeftThroughLineBreaks();
       } else if (/^\s+$/.test(TextEditor.getText(new vscode.Range(endPos.getLineBegin(), endPos.getLeft())))) {
         endPos = endPos.getPreviousLineBegin().getLineEnd();
