@@ -1439,8 +1439,9 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       // Store this search if different than previous
       if (vimState.searchStatePrevious.length !== 0) {
-        if (searchState.searchString !== vimState.searchStatePrevious[vimState.searchStatePrevious.length - 1]!.searchString) {
-          vimState.searchStatePrevious.push(searchState);
+        let previousSearchState = vimState.searchStatePrevious;
+        if (searchState.searchString !== previousSearchState[previousSearchState.length - 1]!.searchString) {
+          previousSearchState.push(searchState);
         }
       } else {
         vimState.searchStatePrevious.push(searchState);

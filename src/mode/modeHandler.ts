@@ -38,6 +38,7 @@ import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
 import { SearchState } from './../state/searchState';
 import { ReplaceState } from './../state/replaceState';
+import { GlobalState } from './../state/globalState';
 
 export class ViewChange {
   public command: string;
@@ -88,11 +89,7 @@ export class VimState {
 
   public lastMovementFailed: boolean = false;
 
-  /**
-   * The keystroke sequence that made up our last complete action (that can be
-   * repeated with '.').
-   */
-  public previousFullAction: RecordedState | undefined = undefined;
+  public static globals: GlobalState = GlobalState;
 
   public alteredHistory = false;
 
@@ -122,6 +119,25 @@ export class VimState {
    * The current full action we are building up.
    */
   public currentFullAction: string[] = [];
+
+  /**
+   * Getters and setters for changing global state
+   */
+  public get searchStatePrevious(): SearchState[]{
+    return GlobalState.searchStatePrevious;
+  }
+
+  public set searchStatePrevious(states: SearchState[]) {
+    GlobalState.searchStatePrevious = this.searchStatePrevious.concat(states);
+  }
+
+  public get previousFullAction(): RecordedState | undefined {
+    return GlobalState.previousFullAction;
+  }
+
+  public set previousFullAction(state : RecordedState | undefined) {
+    GlobalState.previousFullAction = state;
+  }
 
   /**
    * The position the cursor will be when this action finishes.
@@ -174,11 +190,6 @@ export class VimState {
    *  Index used for navigating search history with <up> and <down> when searching
    */
   public searchStateIndex: number = 0;
-
-  /**
-   * Previous searches performed
-   */
-  public searchStatePrevious: SearchState[] = [];
 
   public isRecordingMacro: boolean = false;
 
