@@ -2379,7 +2379,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 
 @RegisterAction
 class OutdentOperator extends BaseOperator {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal];
   keys = ["<"];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -2387,7 +2387,27 @@ class OutdentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand("editor.action.outdentLines");
     vimState.currentMode  = ModeName.Normal;
-    vimState.cursorPosition = vimState.cursorStartPosition;
+    vimState.cursorPosition = start.getFirstLineNonBlankChar();
+
+    return vimState;
+  }
+}
+
+/**
+ * See comment for IndentOperatorInVisualModesIsAWeirdSpecialCase
+ */
+@RegisterAction
+class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["<"];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    for (let i = 0; i < (vimState.recordedState.count || 1); i++) {
+      await vscode.commands.executeCommand("editor.action.outdentLines");
+    }
+
+    vimState.currentMode    = ModeName.Normal;
+    vimState.cursorPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
   }
