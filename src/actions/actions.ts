@@ -2390,13 +2390,7 @@ class OutdentOperator extends BaseOperator {
 }
 
 /**
- * `3<` to outdent a line 3 times in visual mode is actually a bit of a special case.
- *
- * < is an operator, and generally speaking, you don't run operators multiple times, you run motions multiple times.
- * e.g. `d3w` runs `w` 3 times, then runs d once.
- *
- * Same with literally every other operator motion combination... until `3<`in visual mode
- * walked into my life.
+ * See comment for IndentOperatorInVisualModesIsAWeirdSpecialCase
  */
 @RegisterAction
 class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
