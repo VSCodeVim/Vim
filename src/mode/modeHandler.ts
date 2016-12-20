@@ -892,11 +892,13 @@ export class ModeHandler implements vscode.Disposable {
 
     // Update mode (note the ordering allows you to go into search mode,
     // then return and have the motion immediately applied to an operator).
-
+    const prevState = this.currentModeName;
     if (vimState.currentMode !== this.currentModeName) {
       this.setCurrentModeByName(vimState);
 
-      if (vimState.currentMode === ModeName.Normal) {
+      // We don't want to mark any searches as a repeatable action
+      if (vimState.currentMode === ModeName.Normal && prevState !== ModeName.SearchInProgressMode &&
+        vimState.currentMode !== ModeName.SearchInProgressMode) {
         ranRepeatableAction = true;
       }
     }
