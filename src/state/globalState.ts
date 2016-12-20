@@ -1,9 +1,5 @@
-// import * as vscode from 'vscode';
 import { SearchState } from './searchState';
 import { RecordedState } from '../mode/modeHandler';
-// import { Position } from './../motion/position';
-// import { TextEditor } from './../textEditor';
-// import { Configuration } from '../../src/configuration/configuration';
 
 /**
  * State which stores global state (across editors)
@@ -13,20 +9,55 @@ export class GlobalState {
    * The keystroke sequence that made up our last complete action (that can be
    * repeated with '.').
    */
-  public static previousFullAction: RecordedState | undefined = undefined;
+  private static _previousFullAction: RecordedState | undefined = undefined;
 
   /**
    * Previous searches performed
    */
-  public static searchStatePrevious: SearchState[] = [];
+  private static _searchStatePrevious: SearchState[] = [];
 
   /**
    * Last search state for running n and N commands
    */
-  public static searchState: SearchState | undefined = undefined;
+  private static _searchState: SearchState | undefined = undefined;
 
   /**
    *  Index used for navigating search history with <up> and <down> when searching
    */
-  public static searchStateIndex: number = 0;
+  private static _searchStateIndex: number = 0;
+
+  /**
+   * Getters and setters for changing global state
+   */
+  public get searchStatePrevious(): SearchState[]{
+    return GlobalState._searchStatePrevious;
+  }
+
+  public set searchStatePrevious(states: SearchState[]) {
+    GlobalState._searchStatePrevious = GlobalState._searchStatePrevious.concat(states);
+  }
+
+  public get previousFullAction(): RecordedState | undefined {
+    return GlobalState._previousFullAction;
+  }
+
+  public set previousFullAction(state : RecordedState | undefined) {
+    GlobalState._previousFullAction = state;
+  }
+
+  public get searchState(): SearchState | undefined {
+    return GlobalState._searchState;
+  }
+
+  public set searchState(state : SearchState | undefined) {
+    GlobalState._searchState = state;
+  }
+
+  public get searchStateIndex(): number {
+    return GlobalState._searchStateIndex;
+  }
+
+  public set searchStateIndex(state : number) {
+    GlobalState._searchStateIndex = state;
+  }
 }
