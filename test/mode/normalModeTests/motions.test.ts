@@ -278,7 +278,7 @@ suite("Motions in Normal Mode", () => {
     end: ['one two |two two'],
   });
 
-  test('Remembers a forward search from another editor', async () => {
+  test('Remembers a forward search from another editor', async function() {
     // adding another editor
     await setupWorkspace();
 
@@ -297,7 +297,7 @@ suite("Motions in Normal Mode", () => {
       title: "",
       start: ['|three four two one'],
       keysPressed: '<Esc>n',
-      end: ['three four |two two'],
+      end: ['three four |two one'],
     });
   });
 
@@ -320,13 +320,7 @@ suite("Motions in Normal Mode", () => {
       title: "",
       start: ['|three four two one'],
       keysPressed: '/\n',
-      end: ['three four |two two'],
-    });
-
-    await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(modeHandler);
-      }, 3000);
+      end: ['three four |two one'],
     });
   });
 
@@ -387,12 +381,6 @@ suite("Motions in Normal Mode", () => {
       start: ['three four two one|'],
       keysPressed: '?\n',
       end: ['three four |two one'],
-    });
-
-    await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(modeHandler);
-      }, 3000);
     });
   });
 
