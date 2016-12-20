@@ -86,6 +86,24 @@ Bind `ZZ` to save and close the current file:
     ]
 ````
 
+Or bind `<leader>w` to save the current file:
+
+```
+    "vim.otherModesKeyBindingsNonRecursive": [
+        {
+            "before": ["leader", "w"],
+            "after": [],
+            "commands": [
+                {
+                    "command": "workbench.action.files.save",
+                    "args": []
+                }
+            ]
+        }
+    ]
+````
+
+
 
 
 #### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
