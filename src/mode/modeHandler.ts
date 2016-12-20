@@ -139,6 +139,22 @@ export class VimState {
     GlobalState.previousFullAction = state;
   }
 
+  public get searchState(): SearchState | undefined {
+    return GlobalState.searchState;
+  }
+
+  public set searchState(state : SearchState | undefined) {
+    GlobalState.searchState = state;
+  }
+
+  public get searchStateIndex(): number {
+    return GlobalState.searchStateIndex;
+  }
+
+  public set searchStateIndex(state : number) {
+    GlobalState.searchStateIndex = state;
+  }
+
   /**
    * The position the cursor will be when this action finishes.
    */
@@ -183,13 +199,6 @@ export class VimState {
   }
 
   public cursorPositionJustBeforeAnythingHappened = [ new Position(0, 0) ];
-
-  public searchState: SearchState | undefined = undefined;
-
-  /**
-   *  Index used for navigating search history with <up> and <down> when searching
-   */
-  public searchStateIndex: number = 0;
 
   public isRecordingMacro: boolean = false;
 

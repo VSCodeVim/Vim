@@ -19,4 +19,14 @@ export class GlobalState {
    * Previous searches performed
    */
   public static searchStatePrevious: SearchState[] = [];
+
+  /**
+   * Last search state for running n and N commands
+   */
+  public static searchState: SearchState | undefined = undefined;
+
+  /**
+   *  Index used for navigating search history with <up> and <down> when searching
+   */
+  public static searchStateIndex: number = 0;
 }
