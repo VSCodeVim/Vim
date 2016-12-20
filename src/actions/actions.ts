@@ -730,7 +730,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
       text += "\n";
     }
 
-    const searchState = vimState.searchState!;
+    const searchState = vimState.globalState.searchState!;
     searchState.searchString += text;
     return vimState;
   }
@@ -882,8 +882,8 @@ class CommandEsc extends BaseCommand {
     }
 
     if (vimState.currentMode === ModeName.SearchInProgressMode) {
-      if (vimState.searchState) {
-        vimState.cursorPosition = vimState.searchState.searchCursorStartPosition;
+      if (vimState.globalState.searchState) {
+        vimState.cursorPosition = vimState.globalState.searchState.searchCursorStartPosition;
       }
     }
 
@@ -1425,7 +1425,7 @@ class CommandInsertInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
-    const searchState = vimState.searchState!;
+    const searchState = vimState.globalState.searchState!;
 
     // handle special keys first
     if (key === "<BS>" || key === "<shift+BS>") {
@@ -1435,55 +1435,56 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
-        const prevSearchList = vimState.searchStatePrevious!;
+        const prevSearchList = vimState.globalState.searchStatePrevious!;
         if (prevSearchList.length > 0) {
           searchState.searchString = prevSearchList[prevSearchList.length - 1].searchString;
         }
       }
 
       // Store this search if different than previous
-      if (vimState.searchStatePrevious.length !== 0) {
-        if (searchState.searchString !== vimState.searchStatePrevious[vimState.searchStatePrevious.length - 1]!.searchString) {
-          vimState.searchStatePrevious.push(searchState);
+      if (vimState.globalState.searchStatePrevious.length !== 0) {
+        let previousSearchState = vimState.globalState.searchStatePrevious;
+        if (searchState.searchString !== previousSearchState[previousSearchState.length - 1]!.searchString) {
+          previousSearchState.push(searchState);
         }
       } else {
-        vimState.searchStatePrevious.push(searchState);
+        vimState.globalState.searchStatePrevious.push(searchState);
       }
 
       // Make sure search history does not exceed configuration option
-      if (vimState.searchStatePrevious.length > Configuration.history) {
-        vimState.searchStatePrevious.splice(0, 1);
+      if (vimState.globalState.searchStatePrevious.length > Configuration.history) {
+        vimState.globalState.searchStatePrevious.splice(0, 1);
       }
 
       // Update the index to the end of the search history
-      vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
+      vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
 
       // Move cursor to next match
       vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
       return vimState;
     } else if (key === "<up>") {
-      const prevSearchList = vimState.searchStatePrevious!;
-      if (prevSearchList[vimState.searchStateIndex] !== undefined) {
-        searchState.searchString = prevSearchList[vimState.searchStateIndex].searchString;
-        vimState.searchStateIndex -= 1;
+      const prevSearchList = vimState.globalState.searchStatePrevious!;
+      if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
+        searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
+        vimState.globalState.searchStateIndex -= 1;
       }
     } else if (key === "<down>") {
-      const prevSearchList = vimState.searchStatePrevious!;
-      if (prevSearchList[vimState.searchStateIndex] !== undefined) {
-        searchState.searchString = prevSearchList[vimState.searchStateIndex].searchString;
-        vimState.searchStateIndex += 1;
+      const prevSearchList = vimState.globalState.searchStatePrevious!;
+      if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
+        searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
+        vimState.globalState.searchStateIndex += 1;
       }
     } else {
       searchState.searchString += this.keysPressed[0];
     }
 
     // Clamp the history index to stay within bounds of search history length
-    if (vimState.searchStateIndex > vimState.searchStatePrevious.length - 1) {
-      vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
+    if (vimState.globalState.searchStateIndex > vimState.globalState.searchStatePrevious.length - 1) {
+      vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
     }
-    if (vimState.searchStateIndex < 0) {
-      vimState.searchStateIndex = 0;
+    if (vimState.globalState.searchStateIndex < 0) {
+      vimState.globalState.searchStateIndex = 0;
     }
 
     return vimState;
@@ -1498,7 +1499,7 @@ class CommandEscInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Normal;
-    vimState.searchState = undefined;
+    vimState.globalState.searchState = undefined;
 
     return vimState;
   }
@@ -1511,7 +1512,7 @@ class CommandCtrlVInSearchMode extends BaseCommand {
   runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const searchState = vimState.searchState!;
+    const searchState = vimState.globalState.searchState!;
     const textFromClipboard = await new Promise<string>((resolve, reject) =>
       clipboard.paste((err, text) => err ? reject(err) : resolve(text))
     );
@@ -1528,7 +1529,7 @@ class CommandCmdVInSearchMode extends BaseCommand {
   runsOnceForEveryCursor() { return this.keysPressed[0] === '\n'; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const searchState = vimState.searchState!;
+    const searchState = vimState.globalState.searchState!;
     const textFromClipboard = await new Promise<string>((resolve, reject) =>
       clipboard.paste((err, text) => err ? reject(err) : resolve(text))
     );
@@ -1543,7 +1544,7 @@ class CommandNextSearchMatch extends BaseMovement {
   keys = ["n"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const searchState = vimState.searchState;
+    const searchState = vimState.globalState.searchState;
 
     if (!searchState || searchState.searchString === "") {
       return position;
@@ -1583,10 +1584,10 @@ class CommandStar extends BaseCommand {
       return vimState;
     }
 
-    vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
+    vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
 
     do {
-      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
+      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
@@ -1609,13 +1610,13 @@ class CommandHash extends BaseCommand {
       return vimState;
     }
 
-    vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
+    vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
 
     do {
       // use getWordLeft() on position to start at the beginning of the word.
       // this ensures that any matches happen ounside of the word currently selected,
       // which are the desired semantics for this motion.
-      vimState.cursorPosition = vimState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
+      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
@@ -1630,7 +1631,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
   keys = ["N"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const searchState = vimState.searchState;
+    const searchState = vimState.globalState.searchState;
 
     if (!searchState || searchState.searchString === "") {
       return position;
@@ -1705,11 +1706,11 @@ export class CommandSearchForwards extends BaseCommand {
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
+    vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
-    vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
+    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
 
     Configuration.hl = true;
 
@@ -1724,11 +1725,11 @@ export class CommandSearchBackwards extends BaseCommand {
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
+    vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
-    vimState.searchStateIndex = vimState.searchStatePrevious.length - 1;
+    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
 
     Configuration.hl = true;
 

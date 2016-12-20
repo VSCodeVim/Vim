@@ -56,6 +56,10 @@ export class TextEditor {
     return vscode.window.activeTextEditor.document.version;
   }
 
+  static getDocumentName(): String {
+    return vscode.window.activeTextEditor.document.fileName;
+  }
+
   /**
    * Removes all text in the entire document.
    */

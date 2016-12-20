@@ -30,6 +30,7 @@ export class SearchState {
   }
 
   private _cachedDocumentVersion: number;
+  private _cachedDocumentName: String;
   private _searchDirection: SearchDirection = SearchDirection.Forward;
   private isRegex: boolean;
 
@@ -52,9 +53,13 @@ export class SearchState {
 
     if (search === "") { return; }
 
-    if (this._cachedDocumentVersion !== TextEditor.getDocumentVersion() || forceRecalc) {
+    // checking if the tab that is worked on has changed, or the file version has changed
+    const shouldRecalculate = (this._cachedDocumentName !== TextEditor.getDocumentName()) ||
+      (this._cachedDocumentVersion !== TextEditor.getDocumentVersion()) || forceRecalc;
+    if (shouldRecalculate) {
       // Calculate and store all matching ranges
       this._cachedDocumentVersion = TextEditor.getDocumentVersion();
+      this._cachedDocumentName = TextEditor.getDocumentName();
       this._matchRanges = [];
 
       /*

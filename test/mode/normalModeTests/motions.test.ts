@@ -2,7 +2,8 @@
 
 import { setupWorkspace, cleanUpWorkspace } from './../../testUtils';
 import { ModeHandler } from '../../../src/mode/modeHandler';
-import { getTestingFunctions } from '../../testSimplifier';
+import { getTestingFunctions, testIt } from '../../testSimplifier';
+import { waitForTabChange } from '../../../src/util';
 
 suite("Motions in Normal Mode", () => {
   let modeHandler: ModeHandler = new ModeHandler();
@@ -277,6 +278,52 @@ suite("Motions in Normal Mode", () => {
     end: ['one two |two two'],
   });
 
+  test('Remembers a forward search from another editor', async function() {
+    // adding another editor
+    await setupWorkspace();
+
+    await testIt(modeHandler, {
+      title: "",
+      start: ['|one two two two'],
+      keysPressed: '/two\n',
+      end: ['one |two two two'],
+    });
+
+    await modeHandler.handleMultipleKeyEvents(['g', 'T', '<Esc>']);
+
+    await waitForTabChange();
+
+    await testIt(modeHandler, {
+      title: "",
+      start: ['|three four two one'],
+      keysPressed: '<Esc>n',
+      end: ['three four |two one'],
+    });
+  });
+
+  test('Shares forward search history from another editor', async () => {
+    // adding another editor
+    await setupWorkspace();
+
+    await testIt(modeHandler, {
+      title: "",
+      start: ['|one two two two'],
+      keysPressed: '/two\n',
+      end: ['one |two two two'],
+    });
+
+    await modeHandler.handleMultipleKeyEvents(['g', 'T', '<Esc>']);
+
+    await waitForTabChange();
+
+    await testIt(modeHandler, {
+      title: "",
+      start: ['|three four two one'],
+      keysPressed: '/\n',
+      end: ['three four |two one'],
+    });
+  });
+
   newTest({
     title: "Can run a reverse search",
     start: ['one two thre|e'],
@@ -290,6 +337,53 @@ suite("Motions in Normal Mode", () => {
     keysPressed: '?two\nn',
     end: ['one |two two three'],
   });
+
+  test('Remembers a reverse search from another editor', async () => {
+    // adding another editor
+    await setupWorkspace();
+
+    await testIt(modeHandler, {
+      title: "",
+      start: ['one two two two|'],
+      keysPressed: '?two\n',
+      end: ['one two two |two'],
+    });
+
+    await modeHandler.handleMultipleKeyEvents(['g', 'T', '<Esc>']);
+
+    await waitForTabChange();
+
+    await testIt(modeHandler, {
+      title: "",
+      start: ['three four two one|'],
+      keysPressed: '<Esc>n',
+      end: ['three four |two one'],
+    });
+  });
+
+  test('Shares reverse search history from another editor', async () => {
+    // adding another editor
+    await setupWorkspace();
+
+    await testIt(modeHandler, {
+      title: "",
+      start: ['one two two two|'],
+      keysPressed: '?two\n',
+      end: ['one two two |two'],
+    });
+
+    await modeHandler.handleMultipleKeyEvents(['g', 'T', '<Esc>']);
+
+    await waitForTabChange();
+
+    await testIt(modeHandler, {
+      title: "",
+      start: ['three four two one|'],
+      keysPressed: '?\n',
+      end: ['three four |two one'],
+    });
+  });
+
 
   newTest({
     title: "maintains column position correctly",

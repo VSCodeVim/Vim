@@ -30,6 +30,24 @@ export async function waitForCursorUpdatesToHappen(): Promise<void> {
   });
 }
 
+/**
+ * Waits for the tabs to change after a command like 'gt' or 'gT' is run.
+ * Sometimes it is not immediate, so we must busy wait
+ * On certain versions, the tab changes are synchronous
+ * For those, a timeout is given
+ */
+export async function waitForTabChange(): Promise<void> {
+  await new Promise((resolve, reject) => {
+    setTimeout(resolve, 100);
+
+    const disposer = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
+      disposer.dispose();
+
+      resolve(textEditor);
+    });
+  });
+}
+
 export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(): Promise<Range[]> {
   await waitForCursorUpdatesToHappen();
 

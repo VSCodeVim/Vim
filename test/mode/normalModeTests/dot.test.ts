@@ -1,7 +1,9 @@
 "use strict";
 
-import { setupWorkspace, cleanUpWorkspace, setTextEditorOptions } from './../../testUtils';
+import { setupWorkspace, cleanUpWorkspace, setTextEditorOptions, assertEqualLines } from './../../testUtils';
 import { ModeHandler } from '../../../src/mode/modeHandler';
+import { waitForTabChange } from '../../../src/util';
+import * as assert from 'assert';
 import { getTestingFunctions } from '../../testSimplifier';
 
 suite("Dot Operator", () => {
@@ -18,6 +20,28 @@ suite("Dot Operator", () => {
     });
 
     teardown(cleanUpWorkspace);
+
+    test('repeats actions across editors ', async () => {
+      // setting the content of the first 2 tabs
+      const firstTabContent = 'some\ntest\nabc\nend';
+      const secondTabContent = 'another\ntest\ndef\nend';
+      const firstTabKeys = ['<Esc>', 'a'].concat(firstTabContent.split(''));
+      const secondTabKeys = ['<Esc>', 'a'].concat(secondTabContent.split(''));
+      await setupWorkspace();
+      setTextEditorOptions(5, false);
+      await modeHandler.handleMultipleKeyEvents(firstTabKeys.concat(['<Esc>']));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'T']);
+      await waitForTabChange();
+      await modeHandler.handleMultipleKeyEvents(secondTabKeys.concat(['<Esc>']));
+
+      // running an action in second tab and repeating in first tab
+      await modeHandler.handleMultipleKeyEvents(['g', 'g', 'd' , 'd']);
+      await assertEqualLines(['test', 'def', 'end']);
+      await modeHandler.handleMultipleKeyEvents(['g', 't']);
+      await waitForTabChange();
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '.']);
+      await assertEqualLines(['test', 'abc', 'end']);
+    });
 
     newTest({
       title: "Can repeat '~' with <num>",
