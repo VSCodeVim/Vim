@@ -2,7 +2,7 @@
 
 import { setupWorkspace, cleanUpWorkspace, setTextEditorOptions, assertEqualLines } from './../../testUtils';
 import { ModeHandler } from '../../../src/mode/modeHandler';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../../../src/util';
+import { waitForTabChange } from '../../../src/util';
 import * as assert from 'assert';
 import { getTestingFunctions } from '../../testSimplifier';
 
@@ -30,18 +30,15 @@ suite("Dot Operator", () => {
       await setupWorkspace();
       setTextEditorOptions(5, false);
       await modeHandler.handleMultipleKeyEvents(firstTabKeys.concat(['<Esc>']));
-      await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'T']);
-      await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+      await waitForTabChange();
       await modeHandler.handleMultipleKeyEvents(secondTabKeys.concat(['<Esc>']));
-      await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 
       // running an action in second tab and repeating in first tab
       await modeHandler.handleMultipleKeyEvents(['g', 'g', 'd' , 'd']);
       await assertEqualLines(['test', 'def', 'end']);
-      await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
       await modeHandler.handleMultipleKeyEvents(['g', 't']);
-      await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+      await waitForTabChange();
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '.']);
       await assertEqualLines(['test', 'abc', 'end']);
     });
