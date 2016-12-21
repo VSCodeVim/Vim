@@ -1,6 +1,7 @@
 import { VimState, RecordedState } from './../mode/modeHandler';
 import * as clipboard from 'copy-paste';
 import { YankOperator, BaseOperator, CommandRegister, DeleteOperator } from './../actions/actions';
+import * as vscode from "vscode";
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -191,16 +192,20 @@ export class Register {
    */
   private static putNormalRegister(content: RegisterContent, register: string, vimState: VimState): void {
     if (Register.isClipboardRegister(register)) {
-      clipboard.copy(content);
+      clipboard.copy(content, (err) => {
+        if (err) {
+          vscode.window.showErrorMessage("Error yanking, if useSystemClipboard is true and you are using Linux, please install xclip.");
+        }
+      });
+
+      Register.registers[register.toLowerCase()] = {
+        text: content,
+        registerMode: vimState.effectiveRegisterMode(),
+        isClipboardRegister: Register.isClipboardRegister(register),
+      };
+
+      Register.ProcessNumberedRegister(content, vimState);
     }
-
-    Register.registers[register.toLowerCase()] = {
-      text               : content,
-      registerMode       : vimState.effectiveRegisterMode(),
-      isClipboardRegister: Register.isClipboardRegister(register),
-    };
-
-    Register.ProcessNumberedRegister(content, vimState);
   }
 
   /**
@@ -313,6 +318,7 @@ export class Register {
       let text = await new Promise<string>((resolve, reject) =>
         clipboard.paste((err, text) => {
           if (err) {
+            vscode.window.showErrorMessage("Error pasting, if useSystemClipboard is true and you are using Linux, please install xclip.");
             reject(err);
           } else {
             resolve(text);
