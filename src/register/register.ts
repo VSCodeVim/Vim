@@ -197,6 +197,7 @@ export class Register {
           vscode.window.showErrorMessage("Error yanking, if useSystemClipboard is true and you are using Linux, please install xclip.");
         }
       });
+    }
 
       Register.registers[register.toLowerCase()] = {
         text: content,
@@ -205,7 +206,6 @@ export class Register {
       };
 
       Register.ProcessNumberedRegister(content, vimState);
-    }
   }
 
   /**
