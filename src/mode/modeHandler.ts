@@ -1585,6 +1585,17 @@ export class ModeHandler implements vscode.Disposable {
     options.cursorStyle = cursorStyle;
     vscode.window.activeTextEditor.options = options;
 
+    // TODO xconverge: temporary workaround for vscode bug not changing cursor style properly
+    // https://github.com/Microsoft/vscode/issues/17472
+    // https://github.com/Microsoft/vscode/issues/17513
+    if (options.cursorStyle === vscode.TextEditorCursorStyle.Block) {
+      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+    } else if (options.cursorStyle === vscode.TextEditorCursorStyle.Line) {
+      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+    }
+
     if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
       this.currentMode.name !== ModeName.Insert) {
 
