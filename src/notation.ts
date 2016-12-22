@@ -30,6 +30,12 @@ export class AngleBracketNotation {
     }
 
     if (key.toLowerCase() === "<leader>") {
+      // <space> is special, change it to " " internally if it is used
+      if (Configuration.leader.toLowerCase() === "<space>") {
+        Configuration.leader = " ";
+      }
+
+      // Otherwise just return leader from config as-is
       return Configuration.leader;
     }
 
