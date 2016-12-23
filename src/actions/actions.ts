@@ -1465,12 +1465,25 @@ class CommandInsertInSearchMode extends BaseCommand {
       return vimState;
     } else if (key === "<up>") {
       const prevSearchList = vimState.globalState.searchStatePrevious!;
+
+      // Preincrement if on boundary to prevent seeing the same search index twice
+      if (vimState.globalState.searchStateIndex === vimState.globalState.searchStatePrevious.length - 1
+        && searchState.searchString !== "") {
+        vimState.globalState.searchStateIndex -= 1;
+      }
+
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
         vimState.globalState.searchStateIndex -= 1;
       }
     } else if (key === "<down>") {
       const prevSearchList = vimState.globalState.searchStatePrevious!;
+
+      // Preincrement if on boundary to prevent seeing the same search index twice
+      if (vimState.globalState.searchStateIndex === 0) {
+        vimState.globalState.searchStateIndex += 1;
+      }
+
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
         vimState.globalState.searchStateIndex += 1;

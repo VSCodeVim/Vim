@@ -366,6 +366,11 @@ export class Position extends vscode.Position {
       return this.getLeft();
     }
 
+    // First char on first line, can not go left any more
+    if (this.line === 0) {
+      return this;
+    }
+
     return this.getUp(0).getLineEnd();
   }
 
