@@ -2930,7 +2930,13 @@ class CommandGoForwardInChangelist extends BaseCommand {
   keys = ["g", ","];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const originalIndex = vimState.historyTracker.changelistIndex;
+    let originalIndex = vimState.historyTracker.changelistIndex;
+
+    // Preincrement if on boundary to prevent seeing the same index twice
+    if (originalIndex === 1) {
+      originalIndex += 1;
+    }
+
     const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
 
     if (nextPos !== undefined) {
