@@ -1,6 +1,7 @@
 // import * as vscode from "vscode";
 import { VimState } from './../mode/modeHandler';
 import { Position } from './../motion/position';
+// import { BaseAction, Actions } from './../actions/actions'
 // import { TextEditor } from './../textEditor';
 
 
@@ -120,5 +121,20 @@ export class Surround {
     }
   }
 
+  public static sSurroundHandler(start: Position, end: Position, charTo: string, vimState: VimState) {
+    const newSurround = this.getOrInputPair(charTo);
+    if (newSurround !== undefined) {
+      vimState.recordedState.transformations.push({
+        type: "insertText",
+        text: newSurround.end,
+        position: end,
+      });
 
+      vimState.recordedState.transformations.push({
+        type: "insertText",
+        text: newSurround.start,
+        position: start,
+      });
+    }
+  }
 }

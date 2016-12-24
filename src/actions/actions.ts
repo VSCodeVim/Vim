@@ -2991,7 +2991,7 @@ class CommandInsertAtLineEnd extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertNewLineAbove extends BaseCommand {
+class CommandInsertNewLineBefore extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["O"];
   runsOnceForEveryCursor() { return false; }
@@ -3002,7 +3002,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
     vimState.recordedState.transformations.push({
       type: "insertText",
       text: "\n",
-      position: new Position(vimState.cursorPosition.line, 0),
+      position: new Position(position.line, 0),
       diff: new PositionDiff(-1, 0),
     });
 
@@ -3011,7 +3011,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertNewLineBefore extends BaseCommand {
+class CommandInsertNewLineAfter extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["o"];
   runsOnceForEveryCursor() { return false; }
@@ -6264,10 +6264,11 @@ class MoveEasyMotion extends BaseMovement {
 // SURROUND
 
 // TODO xconverge:
-// Tags in delete and change properly
+// <tags> in delete and change properly
 // Add a reset() function to take out some of the variable initialization
 // YouSurround mode to add surrounding chars from scratch, this will be tough since it needs stuff like 'aw' 'iw', how to leverage existing
-// Find forward/backword on one line or search past the line (for brackets)
+// Quotes and characters not defined in the map of brackets are only searched for ON THE LINE, all others will search the rest of the lines
+// S for visual surround, needs to suppor <tags>
 
 @RegisterAction
 class ActionSurroundCommand extends BaseCommand {
@@ -6322,4 +6323,46 @@ class ActionSurroundCommand extends BaseCommand {
 
     return vimState;
   }
+}
+
+@RegisterAction
+class ActionSurroundCommandVisual extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["S", "<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    var key = this.keysPressed[1];
+    if (!key) {
+      return vimState;
+    }
+
+    let start = vimState.cursorStartPosition;
+    let end = vimState.cursorPosition;
+
+    if (start.isAfter(end)) {
+      [start, end] = [end, start];
+    }
+
+    // If linewise, insert lines
+    if (vimState.currentMode === ModeName.VisualLine) {
+      await new CommandInsertNewLineAfter().exec(end, vimState);
+      await new CommandInsertNewLineBefore().exec(start, vimState);
+
+      end = end.getDownByCount(2);
+    } else {
+      if (end.isLineEnd()) {
+        end = end.getDown(0);
+      } else {
+        end = new Position(end.line, end.character + 1);
+      }
+    }
+
+    Surround.sSurroundHandler(start, end, key, vimState);
+
+    vimState.cursorPosition = start;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+
 }
