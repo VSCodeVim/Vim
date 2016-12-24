@@ -17,6 +17,7 @@ import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
 import { EasyMotion } from './../easymotion/easymotion';
+import { SurroundType } from './../mode/modeSurround';
 import { FileCommand } from './../cmd_line/commands/file';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
@@ -851,7 +852,8 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.Normal,
     ModeName.SearchInProgressMode,
-    ModeName.EasyMotionMode
+    ModeName.EasyMotionMode,
+    ModeName.SurroundMode
   ];
   keys = [
     ["<Esc>"],
@@ -4946,6 +4948,34 @@ class ActionChangeChar extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+
+    if (Configuration.surround) {
+      const prevCommand = vimState.recordedState.commandList[vimState.recordedState.commandList.length - 2];
+      if (prevCommand !== undefined) {
+        let validSurround = false;
+
+        if (prevCommand === "d") {
+          validSurround = true;
+          vimState.recordedState.surroundType = SurroundType.DeleteSurround;
+        }
+
+        if (prevCommand === "c") {
+          validSurround = true;
+          vimState.recordedState.surroundType = SurroundType.ChangeSurround;
+        }
+
+        if (prevCommand === "y") {
+          validSurround = true;
+          vimState.recordedState.surroundType = SurroundType.YouSurround;
+        }
+
+        if (validSurround) {
+          vimState.currentMode = ModeName.SurroundMode;
+          return vimState;
+        }
+      }
+    }
+
     const state = await new ChangeOperator().run(vimState, position, position);
 
     state.currentMode = ModeName.Insert;
@@ -5971,6 +6001,9 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 }
 
 
+
+
+// EASYMOTION
 abstract class BaseEasyMotionCommand extends BaseCommand {
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     throw new Error("Not implemented!");
@@ -6224,5 +6257,21 @@ class MoveEasyMotion extends BaseMovement {
     }
 
     return position;
+  }
+}
+
+// SURROUND
+@RegisterAction
+class ActionSurroundCommand extends BaseCommand {
+  modes = [ModeName.SurroundMode];
+  keys = ["<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+
+    console.log(vimState.recordedState.surroundType);
+
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
   }
 }

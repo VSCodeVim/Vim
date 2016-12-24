@@ -107,6 +107,11 @@ class ConfigurationClass {
   easymotion = false;
 
   /**
+   * Use Surround plugin?
+   */
+  surround = false;
+
+  /**
    * Timeout in milliseconds for remapped commands.
    */
   timeout = 1000;

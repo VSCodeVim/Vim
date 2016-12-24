@@ -20,6 +20,7 @@ import { VisualMode } from './modeVisual';
 import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
 import { EasyMotionMode } from './modeEasyMotion';
+import { SurroundMode , SurroundType} from './modeSurround';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
@@ -331,6 +332,12 @@ export class RecordedState {
   public visualBlockInsertionType = VisualBlockInsertionType.Insert;
 
   /**
+   * If in surround mode, what type of surround mode are we in
+   */
+
+  public surroundType = SurroundType.ChangeSurround;
+
+  /**
    * The text transformations that we want to run. They will all be run after the action has been processed.
    *
    * Running an individual action will generally queue up to one of these, but if you're in
@@ -483,6 +490,7 @@ export class ModeHandler implements vscode.Disposable {
       new SearchInProgressMode(),
       new ReplaceMode(),
       new EasyMotionMode(),
+      new SurroundMode()
     ];
     this.vimState.historyTracker = new HistoryTracker();
     this.vimState.easyMotion = new EasyMotion();
@@ -559,7 +567,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.currentModeName === ModeName.VisualBlockInsertMode ||
-        this.currentModeName === ModeName.EasyMotionMode) {
+      this.currentModeName === ModeName.EasyMotionMode ||
+      this.currentModeName === ModeName.SurroundMode) {
       // AArrgghhhh - johnfn
 
       return;
