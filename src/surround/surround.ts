@@ -22,6 +22,9 @@ export class Surround {
   public changeFromSet = false;
   public changeFrom = "";
 
+  public isTag = false;
+  public tagString = "";
+
   private static surroundPairs: { [key: string]: { pair: Pair } } = {
     "b": { pair: new Pair("(", ")") },
     "(": { pair: new Pair("( ", " )") },
@@ -52,7 +55,7 @@ export class Surround {
   private static inputTagPair(tagInput: string): Pair | undefined {
     let tagName = "";
     if (tagInput.endsWith(">")) {
-      tagName = tagInput.substring(0, tagInput.length - 1);
+      tagName = tagInput.substring(1, tagInput.length - 1);
       return new Pair("<" + tagName + ">", "</" + tagName + ">");
     } else {
       return undefined;
@@ -60,7 +63,7 @@ export class Surround {
   }
 
   private static getOrInputPair(char: string): Pair | undefined {
-    return char === '<' || char === 't' ? this.inputTagPair(char) : this.getSurroundPair(char);
+    return char.startsWith('<') || char === 't' ? this.inputTagPair(char) : this.getSurroundPair(char);
   }
 
 
@@ -70,10 +73,10 @@ export class Surround {
   // }
 
   private static change(charFrom: Pair, charTo: Pair, vimState: VimState) {
-    let forwardSearch = this.findChar(charFrom.start, true, vimState);
+    let forwardSearch = this.findChar(charFrom.end, true, vimState);
     if (forwardSearch === null) { return; };
 
-    let backwardSearch = this.findChar(charFrom.end, false, vimState);
+    let backwardSearch = this.findChar(charFrom.start, false, vimState);
     if (backwardSearch === null) { return; };
 
     vimState.recordedState.transformations.push({
@@ -89,6 +92,9 @@ export class Surround {
       start: backwardSearch.getLeftByCount(charFrom.end.length),
       end: new Position(backwardSearch.line, backwardSearch.character + charFrom.end.length - 1)
     });
+
+    // Move cursor to start of the surround area
+    vimState.cursorPosition = backwardSearch.getLeftByCount(charFrom.end.length);
   }
 
   private static findChar(char: string, forwards: boolean, vimState: VimState): Position | null {

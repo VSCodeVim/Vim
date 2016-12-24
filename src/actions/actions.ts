@@ -6262,6 +6262,13 @@ class MoveEasyMotion extends BaseMovement {
 }
 
 // SURROUND
+
+// TODO xconverge:
+// Tags in delete and change properly
+// Add a reset() function to take out some of the variable initialization
+// YouSurround mode to add surrounding chars from scratch, this will be tough since it needs stuff like 'aw' 'iw', how to leverage existing
+// Find forward/backword on one line or search past the line (for brackets)
+
 @RegisterAction
 class ActionSurroundCommand extends BaseCommand {
   modes = [ModeName.SurroundMode];
@@ -6273,12 +6280,25 @@ class ActionSurroundCommand extends BaseCommand {
       return vimState;
     }
 
-    const surroundType = vimState.recordedState.surroundType;
+   const surroundType = vimState.recordedState.surroundType;
 
     if (surroundType === SurroundType.DeleteSurround) {
       Surround.dSurroundHandler(key, vimState);
       vimState.currentMode = ModeName.Normal;
     } else if (surroundType === SurroundType.ChangeSurround) {
+      if (vimState.surround.changeFromSet && !vimState.surround.changeToSet && key === "<") {
+        vimState.surround.isTag = true;
+        return vimState;
+      }
+
+      if (vimState.surround.isTag && key !== ">") {
+        vimState.surround.tagString += key;
+        return vimState;
+      } else if (vimState.surround.isTag && key === ">") {
+        vimState.surround.changeTo = "<" + vimState.surround.tagString + ">";
+        vimState.surround.changeToSet = true;
+      }
+
       if (!vimState.surround.changeFromSet) {
         vimState.surround.changeFrom = key;
         vimState.surround.changeFromSet = true;
@@ -6294,6 +6314,8 @@ class ActionSurroundCommand extends BaseCommand {
         Surround.cSurroundHandler(vimState.surround.changeFrom, vimState.surround.changeTo, vimState);
         vimState.surround.changeFromSet = false;
         vimState.surround.changeToSet = false;
+        vimState.surround.isTag = false;
+        vimState.surround.tagString = "";
         vimState.currentMode = ModeName.Normal;
       }
     }
