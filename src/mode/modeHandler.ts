@@ -21,6 +21,7 @@ import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
 import { EasyMotionMode } from './modeEasyMotion';
 import { SurroundMode , SurroundType} from './modeSurround';
+import { Surround } from './../surround/surround';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
@@ -71,6 +72,8 @@ export class VimState {
   public historyTracker: HistoryTracker;
 
   public easyMotion: EasyMotion;
+
+  public surround: Surround;
 
   /**
    * For timing out remapped keys like jj to esc.
@@ -494,6 +497,7 @@ export class ModeHandler implements vscode.Disposable {
     ];
     this.vimState.historyTracker = new HistoryTracker();
     this.vimState.easyMotion = new EasyMotion();
+    this.vimState.surround = new Surround();
 
     if (Configuration.startInInsertMode) {
       this._vimState.currentMode = ModeName.Insert;

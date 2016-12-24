@@ -17,6 +17,7 @@ import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
 import { EasyMotion } from './../easymotion/easymotion';
+import { Surround } from './../surround/surround';
 import { SurroundType } from './../mode/modeSurround';
 import { FileCommand } from './../cmd_line/commands/file';
 import * as vscode from 'vscode';
@@ -6267,9 +6268,13 @@ class ActionSurroundCommand extends BaseCommand {
   keys = ["<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const surroundType = vimState.recordedState.surroundType;
+
+    if (surroundType === SurroundType.DeleteSurround) {
+
+    }
 
     console.log(vimState.recordedState.surroundType);
-
     vimState.currentMode = ModeName.Normal;
 
     return vimState;
