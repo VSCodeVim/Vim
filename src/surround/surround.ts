@@ -1,10 +1,12 @@
 // import * as vscode from "vscode";
 import { VimState } from './../mode/modeHandler';
-// import { Position } from './../motion/position';
+import { Position } from './../motion/position';
 // import { TextEditor } from './../textEditor';
 
+
+
 class Pair {
-  constructor(start: string, end: string){
+  constructor(start: string, end: string) {
     this.start = start;
     this.end = end;
   }
@@ -13,6 +15,12 @@ class Pair {
 }
 
 export class Surround {
+
+  public changeToSet = false;
+  public changeTo = "";
+
+  public changeFromSet = false;
+  public changeFrom = "";
 
   private static surroundPairs: { [key: string]: { pair: Pair } } = {
     "b": { pair: new Pair("(", ")") },
@@ -29,8 +37,11 @@ export class Surround {
   };
 
   private static getSurroundPair(char: string): Pair | undefined {
-    if (this.surroundPairs[char].pair !== undefined) {
-      return this.surroundPairs[char].pair;
+    const findPair = this.surroundPairs[char];
+    if (findPair !== undefined) {
+      if (findPair.pair !== undefined) {
+        return findPair.pair;
+      }
     } else if (!/[a-z]/i.test(char)) {
       return new Pair(char, char);
     } else {
@@ -54,27 +65,54 @@ export class Surround {
 
 
 
-  private static pasteSurround(innerValue: string, vimState: VimState): void {
+  // private static pasteSurround(innerValue: string, vimState: VimState): void {
 
+  // }
+
+  private static change(charFrom: Pair, charTo: Pair, vimState: VimState) {
+    let forwardSearch = this.findChar(charFrom.start, true, vimState);
+    if (forwardSearch === null) { return; };
+
+    let backwardSearch = this.findChar(charFrom.end, false, vimState);
+    if (backwardSearch === null) { return; };
+
+    vimState.recordedState.transformations.push({
+      type: "replaceText",
+      text: charTo.end,
+      start: forwardSearch.getRight(),
+      end: new Position(forwardSearch.line, forwardSearch.getRight().character + charFrom.start.length)
+    });
+
+    vimState.recordedState.transformations.push({
+      type: "replaceText",
+      text: charTo.start,
+      start: backwardSearch.getLeftByCount(charFrom.end.length),
+      end: new Position(backwardSearch.line, backwardSearch.character + charFrom.end.length - 1)
+    });
   }
 
-  private static change(charFrom: string, charTo: Pair, vimState: VimState) {
-
-  }
-
-  public static cSurroundHandler(charFrom: string, charTo: string, vimState: VimState){
-    const newSurround = this.getOrInputPair(charTo);
-    if (newSurround !== undefined) {
-      this.change(charFrom, newSurround, vimState);
+  private static findChar(char: string, forwards: boolean, vimState: VimState): Position | null {
+    if (forwards) {
+      return vimState.cursorPosition.tilForwards(char, 1);
+    } else {
+      return vimState.cursorPosition.tilBackwards(char, 1);
     }
   }
 
-  public static dSurroundHandler(charFrom: string, charTo: string, vimState: VimState){
-    this.change(charFrom, new Pair("", ""), vimState);
+  public static cSurroundHandler(charFrom: string, charTo: string, vimState: VimState) {
+    const newSurround = this.getOrInputPair(charTo);
+    const prevSurround = this.getOrInputPair(charFrom);
+    if (newSurround !== undefined && prevSurround !== undefined) {
+      this.change(prevSurround, newSurround, vimState);
+    }
   }
 
-  public static ySurroundHandler(charFrom: string, charTo: string, vimState: VimState){
-
+  public static dSurroundHandler(charFrom: string, vimState: VimState) {
+    const prevSurround = this.getOrInputPair(charFrom);
+    if (prevSurround !== undefined) {
+      this.change(prevSurround, new Pair("", ""), vimState);
+    }
   }
+
 
 }

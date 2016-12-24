@@ -6268,14 +6268,35 @@ class ActionSurroundCommand extends BaseCommand {
   keys = ["<character>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    var key = this.keysPressed[0];
+    if (!key) {
+      return vimState;
+    }
+
     const surroundType = vimState.recordedState.surroundType;
 
     if (surroundType === SurroundType.DeleteSurround) {
+      Surround.dSurroundHandler(key, vimState);
+      vimState.currentMode = ModeName.Normal;
+    } else if (surroundType === SurroundType.ChangeSurround) {
+      if (!vimState.surround.changeFromSet) {
+        vimState.surround.changeFrom = key;
+        vimState.surround.changeFromSet = true;
+        return vimState;
+      }
 
+      if (!vimState.surround.changeToSet) {
+        vimState.surround.changeTo = key;
+        vimState.surround.changeToSet = true;
+      }
+
+      if (vimState.surround.changeToSet && vimState.surround.changeFromSet) {
+        Surround.cSurroundHandler(vimState.surround.changeFrom, vimState.surround.changeTo, vimState);
+        vimState.surround.changeFromSet = false;
+        vimState.surround.changeToSet = false;
+        vimState.currentMode = ModeName.Normal;
+      }
     }
-
-    console.log(vimState.recordedState.surroundType);
-    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }
