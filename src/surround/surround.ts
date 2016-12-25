@@ -84,14 +84,16 @@ export class Surround {
       type: "replaceText",
       text: charTo.end,
       start: forwardSearch.getRight(),
-      end: new Position(forwardSearch.line, forwardSearch.getRight().character + charFrom.start.length)
+      end: new Position(forwardSearch.line, forwardSearch.getRight().character + charFrom.start.length),
+      manuallySetCursorPositions: true
     });
 
     vimState.recordedState.transformations.push({
       type: "replaceText",
       text: charTo.start,
       start: backwardSearch.getLeftByCount(charFrom.end.length),
-      end: new Position(backwardSearch.line, backwardSearch.character + charFrom.end.length - 1)
+      end: new Position(backwardSearch.line, backwardSearch.character + charFrom.end.length - 1),
+      manuallySetCursorPositions: true
     });
 
     // Move cursor to start of the surround area
@@ -128,12 +130,14 @@ export class Surround {
         type: "insertText",
         text: newSurround.end,
         position: end,
+        manuallySetCursorPositions: true
       });
 
       vimState.recordedState.transformations.push({
         type: "insertText",
         text: newSurround.start,
         position: start,
+        manuallySetCursorPositions: true
       });
     }
   }

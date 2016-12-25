@@ -3003,7 +3003,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
       type: "insertText",
       text: "\n",
       position: new Position(position.line, 0),
-      diff: new PositionDiff(-1, 0),
+      manuallySetCursorPositions: true
     });
 
     return vimState;
@@ -6348,10 +6348,11 @@ class ActionSurroundCommandVisual extends BaseCommand {
       await new CommandInsertNewLineAfter().exec(end, vimState);
       await new CommandInsertNewLineBefore().exec(start, vimState);
 
-      end = end.getDownByCount(2);
+      // Dont use getDown incase of it being the last line, we want to insert there
+      end = new Position(end.line + 2, end.character);
     } else {
       if (end.isLineEnd()) {
-        end = end.getDown(0);
+        end = new Position(end.line + 1, 0);
       } else {
         end = new Position(end.line, end.character + 1);
       }
