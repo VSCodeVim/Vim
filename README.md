@@ -241,7 +241,12 @@ Motion Command | Description
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
 
-Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
+## Special Shoutouts to Cool Contributors
+
+* Thanks to @xconverge for making over 100 commits to the repo. If you're wondering why your least favorite bug packed up and left, it was probably him.
+* Thanks to @Metamist for implementing EasyMotion!
+* Thanks to @sectioneight for implementing text objects!
+* Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
 
 ## Release Notes
 
