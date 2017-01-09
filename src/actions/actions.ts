@@ -2703,7 +2703,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
 }
 
 @RegisterAction
-class CommandYankFullLine extends BaseCommand {
+export class CommandYankFullLine extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["Y"];
 
