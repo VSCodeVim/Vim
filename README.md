@@ -18,7 +18,7 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 ## Donations
 
-I'd like to work more on this project, but it's hard to justify over other projects when it's essentially pro bono. [Convince me otherwise by making a donation!](https://www.paypal.com/us/cgi-bin/webscr?cmd=_flow&SESSION=2Q_HylRdsudPD-_hjEiC3AwuEk_ON4cqLkyCeIY34BSWtuqYf4fsvZY6UQe&dispatch=5885d80a13c0db1f8e263663d3faee8d333dc9aadeed3fe0b5b299d55fd35542)
+I'd like to work more on this project, but it's hard to justify over other projects when it's essentially pro bono. [Convince me otherwise by making a donation!](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FNUBXQADN5VG4)
 
 ## Supported Options
 
