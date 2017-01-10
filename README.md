@@ -7,7 +7,7 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * Highly versatile command remapping (`jj` to esc, `:` to command panel, etc.)
 * Incremental search with `/` and `?`
 * Marks
-* Vim settings (like .vimrc)
+* Vim settings similar to those found in .vimrc
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
 * The EasyMotion plugin!
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
