@@ -20,7 +20,7 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 [Make a dontation to VSCodeVim here!](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FNUBXQADN5VG4)
 
-Donations help convince me to work on this project rather than my other (non-open-source) projects.
+Donations help convince me to work on this project rather than my other (non-open-source) projects. I'd love to work on VSCodeVim full time, but I need money to live! 
 
 ## Supported Options
 
