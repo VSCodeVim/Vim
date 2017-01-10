@@ -18,7 +18,9 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 ## Donations
 
-I'd like to work more on this project, but it's hard to justify over other projects when it's essentially pro bono. [Convince me otherwise by making a donation!](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FNUBXQADN5VG4)
+[Make a dontation to VSCodeVim here!](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FNUBXQADN5VG4)
+
+Donations help convince me to work on this project rather than my other (non-open-source) projects.
 
 ## Supported Options
 
