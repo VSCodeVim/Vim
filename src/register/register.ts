@@ -1,6 +1,6 @@
 import { VimState, RecordedState } from './../mode/modeHandler';
 import * as clipboard from 'copy-paste';
-import { YankOperator, BaseOperator, CommandRegister, DeleteOperator } from './../actions/actions';
+import { YankOperator, CommandYankFullLine, BaseOperator, BaseCommand, CommandRegister, DeleteOperator } from './../actions/actions';
 import * as vscode from "vscode";
 
 /**
@@ -261,10 +261,11 @@ export class Register {
   private static ProcessNumberedRegister(content: RegisterContent, vimState: VimState): void {
     // Find the BaseOperator of the current actions
     const baseOperator = vimState.recordedState.actionsRun.find( (value) => {
-      return value instanceof BaseOperator;
+      return value instanceof BaseOperator ||
+             value instanceof BaseCommand;
     });
 
-    if (baseOperator instanceof YankOperator) {
+    if (baseOperator instanceof YankOperator || baseOperator instanceof CommandYankFullLine) {
       // 'yank' to 0 only if no register was specified
       const registerCommand = vimState.recordedState.actionsRun.find( (value) => {
         return value instanceof CommandRegister;
