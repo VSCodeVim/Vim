@@ -20,6 +20,8 @@ import { VisualMode } from './modeVisual';
 import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
 import { EasyMotionMode } from './modeEasyMotion';
+import { SurroundMode , SurroundType} from './modeSurround';
+import { Surround } from './../surround/surround';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
@@ -70,6 +72,8 @@ export class VimState {
   public historyTracker: HistoryTracker;
 
   public easyMotion: EasyMotion;
+
+  public surround: Surround;
 
   /**
    * For timing out remapped keys like jj to esc.
@@ -331,6 +335,12 @@ export class RecordedState {
   public visualBlockInsertionType = VisualBlockInsertionType.Insert;
 
   /**
+   * If in surround mode, what type of surround mode are we in
+   */
+
+  public surroundType = SurroundType.ChangeSurround;
+
+  /**
    * The text transformations that we want to run. They will all be run after the action has been processed.
    *
    * Running an individual action will generally queue up to one of these, but if you're in
@@ -483,9 +493,11 @@ export class ModeHandler implements vscode.Disposable {
       new SearchInProgressMode(),
       new ReplaceMode(),
       new EasyMotionMode(),
+      new SurroundMode()
     ];
     this.vimState.historyTracker = new HistoryTracker();
     this.vimState.easyMotion = new EasyMotion();
+    this.vimState.surround = new Surround();
 
     if (Configuration.startInInsertMode) {
       this._vimState.currentMode = ModeName.Insert;
@@ -559,7 +571,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.currentModeName === ModeName.VisualBlockInsertMode ||
-        this.currentModeName === ModeName.EasyMotionMode) {
+      this.currentModeName === ModeName.EasyMotionMode ||
+      this.currentModeName === ModeName.SurroundMode) {
       // AArrgghhhh - johnfn
 
       return;
@@ -1346,7 +1359,9 @@ export class ModeHandler implements vscode.Disposable {
 
     const selections = vscode.window.activeTextEditor.selections;
     const firstTransformation = transformations[0];
-    const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange" || firstTransformation.type === "replaceText")
+    const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange"
+      || firstTransformation.type === "replaceText"
+      || firstTransformation.type === "insertText")
       && firstTransformation.manuallySetCursorPositions);
 
     // We handle multiple cursors in a different way in visual block mode, unfortunately.

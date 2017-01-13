@@ -17,6 +17,8 @@ import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
 import { EasyMotion } from './../easymotion/easymotion';
+import { Surround } from './../surround/surround';
+import { SurroundType } from './../mode/modeSurround';
 import { FileCommand } from './../cmd_line/commands/file';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
@@ -851,7 +853,8 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.Normal,
     ModeName.SearchInProgressMode,
-    ModeName.EasyMotionMode
+    ModeName.EasyMotionMode,
+    ModeName.SurroundMode
   ];
   keys = [
     ["<Esc>"],
@@ -2988,7 +2991,7 @@ class CommandInsertAtLineEnd extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertNewLineAbove extends BaseCommand {
+class CommandInsertNewLineBefore extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["O"];
   runsOnceForEveryCursor() { return false; }
@@ -2999,8 +3002,8 @@ class CommandInsertNewLineAbove extends BaseCommand {
     vimState.recordedState.transformations.push({
       type: "insertText",
       text: "\n",
-      position: new Position(vimState.cursorPosition.line, 0),
-      diff: new PositionDiff(-1, 0),
+      position: new Position(position.line, 0),
+      manuallySetCursorPositions: true
     });
 
     return vimState;
@@ -3008,7 +3011,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertNewLineBefore extends BaseCommand {
+class CommandInsertNewLineAfter extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["o"];
   runsOnceForEveryCursor() { return false; }
@@ -4946,6 +4949,34 @@ class ActionChangeChar extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+
+    if (Configuration.surround) {
+      const prevCommand = vimState.recordedState.commandList[vimState.recordedState.commandList.length - 2];
+      if (prevCommand !== undefined) {
+        let validSurround = false;
+
+        if (prevCommand === "d") {
+          validSurround = true;
+          vimState.recordedState.surroundType = SurroundType.DeleteSurround;
+        }
+
+        if (prevCommand === "c") {
+          validSurround = true;
+          vimState.recordedState.surroundType = SurroundType.ChangeSurround;
+        }
+
+        if (prevCommand === "y") {
+          validSurround = true;
+          vimState.recordedState.surroundType = SurroundType.YouSurround;
+        }
+
+        if (validSurround) {
+          vimState.currentMode = ModeName.SurroundMode;
+          return vimState;
+        }
+      }
+    }
+
     const state = await new ChangeOperator().run(vimState, position, position);
 
     state.currentMode = ModeName.Insert;
@@ -5971,6 +6002,9 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 }
 
 
+
+
+// EASYMOTION
 abstract class BaseEasyMotionCommand extends BaseCommand {
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
     throw new Error("Not implemented!");
@@ -6225,4 +6259,111 @@ class MoveEasyMotion extends BaseMovement {
 
     return position;
   }
+}
+
+// SURROUND
+
+// TODO xconverge:
+// <tags> in delete and change properly
+// Add a reset() function to take out some of the variable initialization
+// YouSurround mode to add surrounding chars from scratch, this will be tough since it needs stuff like 'aw' 'iw', how to leverage existing
+// Quotes and characters not defined in the map of brackets are only searched for ON THE LINE, all others will search the rest of the lines
+// S for visual surround, needs to suppor <tags>
+
+@RegisterAction
+class ActionSurroundCommand extends BaseCommand {
+  modes = [ModeName.SurroundMode];
+  keys = ["<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    var key = this.keysPressed[0];
+    if (!key) {
+      return vimState;
+    }
+
+   const surroundType = vimState.recordedState.surroundType;
+
+    if (surroundType === SurroundType.DeleteSurround) {
+      Surround.dSurroundHandler(key, vimState);
+      vimState.currentMode = ModeName.Normal;
+    } else if (surroundType === SurroundType.ChangeSurround) {
+      if (vimState.surround.changeFromSet && !vimState.surround.changeToSet && key === "<") {
+        vimState.surround.isTag = true;
+        return vimState;
+      }
+
+      if (vimState.surround.isTag && key !== ">") {
+        vimState.surround.tagString += key;
+        return vimState;
+      } else if (vimState.surround.isTag && key === ">") {
+        vimState.surround.changeTo = "<" + vimState.surround.tagString + ">";
+        vimState.surround.changeToSet = true;
+      }
+
+      if (!vimState.surround.changeFromSet) {
+        vimState.surround.changeFrom = key;
+        vimState.surround.changeFromSet = true;
+        return vimState;
+      }
+
+      if (!vimState.surround.changeToSet) {
+        vimState.surround.changeTo = key;
+        vimState.surround.changeToSet = true;
+      }
+
+      if (vimState.surround.changeToSet && vimState.surround.changeFromSet) {
+        Surround.cSurroundHandler(vimState.surround.changeFrom, vimState.surround.changeTo, vimState);
+        vimState.surround.changeFromSet = false;
+        vimState.surround.changeToSet = false;
+        vimState.surround.isTag = false;
+        vimState.surround.tagString = "";
+        vimState.currentMode = ModeName.Normal;
+      }
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class ActionSurroundCommandVisual extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["S", "<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    var key = this.keysPressed[1];
+    if (!key) {
+      return vimState;
+    }
+
+    let start = vimState.cursorStartPosition;
+    let end = vimState.cursorPosition;
+
+    if (start.isAfter(end)) {
+      [start, end] = [end, start];
+    }
+
+    // If linewise, insert lines
+    if (vimState.currentMode === ModeName.VisualLine) {
+      await new CommandInsertNewLineAfter().exec(end, vimState);
+      await new CommandInsertNewLineBefore().exec(start, vimState);
+
+      // Dont use getDown incase of it being the last line, we want to insert there
+      end = new Position(end.line + 2, end.character);
+    } else {
+      if (end.isLineEnd()) {
+        end = new Position(end.line + 1, 0);
+      } else {
+        end = new Position(end.line, end.character + 1);
+      }
+    }
+
+    Surround.sSurroundHandler(start, end, key, vimState);
+
+    vimState.cursorPosition = start;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+
 }

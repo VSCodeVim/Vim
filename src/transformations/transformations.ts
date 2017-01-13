@@ -43,6 +43,11 @@ export interface InsertTextTransformation {
    * If you don't know what this is, just ignore it. You probably don't need it.
    */
   diff?: PositionDiff;
+
+  /**
+   * Please don't use this! It's a hack.
+   */
+  manuallySetCursorPositions?: boolean;
 }
 
 export interface ReplaceTextTransformation {
