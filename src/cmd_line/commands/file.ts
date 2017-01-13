@@ -2,6 +2,7 @@
 
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fs from "fs"
 import * as node from "../node";
 
 export enum FilePosition {
@@ -73,9 +74,26 @@ export class FileCommand extends node.CommandBase {
       path.join(path.dirname(currentFilePath), this._arguments.name);
 
     if (newFilePath !== currentFilePath) {
+      const newFileDoesntExist = !await this.fileExists(newFilePath);
+      const newFileHasNoExtname = path.extname(newFilePath) === '';
+      if(newFileDoesntExist && newFileHasNoExtname) {
+        const pathWithExtname = newFilePath + path.extname(currentFilePath)
+        if(await this.fileExists(pathWithExtname)) {
+          newFilePath = pathWithExtname;
+        }
+      }
+
       let folder = vscode.Uri.file(newFilePath);
       await vscode.commands.executeCommand("vscode.open", folder,
         this._arguments.position === FilePosition.NewWindow ? this.getViewColumnToRight() : this.getActiveViewColumn());
     }
+  }
+
+  protected async fileExists(filePath: string) {
+    return new Promise<boolean>((resolve, reject) => {
+      fs.stat(filePath, async (error, stat) => {
+        resolve(!error)
+      });
+    });
   }
 }
