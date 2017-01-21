@@ -199,6 +199,10 @@ export class VimState {
     vscode.commands.executeCommand('setContext', 'vim.mode', ModeName[value]);
   }
 
+  public currentModeName(): string {
+    return ModeName[this._currentMode];
+  }
+
   public getModeObject(modeHandler: ModeHandler): Mode {
     return modeHandler.modeList.find(mode => mode.isActive);
   }

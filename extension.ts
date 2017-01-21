@@ -101,6 +101,8 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     handler.vimState.focusChanged = true;
   }
 
+  vscode.commands.executeCommand('setContext', 'vim.mode', handler.vimState.currentModeName());
+
   return handler;
 }
 
