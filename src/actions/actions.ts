@@ -5334,7 +5334,7 @@ abstract class MoveInsideCharacter extends BaseMovement {
   protected charToMatch: string;
   protected includeSurrounding = false;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const failure = { start: position, stop: position, failed: true };
     const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
@@ -6323,6 +6323,12 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     return vimState;
   }
 
+  private handleFailure(vimState: VimState): void {
+    vimState.recordedState.hasRunOperator = false;
+    vimState.recordedState.actionsRun = [];
+    vimState.currentMode = ModeName.Normal;
+  }
+
   // Returns true if it could actually find something to run surround on.
   private async tryToExecuteSurround(vimState: VimState, position: Position): boolean {
     const { target, replacement } = vimState.surround!;
@@ -6331,8 +6337,15 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return false;
     }
 
+    // This is an incomplete tag. Wait for the user to finish it.
+    if (replacement[0] === "<" && replacement[replacement.length - 1] !== ">") {
+      return false;
+    }
+
     if (target === "'") {
-      const { start, stop } = await new MoveASingleQuotes().execAction(position, vimState);
+      const { start, stop, failed } = await new MoveASingleQuotes().execAction(position, vimState);
+
+      if (failed) { return this.handleFailure(vimState); }
 
       TextEditor.replaceText(vimState, replacement, start, start.getRight());
       TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
@@ -6341,7 +6354,9 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     }
 
     if (target === '"') {
-      const { start, stop } = await new MoveADoubleQuotes().execAction(position, vimState);
+      const { start, stop, failed } = await new MoveADoubleQuotes().execAction(position, vimState);
+
+      if (failed) { return this.handleFailure(vimState); }
 
       TextEditor.replaceText(vimState, replacement, start, start.getRight());
       TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
@@ -6350,10 +6365,29 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     }
 
     if (target === '`') {
-      const { start, stop } = await new MoveABacktick().execAction(position, vimState);
+      const { start, stop, failed } = await new MoveABacktick().execAction(position, vimState);
+
+      if (failed) { return this.handleFailure(vimState); }
 
       TextEditor.replaceText(vimState, replacement, start, start.getRight());
       TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
+
+      return true;
+    }
+
+    if (target === '{') {
+      // Remove whitespace
+    }
+
+    if (target === '}') {
+      // Don't remove whitespace
+
+      const { start, stop, failed } = await new MoveACurlyBrace().execAction(position, vimState);
+
+      if (failed) { return this.handleFailure(vimState); }
+
+      TextEditor.replaceText(vimState, replacement, start, start.getRight());
+      TextEditor.replaceText(vimState, replacement, stop.getLeft(), stop);
 
       return true;
     }
