@@ -6386,7 +6386,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return false;
     }
 
-    const { startReplace, endReplace } = this.getStartAndEndReplacements(replacement);
+    let { startReplace, endReplace } = this.getStartAndEndReplacements(replacement);
 
     if (target === "'") {
       const { start, stop, failed } = await new MoveASingleQuotes().execAction(position, vimState);
@@ -6470,12 +6470,13 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return true;
     }
 
-    const wordMatchings: { char: string, movement: () => TextObjectMovement }[] = [
-      { char: "w", movement: () => new SelectInnerWord() },
-      { char: "W", movement: () => new SelectInnerBigWord() },
+    const wordMatchings: { char: string, movement: () => TextObjectMovement, addNewline: boolean }[] = [
+      { char: "w", movement: () => new SelectInnerWord(), addNewline: false },
+      { char: "p", movement: () => new SelectInnerParagraph(), addNewline: true },
+      { char: "W", movement: () => new SelectInnerBigWord(), addNewline: false },
     ];
 
-    for (const { char, movement } of wordMatchings) {
+    for (const { char, movement, addNewline } of wordMatchings) {
       if (target !== char) { continue; }
 
       let { stop, start, failed } = await movement().execAction(position, vimState) as IMovement;
@@ -6483,6 +6484,8 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       stop = stop.getRight();
 
       if (failed) { return this.handleFailure(vimState); }
+
+      if (addNewline) { startReplace += "\n"; endReplace = "\n" + endReplace; }
 
       vimState.recordedState.transformations.push({ type: "insertText", text: startReplace, position: start });
       vimState.recordedState.transformations.push({ type: "insertText", text: endReplace, position: stop });
