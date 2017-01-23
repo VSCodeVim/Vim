@@ -1,4 +1,5 @@
 "use strict";
+import { SurroundInputMode } from './surroundInputMode';
 
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
@@ -93,6 +94,14 @@ export class VimState {
   public isRunningDotCommand = false;
 
   public focusChanged = false;
+
+  public surround: undefined | {
+    active: boolean;
+    operator: "change" | "delete" | "yank";
+    target: string | undefined;
+    replacement: string | undefined;
+    range: Range | undefined;
+  } = undefined;
 
   /**
    * Used for command like <C-o> which allows you to return to insert after a command
@@ -487,6 +496,7 @@ export class ModeHandler implements vscode.Disposable {
       new SearchInProgressMode(),
       new ReplaceMode(),
       new EasyMotionMode(),
+      new SurroundInputMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
     this.vimState.easyMotion = new EasyMotion();
@@ -1218,6 +1228,11 @@ export class ModeHandler implements vscode.Disposable {
 
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
+        console.log(
+           `Text transformations are overlapping. Falling back to serial
+           transformations. This is generally a very bad sign. Try to make
+           your text transformations operate on non-overlapping ranges.`);
+
         // TODO: Select one transformation for every cursor and run them all
         // in parallel. Repeat till there are no more transformations.
 

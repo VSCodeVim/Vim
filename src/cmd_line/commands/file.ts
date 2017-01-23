@@ -15,7 +15,6 @@ export interface IFileCommandArguments extends node.ICommandArgs {
   position?: FilePosition;
 }
 
-
 export class FileCommand extends node.CommandBase {
   protected _arguments: IFileCommandArguments;
 
