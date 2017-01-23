@@ -6447,6 +6447,49 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return true;
     }
 
+    if (target === "t") {
+      let { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
+      let tagEnd = await new MoveInsideTag().execAction(position, vimState);
+
+      if (failed || tagEnd.failed) { return this.handleFailure(vimState); }
+
+      stop = stop.getRight();
+      tagEnd.stop = tagEnd.stop.getRight();
+
+      if (failed) { return this.handleFailure(vimState); }
+
+      TextEditor.replaceText(vimState, startReplace, start, start.getRight());
+      TextEditor.replaceText(vimState, endReplace, tagEnd.stop, tagEnd.stop.getRight());
+
+      const firstTagRange = new Range(start.getRight(), tagEnd.start);
+      const secondTagRange = new Range(tagEnd.stop.getRight(), stop);
+
+      vimState.recordedState.transformations.push({ type: "deleteRange", range: firstTagRange });
+      vimState.recordedState.transformations.push({ type: "deleteRange", range: secondTagRange });
+
+      return true;
+    }
+
+    const wordMatchings: { char: string, movement: () => TextObjectMovement }[] = [
+      { char: "w", movement: () => new SelectInnerWord() },
+      { char: "W", movement: () => new SelectInnerBigWord() },
+    ];
+
+    for (const { char, movement } of wordMatchings) {
+      if (target !== char) { continue; }
+
+      let { stop, start, failed } = await movement().execAction(position, vimState) as IMovement;
+
+      stop = stop.getRight();
+
+      if (failed) { return this.handleFailure(vimState); }
+
+      vimState.recordedState.transformations.push({ type: "insertText", text: startReplace, position: start });
+      vimState.recordedState.transformations.push({ type: "insertText", text: endReplace, position: stop });
+
+      return true;
+    }
+
     return false;
   }
 }

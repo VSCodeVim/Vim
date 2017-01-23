@@ -1226,6 +1226,11 @@ export class ModeHandler implements vscode.Disposable {
 
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
+        console.log(
+           `Text transformations are overlapping. Falling back to serial
+           transformations. This is generally a very bad sign. Try to make
+           your text transformations operate on non-overlapping ranges.`);
+
         // TODO: Select one transformation for every cursor and run them all
         // in parallel. Repeat till there are no more transformations.
 
