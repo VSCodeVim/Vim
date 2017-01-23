@@ -6366,6 +6366,10 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       endReplace = startReplace[0] + "/" + startReplace.slice(1);
     }
 
+    if (startReplace.length === 1 && startReplace in PairMatcher.pairings) {
+      endReplace = PairMatcher.pairings[startReplace].match;
+    }
+
     return { startReplace, endReplace };
   }
 
@@ -6417,8 +6421,17 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return true;
     }
 
-    if (target === '}' || target === '{') {
-      let { start, stop, failed } = await new MoveACurlyBrace().execAction(position, vimState);
+    const pairedMatchings: { open: string, close: string, movement: () => MoveInsideCharacter }[] = [
+      { open: "{", close: "}", movement: () => new MoveACurlyBrace() },
+      { open: "[", close: "]", movement: () => new MoveASquareBracket() },
+      { open: "(", close: ")", movement: () => new MoveAParentheses() },
+      { open: "<", close: ">", movement: () => new MoveACaret() },
+    ];
+
+    for (const { open, close, movement } of pairedMatchings) {
+      if (target !== open && target !== close) { continue; }
+
+      let { start, stop, failed } = await movement().execAction(position, vimState);
 
       if (failed) { return this.handleFailure(vimState); }
 
@@ -6427,11 +6440,13 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       TextEditor.replaceText(vimState, startReplace, start, start.getRight());
       TextEditor.replaceText(vimState, endReplace, stop, stop.getRight());
 
-      if (target === '{') {
+      if (target === open) {
         this.removeWhitespace(vimState, start, stop);
       }
 
       return true;
     }
+
+    return false;
   }
 }
