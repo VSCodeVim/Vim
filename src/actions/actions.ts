@@ -6287,6 +6287,29 @@ class CommandSurroundModeStart extends BaseCommand {
 }
 
 @RegisterAction
+class CommandSurroundModeStartVisual extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["S"];
+  isCompleteAction = false;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.surround = {
+      active: true,
+      target: undefined,
+      operator: "yank",
+      replacement: undefined,
+      range: new Range(vimState.cursorStartPosition, vimState.cursorPosition),
+    };
+
+    vimState.currentMode = ModeName.SurroundInputMode;
+    vimState.cursorStartPosition = vimState.cursorPosition;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandSurroundAddTarget extends BaseCommand {
   modes = [ModeName.SurroundInputMode];
   keys = [
