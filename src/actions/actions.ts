@@ -1919,22 +1919,22 @@ export class ShiftYankOperatorVisual extends BaseOperator {
 
 @RegisterAction
 export class DeleteOperatorXVisual extends BaseOperator {
-    public keys = ["x"];
-    public modes = [ModeName.Visual, ModeName.VisualLine];
+  public keys = ["x"];
+  public modes = [ModeName.Visual, ModeName.VisualLine];
 
-    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
-    }
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+  }
 }
 
 @RegisterAction
 export class ChangeOperatorSVisual extends BaseOperator {
-    public keys = ["s"];
-    public modes = [ModeName.Visual, ModeName.VisualLine];
+  public keys = ["s"];
+  public modes = [ModeName.Visual, ModeName.VisualLine];
 
-    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      return await new ChangeOperator().run(vimState, start, end);
-    }
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    return await new ChangeOperator().run(vimState, start, end);
+  }
 }
 
 @RegisterAction
@@ -4954,7 +4954,6 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 class ActionChangeChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["s"];
-  mustBeFirstKey = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -4963,6 +4962,17 @@ class ActionChangeChar extends BaseCommand {
     state.currentMode = ModeName.Insert;
 
     return state;
+  }
+
+  // Don't clash with surround mode!
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      !vimState.recordedState.operator;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      !vimState.recordedState.operator;
   }
 }
 
