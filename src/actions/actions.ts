@@ -6329,6 +6329,17 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     vimState.currentMode = ModeName.Normal;
   }
 
+  private getStartAndEndReplacements(replacement: string): { startReplace: string; endReplace: string; } {
+    let startReplace = replacement;
+    let endReplace   = replacement;
+
+    if (startReplace[0] === "<") {
+      endReplace = startReplace[0] + "/" + startReplace.slice(1);
+    }
+
+    return { startReplace, endReplace };
+  }
+
   // Returns true if it could actually find something to run surround on.
   private async tryToExecuteSurround(vimState: VimState, position: Position): boolean {
     const { target, replacement } = vimState.surround!;
@@ -6342,13 +6353,15 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return false;
     }
 
+    const { startReplace, endReplace } = this.getStartAndEndReplacements(replacement);
+
     if (target === "'") {
       const { start, stop, failed } = await new MoveASingleQuotes().execAction(position, vimState);
 
       if (failed) { return this.handleFailure(vimState); }
 
-      TextEditor.replaceText(vimState, replacement, start, start.getRight());
-      TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
+      TextEditor.replaceText(vimState, startReplace, start, start.getRight());
+      TextEditor.replaceText(vimState, endReplace, stop, stop.getRight());
 
       return true;
     }
@@ -6358,8 +6371,8 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
       if (failed) { return this.handleFailure(vimState); }
 
-      TextEditor.replaceText(vimState, replacement, start, start.getRight());
-      TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
+      TextEditor.replaceText(vimState, startReplace, start, start.getRight());
+      TextEditor.replaceText(vimState, endReplace, stop, stop.getRight());
 
       return true;
     }
@@ -6369,8 +6382,8 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
       if (failed) { return this.handleFailure(vimState); }
 
-      TextEditor.replaceText(vimState, replacement, start, start.getRight());
-      TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
+      TextEditor.replaceText(vimState, startReplace, start, start.getRight());
+      TextEditor.replaceText(vimState, endReplace, stop, stop.getRight());
 
       return true;
     }
@@ -6386,8 +6399,8 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
       if (failed) { return this.handleFailure(vimState); }
 
-      TextEditor.replaceText(vimState, replacement, start, start.getRight());
-      TextEditor.replaceText(vimState, replacement, stop.getLeft(), stop);
+      TextEditor.replaceText(vimState, startReplace, start, start.getRight());
+      TextEditor.replaceText(vimState, endReplace, stop.getLeft(), stop);
 
       return true;
     }
