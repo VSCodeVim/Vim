@@ -10,6 +10,7 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * Vim settings similar to those found in .vimrc
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
 * The EasyMotion plugin!
+* The Surround.vim plugin!
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
@@ -20,7 +21,7 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 [Make a dontation to VSCodeVim here!](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FNUBXQADN5VG4)
 
-Donations help convince me to work on this project rather than my other (non-open-source) projects. I'd love to work on VSCodeVim full time, but I need money to live! 
+Donations help convince me to work on this project rather than my other (non-open-source) projects. I'd love to work on VSCodeVim full time, but I need money to live!
 
 ## Supported Options
 
