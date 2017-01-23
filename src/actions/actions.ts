@@ -6323,10 +6323,39 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     return vimState;
   }
 
-  private handleFailure(vimState: VimState): void {
+  private handleFailure(vimState: VimState): boolean {
     vimState.recordedState.hasRunOperator = false;
     vimState.recordedState.actionsRun = [];
     vimState.currentMode = ModeName.Normal;
+
+    return false;
+  }
+
+  // we assume that we start directly on the characters we're operating over
+  // e.g. cs{' starts us with start on { end on }.
+
+  private removeWhitespace(vimState: VimState, start: Position, stop: Position): void {
+    const firstRangeStart = start.getRightThroughLineBreaks();
+    let   firstRangeEnd   = start.getRightThroughLineBreaks();
+
+    let   secondRangeStart = stop.getLeftThroughLineBreaks();
+    const secondRangeEnd   = stop.getLeftThroughLineBreaks();
+
+    if (firstRangeEnd.isEqual(secondRangeStart)) { return; }
+
+    while (!firstRangeEnd.isEqual(stop) && TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/)) {
+      firstRangeEnd = firstRangeEnd.getRightThroughLineBreaks();
+    }
+
+    while (!secondRangeStart.isEqual(firstRangeEnd) && TextEditor.getCharAt(secondRangeStart).match(/[ \t]/)) {
+      secondRangeStart = secondRangeStart.getLeftThroughLineBreaks(false);
+    }
+
+    const firstRange  = new Range(firstRangeStart, firstRangeEnd);
+    const secondRange = new Range(secondRangeStart, secondRangeEnd);
+
+    vimState.recordedState.transformations.push({ type: "deleteRange", range: firstRange });
+    vimState.recordedState.transformations.push({ type: "deleteRange", range: secondRange });
   }
 
   private getStartAndEndReplacements(replacement: string): { startReplace: string; endReplace: string; } {
@@ -6341,7 +6370,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
   }
 
   // Returns true if it could actually find something to run surround on.
-  private async tryToExecuteSurround(vimState: VimState, position: Position): boolean {
+  private async tryToExecuteSurround(vimState: VimState, position: Position): Promise<boolean> {
     const { target, replacement } = vimState.surround!;
 
     if (!replacement) {
@@ -6388,19 +6417,19 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return true;
     }
 
-    if (target === '{') {
-      // Remove whitespace
-    }
-
-    if (target === '}') {
-      // Don't remove whitespace
-
-      const { start, stop, failed } = await new MoveACurlyBrace().execAction(position, vimState);
+    if (target === '}' || target === '{') {
+      let { start, stop, failed } = await new MoveACurlyBrace().execAction(position, vimState);
 
       if (failed) { return this.handleFailure(vimState); }
 
+      stop = stop.getLeft();
+
       TextEditor.replaceText(vimState, startReplace, start, start.getRight());
-      TextEditor.replaceText(vimState, endReplace, stop.getLeft(), stop);
+      TextEditor.replaceText(vimState, endReplace, stop, stop.getRight());
+
+      if (target === '{') {
+        this.removeWhitespace(vimState, start, stop);
+      }
 
       return true;
     }

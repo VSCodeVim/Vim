@@ -131,6 +131,12 @@ export class TextEditor {
     return vscode.window.activeTextEditor.document.lineAt(position);
   }
 
+  static getCharAt(position: Position): string {
+    const line = TextEditor.getLineAt(position);
+
+    return line.text[position.character];
+  }
+
   static getLineMaxColumn(lineNumber: number): number {
     if (lineNumber < 1 || lineNumber > TextEditor.getLineCount()) {
       throw new Error('Illegal value ' + lineNumber + ' for `lineNumber`');
