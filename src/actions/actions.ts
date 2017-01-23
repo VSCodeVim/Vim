@@ -6424,6 +6424,9 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
       if (!PairMatcher.pairings[startReplace].nextMatchIsForward) {
         [startReplace, endReplace] = [endReplace, startReplace];
+      } else {
+        startReplace = startReplace + " ";
+        endReplace = " " + endReplace;
       }
     }
 
