@@ -52,7 +52,6 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
            s.length > 1;
   };
 
-
   for (let i = 0, j = 0; i < one.length; i++, j++) {
     const left = one[i], right = two[j];
 
@@ -851,6 +850,7 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.Normal,
     ModeName.SearchInProgressMode,
+    ModeName.SurroundInputMode,
     ModeName.EasyMotionMode
   ];
   keys = [
@@ -6257,11 +6257,11 @@ class CommandSurroundModeStart extends BaseCommand {
     if (!operatorString) { return vimState; }
 
     vimState.surround = {
-      active: true,
-      target: undefined,
-      operator: operatorString,
+      active     : true,
+      target     : undefined,
+      operator   : operatorString,
       replacement: undefined,
-      range: undefined,
+      range      : undefined,
     };
 
     if (operatorString !== "yank") {
@@ -6394,11 +6394,15 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
     if (firstRangeEnd.isEqual(secondRangeStart)) { return; }
 
-    while (!firstRangeEnd.isEqual(stop) && TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/)) {
-      firstRangeEnd = firstRangeEnd.getRightThroughLineBreaks();
+    while (!firstRangeEnd.isEqual(stop) &&
+           TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/) &&
+           !firstRangeEnd.isLineEnd()) {
+      firstRangeEnd = firstRangeEnd.getRight();
     }
 
-    while (!secondRangeStart.isEqual(firstRangeEnd) && TextEditor.getCharAt(secondRangeStart).match(/[ \t]/)) {
+    while (!secondRangeStart.isEqual(firstRangeEnd) &&
+           TextEditor.getCharAt(secondRangeStart).match(/[ \t]/) &&
+           !secondRangeStart.isLineBeginning()) {
       secondRangeStart = secondRangeStart.getLeftThroughLineBreaks(false);
     }
 
@@ -6565,8 +6569,6 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
     if (operator === "change") {
       if (!replacement) { return false; }
-
-      let { startReplace, endReplace } = this.GetStartAndEndReplacements(replacement);
 
       if (startReplaceRange) { TextEditor.replaceText(vimState, startReplace, startReplaceRange.start, startReplaceRange.stop); }
       if (endReplaceRange)   { TextEditor.replaceText(vimState, endReplace  , endReplaceRange.start  , endReplaceRange.stop  ); }
