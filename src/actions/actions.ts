@@ -6386,6 +6386,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
   public static Finish(vimState: VimState): boolean {
     vimState.recordedState.hasRunOperator = false;
     vimState.recordedState.actionsRun = [];
+    vimState.surround = undefined;
     vimState.currentMode = ModeName.Normal;
 
     return false;
