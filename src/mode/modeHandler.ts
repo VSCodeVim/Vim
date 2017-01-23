@@ -97,6 +97,7 @@ export class VimState {
 
   public surround: undefined | {
     active: boolean;
+    operator: "change" | "delete";
     target: string | undefined;
     replacement: string | undefined;
   } = undefined;
