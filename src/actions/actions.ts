@@ -6339,5 +6339,23 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
       return true;
     }
+
+    if (target === '"') {
+      const { start, stop } = await new MoveADoubleQuotes().execAction(position, vimState);
+
+      TextEditor.replaceText(vimState, replacement, start, start.getRight());
+      TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
+
+      return true;
+    }
+
+    if (target === '`') {
+      const { start, stop } = await new MoveABacktick().execAction(position, vimState);
+
+      TextEditor.replaceText(vimState, replacement, start, start.getRight());
+      TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
+
+      return true;
+    }
   }
 }
