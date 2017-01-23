@@ -4943,6 +4943,7 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 class ActionChangeChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["s"];
+  mustBeFirstKey = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -6224,5 +6225,119 @@ class MoveEasyMotion extends BaseMovement {
     }
 
     return position;
+  }
+}
+
+@RegisterAction
+class CommandSurroundModeStart extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["s"];
+  isCompleteAction = false;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.surround = {
+      active: true,
+      target: undefined,
+      replacement: undefined,
+    };
+    vimState.currentMode = ModeName.SurroundInputMode;
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const hasSomeOperator = !!vimState.recordedState.operator;
+
+    return super.doesActionApply(vimState, keysPressed) &&
+      hasSomeOperator;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const hasSomeOperator = !!vimState.recordedState.operator;
+
+    return super.doesActionApply(vimState, keysPressed) &&
+      hasSomeOperator;
+  }
+}
+
+@RegisterAction
+class CommandSurroundAddTarget extends BaseCommand {
+  modes = [ModeName.SurroundInputMode];
+  keys = [
+    ["("], [")"],
+    ["{"], ["}"],
+    ["["], ["]"],
+    ["<"], [">"],
+    ["'"], ['"'], ["`"],
+    ["t"],
+    ["w"], ["W"], ["s"],
+    ["p"]
+  ];
+  isCompleteAction = false;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (!vimState.surround) {
+      return vimState;
+    }
+
+    vimState.surround.target = this.keysPressed[this.keysPressed.length - 1];
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      !!(vimState.surround && vimState.surround.active && !vimState.surround.target);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      !!(vimState.surround && vimState.surround.active && !vimState.surround.target);
+  }
+}
+
+@RegisterAction
+class CommandSurroundAddToReplacement extends BaseCommand {
+  modes = [ModeName.SurroundInputMode];
+  keys = ["<character>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (!vimState.surround) {
+      return vimState;
+    }
+
+    if (!vimState.surround.replacement) {
+      vimState.surround.replacement = "";
+    }
+
+    vimState.surround.replacement += this.keysPressed[this.keysPressed.length - 1];
+
+    const success = await this.tryToExecuteSurround(vimState, position);
+
+    if (success) {
+      vimState.currentMode = ModeName.Normal;
+    }
+
+    return vimState;
+  }
+
+  // Returns true if it could actually find something to run surround on.
+  private async tryToExecuteSurround(vimState: VimState, position: Position): boolean {
+    const { target, replacement } = vimState.surround!;
+
+    if (!replacement) {
+      return false;
+    }
+
+    if (target === "'") {
+      const { start, stop } = await new MoveASingleQuotes().execAction(position, vimState);
+
+      TextEditor.replaceText(vimState, replacement, start, start.getRight());
+      TextEditor.replaceText(vimState, replacement, stop, stop.getRight());
+
+      return true;
+    }
   }
 }

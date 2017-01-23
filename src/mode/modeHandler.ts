@@ -1,4 +1,5 @@
 "use strict";
+import { SurroundInputMode } from './surroundInputMode';
 
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
@@ -93,6 +94,12 @@ export class VimState {
   public isRunningDotCommand = false;
 
   public focusChanged = false;
+
+  public surround: undefined | {
+    active: boolean;
+    target: string | undefined;
+    replacement: string | undefined;
+  } = undefined;
 
   /**
    * Used for command like <C-o> which allows you to return to insert after a command
@@ -487,6 +494,7 @@ export class ModeHandler implements vscode.Disposable {
       new SearchInProgressMode(),
       new ReplaceMode(),
       new EasyMotionMode(),
+      new SurroundInputMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker();
     this.vimState.easyMotion = new EasyMotion();

@@ -1,6 +1,7 @@
 "use strict";
+import { VimState } from './mode/modeHandler';
 
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import { Position } from './motion/position';
 import { Configuration } from './configuration/configuration';
 import { Globals } from './globals';
@@ -81,6 +82,18 @@ export class TextEditor {
   static async replace(range: vscode.Range, text: string): Promise<boolean> {
     return vscode.window.activeTextEditor.edit(editBuilder => {
       editBuilder.replace(range, text);
+    });
+  }
+
+  /**
+   * This is the correct replace method to use. (Notice how it's not async? Yep)
+   */
+  static replaceText(vimState: VimState, text: string, start: Position, end: Position): void {
+    vimState.recordedState.transformations.push({
+      type: "replaceText",
+      text,
+      start,
+      end,
     });
   }
 

@@ -10,6 +10,7 @@ export enum ModeName {
   SearchInProgressMode,
   Replace,
   EasyMotionMode,
+  SurroundInputMode,
 }
 
 export enum VSCodeVimCursorType {
