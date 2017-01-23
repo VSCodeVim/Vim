@@ -1108,16 +1108,15 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalText = TextEditor.getLineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
-    const tabSize = Configuration.tabstop;
+    const tabSize = Configuration.tabstop || Number(vscode.window.activeTextEditor.options.tabSize);
     const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
-    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
-      TextEditor.setIndentationLevel(originalText, newIndentationWidth));
 
-    const cursorPosition = Position.FromVSCodePosition(position.with(position.line,
-      position.character + (newIndentationWidth - indentationWidth) / tabSize));
-    vimState.cursorPosition = cursorPosition;
-    vimState.cursorStartPosition = cursorPosition;
-    vimState.currentMode = ModeName.Insert;
+    TextEditor.replaceText(
+      vimState, TextEditor.setIndentationLevel(originalText, newIndentationWidth),
+      position.getLineBegin(), position.getLineEnd(),
+      new PositionDiff(0, newIndentationWidth - indentationWidth)
+    );
+
     return vimState;
   }
 }
