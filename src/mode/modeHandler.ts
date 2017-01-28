@@ -1670,12 +1670,12 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.postponedCodeViewChanges = [];
 
     if (this.currentMode.name === ModeName.SearchInProgressMode) {
-      this.setStatusBarText(`Searching for: ${ this.vimState.globalState.searchState!.searchString }`);
+      this.setStatusBarText(`Searching for: ${this.vimState.globalState.searchState!.searchString}`);
     } else if (this.currentMode.name === ModeName.EasyMotionMode) {
       // Update all EasyMotion decorations
       this._vimState.easyMotion.updateDecorations();
 
-      this.setStatusBarText(`Current depth: ${ this.vimState.easyMotion.accumulation }`);
+      this.setStatusBarText(`Current depth: ${this.vimState.easyMotion.accumulation}`);
     } else {
       this._renderStatusBar();
     }
@@ -1695,6 +1695,15 @@ export class ModeHandler implements vscode.Disposable {
 
       if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
         currentCommandText = ` ${ this._vimState.globalState.searchState!.searchString }`;
+      }
+
+      if (this._vimState.currentMode === ModeName.SurroundInputMode) {
+        if (this._vimState.surround !== undefined) {
+          const surroundText = this._vimState.surround.replacement;
+          if (surroundText !== undefined) {
+            currentCommandText = surroundText;
+          }
+        }
       }
 
       this.setStatusBarText(`${ modeText }${ currentCommandText }${ macroText }`);
