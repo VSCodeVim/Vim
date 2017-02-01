@@ -4,7 +4,7 @@ import { SurroundInputMode } from './surroundInputMode';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { getAndUpdateModeHandler } from './../../extension';
+import { getAndUpdateModeHandler, getModeHandlerForActiveEditor } from './../../extension';
 import {
   isTextTransformation,
   TextTransformations,
@@ -836,8 +836,15 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Update view
-    await this.updateView(vimState);
-
+    if (vimState.focusChanged) {
+      // If this command changed focus (e.g. GoToDeclaration opening a new editor)
+      // get the modehandler for _that_ editor and update it's view.
+      const newHandler = getModeHandlerForActiveEditor();
+      await newHandler.updateView(newHandler.vimState);
+      vimState.focusChanged = false;
+    } else {
+      await this.updateView(vimState);
+    }
     return vimState;
   }
 
@@ -1047,7 +1054,9 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    vimState.allCursors = resultingList;
+    if (!vimState.focusChanged) {
+      vimState.allCursors = resultingList;
+    }
 
     return vimState;
   }

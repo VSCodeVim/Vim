@@ -20,7 +20,6 @@ import { EasyMotion } from './../easymotion/easymotion';
 import { FileCommand } from './../cmd_line/commands/file';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
-
 const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);
 };
@@ -428,7 +427,9 @@ export abstract class BaseCommand extends BaseAction {
       }
     }
 
-    vimState.allCursors = resultingCursors;
+    if (!vimState.focusChanged) {
+      vimState.allCursors = resultingCursors;
+    }
 
     return vimState;
   }
@@ -2874,28 +2875,40 @@ class CommandGoToDefinition extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const startPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    const startFileURI = vscode.window.activeTextEditor.document.uri.toString();
 
     await vscode.commands.executeCommand("editor.action.goToDeclaration");
 
     // Unfortuantely, the above does not necessarily have to have finished executing
     // (even though we do await!). THe only way to ensure it's done is to poll, which is
     // a major bummer.
-
     let maxIntervals = 10;
+    let fileURINow = startFileURI;
+    let positionNow = startPosition;
 
     await new Promise(resolve => {
       let interval = setInterval(() => {
-        const positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        if (!vscode.window.activeTextEditor) {
+          return;
+        }
+        positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+        fileURINow = vscode.window.activeTextEditor.document.uri.toString();
 
-        if (!startPosition.isEqual(positionNow) || maxIntervals-- < 0) {
+        const positionUpdated = !startPosition.isEqual(positionNow) || fileURINow !== startFileURI;
+        if (positionUpdated || maxIntervals-- < 0) {
           clearInterval(interval);
           resolve();
         }
       }, 50);
     });
 
-    vimState.focusChanged = true;
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    if (fileURINow === startFileURI) {
+      // update cursorPosition only when jumping in same file. Otherwise let
+      // the event handlers for active editor changing handle it.
+      vimState.cursorPosition = positionNow;
+    } else {
+      vimState.focusChanged = true;
+    }
 
     return vimState;
   }

@@ -69,8 +69,7 @@ let extensionContext: vscode.ExtensionContext;
 let modeHandlerToEditorIdentity: { [key: string]: ModeHandler } = {};
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
 
-export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-  const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
+export function getModeHandlerForActiveEditor(): ModeHandler {
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
   if (!modeHandlerToEditorIdentity[activeEditorId.toString()]) {
@@ -79,8 +78,13 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
   }
+  return modeHandlerToEditorIdentity[activeEditorId.toString()]
+}
 
-  const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
+export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
+  const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
+  const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
+  const handler = getModeHandlerForActiveEditor()
 
   if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
     if (!previousActiveEditorId.isEqual(activeEditorId)) {
