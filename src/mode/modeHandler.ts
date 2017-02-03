@@ -752,6 +752,8 @@ export class ModeHandler implements vscode.Disposable {
 
       if (!handled) {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
+      } else {
+        this._vimState.recordedState.commandList = [];
       }
     } catch (e) {
       console.log('error.stack');
