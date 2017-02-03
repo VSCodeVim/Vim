@@ -3004,13 +3004,14 @@ class CommandInsertNewLineAbove extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(position).text);
     vimState.currentMode = ModeName.Insert;
 
     vimState.recordedState.transformations.push({
       type: "insertText",
-      text: "\n",
+      text: TextEditor.setIndentationLevel("V", indentationWidth).replace("V", "\n"),
       position: new Position(vimState.cursorPosition.line, 0),
-      diff: new PositionDiff(-1, 0),
+      diff: new PositionDiff(-1, indentationWidth),
     });
 
     return vimState;
