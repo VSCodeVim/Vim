@@ -69,6 +69,9 @@ export class PairMatcher {
    * no matching bracket is found immediately following the opening bracket, return undefined.
    */
   static immediateMatchingBracket(currentPosition: Position): vscode.Range | undefined {
+    // Don't delete bracket unless autoClosingBrackets is set
+    if (!vscode.workspace.getConfiguration().get("editor.autoClosingBrackets")) { return undefined; }
+
     let deleteRange = new vscode.Range(currentPosition, currentPosition.getLeftThroughLineBreaks());
     let deleteText = vscode.window.activeTextEditor.document.getText(deleteRange);
     let matchRange: vscode.Range | undefined;
