@@ -1,4 +1,5 @@
-import { Position } from './../motion/position';
+import { Position, PositionDiff } from './../motion/position';
+import * as vscode from 'vscode';
 
 /**
  * PairMatcher finds the position matching the given character, respecting nested
@@ -60,6 +61,31 @@ export class PairMatcher {
     }
 
     // TODO(bell)
+    return undefined;
+  }
+
+  /**
+   * Given a current position, find an immediate following bracket and return the range. If
+   * no matching bracket is found immediately following the opening bracket, return undefined.
+   */
+  static immediateMatchingBracket(currentPosition: Position): vscode.Range | undefined {
+    let deleteRange = new vscode.Range(currentPosition, currentPosition.getLeftThroughLineBreaks());
+    let deleteText = vscode.window.activeTextEditor.document.getText(deleteRange);
+    let matchRange: vscode.Range | undefined;
+    let isNextMatch = false;
+
+    if ("{[(<".indexOf(deleteText) > -1) {
+      let matchPosition = currentPosition.add(new PositionDiff(0, 1));
+      if (matchPosition) {
+        matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
+        isNextMatch = vscode.window.activeTextEditor.document.getText(matchRange) === PairMatcher.pairings[deleteText].match;
+      }
+    }
+
+    if (isNextMatch && matchRange) {
+      return matchRange;
+    }
+
     return undefined;
   }
 }
