@@ -15,8 +15,13 @@ export class PairMatcher {
     "]" : { match: "[",  nextMatchIsForward: false, matchesWithPercentageMotion: true },
     // These characters can't be used for "%"-based matching, but are still
     // useful for text objects.
-    "<" : { match: ">",  nextMatchIsForward: true },
+    "<" : { match: ">",  nextMatchIsForward: true  },
     ">" : { match: "<",  nextMatchIsForward: false },
+    // These are useful for deleting closing and opening quotes, but don't seem to negatively
+    // affect how text objects such as `ci"` work, which was my worry.
+    '"' : { match: '"',  nextMatchIsForward: true  },
+    "'" : { match: "'",  nextMatchIsForward: true  },
+    "`" : { match: "`",  nextMatchIsForward: true  },
   };
 
   static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true): Position | undefined {
@@ -77,7 +82,7 @@ export class PairMatcher {
     let matchRange: vscode.Range | undefined;
     let isNextMatch = false;
 
-    if ("{[(<".indexOf(deleteText) > -1) {
+    if ("{[(\"'`".indexOf(deleteText) > -1) {
       let matchPosition = currentPosition.add(new PositionDiff(0, 1));
       if (matchPosition) {
         matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
