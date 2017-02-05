@@ -19,6 +19,11 @@ class Remapper {
   private _remappedModes: ModeName[];
   private _recursive: boolean;
 
+  /**
+   * Have the keys pressed so far potentially be a remap
+   */
+  public couldRemappingApply = false;
+
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
@@ -120,8 +125,17 @@ class Remapper {
       }
 
       vimState.isCurrentlyPerformingRemapping = false;
-
       return true;
+    } else {
+      // Check to see if a remapping could potentially be applied when more keys are received
+      for (let remap of this._remappings) {
+        if (keys.join("") === remap.before.slice(0, keys.length).join("")) {
+          this.couldRemappingApply = true;
+          break;
+        } else {
+          this.couldRemappingApply = false;
+        }
+      }
     }
 
     return false;
