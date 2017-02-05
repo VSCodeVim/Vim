@@ -77,17 +77,15 @@ export class PairMatcher {
     // Don't delete bracket unless autoClosingBrackets is set
     if (!vscode.workspace.getConfiguration().get("editor.autoClosingBrackets")) { return undefined; }
 
-    let deleteRange = new vscode.Range(currentPosition, currentPosition.getLeftThroughLineBreaks());
-    let deleteText = vscode.window.activeTextEditor.document.getText(deleteRange);
+    const deleteRange = new vscode.Range(currentPosition, currentPosition.getLeftThroughLineBreaks());
+    const deleteText = vscode.window.activeTextEditor.document.getText(deleteRange);
     let matchRange: vscode.Range | undefined;
     let isNextMatch = false;
 
     if ("{[(\"'`".indexOf(deleteText) > -1) {
-      let matchPosition = currentPosition.add(new PositionDiff(0, 1));
-      if (matchPosition) {
-        matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
-        isNextMatch = vscode.window.activeTextEditor.document.getText(matchRange) === PairMatcher.pairings[deleteText].match;
-      }
+      const matchPosition = currentPosition.add(new PositionDiff(0, 1));
+      matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
+      isNextMatch = vscode.window.activeTextEditor.document.getText(matchRange) === PairMatcher.pairings[deleteText].match;
     }
 
     if (isNextMatch && matchRange) {
