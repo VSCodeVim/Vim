@@ -1571,9 +1571,37 @@ class CommandCmdA extends BaseCommand {
 }
 
 @RegisterAction
-class CommandStar extends BaseCommand {
+class CommandSearchCurrentWordExactForward extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["*"];
+  isMotion = true;
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
+      return vimState;
+    }
+
+    vimState.globalState.searchState = new SearchState(
+      SearchDirection.Forward, vimState.cursorPosition, `\\b${currentWord}\\b`, { isRegex: true }
+    );
+
+    do {
+      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
+    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandSearchCurrentWordForward extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "*"];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
 
@@ -1597,9 +1625,39 @@ class CommandStar extends BaseCommand {
 }
 
 @RegisterAction
-class CommandHash extends BaseCommand {
+class CommandSearchCurrentWordExactBackward extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["#"];
+  isMotion = true;
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
+      return vimState;
+    }
+
+    vimState.globalState.searchState = new SearchState(
+      SearchDirection.Backward, vimState.cursorPosition, `\\b${currentWord}\\b`, { isRegex: true }
+    );
+    do {
+      // use getWordLeft() on position to start at the beginning of the word.
+      // this ensures that any matches happen outside of the word currently selected,
+      // which are the desired semantics for this motion.
+      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
+    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandSearchCurrentWordBackward extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "#"];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
 
@@ -1613,7 +1671,7 @@ class CommandHash extends BaseCommand {
 
     do {
       // use getWordLeft() on position to start at the beginning of the word.
-      // this ensures that any matches happen ounside of the word currently selected,
+      // this ensures that any matches happen outside of the word currently selected,
       // which are the desired semantics for this motion.
       vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
     } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
