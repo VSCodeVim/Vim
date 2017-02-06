@@ -6034,8 +6034,12 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     }
 
     // Enter the EasyMotion mode and await further keys
-    vimState.currentMode = ModeName.EasyMotionMode;
     vimState.easyMotion = new EasyMotion();
+
+    // Store mode to return to after performing easy motion
+    vimState.easyMotion.previousMode = vimState.currentMode;
+
+    vimState.currentMode = ModeName.EasyMotionMode;
 
     this.processMarkers(matches, position, vimState);
 
@@ -6045,7 +6049,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
 @RegisterAction
 class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "s", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6062,7 +6066,7 @@ class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "f", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6083,7 +6087,7 @@ class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "F", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6104,7 +6108,7 @@ class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "t", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6129,7 +6133,7 @@ class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "T", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6154,7 +6158,7 @@ class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "w"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6167,7 +6171,7 @@ class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "e"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6184,7 +6188,7 @@ class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "g", "e"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6201,7 +6205,7 @@ class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "b"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6213,14 +6217,14 @@ class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
 }
 
 @RegisterAction
-class MoveEasyMotion extends BaseMovement {
+class MoveEasyMotion extends BaseCommand {
   modes = [ModeName.EasyMotionMode];
   keys = ["<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     var key = this.keysPressed[0];
     if (!key) {
-      return position;
+      return vimState;
     }
 
     // "nail" refers to the accumulated depth keys
@@ -6229,23 +6233,37 @@ class MoveEasyMotion extends BaseMovement {
 
     // Find markers starting with "nail"
     var markers = vimState.easyMotion.findMarkers(nail);
+
+    // If previous mode was visual, restore visual selection
+    if (vimState.easyMotion.previousMode === ModeName.Visual ||
+      vimState.easyMotion.previousMode === ModeName.VisualLine ||
+      vimState.easyMotion.previousMode === ModeName.VisualBlock) {
+      vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
+      vimState.cursorPosition = vimState.lastVisualSelectionEnd;
+    }
+
+
     if (markers.length === 1) { // Only one found, navigate to it
       var marker = markers[0];
 
       vimState.easyMotion.clearDecorations();
-      vimState.currentMode = ModeName.Normal;
+      // Restore the mode from before easy motion
+      vimState.currentMode = vimState.easyMotion.previousMode;
 
-      return marker.position;
+      // Set cursor position based on marker entered
+      vimState.cursorPosition = marker.position;
+
+      return vimState;
     } else {
       if (markers.length === 0) { // None found, exit mode
         vimState.easyMotion.clearDecorations();
-        vimState.currentMode = ModeName.Normal;
+        vimState.currentMode = vimState.easyMotion.previousMode;
 
-        return position;
+        return vimState;
       }
     }
 
-    return position;
+    return vimState;
   }
 }
 

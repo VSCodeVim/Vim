@@ -36,6 +36,11 @@ export class EasyMotion {
     "v", "b", "n", "m", "f", "j"
   ];
 
+  /**
+   * Mode to return to after attempting easymotion
+   */
+  public previousMode: number;
+
   constructor() {
     this.markers = [];
     this.visibleMarkers = [];
