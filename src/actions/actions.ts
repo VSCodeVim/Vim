@@ -6401,7 +6401,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     let   firstRangeEnd   = start.getRightThroughLineBreaks();
 
     let   secondRangeStart = stop.getLeftThroughLineBreaks();
-    const secondRangeEnd   = stop.getLeftThroughLineBreaks();
+    const secondRangeEnd   = stop.getLeftThroughLineBreaks().getRight();
 
     if (firstRangeEnd.isEqual(secondRangeStart)) { return; }
 
@@ -6416,6 +6416,9 @@ class CommandSurroundAddToReplacement extends BaseCommand {
            !secondRangeStart.isLineBeginning()) {
       secondRangeStart = secondRangeStart.getLeftThroughLineBreaks(false);
     }
+
+    // Adjust range start based on found position
+    secondRangeStart = secondRangeStart.getRight();
 
     const firstRange  = new Range(firstRangeStart, firstRangeEnd);
     const secondRange = new Range(secondRangeStart, secondRangeEnd);
