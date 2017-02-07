@@ -1570,58 +1570,82 @@ class CommandCmdA extends BaseCommand {
   }
 }
 
+function searchCurrentWord(position: Position, vimState: VimState, direction: SearchDirection, isExact: boolean) {
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
+      return vimState;
+    }
+
+    // For an exact search we need to use a regex with word bounds.
+    const searchString = isExact
+      ? `\\b${currentWord}\\b`
+      : currentWord;
+
+    // Start a search for the given term.
+    vimState.globalState.searchState = new SearchState(
+      direction, vimState.cursorPosition, searchString, { isRegex: isExact }
+    );
+
+    // If the search is going left then use `getWordLeft()` on position to start
+    // at the beginning of the word. This ensures that any matches happen
+    // outside of the currently selected word.
+    const searchStartCursorPosition = direction === SearchDirection.Backward
+      ? vimState.cursorPosition.getWordLeft(true)
+      : vimState.cursorPosition;
+
+    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(searchStartCursorPosition).pos;
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
+
+    return vimState;
+}
+
 @RegisterAction
-class CommandStar extends BaseCommand {
+class CommandSearchCurrentWordExactForward extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["*"];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
-      return vimState;
-    }
-
-    vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
-
-    do {
-      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
-
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
-    return vimState;
+    return searchCurrentWord(position, vimState, SearchDirection.Forward, true);
   }
 }
 
 @RegisterAction
-class CommandHash extends BaseCommand {
+class CommandSearchCurrentWordForward extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "*"];
+  isMotion = true;
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return searchCurrentWord(position, vimState, SearchDirection.Forward, false);
+  }
+}
+
+@RegisterAction
+class CommandSearchCurrentWordExactBackward extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["#"];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
-      return vimState;
-    }
+    return searchCurrentWord(position, vimState, SearchDirection.Backward, true);
+  }
+}
 
-    vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
+@RegisterAction
+class CommandSearchCurrentWordBackward extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "#"];
+  isMotion = true;
+  runsOnceForEachCountPrefix = true;
 
-    do {
-      // use getWordLeft() on position to start at the beginning of the word.
-      // this ensures that any matches happen ounside of the word currently selected,
-      // which are the desired semantics for this motion.
-      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
-    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
-
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
-    return vimState;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return searchCurrentWord(position, vimState, SearchDirection.Backward, false);
   }
 }
 
