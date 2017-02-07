@@ -174,6 +174,24 @@ suite("Mode Insert", () => {
         assertEqualLines(["  "]);
     });
 
+    test("will remove closing bracket", async() => {
+        await modeHandler.handleMultipleKeyEvents([
+            'i',
+            '(',
+            '<Esc>'
+        ]);
+
+        assertEqualLines(["()"]);
+
+        await modeHandler.handleMultipleKeyEvents([
+            'a',
+            '<BS>',
+            '<Esc>'
+        ]);
+
+        assertEqualLines([""]);
+    });
+
     newTest({
       title: "Can perform <ctrl+o> to exit and perform one command in normal",
       start: ['testtest|'],
