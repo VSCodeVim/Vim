@@ -1570,6 +1570,37 @@ class CommandCmdA extends BaseCommand {
   }
 }
 
+function searchCurrentWord(position: Position, vimState: VimState, direction: SearchDirection, isExact: boolean) {
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
+      return vimState;
+    }
+
+    // For an exact search we need to use a regex with word bounds.
+    const searchString = isExact
+      ? `\\b${currentWord}\\b`
+      : currentWord;
+
+    // Start a search for the given term.
+    vimState.globalState.searchState = new SearchState(
+      direction, vimState.cursorPosition, searchString, { isRegex: isExact }
+    );
+
+    // If the search is going left then use `getWordLeft()` on position to start
+    // at the beginning of the word. This ensures that any matches happen
+    // outside of the currently selected word.
+    const searchStartCursorPosition = direction === SearchDirection.Backward
+      ? vimState.cursorPosition.getWordLeft(true)
+      : vimState.cursorPosition;
+
+    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(searchStartCursorPosition).pos;
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
+
+    return vimState;
+}
+
 @RegisterAction
 class CommandSearchCurrentWordExactForward extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
@@ -1578,21 +1609,7 @@ class CommandSearchCurrentWordExactForward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
-      return vimState;
-    }
-
-    vimState.globalState.searchState = new SearchState(
-      SearchDirection.Forward, vimState.cursorPosition, `\\b${currentWord}\\b`, { isRegex: true }
-    );
-
-    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
-    return vimState;
+    return searchCurrentWord(position, vimState, SearchDirection.Forward, true);
   }
 }
 
@@ -1604,19 +1621,7 @@ class CommandSearchCurrentWordForward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
-      return vimState;
-    }
-
-    vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
-
-    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
-    return vimState;
+    return searchCurrentWord(position, vimState, SearchDirection.Forward, false);
   }
 }
 
@@ -1628,24 +1633,7 @@ class CommandSearchCurrentWordExactBackward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
-      return vimState;
-    }
-
-    vimState.globalState.searchState = new SearchState(
-      SearchDirection.Backward, vimState.cursorPosition, `\\b${currentWord}\\b`, { isRegex: true }
-    );
-
-    // use getWordLeft() on position to start at the beginning of the word.
-    // this ensures that any matches happen outside of the word currently selected,
-    // which are the desired semantics for this motion.
-    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
-
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
-    return vimState;
+    return searchCurrentWord(position, vimState, SearchDirection.Backward, true);
   }
 }
 
@@ -1657,22 +1645,7 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
-      return vimState;
-    }
-
-    vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
-
-    // use getWordLeft() on position to start at the beginning of the word.
-    // this ensures that any matches happen outside of the word currently selected,
-    // which are the desired semantics for this motion.
-    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
-
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
-    return vimState;
+    return searchCurrentWord(position, vimState, SearchDirection.Backward, false);
   }
 }
 
