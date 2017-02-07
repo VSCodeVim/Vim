@@ -1587,9 +1587,7 @@ class CommandSearchCurrentWordExactForward extends BaseCommand {
       SearchDirection.Forward, vimState.cursorPosition, `\\b${currentWord}\\b`, { isRegex: true }
     );
 
-    do {
-      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
+    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
     Configuration.hl = true;
@@ -1613,9 +1611,7 @@ class CommandSearchCurrentWordForward extends BaseCommand {
 
     vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
 
-    do {
-      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
+    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
     Configuration.hl = true;
@@ -1640,12 +1636,11 @@ class CommandSearchCurrentWordExactBackward extends BaseCommand {
     vimState.globalState.searchState = new SearchState(
       SearchDirection.Backward, vimState.cursorPosition, `\\b${currentWord}\\b`, { isRegex: true }
     );
-    do {
-      // use getWordLeft() on position to start at the beginning of the word.
-      // this ensures that any matches happen outside of the word currently selected,
-      // which are the desired semantics for this motion.
-      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
-    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
+
+    // use getWordLeft() on position to start at the beginning of the word.
+    // this ensures that any matches happen outside of the word currently selected,
+    // which are the desired semantics for this motion.
+    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
     Configuration.hl = true;
@@ -1669,12 +1664,10 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
 
     vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
 
-    do {
-      // use getWordLeft() on position to start at the beginning of the word.
-      // this ensures that any matches happen outside of the word currently selected,
-      // which are the desired semantics for this motion.
-      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
-    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
+    // use getWordLeft() on position to start at the beginning of the word.
+    // this ensures that any matches happen outside of the word currently selected,
+    // which are the desired semantics for this motion.
+    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
     Configuration.hl = true;
