@@ -551,6 +551,20 @@ export class CommandInsertInInsertMode extends BaseCommand {
             range: new Range(new Position(position.line, desiredLineLength), position)
           });
         } else {
+          // Check for matching character that was auto inserted ("" or [] and delete the closing char if the opening char is deleted)
+          const text = TextEditor.getLineAt(position).text;
+          const charToMatch = text[position.character - 1];
+          const toFind = PairMatcher.pairings[charToMatch];
+
+          if (toFind !== undefined) {
+            if (text[position.character] === toFind.match) {
+              vimState.recordedState.transformations.push({
+                type: "deleteRange",
+                range: new Range(position, new Position(position.line, position.character + 1)),
+              });
+            }
+          }
+
           vimState.recordedState.transformations.push({
             type: "deleteText",
             position: position,
@@ -558,19 +572,19 @@ export class CommandInsertInInsertMode extends BaseCommand {
         }
       }
 
-      vimState.cursorPosition      = vimState.cursorPosition.getLeft();
+      vimState.cursorPosition = vimState.cursorPosition.getLeft();
       vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
     } else {
       if (vimState.isMultiCursor) {
         vimState.recordedState.transformations.push({
-          type     : "insertText",
-          text     : char,
-          position : vimState.cursorPosition,
+          type: "insertText",
+          text: char,
+          position: vimState.cursorPosition,
         });
       } else {
         vimState.recordedState.transformations.push({
-          type : "insertTextVSCode",
-          text : char,
+          type: "insertTextVSCode",
+          text: char,
         });
       }
     }
