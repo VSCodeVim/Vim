@@ -744,10 +744,14 @@ export class ModeHandler implements vscode.Disposable {
           (withinTimeout || keys.length === 1)) {
 
 
-        handled = handled || await this._insertModeRemapper.sendKey(keys, this, this.vimState);
-        handled = handled || await this._otherModesRemapper.sendKey(keys, this, this.vimState);
-        handled = handled || await this._insertModeNonRecursive.sendKey(keys, this, this.vimState);
-        handled = handled || await this._otherModesNonRecursive.sendKey(keys, this, this.vimState);
+        // User remappings bork the tests. If the the remappings start getting tested
+        // at some point, will probably need a new solution.
+        if (!ModeHandler.IsTesting) {
+          handled = handled || await this._insertModeRemapper.sendKey(keys, this, this.vimState);
+          handled = handled || await this._otherModesRemapper.sendKey(keys, this, this.vimState);
+          handled = handled || await this._insertModeNonRecursive.sendKey(keys, this, this.vimState);
+          handled = handled || await this._otherModesNonRecursive.sendKey(keys, this, this.vimState);
+        }
       }
 
       if (!handled) {
@@ -1296,6 +1300,8 @@ export class ModeHandler implements vscode.Disposable {
                 break;
 
               case "deleteText":
+                let matchRange = PairMatcher.immediateMatchingBracket(command.position);
+                if (matchRange) { edit.delete(matchRange); }
                 edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
                 break;
 
