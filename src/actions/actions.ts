@@ -6314,7 +6314,7 @@ class CommandSurroundModeStart extends BaseCommand {
       operator   : operatorString,
       replacement: undefined,
       range      : undefined,
-      isVisual   : false
+      isVisualLine   : false
     };
 
     if (operatorString !== "yank") {
@@ -6347,17 +6347,27 @@ class CommandSurroundModeStartVisual extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Make sure cursor positions are ordered correctly for top->down or down->top selection
+    if (vimState.cursorStartPosition.line > vimState.cursorPosition.line) {
+      [vimState.cursorPosition, vimState.cursorStartPosition] =
+        [vimState.cursorStartPosition, vimState.cursorPosition];
+    }
+
     vimState.surround = {
       active: true,
       target: undefined,
       operator: "yank",
       replacement: undefined,
       range: new Range(vimState.cursorStartPosition, vimState.cursorPosition),
-      isVisual : true
+      isVisualLine : false
     };
 
+    if (vimState.currentMode === ModeName.VisualLine) {
+      vimState.surround.isVisualLine = true;
+    }
+
     vimState.currentMode = ModeName.SurroundInputMode;
-    vimState.cursorStartPosition = vimState.cursorPosition;
+    vimState.cursorPosition = vimState.cursorStartPosition;
 
     return vimState;
   }
@@ -6417,6 +6427,21 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return vimState;
     }
 
+    // Backspace modifies the tag entry
+    if (vimState.surround.replacement !== undefined) {
+      if (this.keysPressed[this.keysPressed.length - 1] === "<BS>" &&
+        vimState.surround.replacement[0] === "<") {
+
+        // Only allow backspace up until the < character
+        if (vimState.surround.replacement.length > 1) {
+          vimState.surround.replacement =
+            vimState.surround.replacement.slice(0, vimState.surround.replacement.length - 1);
+        }
+
+        return vimState;
+      }
+    }
+
     if (!vimState.surround.replacement) {
       vimState.surround.replacement = "";
     }
@@ -6427,6 +6452,11 @@ class CommandSurroundAddToReplacement extends BaseCommand {
     if (this.keysPressed[0] === "t" && vimState.surround.replacement.length === 0) {
       stringToAdd = "<";
     }
+
+    // Convert a few shortcuts to the correct surround characters
+    if (stringToAdd === "b") { stringToAdd = "("; };
+    if (stringToAdd === "B") { stringToAdd = "{"; };
+    if (stringToAdd === "r") { stringToAdd = "["; };
 
     vimState.surround.replacement += stringToAdd;
 
@@ -6528,7 +6558,7 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
       stop = stop.getRight();
 
-      if (vimState.surround.isVisual) {
+      if (vimState.surround.isVisualLine) {
         startReplace = startReplace + "\n";
         endReplace = "\n" + endReplace;
       }

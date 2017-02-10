@@ -101,7 +101,7 @@ export class VimState {
     target: string | undefined;
     replacement: string | undefined;
     range: Range | undefined;
-    isVisual: boolean;
+    isVisualLine: boolean;
   } = undefined;
 
   /**
