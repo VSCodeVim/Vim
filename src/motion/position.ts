@@ -367,7 +367,7 @@ export class Position extends vscode.Position {
     }
 
     // First char on first line, can not go left any more
-    if (this.line === 0 && this.char === 0) {
+    if (this.line === 0) {
       return this;
     }
 
