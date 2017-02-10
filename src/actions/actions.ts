@@ -585,7 +585,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
 @RegisterAction
 class CommandNumber extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<number>"];
   isCompleteAction = false;
   runsOnceForEveryCursor() { return false; }
