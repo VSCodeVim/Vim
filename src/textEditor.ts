@@ -1,7 +1,9 @@
 "use strict";
+import { ReplaceTextTransformation } from './transformations/transformations';
+import { VimState } from './mode/modeHandler';
 
-import * as vscode from "vscode";
-import { Position } from './motion/position';
+import * as vscode from 'vscode';
+import { Position, PositionDiff } from './motion/position';
 import { Configuration } from './configuration/configuration';
 import { Globals } from './globals';
 
@@ -84,6 +86,24 @@ export class TextEditor {
     });
   }
 
+  /**
+   * This is the correct replace method to use. (Notice how it's not async? Yep)
+   */
+  static replaceText(vimState: VimState, text: string, start: Position, end: Position,
+                     diff: PositionDiff | undefined = undefined): void {
+
+    const trans: ReplaceTextTransformation = {
+      type: "replaceText",
+      text,
+      start,
+      end,
+    };
+
+    if (diff) { trans.diff = diff; }
+
+    vimState.recordedState.transformations.push(trans);
+  }
+
   static getAllText(): string {
     if (vscode.window.activeTextEditor) {
       return vscode.window.activeTextEditor.document.getText();
@@ -116,6 +136,12 @@ export class TextEditor {
 
   static getLineAt(position: vscode.Position): vscode.TextLine {
     return vscode.window.activeTextEditor.document.lineAt(position);
+  }
+
+  static getCharAt(position: Position): string {
+    const line = TextEditor.getLineAt(position);
+
+    return line.text[position.character];
   }
 
   static getLineMaxColumn(lineNumber: number): number {

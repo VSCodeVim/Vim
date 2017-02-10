@@ -52,7 +52,6 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
            s.length > 1;
   };
 
-
   for (let i = 0, j = 0; i < one.length; i++, j++) {
     const left = one[i], right = two[j];
 
@@ -586,7 +585,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
 @RegisterAction
 class CommandNumber extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<number>"];
   isCompleteAction = false;
   runsOnceForEveryCursor() { return false; }
@@ -851,6 +850,7 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.Normal,
     ModeName.SearchInProgressMode,
+    ModeName.SurroundInputMode,
     ModeName.EasyMotionMode
   ];
   keys = [
@@ -1108,16 +1108,15 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalText = TextEditor.getLineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
-    const tabSize = Configuration.tabstop;
+    const tabSize = Configuration.tabstop || Number(vscode.window.activeTextEditor.options.tabSize);
     const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
-    await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
-      TextEditor.setIndentationLevel(originalText, newIndentationWidth));
 
-    const cursorPosition = Position.FromVSCodePosition(position.with(position.line,
-      position.character + (newIndentationWidth - indentationWidth) / tabSize));
-    vimState.cursorPosition = cursorPosition;
-    vimState.cursorStartPosition = cursorPosition;
-    vimState.currentMode = ModeName.Insert;
+    TextEditor.replaceText(
+      vimState, TextEditor.setIndentationLevel(originalText, newIndentationWidth),
+      position.getLineBegin(), position.getLineEnd(),
+      new PositionDiff(0, newIndentationWidth - indentationWidth)
+    );
+
     return vimState;
   }
 }
@@ -1584,58 +1583,82 @@ class CommandCmdA extends BaseCommand {
   }
 }
 
+function searchCurrentWord(position: Position, vimState: VimState, direction: SearchDirection, isExact: boolean) {
+    const currentWord = TextEditor.getWord(position);
+    if (currentWord === undefined) {
+      return vimState;
+    }
+
+    // For an exact search we need to use a regex with word bounds.
+    const searchString = isExact
+      ? `\\b${currentWord}\\b`
+      : currentWord;
+
+    // Start a search for the given term.
+    vimState.globalState.searchState = new SearchState(
+      direction, vimState.cursorPosition, searchString, { isRegex: isExact }
+    );
+
+    // If the search is going left then use `getWordLeft()` on position to start
+    // at the beginning of the word. This ensures that any matches happen
+    // outside of the currently selected word.
+    const searchStartCursorPosition = direction === SearchDirection.Backward
+      ? vimState.cursorPosition.getWordLeft(true)
+      : vimState.cursorPosition;
+
+    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(searchStartCursorPosition).pos;
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
+    Configuration.hl = true;
+
+    return vimState;
+}
+
 @RegisterAction
-class CommandStar extends BaseCommand {
+class CommandSearchCurrentWordExactForward extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["*"];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
-      return vimState;
-    }
-
-    vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, currentWord);
-
-    do {
-      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
-
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
-    return vimState;
+    return searchCurrentWord(position, vimState, SearchDirection.Forward, true);
   }
 }
 
 @RegisterAction
-class CommandHash extends BaseCommand {
+class CommandSearchCurrentWordForward extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "*"];
+  isMotion = true;
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return searchCurrentWord(position, vimState, SearchDirection.Forward, false);
+  }
+}
+
+@RegisterAction
+class CommandSearchCurrentWordExactBackward extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["#"];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
-      return vimState;
-    }
+    return searchCurrentWord(position, vimState, SearchDirection.Backward, true);
+  }
+}
 
-    vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, currentWord);
+@RegisterAction
+class CommandSearchCurrentWordBackward extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["g", "#"];
+  isMotion = true;
+  runsOnceForEachCountPrefix = true;
 
-    do {
-      // use getWordLeft() on position to start at the beginning of the word.
-      // this ensures that any matches happen ounside of the word currently selected,
-      // which are the desired semantics for this motion.
-      vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorPosition.getWordLeft(true)).pos;
-    } while (TextEditor.getWord(vimState.cursorPosition) !== currentWord);
-
-    // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
-
-    return vimState;
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return searchCurrentWord(position, vimState, SearchDirection.Backward, false);
   }
 }
 
@@ -1867,6 +1890,17 @@ export class YankOperator extends BaseOperator {
     canBeRepeatedWithDot = false;
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      // Hack to make Surround with y (which takes a motion) work.
+
+      if (vimState.surround) {
+        vimState.surround.range = new Range(start, end);
+        vimState.currentMode = ModeName.SurroundInputMode;
+        vimState.cursorPosition = start;
+        vimState.cursorStartPosition = start;
+
+        return vimState;
+      }
+
       const originalMode = vimState.currentMode;
 
       if (start.compareTo(end) <= 0) {
@@ -1921,22 +1955,22 @@ export class ShiftYankOperatorVisual extends BaseOperator {
 
 @RegisterAction
 export class DeleteOperatorXVisual extends BaseOperator {
-    public keys = ["x"];
-    public modes = [ModeName.Visual, ModeName.VisualLine];
+  public keys = ["x"];
+  public modes = [ModeName.Visual, ModeName.VisualLine];
 
-    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
-    }
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+  }
 }
 
 @RegisterAction
 export class ChangeOperatorSVisual extends BaseOperator {
-    public keys = ["s"];
-    public modes = [ModeName.Visual, ModeName.VisualLine];
+  public keys = ["s"];
+  public modes = [ModeName.Visual, ModeName.VisualLine];
 
-    public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-      return await new ChangeOperator().run(vimState, start, end);
-    }
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    return await new ChangeOperator().run(vimState, start, end);
+  }
 }
 
 @RegisterAction
@@ -2716,7 +2750,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
 }
 
 @RegisterAction
-class CommandYankFullLine extends BaseCommand {
+export class CommandYankFullLine extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["Y"];
 
@@ -3013,13 +3047,14 @@ class CommandInsertNewLineAbove extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(position).text);
     vimState.currentMode = ModeName.Insert;
 
     vimState.recordedState.transformations.push({
       type: "insertText",
-      text: "\n",
+      text: TextEditor.setIndentationLevel("V", indentationWidth).replace("V", "\n"),
       position: new Position(vimState.cursorPosition.line, 0),
-      diff: new PositionDiff(-1, 0),
+      diff: new PositionDiff(-1, indentationWidth),
     });
 
     return vimState;
@@ -4971,6 +5006,17 @@ class ActionChangeChar extends BaseCommand {
 
     return state;
   }
+
+  // Don't clash with surround mode!
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      !vimState.recordedState.operator;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      !vimState.recordedState.operator;
+  }
 }
 
 abstract class TextObjectMovement extends BaseMovement {
@@ -5352,7 +5398,7 @@ abstract class MoveInsideCharacter extends BaseMovement {
   protected charToMatch: string;
   protected includeSurrounding = false;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const failure = { start: position, stop: position, failed: true };
     const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
@@ -6031,8 +6077,12 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     }
 
     // Enter the EasyMotion mode and await further keys
-    vimState.currentMode = ModeName.EasyMotionMode;
     vimState.easyMotion = new EasyMotion();
+
+    // Store mode to return to after performing easy motion
+    vimState.easyMotion.previousMode = vimState.currentMode;
+
+    vimState.currentMode = ModeName.EasyMotionMode;
 
     this.processMarkers(matches, position, vimState);
 
@@ -6042,7 +6092,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
 @RegisterAction
 class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "s", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6059,7 +6109,7 @@ class ActionEasyMotionSearchCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "f", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6080,7 +6130,7 @@ class ActionEasyMotionFindForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "F", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6101,7 +6151,7 @@ class ActionEasyMotionFindBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "t", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6126,7 +6176,7 @@ class ActionEasyMotionTilForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "T", "<character>"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6151,7 +6201,7 @@ class ActionEasyMotionTilBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "w"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6164,7 +6214,7 @@ class ActionEasyMotionWordCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "e"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6181,7 +6231,7 @@ class ActionEasyMotionEndForwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "g", "e"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6198,7 +6248,7 @@ class ActionEasyMotionEndBackwardCommand extends BaseEasyMotionCommand {
 
 @RegisterAction
 class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<leader>", "<leader>", "b"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -6210,14 +6260,14 @@ class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
 }
 
 @RegisterAction
-class MoveEasyMotion extends BaseMovement {
+class MoveEasyMotion extends BaseCommand {
   modes = [ModeName.EasyMotionMode];
   keys = ["<character>"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     var key = this.keysPressed[0];
     if (!key) {
-      return position;
+      return vimState;
     }
 
     // "nail" refers to the accumulated depth keys
@@ -6226,22 +6276,394 @@ class MoveEasyMotion extends BaseMovement {
 
     // Find markers starting with "nail"
     var markers = vimState.easyMotion.findMarkers(nail);
+
+    // If previous mode was visual, restore visual selection
+    if (vimState.easyMotion.previousMode === ModeName.Visual ||
+      vimState.easyMotion.previousMode === ModeName.VisualLine ||
+      vimState.easyMotion.previousMode === ModeName.VisualBlock) {
+      vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
+      vimState.cursorPosition = vimState.lastVisualSelectionEnd;
+    }
+
+
     if (markers.length === 1) { // Only one found, navigate to it
       var marker = markers[0];
 
       vimState.easyMotion.clearDecorations();
-      vimState.currentMode = ModeName.Normal;
+      // Restore the mode from before easy motion
+      vimState.currentMode = vimState.easyMotion.previousMode;
 
-      return marker.position;
+      // Set cursor position based on marker entered
+      vimState.cursorPosition = marker.position;
+
+      return vimState;
     } else {
       if (markers.length === 0) { // None found, exit mode
         vimState.easyMotion.clearDecorations();
-        vimState.currentMode = ModeName.Normal;
+        vimState.currentMode = vimState.easyMotion.previousMode;
 
-        return position;
+        return vimState;
       }
     }
 
-    return position;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandSurroundModeStart extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["s"];
+  isCompleteAction = false;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const operator = vimState.recordedState.operator;
+    let operatorString: "change" | "delete" | "yank" | undefined;
+
+    if (operator instanceof ChangeOperator) { operatorString = "change"; }
+    if (operator instanceof DeleteOperator) { operatorString = "delete"; }
+    if (operator instanceof YankOperator)   { operatorString = "yank"; }
+
+    if (!operatorString) { return vimState; }
+
+    vimState.surround = {
+      active     : true,
+      target     : undefined,
+      operator   : operatorString,
+      replacement: undefined,
+      range      : undefined,
+    };
+
+    if (operatorString !== "yank") {
+      vimState.currentMode = ModeName.SurroundInputMode;
+    }
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const hasSomeOperator = !!vimState.recordedState.operator;
+
+    return super.doesActionApply(vimState, keysPressed) &&
+      hasSomeOperator;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const hasSomeOperator = !!vimState.recordedState.operator;
+
+    return super.doesActionApply(vimState, keysPressed) &&
+      hasSomeOperator;
+  }
+}
+
+@RegisterAction
+class CommandSurroundModeStartVisual extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["S"];
+  isCompleteAction = false;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.surround = {
+      active: true,
+      target: undefined,
+      operator: "yank",
+      replacement: undefined,
+      range: new Range(vimState.cursorStartPosition, vimState.cursorPosition),
+    };
+
+    vimState.currentMode = ModeName.SurroundInputMode;
+    vimState.cursorStartPosition = vimState.cursorPosition;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandSurroundAddTarget extends BaseCommand {
+  modes = [ModeName.SurroundInputMode];
+  keys = [
+    ["("], [")"],
+    ["{"], ["}"],
+    ["["], ["]"],
+    ["<"], [">"],
+    ["'"], ['"'], ["`"],
+    ["t"],
+    ["w"], ["W"], ["s"],
+    ["p"]
+  ];
+  isCompleteAction = false;
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (!vimState.surround) {
+      return vimState;
+    }
+
+    vimState.surround.target = this.keysPressed[this.keysPressed.length - 1];
+
+    // It's possible we're already done, e.g. dst
+    await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position);
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      !!(vimState.surround && vimState.surround.active &&
+      !vimState.surround.target &&
+      !vimState.surround.range);
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) &&
+      !!(vimState.surround && vimState.surround.active &&
+      !vimState.surround.target &&
+      !vimState.surround.range);
+  }
+}
+
+@RegisterAction
+class CommandSurroundAddToReplacement extends BaseCommand {
+  modes = [ModeName.SurroundInputMode];
+  keys = ["<any>"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (!vimState.surround) {
+      return vimState;
+    }
+
+    if (!vimState.surround.replacement) {
+      vimState.surround.replacement = "";
+    }
+
+    vimState.surround.replacement += this.keysPressed[this.keysPressed.length - 1];
+
+    await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position);
+
+    return vimState;
+  }
+
+  public static Finish(vimState: VimState): boolean {
+    vimState.recordedState.hasRunOperator = false;
+    vimState.recordedState.actionsRun = [];
+    vimState.surround = undefined;
+    vimState.currentMode = ModeName.Normal;
+
+    return false;
+  }
+
+  // we assume that we start directly on the characters we're operating over
+  // e.g. cs{' starts us with start on { end on }.
+
+  public static RemoveWhitespace(vimState: VimState, start: Position, stop: Position): void {
+    const firstRangeStart = start.getRightThroughLineBreaks();
+    let   firstRangeEnd   = start.getRightThroughLineBreaks();
+
+    let   secondRangeStart = stop.getLeftThroughLineBreaks();
+    const secondRangeEnd   = stop.getLeftThroughLineBreaks().getRight();
+
+    if (firstRangeEnd.isEqual(secondRangeStart)) { return; }
+
+    while (!firstRangeEnd.isEqual(stop) &&
+           TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/) &&
+           !firstRangeEnd.isLineEnd()) {
+      firstRangeEnd = firstRangeEnd.getRight();
+    }
+
+    while (!secondRangeStart.isEqual(firstRangeEnd) &&
+           TextEditor.getCharAt(secondRangeStart).match(/[ \t]/) &&
+           !secondRangeStart.isLineBeginning()) {
+      secondRangeStart = secondRangeStart.getLeftThroughLineBreaks(false);
+    }
+
+    // Adjust range start based on found position
+    secondRangeStart = secondRangeStart.getRight();
+
+    const firstRange  = new Range(firstRangeStart, firstRangeEnd);
+    const secondRange = new Range(secondRangeStart, secondRangeEnd);
+
+    vimState.recordedState.transformations.push({ type: "deleteRange", range: firstRange });
+    vimState.recordedState.transformations.push({ type: "deleteRange", range: secondRange });
+  }
+
+  public static GetStartAndEndReplacements(replacement: string | undefined): { startReplace: string; endReplace: string; } {
+    if (!replacement) { return { startReplace: "", endReplace: "" }; }
+
+    let startReplace = replacement;
+    let endReplace   = replacement;
+
+    if (startReplace[0] === "<") {
+      endReplace = startReplace[0] + "/" + startReplace.slice(1);
+    }
+
+    if (startReplace.length === 1 && startReplace in PairMatcher.pairings) {
+      endReplace = PairMatcher.pairings[startReplace].match;
+
+      if (!PairMatcher.pairings[startReplace].nextMatchIsForward) {
+        [startReplace, endReplace] = [endReplace, startReplace];
+      } else {
+        startReplace = startReplace + " ";
+        endReplace = " " + endReplace;
+      }
+    }
+
+    return { startReplace, endReplace };
+  }
+
+  // Returns true if it could actually find something to run surround on.
+  public static async TryToExecuteSurround(vimState: VimState, position: Position): Promise<boolean> {
+    const { target, replacement, operator } = vimState.surround!;
+
+    if (operator === "change" || operator === "yank") {
+      if (!replacement) {
+        return false;
+      }
+
+      // This is an incomplete tag. Wait for the user to finish it.
+      if (replacement[0] === "<" && replacement[replacement.length - 1] !== ">") {
+        return false;
+      }
+    }
+
+    let { startReplace, endReplace } = this.GetStartAndEndReplacements(replacement);
+
+    if (operator === "yank") {
+      if (!vimState.surround) { return false; }
+      if (!vimState.surround.range) { return false; }
+
+      let start = vimState.surround.range.start;
+      let stop  = vimState.surround.range.stop;
+
+      stop = stop.getRight();
+
+      vimState.recordedState.transformations.push({ type: "insertText", text: startReplace, position: start });
+      vimState.recordedState.transformations.push({ type: "insertText", text: endReplace,   position: stop });
+
+      return CommandSurroundAddToReplacement.Finish(vimState);
+    }
+
+    let startReplaceRange: Range | undefined;
+    let endReplaceRange: Range | undefined;
+    let startDeleteRange: Range | undefined;
+    let endDeleteRange: Range | undefined;
+
+    const quoteMatches: { char: string; movement: () => MoveQuoteMatch }[] = [
+      { char: "'", movement: () => new MoveASingleQuotes() },
+      { char: '"', movement: () => new MoveADoubleQuotes() },
+      { char: "`", movement: () => new MoveABacktick() },
+    ];
+
+    for (const { char, movement } of quoteMatches) {
+      if (char !== target) { continue; }
+
+      const { start, stop, failed } = await movement().execAction(position, vimState);
+
+      if (failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
+
+      startReplaceRange  = new Range(start, start.getRight());
+      endReplaceRange = new Range(stop, stop.getRight());
+    }
+
+    const pairedMatchings: { open: string, close: string, movement: () => MoveInsideCharacter }[] = [
+      { open: "{", close: "}", movement: () => new MoveACurlyBrace() },
+      { open: "[", close: "]", movement: () => new MoveASquareBracket() },
+      { open: "(", close: ")", movement: () => new MoveAParentheses() },
+      { open: "<", close: ">", movement: () => new MoveACaret() },
+    ];
+
+    for (const { open, close, movement } of pairedMatchings) {
+      if (target !== open && target !== close) { continue; }
+
+      let { start, stop, failed } = await movement().execAction(position, vimState);
+
+      if (failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
+
+      stop = stop.getLeft();
+
+      startReplaceRange = new Range(start, start.getRight());
+      endReplaceRange = new Range(stop, stop.getRight());
+
+      if (target === open) {
+        CommandSurroundAddToReplacement.RemoveWhitespace(vimState, start, stop);
+      }
+    }
+
+    if (target === "t") {
+      let { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
+      let tagEnd = await new MoveInsideTag().execAction(position, vimState);
+
+      if (failed || tagEnd.failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
+
+      stop        = stop.getRight();
+      tagEnd.stop = tagEnd.stop.getRight();
+
+      if (failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
+
+      startReplaceRange = new Range(start, start.getRight());
+      endReplaceRange   = new Range(tagEnd.stop, tagEnd.stop.getRight());
+
+      startDeleteRange = new Range(start.getRight(), tagEnd.start);
+      endDeleteRange   = new Range(tagEnd.stop.getRight(), stop);
+    }
+
+    if (operator === "change") {
+      if (!replacement) { return false; }
+      const wordMatchings: { char: string, movement: () => TextObjectMovement, addNewline: "no" | "end-only" | "both" }[] = [
+        { char: "w", movement: () => new SelectInnerWord(), addNewline: "no" },
+        { char: "p", movement: () => new SelectInnerParagraph(), addNewline: "both" },
+        { char: "s", movement: () => new SelectInnerSentence(), addNewline: "end-only" },
+        { char: "W", movement: () => new SelectInnerBigWord(), addNewline: "no" },
+      ];
+
+      for (const { char, movement, addNewline } of wordMatchings) {
+        if (target !== char) { continue; }
+
+        let { stop, start, failed } = await movement().execAction(position, vimState) as IMovement;
+
+        stop = stop.getRight();
+
+        if (failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
+
+        if (addNewline === "end-only" || addNewline === "both") { endReplace = "\n" + endReplace; }
+        if (addNewline === "both") { startReplace += "\n"; }
+
+        vimState.recordedState.transformations.push({ type: "insertText", text: startReplace, position: start });
+        vimState.recordedState.transformations.push({ type: "insertText", text: endReplace,   position: stop });
+
+        return CommandSurroundAddToReplacement.Finish(vimState);
+      }
+    }
+
+    // We've got our ranges. Run the surround command with the appropriate operator.
+
+    if (!startReplaceRange && !endReplaceRange && !startDeleteRange && !endDeleteRange) {
+      return false;
+    }
+
+    if (operator === "change") {
+      if (!replacement) { return false; }
+
+      if (startReplaceRange) { TextEditor.replaceText(vimState, startReplace, startReplaceRange.start, startReplaceRange.stop); }
+      if (endReplaceRange)   { TextEditor.replaceText(vimState, endReplace  , endReplaceRange.start  , endReplaceRange.stop  ); }
+
+      if (startDeleteRange) { vimState.recordedState.transformations.push({ type: "deleteRange", range: startDeleteRange }); }
+      if (endDeleteRange)   { vimState.recordedState.transformations.push({ type: "deleteRange", range: endDeleteRange   }); }
+
+      return CommandSurroundAddToReplacement.Finish(vimState);
+    }
+
+    if (operator === "delete") {
+      if (startReplaceRange) { vimState.recordedState.transformations.push({ type: "deleteRange", range: startReplaceRange }); }
+      if (endReplaceRange)   { vimState.recordedState.transformations.push({ type: "deleteRange", range: endReplaceRange   }); }
+
+      if (startDeleteRange) { vimState.recordedState.transformations.push({ type: "deleteRange", range: startDeleteRange   }); }
+      if (endDeleteRange)   { vimState.recordedState.transformations.push({ type: "deleteRange", range: endDeleteRange     }); }
+
+      return CommandSurroundAddToReplacement.Finish(vimState);
+    }
+
+    return false;
   }
 }

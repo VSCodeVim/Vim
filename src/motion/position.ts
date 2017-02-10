@@ -361,17 +361,21 @@ export class Position extends vscode.Position {
    *
    * Equivalent to left arrow (in a non-vim editor!)
    */
-  public getLeftThroughLineBreaks(): Position {
+  public getLeftThroughLineBreaks(includeEol = true): Position {
     if (!this.isLineBeginning()) {
       return this.getLeft();
     }
 
     // First char on first line, can not go left any more
-    if (this.line === 0) {
+    if (this.line === 0 && this.char === 0) {
       return this;
     }
 
-    return this.getUp(0).getLineEnd();
+    if (includeEol) {
+      return this.getUp(0).getLineEnd();
+    } else {
+      return this.getUp(0).getLineEnd().getLeft();
+    }
   }
 
   public getRightThroughLineBreaks(): Position {
@@ -644,7 +648,7 @@ export class Position extends vscode.Position {
    * Returns a new position at the end of this position's line.
    */
   public getLineEnd(): Position {
-  return new Position(this.line, Position.getLineLength(this.line));
+    return new Position(this.line, Position.getLineLength(this.line));
   }
 
   /**

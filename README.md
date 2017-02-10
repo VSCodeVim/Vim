@@ -7,14 +7,23 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * Highly versatile command remapping (`jj` to esc, `:` to command panel, etc.)
 * Incremental search with `/` and `?`
 * Marks
-* Vim settings (like .vimrc)
+* Vim settings similar to those found in .vimrc
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
 * The EasyMotion plugin!
+* The Surround.vim plugin!
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
 
 Ask us questions, talk about contributing, or just say hi on [Slack](https://vscodevim-slackin.azurewebsites.net)!
+
+## Donations
+
+[![Donate](https://www.paypalobjects.com/webstatic/en_US/i/btn/png/btn_donate_92x26.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FNUBXQADN5VG4)
+
+[Make a donation to VSCodeVim here!](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FNUBXQADN5VG4)
+
+Donations help convince me to work on this project rather than my other (non-open-source) projects. I'd love to work on VSCodeVim full time, but I need money to live!
 
 ## Supported Options
 
@@ -241,7 +250,12 @@ Motion Command | Description
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
 
-Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
+## Special Shoutouts to Cool Contributors
+
+* Thanks to @xconverge for making over 100 commits to the repo. If you're wondering why your least favorite bug packed up and left, it was probably him.
+* Thanks to @Metamist for implementing EasyMotion!
+* Thanks to @sectioneight for implementing text objects!
+* Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
 
 ## Release Notes
 
