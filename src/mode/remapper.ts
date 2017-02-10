@@ -22,7 +22,10 @@ class Remapper {
   /**
    * Have the keys pressed so far potentially be a remap
    */
-  public couldRemappingApply = false;
+  private _couldRemappingApply = false;
+  public get couldRemappingApply(): boolean {
+    return this._couldRemappingApply;
+  }
 
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
@@ -130,10 +133,10 @@ class Remapper {
       // Check to see if a remapping could potentially be applied when more keys are received
       for (let remap of this._remappings) {
         if (keys.join("") === remap.before.slice(0, keys.length).join("")) {
-          this.couldRemappingApply = true;
+          this._couldRemappingApply = true;
           break;
         } else {
-          this.couldRemappingApply = false;
+          this._couldRemappingApply = false;
         }
       }
     }
