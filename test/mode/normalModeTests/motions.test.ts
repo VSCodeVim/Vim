@@ -463,17 +463,25 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
-    title: "Can handle *",
-    start: ['|blah duh blah duh blah'],
-    keysPressed: '*',
-    end: ['blah duh |blah duh blah']
+    title: "Can handle g*",
+    start: ['|blah duh blahblah duh blah'],
+    keysPressed: 'g*',
+    end: ['blah duh |blahblah duh blah']
   });
 
   newTest({
-    title: "Can handle tricky *",
-    start: ['|blah blahblah duh blah'],
+    title: "Can handle g*n",
+    start: ['|blah duh blahblah duh blah'],
+    keysPressed: 'g*n',
+    end: ['blah duh blah|blah duh blah']
+  });
+
+
+  newTest({
+    title: "Can handle *",
+    start: ['|blah blahblah duh blah blah'],
     keysPressed: '*',
-    end: ['blah blahblah duh |blah']
+    end: ['blah blahblah duh |blah blah']
   });
 
   newTest({
@@ -498,10 +506,24 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
+    title: "Can handle g#",
+    start: ['blah duh blahblah duh |blah'],
+    keysPressed: 'g#',
+    end: ['blah duh blah|blah duh blah']
+  });
+
+  newTest({
+    title: "Can handle g#n",
+    start: ['blah duh blahblah duh |blah'],
+    keysPressed: 'g#n',
+    end: ['blah duh |blahblah duh blah']
+  });
+
+  newTest({
     title: "Can handle #",
-    start: ['blah duh |blah duh blah'],
+    start: ['blah blah blahblah duh |blah'],
     keysPressed: '#',
-    end: ['|blah duh blah duh blah']
+    end: ['blah |blah blahblah duh blah']
   });
 
   newTest({

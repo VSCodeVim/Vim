@@ -1295,6 +1295,8 @@ export class ModeHandler implements vscode.Disposable {
                 break;
 
               case "deleteText":
+                let matchRange = PairMatcher.immediateMatchingBracket(command.position);
+                if (matchRange) { edit.delete(matchRange); }
                 edit.delete(new vscode.Range(command.position, command.position.getLeftThroughLineBreaks()));
                 break;
 
