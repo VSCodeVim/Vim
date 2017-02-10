@@ -6314,6 +6314,7 @@ class CommandSurroundModeStart extends BaseCommand {
       operator   : operatorString,
       replacement: undefined,
       range      : undefined,
+      isVisual   : false
     };
 
     if (operatorString !== "yank") {
@@ -6352,6 +6353,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
       operator: "yank",
       replacement: undefined,
       range: new Range(vimState.cursorStartPosition, vimState.cursorPosition),
+      isVisual : true
     };
 
     vimState.currentMode = ModeName.SurroundInputMode;
@@ -6419,7 +6421,14 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       vimState.surround.replacement = "";
     }
 
-    vimState.surround.replacement += this.keysPressed[this.keysPressed.length - 1];
+    let stringToAdd = this.keysPressed[this.keysPressed.length - 1];
+
+    // t should start creation of a tag
+    if (this.keysPressed[0] === "t" && vimState.surround.replacement.length === 0) {
+      stringToAdd = "<";
+    }
+
+    vimState.surround.replacement += stringToAdd;
 
     await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position);
 
@@ -6518,6 +6527,11 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       let stop  = vimState.surround.range.stop;
 
       stop = stop.getRight();
+
+      if (vimState.surround.isVisual) {
+        startReplace = startReplace + "\n";
+        endReplace = "\n" + endReplace;
+      }
 
       vimState.recordedState.transformations.push({ type: "insertText", text: startReplace, position: start });
       vimState.recordedState.transformations.push({ type: "insertText", text: endReplace,   position: stop });
