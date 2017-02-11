@@ -788,7 +788,12 @@ export class ModeHandler implements vscode.Disposable {
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
-    if (result === KeypressState.NoPossibleMatch) {
+    const isPotentialRemapping = this._insertModeNonRecursive.couldRemappingApply ||
+      this._insertModeRemapper.couldRemappingApply ||
+      this._otherModesRemapper.couldRemappingApply ||
+      this._otherModesNonRecursive.couldRemappingApply;
+
+    if (result === KeypressState.NoPossibleMatch && !isPotentialRemapping) {
       vimState.recordedState = new RecordedState();
       vimState.recordedState.commandList = [];
 
