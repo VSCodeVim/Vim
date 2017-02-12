@@ -1136,6 +1136,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
 
     const tabSize = Configuration.tabstop;
     const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
+
     await TextEditor.replace(new vscode.Range(position.getLineBegin(), position.getLineEnd()),
       TextEditor.setIndentationLevel(originalText, newIndentationWidth < 0 ? 0 : newIndentationWidth));
 
@@ -3025,7 +3026,7 @@ class CommandInsertAtLineEnd extends BaseCommand {
 class CommandInsertNewLineAbove extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["O"];
-  runsOnceForEveryCursor() { return false; }
+  runsOnceForEveryCursor() { return true; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(position).text);
