@@ -28,7 +28,7 @@ Donations help convince me to work on this project rather than my other (non-ope
 
 ## Configuring VSCodeVim
 
-Below is an example of a settings.json file for VSCode settings applicable to this extension. The following section goes over some supported options in more detail.
+Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension. The following section goes over some supported options in more detail.
 
 ```
 {
