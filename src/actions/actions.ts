@@ -2082,7 +2082,7 @@ export class ChangeOperator extends BaseOperator {
         const isEndOfLine = end.character === end.getLineEnd().character;
         const isBeginning =
                 end.isLineBeginning() &&
-                start.isLineBeginning() // to ensure this is a selection and not e.g. and s command
+                start.isLineBeginning(); // to ensure this is a selection and not e.g. and s command
         let state = vimState;
 
         // If we delete to EOL, the block cursor would end on the final character,
