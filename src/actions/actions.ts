@@ -1869,6 +1869,10 @@ export class DeleteOperatorVisual extends BaseOperator {
     public modes = [ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      // ensures linewise deletion when in visual mode
+      // see special case in DeleteOperator.delete()
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+
       return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
     }
 }
