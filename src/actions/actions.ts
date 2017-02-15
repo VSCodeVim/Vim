@@ -696,7 +696,9 @@ export class CommandOneNormalCommandInInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.returnToInsertAfterCommand = true;
-    return await new CommandEscInsertMode().exec(position, vimState);
+    return await new CommandEscInsertMode().exec(
+                      position.character === 0 ? position : position.getRight(),
+                      vimState);
   }
 }
 
