@@ -2081,8 +2081,8 @@ export class ChangeOperator extends BaseOperator {
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const isEndOfLine = end.character === end.getLineEnd().character;
         const isBeginning =
-                end.character === end.getLineBegin().character &&
-                start.character !== start.getLineBegin().character; // to ensure this is a selection and not e.g. and s command
+                end.isLineBeginning() &&
+                start.isLineBeginning() // to ensure this is a selection and not e.g. and s command
         let state = vimState;
 
         // If we delete to EOL, the block cursor would end on the final character,
