@@ -2084,13 +2084,16 @@ export class ChangeOperator extends BaseOperator {
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const isEndOfLine = end.character === end.getLineEnd().character;
+        const isBeginning =
+                end.isLineBeginning() &&
+                !start.isLineBeginning(); // to ensure this is a selection and not e.g. and s command
         let state = vimState;
 
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
         // the line. We do want to run delete if it is a multiline change though ex. c}
         if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 || (end.line !== start.line)) {
-          if (isEndOfLine) {
+          if (isEndOfLine || isBeginning) {
             state = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end.getLeftThroughLineBreaks());
           } else {
             state = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
