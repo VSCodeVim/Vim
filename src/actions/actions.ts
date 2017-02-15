@@ -1869,6 +1869,10 @@ export class DeleteOperatorVisual extends BaseOperator {
     public modes = [ModeName.Visual, ModeName.VisualLine];
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+      // ensures linewise deletion when in visual mode
+      // see special case in DeleteOperator.delete()
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+
       return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
     }
 }
@@ -6320,6 +6324,7 @@ class CommandSurroundModeStart extends BaseCommand {
       operator   : operatorString,
       replacement: undefined,
       range      : undefined,
+      isVisualLine   : false
     };
 
     if (operatorString !== "yank") {
@@ -6352,16 +6357,27 @@ class CommandSurroundModeStartVisual extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Make sure cursor positions are ordered correctly for top->down or down->top selection
+    if (vimState.cursorStartPosition.line > vimState.cursorPosition.line) {
+      [vimState.cursorPosition, vimState.cursorStartPosition] =
+        [vimState.cursorStartPosition, vimState.cursorPosition];
+    }
+
     vimState.surround = {
       active: true,
       target: undefined,
       operator: "yank",
       replacement: undefined,
       range: new Range(vimState.cursorStartPosition, vimState.cursorPosition),
+      isVisualLine : false
     };
 
+    if (vimState.currentMode === ModeName.VisualLine) {
+      vimState.surround.isVisualLine = true;
+    }
+
     vimState.currentMode = ModeName.SurroundInputMode;
-    vimState.cursorStartPosition = vimState.cursorPosition;
+    vimState.cursorPosition = vimState.cursorStartPosition;
 
     return vimState;
   }
@@ -6421,11 +6437,38 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       return vimState;
     }
 
+    // Backspace modifies the tag entry
+    if (vimState.surround.replacement !== undefined) {
+      if (this.keysPressed[this.keysPressed.length - 1] === "<BS>" &&
+        vimState.surround.replacement[0] === "<") {
+
+        // Only allow backspace up until the < character
+        if (vimState.surround.replacement.length > 1) {
+          vimState.surround.replacement =
+            vimState.surround.replacement.slice(0, vimState.surround.replacement.length - 1);
+        }
+
+        return vimState;
+      }
+    }
+
     if (!vimState.surround.replacement) {
       vimState.surround.replacement = "";
     }
 
-    vimState.surround.replacement += this.keysPressed[this.keysPressed.length - 1];
+    let stringToAdd = this.keysPressed[this.keysPressed.length - 1];
+
+    // t should start creation of a tag
+    if (this.keysPressed[0] === "t" && vimState.surround.replacement.length === 0) {
+      stringToAdd = "<";
+    }
+
+    // Convert a few shortcuts to the correct surround characters
+    if (stringToAdd === "b") { stringToAdd = "("; };
+    if (stringToAdd === "B") { stringToAdd = "{"; };
+    if (stringToAdd === "r") { stringToAdd = "["; };
+
+    vimState.surround.replacement += stringToAdd;
 
     await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position);
 
@@ -6524,6 +6567,11 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       let stop  = vimState.surround.range.stop;
 
       stop = stop.getRight();
+
+      if (vimState.surround.isVisualLine) {
+        startReplace = startReplace + "\n";
+        endReplace = "\n" + endReplace;
+      }
 
       vimState.recordedState.transformations.push({ type: "insertText", text: startReplace, position: start });
       vimState.recordedState.transformations.push({ type: "insertText", text: endReplace,   position: stop });
