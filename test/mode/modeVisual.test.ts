@@ -639,4 +639,12 @@ suite("Mode Visual", () => {
     end: ["tes|est"],
     endMode: ModeName.Normal
   });
+
+  newTest({
+    title: "Changes on a firstline selection will not delete first character",
+    start: ["test|jojo", "haha"],
+    keysPressed: "vj0c",
+    end: ["test|haha"],
+    endMode: ModeName.Insert
+  });
 });
