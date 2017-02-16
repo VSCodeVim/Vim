@@ -647,7 +647,7 @@ suite("Mode Visual", () => {
     end: ["test|haha"],
     endMode: ModeName.Insert
   });
-  
+
   suite("D command will remove all selected lines", () => {
     newTest({
       title: "D deletes all selected lines",
@@ -661,6 +661,24 @@ suite("Mode Visual", () => {
       title: "D deletes the current line",
       start: ["first line", "test| line1", "second line"],
       keysPressed: "vlllD",
+      end: ["first line", "|second line"],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("X will remove all selected lines", () => {
+    newTest({
+      title: "X deletes all selected lines",
+      start: ["first line", "test| line1", "test line2", "second line"],
+      keysPressed: "vjX",
+      end: ["first line", "|second line"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "X deletes the current line",
+      start: ["first line", "test| line1", "second line"],
+      keysPressed: "vlllX",
       end: ["first line", "|second line"],
       endMode: ModeName.Normal
     });
