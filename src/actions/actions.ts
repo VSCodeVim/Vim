@@ -5003,6 +5003,16 @@ class ActionChangeLineVisualMode extends BaseCommand {
 }
 
 @RegisterAction
+class ActionRemoveLineVisualMode extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["R"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      return await new ActionChangeLineVisualMode().exec(position, vimState);
+  }
+}
+
+@RegisterAction
 class ActionChangeChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["s"];

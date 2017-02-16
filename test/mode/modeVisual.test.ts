@@ -701,4 +701,23 @@ suite("Mode Visual", () => {
       endMode: ModeName.Insert
     });
   });
+
+  suite("R will replace all selected lines", () => {
+    newTest({
+      title: "R replaces all selected lines",
+      start: ["first line", "test| line1", "test line2", "second line"],
+      keysPressed: "vjR",
+      end: ["first line", "|", "second line"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "R replaces the current line",
+      start: ["first line", "test| line1", "second line"],
+      keysPressed: "vlllR",
+      end: ["first line", "|", "second line"],
+      endMode: ModeName.Insert
+    });
+  });
+
 });
