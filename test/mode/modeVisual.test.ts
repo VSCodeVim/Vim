@@ -683,4 +683,22 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
   });
+
+  suite("C will replace all selected lines", () => {
+    newTest({
+      title: "C replaces all selected lines",
+      start: ["first line", "test| line1", "test line2", "second line"],
+      keysPressed: "vjC",
+      end: ["first line", "|", "second line"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "C replaces the current line",
+      start: ["first line", "test| line1", "second line"],
+      keysPressed: "vlllC",
+      end: ["first line", "|", "second line"],
+      endMode: ModeName.Insert
+    });
+  });
 });

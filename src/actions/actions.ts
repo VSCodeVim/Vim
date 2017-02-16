@@ -4991,6 +4991,18 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 }
 
 @RegisterAction
+class ActionChangeLineVisualMode extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["C"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      return await new ChangeOperator(this.multicursorIndex).run(vimState,
+                                                                vimState.lastVisualSelectionStart.getLineBegin(),
+                                                                vimState.lastVisualSelectionEnd.getLineEnd());
+  }
+}
+
+@RegisterAction
 class ActionChangeChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["s"];
