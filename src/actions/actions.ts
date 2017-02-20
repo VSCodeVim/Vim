@@ -18,6 +18,7 @@ import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
 import { EasyMotion } from './../easymotion/easymotion';
 import { FileCommand } from './../cmd_line/commands/file';
+import { QuitCommand } from './../cmd_line/commands/quit';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
@@ -3156,6 +3157,18 @@ class MoveRightWithSpace extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getRightThroughLineBreaks();
+  }
+}
+
+@RegisterAction
+class CommandQuit extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<C-w>", "q"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    new QuitCommand({}).execute();
+
+    return vimState;
   }
 }
 
