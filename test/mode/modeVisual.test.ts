@@ -647,7 +647,7 @@ suite("Mode Visual", () => {
     end: ["test|haha"],
     endMode: ModeName.Insert
   });
-  
+
   suite("D command will remove all selected lines", () => {
     newTest({
       title: "D deletes all selected lines",
