@@ -25,9 +25,37 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 Donations help convince me to work on this project rather than my other (non-open-source) projects. I'd love to work on VSCodeVim full time, but I need money to live!
 
+
+## Configuring VSCodeVim
+
+Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension. The following section goes over some supported options in more detail.
+
+```
+{
+    "vim.easymotion": true,
+    "vim.incsearch": true,
+    "vim.useSystemClipboard": true,
+    "vim.useCtrlKeys": true,
+    "vim.hlsearch": true,
+    "vim.insertModeKeyBindings": [
+        {
+            "before": ["j","j"],
+            "after": ["<Esc>"]
+        }
+    ],
+    "vim.otherModesKeyBindingsNonRecursive": [
+        {
+            "before": ["<leader>","d"],
+            "after": ["d", "d"]
+        }
+    ],
+    "vim.leader": "<space>"
+}
+```
+
 ## Supported Options
 
-The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
+The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
 
 #### useCtrlKeys
   * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:

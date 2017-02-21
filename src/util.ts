@@ -38,7 +38,7 @@ export async function waitForCursorUpdatesToHappen(): Promise<void> {
  */
 export async function waitForTabChange(): Promise<void> {
   await new Promise((resolve, reject) => {
-    setTimeout(resolve, 100);
+    setTimeout(resolve, 500);
 
     const disposer = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
       disposer.dispose();

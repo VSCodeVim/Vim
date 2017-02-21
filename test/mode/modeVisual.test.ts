@@ -128,11 +128,11 @@ suite("Mode Visual", () => {
   });
 
   newTest({
-      title: "Can handle H key",
-      start: ['1', '2', '|3', '4', '5'],
-      keysPressed: 'vH',
-      end: ['|1', '2', '3', '4', '5']
-    });
+    title: "Can handle H key",
+    start: ['1', '2', '|3', '4', '5'],
+    keysPressed: 'vH',
+    end: ['|1', '2', '3', '4', '5']
+  });
 
   test("handles case where we delete over a newline", async () => {
     await modeHandler.handleMultipleKeyEvents("ione two\n\nthree four".split(""));
@@ -472,7 +472,7 @@ suite("Mode Visual", () => {
     });
 
     newTest({
-      title: "Can handle 'Y' in visual mode" ,
+      title: "Can handle 'Y' in visual mode",
       start: ['one', '|two'],
       keysPressed: 'vwYP',
       end: ['one', '|two', 'two'],
@@ -638,5 +638,31 @@ suite("Mode Visual", () => {
     keysPressed: "vl<Esc>llgvd",
     end: ["tes|est"],
     endMode: ModeName.Normal
+  });
+
+  newTest({
+    title: "Changes on a firstline selection will not delete first character",
+    start: ["test|jojo", "haha"],
+    keysPressed: "vj0c",
+    end: ["test|haha"],
+    endMode: ModeName.Insert
+  });
+
+  suite("D command will remove all selected lines", () => {
+    newTest({
+      title: "D deletes all selected lines",
+      start: ["first line", "test| line1", "test line2", "second line"],
+      keysPressed: "vjD",
+      end: ["first line", "|second line"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "D deletes the current line",
+      start: ["first line", "test| line1", "second line"],
+      keysPressed: "vlllD",
+      end: ["first line", "|second line"],
+      endMode: ModeName.Normal
+    });
   });
 });

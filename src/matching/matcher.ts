@@ -19,9 +19,9 @@ export class PairMatcher {
     ">" : { match: "<",  nextMatchIsForward: false },
     // These are useful for deleting closing and opening quotes, but don't seem to negatively
     // affect how text objects such as `ci"` work, which was my worry.
-    '"' : { match: '"',  nextMatchIsForward: true  },
-    "'" : { match: "'",  nextMatchIsForward: true  },
-    "`" : { match: "`",  nextMatchIsForward: true  },
+    '"' : { match: '"',  nextMatchIsForward: false  },
+    "'" : { match: "'",  nextMatchIsForward: false  },
+    "`" : { match: "`",  nextMatchIsForward: false  },
   };
 
   static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true): Position | undefined {
