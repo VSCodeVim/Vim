@@ -2135,7 +2135,8 @@ export class PutCommand extends BaseCommand {
       return register.text as string;
     }
 
-    public async exec(position: Position, vimState: VimState, after: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
+    public async exec(position: Position, vimState: VimState,
+                      after: boolean = false, adjustIndent: boolean = false): Promise<VimState> {
         const register = await Register.get(vimState);
         const dest = after ? position : position.getRight();
 
@@ -2164,6 +2165,10 @@ export class PutCommand extends BaseCommand {
 
         if (register.registerMode === RegisterMode.CharacterWise) {
           textToAdd = text;
+          whereToAddText = dest;
+        } else if (vimState.currentMode === ModeName.Visual &&
+                   register.registerMode === RegisterMode.LineWise) {
+          textToAdd = "\n" + text + "\n";
           whereToAddText = dest;
         } else {
           if (adjustIndent) {
@@ -2371,9 +2376,14 @@ export class PutCommandVisual extends BaseCommand {
       [start, end] = [end, start];
     }
 
+    let tmpVimMode = vimState.currentMode;
+
     const result = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
 
-    return await new PutCommand().exec(start, result, true);
+    result.currentMode = tmpVimMode;
+    let finishState = await new PutCommand().exec(start, result, true);
+    finishState.currentMode = ModeName.Normal;
+    return finishState;
   }
 
   // TODO - execWithCount

@@ -720,4 +720,38 @@ suite("Mode Visual", () => {
     });
   });
 
+  suite("Pasting multiple line yanks done by Y or yy will be done in place with newlines", () => {
+    newTest({
+      title: "Y pasted text will be inserted by p",
+      start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
+      keysPressed: "vjYjjlllvjp",
+      end: ["aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "fir", "|aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "nd line"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Y pasted text will be inserted by P",
+      start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
+      keysPressed: "vjYjjlllvjP",
+      end: ["aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "fir", "|aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "nd line"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "yy pasted text will be inserted by p",
+      start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
+      keysPressed: "yyjjlllvjp",
+      end: ["aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "first ", "|aaaaaaaaaaaaa", "line"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "yy pasted text will be inserted by P",
+      start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
+      keysPressed: "yyjjlllvjP",
+      end: ["aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "first ", "|aaaaaaaaaaaaa", "line"],
+      endMode: ModeName.Normal
+    });
+  });
+
 });
