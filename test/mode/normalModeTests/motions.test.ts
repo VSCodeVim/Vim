@@ -188,6 +188,20 @@ suite("Motions in Normal Mode", () => {
   });
 
   newTest({
+    title: "Can handle 'gg' to first non blank char on random line",
+    start: ['   te|xt', '  text', ' text', 'test'],
+    keysPressed: '3gg',
+    end: ['   text', '  text', ' |text', 'test'],
+  });
+
+  newTest({
+    title: "Can handle 'gg' to first non blank char on first line",
+    start: ['   text', 'text', 'tex|t'],
+    keysPressed: 'gg',
+    end: ['   |text', 'text', 'text'],
+  });
+
+  newTest({
     title: "Retain same column when moving up/down",
     start: ['text text', 'text', 'text tex|t'],
     keysPressed: 'kk',

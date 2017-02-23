@@ -734,10 +734,6 @@ export class Position extends vscode.Position {
     return new Position(this.line, Position.getFirstNonBlankCharAtLine(this.line));
   }
 
-  public getDocumentStart(): Position {
-    return new Position(0, 0);
-  }
-
   public static getLineLength(line: number) : number {
     return TextEditor.readLineAt(line).length;
   }
