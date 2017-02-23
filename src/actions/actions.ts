@@ -6376,6 +6376,13 @@ class CommandSurroundModeStartVisual extends BaseCommand {
         [vimState.cursorStartPosition, vimState.cursorPosition];
     }
 
+    // Make sure start/end cursor positions are in order
+    if (vimState.cursorPosition.line < vimState.cursorPosition.line ||
+      (vimState.cursorPosition.line === vimState.cursorStartPosition.line
+        && vimState.cursorPosition.character < vimState.cursorStartPosition.character)) {
+      [vimState.cursorPosition, vimState.cursorStartPosition] = [vimState.cursorStartPosition, vimState.cursorPosition];
+    }
+
     vimState.surround = {
       active: true,
       target: undefined,
