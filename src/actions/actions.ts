@@ -3692,10 +3692,10 @@ class MoveNonBlankFirst extends BaseMovement {
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     if (count === 0) {
-      return position.getDocumentStart();
+      return position.getDocumentBegin().getFirstLineNonBlankChar();
     }
 
-    return new Position(count - 1, 0);
+    return new Position(count - 1, 0).getFirstLineNonBlankChar();
   }
 }
 
