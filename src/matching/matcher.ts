@@ -17,11 +17,6 @@ export class PairMatcher {
     // useful for text objects.
     "<" : { match: ">",  nextMatchIsForward: true  },
     ">" : { match: "<",  nextMatchIsForward: false },
-    // These are useful for deleting closing and opening quotes, but don't seem to negatively
-    // affect how text objects such as `ci"` work, which was my worry.
-    '"' : { match: '"',  nextMatchIsForward: false  },
-    "'" : { match: "'",  nextMatchIsForward: false  },
-    "`" : { match: "`",  nextMatchIsForward: false  },
   };
 
   static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true): Position | undefined {
@@ -85,7 +80,13 @@ export class PairMatcher {
     if ("{[(\"'`".indexOf(deleteText) > -1) {
       const matchPosition = currentPosition.add(new PositionDiff(0, 1));
       matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
-      isNextMatch = vscode.window.activeTextEditor.document.getText(matchRange) === PairMatcher.pairings[deleteText].match;
+
+      // Quotes are in pairings so treat them separately since they do not have an open/close direction
+      if ("\"'`".indexOf(deleteText) > -1) {
+        isNextMatch = vscode.window.activeTextEditor.document.getText(matchRange) === deleteText;
+      } else {
+        isNextMatch = vscode.window.activeTextEditor.document.getText(matchRange) === PairMatcher.pairings[deleteText].match;
+      }
     }
 
     if (isNextMatch && matchRange) {
