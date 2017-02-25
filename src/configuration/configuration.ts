@@ -145,22 +145,22 @@ class ConfigurationClass {
    * Size of a tab character.
    */
   @overlapSetting({ codeName: "tabSize", default: 8})
-  tabstop: number | undefined = undefined;
+  tabstop: number;
 
   /**
    * Use spaces when the user presses tab?
    */
   @overlapSetting({ codeName: "insertSpaces", default: false})
-  expandtab: boolean | undefined = undefined;
+  expandtab: boolean;
 
   @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: {true: "on", false: "off"}})
-  number: boolean | undefined = undefined;
+  number: boolean;
 
   /**
    * Show relative line numbers?
    */
   @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: {true: "relative", false: "off"}})
-  relativenumber: boolean | undefined = undefined;
+  relativenumber: boolean;
 
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 }
