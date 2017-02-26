@@ -6,7 +6,10 @@ import * as vscode from 'vscode';
  * instances of the pair.
  */
 export class PairMatcher {
-  static pairings: { [key: string]: { match: string, nextMatchIsForward: boolean, matchesWithPercentageMotion?: boolean }} = {
+  static pairings: {
+    [key: string]:
+    { match: string, nextMatchIsForward: boolean, directionLess?: boolean, matchesWithPercentageMotion?: boolean }
+  } = {
     "(" : { match: ")",  nextMatchIsForward: true,  matchesWithPercentageMotion: true },
     "{" : { match: "}",  nextMatchIsForward: true,  matchesWithPercentageMotion: true },
     "[" : { match: "]",  nextMatchIsForward: true,  matchesWithPercentageMotion: true },
@@ -19,9 +22,9 @@ export class PairMatcher {
     ">" : { match: "<",  nextMatchIsForward: false },
     // These are useful for deleting closing and opening quotes, but don't seem to negatively
     // affect how text objects such as `ci"` work, which was my worry.
-    '"' : { match: '"',  nextMatchIsForward: false  },
-    "'" : { match: "'",  nextMatchIsForward: false  },
-    "`" : { match: "`",  nextMatchIsForward: false  },
+    '"': { match: '"', nextMatchIsForward: false, directionLess: true },
+    "'": { match: "'", nextMatchIsForward: false, directionLess: true },
+    "`": { match: "`", nextMatchIsForward: false, directionLess: true },
   };
 
   static nextPairedChar(position: Position, charToMatch: string, closed: boolean = true): Position | undefined {
@@ -38,7 +41,7 @@ export class PairMatcher {
      */
     const toFind = this.pairings[charToMatch];
 
-    if (toFind === undefined) {
+    if (toFind === undefined || toFind.directionLess) {
       return undefined;
     }
 
