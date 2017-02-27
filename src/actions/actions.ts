@@ -4456,6 +4456,15 @@ class ActionReplaceCharacter extends BaseCommand {
     let timesToRepeat = vimState.recordedState.count || 1;
     const toReplace = this.keysPressed[1];
 
+    /**
+     * <character> includes <BS>, <SHIFT+BS> and <TAB> but not any control keys,
+     * so we ignore the former two keys and have a special handle for <tab>.
+     */
+
+    if (['<BS>', '<SHIFT+BS>'].indexOf(toReplace.toUpperCase()) >= 0) {
+      return vimState;
+    }
+
     if (position.character + timesToRepeat > position.getLineEnd().character) {
       return vimState;
     }
@@ -4472,14 +4481,25 @@ class ActionReplaceCharacter extends BaseCommand {
       endPos = new Position(endPos.line, endPos.character + 1);
     }
 
-    vimState.recordedState.transformations.push({
-      type    : "replaceText",
-      text    : toReplace.repeat(timesToRepeat),
-      start   : position,
-      end     : endPos,
-      diff    : new PositionDiff(0, timesToRepeat - 1),
-    });
-
+    if (toReplace === '<tab>') {
+      vimState.recordedState.transformations.push({
+        type: "deleteRange",
+        range: new Range(position, endPos)
+      });
+      vimState.recordedState.transformations.push({
+        type: "tab",
+        cursorIndex: this.multicursorIndex,
+        diff: new PositionDiff(0, -1)
+      });
+    } else {
+      vimState.recordedState.transformations.push({
+        type    : "replaceText",
+        text    : toReplace.repeat(timesToRepeat),
+        start   : position,
+        end     : endPos,
+        diff    : new PositionDiff(0, timesToRepeat - 1),
+      });
+    }
     return vimState;
   }
 

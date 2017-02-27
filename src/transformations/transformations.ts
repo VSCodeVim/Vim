@@ -193,6 +193,19 @@ export interface Dot {
 }
 
 /**
+ * Represents Tab
+ */
+export interface Tab {
+  type: "tab";
+  cursorIndex?: number;
+
+  /**
+   * Move the cursor this much.
+   */
+  diff: PositionDiff;
+}
+
+/**
  * Represents macro
  */
 export interface Macro {
@@ -211,7 +224,8 @@ export type Transformation
   | ShowCommandLine
   | Dot
   | Macro
-  | DeleteTextTransformation;
+  | DeleteTextTransformation
+  | Tab;
 
 /**
  * Text Transformations
