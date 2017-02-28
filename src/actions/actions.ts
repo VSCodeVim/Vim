@@ -1581,8 +1581,9 @@ class CommandOverrideCopy extends BaseCommand {
     clipboard.copy(text, (err) => {
       if (err) {
         vscode.window.showErrorMessage(`Error copying to clipboard.
-        You use an OS that VSCodeVim's clipboard library doesn't support. :( Set vim.overrideCopy to be false to get
-        subpar behavior. And make some noise on VSCode's issue #217 if you want this fixed.`);
+        If you are on Linux, try installing xclip. If that doesn't work, set 
+        vim.overrideCopy to be false to get subpar behavior. And make some 
+        noise on VSCode's issue #217 if you want this fixed.`);
       }
     });
 
