@@ -1374,6 +1374,21 @@ export class ModeHandler implements vscode.Disposable {
             return vimState;
           }
           break;
+        case "tab":
+          await vscode.commands.executeCommand('tab');
+          if (command.diff) {
+              if (command.cursorIndex === undefined) {
+                throw new Error("No cursor index - this should never ever happen!");
+              }
+
+              if (!accumulatedPositionDifferences[command.cursorIndex]) {
+                accumulatedPositionDifferences[command.cursorIndex] = [];
+              }
+
+              accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+            }
+
+          break;
       }
     }
 
