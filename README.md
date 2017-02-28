@@ -159,6 +159,11 @@ Or bind `<leader>w` to save the current file:
   * Have VSCodeVim start in Insert Mode rather than Normal Mode.
   * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
 
+### overrideCopy
+  * Override VSCode's copy command with our own, which works correctly with VSCodeVim.
+  * If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
+  * Type: Boolean (Default: `true`)
+
 #### useSystemClipboard
   * Enable yanking to the system clipboard by default
   * Type: Boolean (Default: `false`)

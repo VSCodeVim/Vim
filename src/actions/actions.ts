@@ -1542,6 +1542,54 @@ class CommandCmdVInSearchMode extends BaseCommand {
   }
 }
 
+/**
+ * Our Vim implementation selects up to but not including the final character
+ * of a visual selection, instead opting to render a block cursor on the final
+ * character. This works for everything except VSCode's native copy command,
+ * which loses the final character because it's not selected. We override that
+ * copy command here by default to include the final character.
+ */
+@RegisterAction
+class CommandOverrideCopy extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<D-c>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let text = "";
+
+    if (vimState.currentMode === ModeName.Visual) {
+      text = vimState.allCursors.map(range => {
+        return vscode.window.activeTextEditor.document.getText(new vscode.Range(
+          range.start,
+          range.stop.getRight()
+        ));
+      }).join("\n");
+    } else if (vimState.currentMode === ModeName.VisualLine) {
+      text = vimState.allCursors.map(range => {
+        return vscode.window.activeTextEditor.document.getText(new vscode.Range(
+          range.start.getLineBegin(),
+          range.stop.getLineEnd()
+        ));
+      }).join("\n");
+    } else if (vimState.currentMode === ModeName.VisualBlock) {
+      for ( const { line } of Position.IterateLine(vimState)) {
+        text += line + '\n';
+      }
+    }
+
+    clipboard.copy(text, (err) => {
+      if (err) {
+        vscode.window.showErrorMessage(`Error copying to clipboard.
+        You use an OS that VSCodeVim's clipboard library doesn't support. :( Set vim.overrideCopy to be false to get
+        subpar behavior. And make some noise on VSCode's issue #217 if you want this fixed.`);
+      }
+    });
+
+    return vimState;
+  }
+}
+
 @RegisterAction
 class CommandNextSearchMatch extends BaseMovement {
   keys = ["n"];

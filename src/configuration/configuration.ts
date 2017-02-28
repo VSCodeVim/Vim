@@ -71,6 +71,11 @@ class ConfigurationClass {
   useCtrlKeys = false;
 
   /**
+   * Override default VSCode copy behavior.
+   */
+  overrideCopy = true;
+
+  /**
    * Width in characters to word-wrap to.
    */
   textwidth = 80;

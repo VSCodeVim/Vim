@@ -1703,6 +1703,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 
