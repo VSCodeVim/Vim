@@ -724,6 +724,19 @@ export class ModeHandler implements vscode.Disposable {
   async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
+    // Rewrite some commands. This overcomes a limitation of package.json where the same command
+    // can't be mapped to from multiple sources.
+
+    if (Configuration.overrideCopy) {
+      if (key === "<D-c>") {
+        key = "copy";
+      }
+
+      if (key === "<C-c>" && !Configuration.useCtrlKeys) {
+        key = "copy";
+      }
+    }
+
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
     this._vimState.recordedState.commandList.push(key);
 
