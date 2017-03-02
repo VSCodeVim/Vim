@@ -5427,6 +5427,8 @@ class MoveToMatchingBracket extends BaseMovement {
   keys = ["%"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    position = position.getLeftIfEOL();
+
     const text = TextEditor.getLineAt(position).text;
     const charToMatch = text[position.character];
     const toFind = PairMatcher.pairings[charToMatch];
