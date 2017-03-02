@@ -1,4 +1,4 @@
-import { VimState, RecordedState } from './../mode/modeHandler';
+import { ModeHandler, RecordedState, VimState } from './../mode/modeHandler';
 import { SearchState, SearchDirection } from './../state/searchState';
 import { ReplaceState } from './../state/replaceState';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
@@ -1552,7 +1552,7 @@ class CommandCmdVInSearchMode extends BaseCommand {
 @RegisterAction
 class CommandOverrideCopy extends BaseCommand {
   modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["<D-c>"];
+  keys = ["copy"]; // A special key - see ModeHandler
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {

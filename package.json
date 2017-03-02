@@ -184,15 +184,12 @@
             {
                 "key": "ctrl+c",
                 "command": "extension.vim_ctrl+c",
-                "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
+                "when": "editorTextFocus && !inDebugRepl && vim.overrideCtrlC"
             },
             {
-                "key": "ctrl+c",
-                "win": "ctrl+c",
-                "linux": "ctrl+c",
-                "mac": "cmd+c",
+                "key": "cmd+c",
                 "command": "extension.vim_cmd+c",
-                "when": "editorTextFocus && !vim.useCtrlKeys && vim.overrideCopy &&  && !inDebugRepl"
+                "when": "editorTextFocus && vim.overrideCopy && !inDebugRepl"
             },
             {
                 "key": "ctrl+a",
