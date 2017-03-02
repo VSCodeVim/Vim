@@ -74,7 +74,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
   if (!modeHandlerToEditorIdentity[activeEditorId.toString()]) {
-    const newModeHandler = new ModeHandler(activeEditorId.fileName);
+    const newModeHandler = new ModeHandler(activeEditorId);
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
@@ -138,7 +138,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (Globals.isTesting) {
       contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
     } else {
-      _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.fileName === event.document.fileName)
+      _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.identity.fileName === event.document.fileName)
         .forEach(modeHandler => {
           contentChangeHandler(modeHandler);
         });
@@ -266,7 +266,7 @@ async function handleKeyEvent(key: string): Promise<void> {
 }
 
 function handleContentChangedFromDisk(document : vscode.TextDocument) : void {
-  _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.fileName === document.fileName)
+  _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.identity.fileName === document.fileName)
     .forEach(modeHandler => {
       modeHandler.vimState.historyTracker.clear();
     });

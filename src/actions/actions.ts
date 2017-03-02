@@ -2958,6 +2958,8 @@ class CommandGoToDefinition extends BaseCommand {
   keys = ["g", "d"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vscode.window.activeTextEditor;
+
     const startPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
 
     await vscode.commands.executeCommand("editor.action.goToDeclaration");
@@ -2979,8 +2981,9 @@ class CommandGoToDefinition extends BaseCommand {
       }, 50);
     });
 
-    vimState.focusChanged = true;
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    if (oldActiveEditor === vscode.window.activeTextEditor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
 
     return vimState;
   }
