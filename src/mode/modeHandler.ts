@@ -611,10 +611,6 @@ export class ModeHandler implements vscode.Disposable {
       this._vimState.isMultiCursor = false;
     }
 
-    if (this._vimState.isMultiCursor) {
-      return;
-    }
-
     // See comment about whatILastSetTheSelectionTo.
     if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
       return;
@@ -724,15 +720,15 @@ export class ModeHandler implements vscode.Disposable {
   async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
-    // Rewrite some commands. This overcomes a limitation of package.json where the same command
-    // can't be mapped to from multiple sources.
+    // Rewrite some commands. The conditions when you trigger a "copy" rather than a ctrl-c are
+    // too sophisticated to be covered by the "when" condition in package.json
 
     if (Configuration.overrideCopy) {
       if (key === "<D-c>") {
         key = "copy";
       }
 
-      if (key === "<C-c>" && !Configuration.useCtrlKeys) {
+      if (process.platform !== "darwin" && key === "<C-c>" && !Configuration.useCtrlKeys) {
         key = "copy";
       }
     }
@@ -1717,6 +1713,7 @@ export class ModeHandler implements vscode.Disposable {
 
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
+    vscode.commands.executeCommand('setContext', 'vim.overrideCtrlC', Configuration.overrideCopy && !Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 

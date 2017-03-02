@@ -184,11 +184,10 @@
             {
                 "key": "ctrl+c",
                 "command": "extension.vim_ctrl+c",
-                "when": "editorTextFocus && !inDebugRepl"
+                "when": "editorTextFocus && !inDebugRepl && vim.overrideCtrlC"
             },
             {
-                "key": "",
-                "mac": "cmd+c",
+                "key": "cmd+c",
                 "command": "extension.vim_cmd+c",
                 "when": "editorTextFocus && vim.overrideCopy && !inDebugRepl"
             },
