@@ -1,4 +1,4 @@
-import { ModeHandler, RecordedState, VimState } from './../mode/modeHandler';
+import { RecordedState, VimState } from './../mode/modeHandler';
 import { SearchState, SearchDirection } from './../state/searchState';
 import { ReplaceState } from './../state/replaceState';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
@@ -1581,8 +1581,8 @@ class CommandOverrideCopy extends BaseCommand {
     clipboard.copy(text, (err) => {
       if (err) {
         vscode.window.showErrorMessage(`Error copying to clipboard.
-        If you are on Linux, try installing xclip. If that doesn't work, set 
-        vim.overrideCopy to be false to get subpar behavior. And make some 
+        If you are on Linux, try installing xclip. If that doesn't work, set
+        vim.overrideCopy to be false to get subpar behavior. And make some
         noise on VSCode's issue #217 if you want this fixed.`);
       }
     });
@@ -2820,6 +2820,7 @@ class CommandChangeToLineEnd extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let count = vimState.recordedState.count || 1;
+
     return new ChangeOperator().run(vimState, position, position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft());
   }
 }
@@ -5009,11 +5010,21 @@ class MoveCC extends BaseMovement {
   keys = ["c"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
-    return {
-      start       : position.getLineBeginRespectingIndent(),
-      stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
-      registerMode: RegisterMode.CharacterWise
-    };
+    const lineIsAllWhitespace = TextEditor.getLineAt(position).text.trim() === "";
+
+    if (lineIsAllWhitespace) {
+      return {
+        start       : position.getLineBegin(),
+        stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
+        registerMode: RegisterMode.CharacterWise
+      };
+    } else {
+      return {
+        start       : position.getLineBeginRespectingIndent(),
+        stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
+        registerMode: RegisterMode.CharacterWise
+      };
+    }
   }
 }
 
