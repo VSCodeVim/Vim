@@ -73,11 +73,19 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
-  if (!modeHandlerToEditorIdentity[activeEditorId.toString()]) {
+  const oldModeHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
+
+  if (!oldModeHandler ||
+      oldModeHandler.editor !== vscode.window.activeTextEditor) {
+
     const newModeHandler = new ModeHandler(activeEditorId);
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
+
+    if (oldModeHandler) {
+      oldModeHandler.dispose();
+    }
   }
 
   const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
@@ -88,9 +96,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     if (!previousActiveEditorId.isEqual(activeEditorId)) {
       // We have opened two editors, working on the same file.
       previousActiveEditorId = activeEditorId;
-
-      handler.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
-      handler.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
   } else {
     previousActiveEditorId = activeEditorId;
