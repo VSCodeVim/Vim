@@ -2964,23 +2964,6 @@ class CommandGoToDefinition extends BaseCommand {
 
     await vscode.commands.executeCommand("editor.action.goToDeclaration");
 
-    // Unfortuantely, the above does not necessarily have to have finished executing
-    // (even though we do await!). THe only way to ensure it's done is to poll, which is
-    // a major bummer.
-
-    let maxIntervals = 10;
-
-    await new Promise(resolve => {
-      let interval = setInterval(() => {
-        const positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-
-        if (!startPosition.isEqual(positionNow) || maxIntervals-- < 0) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 50);
-    });
-
     if (oldActiveEditor === vscode.window.activeTextEditor) {
       vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }

@@ -141,8 +141,6 @@ export class VimState {
     return this.allCursors[0].stop;
   }
   public set cursorPosition(value: Position) {
-    console.log("Set to ", value.toString(), "for ", this.identity.toString());
-
     this.allCursors[0] = this.allCursors[0].withNewStop(value);
   }
 
@@ -616,8 +614,6 @@ export class ModeHandler implements vscode.Disposable {
            */
           return;
         }
-
-        console.log('!!! update because of selection change. !!!', selection.start)
 
         this._vimState.cursorPosition = Position.FromVSCodePosition(selection.active);
         this._vimState.cursorStartPosition = Position.FromVSCodePosition(selection.start);

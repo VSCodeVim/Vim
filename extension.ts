@@ -82,6 +82,8 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
 
+  handler.editor = vscode.window.activeTextEditor;
+
   if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
     if (!previousActiveEditorId.isEqual(activeEditorId)) {
       // We have opened two editors, working on the same file.
