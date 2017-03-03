@@ -2960,8 +2960,6 @@ class CommandGoToDefinition extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const oldActiveEditor = vscode.window.activeTextEditor;
 
-    const startPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-
     await vscode.commands.executeCommand("editor.action.goToDeclaration");
 
     if (oldActiveEditor === vscode.window.activeTextEditor) {

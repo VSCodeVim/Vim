@@ -76,9 +76,9 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const oldModeHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
 
   if (!oldModeHandler ||
-      oldModeHandler.editor !== vscode.window.activeTextEditor) {
+      oldModeHandler.vimState.editor !== vscode.window.activeTextEditor) {
 
-    const newModeHandler = new ModeHandler(activeEditorId);
+    const newModeHandler = new ModeHandler();
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
@@ -90,7 +90,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
 
-  handler.editor = vscode.window.activeTextEditor;
+  handler.vimState.editor = vscode.window.activeTextEditor;
 
   if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
     if (!previousActiveEditorId.isEqual(activeEditorId)) {
