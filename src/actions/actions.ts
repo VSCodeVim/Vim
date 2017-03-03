@@ -1551,7 +1551,7 @@ class CommandCmdVInSearchMode extends BaseCommand {
  */
 @RegisterAction
 class CommandOverrideCopy extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock, ModeName.Insert];
   keys = ["copy"]; // A special key - see ModeHandler
   runsOnceForEveryCursor() { return false; }
 
