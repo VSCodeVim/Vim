@@ -739,11 +739,11 @@ export class ModeHandler implements vscode.Disposable {
 
     if (Configuration.overrideCopy) {
       if (key === "<D-c>") {
-        key = "copy";
+        key = "<copy>";
       }
 
       if (process.platform !== "darwin" && key === "<C-c>" && !Configuration.useCtrlKeys) {
-        key = "copy";
+        key = "<copy>";
       }
     }
 

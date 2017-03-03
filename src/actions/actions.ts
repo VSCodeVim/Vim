@@ -46,6 +46,9 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
   };
 
   const containsControlKey = (s: string): boolean => {
+    // We count anything starting with < (e.g. <c-u>) as a control key, but we
+    // exclude the first 3 because it's more convenient to do so.
+
     return s.toUpperCase() !== "<BS>" &&
            s.toUpperCase() !== "<SHIFT+BS>" &&
            s.toUpperCase() !== "<TAB>" &&
@@ -1551,18 +1554,22 @@ class CommandCmdVInSearchMode extends BaseCommand {
  */
 @RegisterAction
 class CommandOverrideCopy extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock, ModeName.Insert];
-  keys = ["copy"]; // A special key - see ModeHandler
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock, ModeName.Insert, ModeName.Normal];
+  keys = ["<copy>"]; // A special key - see ModeHandler
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let text = "";
 
-    if (vimState.currentMode === ModeName.Visual) {
+    if (vimState.currentMode === ModeName.Visual ||
+        vimState.currentMode === ModeName.Normal ||
+        vimState.currentMode === ModeName.Insert) {
       text = vimState.allCursors.map(range => {
         return vscode.window.activeTextEditor.document.getText(new vscode.Range(
           range.start,
-          range.stop.getRight()
+          vimState.currentMode === ModeName.Insert ?
+            range.stop :
+            range.stop.getRight()
         ));
       }).join("\n");
     } else if (vimState.currentMode === ModeName.VisualLine) {
