@@ -283,6 +283,13 @@ Motion Command | Description
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
 
+## Awesome Features You Might Not Know About
+
+Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest nooks and crannies of Vim. Some of our favorite include:
+
+* `gd` - jump to definition. _Astoundingly_ useful in any language that VSCode provides definition support for. I use this one probably hundreds of times a day.
+* `gq` on a visual selection - Reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
+
 ## Special Shoutouts to Cool Contributors
 
 * Thanks to @xconverge for making over 100 commits to the repo. If you're wondering why your least favorite bug packed up and left, it was probably him.
