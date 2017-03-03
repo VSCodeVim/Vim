@@ -22,6 +22,7 @@ import { QuitCommand } from './../cmd_line/commands/quit';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
 
+
 const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);
 };
