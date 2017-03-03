@@ -1565,11 +1565,14 @@ class CommandOverrideCopy extends BaseCommand {
         vimState.currentMode === ModeName.Normal ||
         vimState.currentMode === ModeName.Insert) {
       text = vimState.allCursors.map(range => {
+        const start = Position.EarlierOf(range.start, range.stop);
+        const stop  = Position.LaterOf(range.start, range.stop);
+
         return vscode.window.activeTextEditor.document.getText(new vscode.Range(
-          range.start,
+          start,
           vimState.currentMode === ModeName.Insert ?
-            range.stop :
-            range.stop.getRight()
+            stop :
+            stop.getRight()
         ));
       }).join("\n");
     } else if (vimState.currentMode === ModeName.VisualLine) {
