@@ -165,3 +165,10 @@ export class OtherModesRemapper extends Remapper {
   }
 }
 
+export const getOtherModesNonRecursiveMapping = (keys: string[]) => {
+  const vimConfiguration = vscode.workspace.getConfiguration('vim');
+  const remappings = vimConfiguration.get<IKeybinding[]>('otherModesKeyBindingsNonRecursive');
+  const foundRemapping = remappings.find(r => JSON.stringify(r.before) === JSON.stringify(keys));
+
+  return foundRemapping ? foundRemapping.after : keys;
+};
