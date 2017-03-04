@@ -21,6 +21,7 @@ import { FileCommand } from './../cmd_line/commands/file';
 import { QuitCommand } from './../cmd_line/commands/quit';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
+import { getOtherModesNonRecursiveMapping } from '../mode/remapper';
 
 
 const is2DArray = function<T>(x: any): x is T[][] {
@@ -505,7 +506,11 @@ export class Actions {
     for (const thing of Actions.allActions) {
       const { type, action } = thing!;
 
-      if (action.doesActionApply(vimState, keysPressed)) {
+      const command = vimState.recordedState.commandList;
+      let mappedKeyPressed = this.shouldRemapKeysPressed(command, keysPressed) ?
+        this.getRemappedKeyPressed(command, keysPressed) : keysPressed;
+
+      if (action.doesActionApply(vimState, mappedKeyPressed)) {
         const result = new type();
 
         result.keysPressed = vimState.recordedState.actionKeys.slice(0);
@@ -513,12 +518,48 @@ export class Actions {
         return result;
       }
 
-      if (action.couldActionApply(vimState, keysPressed)) {
+      if (action.couldActionApply(vimState, mappedKeyPressed)) {
         couldPotentiallyHaveMatch = true;
       }
     }
 
     return couldPotentiallyHaveMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
+  }
+
+  /**
+   * Keys that follows a count operation need to be remapped.
+   * For instance:
+   * If 's' is mapped to 'k', '2s' should perform '2k'
+   */
+  private static shouldRemapKeysPressed(command: string[], keysPressed: string[]): boolean {
+    return this.isCountCommand(command) && this.countCommandPerforming(command, keysPressed);
+  }
+
+  private static isCountCommand(command: string[]) : boolean {
+    return command.length > 1 && this.isCount(command[0]);
+  }
+
+  private static getRemappedKeyPressed(recordedCommands: string[], keysPressed: string[]): string[] {
+    const remappedKeyPressed = getOtherModesNonRecursiveMapping(keysPressed);
+
+    return remappedKeyPressed ? remappedKeyPressed : keysPressed;
+  }
+
+  private static isCount(key: string) {
+    return !isNaN(Number(key));
+  }
+
+/**
+ * returns wether the count command is
+ * currently performing. This is the case whenever there is only one key
+ * pressed after the count (2d will return true, 2diw won't).
+ */
+  private static countCommandPerforming(recordedCommand: string[], keysPressed: string[]): boolean {
+    const joinedCommand = recordedCommand.join('');
+    const joinedKeysPressed = keysPressed.join('');
+    const actionPerforming = joinedCommand.replace(joinedKeysPressed, '');
+
+    return this.isCount(actionPerforming);
   }
 }
 
