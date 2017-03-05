@@ -182,6 +182,7 @@ export class VimState {
   public cursorPositionJustBeforeAnythingHappened = [ new Position(0, 0) ];
 
   public isRecordingMacro: boolean = false;
+  public isReplayingMacro: boolean = false;
 
   public replaceState: ReplaceState | undefined = undefined;
 
@@ -1376,6 +1377,8 @@ export class ModeHandler implements vscode.Disposable {
         case "macro":
           let recordedMacro = (await Register.getByKey(command.register)).text as RecordedState;
 
+          vimState.isReplayingMacro = true;
+
           if (command.replay === "contentChange") {
             vimState = await this.runMacro(vimState, recordedMacro);
           } else {
@@ -1385,8 +1388,10 @@ export class ModeHandler implements vscode.Disposable {
             }
             this.vimState.recordedState = new RecordedState();
             await this.handleMultipleKeyEvents(keyStrokes);
+            await this.updateView(this.vimState);
           }
 
+          vimState.isReplayingMacro = false;
           vimState.historyTracker.lastInvokedMacro = recordedMacro;
 
           if (vimState.lastMovementFailed) {
@@ -1395,6 +1400,7 @@ export class ModeHandler implements vscode.Disposable {
             vimState.lastMovementFailed = false;
             return vimState;
           }
+
           break;
         case "tab":
           await vscode.commands.executeCommand('tab');
