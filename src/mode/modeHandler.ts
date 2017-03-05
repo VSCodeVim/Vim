@@ -556,6 +556,16 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   /**
+   * Update remappers after a configuration change
+   */
+  updateRemappers() {
+    this._insertModeRemapper.update();
+    this._insertModeNonRecursive.update();
+    this._otherModesRemapper.update();
+    this._otherModesNonRecursive.update();
+  }
+
+  /**
    * This is easily the worst function in VSCodeVim.
    *
    * We need to know when VSCode has updated our selection, so that we can sync
