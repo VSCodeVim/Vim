@@ -9,4 +9,6 @@ export class Globals {
   public static modeHandlerForTesting: any = undefined;
 
   public static WhitespaceRegExp = new RegExp("^ *$");
+
+  public static active = true;
 }
