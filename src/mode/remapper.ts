@@ -30,6 +30,7 @@ class Remapper {
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
+
     let remappings = vscode.workspace.getConfiguration('vim')
       .get<IKeybinding[]>(configKey, []);
 
@@ -42,8 +43,7 @@ class Remapper {
         remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
       }
 
-      this._remappings = [];
-      this._remappings.push(<IKeybinding>{
+      this._remappings.push(<IKeybinding> {
         before: before,
         after: after,
         commands: remapping.commands,
