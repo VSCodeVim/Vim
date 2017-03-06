@@ -492,10 +492,7 @@ export class ModeHandler implements vscode.Disposable {
     this.identity = new EditorIdentity(vscode.window.activeTextEditor);
 
     this._vimState.identity = this.identity;
-    this._insertModeRemapper = new InsertModeRemapper(true);
-    this._otherModesRemapper = new OtherModesRemapper(true);
-    this._insertModeNonRecursive = new InsertModeRemapper(false);
-    this._otherModesNonRecursive = new OtherModesRemapper(false);
+    this.createRemappers();
 
     this._modes = [
       new NormalMode(this),
@@ -556,13 +553,13 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   /**
-   * Update remappers after a configuration change
+   * create remappers after a configuration change
    */
-  updateRemappers() {
-    this._insertModeRemapper.update();
-    this._insertModeNonRecursive.update();
-    this._otherModesRemapper.update();
-    this._otherModesNonRecursive.update();
+  createRemappers() {
+    this._insertModeRemapper = new InsertModeRemapper(true);
+    this._otherModesRemapper = new OtherModesRemapper(true);
+    this._insertModeNonRecursive = new InsertModeRemapper(false);
+    this._otherModesNonRecursive = new OtherModesRemapper(false);
   }
 
   /**

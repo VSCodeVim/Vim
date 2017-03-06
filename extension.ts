@@ -129,7 +129,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Update the remappers foreach modehandler
     for (let mh in modeHandlerToEditorIdentity) {
-      modeHandlerToEditorIdentity[mh].updateRemappers();
+      modeHandlerToEditorIdentity[mh].createRemappers();
     }
   })
 

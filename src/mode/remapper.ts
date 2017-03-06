@@ -30,10 +30,6 @@ class Remapper {
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
-    this.updateRemappings(configKey);
-  }
-
-  protected updateRemappings(configKey: string) {
     let remappings = vscode.workspace.getConfiguration('vim')
       .get<IKeybinding[]>(configKey, []);
 
@@ -157,11 +153,6 @@ export class InsertModeRemapper extends Remapper {
       recursive
     );
   }
-
-  update() {
-    this.updateRemappings("insertModeKeyBindings");
-    super.updateRemappings("insertModeKeyBindingsNonRecursive");
-  }
 }
 
 export class OtherModesRemapper extends Remapper {
@@ -171,11 +162,6 @@ export class OtherModesRemapper extends Remapper {
       [ModeName.Normal, ModeName.Visual, ModeName.VisualLine],
       recursive
     );
-  }
-
-  update() {
-    super.updateRemappings("otherModesKeyBindings");
-    super.updateRemappings("otherModesKeyBindingsNonRecursive");
   }
 }
 
