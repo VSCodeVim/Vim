@@ -43,227 +43,231 @@
       {
         "command": "vim.remap",
         "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
+      },
+      {
+        "command": "toggleVim",
+        "title": "Vim: Toggle Vim Mode"
       }
     ],
     "keybindings": [
       {
         "key": "Escape",
         "command": "extension.vim_escape",
-        "when": "editorTextFocus && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "Home",
         "command": "extension.vim_home",
-        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "End",
         "command": "extension.vim_end",
-        "when": "editorTextFocus && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+left",
         "command": "extension.vim_cmd+left",
-        "when": "editorTextFocus && vim.use<D-left> && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<D-left> && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+right",
         "command": "extension.vim_cmd+right",
-        "when": "editorTextFocus && vim.use<D-right> &&  !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<D-right> &&  !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "cmd+d",
         "command": "extension.vim_cmd+d",
-        "when": "editorTextFocus && vim.use<D-d> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-d> && !inDebugRepl"
       },
       {
         "key": "cmd+a",
         "command": "extension.vim_cmd+a",
-        "when": "editorTextFocus && vim.use<D-a> && !inDebugRepl && vim.mode != 'Insert'"
+        "when": "editorTextFocus && vim.active && vim.use<D-a> && !inDebugRepl && vim.mode != 'Insert'"
       },
       {
         "key": "ctrl+d",
         "command": "extension.vim_ctrl+d",
-        "when": "editorTextFocus && vim.use<C-d> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-d> && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
         "linux": "shift+alt+down",
         "mac": "cmd+alt+down",
         "command": "extension.vim_cmd+alt+down",
-        "when": "editorTextFocus && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+up",
         "linux": "shift+alt+up",
         "mac": "cmd+alt+up",
         "command": "extension.vim_cmd+alt+up",
-        "when": "editorTextFocus && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "Backspace",
         "command": "extension.vim_backspace",
-        "when": "editorTextFocus && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.mode == 'Normal' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode == 'Normal' && !inDebugRepl"
       },
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.mode == 'Normal' && !inDebugRepl"
+        "when": "editorFocus && vim.active && vim.mode == 'Normal' && !inDebugRepl"
       },
       {
         "key": "ctrl+r",
         "command": "extension.vim_ctrl+r",
-        "when": "editorTextFocus && vim.use<C-r> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-r> && !inDebugRepl"
       },
       {
         "key": "ctrl+f",
         "command": "extension.vim_ctrl+f",
-        "when": "editorTextFocus && vim.use<C-f> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-f> && !inDebugRepl"
       },
       {
         "key": "ctrl+b",
         "command": "extension.vim_ctrl+b",
-        "when": "editorTextFocus && vim.use<C-b> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-b> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+j",
         "command": "extension.vim_ctrl+j",
-        "when": "editorTextFocus && vim.use<C-j> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-j> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+k",
         "command": "extension.vim_ctrl+k",
-        "when": "editorTextFocus && vim.use<C-k> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-k> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+h",
         "command": "extension.vim_ctrl+h",
-        "when": "editorTextFocus && vim.use<C-h> && vim.mode == 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-h> && vim.mode == 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+e",
         "command": "extension.vim_ctrl+e",
-        "when": "editorTextFocus && vim.use<C-e> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-e> && !inDebugRepl"
       },
       {
         "key": "ctrl+y",
         "command": "extension.vim_ctrl+y",
-        "when": "editorTextFocus && vim.use<C-y> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-y> && !inDebugRepl"
       },
       {
         "key": "ctrl+u",
         "command": "extension.vim_ctrl+u",
-        "when": "editorTextFocus && vim.use<C-u> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-u> && !inDebugRepl"
       },
       {
         "key": "ctrl+o",
         "command": "extension.vim_ctrl+o",
-        "when": "editorTextFocus && vim.use<C-o> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-o> && !inDebugRepl"
       },
       {
         "key": "ctrl+i",
         "command": "extension.vim_ctrl+i",
-        "when": "editorTextFocus && vim.use<C-i> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl"
       },
       {
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
-        "when": "editorTextFocus && vim.use<C-v> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-v> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "cmd+v",
         "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
       },
       {
         "key": "ctrl+[",
         "command": "extension.vim_ctrl+[",
-        "when": "editorTextFocus && vim.use<C-[> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-[> && !inDebugRepl"
       },
       {
         "key": "ctrl+w",
         "command": "extension.vim_ctrl+w",
-        "when": "editorTextFocus && vim.use<C-w> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
       },
       {
         "key": "ctrl+c",
         "command": "extension.vim_ctrl+c",
-        "when": "editorTextFocus && vim.use<C-c> && !inDebugRepl && vim.overrideCtrlC"
+        "when": "editorTextFocus && vim.active && vim.use<C-c> && !inDebugRepl && vim.overrideCtrlC"
       },
       {
         "key": "cmd+c",
         "command": "extension.vim_cmd+c",
-        "when": "editorTextFocus && vim.use<D-c> && vim.overrideCopy && !inDebugRepl"
+        "when": "editorTextFocus && vvim.active && im.use<D-c> && vim.overrideCopy && !inDebugRepl"
       },
       {
         "key": "ctrl+a",
         "command": "extension.vim_ctrl+a",
-        "when": "editorTextFocus && vim.use<C-a> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-a> && !inDebugRepl"
       },
       {
         "key": "ctrl+n",
         "command": "extension.vim_ctrl+n",
-        "when": "editorTextFocus && vim.use<C-n> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl"
       },
       {
         "key": "ctrl+p",
         "command": "extension.vim_ctrl+p",
-        "when": "suggestWidgetVisible && vim.use<C-p>"
+        "when": "suggestWidgetVisible && vim.active && vim.use<C-p>"
       },
       {
         "key": "ctrl+x",
         "command": "extension.vim_ctrl+x",
-        "when": "editorTextFocus && vim.use<C-x> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-x> && !inDebugRepl"
       },
       {
         "key": "ctrl+shift+2",
         "command": "extension.vim_ctrl+shift+2",
-        "when": "editorTextFocus && vim.use<C-shift+2>"
+        "when": "editorTextFocus && vim.active && vim.use<C-shift+2>"
       },
       {
         "key": "ctrl+t",
         "command": "extension.vim_ctrl+t",
-        "when": "editorTextFocus && vim.use<C-t> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-t> && !inDebugRepl"
       },
       {
         "key": "ctrl+pagedown",
         "command": "extension.vim_ctrl+pagedown",
-        "when": "editorTextFocus && vim.use<C-pagedown> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-pagedown> && !inDebugRepl"
       },
       {
         "key": "ctrl+pageup",
         "command": "extension.vim_ctrl+pageup",
-        "when": "editorTextFocus && vim.use<C-pageup> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-pageup> && !inDebugRepl"
       },
       {
         "key": "left",
         "command": "extension.vim_left",
-        "when": "editorTextFocus && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "right",
         "command": "extension.vim_right",
-        "when": "editorTextFocus && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "up",
         "command": "extension.vim_up",
-        "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
       },
       {
         "key": "down",
         "command": "extension.vim_down",
-        "when": "editorTextFocus && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
       }
     ],
     "configuration": {
