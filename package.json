@@ -380,8 +380,8 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "node ./node_modules/vscode/bin/compile -p ./",
-        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
         "test": "node ./node_modules/vscode/bin/test",
         "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
     },
@@ -391,7 +391,7 @@
         "diff-match-patch": "^1.0.0",
         "lodash": "^4.12.0",
         "typescript": "^2.0.10",
-        "vscode": "^0.11.16"
+        "vscode": "^1.0.5"
     },
     "devDependencies": {
         "gulp": "^3.9.1",
