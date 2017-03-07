@@ -187,7 +187,13 @@ export class TextEditor {
 
   static getIndentationLevel(line: string): number {
     let tabSize = Configuration.tabstop;
-    let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
+
+    let firstNonWhiteSpace = 0;
+    let checkLine = line.match(/^\s*/);
+    if (checkLine) {
+      firstNonWhiteSpace = checkLine[0].length;
+    }
+
     let visibleColumn: number = 0;
 
     if (firstNonWhiteSpace >= 0) {
@@ -230,7 +236,12 @@ export class TextEditor {
       indentString += new Array(screenCharacters % tabSize + 1).join(" ");
     }
 
-    let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
+    let firstNonWhiteSpace = 0;
+    let lineCheck = line.match(/^\s*/);
+    if (lineCheck) {
+      firstNonWhiteSpace = lineCheck[0].length;
+    }
+
     return indentString + line.substring(firstNonWhiteSpace, line.length);
   }
 }

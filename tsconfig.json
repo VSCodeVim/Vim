@@ -5,12 +5,15 @@
     "outDir": "out",
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
-    "noLib": true,
+    "lib": [
+      "es6"
+    ],
     "sourceMap": true,
     "strictNullChecks": true,
     "experimentalDecorators": true
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".vscode-test"
   ]
 }

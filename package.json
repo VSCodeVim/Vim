@@ -405,6 +405,9 @@
         "merge-stream": "^1.0.0",
         "tslint": "^3.10.2",
         "typescript": "^2.0.10",
-        "typings": "^1.4.0"
+        "typings": "^1.4.0",
+        "mocha": "^2.3.3",
+        "@types/node": "^6.0.40",
+        "@types/mocha": "^2.2.32"
     }
 }
