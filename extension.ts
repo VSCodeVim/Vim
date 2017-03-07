@@ -252,8 +252,8 @@ export async function activate(context: vscode.ExtensionContext) {
       mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
     } else {
       let cursorStyle = await vscode.workspace.getConfiguration('editor').get('cursorStyle', 'line');
-      if (vscode.window.activeTextEditor) {
-        let options = vscode.window.activeTextEditor.options;
+      vscode.window.visibleTextEditors.forEach(editor => {
+        let options = editor.options;
         switch (cursorStyle) {
           case 'line':
             options.cursorStyle = vscode.TextEditorCursorStyle.Line;
@@ -268,8 +268,8 @@ export async function activate(context: vscode.ExtensionContext) {
           default:
             break;
         }
-        vscode.window.activeTextEditor.options = options;
-      }
+        editor.options = options;
+      });
       await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
     }
   });

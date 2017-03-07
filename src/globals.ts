@@ -10,5 +10,6 @@ export class Globals {
 
   public static WhitespaceRegExp = new RegExp("^ *$");
 
+  // false for disabling Vim temporarily
   public static active = true;
 }
