@@ -380,8 +380,8 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "node ./node_modules/vscode/bin/compile -p ./",
-        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
         "test": "node ./node_modules/vscode/bin/test",
         "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
     },
