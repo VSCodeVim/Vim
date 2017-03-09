@@ -347,7 +347,11 @@ export class Position extends vscode.Position {
     return this;
   }
 
-  public getLeft() : Position {
+  /**
+   * Gets the position one to the left of this position. Does not go up line
+   * breaks.
+   */
+  public getLeft(): Position {
     if (!this.isLineBeginning()) {
       return new Position(this.line, this.character - 1);
     }
@@ -659,8 +663,20 @@ export class Position extends vscode.Position {
     return new Position(this.line, Position.getLineLength(this.line) + 1);
   }
 
-  public getDocumentBegin() : Position {
+  public getDocumentBegin(): Position {
     return new Position(0, 0);
+  }
+
+  /**
+   * Returns a new Position one to the left if this position is on the EOL. Otherwise,
+   * returns this position.
+   */
+  public getLeftIfEOL(): Position {
+    if (this.character === Position.getLineLength(this.line)) {
+      return this.getLeft();
+    } else {
+      return this;
+    }
   }
 
   /**
@@ -737,10 +753,6 @@ export class Position extends vscode.Position {
    */
   public getFirstLineNonBlankChar(): Position {
     return new Position(this.line, Position.getFirstNonBlankCharAtLine(this.line));
-  }
-
-  public getDocumentStart(): Position {
-    return new Position(0, 0);
   }
 
   public static getLineLength(line: number) : number {

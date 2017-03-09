@@ -1,5 +1,6 @@
 "use strict";
 
+import * as vscode from 'vscode';
 import { ModeHandler } from "../../src/mode/modeHandler";
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
@@ -50,6 +51,8 @@ suite("register", () => {
   });
 
   test("Yank stores text in Register '0'", async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor;
+
     await modeHandler.handleMultipleKeyEvents(
       'itest1\ntest2\ntest3'.split('')
     );
@@ -74,6 +77,8 @@ suite("register", () => {
   });
 
   test("Register '1'-'9' stores delete content", async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor;
+
     await modeHandler.handleMultipleKeyEvents(
       'itest1\ntest2\ntest3\n'.split('')
     );
@@ -98,6 +103,8 @@ suite("register", () => {
   });
 
   test("\"A appends linewise text to \"a", async() => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor;
+
     await modeHandler.handleMultipleKeyEvents(
       'itest1\ntest2\ntest3'.split('')
     );
@@ -124,6 +131,8 @@ suite("register", () => {
   });
 
   test("\"A appends character wise text to \"a", async() => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor;
+
     await modeHandler.handleMultipleKeyEvents(
       'itest1\ntest2\n'.split('')
     );

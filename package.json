@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.5.3",
+    "version": "0.6.2",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#e3f4ff",
@@ -184,7 +184,12 @@
             {
                 "key": "ctrl+c",
                 "command": "extension.vim_ctrl+c",
-                "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
+                "when": "editorTextFocus && !inDebugRepl && vim.overrideCtrlC"
+            },
+            {
+                "key": "cmd+c",
+                "command": "extension.vim_cmd+c",
+                "when": "editorTextFocus && vim.overrideCopy && !inDebugRepl"
             },
             {
                 "key": "ctrl+a",
@@ -284,6 +289,11 @@
                     "description": "Use system clipboard for unnamed register.",
                     "default": false
                 },
+                "vim.overrideCopy": {
+                    "type": "boolean",
+                    "description": "Override VSCode's copy command with our own copy command, which works better with VSCodeVim. Turn this off if copying is not working.",
+                    "default": true
+                },
                 "vim.insertModeKeyBindings": {
                     "type": "array",
                     "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for more."
@@ -370,8 +380,8 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "node ./node_modules/vscode/bin/compile -p ./",
-        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
         "test": "node ./node_modules/vscode/bin/test",
         "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
     },
@@ -381,7 +391,7 @@
         "diff-match-patch": "^1.0.0",
         "lodash": "^4.12.0",
         "typescript": "^2.0.10",
-        "vscode": "^0.11.16"
+        "vscode": "^1.0.5"
     },
     "devDependencies": {
         "gulp": "^3.9.1",

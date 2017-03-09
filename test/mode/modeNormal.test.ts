@@ -1411,4 +1411,11 @@ suite("Mode Normal", () => {
         'test aaa test aaa test aaa test '
       ]
     });
+
+    newTest({
+      title: "cc on whitespace-only line clears line",
+      start: ["|     "],
+      keysPressed: 'cc',
+      end: ["|"],
+    });
 });

@@ -4,7 +4,7 @@ import { SurroundInputMode } from './surroundInputMode';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { getAndUpdateModeHandler } from './../../extension';
+import { EditorIdentity } from './../../extension';
 import {
   isTextTransformation,
   TextTransformations,
@@ -71,6 +71,13 @@ export class VimState {
   public historyTracker: HistoryTracker;
 
   public easyMotion: EasyMotion;
+
+  /**
+   * Just for debugging!!
+   */
+  public identity: EditorIdentity;
+
+  public editor: vscode.TextEditor;
 
   /**
    * For timing out remapped keys like jj to esc.
@@ -443,9 +450,9 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   /**
-   * Filename associated with this ModeHandler. Only used for debugging.
+   * Identity associated with this ModeHandler. Only used for debugging.
    */
-  public fileName: string;
+  public identity: EditorIdentity;
 
   private _caretDecoration = vscode.window.createTextEditorDecorationType({
     dark: {
@@ -476,16 +483,16 @@ export class ModeHandler implements vscode.Disposable {
    * isTesting speeds up tests drastically by turning off our checks for
    * mouse events.
    */
-  constructor(filename = "") {
+  constructor() {
     ModeHandler.IsTesting = Globals.isTesting;
 
-    this.fileName = filename;
-
     this._vimState = new VimState();
-    this._insertModeRemapper = new InsertModeRemapper(true);
-    this._otherModesRemapper = new OtherModesRemapper(true);
-    this._insertModeNonRecursive = new InsertModeRemapper(false);
-    this._otherModesNonRecursive = new OtherModesRemapper(false);
+    this._vimState.editor = vscode.window.activeTextEditor;
+
+    this.identity = new EditorIdentity(vscode.window.activeTextEditor);
+
+    this._vimState.identity = this.identity;
+    this.createRemappers();
 
     this._modes = [
       new NormalMode(this),
@@ -499,7 +506,7 @@ export class ModeHandler implements vscode.Disposable {
       new EasyMotionMode(),
       new SurroundInputMode(),
     ];
-    this.vimState.historyTracker = new HistoryTracker();
+    this.vimState.historyTracker = new HistoryTracker(this.vimState);
     this.vimState.easyMotion = new EasyMotion();
 
     if (Configuration.startInInsertMode) {
@@ -518,9 +525,13 @@ export class ModeHandler implements vscode.Disposable {
     // is not (0, 0) - e.g., if you previously edited the file and left the
     // cursor somewhere else when you closed it. This will set our cursor's
     // position to the position that VSC set it to.
+
+    // This also makes things like gd work.
     if (vscode.window.activeTextEditor) {
       this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      this._vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      this._vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+      this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
+
       this._vimState.whatILastSetTheSelectionTo = vscode.window.activeTextEditor.selection;
     }
 
@@ -539,6 +550,16 @@ export class ModeHandler implements vscode.Disposable {
     });
 
     this._toBeDisposed.push(disposer);
+  }
+
+  /**
+   * create remappers after a configuration change
+   */
+  createRemappers() {
+    this._insertModeRemapper = new InsertModeRemapper(true);
+    this._otherModesRemapper = new OtherModesRemapper(true);
+    this._insertModeNonRecursive = new InsertModeRemapper(false);
+    this._otherModesNonRecursive = new OtherModesRemapper(false);
   }
 
   /**
@@ -563,7 +584,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (e.textEditor.document.fileName !== this.fileName) {
+    if (e.textEditor !== this.vimState.editor) {
       return;
     }
 
@@ -609,10 +630,6 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this._vimState.isMultiCursor && e.selections.length === 1) {
       this._vimState.isMultiCursor = false;
-    }
-
-    if (this._vimState.isMultiCursor) {
-      return;
     }
 
     // See comment about whatILastSetTheSelectionTo.
@@ -724,6 +741,19 @@ export class ModeHandler implements vscode.Disposable {
   async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
+    // Rewrite some commands. The conditions when you trigger a "copy" rather than a ctrl-c are
+    // too sophisticated to be covered by the "when" condition in package.json
+
+    if (Configuration.overrideCopy) {
+      if (key === "<D-c>") {
+        key = "<copy>";
+      }
+
+      if (process.platform !== "darwin" && key === "<C-c>" && !Configuration.useCtrlKeys) {
+        key = "<copy>";
+      }
+    }
+
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
     this._vimState.recordedState.commandList.push(key);
 
@@ -766,10 +796,6 @@ export class ModeHandler implements vscode.Disposable {
       console.log(e.stack);
     }
 
-    if (this._vimState.focusChanged) {
-      await getAndUpdateModeHandler();
-    }
-
     this._vimState.lastKeyPressedTimestamp = now;
     this._renderStatusBar();
 
@@ -777,6 +803,9 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
+
+    // Just nope right out of here.
+    if (vscode.window.activeTextEditor !== this.vimState.editor) { return this.vimState; }
 
     // Catch any text change not triggered by us (example: tab completion).
     vimState.historyTracker.addChange(this._vimState.cursorPositionJustBeforeAnythingHappened);
@@ -1220,7 +1249,7 @@ export class ModeHandler implements vscode.Disposable {
         ));
       }
 
-      vscode.window.activeTextEditor.selections = selections;
+      this.vimState.editor.selections = selections;
     }
 
     return resultVimState;
@@ -1373,6 +1402,21 @@ export class ModeHandler implements vscode.Disposable {
             vimState.lastMovementFailed = false;
             return vimState;
           }
+          break;
+        case "tab":
+          await vscode.commands.executeCommand('tab');
+          if (command.diff) {
+              if (command.cursorIndex === undefined) {
+                throw new Error("No cursor index - this should never ever happen!");
+              }
+
+              if (!accumulatedPositionDifferences[command.cursorIndex]) {
+                accumulatedPositionDifferences[command.cursorIndex] = [];
+              }
+
+              accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+            }
+
           break;
       }
     }
@@ -1592,17 +1636,17 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       this._vimState.whatILastSetTheSelectionTo = selections[0];
-      vscode.window.activeTextEditor.selections = selections;
+      this._vimState.editor.selections = selections;
     }
 
     // Scroll to position of cursor
     if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
       const nextMatch = vimState.globalState.searchState!.getNextSearchMatchPosition(vimState.cursorPosition).pos;
 
-      vscode.window.activeTextEditor.revealRange(new vscode.Range(nextMatch, nextMatch));
+      this._vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch));
     } else {
       if (args.revealRange) {
-        vscode.window.activeTextEditor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
+        this._vimState.editor.revealRange(new vscode.Range(vimState.cursorPosition, vimState.cursorPosition));
       }
     }
 
@@ -1703,6 +1747,8 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.useCtrlKeys);
+    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
+    vscode.commands.executeCommand('setContext', 'vim.overrideCtrlC', Configuration.overrideCopy || Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 

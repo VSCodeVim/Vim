@@ -1,4 +1,4 @@
-import { VimState, RecordedState } from './../mode/modeHandler';
+import { RecordedState, VimState } from './../mode/modeHandler';
 import { SearchState, SearchDirection } from './../state/searchState';
 import { ReplaceState } from './../state/replaceState';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
@@ -18,8 +18,10 @@ import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { isTextTransformation } from './../transformations/transformations';
 import { EasyMotion } from './../easymotion/easymotion';
 import { FileCommand } from './../cmd_line/commands/file';
+import { QuitCommand } from './../cmd_line/commands/quit';
 import * as vscode from 'vscode';
 import * as clipboard from 'copy-paste';
+
 
 const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);
@@ -45,6 +47,9 @@ let compareKeypressSequence = function (one: string[] | string[][], two: string[
   };
 
   const containsControlKey = (s: string): boolean => {
+    // We count anything starting with < (e.g. <c-u>) as a control key, but we
+    // exclude the first 3 because it's more convenient to do so.
+
     return s.toUpperCase() !== "<BS>" &&
            s.toUpperCase() !== "<SHIFT+BS>" &&
            s.toUpperCase() !== "<TAB>" &&
@@ -1554,6 +1559,62 @@ class CommandCmdVInSearchMode extends BaseCommand {
   }
 }
 
+/**
+ * Our Vim implementation selects up to but not including the final character
+ * of a visual selection, instead opting to render a block cursor on the final
+ * character. This works for everything except VSCode's native copy command,
+ * which loses the final character because it's not selected. We override that
+ * copy command here by default to include the final character.
+ */
+@RegisterAction
+class CommandOverrideCopy extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock, ModeName.Insert, ModeName.Normal];
+  keys = ["<copy>"]; // A special key - see ModeHandler
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let text = "";
+
+    if (vimState.currentMode === ModeName.Visual ||
+        vimState.currentMode === ModeName.Normal ||
+        vimState.currentMode === ModeName.Insert) {
+      text = vimState.allCursors.map(range => {
+        const start = Position.EarlierOf(range.start, range.stop);
+        const stop  = Position.LaterOf(range.start, range.stop);
+
+        return vscode.window.activeTextEditor.document.getText(new vscode.Range(
+          start,
+          vimState.currentMode === ModeName.Insert ?
+            stop :
+            stop.getRight()
+        ));
+      }).join("\n");
+    } else if (vimState.currentMode === ModeName.VisualLine) {
+      text = vimState.allCursors.map(range => {
+        return vscode.window.activeTextEditor.document.getText(new vscode.Range(
+          range.start.getLineBegin(),
+          range.stop.getLineEnd()
+        ));
+      }).join("\n");
+    } else if (vimState.currentMode === ModeName.VisualBlock) {
+      for ( const { line } of Position.IterateLine(vimState)) {
+        text += line + '\n';
+      }
+    }
+
+    clipboard.copy(text, (err) => {
+      if (err) {
+        vscode.window.showErrorMessage(`Error copying to clipboard.
+        If you are on Linux, try installing xclip. If that doesn't work, set
+        vim.overrideCopy to be false to get subpar behavior. And make some
+        noise on VSCode's issue #217 if you want this fixed.`);
+      }
+    });
+
+    return vimState;
+  }
+}
+
 @RegisterAction
 class CommandNextSearchMatch extends BaseMovement {
   keys = ["n"];
@@ -2783,6 +2844,7 @@ class CommandChangeToLineEnd extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let count = vimState.recordedState.count || 1;
+
     return new ChangeOperator().run(vimState, position, position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft());
   }
 }
@@ -2920,29 +2982,13 @@ class CommandGoToDefinition extends BaseCommand {
   keys = ["g", "d"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const startPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    const oldActiveEditor = vscode.window.activeTextEditor;
 
     await vscode.commands.executeCommand("editor.action.goToDeclaration");
 
-    // Unfortuantely, the above does not necessarily have to have finished executing
-    // (even though we do await!). THe only way to ensure it's done is to poll, which is
-    // a major bummer.
-
-    let maxIntervals = 10;
-
-    await new Promise(resolve => {
-      let interval = setInterval(() => {
-        const positionNow = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-
-        if (!startPosition.isEqual(positionNow) || maxIntervals-- < 0) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 50);
-    });
-
-    vimState.focusChanged = true;
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    if (oldActiveEditor === vscode.window.activeTextEditor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
 
     return vimState;
   }
@@ -3175,6 +3221,18 @@ class MoveRightWithSpace extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getRightThroughLineBreaks();
+  }
+}
+
+@RegisterAction
+class CommandQuit extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<C-w>", "q"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    new QuitCommand({}).execute();
+
+    return vimState;
   }
 }
 
@@ -3698,10 +3756,10 @@ class MoveNonBlankFirst extends BaseMovement {
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     if (count === 0) {
-      return position.getDocumentStart();
+      return position.getDocumentBegin().getFirstLineNonBlankChar();
     }
 
-    return new Position(count - 1, 0);
+    return new Position(count - 1, 0).getFirstLineNonBlankChar();
   }
 }
 
@@ -4462,6 +4520,15 @@ class ActionReplaceCharacter extends BaseCommand {
     let timesToRepeat = vimState.recordedState.count || 1;
     const toReplace = this.keysPressed[1];
 
+    /**
+     * <character> includes <BS>, <SHIFT+BS> and <TAB> but not any control keys,
+     * so we ignore the former two keys and have a special handle for <tab>.
+     */
+
+    if (['<BS>', '<SHIFT+BS>'].indexOf(toReplace.toUpperCase()) >= 0) {
+      return vimState;
+    }
+
     if (position.character + timesToRepeat > position.getLineEnd().character) {
       return vimState;
     }
@@ -4478,14 +4545,25 @@ class ActionReplaceCharacter extends BaseCommand {
       endPos = new Position(endPos.line, endPos.character + 1);
     }
 
-    vimState.recordedState.transformations.push({
-      type    : "replaceText",
-      text    : toReplace.repeat(timesToRepeat),
-      start   : position,
-      end     : endPos,
-      diff    : new PositionDiff(0, timesToRepeat - 1),
-    });
-
+    if (toReplace === '<tab>') {
+      vimState.recordedState.transformations.push({
+        type: "deleteRange",
+        range: new Range(position, endPos)
+      });
+      vimState.recordedState.transformations.push({
+        type: "tab",
+        cursorIndex: this.multicursorIndex,
+        diff: new PositionDiff(0, -1)
+      });
+    } else {
+      vimState.recordedState.transformations.push({
+        type    : "replaceText",
+        text    : toReplace.repeat(timesToRepeat),
+        start   : position,
+        end     : endPos,
+        diff    : new PositionDiff(0, timesToRepeat - 1),
+      });
+    }
     return vimState;
   }
 
@@ -4946,11 +5024,21 @@ class MoveCC extends BaseMovement {
   keys = ["c"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
-    return {
-      start       : position.getLineBeginRespectingIndent(),
-      stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
-      registerMode: RegisterMode.CharacterWise
-    };
+    const lineIsAllWhitespace = TextEditor.getLineAt(position).text.trim() === "";
+
+    if (lineIsAllWhitespace) {
+      return {
+        start       : position.getLineBegin(),
+        stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
+        registerMode: RegisterMode.CharacterWise
+      };
+    } else {
+      return {
+        start       : position.getLineBeginRespectingIndent(),
+        stop        : position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
+        registerMode: RegisterMode.CharacterWise
+      };
+    }
   }
 }
 
@@ -5353,6 +5441,8 @@ class MoveToMatchingBracket extends BaseMovement {
   keys = ["%"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    position = position.getLeftIfEOL();
+
     const text = TextEditor.getLineAt(position).text;
     const charToMatch = text[position.character];
     const toFind = PairMatcher.pairings[charToMatch];
@@ -6380,6 +6470,13 @@ class CommandSurroundModeStartVisual extends BaseCommand {
     if (vimState.cursorStartPosition.line > vimState.cursorPosition.line) {
       [vimState.cursorPosition, vimState.cursorStartPosition] =
         [vimState.cursorStartPosition, vimState.cursorPosition];
+    }
+
+    // Make sure start/end cursor positions are in order
+    if (vimState.cursorPosition.line < vimState.cursorPosition.line ||
+      (vimState.cursorPosition.line === vimState.cursorStartPosition.line
+        && vimState.cursorPosition.character < vimState.cursorStartPosition.character)) {
+      [vimState.cursorPosition, vimState.cursorStartPosition] = [vimState.cursorStartPosition, vimState.cursorPosition];
     }
 
     vimState.surround = {

@@ -159,6 +159,11 @@ Or bind `<leader>w` to save the current file:
   * Have VSCodeVim start in Insert Mode rather than Normal Mode.
   * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
 
+### overrideCopy
+  * Override VSCode's copy command with our own, which works correctly with VSCodeVim.
+  * If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
+  * Type: Boolean (Default: `true`)
+
 #### useSystemClipboard
   * Enable yanking to the system clipboard by default
   * Type: Boolean (Default: `false`)
@@ -277,6 +282,13 @@ Motion Command | Description
 ## Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
+
+## Awesome Features You Might Not Know About
+
+Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest nooks and crannies of Vim. Some of our favorite include:
+
+* `gd` - jump to definition. _Astoundingly_ useful in any language that VSCode provides definition support for. I use this one probably hundreds of times a day.
+* `gq` on a visual selection - Reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
 
 ## Special Shoutouts to Cool Contributors
 
