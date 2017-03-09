@@ -59,7 +59,7 @@ export class SubstituteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  getRegex(args: ISubstituteCommandArguments) {
+  getRegex(args: ISubstituteCommandArguments, modeHandler: ModeHandler) {
     let jsRegexFlags = "";
 
     if (args.flags & SubstituteFlags.ReplaceAll) {
@@ -68,6 +68,15 @@ export class SubstituteCommand extends node.CommandBase {
 
     if (args.flags & SubstituteFlags.IgnoreCase) {
       jsRegexFlags += "i";
+    }
+
+    // If no pattern is entered, use previous search state
+    if (args.pattern === "") {
+      const prevSearchState = modeHandler.vimState.globalState.searchStatePrevious;
+      if (prevSearchState) {
+        const prevSearchString = prevSearchState[prevSearchState.length - 1].searchString;
+        args.pattern = prevSearchString;
+      }
     }
 
     return new RegExp(args.pattern, jsRegexFlags);
@@ -82,8 +91,8 @@ export class SubstituteCommand extends node.CommandBase {
     }
   }
 
-  async execute(): Promise<void> {
-    const regex = this.getRegex(this._arguments);
+  async execute(modeHandler : ModeHandler): Promise<void> {
+    const regex = this.getRegex(this._arguments, modeHandler);
     const selection = vscode.window.activeTextEditor.selection;
     const line = selection.start.isBefore(selection.end) ? selection.start.line : selection.end.line;
 
@@ -110,7 +119,7 @@ export class SubstituteCommand extends node.CommandBase {
     // TODO: Global Setting.
     // TODO: There are differencies between Vim Regex and JS Regex.
 
-    let regex = this.getRegex(this._arguments);
+    let regex = this.getRegex(this._arguments, modeHandler);
     for (let currentLine = startLine.line; currentLine <= endLine.line && currentLine < TextEditor.getLineCount(); currentLine++) {
       await this.replaceTextAtLine(currentLine, regex);
     }
