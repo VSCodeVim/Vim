@@ -33,6 +33,18 @@ class ConfigurationClass {
   private static _instance: ConfigurationClass | null;
 
   constructor() {
+    this.updateConfiguration();
+  }
+
+  public static getInstance(): ConfigurationClass {
+    if (ConfigurationClass._instance == null) {
+      ConfigurationClass._instance = new ConfigurationClass();
+    }
+
+    return ConfigurationClass._instance;
+  }
+
+  updateConfiguration() {
     /**
      * Load Vim options from User Settings.
      */
@@ -45,14 +57,6 @@ class ConfigurationClass {
         this[option] = vimOptionValue;
       }
     }
-  }
-
-  public static getInstance(): ConfigurationClass {
-    if (ConfigurationClass._instance == null) {
-      ConfigurationClass._instance = new ConfigurationClass();
-    }
-
-    return ConfigurationClass._instance;
   }
 
   /**
@@ -69,6 +73,11 @@ class ConfigurationClass {
    * Enable ctrl- actions that would override existing VSCode actions.
    */
   useCtrlKeys = false;
+
+  /**
+   * Override default VSCode copy behavior.
+   */
+  overrideCopy = true;
 
   /**
    * Width in characters to word-wrap to.
@@ -144,28 +153,28 @@ class ConfigurationClass {
   /**
    * Size of a tab character.
    */
-  @overlapSetting({ codeName: "tabSize", default: 8})
-  tabstop: number | undefined = undefined;
+  @overlapSetting({ codeName: "tabSize", default: 8 })
+  tabstop: number;
 
   /**
    * Use spaces when the user presses tab?
    */
-  @overlapSetting({ codeName: "insertSpaces", default: false})
-  expandtab: boolean | undefined = undefined;
+  @overlapSetting({ codeName: "insertSpaces", default: false })
+  expandtab: boolean;
 
-  @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: {true: "on", false: "off"}})
-  number: boolean | undefined = undefined;
+  @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: { true: "on", false: "off" } })
+  number: boolean;
 
   /**
    * Show relative line numbers?
    */
-  @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: {true: "relative", false: "off"}})
-  relativenumber: boolean | undefined = undefined;
+  @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: { true: "relative", false: "off" } })
+  relativenumber: boolean;
 
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 }
 
-function overlapSetting(args: {codeName: string, default: OptionValue, codeValueMapping?: ValueMapping}) {
+function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {
   return function (target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
       get: function () {

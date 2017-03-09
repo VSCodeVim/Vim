@@ -15,7 +15,7 @@ import * as _ from "lodash";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
-import { RecordedState } from './../mode/modeHandler';
+import { RecordedState, VimState } from './../mode/modeHandler';
 
 import DiffMatchPatch = require("diff-match-patch");
 
@@ -92,12 +92,14 @@ class HistoryStep {
    */
   marks: IMark[] = [];
 
+  vimState: VimState;
+
   constructor(init: {
     changes?: DocumentChange[],
     isFinished?: boolean,
     cursorStart?: Position[] | undefined,
     cursorEnd?: Position[] | undefined,
-    marks?: IMark[]
+    marks?: IMark[],
   }) {
     this.changes   = init.changes = [];
     this.isFinished  = init.isFinished || false;
@@ -177,6 +179,8 @@ export class HistoryTracker {
    */
   private oldText: string;
 
+  private vimState: VimState;
+
   private get currentHistoryStep(): HistoryStep {
     if (this.currentHistoryStepIndex === -1) {
       console.log("Tried to modify history at index -1");
@@ -187,8 +191,14 @@ export class HistoryTracker {
     return this.historySteps[this.currentHistoryStepIndex];
   }
 
-  constructor() {
+  constructor(vimState: VimState) {
+    this.vimState = vimState;
+
     this._initialize();
+  }
+
+  public getAllText(): string {
+    return this.vimState.editor.document.getText();
   }
 
   public clear() {
@@ -202,7 +212,7 @@ export class HistoryTracker {
    */
   private _initialize() {
     this.historySteps.push(new HistoryStep({
-      changes  : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
+      changes  : [new DocumentChange(new Position(0, 0), this.getAllText(), true)],
       isFinished : true,
       cursorStart: [ new Position(0, 0) ],
       cursorEnd: [ new Position(0, 0) ]
@@ -210,7 +220,7 @@ export class HistoryTracker {
 
     this.finishCurrentStep();
 
-    this.oldText = TextEditor.getAllText();
+    this.oldText = this.getAllText();
     this.currentContentChanges = [];
     this.lastContentChanges = [];
   }
@@ -349,7 +359,7 @@ export class HistoryTracker {
    * used to look like.
    */
   addChange(cursorPosition = [ new Position(0, 0) ]): void {
-    const newText = TextEditor.getAllText();
+    const newText = this.getAllText();
 
     if (newText === this.oldText) { return; }
 
@@ -439,7 +449,7 @@ export class HistoryTracker {
    * the HistoryTracker.
    */
   ignoreChange(): void {
-    this.oldText = TextEditor.getAllText();
+    this.oldText = this.getAllText();
   }
 
   /**

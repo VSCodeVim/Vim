@@ -5,6 +5,8 @@ import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 
+import * as vscode from 'vscode';
+
 suite("Mode Visual Block", () => {
   let modeHandler: ModeHandler = new ModeHandler();
 
@@ -21,6 +23,8 @@ suite("Mode Visual Block", () => {
   teardown(cleanUpWorkspace);
 
   test("can be activated", async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor;
+
     await modeHandler.handleKeyEvent('<C-v>');
     assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
 

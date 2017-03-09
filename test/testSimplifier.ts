@@ -186,8 +186,9 @@ function tokenizeKeySequence(sequence: string): string[] {
 }
 
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
+  modeHandler.vimState.editor = vscode.window.activeTextEditor;
+
   let helper = new TestObjectHelper(testObj);
-  let editor = vscode.window.activeTextEditor;
 
   // Don't try this at home, kids.
   (modeHandler as any)._vimState.cursorPosition = new Position(0, 0);
@@ -195,7 +196,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   await modeHandler.handleKeyEvent('<Esc>');
 
   // Insert all the text as a single action.
-  await editor.edit(builder => {
+  await modeHandler.vimState.editor.edit(builder => {
     builder.insert(new Position(0, 0), testObj.start.join("\n").replace("|", ""));
   });
 
@@ -205,7 +206,6 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // Since we bypassed VSCodeVim to add text, we need to tell the history tracker
   // that we added it.
-  modeHandler.vimState.historyTracker = new HistoryTracker();
   modeHandler.vimState.historyTracker.addChange();
   modeHandler.vimState.historyTracker.finishCurrentStep();
 

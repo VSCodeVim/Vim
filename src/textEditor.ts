@@ -104,14 +104,6 @@ export class TextEditor {
     vimState.recordedState.transformations.push(trans);
   }
 
-  static getAllText(): string {
-    if (vscode.window.activeTextEditor) {
-      return vscode.window.activeTextEditor.document.getText();
-    }
-
-    return "";
-  }
-
   static readLine(): string {
     const lineNo = vscode.window.activeTextEditor.selection.active.line;
 

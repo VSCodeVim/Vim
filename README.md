@@ -25,9 +25,37 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 Donations help convince me to work on this project rather than my other (non-open-source) projects. I'd love to work on VSCodeVim full time, but I need money to live!
 
+
+## Configuring VSCodeVim
+
+Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension. The following section goes over some supported options in more detail.
+
+```
+{
+    "vim.easymotion": true,
+    "vim.incsearch": true,
+    "vim.useSystemClipboard": true,
+    "vim.useCtrlKeys": true,
+    "vim.hlsearch": true,
+    "vim.insertModeKeyBindings": [
+        {
+            "before": ["j","j"],
+            "after": ["<Esc>"]
+        }
+    ],
+    "vim.otherModesKeyBindingsNonRecursive": [
+        {
+            "before": ["<leader>","d"],
+            "after": ["d", "d"]
+        }
+    ],
+    "vim.leader": "<space>"
+}
+```
+
 ## Supported Options
 
-The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175):
+The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
 
 #### useCtrlKeys
   * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
@@ -130,6 +158,11 @@ Or bind `<leader>w` to save the current file:
 #### startInInsertMode
   * Have VSCodeVim start in Insert Mode rather than Normal Mode.
   * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
+
+### overrideCopy
+  * Override VSCode's copy command with our own, which works correctly with VSCodeVim.
+  * If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
+  * Type: Boolean (Default: `true`)
 
 #### useSystemClipboard
   * Enable yanking to the system clipboard by default
@@ -249,6 +282,13 @@ Motion Command | Description
 ## Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
+
+## Awesome Features You Might Not Know About
+
+Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest nooks and crannies of Vim. Some of our favorite include:
+
+* `gd` - jump to definition. _Astoundingly_ useful in any language that VSCode provides definition support for. I use this one probably hundreds of times a day.
+* `gq` on a visual selection - Reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
 
 ## Special Shoutouts to Cool Contributors
 

@@ -15,6 +15,7 @@ import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
 import { ModeName } from './src/mode/mode';
+import { Configuration } from './src/configuration/configuration'
 
 interface VSCodeKeybinding {
   key: string;
@@ -73,22 +74,29 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
-  if (!modeHandlerToEditorIdentity[activeEditorId.toString()]) {
-    const newModeHandler = new ModeHandler(activeEditorId.fileName);
+  const oldModeHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
+
+  if (!oldModeHandler ||
+      oldModeHandler.vimState.editor !== vscode.window.activeTextEditor) {
+
+    const newModeHandler = new ModeHandler();
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
+
+    if (oldModeHandler) {
+      oldModeHandler.dispose();
+    }
   }
 
   const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
+
+  handler.vimState.editor = vscode.window.activeTextEditor;
 
   if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
     if (!previousActiveEditorId.isEqual(activeEditorId)) {
       // We have opened two editors, working on the same file.
       previousActiveEditorId = activeEditorId;
-
-      handler.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
-      handler.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
     }
   } else {
     previousActiveEditorId = activeEditorId;
@@ -115,6 +123,16 @@ export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   let compositionState = new CompositionState();
 
+  // Event to update active configuration items when changed without restarting vscode
+  vscode.workspace.onDidChangeConfiguration((e: void) => {
+    Configuration.updateConfiguration();
+
+    // Update the remappers foreach modehandler
+    for (let mh in modeHandlerToEditorIdentity) {
+      modeHandlerToEditorIdentity[mh].createRemappers();
+    }
+  })
+
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
   vscode.workspace.onDidChangeTextDocument((event) => {
@@ -138,7 +156,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (Globals.isTesting) {
       contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
     } else {
-      _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.fileName === event.document.fileName)
+      _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.identity.fileName === event.document.fileName)
         .forEach(modeHandler => {
           contentChangeHandler(modeHandler);
         });
@@ -266,7 +284,7 @@ async function handleKeyEvent(key: string): Promise<void> {
 }
 
 function handleContentChangedFromDisk(document : vscode.TextDocument) : void {
-  _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.fileName === document.fileName)
+  _.filter(modeHandlerToEditorIdentity, modeHandler => modeHandler.identity.fileName === document.fileName)
     .forEach(modeHandler => {
       modeHandler.vimState.historyTracker.clear();
     });
