@@ -6,15 +6,16 @@ import { getTestingFunctions, testIt } from '../../testSimplifier';
 import { waitForTabChange } from '../../../src/util';
 
 suite("Motions in Normal Mode", () => {
-  let modeHandler: ModeHandler = new ModeHandler();
+  let modeHandler: ModeHandler;
 
   let {
     newTest,
     newTestOnly,
-  } = getTestingFunctions(modeHandler);
+  } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
+    modeHandler = new ModeHandler();
   });
 
   teardown(cleanUpWorkspace);
