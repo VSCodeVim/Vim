@@ -126,7 +126,7 @@ class HistoryStep {
         // current is eliminated, replace it with top of merged, or adopt next as current
         // see also add+del case
         if (merged.length > 0) {
-          current = merged.pop();
+          current = merged.pop()!;
         } else {
           current = next;
           continue;
@@ -437,7 +437,7 @@ export class HistoryTracker {
     }
 
     for (let i = 0; i < n; i++) {
-      await this.currentHistoryStep.changes.pop().undo();
+      await this.currentHistoryStep.changes.pop()!.undo();
     }
 
     this.ignoreChange();

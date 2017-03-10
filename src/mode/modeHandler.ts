@@ -222,7 +222,7 @@ export class VimState {
   }
 
   public getModeObject(modeHandler: ModeHandler): Mode {
-    return modeHandler.modeList.find(mode => mode.isActive);
+    return modeHandler.modeList.find(mode => mode.isActive)!;
   }
 
   public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
@@ -493,10 +493,7 @@ export class ModeHandler implements vscode.Disposable {
     this.identity = new EditorIdentity(vscode.window.activeTextEditor);
 
     this._vimState.identity = this.identity;
-    this._insertModeRemapper = new InsertModeRemapper(true);
-    this._otherModesRemapper = new OtherModesRemapper(true);
-    this._insertModeNonRecursive = new InsertModeRemapper(false);
-    this._otherModesNonRecursive = new OtherModesRemapper(false);
+    this.createRemappers();
 
     this._modes = [
       new NormalMode(this),
@@ -554,6 +551,16 @@ export class ModeHandler implements vscode.Disposable {
     });
 
     this._toBeDisposed.push(disposer);
+  }
+
+  /**
+   * create remappers after a configuration change
+   */
+  createRemappers() {
+    this._insertModeRemapper = new InsertModeRemapper(true);
+    this._otherModesRemapper = new OtherModesRemapper(true);
+    this._insertModeNonRecursive = new InsertModeRemapper(false);
+    this._otherModesNonRecursive = new OtherModesRemapper(false);
   }
 
   /**
@@ -715,7 +722,7 @@ export class ModeHandler implements vscode.Disposable {
    * The active mode.
    */
   get currentMode(): Mode {
-    return this._modes.find(mode => mode.isActive);
+    return this._modes.find(mode => mode.isActive)!;
   }
 
   setCurrentModeByName(vimState: VimState): void {

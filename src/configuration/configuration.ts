@@ -33,6 +33,18 @@ class ConfigurationClass {
   private static _instance: ConfigurationClass | null;
 
   constructor() {
+    this.updateConfiguration();
+  }
+
+  public static getInstance(): ConfigurationClass {
+    if (ConfigurationClass._instance == null) {
+      ConfigurationClass._instance = new ConfigurationClass();
+    }
+
+    return ConfigurationClass._instance;
+  }
+
+  updateConfiguration() {
     /**
      * Load Vim options from User Settings.
      */
@@ -45,14 +57,6 @@ class ConfigurationClass {
         this[option] = vimOptionValue;
       }
     }
-  }
-
-  public static getInstance(): ConfigurationClass {
-    if (ConfigurationClass._instance == null) {
-      ConfigurationClass._instance = new ConfigurationClass();
-    }
-
-    return ConfigurationClass._instance;
   }
 
   /**
@@ -149,28 +153,28 @@ class ConfigurationClass {
   /**
    * Size of a tab character.
    */
-  @overlapSetting({ codeName: "tabSize", default: 8})
+  @overlapSetting({ codeName: "tabSize", default: 8 })
   tabstop: number;
 
   /**
    * Use spaces when the user presses tab?
    */
-  @overlapSetting({ codeName: "insertSpaces", default: false})
+  @overlapSetting({ codeName: "insertSpaces", default: false })
   expandtab: boolean;
 
-  @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: {true: "on", false: "off"}})
+  @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: { true: "on", false: "off" } })
   number: boolean;
 
   /**
    * Show relative line numbers?
    */
-  @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: {true: "relative", false: "off"}})
+  @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: { true: "relative", false: "off" } })
   relativenumber: boolean;
 
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
 }
 
-function overlapSetting(args: {codeName: string, default: OptionValue, codeValueMapping?: ValueMapping}) {
+function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {
   return function (target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
       get: function () {

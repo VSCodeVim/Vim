@@ -15,6 +15,7 @@ import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
 import { ModeName } from './src/mode/mode';
+import { Configuration } from './src/configuration/configuration'
 
 interface VSCodeKeybinding {
   key: string;
@@ -121,6 +122,16 @@ class CompositionState {
 export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   let compositionState = new CompositionState();
+
+  // Event to update active configuration items when changed without restarting vscode
+  vscode.workspace.onDidChangeConfiguration((e: void) => {
+    Configuration.updateConfiguration();
+
+    // Update the remappers foreach modehandler
+    for (let mh in modeHandlerToEditorIdentity) {
+      modeHandlerToEditorIdentity[mh].createRemappers();
+    }
+  })
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
