@@ -1395,7 +1395,6 @@ export class ModeHandler implements vscode.Disposable {
             }
             this.vimState.recordedState = new RecordedState();
             await this.handleMultipleKeyEvents(keyStrokes);
-            await this.updateView(this.vimState);
           }
 
           vimState.isReplayingMacro = false;

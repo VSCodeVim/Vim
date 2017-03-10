@@ -808,7 +808,7 @@ class CommandExecuteMacro extends BaseCommand {
     vimState.recordedState.transformations.push({
       type: "macro",
       register: register,
-      replay: "keystrokes"
+      replay: "contentChange"
     });
 
     return vimState;
@@ -840,7 +840,7 @@ class CommandExecuteLastMacro extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: "macro",
         register: lastInvokedMacro.registerName,
-        replay: "keystrokes"
+        replay: "contentChange"
       });
     }
 
