@@ -11,14 +11,10 @@ import { Globals } from '../src/globals';
 
 export function getTestingFunctions() {
   const newTest = (testObj: ITestObject): void => {
-    if (!vscode.window.activeTextEditor) {
-      return;
-    }
-    const testWithObject = testIt.bind(null, new ModeHandler());
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
-    test(testObj.title, async () => testWithObject(testObj)
+    test(testObj.title, async () => testIt.bind(null, new ModeHandler())(testObj)
       .catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;
@@ -28,15 +24,10 @@ export function getTestingFunctions() {
 
   const newTestOnly = (testObj: ITestObject): void => {
     console.log("!!! Running single test !!!");
-    if (!vscode.window.activeTextEditor) {
-      return;
-    }
-    const testWithObject = testIt.bind(null, new ModeHandler());
-
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
-    test.only(testObj.title, async () => testWithObject(testObj)
+    test.only(testObj.title, async () => testIt.bind(null, new ModeHandler())(testObj)
       .catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;
