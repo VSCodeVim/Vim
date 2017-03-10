@@ -6,12 +6,12 @@ import { getTestingFunctions } from '../testSimplifier';
 
 suite("put operator", () => {
 
-  let modeHandler: ModeHandler = new ModeHandler();
+  let modeHandler: ModeHandler;
 
   let {
     newTest,
     newTestOnly,
-  } = getTestingFunctions(modeHandler);
+  } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

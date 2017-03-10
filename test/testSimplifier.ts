@@ -9,10 +9,12 @@ import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
 import { Globals } from '../src/globals';
 
-export function getTestingFunctions(modeHandler: ModeHandler) {
-  let testWithObject = testIt.bind(null, modeHandler);
-
+export function getTestingFunctions() {
   const newTest = (testObj: ITestObject): void => {
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
+    const testWithObject = testIt.bind(null, new ModeHandler());
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
@@ -26,6 +28,10 @@ export function getTestingFunctions(modeHandler: ModeHandler) {
 
   const newTestOnly = (testObj: ITestObject): void => {
     console.log("!!! Running single test !!!");
+    if (!vscode.window.activeTextEditor) {
+      return;
+    }
+    const testWithObject = testIt.bind(null, new ModeHandler());
 
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";

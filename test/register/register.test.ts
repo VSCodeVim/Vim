@@ -7,15 +7,16 @@ import { getTestingFunctions } from '../testSimplifier';
 import * as clipboard from 'copy-paste';
 
 suite("register", () => {
-  let modeHandler: ModeHandler = new ModeHandler();
+  let modeHandler: ModeHandler;
 
   let {
       newTest,
       newTestOnly,
-  } = getTestingFunctions(modeHandler);
+  } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
+    modeHandler = new ModeHandler();
   });
 
   suiteTeardown(cleanUpWorkspace);
