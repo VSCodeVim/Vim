@@ -1433,6 +1433,7 @@ class CommandInsertInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
     const searchState = vimState.globalState.searchState!;
+    const prevSearchList = vimState.globalState.searchStatePrevious!;
 
     // handle special keys first
     if (key === "<BS>" || key === "<shift+BS>") {
@@ -1442,7 +1443,6 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
-        const prevSearchList = vimState.globalState.searchStatePrevious!;
         if (prevSearchList.length > 0) {
           searchState.searchString = prevSearchList[prevSearchList.length - 1].searchString;
         }
@@ -1471,40 +1471,29 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       return vimState;
     } else if (key === "<up>") {
-      const prevSearchList = vimState.globalState.searchStatePrevious!;
+      vimState.globalState.searchStateIndex -= 1;
 
-      // Preincrement if on boundary to prevent seeing the same search index twice
-      if (vimState.globalState.searchStateIndex === vimState.globalState.searchStatePrevious.length - 1
-        && searchState.searchString !== "") {
-        vimState.globalState.searchStateIndex -= 1;
-      }
+      // Clamp the history index to stay within bounds of search history length
+      vimState.globalState.searchStateIndex = Math.max(vimState.globalState.searchStateIndex, 0);
 
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
-        vimState.globalState.searchStateIndex -= 1;
       }
     } else if (key === "<down>") {
-      const prevSearchList = vimState.globalState.searchStatePrevious!;
+      vimState.globalState.searchStateIndex += 1;
 
-      // Preincrement if on boundary to prevent seeing the same search index twice
-      if (vimState.globalState.searchStateIndex === 0) {
-        vimState.globalState.searchStateIndex += 1;
+      // If past the first history item, allow user to enter their own search string (not using history)
+      if (vimState.globalState.searchStateIndex > vimState.globalState.searchStatePrevious.length - 1) {
+        searchState.searchString = "";
+        vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
+        return vimState;
       }
 
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
-        vimState.globalState.searchStateIndex += 1;
       }
     } else {
       searchState.searchString += this.keysPressed[0];
-    }
-
-    // Clamp the history index to stay within bounds of search history length
-    if (vimState.globalState.searchStateIndex > vimState.globalState.searchStatePrevious.length - 1) {
-      vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
-    }
-    if (vimState.globalState.searchStateIndex < 0) {
-      vimState.globalState.searchStateIndex = 0;
     }
 
     return vimState;
@@ -1810,7 +1799,7 @@ export class CommandSearchForwards extends BaseCommand {
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
-    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
+    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
     Configuration.hl = true;
 
@@ -1829,7 +1818,7 @@ export class CommandSearchBackwards extends BaseCommand {
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
-    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
+    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
     Configuration.hl = true;
 
