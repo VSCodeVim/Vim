@@ -221,7 +221,7 @@ export class VimState {
   }
 
   public getModeObject(modeHandler: ModeHandler): Mode {
-    return modeHandler.modeList.find(mode => mode.isActive);
+    return modeHandler.modeList.find(mode => mode.isActive)!;
   }
 
   public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
@@ -721,7 +721,7 @@ export class ModeHandler implements vscode.Disposable {
    * The active mode.
    */
   get currentMode(): Mode {
-    return this._modes.find(mode => mode.isActive);
+    return this._modes.find(mode => mode.isActive)!;
   }
 
   setCurrentModeByName(vimState: VimState): void {

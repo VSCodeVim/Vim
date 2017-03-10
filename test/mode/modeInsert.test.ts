@@ -7,12 +7,12 @@ import {ModeHandler} from "../../src/mode/modeHandler";
 import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Insert", () => {
-    let modeHandler: ModeHandler = new ModeHandler();
+    let modeHandler: ModeHandler;
 
     let {
         newTest,
         newTestOnly,
-    } = getTestingFunctions(modeHandler);
+    } = getTestingFunctions();
 
     setup(async () => {
         await setupWorkspace();

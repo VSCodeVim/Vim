@@ -376,13 +376,6 @@ suite("sentence motion", () => {
     "Another sentence inside one paragraph."
   ];
 
-  let modeHandler: ModeHandler = new ModeHandler();
-
-  let {
-    newTest,
-    newTestOnly,
-  } = getTestingFunctions(modeHandler);
-
   suiteSetup(() => {
     return setupWorkspace().then(() => {
       return TextEditor.insert(text.join('\n'));

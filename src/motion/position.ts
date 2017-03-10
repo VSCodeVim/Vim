@@ -745,7 +745,7 @@ export class Position extends vscode.Position {
   }
 
   public static getFirstNonBlankCharAtLine(line: number): number {
-    return TextEditor.readLineAt(line).match(/^\s*/)[0].length;
+    return TextEditor.readLineAt(line).match(/^\s*/)![0].length;
   }
 
   /**

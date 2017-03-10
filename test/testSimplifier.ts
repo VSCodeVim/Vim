@@ -9,14 +9,12 @@ import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
 import { Globals } from '../src/globals';
 
-export function getTestingFunctions(modeHandler: ModeHandler) {
-  let testWithObject = testIt.bind(null, modeHandler);
-
+export function getTestingFunctions() {
   const newTest = (testObj: ITestObject): void => {
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
-    test(testObj.title, async () => testWithObject(testObj)
+    test(testObj.title, async () => testIt.bind(null, new ModeHandler())(testObj)
       .catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;
@@ -26,11 +24,10 @@ export function getTestingFunctions(modeHandler: ModeHandler) {
 
   const newTestOnly = (testObj: ITestObject): void => {
     console.log("!!! Running single test !!!");
-
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
-    test.only(testObj.title, async () => testWithObject(testObj)
+    test.only(testObj.title, async () => testIt.bind(null, new ModeHandler())(testObj)
       .catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;

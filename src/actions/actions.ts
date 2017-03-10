@@ -222,7 +222,7 @@ export class DocumentContentChangeAction extends BaseAction {
       if (newLineCount === 1) {
         newRightBoundary = newStart.with(newStart.line, newStart.character + contentChange.text.length);
       } else {
-        newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop().length);
+          newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop()!.length);
       }
 
       if (newRightBoundary.isAfter(rightBoundary)) {
@@ -1378,7 +1378,7 @@ export class ArrowsInInsertMode extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
     // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
-    vimState.recordedState.actionsRun = [vimState.recordedState.actionsRun.shift(), vimState.recordedState.actionsRun.pop()];
+    vimState.recordedState.actionsRun = [vimState.recordedState.actionsRun.shift()!, vimState.recordedState.actionsRun.pop()!];
     let newPosition: Position = position;
 
     switch (this.keys[0]) {
@@ -2271,7 +2271,12 @@ export class PutCommand extends BaseCommand {
         const currentLineLength = TextEditor.getLineAt(position).text.length;
 
         if (register.registerMode === RegisterMode.LineWise) {
-          const numWhitespace = text.match(/^\s*/)[0].length;
+          const check = text.match(/^\s*/);
+          let numWhitespace = 0;
+
+          if (check) {
+            numWhitespace = check[0].length;
+          }
 
           if (after) {
             diff = PositionDiff.NewBOLDiff(-numNewlines - 1, numWhitespace);
@@ -3491,7 +3496,7 @@ class MoveRepeatReversed extends BaseMovement {
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     const movement = VimState.lastRepeatableMovement;
     if (movement) {
-      const reverse = MoveRepeatReversed.reverseMotionMapping.get(movement.constructor)();
+      const reverse = MoveRepeatReversed.reverseMotionMapping.get(movement.constructor)!();
       reverse.keysPressed = [(reverse.keys as string[])[0], movement.keysPressed[1]];
 
       let result = await reverse.execActionWithCount(position, vimState, count);

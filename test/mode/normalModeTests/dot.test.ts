@@ -8,16 +8,17 @@ import * as assert from 'assert';
 import { getTestingFunctions } from '../../testSimplifier';
 
 suite("Dot Operator", () => {
-    let modeHandler: ModeHandler = new ModeHandler();
+    let modeHandler: ModeHandler;
 
     let {
         newTest,
         newTestOnly
-    } = getTestingFunctions(modeHandler);
+    } = getTestingFunctions();
 
     setup(async () => {
         await setupWorkspace();
         setTextEditorOptions(4, false);
+        modeHandler = new ModeHandler();
     });
 
     teardown(cleanUpWorkspace);
@@ -102,12 +103,10 @@ suite("Dot Operator", () => {
 });
 
 suite("Repeat content change", () => {
-  let modeHandler: ModeHandler = new ModeHandler();
-
   let {
     newTest,
     newTestOnly
-  } = getTestingFunctions(modeHandler);
+  } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

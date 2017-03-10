@@ -28,14 +28,7 @@ gulp.task('typings', function () {
 
 gulp.task('typings-vscode-definitions', ['typings'], function() {
   // add vscode definitions
-  var vscodeTypings = '/// <reference path="vscode/index.d.ts" />\n';
-  var vscodeNodeTypings = '/// <reference path="vscode/node.d.ts" />\n';
-  return gulp.src('./typings/index.d.ts')
-    .pipe(inject.replace(vscodeTypings, ''))
-    .pipe(inject.replace(vscodeNodeTypings, ''))
-    .pipe(inject.prepend(vscodeTypings))
-    .pipe(inject.prepend(vscodeNodeTypings))
-    .pipe(gulp.dest('./typings'));
+  return gulp.src('./typings/index.d.ts').pipe(gulp.dest('./typings'));
 })
 
 gulp.task('tslint', function() {
