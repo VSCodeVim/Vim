@@ -63,7 +63,7 @@ export class EasyMotion {
         totalSteps = Math.floor(totalRemainder / keyTable.length);
 
         for (var i = 0; i < totalSteps; i++) {
-            keyDepthTable.push(availableKeyTable.pop());
+            keyDepthTable.push(availableKeyTable.pop()!);
         }
     }
 

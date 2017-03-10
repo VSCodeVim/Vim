@@ -36,7 +36,7 @@ async function WaitForVsCodeClose() : Promise<void> {
   try {
     await poll;
   } catch (error) {
-    assert.fail(null, null, error.toString());
+    assert.fail(null, null, error.toString(), "");
   }
 }
 
