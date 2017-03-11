@@ -180,11 +180,11 @@ export class DocumentContentChangeAction extends BaseAction {
     }
 
     let rightBoundary: vscode.Position = position;
+    let newStart: vscode.Position | undefined;
+    let newEnd: vscode.Position | undefined;
 
     for (let i = 0; i < this.contentChanges.length; i++) {
       let contentChange = this.contentChanges[i];
-      let newStart: vscode.Position;
-      let newEnd: vscode.Position;
 
       if (contentChange.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
@@ -238,8 +238,17 @@ export class DocumentContentChangeAction extends BaseAction {
       }
     }
 
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+    /**
+     * We're making an assumption here that content changes are always in order, and I'm not sure
+     * we're guaranteed that, but it seems to work well enough in practice.
+     */
+    if (newStart && newEnd) {
+      const last = this.contentChanges[this.contentChanges.length - 1];
+
+      vimState.cursorStartPosition = Position.FromVSCodePosition(newStart).advancePositionByText(last.text);
+      vimState.cursorPosition = Position.FromVSCodePosition(newEnd).advancePositionByText(last.text);
+    }
+
     vimState.currentMode = ModeName.Insert;
     return vimState;
   }
