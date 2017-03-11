@@ -369,7 +369,7 @@ export class RecordedState {
   public get operator(): BaseOperator {
     const list = _.filter(this.actionsRun, a => a instanceof BaseOperator);
 
-    if (list.length > 1) { throw "Too many operators!"; }
+    if (list.length > 1) { throw new Error("Too many operators!"); }
 
     return list[0] as any;
   }
@@ -1531,14 +1531,19 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = new RecordedState();
     vimState.recordedState = recordedState;
     vimState.isRunningDotCommand = true;
-    let i = 0;
 
     for (let action of actions) {
-      recordedState.actionsRun = actions.slice(0, ++i);
+      recordedState.actionsRun.push(action);
       vimState = await this.runAction(vimState, recordedState, action);
 
+      // We just finished a full action; let's clear out our current state.
+      if (vimState.recordedState.actionsRun.length === 0) {
+        recordedState = new RecordedState();
+        vimState.recordedState = recordedState;
+      }
+
       if (vimState.lastMovementFailed) {
-        break;
+        continue;
       }
 
       await this.updateView(vimState);
