@@ -370,6 +370,11 @@ export class Position extends vscode.Position {
       return this.getLeft();
     }
 
+    // First char on first line, can not go left any more
+    if (this.line === 0) {
+      return this;
+    }
+
     if (includeEol) {
       return this.getUp(0).getLineEnd();
     } else {
@@ -740,7 +745,7 @@ export class Position extends vscode.Position {
   }
 
   public static getFirstNonBlankCharAtLine(line: number): number {
-    return TextEditor.readLineAt(line).match(/^\s*/)[0].length;
+    return TextEditor.readLineAt(line).match(/^\s*/)![0].length;
   }
 
   /**

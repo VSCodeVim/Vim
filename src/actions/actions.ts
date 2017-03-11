@@ -180,11 +180,11 @@ export class DocumentContentChangeAction extends BaseAction {
     }
 
     let rightBoundary: vscode.Position = position;
+    let newStart: vscode.Position | undefined;
+    let newEnd: vscode.Position | undefined;
 
     for (let i = 0; i < this.contentChanges.length; i++) {
       let contentChange = this.contentChanges[i];
-      let newStart: vscode.Position;
-      let newEnd: vscode.Position;
 
       if (contentChange.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
@@ -222,7 +222,7 @@ export class DocumentContentChangeAction extends BaseAction {
       if (newLineCount === 1) {
         newRightBoundary = newStart.with(newStart.line, newStart.character + contentChange.text.length);
       } else {
-        newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop().length);
+          newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop()!.length);
       }
 
       if (newRightBoundary.isAfter(rightBoundary)) {
@@ -238,8 +238,17 @@ export class DocumentContentChangeAction extends BaseAction {
       }
     }
 
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+    /**
+     * We're making an assumption here that content changes are always in order, and I'm not sure
+     * we're guaranteed that, but it seems to work well enough in practice.
+     */
+    if (newStart && newEnd) {
+      const last = this.contentChanges[this.contentChanges.length - 1];
+
+      vimState.cursorStartPosition = Position.FromVSCodePosition(newStart).advancePositionByText(last.text);
+      vimState.cursorPosition = Position.FromVSCodePosition(newEnd).advancePositionByText(last.text);
+    }
+
     vimState.currentMode = ModeName.Insert;
     return vimState;
   }
@@ -1378,7 +1387,7 @@ export class ArrowsInInsertMode extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.
     // Please note the arrow key movement can be repeated while using `.` but it can't be repeated when using `<C-A>` in Insert Mode.
-    vimState.recordedState.actionsRun = [vimState.recordedState.actionsRun.shift(), vimState.recordedState.actionsRun.pop()];
+    vimState.recordedState.actionsRun = [vimState.recordedState.actionsRun.shift()!, vimState.recordedState.actionsRun.pop()!];
     let newPosition: Position = position;
 
     switch (this.keys[0]) {
@@ -1433,6 +1442,7 @@ class CommandInsertInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
     const searchState = vimState.globalState.searchState!;
+    const prevSearchList = vimState.globalState.searchStatePrevious!;
 
     // handle special keys first
     if (key === "<BS>" || key === "<shift+BS>") {
@@ -1442,7 +1452,6 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
-        const prevSearchList = vimState.globalState.searchStatePrevious!;
         if (prevSearchList.length > 0) {
           searchState.searchString = prevSearchList[prevSearchList.length - 1].searchString;
         }
@@ -1471,27 +1480,29 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       return vimState;
     } else if (key === "<up>") {
-      const prevSearchList = vimState.globalState.searchStatePrevious!;
+      vimState.globalState.searchStateIndex -= 1;
+
+      // Clamp the history index to stay within bounds of search history length
+      vimState.globalState.searchStateIndex = Math.max(vimState.globalState.searchStateIndex, 0);
+
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
-        vimState.globalState.searchStateIndex -= 1;
       }
     } else if (key === "<down>") {
-      const prevSearchList = vimState.globalState.searchStatePrevious!;
+      vimState.globalState.searchStateIndex += 1;
+
+      // If past the first history item, allow user to enter their own search string (not using history)
+      if (vimState.globalState.searchStateIndex > vimState.globalState.searchStatePrevious.length - 1) {
+        searchState.searchString = "";
+        vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
+        return vimState;
+      }
+
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
-        vimState.globalState.searchStateIndex += 1;
       }
     } else {
       searchState.searchString += this.keysPressed[0];
-    }
-
-    // Clamp the history index to stay within bounds of search history length
-    if (vimState.globalState.searchStateIndex > vimState.globalState.searchStatePrevious.length - 1) {
-      vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
-    }
-    if (vimState.globalState.searchStateIndex < 0) {
-      vimState.globalState.searchStateIndex = 0;
     }
 
     return vimState;
@@ -1797,7 +1808,7 @@ export class CommandSearchForwards extends BaseCommand {
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
-    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
+    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
     Configuration.hl = true;
 
@@ -1816,7 +1827,7 @@ export class CommandSearchBackwards extends BaseCommand {
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
-    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
+    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
     Configuration.hl = true;
 
@@ -2258,7 +2269,12 @@ export class PutCommand extends BaseCommand {
         const currentLineLength = TextEditor.getLineAt(position).text.length;
 
         if (register.registerMode === RegisterMode.LineWise) {
-          const numWhitespace = text.match(/^\s*/)[0].length;
+          const check = text.match(/^\s*/);
+          let numWhitespace = 0;
+
+          if (check) {
+            numWhitespace = check[0].length;
+          }
 
           if (after) {
             diff = PositionDiff.NewBOLDiff(-numNewlines - 1, numWhitespace);
@@ -3007,7 +3023,13 @@ class CommandGoForwardInChangelist extends BaseCommand {
   keys = ["g", ","];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const originalIndex = vimState.historyTracker.changelistIndex;
+    let originalIndex = vimState.historyTracker.changelistIndex;
+
+    // Preincrement if on boundary to prevent seeing the same index twice
+    if (originalIndex === 1) {
+      originalIndex += 1;
+    }
+
     const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
 
     if (nextPos !== undefined) {
@@ -3472,7 +3494,7 @@ class MoveRepeatReversed extends BaseMovement {
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     const movement = VimState.lastRepeatableMovement;
     if (movement) {
-      const reverse = MoveRepeatReversed.reverseMotionMapping.get(movement.constructor)();
+      const reverse = MoveRepeatReversed.reverseMotionMapping.get(movement.constructor)!();
       reverse.keysPressed = [(reverse.keys as string[])[0], movement.keysPressed[1]];
 
       let result = await reverse.execActionWithCount(position, vimState, count);

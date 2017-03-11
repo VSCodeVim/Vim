@@ -15,6 +15,7 @@ import * as _ from "lodash";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
+import { Configuration } from './../configuration/configuration';
 import { RecordedState, VimState } from './../mode/modeHandler';
 
 import DiffMatchPatch = require("diff-match-patch");
@@ -126,7 +127,7 @@ class HistoryStep {
         // current is eliminated, replace it with top of merged, or adopt next as current
         // see also add+del case
         if (merged.length > 0) {
-          current = merged.pop();
+          current = merged.pop()!;
         } else {
           current = next;
           continue;
@@ -409,6 +410,11 @@ export class HistoryTracker {
 
         this.currentHistoryStep.changes.push(change);
 
+        // Make sure history length does not exceed configuration option
+        if (this.currentHistoryStep.changes.length > Configuration.history) {
+          this.currentHistoryStep.changes.splice(0, 1);
+        }
+
         if (change && this.currentHistoryStep.cursorStart === undefined) {
           this.currentHistoryStep.cursorStart = cursorPosition;
         }
@@ -437,7 +443,7 @@ export class HistoryTracker {
     }
 
     for (let i = 0; i < n; i++) {
-      await this.currentHistoryStep.changes.pop().undo();
+      await this.currentHistoryStep.changes.pop()!.undo();
     }
 
     this.ignoreChange();

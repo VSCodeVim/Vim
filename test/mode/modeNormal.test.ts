@@ -6,16 +6,16 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Normal", () => {
-    let modeHandler: ModeHandler = new ModeHandler();
-
+    let modeHandler: ModeHandler;
     let {
         newTest,
         newTestOnly,
-    } = getTestingFunctions(modeHandler);
+    } = getTestingFunctions();
 
     setup(async () => {
         await setupWorkspace();
         setTextEditorOptions(4, false);
+        modeHandler = new ModeHandler();
     });
 
     teardown(cleanUpWorkspace);

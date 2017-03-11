@@ -275,7 +275,7 @@ export class Register {
         Register.registers['0'].text = content;
         Register.registers['0'].registerMode = vimState.effectiveRegisterMode();
       }
-    } else if (baseOperator instanceof DeleteOperator) {
+    } else if (baseOperator instanceof DeleteOperator && !(vimState.isRecordingMacro || vimState.isReplayingMacro)) {
       // shift 'delete-history' register
       for (let index = 9; index > 1; index--) {
         Register.registers[String(index)].text = Register.registers[String(index - 1)].text;

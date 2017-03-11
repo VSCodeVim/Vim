@@ -57,7 +57,7 @@ export class WriteCommand extends node.CommandBase {
     }
 
     try {
-      fs.accessSync(this.activeTextEditor.document.fileName, fs.W_OK);
+      fs.accessSync(this.activeTextEditor.document.fileName, fs.constants.W_OK);
       return this.save(modeHandler);
     } catch (accessErr) {
       if (this.arguments.bang) {
