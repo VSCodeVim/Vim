@@ -1543,7 +1543,7 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (vimState.lastMovementFailed) {
-        continue;
+        break;
       }
 
       await this.updateView(vimState);
