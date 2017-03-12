@@ -811,6 +811,7 @@ class CommandExecuteMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["@", "<character>"];
   runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
@@ -841,6 +842,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["@", "@"];
   runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
@@ -5493,6 +5495,17 @@ class MoveToMatchingBracket extends BaseMovement {
     } else {
       return result.getRight();
     }
+  }
+
+  // % has a special mode that lets you use it to jump to a percentage of the file
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    // Check to make sure this is a valid percentage
+    if (count < 0 || count > 100) {
+      return { start: position, stop: position, failed: true };
+    }
+
+    const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
+    return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
   }
 }
 
