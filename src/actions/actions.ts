@@ -164,7 +164,10 @@ export class BaseAction {
 }
 
 export class DocumentContentChangeAction extends BaseAction {
-  contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
+  contentChanges: {
+    positionDiff: PositionDiff;
+    textDiff: vscode.TextDocumentContentChangeEvent;
+  }[] = [];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (this.contentChanges.length === 0) {
@@ -173,10 +176,10 @@ export class DocumentContentChangeAction extends BaseAction {
 
     let originalLeftBoundary: vscode.Position;
 
-    if (this.contentChanges[0].text === "" && this.contentChanges[0].rangeLength === 1) {
-      originalLeftBoundary = this.contentChanges[0].range.end;
+    if (this.contentChanges[0].textDiff.text === "" && this.contentChanges[0].textDiff.rangeLength === 1) {
+      originalLeftBoundary = this.contentChanges[0].textDiff.range.end;
     } else {
-      originalLeftBoundary = this.contentChanges[0].range.start;
+      originalLeftBoundary = this.contentChanges[0].textDiff.range.start;
     }
 
     let rightBoundary: vscode.Position = position;
@@ -184,7 +187,7 @@ export class DocumentContentChangeAction extends BaseAction {
     let newEnd: vscode.Position | undefined;
 
     for (let i = 0; i < this.contentChanges.length; i++) {
-      let contentChange = this.contentChanges[i];
+      let contentChange = this.contentChanges[i].textDiff;
 
       if (contentChange.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
@@ -222,7 +225,7 @@ export class DocumentContentChangeAction extends BaseAction {
       if (newLineCount === 1) {
         newRightBoundary = newStart.with(newStart.line, newStart.character + contentChange.text.length);
       } else {
-          newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop()!.length);
+        newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop()!.length);
       }
 
       if (newRightBoundary.isAfter(rightBoundary)) {
@@ -245,8 +248,12 @@ export class DocumentContentChangeAction extends BaseAction {
     if (newStart && newEnd) {
       const last = this.contentChanges[this.contentChanges.length - 1];
 
-      vimState.cursorStartPosition = Position.FromVSCodePosition(newStart).advancePositionByText(last.text);
-      vimState.cursorPosition = Position.FromVSCodePosition(newEnd).advancePositionByText(last.text);
+      vimState.cursorStartPosition = Position.FromVSCodePosition(newStart)
+        .advancePositionByText(last.textDiff.text)
+        .add(last.positionDiff);
+      vimState.cursorPosition = Position.FromVSCodePosition(newEnd)
+        .advancePositionByText(last.textDiff.text)
+        .add(last.positionDiff);
     }
 
     vimState.currentMode = ModeName.Insert;
