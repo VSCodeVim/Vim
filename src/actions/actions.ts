@@ -940,7 +940,7 @@ class CommandEscInsertMode extends BaseCommand {
     // only remove leading spaces inserted by vscode.
     // vscode only inserts them when user enter a new line,
     // ie, o/O in Normal mode or \n in Insert mode.
-    const lastActionBeforeEsc = vimState.currentFullAction[vimState.currentFullAction.length - 2];
+    const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
     if (['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
         vscode.window.activeTextEditor.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(position).text)) {

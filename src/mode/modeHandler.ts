@@ -130,9 +130,9 @@ export class VimState {
   public isCurrentlyPerformingRemapping = false;
 
   /**
-   * The current full action we are building up.
+   * All the keys we've pressed so far.
    */
-  public currentFullAction: string[] = [];
+  public keyHistory: string[] = [];
 
   public globalState: GlobalState = new GlobalState;
 
@@ -814,7 +814,7 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     recordedState.actionKeys.push(key);
-    vimState.currentFullAction.push(key);
+    vimState.keyHistory.push(key);
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
@@ -1534,6 +1534,8 @@ export class ModeHandler implements vscode.Disposable {
 
     for (let action of actions) {
       recordedState.actionsRun.push(action);
+      vimState.keyHistory = vimState.keyHistory.concat(action.keysPressed);
+
       vimState = await this.runAction(vimState, recordedState, action);
 
       // We just finished a full action; let's clear out our current state.
