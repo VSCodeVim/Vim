@@ -224,8 +224,6 @@ Vim options are loaded in the following sequence:
 3. VSCode configuration
 4. VSCodeVim default values
 
-**Note:** changes to the user/workspace settings require a restart of VS Code to take effect.
-
 ## Multi-Cursor Mode
 
 Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
