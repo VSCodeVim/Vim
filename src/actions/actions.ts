@@ -842,6 +842,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["@", "@"];
   runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
