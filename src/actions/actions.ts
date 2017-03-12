@@ -5494,6 +5494,17 @@ class MoveToMatchingBracket extends BaseMovement {
       return result.getRight();
     }
   }
+
+  // % has a special mode that lets you use it to jump to a percentage of the file
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    // Check to make sure this is a valid percentage
+    if (count < 0 || count > 100) {
+      return { start: position, stop: position, failed: true };
+    }
+
+    const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
+    return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
+  }
 }
 
 abstract class MoveInsideCharacter extends BaseMovement {
