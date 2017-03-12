@@ -5506,6 +5506,14 @@ class MoveToMatchingBracket extends BaseMovement {
 
   // % has a special mode that lets you use it to jump to a percentage of the file
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    if (count === 0) {
+      if (vimState.recordedState.operator) {
+        return this.execActionForOperator(position, vimState);
+      } else {
+        return this.execAction(position, vimState);
+      }
+    }
+
     // Check to make sure this is a valid percentage
     if (count < 0 || count > 100) {
       return { start: position, stop: position, failed: true };
