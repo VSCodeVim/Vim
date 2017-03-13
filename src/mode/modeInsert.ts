@@ -5,7 +5,7 @@ import { VSCodeVimCursorType } from './mode';
 
 export class InsertMode extends Mode {
   public text = "Insert Mode";
-  public cursorType = VSCodeVimCursorType.Native;
+  public cursorType = VSCodeVimCursorType.Line;
 
    constructor() {
     super(ModeName.Insert);

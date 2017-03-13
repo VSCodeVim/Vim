@@ -1694,11 +1694,17 @@ export class ModeHandler implements vscode.Disposable {
         .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
     }
 
-    // Use native block cursor if possible.
-    let cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-      this.currentMode.name !== ModeName.VisualBlockInsertMode &&
-      this.currentMode.name !== ModeName.Insert ?
-      vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+    // Use native cursor if possible. Default to Block.
+    let cursorStyle = vscode.TextEditorCursorStyle.Block;
+    switch (this.currentMode.cursorType) {
+      case VSCodeVimCursorType.TextDecoration:
+      case VSCodeVimCursorType.Line:
+        cursorStyle = vscode.TextEditorCursorStyle.Line;
+        break;
+      case VSCodeVimCursorType.Underline:
+        cursorStyle = vscode.TextEditorCursorStyle.Underline;
+        break;
+    }
 
     let options = vscode.window.activeTextEditor.options;
     options.cursorStyle = cursorStyle;
