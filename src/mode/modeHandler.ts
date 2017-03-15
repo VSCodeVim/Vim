@@ -759,7 +759,8 @@ export class ModeHandler implements vscode.Disposable {
     this._vimState.recordedState.commandList.push(key);
 
     try {
-      const keys = this._vimState.recordedState.commandList;
+      // Take the count prefix out to perform the correct remapping.
+      const keys = this.getCurrentCommandWithoutCountPrefix();
       const withinTimeout = now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout;
 
       let handled = false;
@@ -801,6 +802,21 @@ export class ModeHandler implements vscode.Disposable {
     this._renderStatusBar();
 
     return true;
+  }
+
+/**
+ * get the current command without the prefixed count.
+ * For instance: if the current commandList is ['2', 'h'], returns only ['h'].
+ */
+  private getCurrentCommandWithoutCountPrefix(): string[] {
+    const commandList = this.vimState.recordedState.commandList;
+    const firstNonCountCommand = commandList.findIndex(this.isNotCount);
+
+    return commandList.slice(firstNonCountCommand);
+  }
+
+  private isNotCount(key: string) {
+    return isNaN(Number(key));
   }
 
   async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
