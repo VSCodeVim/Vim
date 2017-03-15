@@ -17,7 +17,8 @@ export enum VSCodeVimCursorType {
   Block,
   Line,
   Underline,
-  TextDecoration
+  TextDecoration,
+  Native
 }
 
 export abstract class Mode {

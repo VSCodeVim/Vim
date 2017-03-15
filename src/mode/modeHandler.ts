@@ -1703,7 +1703,6 @@ export class ModeHandler implements vscode.Disposable {
     let cursorRange: vscode.Range[] = [];
 
     // Draw block cursor.
-
     if (Configuration.useSolidBlockCursor) {
       await vscode.workspace
         .getConfiguration("editor")
@@ -1720,6 +1719,9 @@ export class ModeHandler implements vscode.Disposable {
       case VSCodeVimCursorType.Underline:
         cursorStyle = vscode.TextEditorCursorStyle.Underline;
         break;
+      case VSCodeVimCursorType.Native:
+        cursorStyle = Configuration.userCursor;
+        break;
     }
 
     let options = vscode.window.activeTextEditor.options;
@@ -1729,20 +1731,7 @@ export class ModeHandler implements vscode.Disposable {
     // TODO xconverge: temporary workaround for vscode bug not changing cursor style properly
     // https://github.com/Microsoft/vscode/issues/17472
     // https://github.com/Microsoft/vscode/issues/17513
-    switch (options.cursorStyle) {
-      case vscode.TextEditorCursorStyle.Block:
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        break;
-      case vscode.TextEditorCursorStyle.Line:
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        break;
-      case vscode.TextEditorCursorStyle.Underline:
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Underline;
-        break;
-    }
+    this.toggleCursorStyle(options.cursorStyle);
 
     if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
       this.currentMode.name !== ModeName.Insert) {
@@ -1813,6 +1802,21 @@ export class ModeHandler implements vscode.Disposable {
     vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
     vscode.commands.executeCommand('setContext', 'vim.overrideCtrlC', Configuration.overrideCopy || Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
+  }
+
+  /** Temporary workaround for vscode bug not changing cursor style properly
+   *  https://github.com/Microsoft/vscode/issues/17472
+   *  https://github.com/Microsoft/vscode/issues/17513
+   */
+  private toggleCursorStyle(desiredStyle: vscode.TextEditorCursorStyle) {
+    // Temporarily change to any other cursor style besides the desired type, then change back
+    if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
+      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+      vscode.window.activeTextEditor.options.cursorStyle = desiredStyle;
+    } else {
+      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+      vscode.window.activeTextEditor.options.cursorStyle = desiredStyle;
+    }
   }
 
   private _renderStatusBar(): void {

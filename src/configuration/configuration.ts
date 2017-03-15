@@ -57,6 +57,21 @@ class ConfigurationClass {
         this[option] = vimOptionValue;
       }
     }
+
+    // Get the cursor type from vscode
+    const cursorStyleString = vscode.workspace.getConfiguration().get("editor.cursorStyle") as string;
+    this.userCursor = this.cursorStyleFromString(cursorStyleString);
+  }
+
+  private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle {
+    if (cursorStyle === 'line') {
+      return vscode.TextEditorCursorStyle.Line;
+    } else if (cursorStyle === 'block') {
+      return vscode.TextEditorCursorStyle.Block;
+    } else if (cursorStyle === 'underline') {
+      return vscode.TextEditorCursorStyle.Underline;
+    }
+    return vscode.TextEditorCursorStyle.Line;
   }
 
   /**
@@ -155,6 +170,11 @@ class ConfigurationClass {
    */
   @overlapSetting({ codeName: "tabSize", default: 8 })
   tabstop: number;
+
+  /**
+   * Type of cursor user is using native to vscode
+   */
+  userCursor: number;
 
   /**
    * Use spaces when the user presses tab?
