@@ -1694,11 +1694,17 @@ export class ModeHandler implements vscode.Disposable {
         .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
     }
 
-    // Use native block cursor if possible.
-    let cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-      this.currentMode.name !== ModeName.VisualBlockInsertMode &&
-      this.currentMode.name !== ModeName.Insert ?
-      vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+    // Use native cursor if possible. Default to Block.
+    let cursorStyle = vscode.TextEditorCursorStyle.Block;
+    switch (this.currentMode.cursorType) {
+      case VSCodeVimCursorType.TextDecoration:
+      case VSCodeVimCursorType.Line:
+        cursorStyle = vscode.TextEditorCursorStyle.Line;
+        break;
+      case VSCodeVimCursorType.Underline:
+        cursorStyle = vscode.TextEditorCursorStyle.Underline;
+        break;
+    }
 
     let options = vscode.window.activeTextEditor.options;
     options.cursorStyle = cursorStyle;
@@ -1707,12 +1713,19 @@ export class ModeHandler implements vscode.Disposable {
     // TODO xconverge: temporary workaround for vscode bug not changing cursor style properly
     // https://github.com/Microsoft/vscode/issues/17472
     // https://github.com/Microsoft/vscode/issues/17513
-    if (options.cursorStyle === vscode.TextEditorCursorStyle.Block) {
-      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-    } else if (options.cursorStyle === vscode.TextEditorCursorStyle.Line) {
-      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+    switch (options.cursorStyle) {
+      case vscode.TextEditorCursorStyle.Block:
+        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+        break;
+      case vscode.TextEditorCursorStyle.Line:
+        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+        break;
+      case vscode.TextEditorCursorStyle.Underline:
+        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Underline;
+        break;
     }
 
     if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
