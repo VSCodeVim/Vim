@@ -5,7 +5,7 @@ import { VSCodeVimCursorType } from './mode';
 
 export class InsertVisualBlockMode extends Mode {
   public text = "Visual Block Insert Mode";
-  public cursorType = VSCodeVimCursorType.Native;
+  public cursorType = VSCodeVimCursorType.Line;
   public isVisualMode = true;
 
   constructor() {

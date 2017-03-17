@@ -766,7 +766,8 @@ export class ModeHandler implements vscode.Disposable {
     this._vimState.recordedState.commandList.push(key);
 
     try {
-      const keys = this._vimState.recordedState.commandList;
+      // Take the count prefix out to perform the correct remapping.
+      const keys = this.getCurrentCommandWithoutCountPrefix();
       const withinTimeout = now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout;
 
       let handled = false;
@@ -808,6 +809,21 @@ export class ModeHandler implements vscode.Disposable {
     this._renderStatusBar();
 
     return true;
+  }
+
+/**
+ * get the current command without the prefixed count.
+ * For instance: if the current commandList is ['2', 'h'], returns only ['h'].
+ */
+  private getCurrentCommandWithoutCountPrefix(): string[] {
+    const commandList = this.vimState.recordedState.commandList;
+    const firstNonCountCommand = commandList.findIndex(this.isNotCount);
+
+    return commandList.slice(firstNonCountCommand);
+  }
+
+  private isNotCount(key: string) {
+    return isNaN(Number(key));
   }
 
   async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
@@ -1701,11 +1717,17 @@ export class ModeHandler implements vscode.Disposable {
         .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
     }
 
-    // Use native block cursor if possible.
-    let cursorStyle = this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-      this.currentMode.name !== ModeName.VisualBlockInsertMode &&
-      this.currentMode.name !== ModeName.Insert ?
-      vscode.TextEditorCursorStyle.Block : vscode.TextEditorCursorStyle.Line;
+    // Use native cursor if possible. Default to Block.
+    let cursorStyle = vscode.TextEditorCursorStyle.Block;
+    switch (this.currentMode.cursorType) {
+      case VSCodeVimCursorType.TextDecoration:
+      case VSCodeVimCursorType.Line:
+        cursorStyle = vscode.TextEditorCursorStyle.Line;
+        break;
+      case VSCodeVimCursorType.Underline:
+        cursorStyle = vscode.TextEditorCursorStyle.Underline;
+        break;
+    }
 
     let options = this._vimState.editor.options;
     options.cursorStyle = cursorStyle;
@@ -1715,12 +1737,19 @@ export class ModeHandler implements vscode.Disposable {
     // https://github.com/Microsoft/vscode/issues/17472
     // https://github.com/Microsoft/vscode/issues/17513
     if (this._vimState.lastCursorTypeSet !== options.cursorStyle) {
-      if (options.cursorStyle === vscode.TextEditorCursorStyle.Block) {
-        this._vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        this._vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-      } else if (options.cursorStyle === vscode.TextEditorCursorStyle.Line) {
-        this._vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        this._vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+      switch (options.cursorStyle) {
+        case vscode.TextEditorCursorStyle.Block:
+          vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+          vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+          break;
+        case vscode.TextEditorCursorStyle.Line:
+          vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+          vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+          break;
+        case vscode.TextEditorCursorStyle.Underline:
+          vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+          vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Underline;
+          break;
       }
 
       this._vimState.lastCursorTypeSet = options.cursorStyle;

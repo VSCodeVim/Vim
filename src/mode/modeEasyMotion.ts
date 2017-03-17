@@ -5,7 +5,7 @@ import { VSCodeVimCursorType } from './mode';
 
 export class EasyMotionMode extends Mode {
   public text = "EasyMotion Mode";
-  public cursorType = VSCodeVimCursorType.Native;
+  public cursorType = VSCodeVimCursorType.Block;
 
    constructor() {
     super(ModeName.EasyMotionMode);
