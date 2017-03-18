@@ -3146,6 +3146,44 @@ class CommandInsertNewLineBefore extends BaseCommand {
 }
 
 @RegisterAction
+class CommandNavigateBack extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<C-o>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vscode.window.activeTextEditor;
+
+    await vscode.commands.executeCommand('workbench.action.navigateBack');
+
+    if (oldActiveEditor === vscode.window.activeTextEditor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandNavigateForward extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<C-i>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vscode.window.activeTextEditor;
+
+    await vscode.commands.executeCommand('workbench.action.navigateForward');
+
+    if (oldActiveEditor === vscode.window.activeTextEditor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class MoveLeft extends BaseMovement {
   keys = ["h"];
 

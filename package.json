@@ -162,6 +162,16 @@
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
             },
             {
+                "key": "ctrl+o",
+                "command": "extension.vim_ctrl+o",
+                "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+i",
+                "command": "extension.vim_ctrl+i",
+                "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
+            },
+            {
                 "key": "ctrl+v",
                 "command": "extension.vim_ctrl+v",
                 "when": "editorTextFocus && vim.mode != 'Insert' && vim.useCtrlKeys && !inDebugRepl"
@@ -194,11 +204,6 @@
             {
                 "key": "ctrl+a",
                 "command": "extension.vim_ctrl+a",
-                "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
-            },
-            {
-                "key": "ctrl+o",
-                "command": "extension.vim_ctrl+o",
                 "when": "editorTextFocus && vim.useCtrlKeys && !inDebugRepl"
             },
             {
