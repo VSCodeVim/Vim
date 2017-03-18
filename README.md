@@ -250,9 +250,9 @@ Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Norma
 
 On OS X, open Terminal and run the following command:
 
-```
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         // For VS Code
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VS Code Insider
+```sh
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
 ```
 
 #### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
