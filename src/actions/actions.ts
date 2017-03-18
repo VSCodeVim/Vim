@@ -5560,23 +5560,28 @@ class MoveToMatchingBracket extends BaseMovement {
     }
   }
 
-  // % has a special mode that lets you use it to jump to a percentage of the file
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    if (count === 0) {
-      if (vimState.recordedState.operator) {
-        return this.execActionForOperator(position, vimState);
-      } else {
-        return this.execAction(position, vimState);
+    // % has a special mode that lets you use it to jump to a percentage of the file
+    // However, some other bracket motions inherit from this so only do this behavior for % explicitly
+    if (Object.getPrototypeOf(this) === MoveToMatchingBracket.prototype) {
+      if (count === 0) {
+        if (vimState.recordedState.operator) {
+          return this.execActionForOperator(position, vimState);
+        } else {
+          return this.execAction(position, vimState);
+        }
       }
-    }
 
-    // Check to make sure this is a valid percentage
-    if (count < 0 || count > 100) {
-      return { start: position, stop: position, failed: true };
-    }
+      // Check to make sure this is a valid percentage
+      if (count < 0 || count > 100) {
+        return { start: position, stop: position, failed: true };
+      }
 
-    const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
-    return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
+      const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
+      return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
+    } else {
+      return super.execActionWithCount(position, vimState, count);
+    }
   }
 }
 
