@@ -14,12 +14,15 @@ export interface IEnqueuedTask {
  */
 class TaskQueue {
   private _taskQueue: {
-    [key: string]: IEnqueuedTask[]
+    [key: string]: {
+      tasks: IEnqueuedTask[];
+      highPriorityCount: number;
+    }
   } = {};
 
   private async _runTasks(queueName: string): Promise<void> {
-    while (this._taskQueue[queueName].length > 0) {
-      let task: IEnqueuedTask = this._taskQueue[queueName][0];
+    while (this._taskQueue[queueName].tasks.length > 0) {
+      let task: IEnqueuedTask = this._taskQueue[queueName].tasks[0];
 
       try {
         task.isRunning = true;
@@ -30,6 +33,10 @@ class TaskQueue {
         console.log(e.stack);
       } finally {
         this.removeTask(task);
+
+        if (task.highPriority) {
+          this._taskQueue[queueName].highPriorityCount--;
+        }
       }
     }
   }
@@ -39,7 +46,7 @@ class TaskQueue {
 
     for (const list in this._taskQueue) {
       if (this._taskQueue.hasOwnProperty(list)) {
-        result += this._taskQueue[list].length;
+        result += this._taskQueue[list].tasks.length;
       }
     }
 
@@ -54,7 +61,7 @@ class TaskQueue {
    */
   public removeTask(task: IEnqueuedTask): void {
     let queueName = task.queue || "default";
-    this._taskQueue[queueName].splice(_.findIndex(this._taskQueue[queueName], t => t === task), 1);
+    this._taskQueue[queueName].tasks.splice(_.findIndex(this._taskQueue[queueName].tasks, t => t === task), 1);
   }
 
   /**
@@ -62,16 +69,24 @@ class TaskQueue {
    */
   public enqueueTask(task: IEnqueuedTask): void {
     let queueName = task.queue || "default";
-    let otherTaskRunning = _.filter(this._taskQueue[queueName], x => x.isRunning).length > 0;
+    let otherTaskRunning = this._taskQueue[queueName] && _.filter(this._taskQueue[queueName].tasks, x => x.isRunning).length > 0;
 
     if (this._taskQueue[queueName]) {
       if (task.highPriority) {
-        this._taskQueue[queueName].unshift(task);
+        // Insert task as the last high priotity task.
+
+        const numHighPriority = this._taskQueue[queueName].highPriorityCount;
+
+        this._taskQueue[queueName].tasks.splice(numHighPriority, 0, task);
+        this._taskQueue[queueName].highPriorityCount++;
       } else {
-        this._taskQueue[queueName].push(task);
+        this._taskQueue[queueName].tasks.push(task);
       }
     } else {
-      this._taskQueue[queueName] = [task];
+      this._taskQueue[queueName] = {
+        tasks: [task],
+        highPriorityCount: 0,
+      };
     }
 
     if (!otherTaskRunning) {

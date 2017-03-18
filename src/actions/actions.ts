@@ -164,7 +164,10 @@ export class BaseAction {
 }
 
 export class DocumentContentChangeAction extends BaseAction {
-  contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
+  contentChanges: {
+    positionDiff: PositionDiff;
+    textDiff: vscode.TextDocumentContentChangeEvent;
+  }[] = [];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (this.contentChanges.length === 0) {
@@ -173,18 +176,18 @@ export class DocumentContentChangeAction extends BaseAction {
 
     let originalLeftBoundary: vscode.Position;
 
-    if (this.contentChanges[0].text === "" && this.contentChanges[0].rangeLength === 1) {
-      originalLeftBoundary = this.contentChanges[0].range.end;
+    if (this.contentChanges[0].textDiff.text === "" && this.contentChanges[0].textDiff.rangeLength === 1) {
+      originalLeftBoundary = this.contentChanges[0].textDiff.range.end;
     } else {
-      originalLeftBoundary = this.contentChanges[0].range.start;
+      originalLeftBoundary = this.contentChanges[0].textDiff.range.start;
     }
 
     let rightBoundary: vscode.Position = position;
+    let newStart: vscode.Position | undefined;
+    let newEnd: vscode.Position | undefined;
 
     for (let i = 0; i < this.contentChanges.length; i++) {
-      let contentChange = this.contentChanges[i];
-      let newStart: vscode.Position;
-      let newEnd: vscode.Position;
+      let contentChange = this.contentChanges[i].textDiff;
 
       if (contentChange.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
@@ -222,7 +225,7 @@ export class DocumentContentChangeAction extends BaseAction {
       if (newLineCount === 1) {
         newRightBoundary = newStart.with(newStart.line, newStart.character + contentChange.text.length);
       } else {
-          newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop()!.length);
+        newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop()!.length);
       }
 
       if (newRightBoundary.isAfter(rightBoundary)) {
@@ -238,8 +241,21 @@ export class DocumentContentChangeAction extends BaseAction {
       }
     }
 
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+    /**
+     * We're making an assumption here that content changes are always in order, and I'm not sure
+     * we're guaranteed that, but it seems to work well enough in practice.
+     */
+    if (newStart && newEnd) {
+      const last = this.contentChanges[this.contentChanges.length - 1];
+
+      vimState.cursorStartPosition = Position.FromVSCodePosition(newStart)
+        .advancePositionByText(last.textDiff.text)
+        .add(last.positionDiff);
+      vimState.cursorPosition = Position.FromVSCodePosition(newEnd)
+        .advancePositionByText(last.textDiff.text)
+        .add(last.positionDiff);
+    }
+
     vimState.currentMode = ModeName.Insert;
     return vimState;
   }
@@ -802,6 +818,7 @@ class CommandExecuteMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["@", "<character>"];
   runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
@@ -832,6 +849,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["@", "@"];
   runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
@@ -931,7 +949,7 @@ class CommandEscInsertMode extends BaseCommand {
     // only remove leading spaces inserted by vscode.
     // vscode only inserts them when user enter a new line,
     // ie, o/O in Normal mode or \n in Insert mode.
-    const lastActionBeforeEsc = vimState.currentFullAction[vimState.currentFullAction.length - 2];
+    const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
     if (['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
         vscode.window.activeTextEditor.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(position).text)) {
@@ -1433,6 +1451,7 @@ class CommandInsertInSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
     const searchState = vimState.globalState.searchState!;
+    const prevSearchList = vimState.globalState.searchStatePrevious!;
 
     // handle special keys first
     if (key === "<BS>" || key === "<shift+BS>") {
@@ -1442,7 +1461,6 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
-        const prevSearchList = vimState.globalState.searchStatePrevious!;
         if (prevSearchList.length > 0) {
           searchState.searchString = prevSearchList[prevSearchList.length - 1].searchString;
         }
@@ -1471,27 +1489,29 @@ class CommandInsertInSearchMode extends BaseCommand {
 
       return vimState;
     } else if (key === "<up>") {
-      const prevSearchList = vimState.globalState.searchStatePrevious!;
+      vimState.globalState.searchStateIndex -= 1;
+
+      // Clamp the history index to stay within bounds of search history length
+      vimState.globalState.searchStateIndex = Math.max(vimState.globalState.searchStateIndex, 0);
+
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
-        vimState.globalState.searchStateIndex -= 1;
       }
     } else if (key === "<down>") {
-      const prevSearchList = vimState.globalState.searchStatePrevious!;
+      vimState.globalState.searchStateIndex += 1;
+
+      // If past the first history item, allow user to enter their own search string (not using history)
+      if (vimState.globalState.searchStateIndex > vimState.globalState.searchStatePrevious.length - 1) {
+        searchState.searchString = "";
+        vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
+        return vimState;
+      }
+
       if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
         searchState.searchString = prevSearchList[vimState.globalState.searchStateIndex].searchString;
-        vimState.globalState.searchStateIndex += 1;
       }
     } else {
       searchState.searchString += this.keysPressed[0];
-    }
-
-    // Clamp the history index to stay within bounds of search history length
-    if (vimState.globalState.searchStateIndex > vimState.globalState.searchStatePrevious.length - 1) {
-      vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
-    }
-    if (vimState.globalState.searchStateIndex < 0) {
-      vimState.globalState.searchStateIndex = 0;
     }
 
     return vimState;
@@ -1797,7 +1817,7 @@ export class CommandSearchForwards extends BaseCommand {
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
-    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
+    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
     Configuration.hl = true;
 
@@ -1816,7 +1836,7 @@ export class CommandSearchBackwards extends BaseCommand {
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
-    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
+    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
     Configuration.hl = true;
 
@@ -3012,7 +3032,13 @@ class CommandGoForwardInChangelist extends BaseCommand {
   keys = ["g", ","];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const originalIndex = vimState.historyTracker.changelistIndex;
+    let originalIndex = vimState.historyTracker.changelistIndex;
+
+    // Preincrement if on boundary to prevent seeing the same index twice
+    if (originalIndex === 1) {
+      originalIndex += 1;
+    }
+
     const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
 
     if (nextPos !== undefined) {
@@ -5476,6 +5502,25 @@ class MoveToMatchingBracket extends BaseMovement {
     } else {
       return result.getRight();
     }
+  }
+
+  // % has a special mode that lets you use it to jump to a percentage of the file
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    if (count === 0) {
+      if (vimState.recordedState.operator) {
+        return this.execActionForOperator(position, vimState);
+      } else {
+        return this.execAction(position, vimState);
+      }
+    }
+
+    // Check to make sure this is a valid percentage
+    if (count < 0 || count > 100) {
+      return { start: position, stop: position, failed: true };
+    }
+
+    const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
+    return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
   }
 }
 
