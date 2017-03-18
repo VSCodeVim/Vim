@@ -70,13 +70,6 @@ export class VimState {
 
   public historyTracker: HistoryTracker;
 
-  /**
-   * We cache the cursor style to work around a bug where updating the cursor
-   * every time the user made an action would cause the cursor in the peek
-   * definition window to move around constantly.
-   */
-  public lastCursorTypeSet: vscode.TextEditorCursorStyle | undefined = undefined;
-
   public easyMotion: EasyMotion;
 
   /**
@@ -1732,26 +1725,6 @@ export class ModeHandler implements vscode.Disposable {
     let options = this._vimState.editor.options;
     options.cursorStyle = cursorStyle;
     this._vimState.editor.options = options;
-
-    // TODO xconverge: temporary workaround for vscode bug not changing cursor style properly
-    // https://github.com/Microsoft/vscode/issues/17472
-    // https://github.com/Microsoft/vscode/issues/17513
-    switch (options.cursorStyle) {
-      case vscode.TextEditorCursorStyle.Block:
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        break;
-      case vscode.TextEditorCursorStyle.Line:
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        break;
-      case vscode.TextEditorCursorStyle.Underline:
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Underline;
-        break;
-    }
-
-    this._vimState.lastCursorTypeSet = options.cursorStyle;
 
     if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
       this.currentMode.name !== ModeName.Insert) {
