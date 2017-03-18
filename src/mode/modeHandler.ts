@@ -538,6 +538,10 @@ export class ModeHandler implements vscode.Disposable {
 
     // Handle scenarios where mouse used to change current position.
     const disposer = vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
+      if (!Globals.active) {
+        return;
+      }
+
       taskQueue.enqueueTask({
         promise: () => this.handleSelectionChange(e),
         isRunning: false,
