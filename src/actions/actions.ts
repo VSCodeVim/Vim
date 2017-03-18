@@ -5225,6 +5225,62 @@ class SelectABigWord extends TextObjectMovement {
   }
 }
 
+/**
+ * This is a custom action that I (johnfn) added. It selects procedurally
+ * larger blocks. e.g. if you had "blah (foo [bar 'ba|z'])" then it would
+ * select 'baz' first. If you pressed az again, it'd then select [bar 'baz'],
+ * and if you did it a third time it would select "(foo [bar 'baz'])".
+ */
+@RegisterAction
+class SelectAnExpandingBlock extends TextObjectMovement {
+  keys = ["a", "f"];
+  modes = [ModeName.Visual];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const ranges = [
+      await new MoveASingleQuotes().execAction(position, vimState),
+      await new MoveADoubleQuotes().execAction(position, vimState),
+      await new MoveAClosingCurlyBrace().execAction(position, vimState),
+      await new MoveAParentheses().execAction(position, vimState),
+      await new MoveASquareBracket().execAction(position, vimState),
+    ];
+
+    let smallestRange: Range | undefined = undefined;
+
+    for (const iMotion of ranges) {
+      if (iMotion.failed) { continue; }
+
+      const range = Range.FromIMovement(iMotion);
+      let contender: Range | undefined = undefined;
+
+      if (!smallestRange) {
+        contender = range;
+      } else {
+        if (range.start.isAfter(smallestRange.start) &&
+            range.stop.isBefore(smallestRange.stop)) {
+          contender = range;
+        }
+      }
+
+      if (contender && !contender.equals(new Range(vimState.cursorStartPosition, vimState.cursorPosition))) {
+        smallestRange = contender;
+      }
+    }
+
+    if (!smallestRange) {
+      return {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorPosition,
+      };
+    } else {
+      return {
+        start: smallestRange.start,
+        stop: smallestRange.stop,
+      };
+    }
+  }
+}
+
 @RegisterAction
 class SelectInnerWord extends TextObjectMovement {
   modes = [ModeName.Normal, ModeName.Visual];
