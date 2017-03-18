@@ -5234,7 +5234,7 @@ class SelectABigWord extends TextObjectMovement {
 @RegisterAction
 class SelectAnExpandingBlock extends TextObjectMovement {
   keys = ["a", "f"];
-  modes = [ModeName.Visual];
+  modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const ranges = [
@@ -5262,8 +5262,16 @@ class SelectAnExpandingBlock extends TextObjectMovement {
         }
       }
 
-      if (contender && !contender.equals(new Range(vimState.cursorStartPosition, vimState.cursorPosition))) {
-        smallestRange = contender;
+      if (contender) {
+        const areTheyEqual =
+          contender.equals(new Range(vimState.cursorStartPosition, vimState.cursorPosition)) ||
+          (vimState.currentMode === ModeName.VisualLine &&
+            contender.start.line === vimState.cursorStartPosition.line &&
+            contender.stop.line === vimState.cursorPosition.line);
+
+        if (!areTheyEqual) {
+          smallestRange = contender;
+        }
       }
     }
 
