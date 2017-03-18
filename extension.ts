@@ -111,6 +111,21 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   vscode.commands.executeCommand('setContext', 'vim.mode', handler.vimState.currentModeName());
 
+  // Temporary workaround for vscode bug not changing cursor style properly
+  // https://github.com/Microsoft/vscode/issues/17472
+  // https://github.com/Microsoft/vscode/issues/17513
+  const options = vscode.window.activeTextEditor.options;
+  const desiredStyle = options.cursorStyle;
+
+  // Temporarily change to any other cursor style besides the desired type, then change back
+  if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
+    vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+    vscode.window.activeTextEditor.options.cursorStyle = desiredStyle;
+  } else {
+    vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+    vscode.window.activeTextEditor.options.cursorStyle = desiredStyle;
+  }
+
   return handler;
 }
 
