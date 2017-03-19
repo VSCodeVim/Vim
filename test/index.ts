@@ -23,7 +23,7 @@ Globals.isTesting = true;
 testRunner.configure({
   ui: 'tdd',
   useColors: true,
-  timeout: 4000,
+  timeout: 8000,
 });
 
 module.exports = testRunner;
