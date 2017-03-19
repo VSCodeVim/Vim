@@ -164,7 +164,10 @@ export class BaseAction {
 }
 
 export class DocumentContentChangeAction extends BaseAction {
-  contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
+  contentChanges: {
+    positionDiff: PositionDiff;
+    textDiff: vscode.TextDocumentContentChangeEvent;
+  }[] = [];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (this.contentChanges.length === 0) {
@@ -173,10 +176,10 @@ export class DocumentContentChangeAction extends BaseAction {
 
     let originalLeftBoundary: vscode.Position;
 
-    if (this.contentChanges[0].text === "" && this.contentChanges[0].rangeLength === 1) {
-      originalLeftBoundary = this.contentChanges[0].range.end;
+    if (this.contentChanges[0].textDiff.text === "" && this.contentChanges[0].textDiff.rangeLength === 1) {
+      originalLeftBoundary = this.contentChanges[0].textDiff.range.end;
     } else {
-      originalLeftBoundary = this.contentChanges[0].range.start;
+      originalLeftBoundary = this.contentChanges[0].textDiff.range.start;
     }
 
     let rightBoundary: vscode.Position = position;
@@ -184,7 +187,7 @@ export class DocumentContentChangeAction extends BaseAction {
     let newEnd: vscode.Position | undefined;
 
     for (let i = 0; i < this.contentChanges.length; i++) {
-      let contentChange = this.contentChanges[i];
+      let contentChange = this.contentChanges[i].textDiff;
 
       if (contentChange.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
@@ -222,7 +225,7 @@ export class DocumentContentChangeAction extends BaseAction {
       if (newLineCount === 1) {
         newRightBoundary = newStart.with(newStart.line, newStart.character + contentChange.text.length);
       } else {
-          newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop()!.length);
+        newRightBoundary = new vscode.Position(newStart.line + newLineCount - 1, contentChange.text.split('\n').pop()!.length);
       }
 
       if (newRightBoundary.isAfter(rightBoundary)) {
@@ -245,8 +248,12 @@ export class DocumentContentChangeAction extends BaseAction {
     if (newStart && newEnd) {
       const last = this.contentChanges[this.contentChanges.length - 1];
 
-      vimState.cursorStartPosition = Position.FromVSCodePosition(newStart).advancePositionByText(last.text);
-      vimState.cursorPosition = Position.FromVSCodePosition(newEnd).advancePositionByText(last.text);
+      vimState.cursorStartPosition = Position.FromVSCodePosition(newStart)
+        .advancePositionByText(last.textDiff.text)
+        .add(last.positionDiff);
+      vimState.cursorPosition = Position.FromVSCodePosition(newEnd)
+        .advancePositionByText(last.textDiff.text)
+        .add(last.positionDiff);
     }
 
     vimState.currentMode = ModeName.Insert;
@@ -811,6 +818,7 @@ class CommandExecuteMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["@", "<character>"];
   runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
@@ -841,6 +849,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ["@", "@"];
   runsOnceForEachCountPrefix = true;
+  canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
@@ -940,7 +949,7 @@ class CommandEscInsertMode extends BaseCommand {
     // only remove leading spaces inserted by vscode.
     // vscode only inserts them when user enter a new line,
     // ie, o/O in Normal mode or \n in Insert mode.
-    const lastActionBeforeEsc = vimState.currentFullAction[vimState.currentFullAction.length - 2];
+    const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
     if (['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
         vscode.window.activeTextEditor.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(position).text)) {
@@ -3137,6 +3146,44 @@ class CommandInsertNewLineBefore extends BaseCommand {
 }
 
 @RegisterAction
+class CommandNavigateBack extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<C-o>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vscode.window.activeTextEditor;
+
+    await vscode.commands.executeCommand('workbench.action.navigateBack');
+
+    if (oldActiveEditor === vscode.window.activeTextEditor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandNavigateForward extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<C-i>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vscode.window.activeTextEditor;
+
+    await vscode.commands.executeCommand('workbench.action.navigateForward');
+
+    if (oldActiveEditor === vscode.window.activeTextEditor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class MoveLeft extends BaseMovement {
   keys = ["h"];
 
@@ -5216,6 +5263,70 @@ class SelectABigWord extends TextObjectMovement {
   }
 }
 
+/**
+ * This is a custom action that I (johnfn) added. It selects procedurally
+ * larger blocks. e.g. if you had "blah (foo [bar 'ba|z'])" then it would
+ * select 'baz' first. If you pressed az again, it'd then select [bar 'baz'],
+ * and if you did it a third time it would select "(foo [bar 'baz'])".
+ */
+@RegisterAction
+class SelectAnExpandingBlock extends TextObjectMovement {
+  keys = ["a", "f"];
+  modes = [ModeName.Visual, ModeName.VisualLine];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const ranges = [
+      await new MoveASingleQuotes().execAction(position, vimState),
+      await new MoveADoubleQuotes().execAction(position, vimState),
+      await new MoveAClosingCurlyBrace().execAction(position, vimState),
+      await new MoveAParentheses().execAction(position, vimState),
+      await new MoveASquareBracket().execAction(position, vimState),
+    ];
+
+    let smallestRange: Range | undefined = undefined;
+
+    for (const iMotion of ranges) {
+      if (iMotion.failed) { continue; }
+
+      const range = Range.FromIMovement(iMotion);
+      let contender: Range | undefined = undefined;
+
+      if (!smallestRange) {
+        contender = range;
+      } else {
+        if (range.start.isAfter(smallestRange.start) &&
+            range.stop.isBefore(smallestRange.stop)) {
+          contender = range;
+        }
+      }
+
+      if (contender) {
+        const areTheyEqual =
+          contender.equals(new Range(vimState.cursorStartPosition, vimState.cursorPosition)) ||
+          (vimState.currentMode === ModeName.VisualLine &&
+            contender.start.line === vimState.cursorStartPosition.line &&
+            contender.stop.line === vimState.cursorPosition.line);
+
+        if (!areTheyEqual) {
+          smallestRange = contender;
+        }
+      }
+    }
+
+    if (!smallestRange) {
+      return {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorPosition,
+      };
+    } else {
+      return {
+        start: smallestRange.start,
+        stop: smallestRange.stop,
+      };
+    }
+  }
+}
+
 @RegisterAction
 class SelectInnerWord extends TextObjectMovement {
   modes = [ModeName.Normal, ModeName.Visual];
@@ -5492,6 +5603,30 @@ class MoveToMatchingBracket extends BaseMovement {
       };
     } else {
       return result.getRight();
+    }
+  }
+
+  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
+    // % has a special mode that lets you use it to jump to a percentage of the file
+    // However, some other bracket motions inherit from this so only do this behavior for % explicitly
+    if (Object.getPrototypeOf(this) === MoveToMatchingBracket.prototype) {
+      if (count === 0) {
+        if (vimState.recordedState.operator) {
+          return this.execActionForOperator(position, vimState);
+        } else {
+          return this.execAction(position, vimState);
+        }
+      }
+
+      // Check to make sure this is a valid percentage
+      if (count < 0 || count > 100) {
+        return { start: position, stop: position, failed: true };
+      }
+
+      const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
+      return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
+    } else {
+      return super.execActionWithCount(position, vimState, count);
     }
   }
 }

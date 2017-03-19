@@ -17,5 +17,8 @@
 					"before": ["j", "j"],
 					"after": ["<esc>"]
 			}
-	]
+	],
+
+	"vim.otherModesKeyBindingsNonRecursive": [ ]
+
 }
