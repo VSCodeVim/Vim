@@ -812,11 +812,15 @@ export class ModeHandler implements vscode.Disposable {
     const commandList = this.vimState.recordedState.commandList;
     const firstNonCountCommand = commandList.findIndex(this.isNotCount);
 
-    return commandList.slice(firstNonCountCommand);
+    if (firstNonCountCommand === -1) {
+      return commandList;
+    } else {
+      return commandList.slice(firstNonCountCommand);
+    }
   }
 
   private isNotCount(key: string) {
-    return isNaN(Number(key));
+    return !isNaN(parseFloat(key));
   }
 
   async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
