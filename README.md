@@ -9,8 +9,8 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * Marks
 * Vim settings similar to those found in .vimrc
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
-* The EasyMotion plugin!
-* The Surround.vim plugin!
+* The [EasyMotion plugin](#how-to-use-easymotion)!
+* The [Surround.vim plugin](#how-to-use-surround)!
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
@@ -250,9 +250,9 @@ Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Norma
 
 On OS X, open Terminal and run the following command:
 
-```
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         // For VS Code
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VS Code Insider
+```sh
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
 ```
 
 #### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
@@ -261,6 +261,7 @@ Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkey
 
 #### How to use easymotion
 
+Easymotion is based on [easymotion-vim](https://github.com/easymotion/vim-easymotion)
 To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
 Now that easymotion is active, you can initiate motions using the following commands. Once you initiate the motion, text decorators will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
 
@@ -277,6 +278,26 @@ Motion Command | Description
 `<leader> <leader> b`|Start of word backwards
 
 
+#### How to use surround
+
+Surround plugin based on tpope's [surround.vim](https://github.com/tpope/vim-surround) plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
+
+t or < as <desired char> or <existing char> will do tags and enter tag entry mode.
+
+Surround Command | Description
+---|--------
+`d s <existing char>`|Delete existing surround
+`c s <existing char> <desired char>`|Change surround existing to desired
+`y s <motion> <desired char>`|Surround something with something using motion (as in "you surround")
+`S <desired char>`|Surround when in visual modes (surrounds full selection)
+
+Some examples:
+
+* `"test"` with cursor inside quotes type cs"' to end up with `'test'`
+* `"test"` with cursor inside quotes type ds" to end up with `test`
+* `"test"` with cursor inside quotes type cs"t and enter 123> to end up with `<123>test</123>`
+* `test` with cursor on word test type ysaw) to end up with `(test)`
+
 ## Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
@@ -287,6 +308,10 @@ Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest noo
 
 * `gd` - jump to definition. _Astoundingly_ useful in any language that VSCode provides definition support for. I use this one probably hundreds of times a day.
 * `gq` on a visual selection - Reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
+* `gc`, which adds another cursor on the next word it finds which is the same as the word under the cursor.
+* `af`, a command that I added in visual mode, which selects increasingly large blocks of text. e.g. if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed az again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
+
+(The mnemonic: selecting blocks is fast af! :wink:)
 
 ## Special Shoutouts to Cool Contributors
 

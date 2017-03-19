@@ -528,12 +528,12 @@ export class ModeHandler implements vscode.Disposable {
     // position to the position that VSC set it to.
 
     // This also makes things like gd work.
-    if (vscode.window.activeTextEditor) {
-      this._vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      this._vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    if (this._vimState.editor) {
+      this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+      this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
       this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
 
-      this._vimState.whatILastSetTheSelectionTo = vscode.window.activeTextEditor.selection;
+      this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
     }
 
     // Handle scenarios where mouse used to change current position.
@@ -694,7 +694,7 @@ export class ModeHandler implements vscode.Disposable {
         // If we prevented from clicking past eol but it is part of this selection, include the last char
         if (this._vimState.lastClickWasPastEol) {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
-          vscode.window.activeTextEditor.selection = new vscode.Selection(newStart, selection.end);
+          this._vimState.editor.selection = new vscode.Selection(newStart, selection.end);
           this._vimState.cursorStartPosition = selectionStart;
           this._vimState.lastClickWasPastEol = false;
         }
@@ -810,13 +810,19 @@ export class ModeHandler implements vscode.Disposable {
  */
   private getCurrentCommandWithoutCountPrefix(): string[] {
     const commandList = this.vimState.recordedState.commandList;
-    const firstNonCountCommand = commandList.findIndex(this.isNotCount);
+    const result = [];
+    let previousWasCount = true;
 
-    return commandList.slice(firstNonCountCommand);
-  }
+    for (const commandKey of commandList) {
+      if (previousWasCount && commandKey.match(/[0-9]/)) {
+        continue;
+      } else {
+        previousWasCount = false;
+        result.push(commandKey);
+      }
+    }
 
-  private isNotCount(key: string) {
-    return isNaN(Number(key));
+    return result;
   }
 
   async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
@@ -1317,7 +1323,7 @@ export class ModeHandler implements vscode.Disposable {
         // in parallel. Repeat till there are no more transformations.
 
         for (const command of textTransformations) {
-          await vscode.window.activeTextEditor.edit(edit => {
+          await this._vimState.editor.edit(edit => {
             switch (command.type) {
               case "insertText":
                 edit.insert(command.position, command.text);
@@ -1357,7 +1363,7 @@ export class ModeHandler implements vscode.Disposable {
          * (this is primarily necessary for multi-cursor mode, since most
          * actions will trigger at most one text operation).
          */
-        await vscode.window.activeTextEditor.edit(edit => {
+        await this._vimState.editor.edit(edit => {
           for (const command of textTransformations) {
             switch (command.type) {
               case "insertText":
@@ -1400,8 +1406,8 @@ export class ModeHandler implements vscode.Disposable {
         case "insertTextVSCode":
           await TextEditor.insert(command.text);
 
-          vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-          vimState.cursorPosition      = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+          vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+          vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.end);
           break;
 
         case "showCommandLine":
@@ -1464,7 +1470,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    const selections = vscode.window.activeTextEditor.selections;
+    const selections = this._vimState.editor.selections;
     const firstTransformation = transformations[0];
     const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange" || firstTransformation.type === "replaceText")
       && firstTransformation.manuallySetCursorPositions);
@@ -1724,14 +1730,9 @@ export class ModeHandler implements vscode.Disposable {
         break;
     }
 
-    let options = vscode.window.activeTextEditor.options;
+    let options = this._vimState.editor.options;
     options.cursorStyle = cursorStyle;
-    vscode.window.activeTextEditor.options = options;
-
-    // TODO xconverge: temporary workaround for vscode bug not changing cursor style properly
-    // https://github.com/Microsoft/vscode/issues/17472
-    // https://github.com/Microsoft/vscode/issues/17513
-    this.toggleCursorStyle(options.cursorStyle);
+    this._vimState.editor.options = options;
 
     if (this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
       this.currentMode.name !== ModeName.Insert) {
@@ -1744,7 +1745,8 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    vscode.window.activeTextEditor.setDecorations(this._caretDecoration, cursorRange);
+    this._vimState.editor.setDecorations(this._caretDecoration, cursorRange);
+
 
     // Draw marks
     // I should re-enable this with a config setting at some point
@@ -1778,7 +1780,8 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    vscode.window.activeTextEditor.setDecorations(this._searchHighlightDecoration, searchRanges);
+    this._vimState.editor.setDecorations(this._searchHighlightDecoration, searchRanges);
+
 
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
@@ -1802,21 +1805,6 @@ export class ModeHandler implements vscode.Disposable {
     vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
     vscode.commands.executeCommand('setContext', 'vim.overrideCtrlC', Configuration.overrideCopy || Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
-  }
-
-  /** Temporary workaround for vscode bug not changing cursor style properly
-   *  https://github.com/Microsoft/vscode/issues/17472
-   *  https://github.com/Microsoft/vscode/issues/17513
-   */
-  private toggleCursorStyle(desiredStyle: vscode.TextEditorCursorStyle) {
-    // Temporarily change to any other cursor style besides the desired type, then change back
-    if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
-      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-      vscode.window.activeTextEditor.options.cursorStyle = desiredStyle;
-    } else {
-      vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-      vscode.window.activeTextEditor.options.cursorStyle = desiredStyle;
-    }
   }
 
   private _renderStatusBar(): void {

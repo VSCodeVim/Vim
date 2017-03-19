@@ -3146,6 +3146,44 @@ class CommandInsertNewLineBefore extends BaseCommand {
 }
 
 @RegisterAction
+class CommandNavigateBack extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<C-o>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vscode.window.activeTextEditor;
+
+    await vscode.commands.executeCommand('workbench.action.navigateBack');
+
+    if (oldActiveEditor === vscode.window.activeTextEditor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandNavigateForward extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["<C-i>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vscode.window.activeTextEditor;
+
+    await vscode.commands.executeCommand('workbench.action.navigateForward');
+
+    if (oldActiveEditor === vscode.window.activeTextEditor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class MoveLeft extends BaseMovement {
   keys = ["h"];
 
@@ -5225,6 +5263,70 @@ class SelectABigWord extends TextObjectMovement {
   }
 }
 
+/**
+ * This is a custom action that I (johnfn) added. It selects procedurally
+ * larger blocks. e.g. if you had "blah (foo [bar 'ba|z'])" then it would
+ * select 'baz' first. If you pressed az again, it'd then select [bar 'baz'],
+ * and if you did it a third time it would select "(foo [bar 'baz'])".
+ */
+@RegisterAction
+class SelectAnExpandingBlock extends TextObjectMovement {
+  keys = ["a", "f"];
+  modes = [ModeName.Visual, ModeName.VisualLine];
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const ranges = [
+      await new MoveASingleQuotes().execAction(position, vimState),
+      await new MoveADoubleQuotes().execAction(position, vimState),
+      await new MoveAClosingCurlyBrace().execAction(position, vimState),
+      await new MoveAParentheses().execAction(position, vimState),
+      await new MoveASquareBracket().execAction(position, vimState),
+    ];
+
+    let smallestRange: Range | undefined = undefined;
+
+    for (const iMotion of ranges) {
+      if (iMotion.failed) { continue; }
+
+      const range = Range.FromIMovement(iMotion);
+      let contender: Range | undefined = undefined;
+
+      if (!smallestRange) {
+        contender = range;
+      } else {
+        if (range.start.isAfter(smallestRange.start) &&
+            range.stop.isBefore(smallestRange.stop)) {
+          contender = range;
+        }
+      }
+
+      if (contender) {
+        const areTheyEqual =
+          contender.equals(new Range(vimState.cursorStartPosition, vimState.cursorPosition)) ||
+          (vimState.currentMode === ModeName.VisualLine &&
+            contender.start.line === vimState.cursorStartPosition.line &&
+            contender.stop.line === vimState.cursorPosition.line);
+
+        if (!areTheyEqual) {
+          smallestRange = contender;
+        }
+      }
+    }
+
+    if (!smallestRange) {
+      return {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorPosition,
+      };
+    } else {
+      return {
+        start: smallestRange.start,
+        stop: smallestRange.stop,
+      };
+    }
+  }
+}
+
 @RegisterAction
 class SelectInnerWord extends TextObjectMovement {
   modes = [ModeName.Normal, ModeName.Visual];
@@ -5504,23 +5606,28 @@ class MoveToMatchingBracket extends BaseMovement {
     }
   }
 
-  // % has a special mode that lets you use it to jump to a percentage of the file
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    if (count === 0) {
-      if (vimState.recordedState.operator) {
-        return this.execActionForOperator(position, vimState);
-      } else {
-        return this.execAction(position, vimState);
+    // % has a special mode that lets you use it to jump to a percentage of the file
+    // However, some other bracket motions inherit from this so only do this behavior for % explicitly
+    if (Object.getPrototypeOf(this) === MoveToMatchingBracket.prototype) {
+      if (count === 0) {
+        if (vimState.recordedState.operator) {
+          return this.execActionForOperator(position, vimState);
+        } else {
+          return this.execAction(position, vimState);
+        }
       }
-    }
 
-    // Check to make sure this is a valid percentage
-    if (count < 0 || count > 100) {
-      return { start: position, stop: position, failed: true };
-    }
+      // Check to make sure this is a valid percentage
+      if (count < 0 || count > 100) {
+        return { start: position, stop: position, failed: true };
+      }
 
-    const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
-    return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
+      const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
+      return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
+    } else {
+      return super.execActionWithCount(position, vimState, count);
+    }
   }
 }
 

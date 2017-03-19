@@ -118,7 +118,12 @@ class Remapper {
       vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(0, -numToRemove);
 
       if (remapping.after) {
-        await modeHandler.handleMultipleKeyEvents(remapping.after);
+        const count = vimState.recordedState.count || 1;
+        vimState.recordedState.count = 0;
+
+        for (let i = 0; i < count; i++) {
+          await modeHandler.handleMultipleKeyEvents(remapping.after);
+        }
       }
 
       if (remapping.commands) {
