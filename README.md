@@ -9,8 +9,8 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * Marks
 * Vim settings similar to those found in .vimrc
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
-* The EasyMotion plugin!
-* The Surround.vim plugin!
+* The [EasyMotion plugin](#how-to-use-easymotion)!
+* The [Surround.vim plugin](#how-to-use-surround)!
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
@@ -261,6 +261,7 @@ Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkey
 
 #### How to use easymotion
 
+Easymotion is based on [easymotion-vim](https://github.com/easymotion/vim-easymotion)
 To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
 Now that easymotion is active, you can initiate motions using the following commands. Once you initiate the motion, text decorators will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
 
@@ -276,6 +277,26 @@ Motion Command | Description
 `<leader> <leader> g e`|End of word backwards
 `<leader> <leader> b`|Start of word backwards
 
+
+#### How to use surround
+
+Surround plugin based on tpope's [surround.vim](https://github.com/tpope/vim-surround) plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
+
+t or < as <desired char> or <existing char> will do tags and enter tag entry mode.
+
+Surround Command | Description
+---|--------
+`d s <existing char>`|Delete existing surround
+`c s <existing char> <desired char>`|Change surround existing to desired
+`y s <motion> <desired char>`|Surround something with something using motion (as in "you surround")
+`S <desired char>`|Surround when in visual modes (surrounds full selection)
+
+Some examples:
+
+* `"test"` with cursor inside quotes type cs"' to end up with `'test'`
+* `"test"` with cursor inside quotes type ds" to end up with `test`
+* `"test"` with cursor inside quotes type cs"t and enter 123> to end up with `<123>test</123>`
+* `test` with cursor on word test type ysaw) to end up with `(test)`
 
 ## Contributing
 
