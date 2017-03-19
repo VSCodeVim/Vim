@@ -148,7 +148,7 @@ export class EasyMotion {
    * Clear all decorations
    */
   public clearDecorations() {
-    var editor = vscode.window.activeTextEditor;
+    var editor = vscode.window.activeTextEditor!;
     for (var i = 1; i <= this.decorations.length; i++) {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
@@ -322,7 +322,7 @@ export class EasyMotion {
     }
 
     // Set the decorations for all the different marker lengths
-    var editor = vscode.window.activeTextEditor;
+    var editor = vscode.window.activeTextEditor!;
     for (var j = 1; j < this.decorations.length; j++) {
       if (this.decorations[j]) {
         editor.setDecorations(EasyMotion.getDecorationType(j), this.decorations[j]);

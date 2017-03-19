@@ -48,7 +48,7 @@ export class SearchState {
 
   private _recalculateSearchRanges({ forceRecalc }: { forceRecalc?: boolean } = {}): void {
     const search = this.searchString;
-    const selection = vscode.window.activeTextEditor.selection;
+    const selection = vscode.window.activeTextEditor!.selection;
     const lineToStartAt = Math.min(selection.start.line, selection.end.line);
 
     if (search === "") { return; }

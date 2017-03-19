@@ -51,17 +51,17 @@ export class WriteCommand extends node.CommandBase {
       return;
     }
 
-    if (this.activeTextEditor.document.isUntitled) {
+    if (modeHandler.vimState.editor.document.isUntitled) {
       await vscode.commands.executeCommand("workbench.action.files.save");
       return;
     }
 
     try {
-      fs.accessSync(this.activeTextEditor.document.fileName, fs.constants.W_OK);
+      fs.accessSync(modeHandler.vimState.editor.document.fileName, fs.constants.W_OK);
       return this.save(modeHandler);
     } catch (accessErr) {
       if (this.arguments.bang) {
-        fs.chmod(this.activeTextEditor.document.fileName, 666, (e) => {
+        fs.chmod(modeHandler.vimState.editor.document.fileName, 666, (e) => {
           if (e) {
             modeHandler.setStatusBarText(e.message);
           } else {
@@ -75,11 +75,11 @@ export class WriteCommand extends node.CommandBase {
   }
 
   private async save(modeHandler : ModeHandler) : Promise<void> {
-    await this.activeTextEditor.document.save().then(
+    await modeHandler.vimState.editor.document.save().then(
       (ok) => {
-        modeHandler.setStatusBarText('"' + path.basename(this.activeTextEditor.document.fileName) +
-        '" ' + this.activeTextEditor.document.lineCount + 'L ' +
-        this.activeTextEditor.document.getText().length + 'C written');
+        modeHandler.setStatusBarText('"' + path.basename(modeHandler.vimState.editor.document.fileName) +
+        '" ' + modeHandler.vimState.editor.document.lineCount + 'L ' +
+        modeHandler.vimState.editor.document.getText().length + 'C written');
       },
       (e) => modeHandler.setStatusBarText(e)
     );

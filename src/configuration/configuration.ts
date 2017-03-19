@@ -70,7 +70,14 @@ class ConfigurationClass {
       return vscode.TextEditorCursorStyle.Block;
     } else if (cursorStyle === 'underline') {
       return vscode.TextEditorCursorStyle.Underline;
+    } else if (cursorStyle === 'line-thin') {
+      return vscode.TextEditorCursorStyle.LineThin;
+    } else if (cursorStyle === 'block-outline') {
+      return vscode.TextEditorCursorStyle.BlockOutline;
+    } else if (cursorStyle === 'underline-thin') {
+      return vscode.TextEditorCursorStyle.UnderlineThin;
     }
+
     return vscode.TextEditorCursorStyle.Line;
   }
 

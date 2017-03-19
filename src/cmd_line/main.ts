@@ -17,7 +17,8 @@ export async function showCmdLine(initialText: string, modeHandler : ModeHandler
   };
 
   try {
-    await runCmdLine(await vscode.window.showInputBox(options), modeHandler);
+    const cmdString = await vscode.window.showInputBox(options);
+    await runCmdLine(cmdString!, modeHandler);
   } catch (e) {
     modeHandler.setStatusBarText(e.toString());
   }
@@ -34,7 +35,7 @@ export async function runCmdLine(command : string, modeHandler : ModeHandler) : 
       return;
     }
 
-    await cmd.execute(vscode.window.activeTextEditor, modeHandler);
+    await cmd.execute(modeHandler.vimState.editor, modeHandler);
   } catch (e) {
     modeHandler.setStatusBarText(e.toString());
   }

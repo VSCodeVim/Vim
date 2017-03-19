@@ -488,7 +488,7 @@ export class ModeHandler implements vscode.Disposable {
     ModeHandler.IsTesting = Globals.isTesting;
 
     this._vimState = new VimState();
-    this._vimState.editor = vscode.window.activeTextEditor;
+    this._vimState.editor = vscode.window.activeTextEditor!;
 
     this.identity = new EditorIdentity(vscode.window.activeTextEditor);
 

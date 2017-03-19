@@ -164,14 +164,14 @@ export class PairMatcher {
     if (!vscode.workspace.getConfiguration().get("editor.autoClosingBrackets")) { return undefined; }
 
     const deleteRange = new vscode.Range(currentPosition, currentPosition.getLeftThroughLineBreaks());
-    const deleteText = vscode.window.activeTextEditor.document.getText(deleteRange);
+    const deleteText = vscode.window.activeTextEditor!.document.getText(deleteRange);
     let matchRange: vscode.Range | undefined;
     let isNextMatch = false;
 
     if ("{[(\"'`".indexOf(deleteText) > -1) {
       const matchPosition = currentPosition.add(new PositionDiff(0, 1));
       matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
-      isNextMatch = vscode.window.activeTextEditor.document.getText(matchRange) === PairMatcher.pairings[deleteText].match;
+      isNextMatch = vscode.window.activeTextEditor!.document.getText(matchRange) === PairMatcher.pairings[deleteText].match;
     }
 
     if (isNextMatch && matchRange) {

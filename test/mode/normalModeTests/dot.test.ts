@@ -32,14 +32,14 @@ suite("Dot Operator", () => {
       await setupWorkspace();
       setTextEditorOptions(5, false);
 
-      modeHandler.vimState.editor = vscode.window.activeTextEditor;
+      modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
       await modeHandler.handleMultipleKeyEvents(firstTabKeys.concat(['<Esc>']));
 
 
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'T']);
       await waitForTabChange();
-      modeHandler.vimState.editor = vscode.window.activeTextEditor;
+      modeHandler.vimState.editor = vscode.window.activeTextEditor!;
       await modeHandler.handleMultipleKeyEvents(secondTabKeys.concat(['<Esc>']));
 
       // running an action in second tab and repeating in first tab
@@ -47,7 +47,7 @@ suite("Dot Operator", () => {
       await assertEqualLines(['test', 'def', 'end']);
       await modeHandler.handleMultipleKeyEvents(['g', 't']);
       await waitForTabChange();
-      modeHandler.vimState.editor = vscode.window.activeTextEditor;
+      modeHandler.vimState.editor = vscode.window.activeTextEditor!;
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '.']);
       await assertEqualLines(['test', 'abc', 'end']);
     });
