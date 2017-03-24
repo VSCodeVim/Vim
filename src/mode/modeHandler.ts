@@ -929,23 +929,16 @@ export class ModeHandler implements vscode.Disposable {
 
     // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
     // this needs to happen before any changes are made
-
-    /*
-    TODO
-
-    // If arrow keys or mouse were in insert mode, create an undo point.
-    // This needs to happen before any changes are made
-
-    let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
-    if (prevPos !== undefined && !vimState.isRunningDotCommand) {
-      if (vimState.cursorPositionJustBeforeAnythingHappened.line !== prevPos.line ||
-          vimState.cursorPositionJustBeforeAnythingHappened.character !== prevPos.character) {
-
-        vimState.globalState.previousFullAction = recordedState;
-        vimState.historyTracker.finishCurrentStep();
+    if (!vimState.isMultiCursor) {
+      let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
+      if (prevPos !== undefined && !vimState.isRunningDotCommand) {
+        if (vimState.cursorPositionJustBeforeAnythingHappened[0].line !== prevPos[0].line ||
+          vimState.cursorPositionJustBeforeAnythingHappened[0].character !== prevPos[0].character) {
+          vimState.globalState.previousFullAction = recordedState;
+          vimState.historyTracker.finishCurrentStep();
+        }
       }
     }
-    */
 
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));

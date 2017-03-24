@@ -116,6 +116,7 @@ class Remapper {
       // from the state.
       const numToRemove = remapping.before.length - 1;
       vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(0, -numToRemove);
+      vimState.keyHistory = vimState.keyHistory.slice(0, -numToRemove);
 
       if (remapping.after) {
         const count = vimState.recordedState.count || 1;
