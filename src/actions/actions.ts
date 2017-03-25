@@ -5132,6 +5132,7 @@ class MoveFormat extends BaseMovement {
   }
 }
 
+// Used for gUU
 @RegisterAction
 class MoveUpercaseLine extends BaseMovement {
   modes = [ModeName.Normal];
@@ -5145,6 +5146,7 @@ class MoveUpercaseLine extends BaseMovement {
   }
 }
 
+// Used for guu
 @RegisterAction
 class MoveLowercaseLine extends BaseMovement {
   modes = [ModeName.Normal];
