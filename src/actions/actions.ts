@@ -2785,6 +2785,7 @@ class CommandUndo extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["u"];
   runsOnceForEveryCursor() { return false; }
+  mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const newPositions = await vimState.historyTracker.goBackHistoryStep();
@@ -5148,19 +5149,6 @@ class MoveUpercaseLine extends BaseMovement {
 class MoveLowercaseLine extends BaseMovement {
   modes = [ModeName.Normal];
   keys = ["u"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start       : position.getLineBegin(),
-      stop        : position.getLineEnd(),
-    };
-  }
-}
-
-@RegisterAction
-class MoveTogglecaseLine extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["~"];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
