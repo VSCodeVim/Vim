@@ -383,7 +383,7 @@
                 },
                 "vim.handleKeys": {
                     "type": "array",
-                    "description": "Allow to delegate certain key combinations back to VSCode"
+                    "description": "Option to delegate certain key combinations back to VSCode to be handled natively"
                 }
             }
         }
