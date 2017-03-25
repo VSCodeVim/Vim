@@ -261,9 +261,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     let bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
 
-    // Register the keybinding
+    // Store registered key bindings in bracket notation form
+    Configuration.boundKeyCombinations.push(bracketedKey);
+
     registerCommand(context, keybinding.command, () => handleKeyEvent(`${ bracketedKey }`));
   }
+
+  // Update configuration now that bound keys array is populated
+  Configuration.updateConfiguration();
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {

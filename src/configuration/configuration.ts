@@ -3,7 +3,6 @@
 import * as vscode from 'vscode';
 import { taskQueue } from '../../src/taskQueue';
 import { Globals } from '../../src/globals';
-import { AngleBracketNotation } from '../../src/notation';
 
 export type OptionValue = number | string | boolean;
 export type ValueMapping = {
@@ -68,23 +67,7 @@ class ConfigurationClass {
     const handleKeys = vscode.workspace.getConfiguration('vim')
       .get<IHandleKeys[]>("handleKeys", []);
 
-    let pkg = require(__dirname + '/../../../package.json');
-
-    for (let keybinding of pkg.contributes.keybindings) {
-      let keyToBeBound = "";
-
-      /**
-       * On OSX, handle mac keybindings if we specified one.
-       */
-      if (process.platform === "darwin") {
-        keyToBeBound = keybinding.mac || keybinding.key;
-      } else if (process.platform === "linux") {
-        keyToBeBound = keybinding.linux || keybinding.key;
-      } else {
-        keyToBeBound = keybinding.key;
-      }
-
-      let bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+    for (let bracketedKey of this.boundKeyCombinations) {
       // Set context for key that is not used
       // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
       // Or if user usese vim.handleKeys configuration option to set certain combinations to false
@@ -219,6 +202,11 @@ class ConfigurationClass {
   relativenumber: boolean;
 
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
+
+  /**
+   * Array of all key combinations that were registered in angle bracket notation
+   */
+  boundKeyCombinations: string[] = [];
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {
