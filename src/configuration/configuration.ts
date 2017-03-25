@@ -62,6 +62,11 @@ class ConfigurationClass {
       }
     }
 
+    // <space> is special, change it to " " internally if it is used as leader
+    if (this.leader.toLowerCase() === "<space>") {
+      this.leader = " ";
+    }
+
     // Get the cursor type from vscode
     const cursorStyleString = vscode.workspace.getConfiguration().get("editor.cursorStyle") as string;
     this.userCursor = this.cursorStyleFromString(cursorStyleString);
