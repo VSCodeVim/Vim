@@ -94,21 +94,21 @@ class ConfigurationClass {
   }
 
   private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle {
-    if (cursorStyle === 'line') {
-      return vscode.TextEditorCursorStyle.Line;
-    } else if (cursorStyle === 'block') {
-      return vscode.TextEditorCursorStyle.Block;
-    } else if (cursorStyle === 'underline') {
-      return vscode.TextEditorCursorStyle.Underline;
-    } else if (cursorStyle === 'line-thin') {
-      return vscode.TextEditorCursorStyle.LineThin;
-    } else if (cursorStyle === 'block-outline') {
-      return vscode.TextEditorCursorStyle.BlockOutline;
-    } else if (cursorStyle === 'underline-thin') {
-      return vscode.TextEditorCursorStyle.UnderlineThin;
-    }
 
-    return vscode.TextEditorCursorStyle.Line;
+    const cursorType = {
+      "line": vscode.TextEditorCursorStyle.Line,
+      "block": vscode.TextEditorCursorStyle.Block,
+      "underline": vscode.TextEditorCursorStyle.Underline,
+      "line-thin": vscode.TextEditorCursorStyle.LineThin,
+      "block-outline": vscode.TextEditorCursorStyle.BlockOutline,
+      "underline-thin": vscode.TextEditorCursorStyle.UnderlineThin,
+    };
+
+    if (cursorType[cursorStyle] !== undefined) {
+      return cursorType[cursorStyle];
+    } else {
+      return vscode.TextEditorCursorStyle.Line;
+    }
   }
 
   /**
