@@ -10,6 +10,10 @@ export type ValueMapping = {
   [key: string]: OptionValue
 }
 
+export interface IHandleKeys {
+  [key: string]: boolean;
+}
+
 /**
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
@@ -61,6 +65,32 @@ class ConfigurationClass {
     // Get the cursor type from vscode
     const cursorStyleString = vscode.workspace.getConfiguration().get("editor.cursorStyle") as string;
     this.userCursor = this.cursorStyleFromString(cursorStyleString);
+
+    // Get configuration setting for handled keys, this allows user to disable
+    // certain key comboinations
+    const handleKeys = vscode.workspace.getConfiguration('vim')
+      .get<IHandleKeys[]>("handleKeys", []);
+
+    for (const bracketedKey of this.boundKeyCombinations) {
+      // Set context for key that is not used
+      // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
+      // Or if user usese vim.handleKeys configuration option to set certain combinations to false
+      // By default, all key combinations are used so start with true
+      let useKey = true;
+
+      // Check for configuration setting disabling combo
+      if (handleKeys[bracketedKey] !== undefined) {
+        if (handleKeys[bracketedKey] === false) {
+          useKey = false;
+        }
+      } else if (!this.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
+        // Check for useCtrlKeys and if it is a <C- ctrl based keybinding
+        useKey = false;
+      }
+
+      // Set the context of whether or not this key will be used based on criteria from above
+      vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
+    }
   }
 
   private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle {
@@ -199,6 +229,11 @@ class ConfigurationClass {
   relativenumber: boolean;
 
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
+
+  /**
+   * Array of all key combinations that were registered in angle bracket notation
+   */
+  boundKeyCombinations: string[] = [];
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {

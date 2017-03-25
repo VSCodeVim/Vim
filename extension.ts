@@ -245,6 +245,10 @@ export async function activate(context: vscode.ExtensionContext) {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
 
+  // Clear boundKeyCombinations array incase there are any entries in it so
+  // that we have a clean list of keys with no duplicates
+  Configuration.boundKeyCombinations = [];
+
   for (let keybinding of packagejson.contributes.keybindings) {
     let keyToBeBound = "";
 
@@ -259,10 +263,16 @@ export async function activate(context: vscode.ExtensionContext) {
       keyToBeBound = keybinding.key;
     }
 
-    let bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+    const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+
+    // Store registered key bindings in bracket notation form
+    Configuration.boundKeyCombinations.push(bracketedKey);
 
     registerCommand(context, keybinding.command, () => handleKeyEvent(`${ bracketedKey }`));
   }
+
+  // Update configuration now that bound keys array is populated
+  Configuration.updateConfiguration();
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
