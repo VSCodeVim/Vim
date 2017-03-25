@@ -62,6 +62,10 @@ class ConfigurationClass {
       }
     }
 
+    // Get the cursor type from vscode
+    const cursorStyleString = vscode.workspace.getConfiguration().get("editor.cursorStyle") as string;
+    this.userCursor = this.cursorStyleFromString(cursorStyleString);
+
     // Get configuration setting for handled keys, this allows user to disable
     // certain key comboinations
     const handleKeys = vscode.workspace.getConfiguration('vim')
@@ -86,6 +90,24 @@ class ConfigurationClass {
 
       // Set the context of whether or not this key will be used based on criteria from above
       vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
+    }
+  }
+
+  private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle {
+
+    const cursorType = {
+      "line": vscode.TextEditorCursorStyle.Line,
+      "block": vscode.TextEditorCursorStyle.Block,
+      "underline": vscode.TextEditorCursorStyle.Underline,
+      "line-thin": vscode.TextEditorCursorStyle.LineThin,
+      "block-outline": vscode.TextEditorCursorStyle.BlockOutline,
+      "underline-thin": vscode.TextEditorCursorStyle.UnderlineThin,
+    };
+
+    if (cursorType[cursorStyle] !== undefined) {
+      return cursorType[cursorStyle];
+    } else {
+      return vscode.TextEditorCursorStyle.Line;
     }
   }
 
@@ -185,6 +207,11 @@ class ConfigurationClass {
    */
   @overlapSetting({ codeName: "tabSize", default: 8 })
   tabstop: number;
+
+  /**
+   * Type of cursor user is using native to vscode
+   */
+  userCursor: number;
 
   /**
    * Use spaces when the user presses tab?

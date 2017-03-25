@@ -55,8 +55,8 @@ export class SortCommand extends node.CommandBase {
       startLine = new vscode.Position(0, 0);
       endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
     } else {
-      startLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.left, modeHandler);
-      endLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.right, modeHandler);
+      startLine = range.lineRefToPosition(modeHandler.vimState.editor, range.left, modeHandler);
+      endLine = range.lineRefToPosition(modeHandler.vimState.editor, range.right, modeHandler);
     }
 
     await this.sortLines(startLine, endLine);

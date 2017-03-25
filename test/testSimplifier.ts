@@ -183,7 +183,7 @@ function tokenizeKeySequence(sequence: string): string[] {
 }
 
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
-  modeHandler.vimState.editor = vscode.window.activeTextEditor;
+  modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
   let helper = new TestObjectHelper(testObj);
 

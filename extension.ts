@@ -91,7 +91,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
 
-  handler.vimState.editor = vscode.window.activeTextEditor;
+  handler.vimState.editor = vscode.window.activeTextEditor!;
 
   if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
     if (!previousActiveEditorId.isEqual(activeEditorId)) {
@@ -114,16 +114,16 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   // Temporary workaround for vscode bug not changing cursor style properly
   // https://github.com/Microsoft/vscode/issues/17472
   // https://github.com/Microsoft/vscode/issues/17513
-  const options = vscode.window.activeTextEditor.options;
+  const options = handler.vimState.editor.options;
   const desiredStyle = options.cursorStyle;
 
   // Temporarily change to any other cursor style besides the desired type, then change back
   if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
-    vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-    vscode.window.activeTextEditor.options.cursorStyle = desiredStyle;
+    handler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+    handler.vimState.editor.options.cursorStyle = desiredStyle;
   } else {
-    vscode.window.activeTextEditor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-    vscode.window.activeTextEditor.options.cursorStyle = desiredStyle;
+    handler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+    handler.vimState.editor.options.cursorStyle = desiredStyle;
   }
 
   return handler;
@@ -211,8 +211,8 @@ export async function activate(context: vscode.ExtensionContext) {
             text: args.text,
             replaceCharCnt: args.replaceCharCnt
           });
-          mh.vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-          mh.vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+          mh.vimState.cursorPosition = Position.FromVSCodePosition(mh.vimState.editor.selection.start);
+          mh.vimState.cursorStartPosition = Position.FromVSCodePosition(mh.vimState.editor.selection.start);
         }
       },
       isRunning: false

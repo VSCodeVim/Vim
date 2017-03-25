@@ -24,7 +24,7 @@ suite("Mode Visual Block", () => {
   teardown(cleanUpWorkspace);
 
   test("can be activated", async () => {
-    modeHandler.vimState.editor = vscode.window.activeTextEditor;
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
     await modeHandler.handleKeyEvent('<C-v>');
     assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);

@@ -35,7 +35,7 @@ export class FileCommand extends node.CommandBase {
       return vscode.ViewColumn.One;
     }
 
-    return active.viewColumn;
+    return active.viewColumn!;
   }
 
   getViewColumnToRight() : vscode.ViewColumn {
@@ -52,7 +52,7 @@ export class FileCommand extends node.CommandBase {
         return vscode.ViewColumn.Three;
     }
 
-    return active.viewColumn;
+    return active.viewColumn!;
   }
 
   async execute(): Promise<void> {
@@ -67,7 +67,7 @@ export class FileCommand extends node.CommandBase {
       return;
     }
 
-    let currentFilePath = vscode.window.activeTextEditor.document.uri.path;
+    let currentFilePath = vscode.window.activeTextEditor!.document.uri.path;
     let newFilePath = path.isAbsolute(this._arguments.name) ?
       this._arguments.name :
       path.join(path.dirname(currentFilePath), this._arguments.name);

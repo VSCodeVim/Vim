@@ -84,8 +84,8 @@ export async function cleanUpWorkspace(): Promise<any> {
 export function setTextEditorOptions(tabSize: number, insertSpaces: boolean): void {
   Configuration.tabstop = tabSize;
   Configuration.expandtab = insertSpaces;
-  let options = vscode.window.activeTextEditor.options;
+  let options = vscode.window.activeTextEditor!.options;
   options.tabSize = tabSize;
   options.insertSpaces = insertSpaces;
-  vscode.window.activeTextEditor.options = options;
+  vscode.window.activeTextEditor!.options = options;
 }

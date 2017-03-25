@@ -6,11 +6,11 @@ import { Range } from './motion/range';
 import { Position } from './motion/position';
 
 export async function showInfo(message : string): Promise<{}> {
-  return vscode.window.showInformationMessage("Vim: " + message);
+  return vscode.window.showInformationMessage("Vim: " + message) as {};
 }
 
 export async function showError(message : string): Promise<{}> {
-  return vscode.window.showErrorMessage("Vim: " + message);
+  return vscode.window.showErrorMessage("Vim: " + message) as {};
 }
 
 /**
@@ -51,7 +51,7 @@ export async function waitForTabChange(): Promise<void> {
 export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(): Promise<Range[]> {
   await waitForCursorUpdatesToHappen();
 
-  return vscode.window.activeTextEditor.selections.map(x =>
+  return vscode.window.activeTextEditor!.selections.map(x =>
     new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
 }
 

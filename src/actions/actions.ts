@@ -232,12 +232,12 @@ export class DocumentContentChangeAction extends BaseAction {
         rightBoundary = newRightBoundary;
       }
 
-      vscode.window.activeTextEditor.selection = new vscode.Selection(newStart, newEnd);
+      vimState.editor.selection = new vscode.Selection(newStart, newEnd);
 
       if (newStart.isEqual(newEnd)) {
         await TextEditor.insert(contentChange.text, Position.FromVSCodePosition(newStart));
       } else {
-        await TextEditor.replace(vscode.window.activeTextEditor.selection, contentChange.text);
+        await TextEditor.replace(vimState.editor.selection, contentChange.text);
       }
     }
 
@@ -564,7 +564,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
           // If the line is empty except whitespace, backspace should return to
           // the next lowest level of indentation.
 
-          const tabSize = vscode.window.activeTextEditor.options.tabSize as number;
+          const tabSize = vimState.editor.options.tabSize as number;
           const desiredLineLength = Math.floor((line.length - 1) / tabSize) * tabSize;
 
           vimState.recordedState.transformations.push({
@@ -690,8 +690,8 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     await TextEditor.insertAt(text, position);
     vimState.currentMode = ModeName.Insert;
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
     return vimState;
   }
@@ -951,7 +951,7 @@ class CommandEscInsertMode extends BaseCommand {
     // ie, o/O in Normal mode or \n in Insert mode.
     const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
     if (['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
-        vscode.window.activeTextEditor.document.languageId !== 'plaintext' &&
+        vimState.editor.document.languageId !== 'plaintext' &&
         /^\s+$/.test(TextEditor.getLineAt(position).text)) {
       vimState.recordedState.transformations.push({
         type: "deleteRange",
@@ -1080,8 +1080,8 @@ export class CommandInsertPreviousText extends BaseCommand {
       }
     }
 
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.end);
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.currentMode = ModeName.Insert;
     return vimState;
   }
@@ -1118,8 +1118,8 @@ class CommandInsertBelowChar extends BaseCommand {
     const char = TextEditor.getText(new vscode.Range(charBelowCursorPosition, charBelowCursorPosition.getRight()));
     await TextEditor.insert(char, position);
 
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
     return vimState;
   }
@@ -1133,7 +1133,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalText = TextEditor.getLineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
-    const tabSize = Configuration.tabstop || Number(vscode.window.activeTextEditor.options.tabSize);
+    const tabSize = Configuration.tabstop || Number(vimState.editor.options.tabSize);
     const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
 
     TextEditor.replaceText(
@@ -1239,8 +1239,8 @@ class CommandInsertAboveChar extends BaseCommand {
     const char = TextEditor.getText(new vscode.Range(charAboveCursorPosition, charAboveCursorPosition.getRight()));
     await TextEditor.insert(char, position);
 
-    vimState.cursorStartPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
     return vimState;
   }
@@ -1589,7 +1589,7 @@ class CommandOverrideCopy extends BaseCommand {
         const start = Position.EarlierOf(range.start, range.stop);
         const stop  = Position.LaterOf(range.start, range.stop);
 
-        return vscode.window.activeTextEditor.document.getText(new vscode.Range(
+        return vimState.editor.document.getText(new vscode.Range(
           start,
           vimState.currentMode === ModeName.Insert ?
             stop :
@@ -1598,7 +1598,7 @@ class CommandOverrideCopy extends BaseCommand {
       }).join("\n");
     } else if (vimState.currentMode === ModeName.VisualLine) {
       text = vimState.allCursors.map(range => {
-        return vscode.window.activeTextEditor.document.getText(new vscode.Range(
+        return vimState.editor.document.getText(new vscode.Range(
           range.start.getLineBegin(),
           range.stop.getLineEnd()
         ));
@@ -1873,7 +1873,7 @@ export class DeleteOperator extends BaseOperator {
           }
         }
 
-        let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+        let text = vimState.editor.document.getText(new vscode.Range(start, end));
 
         // If we delete linewise to the final line of the document, we expect the line
         // to be removed. This is actually a special case because the newline
@@ -2054,7 +2054,7 @@ export class FormatOperator extends BaseOperator {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
+    vimState.editor.selection = new vscode.Selection(start, end);
     await vscode.commands.executeCommand("editor.action.formatSelection");
     let line = vimState.cursorStartPosition.line;
 
@@ -2077,7 +2077,7 @@ export class UpperCaseOperator extends BaseOperator {
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
       const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-      let text = vscode.window.activeTextEditor.document.getText(range);
+      let text = vimState.editor.document.getText(range);
 
       await TextEditor.replace(range, text.toUpperCase());
 
@@ -2101,7 +2101,7 @@ export class LowerCaseOperator extends BaseOperator {
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
       const range = new vscode.Range(start, new Position(end.line, end.character + 1));
-      let text = vscode.window.activeTextEditor.document.getText(range);
+      let text = vimState.editor.document.getText(range);
 
       await TextEditor.replace(range, text.toLowerCase());
 
@@ -2471,7 +2471,7 @@ class IndentOperator extends BaseOperator {
   keys = [">"];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    vscode.window.activeTextEditor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
+    vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
 
     await vscode.commands.executeCommand("editor.action.indentLines");
 
@@ -2514,7 +2514,7 @@ class OutdentOperator extends BaseOperator {
   keys = ["<"];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    vscode.window.activeTextEditor.selection = new vscode.Selection(start, end);
+    vimState.editor.selection = new vscode.Selection(start, end);
 
     await vscode.commands.executeCommand("editor.action.outdentLines");
     vimState.currentMode  = ModeName.Normal;
@@ -2722,7 +2722,7 @@ class CommandCenterScroll extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // In these modes you want to center on the cursor position
-    vscode.window.activeTextEditor.revealRange(
+    vimState.editor.revealRange(
       new vscode.Range(vimState.cursorPosition,
         vimState.cursorPosition),
       vscode.TextEditorRevealType.InCenter);
@@ -2995,12 +2995,12 @@ class CommandGoToDefinition extends BaseCommand {
   keys = ["g", "d"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const oldActiveEditor = vscode.window.activeTextEditor;
+    const oldActiveEditor = vimState.editor;
 
     await vscode.commands.executeCommand("editor.action.goToDeclaration");
 
-    if (oldActiveEditor === vscode.window.activeTextEditor) {
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    if (oldActiveEditor === vimState.editor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }
 
     return vimState;
@@ -3153,12 +3153,12 @@ class CommandNavigateBack extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const oldActiveEditor = vscode.window.activeTextEditor;
+    const oldActiveEditor = vimState.editor;
 
     await vscode.commands.executeCommand('workbench.action.navigateBack');
 
-    if (oldActiveEditor === vscode.window.activeTextEditor) {
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    if (oldActiveEditor === vimState.editor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }
 
     return vimState;
@@ -3172,12 +3172,12 @@ class CommandNavigateForward extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const oldActiveEditor = vscode.window.activeTextEditor;
+    const oldActiveEditor = vimState.editor;
 
     await vscode.commands.executeCommand('workbench.action.navigateForward');
 
-    if (oldActiveEditor === vscode.window.activeTextEditor) {
-      vimState.cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
+    if (oldActiveEditor === vimState.editor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }
 
     return vimState;
@@ -3605,15 +3605,15 @@ abstract class MoveByScreenLine extends BaseMovement {
     });
 
     if (vimState.currentMode === ModeName.Normal) {
-      return Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+      return Position.FromVSCodePosition(vimState.editor.selection.active);
     } else {
       /**
        * cursorMove command is handling the selection for us.
        * So we are not following our design principal (do no real movement inside an action) here.
        */
 
-      let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-      let stop = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+      let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
 
       // We want to swap the cursor start stop positions based on which direction we are moving, up or down
       if (start.line < position.line) {
@@ -3633,8 +3633,8 @@ abstract class MoveByScreenLine extends BaseMovement {
     });
 
     return {
-      start: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start),
-      stop: Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end)
+      start: Position.FromVSCodePosition(vimState.editor.selection.start),
+      stop: Position.FromVSCodePosition(vimState.editor.selection.end)
     };
   }
 }
@@ -4262,8 +4262,8 @@ class ActionJoinVisualMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let actionJoin = new ActionJoin();
-    let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    let end = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+    let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+    let end = Position.FromVSCodePosition(vimState.editor.selection.end);
 
     if (start.isAfter(end)) {
       [start, end] = [end, start];
@@ -4541,8 +4541,8 @@ class ActionJoinNoWhitespaceVisualMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let actionJoin = new ActionJoinNoWhitespace();
-    let start = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.start);
-    let end = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.end);
+    let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+    let end = Position.FromVSCodePosition(vimState.editor.selection.end);
 
     if (start.line === end.line) {
       return vimState;

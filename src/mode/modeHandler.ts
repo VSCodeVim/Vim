@@ -488,7 +488,7 @@ export class ModeHandler implements vscode.Disposable {
     ModeHandler.IsTesting = Globals.isTesting;
 
     this._vimState = new VimState();
-    this._vimState.editor = vscode.window.activeTextEditor;
+    this._vimState.editor = vscode.window.activeTextEditor!;
 
     this.identity = new EditorIdentity(vscode.window.activeTextEditor);
 
@@ -1702,7 +1702,6 @@ export class ModeHandler implements vscode.Disposable {
     let cursorRange: vscode.Range[] = [];
 
     // Draw block cursor.
-
     if (Configuration.useSolidBlockCursor) {
       await vscode.workspace
         .getConfiguration("editor")
@@ -1718,6 +1717,9 @@ export class ModeHandler implements vscode.Disposable {
         break;
       case VSCodeVimCursorType.Underline:
         cursorStyle = vscode.TextEditorCursorStyle.Underline;
+        break;
+      case VSCodeVimCursorType.Native:
+        cursorStyle = Configuration.userCursor;
         break;
     }
 

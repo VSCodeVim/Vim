@@ -93,7 +93,7 @@ export class SubstituteCommand extends node.CommandBase {
 
   async execute(modeHandler : ModeHandler): Promise<void> {
     const regex = this.getRegex(this._arguments, modeHandler);
-    const selection = vscode.window.activeTextEditor.selection;
+    const selection = modeHandler.vimState.editor.selection;
     const line = selection.start.isBefore(selection.end) ? selection.start.line : selection.end.line;
 
     await this.replaceTextAtLine(line, regex);
@@ -107,8 +107,8 @@ export class SubstituteCommand extends node.CommandBase {
       startLine = new vscode.Position(0, 0);
       endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
     } else {
-      startLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.left, modeHandler);
-      endLine = range.lineRefToPosition(vscode.window.activeTextEditor, range.right, modeHandler);
+      startLine = range.lineRefToPosition(modeHandler.vimState.editor, range.left, modeHandler);
+      endLine = range.lineRefToPosition(modeHandler.vimState.editor, range.right, modeHandler);
     }
 
     if (this._arguments.count && this._arguments.count >= 0) {
