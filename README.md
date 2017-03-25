@@ -49,7 +49,11 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
             "after": ["d", "d"]
         }
     ],
-    "vim.leader": "<space>"
+    "vim.leader": "<space>",
+    "vim.handleKeys":{
+        "<C-a>": false,
+        "<C-f>": false
+    }
 }
 ```
 
@@ -70,6 +74,17 @@ The following is a subset of the supported configurations; the full list is desc
 
     ```
     "vim.useCtrlKeys": true
+    ```
+
+#### handleKeys
+  * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
+  * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
+
+    ```
+    "vim.handleKeys":{
+        "<C-a>": false,
+        "<C-f>": false
+    }
     ```
 
 #### insertModeKeyBindings/otherModesKeyBindings
