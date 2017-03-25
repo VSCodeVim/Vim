@@ -10,6 +10,10 @@ export type ValueMapping = {
   [key: string]: OptionValue
 }
 
+export interface IHandleKeys {
+  [key: string]: boolean;
+}
+
 /**
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
