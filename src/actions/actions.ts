@@ -2095,6 +2095,27 @@ export class UpperCaseWithMotion extends UpperCaseOperator {
 }
 
 @RegisterAction
+export class UpperCaseWholeLine extends BaseCommand {
+  public keys = ["g", "U", "U"];
+  public modes = [ModeName.Normal];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const count = vimState.recordedState.count;
+    const fromPos = position.getLineBegin();
+    const toPos = position.getDownByCount(count).getLineEnd();
+    const range = new vscode.Range(fromPos, toPos);
+    let text = vscode.window.activeTextEditor.document.getText(range);
+
+    await TextEditor.replace(range, text.toUpperCase());
+
+    vimState.currentMode = ModeName.Normal;
+    vimState.cursorPosition = position;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 export class LowerCaseOperator extends BaseOperator {
     public keys = ["u"];
     public modes = [ModeName.Visual, ModeName.VisualLine];
@@ -2116,6 +2137,27 @@ export class LowerCaseOperator extends BaseOperator {
 export class LowerCaseWithMotion extends LowerCaseOperator {
   public keys = ["g", "u"];
   public modes = [ModeName.Normal];
+}
+
+@RegisterAction
+export class LowerCaseWholeLine extends BaseCommand {
+  public keys = ["g", "u", "u"];
+  public modes = [ModeName.Normal];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const count = vimState.recordedState.count;
+    const fromPos = position.getLineBegin();
+    const toPos = position.getDownByCount(count).getLineEnd();
+    const range = new vscode.Range(fromPos, toPos);
+    let text = vscode.window.activeTextEditor.document.getText(range);
+
+    await TextEditor.replace(range, text.toLowerCase());
+
+    vimState.currentMode = ModeName.Normal;
+    vimState.cursorPosition = position;
+
+    return vimState;
+  }
 }
 
 @RegisterAction
