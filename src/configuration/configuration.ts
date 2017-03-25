@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { taskQueue } from '../../src/taskQueue';
 import { Globals } from '../../src/globals';
+import { AngleBracketNotation } from '../../src/notation';
 
 export type OptionValue = number | string | boolean;
 export type ValueMapping = {
@@ -60,6 +61,48 @@ class ConfigurationClass {
       if (vimOptionValue !== null && vimOptionValue !== undefined) {
         this[option] = vimOptionValue;
       }
+    }
+
+    // Get configuration setting for handled keys, this allows user to disable
+    // certain key comboinations
+    const handleKeys = vscode.workspace.getConfiguration('vim')
+      .get<IHandleKeys[]>("handleKeys", []);
+
+    let pkg = require(__dirname + '/../../../package.json');
+
+    for (let keybinding of pkg.contributes.keybindings) {
+      let keyToBeBound = "";
+
+      /**
+       * On OSX, handle mac keybindings if we specified one.
+       */
+      if (process.platform === "darwin") {
+        keyToBeBound = keybinding.mac || keybinding.key;
+      } else if (process.platform === "linux") {
+        keyToBeBound = keybinding.linux || keybinding.key;
+      } else {
+        keyToBeBound = keybinding.key;
+      }
+
+      let bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+      // Set context for key that is not used
+      // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
+      // Or if user usese vim.handleKeys configuration option to set certain combinations to false
+      // By default, all key combinations are used so start with true
+      let useKey = true;
+
+      // Check for configuration setting disabling combo
+      if (handleKeys[bracketedKey] !== undefined) {
+        if (handleKeys[bracketedKey] === false) {
+          useKey = false;
+        }
+      } else if (!this.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
+        // Check for useCtrlKeys and if it is a <C- ctrl based keybinding
+        useKey = false;
+      }
+
+      // Set the context of whether or not this key will be used based on criteria from above
+      vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
     }
   }
 

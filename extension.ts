@@ -15,7 +15,7 @@ import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
 import { ModeName } from './src/mode/mode';
-import { Configuration, IHandleKeys } from './src/configuration/configuration'
+import { Configuration } from './src/configuration/configuration'
 
 interface VSCodeKeybinding {
   key: string;
@@ -245,11 +245,6 @@ export async function activate(context: vscode.ExtensionContext) {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
 
-  // Get configuration setting for handled keys, this allows user to disable
-  // certain key comboinations
-  const handleKeys = vscode.workspace.getConfiguration('vim')
-    .get<IHandleKeys[]>("handleKeys", []);
-
   for (let keybinding of packagejson.contributes.keybindings) {
     let keyToBeBound = "";
 
@@ -265,25 +260,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     let bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
-
-    // Set context for key that is not used
-    // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
-    // Or if user usese vim.handleKeys configuration option to set certain combinations to false
-    // By default, all key combinations are used so start with true
-    let useKey = true;
-
-    //Check for configuration setting disabling combo
-    if (handleKeys[bracketedKey] !== undefined) {
-      if (handleKeys[bracketedKey] === false) {
-        useKey = false;
-      }
-    } else if (!Configuration.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
-      // Check for useCtrlKeys and if it is a <C- ctrl based keybinding
-      useKey = false;
-    }
-
-    // Set the context of whether or not this key will be used based on criteria from above
-    vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
 
     // Register the keybinding
     registerCommand(context, keybinding.command, () => handleKeyEvent(`${ bracketedKey }`));
