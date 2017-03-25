@@ -2082,7 +2082,7 @@ export class UpperCaseOperator extends BaseOperator {
       await TextEditor.replace(range, text.toUpperCase());
 
       vimState.currentMode = ModeName.Normal;
-      vimState.cursorPosition = vimState.cursorPositionJustBeforeAnythingHappened[0];
+      vimState.cursorPosition = start;
 
       return vimState;
     }
@@ -2106,7 +2106,7 @@ export class LowerCaseOperator extends BaseOperator {
       await TextEditor.replace(range, text.toLowerCase());
 
       vimState.currentMode = ModeName.Normal;
-      vimState.cursorPosition = vimState.cursorPositionJustBeforeAnythingHappened[0];
+      vimState.cursorPosition = start;
 
       return vimState;
     }
