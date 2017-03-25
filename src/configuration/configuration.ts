@@ -67,7 +67,7 @@ class ConfigurationClass {
     const handleKeys = vscode.workspace.getConfiguration('vim')
       .get<IHandleKeys[]>("handleKeys", []);
 
-    for (let bracketedKey of this.boundKeyCombinations) {
+    for (const bracketedKey of this.boundKeyCombinations) {
       // Set context for key that is not used
       // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
       // Or if user usese vim.handleKeys configuration option to set certain combinations to false
