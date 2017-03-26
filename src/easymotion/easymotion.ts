@@ -143,9 +143,10 @@ export class EasyMotion {
       }
 
       if (font === undefined) { font = "Consolas"; }
-      if (fontColor === undefined) { fontColor = "black"; }
+      if (fontColor === undefined) { fontColor = "white"; }
       if (fontSize === undefined) { fontSize = "14"; }
       if (fontWeight === undefined) { fontWeight = "normal"; }
+      if (backgroundColor === undefined) { backgroundColor = "black"; }
 
       const width = code.length * 8 + 1;
       var uri = vscode.Uri.parse(
