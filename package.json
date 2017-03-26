@@ -352,6 +352,11 @@
                     "description": "Enable the EasyMotion plugin for Vim.",
                     "default": false
                 },
+                "vim.easymotionChangeBackgroundColor": {
+                    "type": "boolean",
+                    "description": "Set to true to use vim.searchHighlightColor as background color",
+                    "default": false
+                },
                 "vim.hlsearch": {
                     "type": "boolean",
                     "description": "Show all matches of the most recent search pattern",

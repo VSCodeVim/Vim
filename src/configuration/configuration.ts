@@ -173,6 +173,11 @@ class ConfigurationClass {
   easymotion = false;
 
   /**
+   * Use searchHighlightColor for easymotion background
+   */
+  easymotionChangeBackgroundColor = false;
+
+  /**
    * Timeout in milliseconds for remapped commands.
    */
   timeout = 1000;

@@ -305,7 +305,7 @@ export class EasyMotion {
 
     // Compute font color based on background (remove opacity)
     var Color = require('color');
-    const backgroundColor = Color.rgb(Configuration.searchHighlightColor).alpha(1.0);
+    let backgroundColor = Color.rgb(Configuration.searchHighlightColor).alpha(1.0);
 
     let fontColor = "white";
     if (backgroundColor.light()) {
@@ -326,6 +326,11 @@ export class EasyMotion {
 
       if (!this.decorations[keystroke.length]) {
         this.decorations[keystroke.length] = [];
+      }
+
+      if (!Configuration.easymotionChangeBackgroundColor) {
+        fontColor = keystroke.length > 1 ? "orange" : "red";
+        backgroundColor = Color('black');
       }
 
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
