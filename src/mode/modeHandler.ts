@@ -602,6 +602,16 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+    if (e.selections.length !== this.vimState.allCursors.length) {
+      // Number of selections changed, make sure we know about all of them still
+      this.vimState.allCursors = vscode.window.activeTextEditor!.selections.map(x =>
+        new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
+
+      await this.updateView(this.vimState);
+
+      return;
+    }
+
     if (this.vimState.isMultiCursor) {
       // AAAAAARGGHHHHH - johnfn
 
