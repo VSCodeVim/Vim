@@ -27,6 +27,7 @@ export class EasyMotion {
    */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
   private static svgCache: { [code: string] : vscode.Uri } = {};
+  private static setBackgroundColor: string = "";
 
   /**
    * The key sequence for marker name generation
@@ -129,6 +130,13 @@ export class EasyMotion {
    */
   private static getSvgDataUri(code: string, backgroundColor: string, font: string, fontColor: string,
     fontSize: string, fontWeight: string): vscode.Uri {
+
+      // Clear cache if the backgroundColor has changed
+      if (this.setBackgroundColor !== backgroundColor) {
+        this.svgCache = {};
+        this.setBackgroundColor = backgroundColor;
+      }
+
       var cache = this.svgCache[code];
       if (cache) {
         return cache;
@@ -326,12 +334,12 @@ export class EasyMotion {
         renderOptions: {
           dark: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor, font, fontColor, fontSize, fontWeight)
+              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor.string(), font, fontColor, fontSize, fontWeight)
             }
           },
           light: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor, font, fontColor, fontSize, fontWeight)
+              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor.string(), font, fontColor, fontSize, fontWeight)
             }
           }
         }
