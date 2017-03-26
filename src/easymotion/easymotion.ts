@@ -127,26 +127,24 @@ export class EasyMotion {
   /**
    * Create and cache the SVG data URI for different marker codes and colors
    */
-  private static getSvgDataUri(code: string, backgroundColor: string, font: string, fontColor: string): vscode.Uri {
-      // var cache = this.svgCache[code];
-      // if (cache) {
-      //   return cache;
-      // }
-
-      if (font === undefined) {
-        font = "Consolas";
+  private static getSvgDataUri(code: string, backgroundColor: string, font: string, fontColor: string,
+    fontSize: string, fontWeight: string): vscode.Uri {
+      var cache = this.svgCache[code];
+      if (cache) {
+        return cache;
       }
 
-      if (fontColor === undefined) {
-        fontColor = "black";
-      }
+      if (font === undefined) { font = "Consolas"; }
+      if (fontColor === undefined) { fontColor = "black"; }
+      if (fontSize === undefined) { fontSize = "14"; }
+      if (fontWeight === undefined) { fontWeight = "normal"; }
 
       const width = code.length * 8 + 1;
       var uri = vscode.Uri.parse(
         `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
         `13" height="14" width="${width}"><rect width="${width}" height="14" rx="2" ry="2" ` +
-        `style="fill: ${backgroundColor};"></rect><text font-family="${font}" font-size="14px" ` +
-        `fill="${fontColor}" x="1" y="10">${code}</text></svg>`);
+        `style="fill: ${backgroundColor};"></rect><text font-family="${font}" font-size="${fontSize}" ` +
+        `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="10">${code}</text></svg>`);
 
       this.svgCache[code] = uri;
 
@@ -293,6 +291,8 @@ export class EasyMotion {
     this.decorations = [];
 
     const font = vscode.workspace.getConfiguration().get("editor.fontFamily") as string;
+    const fontSize = vscode.workspace.getConfiguration().get("editor.fontSize") as string;
+    const fontWeight = vscode.workspace.getConfiguration().get("editor.fontWeight") as string;
 
     // Compute font color based on background (remove opacity)
     var Color = require('color');
@@ -326,12 +326,12 @@ export class EasyMotion {
         renderOptions: {
           dark: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor, font, fontColor)
+              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor, font, fontColor, fontSize, fontWeight)
             }
           },
           light: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor, font, fontColor)
+              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor, font, fontColor, fontSize, fontWeight)
             }
           }
         }
