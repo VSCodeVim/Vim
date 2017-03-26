@@ -931,16 +931,14 @@ export class ModeHandler implements vscode.Disposable {
     let ranRepeatableAction = false;
     let ranAction = false;
 
-    // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
+    // If mouse was used prior to entering characters while in insert mode, create an undo point
     // this needs to happen before any changes are made
-    if (!vimState.isMultiCursor) {
-      let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
-      if (prevPos !== undefined && !vimState.isRunningDotCommand) {
-        if (vimState.cursorPositionJustBeforeAnythingHappened[0].line !== prevPos[0].line ||
-          vimState.cursorPositionJustBeforeAnythingHappened[0].character !== prevPos[0].character) {
-          vimState.globalState.previousFullAction = recordedState;
-          vimState.historyTracker.finishCurrentStep();
-        }
+    const prevPos = vimState.historyTracker.getLastHistoryEndPosition();
+    if (prevPos !== undefined && !vimState.isRunningDotCommand) {
+      if (vimState.cursorPositionJustBeforeAnythingHappened[0].line !== prevPos[0].line ||
+        vimState.cursorPositionJustBeforeAnythingHappened[0].character !== prevPos[0].character) {
+        vimState.globalState.previousFullAction = recordedState;
+        vimState.historyTracker.finishCurrentStep();
       }
     }
 
@@ -1080,8 +1078,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // Update the current history step to have the latest cursor position
-
+    // Update the current history step to have the latest cursor positions
     vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
 
     if (vimState.getModeObject(this).isVisualMode) {
