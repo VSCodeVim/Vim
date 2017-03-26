@@ -128,7 +128,7 @@ export class EasyMotion {
   /**
    * Create and cache the SVG data URI for different marker codes and colors
    */
-  private static getSvgDataUri(code: string, backgroundColor: string, font: string, fontColor: string,
+  private static getSvgDataUri(code: string, backgroundColor: string, fontFamily: string, fontColor: string,
     fontSize: string, fontWeight: string): vscode.Uri {
 
       // Clear cache if the backgroundColor has changed
@@ -142,7 +142,7 @@ export class EasyMotion {
         return cache;
       }
 
-      if (font === undefined) { font = "Consolas"; }
+      if (fontFamily === undefined) { fontFamily = "Consolas"; }
       if (fontColor === undefined) { fontColor = "white"; }
       if (fontSize === undefined) { fontSize = "14"; }
       if (fontWeight === undefined) { fontWeight = "normal"; }
@@ -152,7 +152,7 @@ export class EasyMotion {
       var uri = vscode.Uri.parse(
         `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
         `13" height="14" width="${width}"><rect width="${width}" height="14" rx="2" ry="2" ` +
-        `style="fill: ${backgroundColor};"></rect><text font-family="${font}" font-size="${fontSize}" ` +
+        `style="fill: ${backgroundColor};"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
         `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="10">${code}</text></svg>`);
 
       this.svgCache[code] = uri;
@@ -299,7 +299,7 @@ export class EasyMotion {
     this.visibleMarkers = [];
     this.decorations = [];
 
-    const font = vscode.workspace.getConfiguration().get("editor.fontFamily") as string;
+    const fontFamily = vscode.workspace.getConfiguration().get("editor.fontFamily") as string;
     const fontSize = vscode.workspace.getConfiguration().get("editor.fontSize") as string;
     const fontWeight = vscode.workspace.getConfiguration().get("editor.fontWeight") as string;
 
@@ -335,12 +335,14 @@ export class EasyMotion {
         renderOptions: {
           dark: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor.string(), font, fontColor, fontSize, fontWeight)
+              contentIconPath: EasyMotion.getSvgDataUri(
+                keystroke, backgroundColor.string(), fontFamily, fontColor, fontSize, fontWeight)
             }
           },
           light: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, backgroundColor.string(), font, fontColor, fontSize, fontWeight)
+              contentIconPath: EasyMotion.getSvgDataUri(
+                keystroke, backgroundColor.string(), fontFamily, fontColor, fontSize, fontWeight)
             }
           }
         }
