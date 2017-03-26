@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
+import { Configuration } from './../configuration/configuration';
 
 export class EasyMotion {
   /**
@@ -26,6 +27,7 @@ export class EasyMotion {
    */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
   private static svgCache: { [code: string] : vscode.Uri } = {};
+  private static setBackgroundColor: string = "";
 
   /**
    * The key sequence for marker name generation
@@ -126,18 +128,32 @@ export class EasyMotion {
   /**
    * Create and cache the SVG data URI for different marker codes and colors
    */
-  private static getSvgDataUri(code: string, backgroundColor: string, fontColor: string): vscode.Uri {
+  private static getSvgDataUri(code: string, backgroundColor: string, fontFamily: string, fontColor: string,
+    fontSize: string, fontWeight: string): vscode.Uri {
+
+      // Clear cache if the backgroundColor has changed
+      if (this.setBackgroundColor !== backgroundColor) {
+        this.svgCache = {};
+        this.setBackgroundColor = backgroundColor;
+      }
+
       var cache = this.svgCache[code];
       if (cache) {
         return cache;
       }
 
+      if (fontFamily === undefined) { fontFamily = "Consolas"; }
+      if (fontColor === undefined) { fontColor = "white"; }
+      if (fontSize === undefined) { fontSize = "14"; }
+      if (fontWeight === undefined) { fontWeight = "normal"; }
+      if (backgroundColor === undefined) { backgroundColor = "black"; }
+
       const width = code.length * 8 + 1;
       var uri = vscode.Uri.parse(
         `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
         `13" height="14" width="${width}"><rect width="${width}" height="14" rx="2" ry="2" ` +
-        `style="fill: ${backgroundColor};"></rect><text font-family="Consolas" font-size="14px" ` +
-        `fill="${fontColor}" x="1" y="10">${code}</text></svg>`);
+        `style="fill: ${backgroundColor};"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
+        `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="10">${code}</text></svg>`);
 
       this.svgCache[code] = uri;
 
@@ -282,6 +298,20 @@ export class EasyMotion {
 
     this.visibleMarkers = [];
     this.decorations = [];
+
+    const fontFamily = vscode.workspace.getConfiguration().get("editor.fontFamily") as string;
+    const fontSize = vscode.workspace.getConfiguration().get("editor.fontSize") as string;
+    const fontWeight = vscode.workspace.getConfiguration().get("editor.fontWeight") as string;
+
+    // Compute font color based on background (remove opacity)
+    var Color = require('color');
+    let backgroundColor = Color.rgb(Configuration.searchHighlightColor).alpha(1.0);
+
+    let fontColor = "white";
+    if (backgroundColor.light()) {
+      fontColor = "black";
+    }
+
     for (var i = 0; i < this.markers.length; i++) {
       var marker = this.getMarker(i);
 
@@ -294,10 +324,13 @@ export class EasyMotion {
       // Get keys after the depth we're at
       var keystroke = marker.name.substr(this.accumulation.length);
 
-      let fontColor = keystroke.length > 1 ? "orange" : "red";
-
       if (!this.decorations[keystroke.length]) {
         this.decorations[keystroke.length] = [];
+      }
+
+      if (!Configuration.easymotionChangeBackgroundColor) {
+        fontColor = keystroke.length > 1 ? "orange" : "red";
+        backgroundColor = Color('black');
       }
 
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
@@ -307,12 +340,14 @@ export class EasyMotion {
         renderOptions: {
           dark: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, "black", fontColor)
+              contentIconPath: EasyMotion.getSvgDataUri(
+                keystroke, backgroundColor.string(), fontFamily, fontColor, fontSize, fontWeight)
             }
           },
           light: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, "black", "white")
+              contentIconPath: EasyMotion.getSvgDataUri(
+                keystroke, backgroundColor.string(), fontFamily, fontColor, fontSize, fontWeight)
             }
           }
         }
