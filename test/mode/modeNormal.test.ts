@@ -1357,7 +1357,15 @@ suite("Mode Normal", () => {
 
     newTest({
       title: "Can do cit on a multiline tag",
-      start: [" <blink>\nhe|llo\n</blink>"],
+      start: [" <blink>\nhe|llo\ntext</blink>"],
+      keysPressed: "cit",
+      end: [" <blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit on a multiline tag with nested tags",
+      start: [" <blink>\n<h1>hello</h1>\nh<br>e|llo\nte</h1>xt</blink>"],
       keysPressed: "cit",
       end: [" <blink>|</blink>"],
       endMode: ModeName.Insert
