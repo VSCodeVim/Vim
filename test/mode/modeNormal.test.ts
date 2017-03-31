@@ -1357,7 +1357,7 @@ suite("Mode Normal", () => {
 
     newTest({
       title: "Can do cit on a multiline tag",
-      start: [" <blink>\nhe|llo\n </blink>"],
+      start: [" <blink>\nhe|llo\n</blink>"],
       keysPressed: "cit",
       end: [" <blink>|</blink>"],
       endMode: ModeName.Insert

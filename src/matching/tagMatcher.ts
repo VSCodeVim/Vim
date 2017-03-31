@@ -1,5 +1,5 @@
 export class TagMatcher {
-  static TAG_REGEX = /\<(\/)?([^\>\<\s]+)\s*(\/?)\s*\>/g;
+  static TAG_REGEX = /\<(\/)?([^\>\<\s]+)[^\>\<]*(\/?)\>/g;
   static OPEN_FORWARD_SLASH = 1;
   static TAG_NAME = 2;
   static CLOSE_FORWARD_SLASH = 3;
