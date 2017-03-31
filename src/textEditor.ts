@@ -148,7 +148,7 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.selection;
   }
 
-  static getText(selection: vscode.Range): string {
+  static getText(selection?: vscode.Range): string {
     return vscode.window.activeTextEditor!.document.getText(selection);
   }
 
@@ -243,6 +243,16 @@ export class TextEditor {
     }
 
     return indentString + line.substring(firstNonWhiteSpace, line.length);
+  }
+
+  static getPositionAt(offset: number) : Position {
+    const pos = vscode.window.activeTextEditor!.document.positionAt(offset);
+
+    return new Position(pos.line, pos.character);
+  }
+
+  static getOffsetAt(position: Position) : number {
+    return vscode.window.activeTextEditor!.document.offsetAt(position);
   }
 }
 

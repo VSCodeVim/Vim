@@ -6156,8 +6156,9 @@ abstract class MoveTagMatch extends BaseMovement {
   protected includeTag = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const text = TextEditor.getLineAt(position).text;
-    const tagMatcher = new TagMatcher(text, position.character);
+    const editorText = TextEditor.getText();
+    const offset = TextEditor.getOffsetAt(position);
+    const tagMatcher = new TagMatcher(editorText, offset);
     const start = tagMatcher.findOpening(this.includeTag);
     const end = tagMatcher.findClosing(this.includeTag);
 
@@ -6169,24 +6170,24 @@ abstract class MoveTagMatch extends BaseMovement {
       };
     }
 
-    if (end === start) {
+    if (start === end) {
       return {
-        start:  new Position(position.line, start),
-        stop:   new Position(position.line, start),
+        start: new Position(position.line, start),
+        stop: new Position(position.line, start),
         failed: true,
       };
     }
 
-    let startPos = new Position(position.line, start);
-    let endPos = new Position(position.line, end - 1);
+    let startPosition = start ? TextEditor.getPositionAt(start) : position;
+    let endPosition = end ? TextEditor.getPositionAt(end) : position;
 
-    if (position.isBefore(startPos)) {
-      vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
+    if (position.isBefore(startPosition)) {
+      vimState.recordedState.operatorPositionDiff = startPosition.subtract(position);
     }
 
     return {
-      start: startPos,
-      stop: endPos
+      start: startPosition,
+      stop: new Position(endPosition.line, endPosition.character - 1)
     };
   }
 
