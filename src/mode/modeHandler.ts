@@ -933,6 +933,11 @@ export class ModeHandler implements vscode.Disposable {
 
     // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
     // this needs to happen before any changes are made
+
+    /*
+
+    TODO: This causes . to crash vscodevim for some reason.
+
     if (!vimState.isMultiCursor) {
       let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
       if (prevPos !== undefined && !vimState.isRunningDotCommand) {
@@ -943,6 +948,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
     }
+    */
 
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
