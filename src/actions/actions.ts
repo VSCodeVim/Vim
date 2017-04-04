@@ -550,6 +550,13 @@ export class CommandInsertInInsertMode extends BaseCommand {
     const char = this.keysPressed[this.keysPressed.length - 1];
     const line = TextEditor.getLineAt(position).text;
 
+    // If we are inserting in a different place than we last inserted (used
+    // arrow keys to get here) then we want to create an undo point
+    if (vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1].keysPressed.length < 2 &&
+      vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2] instanceof ArrowsInInsertMode) {
+      vimState.historyTracker.finishCurrentStep();
+    }
+
     if (char === "<BS>") {
       const selection = TextEditor.getSelection();
 
