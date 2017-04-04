@@ -165,7 +165,7 @@ Status | Command | Description
 
 ## Using tags
 
-The following are all marked low priority because VSCode has very good support for tags with Goto Symbol. Try it from the comand palette if you haven't yet!
+The following are all marked low priority because VSCode has very good support for tags with Goto Symbol. Try it from the command palette if you haven't yet!
 
 Status | Command | Description
 ---|--------|------------------------------
@@ -306,6 +306,11 @@ Status | Command | Description
 :white_check_mark:| :[range]d [x]	| delete [range] lines [into register x]
 
 ## Copying and moving text
+
+Miscellanea:
+
+* We don't currently support the black hole register. [associated issue](https://github.com/VSCodeVim/Vim/issues/1357)
+* We don't support read only registers.
 
 Status | Command | Description | Note
 ---|--------|-------------|-----------------
@@ -480,8 +485,8 @@ Status | Command | Default Value | Description
 
 Status | Command | Description | Note
 ---|--------|-------|------------------------------
-:warning:| :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
-:warning: | :1234: CTRL-R |	redo last N undone changes | As above.
+:white_check_mark: | :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
+:white_check_mark: | :1234: CTRL-R |	redo last N undone changes | As above.
  | U | restore last changed line
 
 ## External commands
@@ -553,6 +558,8 @@ Status | Command | Description | Note
 The folding method can be set with the 'foldmethod' option. This is currently not possible as we are relying on Code's Fold logic.
 
 ### Fold commands
+
+Pretty much everything fold-related is blocked by [this issue](https://github.com/VSCodeVim/Vim/issues/1004).
 
 Status | Command | Description
 ---|--------|------------------------------
