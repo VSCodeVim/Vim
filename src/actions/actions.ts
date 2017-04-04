@@ -6527,6 +6527,32 @@ class ActionEasyMotionBeginningWordCommand extends BaseEasyMotionCommand {
 }
 
 @RegisterAction
+class ActionEasyMotionDownLines extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<leader>", "<leader>", "j"];
+
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    // Search for the beginning of all line start chars after the cursor
+    return vimState.easyMotion.sortedSearch(position, new RegExp("^.", "gm"), {
+      min: position
+    });
+  }
+}
+
+@RegisterAction
+class ActionEasyMotionUpLines extends BaseEasyMotionCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["<leader>", "<leader>", "k"];
+
+  public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
+    // Search for the beginning of all line start chars before the cursor
+    return vimState.easyMotion.sortedSearch(position, new RegExp("^.", "gm"), {
+      max: position
+    });
+  }
+}
+
+@RegisterAction
 class MoveEasyMotion extends BaseCommand {
   modes = [ModeName.EasyMotionMode];
   keys = ["<character>"];
