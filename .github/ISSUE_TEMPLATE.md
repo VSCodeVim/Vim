@@ -1,5 +1,5 @@
 <!--
-For questions, ask us on [Slack](https://vscodevim-slackin.azurewebsites.net/) 👫. Found a bug? Delete this line and fill out the sections below.
+For questions, ask us on [Slack](https://vscodevim-slackin.azurewebsites.net/) 👫. 
 -->
 
 Please *thumbs-up* 👍 this issue if it personally affects you! You can do this by clicking on the emoji-face on the top right of this post. Issues with more thumbs-up will be prioritized.
