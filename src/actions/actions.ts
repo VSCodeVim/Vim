@@ -6242,7 +6242,7 @@ class ActionTriggerHover extends BaseCommand {
 
 @RegisterAction
 class ActionOverrideCmdD extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.Insert];
   keys = [
     ["<D-d>"],
     ["g", "c"]
