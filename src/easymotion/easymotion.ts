@@ -407,6 +407,10 @@ export module EasyMotion {
     public get index(): number {
       return this._index;
     }
+
+    public set position(position: Position) {
+      this._position = position;
+    }
   }
 
   export interface SearchOptions {

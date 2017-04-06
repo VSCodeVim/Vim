@@ -6532,10 +6532,15 @@ class ActionEasyMotionDownLines extends BaseEasyMotionCommand {
   keys = ["<leader>", "<leader>", "j"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    // Search for the beginning of all line start chars after the cursor
-    return vimState.easyMotion.sortedSearch(position, new RegExp("^.", "gm"), {
+    // Search for the beginning of all non whitespace chars on each line after the cursor
+    let matches = vimState.easyMotion.sortedSearch(position, new RegExp("^.", "gm"), {
       min: position
     });
+
+    for (let match of matches) {
+      match.position = match.position.getFirstLineNonBlankChar();
+    }
+    return matches;
   }
 }
 
@@ -6545,10 +6550,15 @@ class ActionEasyMotionUpLines extends BaseEasyMotionCommand {
   keys = ["<leader>", "<leader>", "k"];
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    // Search for the beginning of all line start chars before the cursor
-    return vimState.easyMotion.sortedSearch(position, new RegExp("^.", "gm"), {
+    // Search for the beginning of all non whitespace chars on each line before the cursor
+    let matches = vimState.easyMotion.sortedSearch(position, new RegExp("^.", "gm"), {
       max: position
     });
+
+    for (let match of matches) {
+      match.position = match.position.getFirstLineNonBlankChar();
+    }
+    return matches;
   }
 }
 
