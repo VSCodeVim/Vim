@@ -387,7 +387,7 @@
                     "description": "Start in Insert Mode."
                 },
                 "vim.handleKeys": {
-                    "type": "array",
+                    "type": "object",
                     "description": "Option to delegate certain key combinations back to VSCode to be handled natively"
                 }
             }
