@@ -7,7 +7,9 @@ DONT CHANGE ANYTHING UNTIL THE -----. Thanks!
 * Click *thumbs-up* 👍 on this issue if you want it!
 * Click *confused* 😕 on this issue if not having it makes VSCodeVim unusable. 
 
------
+The VSCodeVim team prioritizes issues based on reaction count. 
+
+--------
 
 ### What did you do?
 
