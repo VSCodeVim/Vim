@@ -711,6 +711,7 @@ export class ModeHandler implements vscode.Disposable {
 
           // double click mouse selection causes an extra character to be selected so take one less character
           this._vimState.cursorPosition = this._vimState.cursorPosition.getLeft();
+          toDraw = true;
         }
       } else {
         if (this._vimState.currentMode !== ModeName.Insert) {
