@@ -5,7 +5,7 @@ DONT CHANGE ANYTHING UNTIL THE -----. Thanks!
 -->
 
 * Click *thumbs-up* 👍 on this issue if you want it!
-* Click *confused* 😕 on this issue if it is BLOCKING you from using VSCodeVim. 
+* Click *confused* 😕 on this issue if not having it makes VSCodeVim unusable. 
 
 -----
 
