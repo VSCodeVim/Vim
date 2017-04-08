@@ -2732,6 +2732,25 @@ class CommandCenterScroll extends BaseCommand {
 }
 
 @RegisterAction
+class CommandCenterScrollFirstChar extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["z", "."];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // In these modes you want to center on the cursor position
+    // This particular one moves cursor to first non blank char though
+    vimState.editor.revealRange(
+      new vscode.Range(vimState.cursorPosition, vimState.cursorPosition),
+      vscode.TextEditorRevealType.InCenter);
+
+    // Move cursor to first char of line
+    vimState.cursorPosition = vimState.cursorPosition.getFirstLineNonBlankChar();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandTopScroll extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["z", "t"];
