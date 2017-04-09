@@ -9,7 +9,7 @@ os:
 addons:
   apt:
     packages:
-    - xclip
+    - xsel
 
 language: node_js
 

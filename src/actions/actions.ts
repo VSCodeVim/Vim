@@ -20,8 +20,8 @@ import { EasyMotion } from './../easymotion/easymotion';
 import { FileCommand } from './../cmd_line/commands/file';
 import { QuitCommand } from './../cmd_line/commands/quit';
 import * as vscode from 'vscode';
-import * as clipboard from 'copy-paste';
 
+const clipboardy = require('clipboardy');
 
 const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);
@@ -1540,9 +1540,7 @@ class CommandCtrlVInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = vimState.globalState.searchState!;
-    const textFromClipboard = await new Promise<string>((resolve, reject) =>
-      clipboard.paste((err, text) => err ? reject(err) : resolve(text))
-    );
+    const textFromClipboard = clipboardy.readSync();
 
     searchState.searchString += textFromClipboard;
     return vimState;
@@ -1557,9 +1555,7 @@ class CommandCmdVInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = vimState.globalState.searchState!;
-    const textFromClipboard = await new Promise<string>((resolve, reject) =>
-      clipboard.paste((err, text) => err ? reject(err) : resolve(text))
-    );
+    const textFromClipboard = clipboardy.readSync();
 
     searchState.searchString += textFromClipboard;
     return vimState;
@@ -1608,15 +1604,7 @@ class CommandOverrideCopy extends BaseCommand {
         text += line + '\n';
       }
     }
-
-    clipboard.copy(text, (err) => {
-      if (err) {
-        vscode.window.showErrorMessage(`Error copying to clipboard.
-        If you are on Linux, try installing xclip. If that doesn't work, set
-        vim.overrideCopy to be false to get subpar behavior. And make some
-        noise on VSCode's issue #217 if you want this fixed.`);
-      }
-    });
+    clipboardy.writeSync(text);
 
     return vimState;
   }
