@@ -9,7 +9,6 @@ os:
 addons:
   apt:
     packages:
-    - xsel
 
 language: node_js
 

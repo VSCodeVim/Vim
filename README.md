@@ -183,7 +183,6 @@ Or bind `<leader>w` to save the current file:
 #### useSystemClipboard
   * Enable yanking to the system clipboard by default
   * Type: Boolean (Default: `false`)
-  * Note: Linux users must have xsel installed
 
 #### searchHighlightColor
   * Set the color of search highlights.
