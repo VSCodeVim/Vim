@@ -20,8 +20,7 @@ import { EasyMotion } from './../easymotion/easymotion';
 import { FileCommand } from './../cmd_line/commands/file';
 import { QuitCommand } from './../cmd_line/commands/quit';
 import * as vscode from 'vscode';
-
-const clipboardy = require('clipboardy');
+import * as util from './../util';
 
 const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);
@@ -1540,7 +1539,7 @@ class CommandCtrlVInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = vimState.globalState.searchState!;
-    const textFromClipboard = clipboardy.readSync();
+    const textFromClipboard = util.clipboardPaste();
 
     searchState.searchString += textFromClipboard;
     return vimState;
@@ -1555,7 +1554,7 @@ class CommandCmdVInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = vimState.globalState.searchState!;
-    const textFromClipboard = clipboardy.readSync();
+    const textFromClipboard = util.clipboardPaste();
 
     searchState.searchString += textFromClipboard;
     return vimState;
@@ -1604,7 +1603,8 @@ class CommandOverrideCopy extends BaseCommand {
         text += line + '\n';
       }
     }
-    clipboardy.writeSync(text);
+
+    util.clipboardCopy(text);
 
     return vimState;
   }

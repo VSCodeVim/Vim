@@ -1,7 +1,6 @@
 import { VimState, RecordedState } from './../mode/modeHandler';
 import { YankOperator, CommandYankFullLine, BaseOperator, BaseCommand, CommandRegister, DeleteOperator } from './../actions/actions';
-
-const clipboardy = require('clipboardy');
+import *  as util from './../util';
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -137,7 +136,7 @@ export class Register {
         }
         clipboardText = clipboardText.replace(/\n$/, "");
 
-        clipboardy.writeSync(clipboardText);
+        util.clipboardCopy(clipboardText);
       }
 
       Register.ProcessNumberedRegister(registerContent.text, vimState);
@@ -192,7 +191,7 @@ export class Register {
    */
   private static putNormalRegister(content: RegisterContent, register: string, vimState: VimState): void {
     if (Register.isClipboardRegister(register)) {
-      clipboardy.writeSync(content);
+      util.clipboardCopy(content.toString());
     }
 
       Register.registers[register.toLowerCase()] = {
@@ -241,7 +240,7 @@ export class Register {
     }
 
     if (Register.isClipboardRegister(register)) {
-      clipboardy.writeSync(content);
+      util.clipboardCopy(content.toString());
     }
 
     Register.registers[register] = {
@@ -312,7 +311,7 @@ export class Register {
 
     /* Read from system clipboard */
     if (Register.isClipboardRegister(register)) {
-      let text = clipboardy.readSync();
+      let text = util.clipboardPaste();
 
       // Harmonize newline character
       text = text.replace(/\r\n/g, '\n');

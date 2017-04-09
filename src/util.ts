@@ -13,6 +13,21 @@ export async function showError(message : string): Promise<{}> {
   return vscode.window.showErrorMessage("Vim: " + message) as {};
 }
 
+const clipboardy = require('clipboardy');
+
+export function clipboardCopy(text: string) {
+  // Set utf-8 if on macOS
+  if (process.platform === 'darwin') {
+    process.env.LANG = 'en_US.UTF-8';
+  }
+
+  clipboardy.writeSync(text);
+}
+
+export function clipboardPaste(): string {
+  return clipboardy.readSync();
+}
+
 /**
  * This is certainly quite janky! The problem we're trying to solve
  * is that writing editor.selection = new Position() won't immediately

@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { ModeHandler } from "../../src/mode/modeHandler";
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
+import * as util from '../../src/util';
 
 suite("register", () => {
   let modeHandler: ModeHandler;
@@ -27,8 +28,7 @@ suite("register", () => {
     end: ["two", "|one"],
   });
 
-  const clipboardy = require('clipboardy');
-  clipboardy.writeSync("12345");
+  util.clipboardCopy("12345");
 
   newTest({
     title: "Can access '*' (clipboard) register",
