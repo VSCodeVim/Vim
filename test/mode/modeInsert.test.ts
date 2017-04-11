@@ -199,7 +199,7 @@ suite("Mode Insert", () => {
       end: ['123|testtest123']
     });
 
-    newTestOnly({
+    newTest({
       title: "Can perform insert command prefixed with count",
       start: ['tes|t'],
       keysPressed: '2i_<Esc>',
