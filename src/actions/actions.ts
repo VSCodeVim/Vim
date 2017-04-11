@@ -6640,6 +6640,11 @@ class CommandSurroundModeStart extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Only execute the action if the configuration is set
+    if (!Configuration.surround) {
+      return vimState;
+    }
+
     const operator = vimState.recordedState.operator;
     let operatorString: "change" | "delete" | "yank" | undefined;
 
@@ -6688,6 +6693,11 @@ class CommandSurroundModeStartVisual extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // Only execute the action if the configuration is set
+    if (!Configuration.surround) {
+      return vimState;
+    }
+
     // Make sure cursor positions are ordered correctly for top->down or down->top selection
     if (vimState.cursorStartPosition.line > vimState.cursorPosition.line) {
       [vimState.cursorPosition, vimState.cursorStartPosition] =

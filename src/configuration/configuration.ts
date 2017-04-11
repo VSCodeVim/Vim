@@ -173,6 +173,11 @@ class ConfigurationClass {
   easymotion = false;
 
   /**
+   * Use surround plugin?
+   */
+  surround = true;
+
+  /**
    * Use searchHighlightColor for easymotion background
    */
   easymotionChangeBackgroundColor = false;

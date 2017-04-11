@@ -357,6 +357,11 @@
                     "description": "Set to true to use vim.searchHighlightColor as background color",
                     "default": false
                 },
+                "vim.surround": {
+                    "type": "boolean",
+                    "description": "Enable the Surround plugin for Vim.",
+                    "default": true
+                },
                 "vim.hlsearch": {
                     "type": "boolean",
                     "description": "Show all matches of the most recent search pattern",
