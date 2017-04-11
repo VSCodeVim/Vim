@@ -277,9 +277,9 @@ Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkey
 
 #### How to use easymotion
 
-Easymotion is based on [easymotion-vim](https://github.com/easymotion/vim-easymotion)
-To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
-Now that easymotion is active, you can initiate motions using the following commands. Once you initiate the motion, text decorators will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
+Easymotion is based on [easymotion-vim](https://github.com/easymotion/vim-easymotion). To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
+
+Once easymotion is active, you can initiate motions using the following commands. After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
 
 Motion Command | Description
 ---|--------
