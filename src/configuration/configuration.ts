@@ -173,9 +173,13 @@ class ConfigurationClass {
   easymotion = false;
 
   /**
+   * Use surround plugin?
+   */
+  surround = true;
+
+  /**
    * Easymotion marker appearance settings
    */
-
   easymotionMarkerBackgroundColor = "#000000";
   easymotionMarkerForegroundColorOneChar = "#ff0000";
   easymotionMarkerForegroundColorTwoChar = "#ffa500";

@@ -397,6 +397,11 @@
                     "description": "Set the Y offset of the marker text (the distance from the top).",
                     "default": 11
                 },
+                "vim.surround": {
+                    "type": "boolean",
+                    "description": "Enable the Surround plugin for Vim.",
+                    "default": true
+                },
                 "vim.hlsearch": {
                     "type": "boolean",
                     "description": "Show all matches of the most recent search pattern",
