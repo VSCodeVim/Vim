@@ -593,6 +593,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
           type : "insertTextVSCode",
           text : char,
         });
+        vimState.insertString += char;
       }
     }
 
@@ -960,6 +961,20 @@ class CommandEscInsertMode extends BaseCommand {
       vimState.cursorPosition = position.getLineBegin();
     }
 
+    // If we wanted to repeat this insert, now is the time to do it. Insert
+    // count amount of these strings before returning back to normal mode
+    if (vimState.insertRepeatCount > 1) {
+      for (let i = 0; i < vimState.insertRepeatCount - 1; i++) {
+        vimState.recordedState.transformations.push({
+          type: "insertTextVSCode",
+          text: vimState.insertString,
+        });
+      }
+      // Reset string to insert
+      vimState.insertString = "";
+      vimState.insertRepeatCount = 0;
+    }
+
     vimState.currentMode = ModeName.Normal;
 
     if (vimState.historyTracker.currentContentChanges.length > 0) {
@@ -1250,9 +1265,15 @@ class CommandInsertAboveChar extends BaseCommand {
 class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["i"];
-  mustBeFirstKey = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    const count = vimState.recordedState.count;
+
+    // Store a repeat counter so that when we exit to normal we can insert the
+    // inserted text this amount of times
+    vimState.insertRepeatCount = count;
+    vimState.insertString = "";
+
     vimState.currentMode = ModeName.Insert;
     return vimState;
   }
@@ -3104,10 +3125,16 @@ class CommandInsertAtLineBegin extends BaseCommand {
 @RegisterAction
 class CommandInsertAfterCursor extends BaseCommand {
   modes = [ModeName.Normal];
-  mustBeFirstKey = true;
   keys = ["a"];
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+    const count = vimState.recordedState.count;
+
+    // Store a repeat counter so that when we exit to normal we can insert the
+    // inserted text this amount of times
+    vimState.insertRepeatCount = count;
+    vimState.insertString = "";
+
     vimState.currentMode = ModeName.Insert;
     vimState.cursorPosition = position.getRight();
 
