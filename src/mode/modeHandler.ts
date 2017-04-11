@@ -198,11 +198,6 @@ export class VimState {
   public lastVisualSelectionEnd: Position;
 
   /**
-   * Store inserted characters in the case of 5i=
-   */
-  public insertRepeatCount: number;
-
-  /**
    * Was the previous mouse click past EOL
    */
   public lastClickWasPastEol: boolean = false;

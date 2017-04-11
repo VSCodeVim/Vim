@@ -964,13 +964,12 @@ class CommandEscInsertMode extends BaseCommand {
 
     // If we wanted to repeat this insert, now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
-    if (vimState.insertRepeatCount > 1) {
-      for (let i = 0; i < vimState.insertRepeatCount - 1; i++) {
+    if (vimState.recordedState.count > 1) {
+      for (let i = 0; i < vimState.recordedState.count - 1; i++) {
         vimState.recordedState.transformations.push({
           type: "dot"
         });
       }
-      vimState.insertRepeatCount = 0;
     }
 
     if (vimState.historyTracker.currentContentChanges.length > 0) {
@@ -1262,13 +1261,7 @@ class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["i"];
 
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    const count = vimState.recordedState.count;
-
-    // Store a repeat counter so that when we exit to normal we can insert the
-    // inserted text this amount of times
-    vimState.insertRepeatCount = count;
-
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
     return vimState;
   }
@@ -3130,13 +3123,7 @@ class CommandInsertAfterCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["a"];
 
-  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    const count = vimState.recordedState.count;
-
-    // Store a repeat counter so that when we exit to normal we can insert the
-    // inserted text this amount of times
-    vimState.insertRepeatCount = count;
-
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
     vimState.cursorPosition = position.getRight();
 
