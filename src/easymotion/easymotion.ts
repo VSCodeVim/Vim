@@ -27,7 +27,11 @@ export class EasyMotion {
    */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
   private static svgCache: { [code: string]: vscode.Uri } = {};
-  private static setBackgroundColor: string = "";
+  private static cachedBackgroundColor: string = "";
+  private static cachedOneFontColor: string = "";
+  private static cachedTwoFontColor: string = "";
+  private static cachedWidthPerChar: number = -1;
+  private static cachedHeight: number = -1;
 
   /**
    * The key sequence for marker name generation
@@ -131,15 +135,30 @@ export class EasyMotion {
   private static getSvgDataUri(code: string, backgroundColor: string, fontFamily: string, fontColor: string,
     fontSize: string, fontWeight: string): vscode.Uri {
 
-    // Clear cache if the backgroundColor has changed
-    if (this.setBackgroundColor !== backgroundColor) {
+    // Clear cache if the backgroundColor or fontColor has changed
+    if (this.cachedBackgroundColor !== backgroundColor) {
       this.svgCache = {};
-      this.setBackgroundColor = backgroundColor;
+      this.cachedBackgroundColor = backgroundColor;
     }
 
-    var cache = this.svgCache[code];
-    if (cache) {
-      return cache;
+    if (this.cachedOneFontColor !== Configuration.easymotionMarkerForegroundColorOneChar) {
+      this.svgCache = {};
+      this.cachedOneFontColor = Configuration.easymotionMarkerForegroundColorOneChar;
+    }
+
+    if (this.cachedTwoFontColor !== Configuration.easymotionMarkerForegroundColorTwoChar) {
+      this.svgCache = {};
+      this.cachedTwoFontColor = Configuration.easymotionMarkerForegroundColorTwoChar;
+    }
+
+    const widthPerChar = Configuration.easymotionMarkerWidthPerChar;
+    const width = code.length * widthPerChar + 1;
+    const height = Configuration.easymotionMarkerHeight;
+
+    if (this.cachedWidthPerChar !== widthPerChar || this.cachedHeight !== height) {
+      this.svgCache = {};
+      this.cachedWidthPerChar = width;
+      this.cachedHeight = height;
     }
 
     if (fontFamily === undefined) { fontFamily = "Consolas"; }
@@ -148,8 +167,10 @@ export class EasyMotion {
     if (fontWeight === undefined) { fontWeight = "normal"; }
     if (backgroundColor === undefined) { backgroundColor = "black"; }
 
-    const width = code.length * Configuration.easymotionMarkerWidthPerChar + 1;
-    const height = Configuration.easymotionMarkerHeight;
+    var cache = this.svgCache[code];
+    if (cache) {
+      return cache;
+    }
 
     var uri = vscode.Uri.parse(
       `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
@@ -305,9 +326,6 @@ export class EasyMotion {
     const fontSize = Configuration.easymotionMarkerFontSize;
     const fontWeight = Configuration.easymotionMarkerFontWeight;
 
-    // Compute font color based on background (remove opacity)
-    // var Color = require('color');
-
     for (var i = 0; i < this.markers.length; i++) {
       var marker = this.getMarker(i);
 
@@ -324,10 +342,10 @@ export class EasyMotion {
         this.decorations[keystroke.length] = [];
       }
 
-      let fontColor = keystroke.length > 1 ?
+      const fontColor = keystroke.length > 1 ?
         Configuration.easymotionMarkerForegroundColorTwoChar
         : Configuration.easymotionMarkerForegroundColorOneChar;
-      let backgroundColor = Configuration.easymotionMarkerBackgroundColor;
+      const backgroundColor = Configuration.easymotionMarkerBackgroundColor;
 
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
       var charPos = pos.character + 1 + (keystroke.length - 1);
