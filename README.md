@@ -305,7 +305,7 @@ Setting | Description
 `vim.easymotionMarkerFontFamily`|The font family used for the marker text.
 `vim.easymotionMarkerFontSize`|The font size used for the marker text.
 `vim.easymotionMarkerFontWeight`|The font weight used for the marker text.
-`vim.easymotionMarkerYOffset` The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
+`vim.easymotionMarkerYOffset`|The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
 
 #### How to use surround
 
