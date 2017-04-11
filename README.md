@@ -299,7 +299,7 @@ Setting | Description
 ---|--------
 `vim.easymotionMarkerBackgroundColor`|The background color of the marker box.
 `vim.easymotionMarkerForegroundColorOneChar`|The font color for one-character markers.
-`vim.easymotionMarkerForegroundColorTwoChar`|The font coor for two-character markers, used to differentiate from one-character markers.
+`vim.easymotionMarkerForegroundColorTwoChar`|The font color for two-character markers, used to differentiate from one-character markers.
 `vim.easymotionMarkerWidthPerChar`|The width in pixels allotted to each character.
 `vim.easymotionMarkerHeight`|The height of the marker.
 `vim.easymotionMarkerFontFamily`|The font family used for the marker text.
