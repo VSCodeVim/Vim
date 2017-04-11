@@ -277,11 +277,9 @@ Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkey
 
 #### How to use easymotion
 
-Easymotion is based on [easymotion-vim](https://github.com/easymotion/vim-easymotion)
-To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
-Now that easymotion is active, you can initiate motions using the following commands. Once you initiate the motion, text decorators will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
+Easymotion is based on [easymotion-vim](https://github.com/easymotion/vim-easymotion). To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
 
-If you set `vim.easymotionChangeBackgroundColor = true` you can use the searchHightlightColor as the background color for the text decorations, however you then lose the red/orange indicators on whether it is a one key or two key combination since the font color needs to stay readable.
+Once easymotion is active, you can initiate motions using the following commands. After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
 
 Motion Command | Description
 ---|--------
@@ -295,6 +293,19 @@ Motion Command | Description
 `<leader> <leader> g e`|End of word backwards
 `<leader> <leader> b`|Start of word backwards
 
+You can customize the appearance of your easymotion markers (the boxes with letters) using the following options:
+
+Setting | Description
+---|--------
+`vim.easymotionMarkerBackgroundColor`|The background color of the marker box.
+`vim.easymotionMarkerForegroundColorOneChar`|The font color for one-character markers.
+`vim.easymotionMarkerForegroundColorTwoChar`|The font color for two-character markers, used to differentiate from one-character markers.
+`vim.easymotionMarkerWidthPerChar`|The width in pixels allotted to each character.
+`vim.easymotionMarkerHeight`|The height of the marker.
+`vim.easymotionMarkerFontFamily`|The font family used for the marker text.
+`vim.easymotionMarkerFontSize`|The font size used for the marker text.
+`vim.easymotionMarkerFontWeight`|The font weight used for the marker text.
+`vim.easymotionMarkerYOffset`|The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
 
 #### How to use surround
 
