@@ -201,7 +201,6 @@ export class VimState {
    * Store inserted characters in the case of 5i=
    */
   public insertRepeatCount: number;
-  public insertString: string = "";
 
   /**
    * Was the previous mouse click past EOL

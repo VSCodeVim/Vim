@@ -593,7 +593,6 @@ export class CommandInsertInInsertMode extends BaseCommand {
           type : "insertTextVSCode",
           text : char,
         });
-        vimState.insertString += char;
       }
     }
 
@@ -961,21 +960,18 @@ class CommandEscInsertMode extends BaseCommand {
       vimState.cursorPosition = position.getLineBegin();
     }
 
+    vimState.currentMode = ModeName.Normal;
+
     // If we wanted to repeat this insert, now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
     if (vimState.insertRepeatCount > 1) {
       for (let i = 0; i < vimState.insertRepeatCount - 1; i++) {
         vimState.recordedState.transformations.push({
-          type: "insertTextVSCode",
-          text: vimState.insertString,
+          type: "dot"
         });
       }
-      // Reset string to insert
-      vimState.insertString = "";
       vimState.insertRepeatCount = 0;
     }
-
-    vimState.currentMode = ModeName.Normal;
 
     if (vimState.historyTracker.currentContentChanges.length > 0) {
       vimState.historyTracker.lastContentChanges = vimState.historyTracker.currentContentChanges;
@@ -1272,10 +1268,17 @@ class CommandInsertAtCursor extends BaseCommand {
     // Store a repeat counter so that when we exit to normal we can insert the
     // inserted text this amount of times
     vimState.insertRepeatCount = count;
-    vimState.insertString = "";
 
     vimState.currentMode = ModeName.Insert;
     return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Only allow this command to be prefixed with a count, nothing else
+    if (vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1] instanceof CommandNumber) {
+      return super.couldActionApply(vimState, keysPressed);
+    }
+    return false;
   }
 }
 
@@ -3133,12 +3136,19 @@ class CommandInsertAfterCursor extends BaseCommand {
     // Store a repeat counter so that when we exit to normal we can insert the
     // inserted text this amount of times
     vimState.insertRepeatCount = count;
-    vimState.insertString = "";
 
     vimState.currentMode = ModeName.Insert;
     vimState.cursorPosition = position.getRight();
 
     return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Only allow this command to be prefixed with a count, nothing else
+    if (vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1] instanceof CommandNumber) {
+      return super.couldActionApply(vimState, keysPressed);
+    }
+    return false;
   }
 }
 
