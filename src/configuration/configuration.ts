@@ -173,9 +173,18 @@ class ConfigurationClass {
   easymotion = false;
 
   /**
-   * Use searchHighlightColor for easymotion background
+   * Easymotion marker appearance settings
    */
-  easymotionChangeBackgroundColor = false;
+
+  easymotionMarkerBackgroundColor = "#000000";
+  easymotionMarkerForegroundColorOneChar = "#ff0000";
+  easymotionMarkerForegroundColorTwoChar = "#ffa500";
+  easymotionMarkerWidthPerChar = 8;
+  easymotionMarkerHeight = 14;
+  easymotionMarkerFontFamily = "Consolas";
+  easymotionMarkerFontSize = "14";
+  easymotionMarkerFontWeight = "normal";
+  easymotionMarkerYOffset = 11;
 
   /**
    * Timeout in milliseconds for remapped commands.
