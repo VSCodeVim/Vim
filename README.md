@@ -302,6 +302,8 @@ Surround plugin based on tpope's [surround.vim](https://github.com/tpope/vim-sur
 
 t or < as <desired char> or <existing char> will do tags and enter tag entry mode.
 
+Surround can be disabled by setting vim.surround : false
+
 Surround Command | Description
 ---|--------
 `d s <existing char>`|Delete existing surround
