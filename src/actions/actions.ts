@@ -965,9 +965,18 @@ class CommandEscInsertMode extends BaseCommand {
     // If we wanted to repeat this insert, now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
     if (vimState.recordedState.count > 1) {
+      const changeAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2] as DocumentContentChangeAction;
+      const changesArray = changeAction.contentChanges;
+      let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
+
+      for (let i = 0; i < changesArray.length; i++) {
+        docChanges.push(changesArray[i].textDiff);
+      }
+
       for (let i = 0; i < vimState.recordedState.count - 1; i++) {
         vimState.recordedState.transformations.push({
-          type: "dot"
+          type: "contentChange",
+          changes: docChanges
         });
       }
     }
