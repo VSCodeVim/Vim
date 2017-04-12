@@ -1267,8 +1267,11 @@ class CommandInsertAtCursor extends BaseCommand {
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    // Only allow this command to be prefixed with a count, nothing else
-    if (vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1] instanceof CommandNumber) {
+    // Only allow this command to be prefixed with a count or nothing, no other
+    // actions or operators before
+    if (vimState.recordedState.actionsRun.length === 0 ||
+      (vimState.recordedState.actionsRun.length === 1 &&
+        vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1] instanceof CommandNumber)) {
       return super.couldActionApply(vimState, keysPressed);
     }
     return false;
@@ -3131,8 +3134,11 @@ class CommandInsertAfterCursor extends BaseCommand {
   }
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    // Only allow this command to be prefixed with a count, nothing else
-    if (vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1] instanceof CommandNumber) {
+    // Only allow this command to be prefixed with a count or nothing, no other
+    // actions or operators before
+    if (vimState.recordedState.actionsRun.length === 0 ||
+      (vimState.recordedState.actionsRun.length === 1 &&
+        vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1] instanceof CommandNumber)) {
       return super.couldActionApply(vimState, keysPressed);
     }
     return false;
