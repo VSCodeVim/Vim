@@ -1278,9 +1278,15 @@ class CommandInsertAtCursor extends BaseCommand {
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Only allow this command to be prefixed with a count or nothing, no other
     // actions or operators before
-    if (vimState.recordedState.actionsRun.length === 0 ||
-      (vimState.recordedState.actionsRun.length === 1 &&
-        vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1] instanceof CommandNumber)) {
+    let previousActionsNumbers = true;
+    for (const prevAction of vimState.recordedState.actionsRun) {
+      if (!(prevAction instanceof CommandNumber)) {
+        previousActionsNumbers = false;
+        break;
+      }
+    }
+
+    if (vimState.recordedState.actionsRun.length === 0 || previousActionsNumbers) {
       return super.couldActionApply(vimState, keysPressed);
     }
     return false;
@@ -3145,9 +3151,15 @@ class CommandInsertAfterCursor extends BaseCommand {
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Only allow this command to be prefixed with a count or nothing, no other
     // actions or operators before
-    if (vimState.recordedState.actionsRun.length === 0 ||
-      (vimState.recordedState.actionsRun.length === 1 &&
-        vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1] instanceof CommandNumber)) {
+    let previousActionsNumbers = true;
+    for (const prevAction of vimState.recordedState.actionsRun) {
+      if (!(prevAction instanceof CommandNumber)) {
+        previousActionsNumbers = false;
+        break;
+      }
+    }
+
+    if (vimState.recordedState.actionsRun.length === 0 || previousActionsNumbers) {
       return super.couldActionApply(vimState, keysPressed);
     }
     return false;
