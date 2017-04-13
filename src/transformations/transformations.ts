@@ -221,6 +221,7 @@ export interface Macro {
 export interface ContentChangeTransformation {
   type: "contentChange";
   changes: vscode.TextDocumentContentChangeEvent[];
+  diff: PositionDiff;
 }
 
 export type Transformation

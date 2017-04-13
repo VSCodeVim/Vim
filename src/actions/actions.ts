@@ -973,10 +973,19 @@ class CommandEscInsertMode extends BaseCommand {
         docChanges.push(changesArray[i].textDiff);
       }
 
-      for (let i = 0; i < vimState.recordedState.count - 1; i++) {
+      let positionDiff = new PositionDiff(0, 0);
+      // Add count amount of inserts in the case of 4i=<esc>
+      for (let i = 0; i < (vimState.recordedState.count - 1); i++) {
+        // If this is the last transform, move cursor back one character
+        if (i === (vimState.recordedState.count - 2)) {
+          positionDiff = new PositionDiff(0, -1);
+        }
+
+        // Add a transform containing the change
         vimState.recordedState.transformations.push({
           type: "contentChange",
-          changes: docChanges
+          changes: docChanges,
+          diff: positionDiff
         });
       }
     }

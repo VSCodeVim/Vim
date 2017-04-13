@@ -1460,9 +1460,10 @@ export class ModeHandler implements vscode.Disposable {
         case "contentChange":
           for (const change of command.changes) {
             await TextEditor.insert(change.text);
-            vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-            vimState.cursorPosition = Position.FromVSCodePosition(this._vimState.editor.selection.end);
+            vimState.cursorPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
           }
+          const newPos = vimState.cursorPosition.add(command.diff);
+          this._vimState.editor.selection = new vscode.Selection(newPos, newPos);
           break;
         case "tab":
           await vscode.commands.executeCommand('tab');
