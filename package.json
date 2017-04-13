@@ -352,10 +352,55 @@
                     "description": "Enable the EasyMotion plugin for Vim.",
                     "default": false
                 },
-                "vim.easymotionChangeBackgroundColor": {
+                "vim.easymotionMarkerBackgroundColor": {
+                    "type": "string",
+                    "description": "Set a custom background color for EasyMotion markers.",
+                    "default": "#000000"
+                },
+                "vim.easymotionMarkerForegroundColorOneChar": {
+                    "type": "string",
+                    "description": "Set a custom color for the text on one character long markers.",
+                    "default": "#ff0000"
+                },
+                "vim.easymotionMarkerForegroundColorTwoChar": {
+                    "type": "string",
+                    "description": "Set a custom color for the text on two character long markers.",
+                    "default": "#ffa500"
+                },
+                "vim.easymotionMarkerWidthPerChar": {
+                    "type": "number",
+                    "description": "Set the width (in pixels) allocated to each character in the match.",
+                    "default": 8
+                },
+                "vim.easymotionMarkerHeight": {
+                    "type": "number",
+                    "description": "Set the height of the marker.",
+                    "default": 14
+                },
+                "vim.easymotionMarkerFontFamily": {
+                    "type": "string",
+                    "description": "Set the font family of the marker text.",
+                    "default": "Consolas"
+                },
+                "vim.easymotionMarkerFontSize": {
+                    "type": "string",
+                    "description": "Set the font size of the marker text.",
+                    "default": "14"
+                },
+                "vim.easymotionMarkerFontWeight": {
+                    "type": "string",
+                    "description": "Set the font weight of the marker text.",
+                    "default": "normal"
+                },
+                "vim.easymotionMarkerYOffset": {
+                    "type": "number",
+                    "description": "Set the Y offset of the marker text (the distance from the top).",
+                    "default": 11
+                },
+                "vim.surround": {
                     "type": "boolean",
-                    "description": "Set to true to use vim.searchHighlightColor as background color",
-                    "default": false
+                    "description": "Enable the Surround plugin for Vim.",
+                    "default": true
                 },
                 "vim.hlsearch": {
                     "type": "boolean",
@@ -403,7 +448,6 @@
         "copy-paste": "^1.3.0",
         "diff-match-patch": "^1.0.0",
         "lodash": "^4.12.0",
-        "color": "^1.0.3",
         "typescript": "^2.2.1"
     },
     "devDependencies": {
