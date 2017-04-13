@@ -195,6 +195,31 @@
         "when": "editorTextFocus && vim.active && vim.use<C-[> && !inDebugRepl"
       },
       {
+        "key": "ctrl+w h",
+        "command": "extension.vim_navigateLeft",
+        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+      },
+      {
+        "key": "ctrl+w l",
+        "command": "extension.vim_navigateRight",
+        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+      },
+      {
+        "key": "ctrl+w ctrl+w",
+        "command": "extension.vim_navigateGroups",
+        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+      },
+      {
+        "key": "ctrl+w j",
+        "command": "extension.vim_navigateDown",
+        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+      },
+      {
+        "key": "ctrl+w k",
+        "command": "extension.vim_navigateUp",
+        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+      },
+      {
         "key": "ctrl+w",
         "command": "extension.vim_ctrl+w",
         "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"

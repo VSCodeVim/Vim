@@ -3438,12 +3438,11 @@ class CommandQuit extends BaseCommand {
 @RegisterAction
 class MoveToRightPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [["<C-w>", "l"],
-  ["<C-w>", "<right>"]];
+  keys = [["<C-w>", "l"], ["<C-w>", "<right>"], ["<C-w l>"]];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
-      command: "workbench.action.focusNextGroup",
+      command: "workbench.action.navigateRight",
       args: {}
     });
 
@@ -3454,12 +3453,11 @@ class MoveToRightPane extends BaseCommand {
 @RegisterAction
 class MoveToLeftPane  extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [["<C-w>", "h"],
-  ["<C-w>", "<left>"]];
+  keys = [["<C-w>", "h"], ["<C-w>", "<left>"], ["<C-w h>"]];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
-      command: "workbench.action.focusPreviousGroup",
+      command: "workbench.action.navigateLeft",
       args: {}
     });
 
@@ -3474,7 +3472,7 @@ class CycleThroughPanes extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
-      command: "workbench.action.navigateEditorGroups",
+      command: "workbench.action.navigateRight",
       args: {}
     });
 
