@@ -1,4 +1,5 @@
 import { Configuration } from './configuration/configuration';
+import * as _ from "lodash";
 
 export class AngleBracketNotation {
 
@@ -31,6 +32,10 @@ export class AngleBracketNotation {
 
     if (key.toLowerCase() === "<leader>") {
       return Configuration.leader;
+    }
+
+    if (_.includes(["<up>", "<down>", "<left>", "<right>"], key.toLocaleLowerCase())) {
+      key = key.toLocaleLowerCase();
     }
 
     for (const notationMapKey in this._notationMap) {
