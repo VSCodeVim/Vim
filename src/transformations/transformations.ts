@@ -1,5 +1,6 @@
 import { Position, PositionDiff } from "./../motion/position";
 import { Range } from "./../motion/range";
+import * as vscode from 'vscode';
 
 /**
  * This file contains definitions of objects that represent text
@@ -214,6 +215,15 @@ export interface Macro {
   replay: "contentChange" | "keystrokes";
 }
 
+/**
+ * Represents updating document content changes
+ */
+export interface ContentChangeTransformation {
+  type: "contentChange";
+  changes: vscode.TextDocumentContentChangeEvent[];
+  diff: PositionDiff;
+}
+
 export type Transformation
   = InsertTextTransformation
   | InsertTextVSCodeTransformation
@@ -224,6 +234,7 @@ export type Transformation
   | ShowCommandLine
   | Dot
   | Macro
+  | ContentChangeTransformation
   | DeleteTextTransformation
   | Tab;
 

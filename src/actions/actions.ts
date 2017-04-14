@@ -961,6 +961,34 @@ class CommandEscInsertMode extends BaseCommand {
 
     vimState.currentMode = ModeName.Normal;
 
+    // If we wanted to repeat this insert, now is the time to do it. Insert
+    // count amount of these strings before returning back to normal mode
+    if (vimState.recordedState.count > 1) {
+      const changeAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2] as DocumentContentChangeAction;
+      const changesArray = changeAction.contentChanges;
+      let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
+
+      for (let i = 0; i < changesArray.length; i++) {
+        docChanges.push(changesArray[i].textDiff);
+      }
+
+      let positionDiff = new PositionDiff(0, 0);
+      // Add count amount of inserts in the case of 4i=<esc>
+      for (let i = 0; i < (vimState.recordedState.count - 1); i++) {
+        // If this is the last transform, move cursor back one character
+        if (i === (vimState.recordedState.count - 2)) {
+          positionDiff = new PositionDiff(0, -1);
+        }
+
+        // Add a transform containing the change
+        vimState.recordedState.transformations.push({
+          type: "contentChange",
+          changes: docChanges,
+          diff: positionDiff
+        });
+      }
+    }
+
     if (vimState.historyTracker.currentContentChanges.length > 0) {
       vimState.historyTracker.lastContentChanges = vimState.historyTracker.currentContentChanges;
       vimState.historyTracker.currentContentChanges = [];
@@ -1249,11 +1277,27 @@ class CommandInsertAboveChar extends BaseCommand {
 class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["i"];
-  mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
     return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Only allow this command to be prefixed with a count or nothing, no other
+    // actions or operators before
+    let previousActionsNumbers = true;
+    for (const prevAction of vimState.recordedState.actionsRun) {
+      if (!(prevAction instanceof CommandNumber)) {
+        previousActionsNumbers = false;
+        break;
+      }
+    }
+
+    if (vimState.recordedState.actionsRun.length === 0 || previousActionsNumbers) {
+      return super.couldActionApply(vimState, keysPressed);
+    }
+    return false;
   }
 }
 
@@ -3092,7 +3136,6 @@ class CommandInsertAtLineBegin extends BaseCommand {
 @RegisterAction
 class CommandInsertAfterCursor extends BaseCommand {
   modes = [ModeName.Normal];
-  mustBeFirstKey = true;
   keys = ["a"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3100,6 +3143,23 @@ class CommandInsertAfterCursor extends BaseCommand {
     vimState.cursorPosition = position.getRight();
 
     return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Only allow this command to be prefixed with a count or nothing, no other
+    // actions or operators before
+    let previousActionsNumbers = true;
+    for (const prevAction of vimState.recordedState.actionsRun) {
+      if (!(prevAction instanceof CommandNumber)) {
+        previousActionsNumbers = false;
+        break;
+      }
+    }
+
+    if (vimState.recordedState.actionsRun.length === 0 || previousActionsNumbers) {
+      return super.couldActionApply(vimState, keysPressed);
+    }
+    return false;
   }
 }
 

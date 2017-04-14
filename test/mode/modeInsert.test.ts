@@ -199,4 +199,18 @@ suite("Mode Insert", () => {
       end: ['123|testtest123']
     });
 
+    newTest({
+      title: "Can perform insert command prefixed with count",
+      start: ['tes|t'],
+      keysPressed: '2i_<Esc>',
+      end: ['tes_|_t']
+    });
+
+    newTest({
+      title: "Can perform append command prefixed with count",
+      start: ['tes|t'],
+      keysPressed: '3a=<Esc>',
+      end: ['test==|=']
+    });
+
 });
