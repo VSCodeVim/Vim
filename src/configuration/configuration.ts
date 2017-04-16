@@ -56,6 +56,11 @@ class ConfigurationClass {
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
+      // Some options are internal states and should not be reinitialized
+      if (option === "hl") {
+        continue;
+      }
+
       const vimOptionValue = vimOptions[option] as any;
       if (vimOptionValue !== null && vimOptionValue !== undefined) {
         this[option] = vimOptionValue;
