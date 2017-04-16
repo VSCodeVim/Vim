@@ -48,7 +48,16 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
         {
             "before": ["<leader>","d"],
             "after": ["d", "d"]
-        }
+        },
+        {
+           "before":["<C-n>"],
+           "after":[],
+            "commands": [
+                {
+                    "command": ":nohl"
+                }
+            ]
+       }
     ],
     "vim.leader": "<space>",
     "vim.handleKeys":{
@@ -140,10 +149,20 @@ Bind `ZZ` to save and close the current file:
     ]
 ````
 
-Or bind `<leader>w` to save the current file:
+Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the current file:
 
 ```
     "vim.otherModesKeyBindingsNonRecursive": [
+        {
+           "before":["<C-n>"],
+           "after":[],
+            "commands": [
+                {
+                    "command": ":nohl",
+                    "args": []
+                }
+            ]
+        },
         {
             "before": ["leader", "w"],
             "after": [],

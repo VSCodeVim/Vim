@@ -147,11 +147,6 @@ class ConfigurationClass {
   hlsearch = false;
 
   /**
-   * Used internally for nohl.
-   */
-  hl = true;
-
-  /**
    * Ignore case when searching with / or ?.
    */
   ignorecase = true;
