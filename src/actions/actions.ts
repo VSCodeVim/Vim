@@ -7066,3 +7066,21 @@ export class CommentOperator extends BaseOperator {
     return vimState;
   }
 }
+
+@RegisterAction
+export class CommentBlockOperator extends BaseOperator {
+  public keys = ["g", "B"];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    const endPosition = vimState.currentMode === ModeName.Normal ? end.getRight() : end;
+    vimState.editor.selection = new vscode.Selection(start, endPosition);
+    await vscode.commands.executeCommand("editor.action.blockComment");
+
+    vimState.cursorPosition = start;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+
+}

@@ -47,4 +47,28 @@ suite("comment operator", () => {
         "third line"
       ],
     });
+
+    newTest({
+      title: "block comment with motion",
+      start: [
+        "function myTestFunction(arg|1, arg2, arg3) {"
+      ],
+      keysPressed: 'gBi)',
+      end: [
+        "function myTestFunction(|/*arg1, arg2, arg3*/) {"
+      ]
+    });
+
+    newTest({
+      title: "block comment in Visual Mode",
+      start: [
+        "blah |blah blah"
+      ],
+      keysPressed: 'vllllgB',
+      end: [
+        "blah |/*blah*/ blah"
+      ],
+      endMode: ModeName.Normal
+    });
+
 });
