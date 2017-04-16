@@ -209,7 +209,7 @@
             {
                 "key": "ctrl+n",
                 "command": "extension.vim_ctrl+n",
-                "when": "suggestWidgetVisible && vim.use<C-n>"
+                "when": "editorTextFocus && vim.use<C-n> && !inDebugRepl"
             },
             {
                 "key": "ctrl+p",
@@ -406,11 +406,6 @@
                     "type": "boolean",
                     "description": "Show all matches of the most recent search pattern",
                     "default": false
-                },
-                "vim.hl": {
-                    "type": "boolean",
-                    "description": "Don't worry about this one.",
-                    "default": true
                 },
                 "vim.incsearch": {
                     "type": "boolean",

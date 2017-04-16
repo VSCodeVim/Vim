@@ -1788,7 +1788,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (
       (Configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
-      ((Configuration.hlsearch && Configuration.hl) && vimState.globalState.searchState)) {
+      ((Configuration.hlsearch && vimState.globalState.hl) && vimState.globalState.searchState)) {
 
       const searchState = vimState.globalState.searchState!;
 
