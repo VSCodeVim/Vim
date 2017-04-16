@@ -6,7 +6,9 @@ import { TextEditor } from './../src/textEditor';
 import { setupWorkspace, cleanUpWorkspace } from './testUtils';
 
 suite("text editor", () => {
-  suiteSetup(setupWorkspace);
+  suiteSetup(async () => {
+    await setupWorkspace();
+  });
 
   suiteTeardown(cleanUpWorkspace);
 
