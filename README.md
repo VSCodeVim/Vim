@@ -9,9 +9,9 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * Marks
 * Vim settings similar to those found in .vimrc
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
-* The [EasyMotion plugin](#how-to-use-easymotion)!
-* The [Surround.vim plugin](#how-to-use-surround)!
-* The [Commentary plugin](#how-to-use-commentary).
+* The [EasyMotion plugin](#how-to-use-easymotion)
+* The [Surround.vim plugin](#how-to-use-surround)
+* The [Commentary plugin](#how-to-use-commentary)
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
@@ -351,7 +351,7 @@ Some examples:
 
 #### How to use commentary
 
-Commentary in VSCodeVim works similarly to tpope's [vim-commentary] (https://github.com/tpope/vim-commentary) but uses the VSCode native "Toggle Line Comment" and "Toggle Block Comment" features.
+Commentary in VSCodeVim works similarly to tpope's [vim-commentary](https://github.com/tpope/vim-commentary) but uses the VSCode native "Toggle Line Comment" and "Toggle Block Comment" features.
 
 Because `gc` is already used in VSCodeVim the commentary operators are bound to `gb` for line comments and `gB` for block comments.
 
