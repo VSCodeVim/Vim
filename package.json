@@ -209,7 +209,7 @@
             {
                 "key": "ctrl+n",
                 "command": "extension.vim_ctrl+n",
-                "when": "suggestWidgetVisible && vim.use<C-n>"
+                "when": "editorTextFocus && vim.use<C-n> && !inDebugRepl"
             },
             {
                 "key": "ctrl+p",
