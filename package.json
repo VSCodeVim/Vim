@@ -407,11 +407,6 @@
                     "description": "Show all matches of the most recent search pattern",
                     "default": false
                 },
-                "vim.hl": {
-                    "type": "boolean",
-                    "description": "Don't worry about this one.",
-                    "default": true
-                },
                 "vim.incsearch": {
                     "type": "boolean",
                     "description": "Show where a / search matches as you type it.",

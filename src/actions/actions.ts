@@ -1678,7 +1678,7 @@ class CommandNextSearchMatch extends BaseMovement {
     }
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
   }
@@ -1724,7 +1724,7 @@ function searchCurrentWord(position: Position, vimState: VimState, direction: Se
     vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(searchStartCursorPosition).pos;
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return vimState;
 }
@@ -1789,7 +1789,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     }
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return searchState.getNextSearchMatchPosition(vimState.cursorPosition, -1).pos;
   }
@@ -1863,7 +1863,7 @@ export class CommandSearchForwards extends BaseCommand {
     // Reset search history index
     vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return vimState;
   }
@@ -1882,7 +1882,7 @@ export class CommandSearchBackwards extends BaseCommand {
     // Reset search history index
     vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return vimState;
   }
