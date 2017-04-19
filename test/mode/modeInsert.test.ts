@@ -213,4 +213,11 @@ suite("Mode Insert", () => {
       end: ['test==|=']
     });
 
+    newTest({
+      title: "Can perform change char (s) command prefixed with count",
+      start: ['tes|ttest'],
+      keysPressed: '3s=====<Esc>',
+      end: ['tes====|=st']
+    });
+
 });
