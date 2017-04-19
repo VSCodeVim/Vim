@@ -12,6 +12,7 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * The [EasyMotion plugin](#how-to-use-easymotion)
 * The [Surround.vim plugin](#how-to-use-surround)
 * The [Commentary plugin](#how-to-use-commentary)
+* The [Vim-airline plugin](#statusBarColorControl)
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
@@ -212,6 +213,25 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 #### useSolidBlockCursor
   * Use a non-blinking block cursor
   * Type: Boolean (Default: `false`)
+
+
+#### statusBarColorControl
+  * Control status bar color based on current mode
+  * Type: Boolean (Default: `false`)
+
+  Once this is set, you need to set statusBarColors as well with these exact strings for modenames. The colors can be adjusted to suit the user.
+
+```
+    "vim.statusBarColorControl": true,
+    "vim.statusBarColors" : {
+        "normal": "#005f5f",
+        "insert": "#5f0000",
+        "visual": "#5f00af",
+        "visualline": "#005f87",
+        "visualblock": "#86592d",
+        "replace": "#000000"
+    }
+```
 
 ### Vim settings we support
 
