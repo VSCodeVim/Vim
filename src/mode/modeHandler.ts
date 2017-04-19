@@ -336,6 +336,10 @@ export class RecordedState {
 
   public hasRunOperator = false;
 
+  public hasRunSurround = false;
+  public surroundKeys: string[] = [];
+  public surroundKeyIndexStart = 0;
+
   /**
    * This is kind of a hack and should be associated with something like this:
    *
@@ -407,6 +411,8 @@ export class RecordedState {
     res.actionKeys      = this.actionKeys.slice(0);
     res.actionsRun      = this.actionsRun.slice(0);
     res.hasRunOperator  = this.hasRunOperator;
+    res.hasRunSurround = this.hasRunSurround;
+    res.surroundKeys = this.surroundKeys;
 
     return res;
   }
@@ -1558,27 +1564,31 @@ export class ModeHandler implements vscode.Disposable {
 
   async rerunRecordedState(vimState: VimState, recordedState: RecordedState): Promise<VimState> {
     const actions = recordedState.actionsRun.slice(0);
+    const hasRunSurround = recordedState.hasRunSurround;
+    const surroundKeys = recordedState.surroundKeys;
 
+    vimState.isRunningDotCommand = true;
     recordedState = new RecordedState();
     vimState.recordedState = recordedState;
-    vimState.isRunningDotCommand = true;
 
-    let i = 0;
+    // Replay surround if applicable, otherwise rerun actions
+    if (hasRunSurround) {
+      await this.handleMultipleKeyEvents(surroundKeys);
+    } else {
+      let i = 0;
+      for (let action of actions) {
+        recordedState.actionsRun = actions.slice(0, ++i);
+        vimState = await this.runAction(vimState, recordedState, action);
 
-    for (let action of actions) {
-      recordedState.actionsRun = actions.slice(0, ++i);
-      vimState = await this.runAction(vimState, recordedState, action);
+        if (vimState.lastMovementFailed) {
+          return vimState;
+        }
 
-      if (vimState.lastMovementFailed) {
-        return vimState;
+        await this.updateView(vimState);
       }
-
-      await this.updateView(vimState);
+      recordedState.actionsRun = actions;
     }
-
     vimState.isRunningDotCommand = false;
-
-    recordedState.actionsRun = actions;
 
     return vimState;
   }
@@ -1778,7 +1788,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (
       (Configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
-      ((Configuration.hlsearch && Configuration.hl) && vimState.globalState.searchState)) {
+      ((Configuration.hlsearch && vimState.globalState.hl) && vimState.globalState.searchState)) {
 
       const searchState = vimState.globalState.searchState!;
 
@@ -1795,10 +1805,17 @@ export class ModeHandler implements vscode.Disposable {
 
     this._vimState.editor.setDecorations(this._searchHighlightDecoration, searchRanges);
 
-
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
+    }
+
+    // If user wants to change status bar color based on mode
+    if (Configuration.statusBarColorControl) {
+      const colorToSet = Configuration.statusBarColors[this._vimState.currentModeName().toLowerCase()];
+      if (colorToSet !== undefined) {
+        this.setStatusBarColor(colorToSet);
+      }
     }
 
     this.vimState.postponedCodeViewChanges = [];
@@ -1861,6 +1878,15 @@ export class ModeHandler implements vscode.Disposable {
 
     ModeHandler._statusBarItem.text = text || '';
     ModeHandler._statusBarItem.show();
+  }
+
+  setStatusBarColor(color: string): void {
+    vscode.workspace.getConfiguration("workbench.experimental").update("colorCustomizations",
+      {
+        "statusBarBackground": `${color}`,
+        "statusBarNoFolderBackground": `${color}`,
+        "statusBarDebuggingBackground": `${color}`
+      });
   }
 
   // Return true if a new undo point should be created based on brackets and parenthesis

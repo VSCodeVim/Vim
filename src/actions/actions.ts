@@ -961,9 +961,11 @@ class CommandEscInsertMode extends BaseCommand {
 
     vimState.currentMode = ModeName.Normal;
 
-    // If we wanted to repeat this insert, now is the time to do it. Insert
+    // If we wanted to repeat this insert (only for i and a), now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
-    if (vimState.recordedState.count > 1) {
+    const typeOfInsert = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 3];
+    if (vimState.recordedState.count > 1 &&
+    (typeOfInsert instanceof CommandInsertAtCursor || typeOfInsert instanceof CommandInsertAfterCursor)) {
       const changeAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2] as DocumentContentChangeAction;
       const changesArray = changeAction.contentChanges;
       let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
@@ -1666,7 +1668,7 @@ class CommandNextSearchMatch extends BaseMovement {
     }
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
   }
@@ -1712,7 +1714,7 @@ function searchCurrentWord(position: Position, vimState: VimState, direction: Se
     vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(searchStartCursorPosition).pos;
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return vimState;
 }
@@ -1777,7 +1779,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     }
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return searchState.getNextSearchMatchPosition(vimState.cursorPosition, -1).pos;
   }
@@ -1851,7 +1853,7 @@ export class CommandSearchForwards extends BaseCommand {
     // Reset search history index
     vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return vimState;
   }
@@ -1870,7 +1872,7 @@ export class CommandSearchBackwards extends BaseCommand {
     // Reset search history index
     vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
 
-    Configuration.hl = true;
+    vimState.globalState.hl = true;
 
     return vimState;
   }
@@ -6702,6 +6704,11 @@ class CommandSurroundModeStart extends BaseCommand {
 
     if (!operatorString) { return vimState; }
 
+    // Start to record the keys to store for playback of surround using dot
+    vimState.recordedState.surroundKeys.push(vimState.keyHistory[vimState.keyHistory.length - 2]);
+    vimState.recordedState.surroundKeys.push("s");
+    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
+
     vimState.surround = {
       active     : true,
       target     : undefined,
@@ -6745,6 +6752,10 @@ class CommandSurroundModeStartVisual extends BaseCommand {
     if (!Configuration.surround) {
       return vimState;
     }
+
+    // Start to record the keys to store for playback of surround using dot
+    vimState.recordedState.surroundKeys.push("S");
+    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
 
     // Make sure cursor positions are ordered correctly for top->down or down->top selection
     if (vimState.cursorStartPosition.line > vimState.cursorPosition.line) {
@@ -6874,8 +6885,14 @@ class CommandSurroundAddToReplacement extends BaseCommand {
   public static Finish(vimState: VimState): boolean {
     vimState.recordedState.hasRunOperator = false;
     vimState.recordedState.actionsRun = [];
+    vimState.recordedState.hasRunSurround = true;
     vimState.surround = undefined;
     vimState.currentMode = ModeName.Normal;
+
+    // Record keys that were pressed since surround started
+    for (let i = vimState.recordedState.surroundKeyIndexStart; i < vimState.keyHistory.length; i++) {
+      vimState.recordedState.surroundKeys.push(vimState.keyHistory[i]);
+    }
 
     return false;
   }
@@ -7097,4 +7114,38 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
     return false;
   }
+}
+
+@RegisterAction
+export class CommentOperator extends BaseOperator {
+  public keys = ["g", "b"];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
+    await vscode.commands.executeCommand("editor.action.commentLine");
+
+    vimState.cursorPosition = new Position(start.line, 0);
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+export class CommentBlockOperator extends BaseOperator {
+  public keys = ["g", "B"];
+  public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+
+  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    const endPosition = vimState.currentMode === ModeName.Normal ? end.getRight() : end;
+    vimState.editor.selection = new vscode.Selection(start, endPosition);
+    await vscode.commands.executeCommand("editor.action.blockComment");
+
+    vimState.cursorPosition = start;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+
 }
