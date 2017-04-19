@@ -192,6 +192,20 @@ suite("Mode Insert", () => {
         assertEqualLines([""]);
     });
 
+    newTestOnly({
+      title: "Backspace works on whitespace only lines",
+      start: ['abcd', '     |    '],
+      keysPressed: 'a<BS><Esc>',
+      end: ['abcd', "   | "],
+    });
+
+    newTestOnly({
+      title: "Backspace works on whitespace only lines (this one fails)?",
+      start: [ '     |    '],
+      keysPressed: 'a<BS><Esc>',
+      end: ["   | "],
+    });
+
     newTest({
       title: "Can perform <ctrl+o> to exit and perform one command in normal",
       start: ['testtest|'],
