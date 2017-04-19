@@ -12,7 +12,7 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * The [EasyMotion plugin](#how-to-use-easymotion)
 * The [Surround.vim plugin](#how-to-use-surround)
 * The [Commentary plugin](#how-to-use-commentary)
-* The [Vim-airline plugin](#statusBarColorControl)
+* The [Vim-airline plugin](#statusbarcolorcontrol)
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
