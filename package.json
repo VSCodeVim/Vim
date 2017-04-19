@@ -429,6 +429,14 @@
                 "vim.handleKeys": {
                     "type": "object",
                     "description": "Option to delegate certain key combinations back to VSCode to be handled natively"
+                },
+                "vim.statusBarColorControl":{
+                    "type": "boolean",
+                    "description": "Allow VSCodeVim to change status bar color based on mode"
+                },
+                "vim.statusBarColors": {
+                    "type": "object",
+                    "description": "Customize colors per mode when VSCodeVim controls status bar colors"
                 }
             }
         }
