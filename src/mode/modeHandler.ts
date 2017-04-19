@@ -1802,7 +1802,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // If user wants to change status bar color based on mode
     if (Configuration.statusBarColorControl) {
-      let colorToSet = Configuration.statusBarColors[this._vimState.currentModeName().toLowerCase()];
+      const colorToSet = Configuration.statusBarColors[this._vimState.currentModeName().toLowerCase()];
       if (colorToSet !== undefined) {
         this.setStatusBarColor(colorToSet);
       }
