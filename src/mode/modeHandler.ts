@@ -1805,10 +1805,17 @@ export class ModeHandler implements vscode.Disposable {
 
     this._vimState.editor.setDecorations(this._searchHighlightDecoration, searchRanges);
 
-
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
+    }
+
+    // If user wants to change status bar color based on mode
+    if (Configuration.statusBarColorControl) {
+      let colorToSet = Configuration.statusBarColors[this._vimState.currentModeName().toLowerCase()];
+      if (colorToSet !== undefined) {
+        this.setStatusBarColor(colorToSet);
+      }
     }
 
     this.vimState.postponedCodeViewChanges = [];
@@ -1871,6 +1878,15 @@ export class ModeHandler implements vscode.Disposable {
 
     ModeHandler._statusBarItem.text = text || '';
     ModeHandler._statusBarItem.show();
+  }
+
+  setStatusBarColor(color: string): void {
+    vscode.workspace.getConfiguration("workbench.experimental").update("colorCustomizations",
+      {
+        "statusBarBackground": `${color}`,
+        "statusBarNoFolderBackground": `${color}`,
+        "statusBarDebuggingBackground": `${color}`
+      });
   }
 
   // Return true if a new undo point should be created based on brackets and parenthesis

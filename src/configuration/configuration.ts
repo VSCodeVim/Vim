@@ -14,6 +14,10 @@ export interface IHandleKeys {
   [key: string]: boolean;
 }
 
+export interface IStatusBarColors {
+  [key: string]: string;
+}
+
 /**
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
@@ -214,6 +218,16 @@ class ConfigurationClass {
    * Start in insert mode?
    */
   startInInsertMode = false;
+
+  /**
+   * Start in insert mode?
+   */
+  statusBarColorControl = false;
+
+  /**
+   * Status bar colors to change to based on mode
+   */
+  statusBarColors: IStatusBarColors = {};
 
   /**
    * Color of search highlights.
