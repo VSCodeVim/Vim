@@ -220,7 +220,7 @@ class ConfigurationClass {
   startInInsertMode = false;
 
   /**
-   * Start in insert mode?
+   * Enable changing of the status bar color based on mode
    */
   statusBarColorControl = false;
 
