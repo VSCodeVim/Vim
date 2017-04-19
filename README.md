@@ -204,7 +204,6 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 #### useSystemClipboard
   * Enable yanking to the system clipboard by default
   * Type: Boolean (Default: `false`)
-  * Note: Linux users must have xclip installed
 
 #### searchHighlightColor
   * Set the color of search highlights.

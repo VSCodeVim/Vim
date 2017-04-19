@@ -9,7 +9,6 @@ os:
 addons:
   apt:
     packages:
-    - xclip
 
 language: node_js
 
