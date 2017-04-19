@@ -962,9 +962,11 @@ class CommandEscInsertMode extends BaseCommand {
 
     vimState.currentMode = ModeName.Normal;
 
-    // If we wanted to repeat this insert, now is the time to do it. Insert
+    // If we wanted to repeat this insert (only for i and a), now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
-    if (vimState.recordedState.count > 1) {
+    const typeOfInsert = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 3];
+    if (vimState.recordedState.count > 1 &&
+    (typeOfInsert instanceof CommandInsertAtCursor || typeOfInsert instanceof CommandInsertAfterCursor)) {
       const changeAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2] as DocumentContentChangeAction;
       const changesArray = changeAction.contentChanges;
       let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
