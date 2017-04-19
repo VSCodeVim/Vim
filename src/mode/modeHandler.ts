@@ -336,6 +336,10 @@ export class RecordedState {
 
   public hasRunOperator = false;
 
+  public hasRunSurround = false;
+  public surroundKeys: string[] = [];
+  public surroundKeyIndexStart = 0;
+
   /**
    * This is kind of a hack and should be associated with something like this:
    *
@@ -407,6 +411,8 @@ export class RecordedState {
     res.actionKeys      = this.actionKeys.slice(0);
     res.actionsRun      = this.actionsRun.slice(0);
     res.hasRunOperator  = this.hasRunOperator;
+    res.hasRunSurround = this.hasRunSurround;
+    res.surroundKeys = this.surroundKeys;
 
     return res;
   }
@@ -1558,27 +1564,31 @@ export class ModeHandler implements vscode.Disposable {
 
   async rerunRecordedState(vimState: VimState, recordedState: RecordedState): Promise<VimState> {
     const actions = recordedState.actionsRun.slice(0);
+    const hasRunSurround = recordedState.hasRunSurround;
+    const surroundKeys = recordedState.surroundKeys;
 
+    vimState.isRunningDotCommand = true;
     recordedState = new RecordedState();
     vimState.recordedState = recordedState;
-    vimState.isRunningDotCommand = true;
 
-    let i = 0;
+    // Replay surround if applicable, otherwise rerun actions
+    if (hasRunSurround) {
+      await this.handleMultipleKeyEvents(surroundKeys);
+    } else {
+      let i = 0;
+      for (let action of actions) {
+        recordedState.actionsRun = actions.slice(0, ++i);
+        vimState = await this.runAction(vimState, recordedState, action);
 
-    for (let action of actions) {
-      recordedState.actionsRun = actions.slice(0, ++i);
-      vimState = await this.runAction(vimState, recordedState, action);
+        if (vimState.lastMovementFailed) {
+          return vimState;
+        }
 
-      if (vimState.lastMovementFailed) {
-        return vimState;
+        await this.updateView(vimState);
       }
-
-      await this.updateView(vimState);
+      recordedState.actionsRun = actions;
     }
-
     vimState.isRunningDotCommand = false;
-
-    recordedState.actionsRun = actions;
 
     return vimState;
   }

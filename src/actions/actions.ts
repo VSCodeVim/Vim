@@ -6716,6 +6716,11 @@ class CommandSurroundModeStart extends BaseCommand {
 
     if (!operatorString) { return vimState; }
 
+    // Start to record the keys to store for playback of surround using dot
+    vimState.recordedState.surroundKeys.push(vimState.keyHistory[vimState.keyHistory.length - 2]);
+    vimState.recordedState.surroundKeys.push("s");
+    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
+
     vimState.surround = {
       active     : true,
       target     : undefined,
@@ -6759,6 +6764,10 @@ class CommandSurroundModeStartVisual extends BaseCommand {
     if (!Configuration.surround) {
       return vimState;
     }
+
+    // Start to record the keys to store for playback of surround using dot
+    vimState.recordedState.surroundKeys.push("S");
+    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
 
     // Make sure cursor positions are ordered correctly for top->down or down->top selection
     if (vimState.cursorStartPosition.line > vimState.cursorPosition.line) {
@@ -6888,8 +6897,14 @@ class CommandSurroundAddToReplacement extends BaseCommand {
   public static Finish(vimState: VimState): boolean {
     vimState.recordedState.hasRunOperator = false;
     vimState.recordedState.actionsRun = [];
+    vimState.recordedState.hasRunSurround = true;
     vimState.surround = undefined;
     vimState.currentMode = ModeName.Normal;
+
+    // Record keys that were pressed since surround started
+    for (let i = vimState.recordedState.surroundKeyIndexStart; i < vimState.keyHistory.length; i++) {
+      vimState.recordedState.surroundKeys.push(vimState.keyHistory[i]);
+    }
 
     return false;
   }
