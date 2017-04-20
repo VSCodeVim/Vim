@@ -55,8 +55,8 @@ Donations help convince me to work on this project rather than my other (non-ope
     * [vim-easymotion](#vim-easymotion)
     * [vim-surround](#vim-surround)
     * [vim-commentary](#vim-commentary)
-  * [FAQ / Troubleshooting](#faq)
   * [VSCodeVim Tricks](#vscodevim-tricks)
+  * [F.A.Q / Troubleshooting](#faq)
 
 
 ## Configuring VSCodeVim
@@ -416,6 +416,21 @@ If you are use to using vim-commentary you are probably use to using `gc` instea
     }
 ],
 ```
+
+## VSCodeVim Tricks!
+
+**Awesome Features You Might Not Know About**
+
+Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest nooks and crannies of Vim. And then we add some of our own! Some of our favorite include:
+
+* `gd` - jump to definition. _Astoundingly_ useful in any language that VSCode provides definition support for. I use this one probably hundreds of times a day.
+* `gq` on a visual selection - Reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
+* `gc`, which adds another cursor on the next word it finds which is the same as the word under the cursor.
+* `af`, a command that I added in visual mode, which selects increasingly large blocks of text. e.g. if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed `af` again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
+* `gh`, another custom VSCodeVim command. This one is equivalent to hovering your mouse over wherever the cursor is. Handy for seeing types and error messages without reaching for the mouse!
+
+(The mnemonic: selecting blocks is fast af! :wink:)
+
 ## F.A.Q.
 
 #### `j`, `k` and others don't repeat when I hold them down.
@@ -434,20 +449,6 @@ Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkey
 ## Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
-
-## VSCodeVim Tricks!
-
-**Awesome Features You Might Not Know About**
-
-Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest nooks and crannies of Vim. And then we add some of our own! Some of our favorite include:
-
-* `gd` - jump to definition. _Astoundingly_ useful in any language that VSCode provides definition support for. I use this one probably hundreds of times a day.
-* `gq` on a visual selection - Reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
-* `gc`, which adds another cursor on the next word it finds which is the same as the word under the cursor.
-* `af`, a command that I added in visual mode, which selects increasingly large blocks of text. e.g. if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed `af` again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
-* `gh`, another custom VSCodeVim command. This one is equivalent to hovering your mouse over wherever the cursor is. Handy for seeing types and error messages without reaching for the mouse!
-
-(The mnemonic: selecting blocks is fast af! :wink:)
 
 ## Special Shoutouts to Cool Contributors
 
