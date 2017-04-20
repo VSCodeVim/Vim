@@ -99,7 +99,11 @@ class ConfigurationClass {
         }
       } else if (!this.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
         // Check for useCtrlKeys and if it is a <C- ctrl based keybinding
-        useKey = false;
+        if (bracketedKey === '<C-c>' && this.overrideCopy) {
+          useKey = true;
+        } else {
+          useKey = false;
+        }
       }
 
       // Set the context of whether or not this key will be used based on criteria from above
