@@ -635,7 +635,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on end of word",
       start: ['one   two   three   fou|r'],
       keysPressed: 'daw',
