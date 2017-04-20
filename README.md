@@ -1,4 +1,23 @@
-# Vim [![Version](http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim) [![Build Status](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim) [![Slack Status](https://vscodevim-slackin.azurewebsites.net/badge.svg)](https://vscodevim-slackin.azurewebsites.net)
+<h1 align="center">
+    <img src="./images/icon.png" height="128">
+    <br>
+    VSCodeVim
+</h1>
+
+<p align="center"><strong>Vim emulation for Visual Studio Code.</strong></p>
+<p align="center">
+    <a href="http://aka.ms/vscodevim">
+        <img src="http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg" alt="Version">
+    </a>
+    <a href="https://travis-ci.org/VSCodeVim/Vim.svg?branch=master">
+        <img src="https://travis-ci.org/VSCodeVim/Vim.svg?branch=master" alt="Build Status">
+    </a>
+    <a href="https://vscodevim-slackin.azurewebsites.net">
+        <img src="https://vscodevim-slackin.azurewebsites.net/badge.svg" alt="Slack Status">
+    </a>
+</p>
+
+<hr>
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vim keybindings, including:
 
