@@ -433,7 +433,7 @@ Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest noo
 
 ## F.A.Q.
 
-#### `j`, `k` and others don't repeat when I hold them down.
+#### `j`, `k` and others keys don't repeat when I hold them down.
 
 On OS X, open Terminal and run the following command:
 
@@ -444,7 +444,7 @@ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
 
 #### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
-Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkeys)) to true.
+Set the [option `useCtrlKeys`](#usectrlkeys) to `true`.
 
 ## Contributing
 
