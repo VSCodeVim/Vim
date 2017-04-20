@@ -21,7 +21,7 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vim keybindings, including:
 
-* Modes: normal, insert, command, visual, visual line, visual block (with `useCtrlKeys`, see below)
+* Modes: normal, insert, command, visual, visual line, visual block
 * Command combinations (`c3w`, `daw`, `2dd`, etc)
 * Highly versatile command remapping (`jj` to esc, `:` to command panel, etc.)
 * Incremental search with `/` and `?`
