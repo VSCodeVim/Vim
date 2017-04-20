@@ -98,7 +98,7 @@ class ConfigurationClass {
           useKey = false;
         }
       } else if (!this.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
-        // Check for useCtrlKeys and if it is a <C- ctrl based keybinding
+        // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding. However, we need to still capture <C-c> due to overrideCopy.
         if (bracketedKey === '<C-c>' && this.overrideCopy) {
           useKey = true;
         } else {
