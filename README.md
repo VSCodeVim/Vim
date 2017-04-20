@@ -46,6 +46,20 @@ Ask us questions, talk about contributing, or just say hi on [Slack](https://vsc
 
 Donations help convince me to work on this project rather than my other (non-open-source) projects. I'd love to work on VSCodeVim full time, but I need money to live!
 
+## Contents
+
+  * [Quick configuration](#configuring-vscodevim)
+  * [Key Remapping](#key-remapping)
+  * [Options](#supported-options)
+    * [Vim Options](#vim-optons)
+  * [Multi-cursor Mode](#multi-cursor-mode)
+  * [Plugins](#plugins)
+    * [vim-easymotion](#vim-easymotion)
+    * [vim-surround](#vim-surround)
+    * [vim-commentary](#vim-commentary)
+  * [FAQ / Troubleshooting](#faq)
+  * [VSCodeVim Tricks](#vscodevim-tricks)
+
 
 ## Configuring VSCodeVim
 
@@ -87,36 +101,8 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 }
 ```
 
-## Supported Options
+## Key Remapping
 
-The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
-
-#### useCtrlKeys
-  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
-    * `ctrl+c`, `ctrl+[` => `<Esc>`
-    * `ctrl+f` => Full Page Forward
-    * `ctrl+d` => Half Page Back
-    * `ctrl+b` => Half Page Forward
-    * `ctrl+v` => Visual Block Mode
-    * etc.
-  * Type: Boolean (Default: `true`)
-  * *Example:*
-
-    ```
-    "vim.useCtrlKeys": true
-    ```
-
-#### handleKeys
-  * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
-  * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
-  * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
-
-    ```
-    "vim.handleKeys":{
-        "<C-a>": false,
-        "<C-f>": false
-    }
-    ```
 
 #### insertModeKeyBindings/otherModesKeyBindings
   * Keybinding overrides to use for insert and other (non-insert) modes.
@@ -211,6 +197,37 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
     }]
     ```
 
+#### useCtrlKeys
+  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
+    * `ctrl+c`, `ctrl+[` => `<Esc>`
+    * `ctrl+f` => Full Page Forward
+    * `ctrl+d` => Half Page Back
+    * `ctrl+b` => Half Page Forward
+    * `ctrl+v` => Visual Block Mode
+    * etc.
+  * Type: Boolean (Default: `true`)
+  * *Example:*
+
+    ```
+    "vim.useCtrlKeys": true
+    ```
+
+#### handleKeys
+  * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
+  * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
+  * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
+
+    ```
+    "vim.handleKeys":{
+        "<C-a>": false,
+        "<C-f>": false
+    }
+    ```
+
+## Supported Options
+
+The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
+
 #### startInInsertMode
   * Have VSCodeVim start in Insert Mode rather than Normal Mode.
   * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
@@ -251,7 +268,9 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
     }
 ```
 
-### Vim settings we support
+### Vim options
+
+Configuration options that have been copied from vim.
 
 #### ignorecase
   * Ignore case in search patterns
@@ -300,7 +319,7 @@ Vim options are loaded in the following sequence:
 
 ## Multi-Cursor Mode
 
-Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
+> ⚡ Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
 
 #### Getting into multi-cursor mode
 
@@ -318,24 +337,11 @@ Each cursor has its own clipboard.
 
 Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
 
-## F.A.Q.
+## Plugins
 
-#### `j`, `k` and others don't repeat when I hold them down.
+### vim-easymotion
 
-On OS X, open Terminal and run the following command:
-
-```sh
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
-```
-
-#### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
-
-Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkeys)) to true.
-
-#### How to use easymotion
-
-Easymotion is based on [easymotion-vim](https://github.com/easymotion/vim-easymotion). To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
+Easymotion is based on [vim-easymotion](https://github.com/easymotion/vim-easymotion). To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json (as the default is `false`).
 
 Once easymotion is active, you can initiate motions using the following commands. After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
 
@@ -347,9 +353,9 @@ Motion Command | Description
 `<leader> <leader> t <char>`|Til character forwards
 `<leader> <leader> T <char>`|Til character backwards
 `<leader> <leader> w`|Start of word forwards
+`<leader> <leader> b`|Start of word backwards
 `<leader> <leader> e`|End of word forwards
 `<leader> <leader> g e`|End of word backwards
-`<leader> <leader> b`|Start of word backwards
 
 You can customize the appearance of your easymotion markers (the boxes with letters) using the following options:
 
@@ -365,7 +371,7 @@ Setting | Description
 `vim.easymotionMarkerFontWeight`|The font weight used for the marker text.
 `vim.easymotionMarkerYOffset`|The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
 
-#### How to use surround
+### vim-surround
 
 Surround plugin based on tpope's [surround.vim](https://github.com/tpope/vim-surround) plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
 
@@ -387,11 +393,11 @@ Some examples:
 * `"test"` with cursor inside quotes type cs"t and enter 123> to end up with `<123>test</123>`
 * `test` with cursor on word test type ysaw) to end up with `(test)`
 
-#### How to use commentary
+### vim-commentary
 
 Commentary in VSCodeVim works similarly to tpope's [vim-commentary](https://github.com/tpope/vim-commentary) but uses the VSCode native "Toggle Line Comment" and "Toggle Block Comment" features.
 
-Because `gc` is already used in VSCodeVim the commentary operators are bound to `gb` for line comments and `gB` for block comments.
+> ⚠️ Because `gc` is already used in VSCodeVim the commentary operators are bound to `gb` for line comments and `gB` for block comments.
 
 Usage examples:
 * `gb` - toggles line comment. For example `gbb` to toggle line comment for current line and `gb2j` to toggle line comments for the current line and the next line.
@@ -411,12 +417,28 @@ If you are use to using vim-commentary you are probably use to using `gc` instea
     }
 ],
 ```
+## F.A.Q.
+
+#### `j`, `k` and others don't repeat when I hold them down.
+
+On OS X, open Terminal and run the following command:
+
+```sh
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
+```
+
+#### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
+
+Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkeys)) to true.
 
 ## Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
 
-## Awesome Features You Might Not Know About
+## VSCodeVim Tricks!
+
+**Awesome Features You Might Not Know About**
 
 Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest nooks and crannies of Vim. And then we add some of our own! Some of our favorite include:
 
