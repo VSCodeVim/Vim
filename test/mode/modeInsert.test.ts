@@ -198,7 +198,6 @@ suite("Mode Insert", () => {
       keysPressed: 'a<BS><Esc>',
       end: ['abcd', "   | "],
     });
-
     newTest({
       title: "Backspace works on end of whitespace only lines",
       start: ['abcd', '     | '],
