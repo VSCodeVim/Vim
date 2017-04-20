@@ -9,7 +9,7 @@ import { ReplaceState } from './../state/replaceState';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { TagMatcher } from './../common/matching/tagMatcher';
 import { RegisterAction } from './base';
-import { ChangeOperator } from './operator';
+import { ChangeOperator, CommentOperator } from './operator';
 import { BaseAction } from './base';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
@@ -965,6 +965,9 @@ class MoveBeginningWord extends BaseMovement {
   keys = ["b"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (vimState.recordedState.operator instanceof CommentOperator) {
+      return position;
+    }
     return position.getWordLeft();
   }
 }
