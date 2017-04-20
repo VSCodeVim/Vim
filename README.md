@@ -48,7 +48,8 @@ Donations help convince me to work on this project rather than my other (non-ope
   * [Quick configuration](#configuring-vscodevim)
   * [Key Remapping](#key-remapping)
   * [Options](#supported-options)
-    * [Vim Options](#vim-optons)
+    * [Status bar customization (vim-airline)](#status-bar-customization)
+    * [Vim Options](#vim-options)
   * [Multi-cursor Mode](#multi-cursor-mode)
   * [Plugins](#plugins)
     * [vim-easymotion](#vim-easymotion)
@@ -246,6 +247,7 @@ The following is a subset of the supported configurations; the full list is desc
   * Use a non-blinking block cursor
   * Type: Boolean (Default: `false`)
 
+### Status bar customization
 
 #### statusBarColorControl
   * Control status bar color based on current mode
