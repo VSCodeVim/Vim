@@ -15,7 +15,12 @@ export interface IHandleKeys {
 }
 
 export interface IStatusBarColors {
-  [key: string]: string;
+  normal: string;
+  insert: string;
+  visual: string;
+  visualline: string;
+  visualblock: string;
+  replace: string;
 }
 
 /**
@@ -227,7 +232,14 @@ class ConfigurationClass {
   /**
    * Status bar colors to change to based on mode
    */
-  statusBarColors: IStatusBarColors = {};
+  statusBarColors: IStatusBarColors = {
+    "normal": "#005f5f",
+    "insert": "#5f0000",
+    "visual": "#5f00af",
+    "visualline": "#005f87",
+    "visualblock": "#86592d",
+    "replace": "#000000",
+  };
 
   /**
    * Color of search highlights.
