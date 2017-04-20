@@ -564,11 +564,11 @@ export class CommandInsertInInsertMode extends BaseCommand {
           // the next lowest level of indentation.
 
           const tabSize = vimState.editor.options.tabSize as number;
-          const desiredLineLength = Math.floor((line.length - 1) / tabSize) * tabSize;
+          const desiredLineLength = Math.floor((position.character - 1) / tabSize) * tabSize;
 
           vimState.recordedState.transformations.push({
             type: "deleteRange",
-            range: new Range(new Position(position.line, desiredLineLength), position)
+            range: new Range(new Position(position.line, desiredLineLength), new Position(position.line, line.length))
           });
         } else {
           vimState.recordedState.transformations.push({
