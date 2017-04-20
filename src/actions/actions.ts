@@ -5296,7 +5296,7 @@ class SelectWord extends TextObjectMovement {
     } else {
         stop = position.getWordRight().getLeftThroughLineBreaks();
 
-        if (stop.isEqual(position.getCurrentWordEnd())) {
+        if (stop.isEqual(position.getCurrentWordEnd(true))) {
           start = position.getLastWordEnd().getRight();
         } else {
           start = position.getWordLeft(true);
