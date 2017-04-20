@@ -1,7 +1,6 @@
 import { VimState, RecordedState } from './../mode/modeHandler';
-import * as clipboard from 'copy-paste';
 import { YankOperator, CommandYankFullLine, BaseOperator, BaseCommand, CommandRegister, DeleteOperator } from './../actions/actions';
-import * as vscode from "vscode";
+import *  as util from './../util';
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -137,7 +136,7 @@ export class Register {
         }
         clipboardText = clipboardText.replace(/\n$/, "");
 
-        clipboard.copy(clipboardText);
+        util.clipboardCopy(clipboardText);
       }
 
       Register.ProcessNumberedRegister(registerContent.text, vimState);
@@ -192,11 +191,7 @@ export class Register {
    */
   private static putNormalRegister(content: RegisterContent, register: string, vimState: VimState): void {
     if (Register.isClipboardRegister(register)) {
-      clipboard.copy(content, (err) => {
-        if (err) {
-          vscode.window.showErrorMessage("Error yanking, if useSystemClipboard is true and you are using Linux, please install xclip.");
-        }
-      });
+      util.clipboardCopy(content.toString());
     }
 
       Register.registers[register.toLowerCase()] = {
@@ -245,7 +240,7 @@ export class Register {
     }
 
     if (Register.isClipboardRegister(register)) {
-      clipboard.copy(content);
+      util.clipboardCopy(content.toString());
     }
 
     Register.registers[register] = {
@@ -316,16 +311,7 @@ export class Register {
 
     /* Read from system clipboard */
     if (Register.isClipboardRegister(register)) {
-      let text = await new Promise<string>((resolve, reject) =>
-        clipboard.paste((err, text) => {
-          if (err) {
-            vscode.window.showErrorMessage("Error pasting, if useSystemClipboard is true and you are using Linux, please install xclip.");
-            reject(err);
-          } else {
-            resolve(text);
-          }
-        })
-      );
+      let text = util.clipboardPaste();
 
       // Harmonize newline character
       text = text.replace(/\r\n/g, '\n');

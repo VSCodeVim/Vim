@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.6.15",
+    "version": "0.6.17",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#e3f4ff",
@@ -209,7 +209,7 @@
             {
                 "key": "ctrl+n",
                 "command": "extension.vim_ctrl+n",
-                "when": "suggestWidgetVisible && vim.use<C-n>"
+                "when": "editorTextFocus && vim.use<C-n> && !inDebugRepl"
             },
             {
                 "key": "ctrl+p",
@@ -407,11 +407,6 @@
                     "description": "Show all matches of the most recent search pattern",
                     "default": false
                 },
-                "vim.hl": {
-                    "type": "boolean",
-                    "description": "Don't worry about this one.",
-                    "default": true
-                },
                 "vim.incsearch": {
                     "type": "boolean",
                     "description": "Show where a / search matches as you type it.",
@@ -434,6 +429,14 @@
                 "vim.handleKeys": {
                     "type": "object",
                     "description": "Option to delegate certain key combinations back to VSCode to be handled natively"
+                },
+                "vim.statusBarColorControl":{
+                    "type": "boolean",
+                    "description": "Allow VSCodeVim to change status bar color based on mode"
+                },
+                "vim.statusBarColors": {
+                    "type": "object",
+                    "description": "Customize colors per mode when VSCodeVim controls status bar colors"
                 }
             }
         }
@@ -445,7 +448,7 @@
         "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
     },
     "dependencies": {
-        "copy-paste": "^1.3.0",
+        "clipboardy": "^1.1.0",
         "diff-match-patch": "^1.0.0",
         "lodash": "^4.12.0",
         "typescript": "^2.2.1"

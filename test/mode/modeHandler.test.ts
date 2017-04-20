@@ -7,7 +7,9 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 
 suite("Mode Handler", () => {
 
-  setup(setupWorkspace);
+  setup(async () => {
+    await setupWorkspace();
+  });
 
   teardown(cleanUpWorkspace);
 

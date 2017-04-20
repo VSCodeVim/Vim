@@ -14,6 +14,15 @@ export interface IHandleKeys {
   [key: string]: boolean;
 }
 
+export interface IStatusBarColors {
+  normal: string;
+  insert: string;
+  visual: string;
+  visualline: string;
+  visualblock: string;
+  replace: string;
+}
+
 /**
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
@@ -147,11 +156,6 @@ class ConfigurationClass {
   hlsearch = false;
 
   /**
-   * Used internally for nohl.
-   */
-  hl = true;
-
-  /**
    * Ignore case when searching with / or ?.
    */
   ignorecase = true;
@@ -219,6 +223,23 @@ class ConfigurationClass {
    * Start in insert mode?
    */
   startInInsertMode = false;
+
+  /**
+   * Enable changing of the status bar color based on mode
+   */
+  statusBarColorControl = false;
+
+  /**
+   * Status bar colors to change to based on mode
+   */
+  statusBarColors: IStatusBarColors = {
+    "normal": "#005f5f",
+    "insert": "#5f0000",
+    "visual": "#5f00af",
+    "visualline": "#005f87",
+    "visualblock": "#86592d",
+    "replace": "#000000",
+  };
 
   /**
    * Color of search highlights.
