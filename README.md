@@ -397,7 +397,7 @@ Setting | Description
 
 Surround plugin based on tpope's [surround.vim](https://github.com/tpope/vim-surround) plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
 
-t or < as <desired char> or <existing char> will do tags and enter tag entry mode.
+`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode.
 
 Surround can be disabled by setting vim.surround : false
 
