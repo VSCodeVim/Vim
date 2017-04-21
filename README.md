@@ -115,7 +115,7 @@ We also recommend going into *System Preferences -> Keyboard* and cranking up th
 
 ### Windows setup
 
-VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#usectrlkeys) and [`handleKeys`](#handlekeys) settings.
+VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
 
 ## Settings
 
@@ -125,16 +125,16 @@ The following is a subset of the supported settings; the full list is described 
 
 These settings are specific to VSCodeVim.
 
-#### `vim.startInInsertMode`
+#### `"vim.startInInsertMode"`
 * Have VSCodeVim start in Insert Mode rather than Normal Mode.
 * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
 
-#### `vim.overrideCopy`
+#### `"vim.overrideCopy"`
 * Override VSCode's copy command with our own, which works correctly with VSCodeVim.
 * If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
 * Type: Boolean (Default: `true`)
 
-#### `vim.useSystemClipboard`
+#### `"vim.useSystemClipboard"`
 * Enable yanking to the system clipboard by default
 * Type: Boolean (Default: `false`)
 
@@ -146,7 +146,7 @@ These settings are specific to VSCodeVim.
 * Use a non-blinking block cursor
 * Type: Boolean (Default: `false`)
 
-#### `useCtrlKeys`
+#### `"vim.useCtrlKeys"`
 * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Full Page Forward
@@ -155,16 +155,11 @@ These settings are specific to VSCodeVim.
     * `ctrl+v` => Visual Block Mode
     * etc.
 * Type: Boolean (Default: `true`)
-* *Example:*
 
-```json
-    "vim.useCtrlKeys": true
-```
-
-#### `handleKeys`
+#### `"vim.handleKeys"`
 * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
 * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
-* An example would be if a user wanted to continue to use ctrl + f for find, but wants to have [`useCtrlKeys`](#usectrlkeys) set to true so that other vim bindings work.
+* An example would be if a user wanted to continue to use ctrl + f for find, but wants to have [`useCtrlKeys`](#vimusectrlkeys) set to true so that other vim bindings work.
 
 ```json
     "vim.handleKeys": {
@@ -175,9 +170,9 @@ These settings are specific to VSCodeVim.
 
 ### Key remapping
 
-There's several different settings you can use to define custom remappings. Also related are the [`useCtrlKeys`](#usectrlkeys) and [`handleKeys`](#handlekeys) settings.
+There's several different settings you can use to define custom remappings. Also related are the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
 
-#### `insertModeKeyBindings`/`otherModesKeyBindings`
+#### `"vim.insertModeKeyBindings"`/`"vim.otherModesKeyBindings"`
 * Keybinding overrides to use for insert and other (non-insert) modes.
 
 Bind `jj` to `<Esc>` in insert mode:
@@ -257,12 +252,12 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 ```
 
 
-#### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
+#### `"vim.insertModeKeyBindingsNonRecursive"`/`"otherModesKeyBindingsNonRecursive"`
 * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
 * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
 ```json
-    "vim.otherModesKeyBindingsNonRecursive": [
+    `"vim.otherModesKeyBindingsNonRecursive": [
         {
             "before": ["j"],
             "after": ["g", "j"]
@@ -274,11 +269,11 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 
 Almost like vim-airline in VSCode!
 
-#### statusBarColorControl
+#### `"vim.statusBarColorControl"`
 * Control status bar color based on current mode
 * Type: Boolean (Default: `false`)
 
-Once this is set, you need to set statusBarColors as well with these exact strings for modenames. The colors can be adjusted to suit the user.
+Once this is set, you need to set `"vim.statusBarColors"` as well with these exact strings for modenames. The colors can be adjusted to suit the user.
 
 ```json
     "vim.statusBarColorControl": true,
@@ -303,39 +298,39 @@ Vim settings are loaded in the following sequence:
 3. VSCode settings
 4. VSCodeVim default values
 
-#### ignorecase
+#### `"vim.ignorecase"`
 * Ignore case in search patterns
 * Type: Boolean (Default: `true`)
 
-#### smartcase
+#### `"vim.smartcase"`
 * Override the 'ignorecase' setting if the search pattern contains upper case characters
 * Type: Boolean (Default: `true`)
 
-#### hlsearch
+#### `"vim.hlsearch"`
 * When there is a previous search pattern, highlight all its matches
 * Type: Boolean (Default: `false`)
 
-#### incsearch
+#### `"vim.incsearch"`
 * Show the next search match while you're searching.
 * Type: Boolean (Default: `true`)
 
-#### autoindent
+#### `"vim.autoindent"`
 * Copy indent from current line when starting a new line
 * Type: Boolean (Default: `true`)
 
-#### timeout
+#### `"vim.timeout"`
 * Timeout in milliseconds for remapped commands
 * Type: Number (Default: `1000`)
 
-#### showcmd
+#### `"vim.showcmd"`
 * Show the text of any command you are in the middle of writing.
 * Type: Boolean (Default: `true`)
 
-#### textwidth
+#### `"vim.textwidth"`
 * Width to word-wrap to when using `gq`.
 * Type: number (Default: `80`)
 
-#### leader
+#### `"vim.leader"`
 * What key should `<leader>` map to in key remappings?
 * Type: string (Default: `\`)
 
@@ -467,7 +462,7 @@ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
 
 ### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
-Set the [`useCtrlKeys` setting](#usectrlkeys) to `true`.
+Set the [`useCtrlKeys` setting](#vimusectrlkeys) to `true`.
 
 ## Contributing
 
