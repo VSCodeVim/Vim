@@ -46,16 +46,16 @@ Donations help convince me to work on this project rather than my other (non-ope
 ## Contents
 
   * [Quick example settings](#quick-example-settings)
-  * [Key Remapping](#key-remapping)
+  * [Key remapping](#key-remapping)
   * [Settings](#settings)
     * [Status bar customization (vim-airline)](#status-bar-customization)
     * [Vim settings](#vim-settings)
-  * [Multi-cursor Mode](#multi-cursor-mode)
-  * [Plugins](#plugins)
+  * [Multi-cursor mode](#multi-cursor-mode)
+  * [Emulated plugins](#plugins)
     * [vim-easymotion](#vim-easymotion)
     * [vim-surround](#vim-surround)
     * [vim-commentary](#vim-commentary)
-  * [VSCodeVim Tricks](#vscodevim-tricks)
+  * [VSCodeVim tricks](#vscodevim-tricks)
   * [F.A.Q / Troubleshooting](#faq)
 
 
@@ -99,10 +99,10 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 }
 ```
 
-## Key Remapping
+## Key remapping
 
 
-#### insertModeKeyBindings/otherModesKeyBindings
+### insertModeKeyBindings/otherModesKeyBindings
   * Keybinding overrides to use for insert and other (non-insert) modes.
 
 Bind `jj` to `<Esc>` in insert mode:
@@ -181,7 +181,7 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 ```
 
 
-#### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
+### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
   * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
   * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
@@ -194,7 +194,7 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
     ]
 ```
 
-#### useCtrlKeys
+### useCtrlKeys
   * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Full Page Forward
@@ -209,7 +209,7 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
     "vim.useCtrlKeys": true
 ```
 
-#### handleKeys
+### handleKeys
   * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
   * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
   * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
@@ -231,7 +231,7 @@ The following is a subset of the supported settings; the full list is described 
   * Have VSCodeVim start in Insert Mode rather than Normal Mode.
   * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
 
-### overrideCopy
+#### overrideCopy
   * Override VSCode's copy command with our own, which works correctly with VSCodeVim.
   * If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
   * Type: Boolean (Default: `true`)
@@ -248,7 +248,7 @@ The following is a subset of the supported settings; the full list is described 
   * Use a non-blinking block cursor
   * Type: Boolean (Default: `false`)
 
-### Status bar customization
+### Status bar settings
 
 #### statusBarColorControl
   * Control status bar color based on current mode
@@ -319,7 +319,7 @@ Vim settings are loaded in the following sequence:
 
 > ⚡ Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
 
-#### Getting into multi-cursor mode
+### Getting into multi-cursor mode
 
 You can enter multi-cursor mode by:
 
@@ -327,7 +327,7 @@ You can enter multi-cursor mode by:
 * Running "Add Cursor Above/Below" or the shortcut on any platform.
 * Pressing `gc`, a new shortcut we added which is equivalent to cmd-d on OSX or ctrl-d on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
 
-#### Doing stuff
+### Doing stuff
 
 Now that you have multiple cursors, you should be able to use Vim commands as you see fit. Most of them should work. There is a list of things I know of which don't [here](https://github.com/VSCodeVim/Vim/pull/587). If you find yourself wanting one of these, please [add it to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
 
@@ -335,7 +335,7 @@ Each cursor has its own clipboard.
 
 Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
 
-## Plugins
+## Emulated plugins
 
 ### vim-easymotion
 
@@ -432,7 +432,7 @@ Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest noo
 
 ## F.A.Q.
 
-#### `j`, `k` and others keys don't repeat when I hold them down.
+### `j`, `k` and others keys don't repeat when I hold them down.
 
 On OS X, open Terminal and run the following command:
 
@@ -441,7 +441,7 @@ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false        
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
 ```
 
-#### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
+### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
 Set the [`useCtrlKeys` setting](#usectrlkeys) to `true`.
 
