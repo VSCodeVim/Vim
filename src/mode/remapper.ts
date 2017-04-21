@@ -5,6 +5,11 @@ import { ModeHandler, VimState } from './modeHandler';
 import { AngleBracketNotation } from './../notation';
 import { runCmdLine } from '../../src/cmd_line/main';
 
+export interface ICodeKeybinding {
+  after?: string[];
+  commands?: { command: string; args: any[] }[];
+}
+
 interface IKeybinding {
   before   : string[];
   after?   : string[];
