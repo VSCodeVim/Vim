@@ -636,6 +636,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'daw' on end of word",
+      start: ['one   two   three   fou|r'],
+      keysPressed: 'daw',
+      end: ['one   two   thre|e'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'daW' on big word with cursor inside spaces",
       start: ['one   two |  three,   four  '],
       keysPressed: 'daW',
@@ -674,6 +682,8 @@ suite("Mode Normal", () => {
       end: ['one   two   three,   |six'],
       endMode: ModeName.Normal
     });
+
+
 
     newTest({
       title: "Can handle 'diw' on word with cursor inside spaces",
