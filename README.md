@@ -52,7 +52,7 @@ Donations help convince me to work on this project rather than my other (non-ope
     * [VSCodeVim settings](#vscodevim-settings)
     * [Key remapping](#key-remapping)
     * [Vim settings](#vim-settings)
-    * [Status bar customization (vim-airline)](#status-bar-customization)
+    * [Status bar colors (vim-airline)](#status-bar-color-settings)
 * [Multi-cursor mode](#multi-cursor-mode)
 * [Emulated plugins](#plugins)
     * [vim-easymotion](#vim-easymotion)
@@ -268,7 +268,7 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
     ]
 ```
 
-### Status bar settings
+### Status bar color settings
 
 Almost like vim-airline in VSCode!
 
