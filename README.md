@@ -54,7 +54,7 @@ Donations help convince me to work on this project rather than my other (non-ope
     * [Vim settings](#vim-settings)
     * [Status bar colors (vim-airline)](#status-bar-color-settings)
 * [Multi-cursor mode](#multi-cursor-mode)
-* [Emulated plugins](#plugins)
+* [Emulated plugins](#emulated-plugins)
     * [vim-easymotion](#vim-easymotion)
     * [vim-surround](#vim-surround)
     * [vim-commentary](#vim-commentary)
