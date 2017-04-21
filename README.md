@@ -45,11 +45,11 @@ Donations help convince me to work on this project rather than my other (non-ope
 
 ## Contents
 
-  * [Quick configuration](#configuring-vscodevim)
+  * [Quick example settings](#quick-example-settings)
   * [Key Remapping](#key-remapping)
-  * [Options](#supported-options)
+  * [Settings](#settings)
     * [Status bar customization (vim-airline)](#status-bar-customization)
-    * [Vim Options](#vim-options)
+    * [Vim settings](#vim-settings)
   * [Multi-cursor Mode](#multi-cursor-mode)
   * [Plugins](#plugins)
     * [vim-easymotion](#vim-easymotion)
@@ -59,9 +59,9 @@ Donations help convince me to work on this project rather than my other (non-ope
   * [F.A.Q / Troubleshooting](#faq)
 
 
-## Configuring VSCodeVim
+## Quick example settings
 
-Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension. The following section goes over some supported options in more detail.
+Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension. Move onto the [Settings](#settings) or [Key remapping](#key-remapping) sections for more in-depth documentation.
 
 ```json
 {
@@ -181,22 +181,21 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 ```
 
 
-
-
 #### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
   * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
   * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
 ```json
     "vim.otherModesKeyBindingsNonRecursive": [
-    {
-        "before": ["j"],
-        "after": ["g", "j"]
-    }]
+        {
+            "before": ["j"],
+            "after": ["g", "j"]
+        }
+    ]
 ```
 
 #### useCtrlKeys
-  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
+  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Full Page Forward
     * `ctrl+d` => Half Page Back
@@ -222,9 +221,11 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
     }
 ```
 
-## Supported Options
+## Settings
 
-The following is a subset of the supported configurations; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
+The following is a subset of the supported settings; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
+
+### VSCodeVim-specific settings
 
 #### startInInsertMode
   * Have VSCodeVim start in Insert Mode rather than Normal Mode.
@@ -267,16 +268,23 @@ The following is a subset of the supported configurations; the full list is desc
     }
 ```
 
-### Vim options
+### Vim settings
 
-Configuration options that have been copied from vim.
+Configuration settings that have been copied from vim.
+
+Vim settings are loaded in the following sequence:
+
+1. `:set {setting}`
+2. `vim.{setting}` from user/workspace settings.
+3. VSCode settings
+4. VSCodeVim default values
 
 #### ignorecase
   * Ignore case in search patterns
   * Type: Boolean (Default: `true`)
 
 #### smartcase
-  * Override the 'ignorecase' option if the search pattern contains upper case characters
+  * Override the 'ignorecase' setting if the search pattern contains upper case characters
   * Type: Boolean (Default: `true`)
 
 #### hlsearch
@@ -306,15 +314,6 @@ Configuration options that have been copied from vim.
 #### leader
   * What key should `<leader>` map to in key remappings?
   * Type: string (Default: `\`)
-
-## Configure
-
-Vim options are loaded in the following sequence:
-
-1. `:set {option}`
-2. `vim.{option}` from user/workspace settings.
-3. VSCode configuration
-4. VSCodeVim default values
 
 ## Multi-Cursor Mode
 
@@ -356,7 +355,7 @@ Motion Command | Description
 `<leader> <leader> e`|End of word forwards
 `<leader> <leader> g e`|End of word backwards
 
-You can customize the appearance of your easymotion markers (the boxes with letters) using the following options:
+You can customize the appearance of your easymotion markers (the boxes with letters) using the following settings:
 
 Setting | Description
 ---|--------
@@ -444,7 +443,7 @@ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
 
 #### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
-Set the [option `useCtrlKeys`](#usectrlkeys) to `true`.
+Set the [`useCtrlKeys` setting](#usectrlkeys) to `true`.
 
 ## Contributing
 
