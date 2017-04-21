@@ -419,7 +419,7 @@ Some examples:
 
 Commentary in VSCodeVim works similarly to tpope's [vim-commentary](https://github.com/tpope/vim-commentary) but uses the VSCode native "Toggle Line Comment" and "Toggle Block Comment" features.
 
-> ⚠️ Because `gc` is already used in VSCodeVim the commentary operators are bound to `gb` for line comments and `gB` for block comments.
+> ⚠️ Because [`gc`](#vscodevim-tricks) is already used in VSCodeVim, the commentary operators are bound to `gb` for line comments and `gB` for block comments.
 
 Usage examples:
 * `gb` - toggles line comment. For example `gbb` to toggle line comment for current line and `gb2j` to toggle line comments for the current line and the next line.
