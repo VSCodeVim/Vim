@@ -46,6 +46,8 @@ Donations help convince me to work on this project rather than my other (non-ope
 ## Contents
 
 * [Quick example settings](#quick-example-settings)
+    * [Mac setup](#mac-setup)
+    * [Windows setup](#windows-setup)
 * [Settings](#settings)
     * [VSCodeVim settings](#vscodevim-settings)
     * [Key remapping](#key-remapping)
@@ -100,11 +102,28 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 }
 ```
 
+### Mac setup
+
+If key repeating is working for you, execute this in your Terminal.
+
+```sh
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
+```
+
+We also recommend going into *System Preferences -> Keyboard* and cranking up the Key Repeat and Delay Until Repeat settings to improve your speed.
+
+### Windows setup
+
+VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#usectrlkeys) and [`handleKeys`](#handlekeys) settings.
+
 ## Settings
 
 The following is a subset of the supported settings; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
 
 ### VSCodeVim settings
+
+These settings are specific to VSCodeVim.
 
 #### startInInsertMode
 * Have VSCodeVim start in Insert Mode rather than Normal Mode.
