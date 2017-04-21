@@ -46,10 +46,11 @@ Donations help convince me to work on this project rather than my other (non-ope
 ## Contents
 
 * [Quick example settings](#quick-example-settings)
-* [Key remapping](#key-remapping)
 * [Settings](#settings)
-    * [Status bar customization (vim-airline)](#status-bar-customization)
+    * [VSCodeVim settings](#vscodevim-settings)
+    * [Key remapping](#key-remapping)
     * [Vim settings](#vim-settings)
+    * [Status bar customization (vim-airline)](#status-bar-customization)
 * [Multi-cursor mode](#multi-cursor-mode)
 * [Emulated plugins](#plugins)
     * [vim-easymotion](#vim-easymotion)
@@ -99,9 +100,63 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 }
 ```
 
-## Key remapping
+## Settings
 
-### insertModeKeyBindings/otherModesKeyBindings
+The following is a subset of the supported settings; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
+
+### VSCodeVim settings
+
+#### startInInsertMode
+* Have VSCodeVim start in Insert Mode rather than Normal Mode.
+* We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
+
+#### overrideCopy
+* Override VSCode's copy command with our own, which works correctly with VSCodeVim.
+* If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
+* Type: Boolean (Default: `true`)
+
+#### useSystemClipboard
+* Enable yanking to the system clipboard by default
+* Type: Boolean (Default: `false`)
+
+#### searchHighlightColor
+* Set the color of search highlights.
+* Type: Color String (Default: `rgba(150, 150, 150, 0.3)`)
+
+#### useSolidBlockCursor
+* Use a non-blinking block cursor
+* Type: Boolean (Default: `false`)
+
+### useCtrlKeys
+* Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
+    * `ctrl+c`, `ctrl+[` => `<Esc>`
+    * `ctrl+f` => Full Page Forward
+    * `ctrl+d` => Half Page Back
+    * `ctrl+b` => Half Page Forward
+    * `ctrl+v` => Visual Block Mode
+    * etc.
+* Type: Boolean (Default: `true`)
+* *Example:*
+
+```json
+    "vim.useCtrlKeys": true
+```
+
+### handleKeys
+* Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
+* Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
+* An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
+
+```json
+    "vim.handleKeys": {
+        "<C-a>": false,
+        "<C-f>": false
+    }
+```
+
+### Key remapping
+
+#### insertModeKeyBindings/otherModesKeyBindings
 * Keybinding overrides to use for insert and other (non-insert) modes.
 
 Bind `jj` to `<Esc>` in insert mode:
@@ -181,7 +236,7 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 ```
 
 
-### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
+#### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
 * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
 * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
@@ -193,60 +248,6 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
         }
     ]
 ```
-
-### useCtrlKeys
-* Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
-    * `ctrl+c`, `ctrl+[` => `<Esc>`
-    * `ctrl+f` => Full Page Forward
-    * `ctrl+d` => Half Page Back
-    * `ctrl+b` => Half Page Forward
-    * `ctrl+v` => Visual Block Mode
-    * etc.
-* Type: Boolean (Default: `true`)
-* *Example:*
-
-```json
-    "vim.useCtrlKeys": true
-```
-
-### handleKeys
-* Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
-* Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
-* An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
-
-```json
-    "vim.handleKeys": {
-        "<C-a>": false,
-        "<C-f>": false
-    }
-```
-
-## Settings
-
-The following is a subset of the supported settings; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
-
-### VSCodeVim-specific settings
-
-#### startInInsertMode
-* Have VSCodeVim start in Insert Mode rather than Normal Mode.
-* We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
-
-#### overrideCopy
-* Override VSCode's copy command with our own, which works correctly with VSCodeVim.
-* If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
-* Type: Boolean (Default: `true`)
-
-#### useSystemClipboard
-* Enable yanking to the system clipboard by default
-* Type: Boolean (Default: `false`)
-
-#### searchHighlightColor
-* Set the color of search highlights.
-* Type: Color String (Default: `rgba(150, 150, 150, 0.3)`)
-
-#### useSolidBlockCursor
-* Use a non-blinking block cursor
-* Type: Boolean (Default: `false`)
 
 ### Status bar settings
 
