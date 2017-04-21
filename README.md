@@ -125,28 +125,28 @@ The following is a subset of the supported settings; the full list is described 
 
 These settings are specific to VSCodeVim.
 
-#### startInInsertMode
+#### `vim.startInInsertMode`
 * Have VSCodeVim start in Insert Mode rather than Normal Mode.
 * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
 
-#### overrideCopy
+#### `vim.overrideCopy`
 * Override VSCode's copy command with our own, which works correctly with VSCodeVim.
 * If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
 * Type: Boolean (Default: `true`)
 
-#### useSystemClipboard
+#### `vim.useSystemClipboard`
 * Enable yanking to the system clipboard by default
 * Type: Boolean (Default: `false`)
 
-#### searchHighlightColor
+#### `"vim.searchHighlightColor"`
 * Set the color of search highlights.
 * Type: Color String (Default: `rgba(150, 150, 150, 0.3)`)
 
-#### useSolidBlockCursor
+#### `"vim.useSolidBlockCursor"`
 * Use a non-blinking block cursor
 * Type: Boolean (Default: `false`)
 
-#### useCtrlKeys
+#### `useCtrlKeys`
 * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Full Page Forward
@@ -161,7 +161,7 @@ These settings are specific to VSCodeVim.
     "vim.useCtrlKeys": true
 ```
 
-#### handleKeys
+#### `handleKeys`
 * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
 * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
 * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have [`useCtrlKeys`](#usectrlkeys) set to true so that other vim bindings work.
@@ -177,7 +177,7 @@ These settings are specific to VSCodeVim.
 
 There's several different settings you can use to define custom remappings. Also related are the [`useCtrlKeys`](#usectrlkeys) and [`handleKeys`](#handlekeys) settings.
 
-#### insertModeKeyBindings/otherModesKeyBindings
+#### `insertModeKeyBindings`/`otherModesKeyBindings`
 * Keybinding overrides to use for insert and other (non-insert) modes.
 
 Bind `jj` to `<Esc>` in insert mode:
