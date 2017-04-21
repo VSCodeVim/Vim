@@ -104,7 +104,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 
 ### Mac setup
 
-If key repeating is working for you, execute this in your Terminal.
+If key repeating isn't working for you, execute this in your Terminal.
 
 ```sh
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
