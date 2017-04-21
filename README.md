@@ -63,7 +63,7 @@ Donations help convince me to work on this project rather than my other (non-ope
 
 Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension. The following section goes over some supported options in more detail.
 
-```
+```json
 {
     "vim.easymotion": true,
     "vim.incsearch": true,
@@ -107,7 +107,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 
 Bind `jj` to `<Esc>` in insert mode:
 
-```
+```json
   "vim.insertModeKeyBindings": [
        {
            "before": ["j", "j"],
@@ -117,7 +117,7 @@ Bind `jj` to `<Esc>` in insert mode:
 ```
 Bind `:` to show the command palette:
 
-```
+```json
 "vim.otherModesKeyBindingsNonRecursive": [
    {
        "before": [":"],
@@ -134,7 +134,7 @@ Bind `:` to show the command palette:
 
 Bind `ZZ` to save and close the current file:
 
-```
+```json
     "vim.otherModesKeyBindingsNonRecursive": [
         {
             "before": ["Z", "Z"],
@@ -151,11 +151,11 @@ Bind `ZZ` to save and close the current file:
             ]
         }
     ]
-````
+```
 
 Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the current file:
 
-```
+```json
     "vim.otherModesKeyBindingsNonRecursive": [
         {
            "before":["<C-n>"],
@@ -178,7 +178,7 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
             ]
         }
     ]
-````
+```
 
 
 
@@ -187,13 +187,13 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
   * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
   * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
-    ```
+```json
     "vim.otherModesKeyBindingsNonRecursive": [
     {
         "before": ["j"],
         "after": ["g", "j"]
     }]
-    ```
+```
 
 #### useCtrlKeys
   * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Setting this option to true will enable:
@@ -206,21 +206,21 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
   * Type: Boolean (Default: `true`)
   * *Example:*
 
-    ```
+```json
     "vim.useCtrlKeys": true
-    ```
+```
 
 #### handleKeys
   * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
   * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
   * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
 
-    ```
+```json
     "vim.handleKeys":{
         "<C-a>": false,
         "<C-f>": false
     }
-    ```
+```
 
 ## Supported Options
 
@@ -255,7 +255,7 @@ The following is a subset of the supported configurations; the full list is desc
 
   Once this is set, you need to set statusBarColors as well with these exact strings for modenames. The colors can be adjusted to suit the user.
 
-```
+```json
     "vim.statusBarColorControl": true,
     "vim.statusBarColors" : {
         "normal": "#005f5f",
