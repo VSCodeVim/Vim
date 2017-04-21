@@ -21,15 +21,15 @@
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vim keybindings, including:
 
-* Modes: normal, insert, command, visual, visual line, visual block
+* Modes: normal, insert, command-line, visual, visual line, visual block
 * Command combinations (`c3w`, `daw`, `2dd`, etc)
-* Highly versatile command remapping (`jj` to esc, `:` to command panel, etc.)
+* Highly versatile command remapping (`jj` to `<Esc>`, `:` to command panel, etc.)
 * Incremental search with `/` and `?`
 * Marks
-* Common vim plugin features built-in (easymotion, surround, commentary)
+* Popular vim plugin features built-in (easymotion, surround, commentary)
 * Vim settings similar to those found in .vimrc
-* Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
-* And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
+* Multi-cursor support, run vim commands everywhere!
+* And much more! Refer to the [roadmap](ROADMAP.md) for everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
 
