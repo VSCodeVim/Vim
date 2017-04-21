@@ -146,7 +146,7 @@ These settings are specific to VSCodeVim.
 * Use a non-blinking block cursor
 * Type: Boolean (Default: `false`)
 
-### useCtrlKeys
+#### useCtrlKeys
 * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Full Page Forward
@@ -161,7 +161,7 @@ These settings are specific to VSCodeVim.
     "vim.useCtrlKeys": true
 ```
 
-### handleKeys
+#### handleKeys
 * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
 * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
 * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have [`useCtrlKeys`](#usectrlkeys) set to true so that other vim bindings work.
@@ -339,7 +339,7 @@ Vim settings are loaded in the following sequence:
 * What key should `<leader>` map to in key remappings?
 * Type: string (Default: `\`)
 
-## Multi-Cursor Mode
+## Multi-Cursor mode
 
 > ⚡ Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
 
@@ -440,7 +440,7 @@ If you are use to using vim-commentary you are probably use to using `gc` instea
 ],
 ```
 
-## VSCodeVim Tricks!
+## VSCodeVim tricks!
 
 **Awesome Features You Might Not Know About**
 
