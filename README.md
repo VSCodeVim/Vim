@@ -60,6 +60,8 @@ Donations help convince me to work on this project rather than my other (non-ope
     * [vim-commentary](#vim-commentary)
 * [VSCodeVim tricks](#vscodevim-tricks)
 * [F.A.Q / Troubleshooting](#faq)
+* [Contributing](#contributing)
+* [Release notes](https://github.com/VSCodeVim/Vim/releases)
 
 
 ## Quick example settings
@@ -468,13 +470,10 @@ Set the [`useCtrlKeys` setting](#vimusectrlkeys) to `true`.
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
 
-## Special Shoutouts to Cool Contributors
+### Special shoutouts to cool contributors
 
 * Thanks to @xconverge for making over 100 commits to the repo. If you're wondering why your least favorite bug packed up and left, it was probably him.
 * Thanks to @Metamist for implementing EasyMotion!
 * Thanks to @sectioneight for implementing text objects!
 * Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
 
-## Release Notes
-
-Our recent releases and update notes are available [here](https://github.com/VSCodeVim/Vim/releases).
