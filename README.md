@@ -45,18 +45,18 @@ Donations help convince me to work on this project rather than my other (non-ope
 
 ## Contents
 
-  * [Quick example settings](#quick-example-settings)
-  * [Key remapping](#key-remapping)
-  * [Settings](#settings)
+* [Quick example settings](#quick-example-settings)
+* [Key remapping](#key-remapping)
+* [Settings](#settings)
     * [Status bar customization (vim-airline)](#status-bar-customization)
     * [Vim settings](#vim-settings)
-  * [Multi-cursor mode](#multi-cursor-mode)
-  * [Emulated plugins](#plugins)
+* [Multi-cursor mode](#multi-cursor-mode)
+* [Emulated plugins](#plugins)
     * [vim-easymotion](#vim-easymotion)
     * [vim-surround](#vim-surround)
     * [vim-commentary](#vim-commentary)
-  * [VSCodeVim tricks](#vscodevim-tricks)
-  * [F.A.Q / Troubleshooting](#faq)
+* [VSCodeVim tricks](#vscodevim-tricks)
+* [F.A.Q / Troubleshooting](#faq)
 
 
 ## Quick example settings
@@ -82,14 +82,14 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
             "after": ["d", "d"]
         },
         {
-           "before":["<C-n>"],
-           "after":[],
+            "before":["<C-n>"],
+            "after":[],
             "commands": [
                 {
                     "command": ":nohl"
                 }
             ]
-       }
+        }
     ],
     "vim.leader": "<space>",
     "vim.handleKeys":{
@@ -101,34 +101,34 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 
 ## Key remapping
 
-
 ### insertModeKeyBindings/otherModesKeyBindings
-  * Keybinding overrides to use for insert and other (non-insert) modes.
+* Keybinding overrides to use for insert and other (non-insert) modes.
 
 Bind `jj` to `<Esc>` in insert mode:
 
 ```json
-  "vim.insertModeKeyBindings": [
-       {
-           "before": ["j", "j"],
-           "after": ["<Esc>"]
-       }
-  ]
+    "vim.insertModeKeyBindings": [
+        {
+            "before": ["j", "j"],
+            "after": ["<Esc>"]
+        }
+    ]
 ```
+
 Bind `:` to show the command palette:
 
 ```json
 "vim.otherModesKeyBindingsNonRecursive": [
-   {
-       "before": [":"],
-       "after": [],
-       "commands": [
-           {
-               "command": "workbench.action.showCommands",
-               "args": []
-           }
-       ]
-   }
+    {
+        "before": [":"],
+        "after": [],
+        "commands": [
+            {
+                "command": "workbench.action.showCommands",
+                "args": []
+            }
+        ]
+    }
 ]
 ```
 
@@ -158,8 +158,8 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 ```json
     "vim.otherModesKeyBindingsNonRecursive": [
         {
-           "before":["<C-n>"],
-           "after":[],
+            "before":["<C-n>"],
+            "after":[],
             "commands": [
                 {
                     "command": ":nohl",
@@ -182,8 +182,8 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 
 
 ### insertModeKeyBindingsNonRecursive/otherModesKeyBindingsNonRecursive
-  * Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
-  * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
+* Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
+* *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
 ```json
     "vim.otherModesKeyBindingsNonRecursive": [
@@ -195,27 +195,27 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 ```
 
 ### useCtrlKeys
-  * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
+* Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
     * `ctrl+f` => Full Page Forward
     * `ctrl+d` => Half Page Back
     * `ctrl+b` => Half Page Forward
     * `ctrl+v` => Visual Block Mode
     * etc.
-  * Type: Boolean (Default: `true`)
-  * *Example:*
+* Type: Boolean (Default: `true`)
+* *Example:*
 
 ```json
     "vim.useCtrlKeys": true
 ```
 
 ### handleKeys
-  * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
-  * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
-  * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
+* Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
+* Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
+* An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
 
 ```json
-    "vim.handleKeys":{
+    "vim.handleKeys": {
         "<C-a>": false,
         "<C-f>": false
     }
@@ -228,33 +228,35 @@ The following is a subset of the supported settings; the full list is described 
 ### VSCodeVim-specific settings
 
 #### startInInsertMode
-  * Have VSCodeVim start in Insert Mode rather than Normal Mode.
-  * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
+* Have VSCodeVim start in Insert Mode rather than Normal Mode.
+* We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
 
 #### overrideCopy
-  * Override VSCode's copy command with our own, which works correctly with VSCodeVim.
-  * If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
-  * Type: Boolean (Default: `true`)
+* Override VSCode's copy command with our own, which works correctly with VSCodeVim.
+* If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
+* Type: Boolean (Default: `true`)
 
 #### useSystemClipboard
-  * Enable yanking to the system clipboard by default
-  * Type: Boolean (Default: `false`)
+* Enable yanking to the system clipboard by default
+* Type: Boolean (Default: `false`)
 
 #### searchHighlightColor
-  * Set the color of search highlights.
-  * Type: Color String (Default: `rgba(150, 150, 150, 0.3)`)
+* Set the color of search highlights.
+* Type: Color String (Default: `rgba(150, 150, 150, 0.3)`)
 
 #### useSolidBlockCursor
-  * Use a non-blinking block cursor
-  * Type: Boolean (Default: `false`)
+* Use a non-blinking block cursor
+* Type: Boolean (Default: `false`)
 
 ### Status bar settings
 
-#### statusBarColorControl
-  * Control status bar color based on current mode
-  * Type: Boolean (Default: `false`)
+Almost like vim-airline in VSCode!
 
-  Once this is set, you need to set statusBarColors as well with these exact strings for modenames. The colors can be adjusted to suit the user.
+#### statusBarColorControl
+* Control status bar color based on current mode
+* Type: Boolean (Default: `false`)
+
+Once this is set, you need to set statusBarColors as well with these exact strings for modenames. The colors can be adjusted to suit the user.
 
 ```json
     "vim.statusBarColorControl": true,
@@ -280,40 +282,40 @@ Vim settings are loaded in the following sequence:
 4. VSCodeVim default values
 
 #### ignorecase
-  * Ignore case in search patterns
-  * Type: Boolean (Default: `true`)
+* Ignore case in search patterns
+* Type: Boolean (Default: `true`)
 
 #### smartcase
-  * Override the 'ignorecase' setting if the search pattern contains upper case characters
-  * Type: Boolean (Default: `true`)
+* Override the 'ignorecase' setting if the search pattern contains upper case characters
+* Type: Boolean (Default: `true`)
 
 #### hlsearch
-  * When there is a previous search pattern, highlight all its matches
-  * Type: Boolean (Default: `false`)
+* When there is a previous search pattern, highlight all its matches
+* Type: Boolean (Default: `false`)
 
 #### incsearch
-  * Show the next search match while you're searching.
-  * Type: Boolean (Default: `true`)
+* Show the next search match while you're searching.
+* Type: Boolean (Default: `true`)
 
 #### autoindent
-  * Copy indent from current line when starting a new line
-  * Type: Boolean (Default: `true`)
+* Copy indent from current line when starting a new line
+* Type: Boolean (Default: `true`)
 
 #### timeout
-  * Timeout in milliseconds for remapped commands
-  * Type: Number (Default: `1000`)
+* Timeout in milliseconds for remapped commands
+* Type: Number (Default: `1000`)
 
 #### showcmd
-  * Show the text of any command you are in the middle of writing.
-  * Type: Boolean (Default: `true`)
+* Show the text of any command you are in the middle of writing.
+* Type: Boolean (Default: `true`)
 
 #### textwidth
-  * Width to word-wrap to when using `gq`.
-  * Type: number (Default: `80`)
+* Width to word-wrap to when using `gq`.
+* Type: number (Default: `80`)
 
 #### leader
-  * What key should `<leader>` map to in key remappings?
-  * Type: string (Default: `\`)
+* What key should `<leader>` map to in key remappings?
+* Type: string (Default: `\`)
 
 ## Multi-Cursor Mode
 
