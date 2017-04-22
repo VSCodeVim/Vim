@@ -14,7 +14,7 @@ export function getIndentObjectRange (position: Position, options: IIndentObject
   const cursorIndent = TextEditor.getIndentationLevel(firstValidContents!);
 
   let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
-  let endLineNumber = findRangeEnd(firstValidLineNumber + 1, cursorIndent);
+  let endLineNumber = findRangeEnd(firstValidLineNumber, cursorIndent);
 
   // Adjust the start line as needed.
   if (options.includeLineAbove) {
@@ -65,6 +65,7 @@ function findFirstValidLine (cursorPosition: Position): number {
  * Searches up from a line finding the first with a lower indent level.
  */
 function findRangeStart (startIndex: number, cursorIndent: number): number {
+  let ret = startIndex;
   for (let i = startIndex; i >= 0; i--) {
     const line = TextEditor.readLineAt(i);
 
@@ -77,16 +78,17 @@ function findRangeStart (startIndex: number, cursorIndent: number): number {
       break;
     }
 
-    return i;
+    ret = i;
   }
 
-  return startIndex;
+  return ret;
 }
 
 /**
  * Searches down from a line finding the first with a lower indent level.
  */
 function findRangeEnd (startIndex: number, cursorIndent: number): number {
+  let ret = startIndex;
   for (let i = startIndex; i < TextEditor.getLineCount(); i++) {
     const line = TextEditor.readLineAt(i);
 
@@ -99,10 +101,10 @@ function findRangeEnd (startIndex: number, cursorIndent: number): number {
       break;
     }
 
-    return i;
+    ret = i;
   }
 
-  return startIndex;
+  return ret;
 }
 
 interface IIndentObjectOptions {
