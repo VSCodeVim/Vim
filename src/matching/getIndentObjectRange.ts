@@ -40,7 +40,9 @@ export function getIndentObjectRange (position: Position, options: IIndentObject
   if (options.operatorString === 'change') {
     startCharacter = TextEditor.getIndentationLevel(TextEditor.readLineAt(startLineNumber));
   }
-  const endCharacter = TextEditor.readLineAt(endLineNumber).length;
+  // Get the number of characters on the last line.
+  // Add one to also get the newline.
+  const endCharacter = TextEditor.readLineAt(endLineNumber).length + 1;
 
   return {
     startPosition: new Position(startLineNumber, startCharacter),
