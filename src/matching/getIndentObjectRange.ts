@@ -5,7 +5,7 @@ const emptyRegex = /^\s*$/;
 
 /**
  * Get a range based on the current indentation level.
- * Will search for non-empty lines.
+ * Will search backward if starting on empty line.
  * Respects indentation level if options.operatorString is 'change'.
  */
 export function getIndentObjectRange (position: Position, options: IIndentObjectOptions): IIndentObjectRange {
@@ -13,8 +13,8 @@ export function getIndentObjectRange (position: Position, options: IIndentObject
   const firstValidContents = TextEditor.readLineAt(firstValidLineNumber);
   const cursorIndent = TextEditor.getIndentationLevel(firstValidContents!);
 
-  let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
-  let endLineNumber = findRangeEnd(firstValidLineNumber, cursorIndent);
+  let startLineNumber = findRangeStartOrEnd(firstValidLineNumber, cursorIndent, -1);
+  let endLineNumber = findRangeStartOrEnd(firstValidLineNumber, cursorIndent, 1);
 
   // Adjust the start line as needed.
   if (options.includeLineAbove) {
@@ -64,42 +64,20 @@ function findFirstValidLine (cursorPosition: Position): number {
 }
 
 /**
- * Searches up from a line finding the first with a lower indent level.
+ * Searches up or down from a line finding the first with a lower indent level.
  */
-function findRangeStart (startIndex: number, cursorIndent: number): number {
+function findRangeStartOrEnd (startIndex: number, cursorIndent: number, step: -1 | 1): number {
+  let i = startIndex;
   let ret = startIndex;
-  for (let i = startIndex; i >= 0; i--) {
+  let end = step === 1
+    ? TextEditor.getLineCount()
+    : -1;
+
+  for (; i !== end; i += step) {
     const line = TextEditor.readLineAt(i);
+    const isLineEmpty = line.match(emptyRegex) !== null;
 
-    // Ignore empty lines.
-    if (line.match(emptyRegex)) {
-      continue;
-    }
-
-    if (TextEditor.getIndentationLevel(line) < cursorIndent) {
-      break;
-    }
-
-    ret = i;
-  }
-
-  return ret;
-}
-
-/**
- * Searches down from a line finding the first with a lower indent level.
- */
-function findRangeEnd (startIndex: number, cursorIndent: number): number {
-  let ret = startIndex;
-  for (let i = startIndex; i < TextEditor.getLineCount(); i++) {
-    const line = TextEditor.readLineAt(i);
-
-    // Ignore empty lines.
-    if (line.match(emptyRegex)) {
-      continue;
-    }
-
-    if (TextEditor.getIndentationLevel(line) < cursorIndent) {
+    if (TextEditor.getIndentationLevel(line) < cursorIndent && !isLineEmpty) {
       break;
     }
 
