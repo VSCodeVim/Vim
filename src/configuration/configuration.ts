@@ -15,7 +15,12 @@ export interface IHandleKeys {
 }
 
 export interface IStatusBarColors {
-  [key: string]: string;
+  normal: string;
+  insert: string;
+  visual: string;
+  visualline: string;
+  visualblock: string;
+  replace: string;
 }
 
 /**
@@ -93,8 +98,13 @@ class ConfigurationClass {
           useKey = false;
         }
       } else if (!this.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
-        // Check for useCtrlKeys and if it is a <C- ctrl based keybinding
-        useKey = false;
+        // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding.
+        // However, we need to still capture <C-c> due to overrideCopy.
+        if (bracketedKey === '<C-c>' && this.overrideCopy) {
+          useKey = true;
+        } else {
+          useKey = false;
+        }
       }
 
       // Set the context of whether or not this key will be used based on criteria from above
@@ -227,7 +237,14 @@ class ConfigurationClass {
   /**
    * Status bar colors to change to based on mode
    */
-  statusBarColors: IStatusBarColors = {};
+  statusBarColors: IStatusBarColors = {
+    "normal": "#005f5f",
+    "insert": "#5f0000",
+    "visual": "#5f00af",
+    "visualline": "#005f87",
+    "visualblock": "#86592d",
+    "replace": "#000000",
+  };
 
   /**
    * Color of search highlights.
