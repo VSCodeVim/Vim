@@ -1449,8 +1449,9 @@ suite("Mode Normal", () => {
       title: "Can do cii",
       start: [
           'if foo > 3:',
-          '    log("foo is big")|',
+          '    log("foo is big")',
           '    foo = 3',
+          '|',
           'do_something_else()',
       ],
       keysPressed: "cii",
@@ -1497,15 +1498,15 @@ suite("Mode Normal", () => {
       title: "Can do dii",
       start: [
           'if foo > 3:',
-          '    log("foo is big")|',
+          '    log("foo is big")',
           '    foo = 3',
+          '|',
           'do_something_else()',
       ],
       keysPressed: "dii",
       end: [
           'if foo > 3:',
-          '|',
-          'do_something_else()',
+          '|do_something_else()',
       ],
       endMode: ModeName.Normal
     });
