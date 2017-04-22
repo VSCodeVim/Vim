@@ -665,4 +665,70 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
   });
+
+  suite("handles indent blocks in visual mode", () => {
+    newTest({
+      title: "Can do vai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "vaid",
+      end: [
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do vii",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "viid",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Searches backwards if cursor line is empty",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")',
+          '|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "viid",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do vaI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "vaId",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Normal
+    });
+  });
+
 });

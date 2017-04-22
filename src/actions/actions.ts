@@ -12,6 +12,7 @@ import { Position, PositionDiff } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
+import { getIndentObjectRange } from './../matching/getIndentObjectRange';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
@@ -6284,6 +6285,53 @@ class MoveInsideTag extends MoveTagMatch {
 class MoveAroundTag extends MoveTagMatch {
   keys = ["a", "t"];
   includeTag = true;
+}
+
+abstract class IndentObjectMatch extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  protected includeLineAbove = false;
+  protected includeLineBelow = false;
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const operator = vimState.recordedState.operator;
+    let operatorString: 'change' | 'delete' | 'yank' | 'visual' | undefined;
+
+    if (operator instanceof ChangeOperator) { operatorString = 'change'; }
+    if (operator instanceof DeleteOperator) { operatorString = 'delete'; }
+    if (operator instanceof YankOperator)   { operatorString = 'yank'; }
+    if (vimState.currentModeName() === 'Visual') {
+      operatorString = 'visual';
+    }
+
+    const range = getIndentObjectRange(position, {
+      includeLineAbove: this.includeLineAbove,
+      includeLineBelow: this.includeLineBelow,
+      operatorString,
+    });
+
+    return {
+      start: range.startPosition,
+      stop: range.endPosition
+    };
+  }
+}
+
+@RegisterAction
+class InsideIndentObject extends IndentObjectMatch {
+  keys = ["i", "i"];
+}
+
+@RegisterAction
+class InsideIndentObjectAbove extends IndentObjectMatch {
+  keys = ["a", "i"];
+  includeLineAbove = true;
+}
+
+@RegisterAction
+class InsideIndentObjectBoth extends IndentObjectMatch {
+  keys = ["a", "I"];
+  includeLineAbove = true;
+  includeLineBelow = true;
 }
 
 @RegisterAction
