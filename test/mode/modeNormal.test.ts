@@ -579,7 +579,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'ca`' inside word",
       start: ['one `t|wo`'],
       keysPressed: 'ca`',
@@ -587,7 +587,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Insert
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word with cursor inside spaces",
       start: ['one   two |  three,   four  '],
       keysPressed: 'daw',
@@ -595,7 +595,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word with trailing spaces",
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'daw',
@@ -603,7 +603,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word with leading spaces",
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'daw',
@@ -611,7 +611,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word with numeric prefix",
       start: ['on|e   two   three,   four  '],
       keysPressed: 'd3aw',
@@ -619,7 +619,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word with numeric prefix and across lines",
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'd2aw',
@@ -627,7 +627,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word with numeric prefix and across lines, containing words end with `.`",
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'd2aw',
@@ -635,7 +635,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on end of word",
       start: ['one   two   three   fou|r'],
       keysPressed: 'daw',
@@ -643,7 +643,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on words at beginning of line with leading whitespace",
       start: ['if (something){',
               '  |this.method();'],
@@ -652,7 +652,7 @@ suite("Mode Normal", () => {
             '  |.method();']
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on words at ends of lines in the middle of whitespace",
       start: ['one two | ',
              'four'],
@@ -660,14 +660,14 @@ suite("Mode Normal", () => {
       end: ['one tw|o']
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word at beginning of file",
       start: ['o|ne'],
       keysPressed: 'daw',
       end: ['|']
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word at beginning of line",
       start: ['one two',
               'th|ree'],
@@ -676,7 +676,7 @@ suite("Mode Normal", () => {
             '|']
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' on word at end of line with trailing whitespace",
       start: ['one tw|o  ',
               'three four'],
@@ -685,7 +685,7 @@ suite("Mode Normal", () => {
             'three four']
     });
 
-    newTestOnly({
+    newTest({
       title: "Can handle 'daw' around word at end of line",
       start: ['one t|wo',
               ' three'],
