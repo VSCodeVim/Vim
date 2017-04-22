@@ -644,6 +644,15 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle daw on words at beginning of line with leading whitespace",
+      start: ['if (something){',
+              '  |this.method();'],
+      keysPressed: 'daw',
+      end: ['if (something){',
+            '  |.method();']
+    });
+
+    newTest({
       title: "Can handle 'daW' on big word with cursor inside spaces",
       start: ['one   two |  three,   four  '],
       keysPressed: 'daW',
@@ -681,15 +690,6 @@ suite("Mode Normal", () => {
       keysPressed: 'd2aW',
       end: ['one   two   three,   |six'],
       endMode: ModeName.Normal
-    });
-
-    newTestOnly({
-      title: "Can handle daw on words at beginning of line with leading whitespace",
-      start: ['if (something){',
-              '  |this.method();'],
-      keysPressed: 'daw',
-      end: ['if (something){',
-            '  |.method();']
     });
 
     newTest({
