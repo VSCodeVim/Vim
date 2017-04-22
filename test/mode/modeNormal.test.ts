@@ -693,14 +693,6 @@ suite("Mode Normal", () => {
       end: ['on|e',
             ' three']
     })
-    // newTestOnly({
-    //   title: "Can handle 'daw' on newline with words after",
-    //   start: ['one two',
-    //           '|',
-    //           'asdf'],
-    //   keysPressed: 'daw',
-    //   end: ['one tw|o']
-    // })
     newTest({
       title: "Can handle 'daW' on big word with cursor inside spaces",
       start: ['one   two |  three,   four  '],
