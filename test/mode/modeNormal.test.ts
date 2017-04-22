@@ -683,7 +683,14 @@ suite("Mode Normal", () => {
       endMode: ModeName.Normal
     });
 
-
+    newTestOnly({
+      title: "Can handle daw on words at beginning of line with leading whitespace",
+      start: ['if (something){',
+              '  |this.method();'],
+      keysPressed: 'daw',
+      end: ['if (something){',
+            '  |.method();']
+    });
 
     newTest({
       title: "Can handle 'diw' on word with cursor inside spaces",

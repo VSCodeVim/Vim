@@ -5297,7 +5297,9 @@ class SelectWord extends TextObjectMovement {
         stop = position.getWordRight().getLeftThroughLineBreaks();
         // If we aren't separated from the next word by whitespace(like in "horse ca|t,dog" or at the end of the line)
         // then we delete the spaces to the left of the current word. Otherwise, we delete to the right.
-        if (stop.isEqual(position.getCurrentWordEnd(true))) {
+        if (stop.isEqual(position.getCurrentWordEnd(true)) && !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar())) {
+          start = position.getWordLeft(true);
+          start = position.getFirstLineNonBlankChar();
           start = position.getLastWordEnd().getRight();
         } else {
           start = position.getWordLeft(true);
