@@ -1,8 +1,6 @@
 import { TextEditor } from '../textEditor';
 import { Position } from '../motion/position';
 
-const emptyRegex = /^\s*$/;
-
 /**
  * Get a range based on the current indentation level.
  * Will search backward if starting on empty line.
@@ -10,8 +8,8 @@ const emptyRegex = /^\s*$/;
  */
 export function getIndentObjectRange (position: Position, options: IIndentObjectOptions): IIndentObjectRange {
   const firstValidLineNumber = findFirstValidLine(position);
-  const firstValidContents = TextEditor.readLineAt(firstValidLineNumber);
-  const cursorIndent = TextEditor.getIndentationLevel(firstValidContents!);
+  const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
+  const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
   let startLineNumber = findRangeStartOrEnd(firstValidLineNumber, cursorIndent, -1);
   let endLineNumber = findRangeStartOrEnd(firstValidLineNumber, cursorIndent, 1);
@@ -38,7 +36,7 @@ export function getIndentObjectRange (position: Position, options: IIndentObject
   // of the block.
   let startCharacter = 0;
   if (options.operatorString === 'change') {
-    startCharacter = TextEditor.getIndentationLevel(TextEditor.readLineAt(startLineNumber));
+    startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0)).firstNonWhitespaceCharacterIndex;
   }
   // Get the number of characters on the last line.
   // Add one to also get the newline.
@@ -55,7 +53,9 @@ export function getIndentObjectRange (position: Position, options: IIndentObject
  */
 function findFirstValidLine (cursorPosition: Position): number {
   for (let i = cursorPosition.line; i >= 0; i--) {
-    if (!TextEditor.readLineAt(i).match(emptyRegex)) {
+    const line = TextEditor.getLineAt(new Position(i, 0));
+
+    if (!line.isEmptyOrWhitespace) {
       return i;
     }
   }
@@ -74,10 +74,11 @@ function findRangeStartOrEnd (startIndex: number, cursorIndent: number, step: -1
     : -1;
 
   for (; i !== end; i += step) {
-    const line = TextEditor.readLineAt(i);
-    const isLineEmpty = line.match(emptyRegex) !== null;
+    const line = TextEditor.getLineAt(new Position(i, 0));
+    const isLineEmpty = line.isEmptyOrWhitespace;
+    const lineIndent = line.firstNonWhitespaceCharacterIndex;
 
-    if (TextEditor.getIndentationLevel(line) < cursorIndent && !isLineEmpty) {
+    if (lineIndent < cursorIndent && !isLineEmpty) {
       break;
     }
 

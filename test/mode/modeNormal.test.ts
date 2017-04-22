@@ -1449,15 +1449,15 @@ suite("Mode Normal", () => {
       title: "Can do cii",
       start: [
           'if foo > 3:',
-          '    log("foo is big")',
-          '    foo = 3',
+          '\tlog("foo is big")',
+          '\tfoo = 3',
           '|',
           'do_something_else()',
       ],
       keysPressed: "cii",
       end: [
           'if foo > 3:',
-          '    |',
+          '\t|',
           'do_something_else()',
       ],
       endMode: ModeName.Insert
