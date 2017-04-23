@@ -67,11 +67,11 @@ Donations help convince me to work on this project rather than my other (non-ope
 
 The plugin will be automatically enabled after [installing](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) it and reloading VSCode. The plugin can only be disabled from the Extension manager in VSCode, with no quick way to switch between modal and modeless editing.
 
-Just like real vim, your editor will now be in Normal mode. You can see what mode you're in from the VSCode's status bar. From here, all your regular vim commands will work as normal.
+Just like real vim, your editor will now be in Normal mode, which is reported to VSCode's status bar. From here, all your regular vim commands will work as normal, hooray!
 
 ### Vim compatibility
 
-All common Vim commands are supported. For an in-depth look at what Vim features are supported, or in the pipeline, check out the [roadmap](ROADMAP.md). Vimscript isn't supported, so you aren't able to load your `.vimrc` or use `.vim` plugins. You have to replicated this using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
+All common Vim commands are supported. For an in-depth look at what Vim features are supported, check out the [roadmap](ROADMAP.md). Vimscript isn't supported, so you aren't able to load your `.vimrc` or use `.vim` plugins. You have to replicated this using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
 
 ### Mac setup
 
