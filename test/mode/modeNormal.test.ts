@@ -644,6 +644,57 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'daw' on words at beginning of line with leading whitespace",
+      start: ['if (something){',
+              '  |this.method();'],
+      keysPressed: 'daw',
+      end: ['if (something){',
+            '  |.method();']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on words at ends of lines in the middle of whitespace",
+      start: ['one two | ',
+             'four'],
+      keysPressed: 'daw',
+      end: ['one tw|o']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at beginning of file",
+      start: ['o|ne'],
+      keysPressed: 'daw',
+      end: ['|']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at beginning of line",
+      start: ['one two',
+              'th|ree'],
+      keysPressed: 'daw',
+      end: ['one two',
+            '|']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at end of line with trailing whitespace",
+      start: ['one tw|o  ',
+              'three four'],
+      keysPressed: 'daw',
+      end: ['one| ',
+            'three four']
+    });
+
+    newTest({
+      title: "Can handle 'daw' around word at end of line",
+      start: ['one t|wo',
+              ' three'],
+      keysPressed: 'daw',
+      end: ['on|e',
+            ' three']
+    });
+
+    newTest({
       title: "Can handle 'daW' on big word with cursor inside spaces",
       start: ['one   two |  three,   four  '],
       keysPressed: 'daW',
@@ -682,8 +733,6 @@ suite("Mode Normal", () => {
       end: ['one   two   three,   |six'],
       endMode: ModeName.Normal
     });
-
-
 
     newTest({
       title: "Can handle 'diw' on word with cursor inside spaces",
