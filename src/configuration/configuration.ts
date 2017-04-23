@@ -10,6 +10,19 @@ export type ValueMapping = {
   [key: string]: OptionValue
 }
 
+export interface IHandleKeys {
+  [key: string]: boolean;
+}
+
+export interface IStatusBarColors {
+  normal: string;
+  insert: string;
+  visual: string;
+  visualline: string;
+  visualblock: string;
+  replace: string;
+}
+
 /**
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
@@ -33,6 +46,18 @@ class ConfigurationClass {
   private static _instance: ConfigurationClass | null;
 
   constructor() {
+    this.updateConfiguration();
+  }
+
+  public static getInstance(): ConfigurationClass {
+    if (ConfigurationClass._instance == null) {
+      ConfigurationClass._instance = new ConfigurationClass();
+    }
+
+    return ConfigurationClass._instance;
+  }
+
+  updateConfiguration() {
     /**
      * Load Vim options from User Settings.
      */
@@ -45,14 +70,64 @@ class ConfigurationClass {
         this[option] = vimOptionValue;
       }
     }
-  }
 
-  public static getInstance(): ConfigurationClass {
-    if (ConfigurationClass._instance == null) {
-      ConfigurationClass._instance = new ConfigurationClass();
+    // <space> is special, change it to " " internally if it is used as leader
+    if (this.leader.toLowerCase() === "<space>") {
+      this.leader = " ";
     }
 
-    return ConfigurationClass._instance;
+    // Get the cursor type from vscode
+    const cursorStyleString = vscode.workspace.getConfiguration().get("editor.cursorStyle") as string;
+    this.userCursor = this.cursorStyleFromString(cursorStyleString);
+
+    // Get configuration setting for handled keys, this allows user to disable
+    // certain key comboinations
+    const handleKeys = vscode.workspace.getConfiguration('vim')
+      .get<IHandleKeys[]>("handleKeys", []);
+
+    for (const bracketedKey of this.boundKeyCombinations) {
+      // Set context for key that is not used
+      // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
+      // Or if user usese vim.handleKeys configuration option to set certain combinations to false
+      // By default, all key combinations are used so start with true
+      let useKey = true;
+
+      // Check for configuration setting disabling combo
+      if (handleKeys[bracketedKey] !== undefined) {
+        if (handleKeys[bracketedKey] === false) {
+          useKey = false;
+        }
+      } else if (!this.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
+        // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding.
+        // However, we need to still capture <C-c> due to overrideCopy.
+        if (bracketedKey === '<C-c>' && this.overrideCopy) {
+          useKey = true;
+        } else {
+          useKey = false;
+        }
+      }
+
+      // Set the context of whether or not this key will be used based on criteria from above
+      vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
+    }
+  }
+
+  private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle {
+
+    const cursorType = {
+      "line": vscode.TextEditorCursorStyle.Line,
+      "block": vscode.TextEditorCursorStyle.Block,
+      "underline": vscode.TextEditorCursorStyle.Underline,
+      "line-thin": vscode.TextEditorCursorStyle.LineThin,
+      "block-outline": vscode.TextEditorCursorStyle.BlockOutline,
+      "underline-thin": vscode.TextEditorCursorStyle.UnderlineThin,
+    };
+
+    if (cursorType[cursorStyle] !== undefined) {
+      return cursorType[cursorStyle];
+    } else {
+      return vscode.TextEditorCursorStyle.Line;
+    }
   }
 
   /**
@@ -71,6 +146,11 @@ class ConfigurationClass {
   useCtrlKeys = false;
 
   /**
+   * Override default VSCode copy behavior.
+   */
+  overrideCopy = true;
+
+  /**
    * Width in characters to word-wrap to.
    */
   textwidth = 80;
@@ -79,11 +159,6 @@ class ConfigurationClass {
    * Should we highlight incremental search matches?
    */
   hlsearch = false;
-
-  /**
-   * Used internally for nohl.
-   */
-  hl = true;
 
   /**
    * Ignore case when searching with / or ?.
@@ -105,6 +180,24 @@ class ConfigurationClass {
    * Use EasyMotion plugin?
    */
   easymotion = false;
+
+  /**
+   * Use surround plugin?
+   */
+  surround = true;
+
+  /**
+   * Easymotion marker appearance settings
+   */
+  easymotionMarkerBackgroundColor = "#000000";
+  easymotionMarkerForegroundColorOneChar = "#ff0000";
+  easymotionMarkerForegroundColorTwoChar = "#ffa500";
+  easymotionMarkerWidthPerChar = 8;
+  easymotionMarkerHeight = 14;
+  easymotionMarkerFontFamily = "Consolas";
+  easymotionMarkerFontSize = "14";
+  easymotionMarkerFontWeight = "normal";
+  easymotionMarkerYOffset = 11;
 
   /**
    * Timeout in milliseconds for remapped commands.
@@ -137,6 +230,23 @@ class ConfigurationClass {
   startInInsertMode = false;
 
   /**
+   * Enable changing of the status bar color based on mode
+   */
+  statusBarColorControl = false;
+
+  /**
+   * Status bar colors to change to based on mode
+   */
+  statusBarColors: IStatusBarColors = {
+    "normal": "#005f5f",
+    "insert": "#5f0000",
+    "visual": "#5f00af",
+    "visualline": "#005f87",
+    "visualblock": "#86592d",
+    "replace": "#000000",
+  };
+
+  /**
    * Color of search highlights.
    */
   searchHighlightColor = "rgba(150, 150, 255, 0.3)";
@@ -144,28 +254,38 @@ class ConfigurationClass {
   /**
    * Size of a tab character.
    */
-  @overlapSetting({ codeName: "tabSize", default: 8})
-  tabstop: number | undefined = undefined;
+  @overlapSetting({ codeName: "tabSize", default: 8 })
+  tabstop: number;
+
+  /**
+   * Type of cursor user is using native to vscode
+   */
+  userCursor: number;
 
   /**
    * Use spaces when the user presses tab?
    */
-  @overlapSetting({ codeName: "insertSpaces", default: false})
-  expandtab: boolean | undefined = undefined;
+  @overlapSetting({ codeName: "insertSpaces", default: false })
+  expandtab: boolean;
 
-  @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: {true: "on", false: "off"}})
-  number: boolean | undefined = undefined;
+  @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: { true: "on", false: "off" } })
+  number: boolean;
 
   /**
    * Show relative line numbers?
    */
-  @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: {true: "relative", false: "off"}})
-  relativenumber: boolean | undefined = undefined;
+  @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: { true: "relative", false: "off" } })
+  relativenumber: boolean;
 
   iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
+
+  /**
+   * Array of all key combinations that were registered in angle bracket notation
+   */
+  boundKeyCombinations: string[] = [];
 }
 
-function overlapSetting(args: {codeName: string, default: OptionValue, codeValueMapping?: ValueMapping}) {
+function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {
   return function (target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
       get: function () {

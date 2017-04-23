@@ -6,15 +6,16 @@ import { getTestingFunctions, testIt } from '../../testSimplifier';
 import { waitForTabChange } from '../../../src/util';
 
 suite("Motions in Normal Mode", () => {
-  let modeHandler: ModeHandler = new ModeHandler();
+  let modeHandler: ModeHandler;
 
   let {
     newTest,
     newTestOnly,
-  } = getTestingFunctions(modeHandler);
+  } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
+    modeHandler = new ModeHandler();
   });
 
   teardown(cleanUpWorkspace);
@@ -185,6 +186,20 @@ suite("Motions in Normal Mode", () => {
     start: ['text', 'text', 'tex|t'],
     keysPressed: '$jkjgg',
     end: ['|text', 'text', 'text'],
+  });
+
+  newTest({
+    title: "Can handle 'gg' to first non blank char on random line",
+    start: ['   te|xt', '  text', ' text', 'test'],
+    keysPressed: '3gg',
+    end: ['   text', '  text', ' |text', 'test'],
+  });
+
+  newTest({
+    title: "Can handle 'gg' to first non blank char on first line",
+    start: ['   text', 'text', 'tex|t'],
+    keysPressed: 'gg',
+    end: ['   |text', 'text', 'text'],
   });
 
   newTest({

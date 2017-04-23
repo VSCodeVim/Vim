@@ -26,7 +26,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async deleteRange(start: Position, end: Position): Promise<string> {
+  async deleteRange(start: Position, end: Position, modeHandler: ModeHandler): Promise<string> {
     start = start.getLineBegin();
     end = end.getLineEnd();
     end = Position.FromVSCodePosition(end.with(end.line, end.character + 1));
@@ -41,7 +41,7 @@ export class DeleteRangeCommand extends node.CommandBase {
       start = start.getPreviousLineBegin().getLineEnd();
     }
 
-    let text = vscode.window.activeTextEditor.document.getText(new vscode.Range(start, end));
+    let text = modeHandler.vimState.editor.document.getText(new vscode.Range(start, end));
     text = text.endsWith("\r\n") ? text.slice(0, -2) : text.slice(0, -1);
     await TextEditor.delete(new vscode.Range(start, end));
 
@@ -53,17 +53,17 @@ export class DeleteRangeCommand extends node.CommandBase {
     }
 
     resultPosition = resultPosition.getLineBegin();
-    vscode.window.activeTextEditor.selection = new vscode.Selection(resultPosition, resultPosition);
+    modeHandler.vimState.editor.selection = new vscode.Selection(resultPosition, resultPosition);
     return text;
   }
 
-  async execute(): Promise<void> {
-    if (!vscode.window.activeTextEditor) {
+  async execute(modeHandler: ModeHandler): Promise<void> {
+    if (!modeHandler.vimState.editor) {
       return;
     }
 
-    let cursorPosition = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
-    let text = await this.deleteRange(cursorPosition, cursorPosition);
+    let cursorPosition = Position.FromVSCodePosition(modeHandler.vimState.editor.selection.active);
+    let text = await this.deleteRange(cursorPosition, cursorPosition, modeHandler);
     Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 
@@ -75,11 +75,11 @@ export class DeleteRangeCommand extends node.CommandBase {
       start = new vscode.Position(0, 0);
       end = new vscode.Position(TextEditor.getLineCount() - 1, 0);
     } else {
-      start = range.lineRefToPosition(vscode.window.activeTextEditor, range.left, modeHandler);
-      end = range.lineRefToPosition(vscode.window.activeTextEditor, range.right, modeHandler);
+      start = range.lineRefToPosition(modeHandler.vimState.editor, range.left, modeHandler);
+      end = range.lineRefToPosition(modeHandler.vimState.editor, range.right, modeHandler);
     }
 
-    let text = await this.deleteRange(Position.FromVSCodePosition(start), Position.FromVSCodePosition(end));
+    let text = await this.deleteRange(Position.FromVSCodePosition(start), Position.FromVSCodePosition(end), modeHandler);
     Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 }

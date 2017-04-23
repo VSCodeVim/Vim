@@ -5,12 +5,10 @@ import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils
 import { getTestingFunctions } from '../testSimplifier';
 
 suite("register", () => {
-  let modeHandler: ModeHandler = new ModeHandler();
-
   let {
       newTest,
       newTestOnly,
-  } = getTestingFunctions(modeHandler);
+  } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

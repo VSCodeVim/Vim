@@ -6,7 +6,9 @@ import { TextEditor } from './../src/textEditor';
 import { setupWorkspace, cleanUpWorkspace } from './testUtils';
 
 suite("text editor", () => {
-  suiteSetup(setupWorkspace);
+  suiteSetup(async () => {
+    await setupWorkspace();
+  });
 
   suiteTeardown(cleanUpWorkspace);
 
@@ -15,7 +17,7 @@ suite("text editor", () => {
 
     await TextEditor.insert(expectedText);
 
-    assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
+    assert.equal(vscode.window.activeTextEditor!.document.lineCount, 1);
     let actualText = TextEditor.readLineAt(0);
     assert.equal(actualText, expectedText);
   });
@@ -27,14 +29,14 @@ suite("text editor", () => {
     let range : vscode.Range = new vscode.Range(start, end);
 
     await TextEditor.replace(range, newText);
-    assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
+    assert.equal(vscode.window.activeTextEditor!.document.lineCount, 1);
 
     let actualText = TextEditor.readLineAt(0);
     assert.equal(actualText, "Hello Foo Bar");
   });
 
   test("delete `Hello`", async () => {
-    assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
+    assert.equal(vscode.window.activeTextEditor!.document.lineCount, 1);
 
     let end = new vscode.Position(0, 5);
     let range = new vscode.Range(new vscode.Position(0, 0), end);
@@ -45,9 +47,9 @@ suite("text editor", () => {
   });
 
   test("delete the whole line", async () => {
-    assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
+    assert.equal(vscode.window.activeTextEditor!.document.lineCount, 1);
 
-    let range = vscode.window.activeTextEditor.document.lineAt(0).range;
+    let range = vscode.window.activeTextEditor!.document.lineAt(0).range;
 
     await TextEditor.delete(range);
     let actualText = TextEditor.readLineAt(0);
@@ -55,7 +57,7 @@ suite("text editor", () => {
   });
 
   test("try to read lines that don't exist", () => {
-    assert.equal(vscode.window.activeTextEditor.document.lineCount, 1);
+    assert.equal(vscode.window.activeTextEditor!.document.lineCount, 1);
     assert.throws(() => TextEditor.readLineAt(1), RangeError);
     assert.throws(() => TextEditor.readLineAt(2), RangeError);
   });

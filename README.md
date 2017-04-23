@@ -9,8 +9,10 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * Marks
 * Vim settings similar to those found in .vimrc
 * Multi-cursor support. Allows multiple simultaneous cursors to receive Vim commands (e.g. allows `/` search, each cursor has independent clipboards, etc.).
-* The EasyMotion plugin!
-* The Surround.vim plugin!
+* The [EasyMotion plugin](#how-to-use-easymotion)
+* The [Surround.vim plugin](#how-to-use-surround)
+* The [Commentary plugin](#how-to-use-commentary)
+* The [Vim-airline plugin](#statusbarcolorcontrol)
 * And much more! Refer to the [roadmap](ROADMAP.md) or everything we support.
 
 Please [report missing features/bugs on GitHub](https://github.com/VSCodeVim/Vim/issues), which will help us get to them faster.
@@ -47,9 +49,22 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
         {
             "before": ["<leader>","d"],
             "after": ["d", "d"]
-        }
+        },
+        {
+           "before":["<C-n>"],
+           "after":[],
+            "commands": [
+                {
+                    "command": ":nohl"
+                }
+            ]
+       }
     ],
-    "vim.leader": "<space>"
+    "vim.leader": "<space>",
+    "vim.handleKeys":{
+        "<C-a>": false,
+        "<C-f>": false
+    }
 }
 ```
 
@@ -70,6 +85,18 @@ The following is a subset of the supported configurations; the full list is desc
 
     ```
     "vim.useCtrlKeys": true
+    ```
+
+#### handleKeys
+  * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
+  * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
+  * An example would be if a user wanted to continue to use ctrl + f for find, but wants to have useCtrlKeys set to true so that other vim bindings work.
+
+    ```
+    "vim.handleKeys":{
+        "<C-a>": false,
+        "<C-f>": false
+    }
     ```
 
 #### insertModeKeyBindings/otherModesKeyBindings
@@ -123,10 +150,20 @@ Bind `ZZ` to save and close the current file:
     ]
 ````
 
-Or bind `<leader>w` to save the current file:
+Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the current file:
 
 ```
     "vim.otherModesKeyBindingsNonRecursive": [
+        {
+           "before":["<C-n>"],
+           "after":[],
+            "commands": [
+                {
+                    "command": ":nohl",
+                    "args": []
+                }
+            ]
+        },
         {
             "before": ["leader", "w"],
             "after": [],
@@ -159,10 +196,14 @@ Or bind `<leader>w` to save the current file:
   * Have VSCodeVim start in Insert Mode rather than Normal Mode.
   * We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
 
+### overrideCopy
+  * Override VSCode's copy command with our own, which works correctly with VSCodeVim.
+  * If cmd-c or ctrl-c is giving you issues, set this to false and complain at https://github.com/Microsoft/vscode/issues/217.
+  * Type: Boolean (Default: `true`)
+
 #### useSystemClipboard
   * Enable yanking to the system clipboard by default
   * Type: Boolean (Default: `false`)
-  * Note: Linux users must have xclip installed
 
 #### searchHighlightColor
   * Set the color of search highlights.
@@ -171,6 +212,25 @@ Or bind `<leader>w` to save the current file:
 #### useSolidBlockCursor
   * Use a non-blinking block cursor
   * Type: Boolean (Default: `false`)
+
+
+#### statusBarColorControl
+  * Control status bar color based on current mode
+  * Type: Boolean (Default: `false`)
+
+  Once this is set, you need to set statusBarColors as well with these exact strings for modenames. The colors can be adjusted to suit the user.
+
+```
+    "vim.statusBarColorControl": true,
+    "vim.statusBarColors" : {
+        "normal": "#005f5f",
+        "insert": "#5f0000",
+        "visual": "#5f00af",
+        "visualline": "#005f87",
+        "visualblock": "#86592d",
+        "replace": "#000000"
+    }
+```
 
 ### Vim settings we support
 
@@ -219,8 +279,6 @@ Vim options are loaded in the following sequence:
 3. VSCode configuration
 4. VSCodeVim default values
 
-**Note:** changes to the user/workspace settings require a restart of VS Code to take effect.
-
 ## Multi-Cursor Mode
 
 Multi-Cursor mode is currently in beta. Please report things you expected to work but didn't [to our feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
@@ -247,9 +305,9 @@ Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Norma
 
 On OS X, open Terminal and run the following command:
 
-```
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         // For VS Code
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false // For VS Code Insider
+```sh
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
 ```
 
 #### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
@@ -258,8 +316,9 @@ Configure the `useCtrlKeys` option (see [configurations#useCtrlKeys](#usectrlkey
 
 #### How to use easymotion
 
-To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
-Now that easymotion is active, you can initiate motions using the following commands. Once you initiate the motion, text decorators will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
+Easymotion is based on [easymotion-vim](https://github.com/easymotion/vim-easymotion). To activate easymotion, you need to make sure that `easymotion` is set to `true` in settings.json.
+
+Once easymotion is active, you can initiate motions using the following commands. After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
 
 Motion Command | Description
 ---|--------
@@ -273,10 +332,82 @@ Motion Command | Description
 `<leader> <leader> g e`|End of word backwards
 `<leader> <leader> b`|Start of word backwards
 
+You can customize the appearance of your easymotion markers (the boxes with letters) using the following options:
+
+Setting | Description
+---|--------
+`vim.easymotionMarkerBackgroundColor`|The background color of the marker box.
+`vim.easymotionMarkerForegroundColorOneChar`|The font color for one-character markers.
+`vim.easymotionMarkerForegroundColorTwoChar`|The font color for two-character markers, used to differentiate from one-character markers.
+`vim.easymotionMarkerWidthPerChar`|The width in pixels allotted to each character.
+`vim.easymotionMarkerHeight`|The height of the marker.
+`vim.easymotionMarkerFontFamily`|The font family used for the marker text.
+`vim.easymotionMarkerFontSize`|The font size used for the marker text.
+`vim.easymotionMarkerFontWeight`|The font weight used for the marker text.
+`vim.easymotionMarkerYOffset`|The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
+
+#### How to use surround
+
+Surround plugin based on tpope's [surround.vim](https://github.com/tpope/vim-surround) plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
+
+t or < as <desired char> or <existing char> will do tags and enter tag entry mode.
+
+Surround can be disabled by setting vim.surround : false
+
+Surround Command | Description
+---|--------
+`d s <existing char>`|Delete existing surround
+`c s <existing char> <desired char>`|Change surround existing to desired
+`y s <motion> <desired char>`|Surround something with something using motion (as in "you surround")
+`S <desired char>`|Surround when in visual modes (surrounds full selection)
+
+Some examples:
+
+* `"test"` with cursor inside quotes type cs"' to end up with `'test'`
+* `"test"` with cursor inside quotes type ds" to end up with `test`
+* `"test"` with cursor inside quotes type cs"t and enter 123> to end up with `<123>test</123>`
+* `test` with cursor on word test type ysaw) to end up with `(test)`
+
+#### How to use commentary
+
+Commentary in VSCodeVim works similarly to tpope's [vim-commentary](https://github.com/tpope/vim-commentary) but uses the VSCode native "Toggle Line Comment" and "Toggle Block Comment" features.
+
+Because `gc` is already used in VSCodeVim the commentary operators are bound to `gb` for line comments and `gB` for block comments.
+
+Usage examples:
+* `gb` - toggles line comment. For example `gbb` to toggle line comment for current line and `gb2j` to toggle line comments for the current line and the next line.
+* `gB` - toggles block comment. For example `gBi)` to comment out everything within parenthesis.
+
+If you are use to using vim-commentary you are probably use to using `gc` instead of `gb`. This can be achieved by adding the following remapping to your VSCode settings:
+
+```
+"vim.otherModesKeyBindings": [
+    {
+        "before": ["g", "c"],
+        "after": ["g", "b"]
+    },
+    {
+        "before": ["g", "C"],
+        "after": ["g", "B"]
+    }
+],
+```
 
 ## Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
+
+## Awesome Features You Might Not Know About
+
+Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest nooks and crannies of Vim. And then we add some of our own! Some of our favorite include:
+
+* `gd` - jump to definition. _Astoundingly_ useful in any language that VSCode provides definition support for. I use this one probably hundreds of times a day.
+* `gq` on a visual selection - Reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
+* `gc`, which adds another cursor on the next word it finds which is the same as the word under the cursor.
+* `af`, a command that I added in visual mode, which selects increasingly large blocks of text. e.g. if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed `af` again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
+* `gh`, another custom VSCodeVim command. This one is equivalent to hovering your mouse over wherever the cursor is. Handy for seeing types and error messages without reaching for the mouse!
+
+(The mnemonic: selecting blocks is fast af! :wink:)
 
 ## Special Shoutouts to Cool Contributors
 

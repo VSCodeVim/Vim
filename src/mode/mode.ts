@@ -14,8 +14,11 @@ export enum ModeName {
 }
 
 export enum VSCodeVimCursorType {
-  Native,
-  TextDecoration
+  Block,
+  Line,
+  Underline,
+  TextDecoration,
+  Native
 }
 
 export abstract class Mode {

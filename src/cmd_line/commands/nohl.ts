@@ -1,7 +1,7 @@
 "use strict";
 
 import * as node from "../node";
-import { Configuration } from './../../configuration/configuration';
+import { ModeHandler } from "../../mode/modeHandler";
 
 export class NohlCommand extends node.CommandBase {
   protected _arguments: {};
@@ -17,7 +17,7 @@ export class NohlCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(): Promise<void> {
-    Configuration.hl = false;
+  async execute(modeHandler : ModeHandler): Promise<void> {
+    modeHandler.vimState.globalState.hl = false;
   }
 }

@@ -6,11 +6,26 @@ import { Range } from './motion/range';
 import { Position } from './motion/position';
 
 export async function showInfo(message : string): Promise<{}> {
-  return vscode.window.showInformationMessage("Vim: " + message);
+  return vscode.window.showInformationMessage("Vim: " + message) as {};
 }
 
 export async function showError(message : string): Promise<{}> {
-  return vscode.window.showErrorMessage("Vim: " + message);
+  return vscode.window.showErrorMessage("Vim: " + message) as {};
+}
+
+const clipboardy = require('clipboardy');
+
+export function clipboardCopy(text: string) {
+  // Set utf-8 if on macOS
+  if (process.platform === 'darwin') {
+    process.env.LANG = 'en_US.UTF-8';
+  }
+
+  clipboardy.writeSync(text);
+}
+
+export function clipboardPaste(): string {
+  return clipboardy.readSync();
 }
 
 /**
@@ -51,7 +66,7 @@ export async function waitForTabChange(): Promise<void> {
 export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(): Promise<Range[]> {
   await waitForCursorUpdatesToHappen();
 
-  return vscode.window.activeTextEditor.selections.map(x =>
+  return vscode.window.activeTextEditor!.selections.map(x =>
     new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
 }
 

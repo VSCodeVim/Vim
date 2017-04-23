@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 
 import { Position } from './../motion/position';
 import { TextEditor } from './../textEditor';
+import { Configuration } from './../configuration/configuration';
 
 export class EasyMotion {
   /**
@@ -25,7 +26,12 @@ export class EasyMotion {
    * Caches for decorations
    */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
-  private static svgCache: { [code: string] : vscode.Uri } = {};
+  private static svgCache: { [code: string]: vscode.Uri } = {};
+  private static cachedBackgroundColor: string = "";
+  private static cachedOneFontColor: string = "";
+  private static cachedTwoFontColor: string = "";
+  private static cachedWidthPerChar: number = -1;
+  private static cachedHeight: number = -1;
 
   /**
    * The key sequence for marker name generation
@@ -59,41 +65,41 @@ export class EasyMotion {
     var totalSteps = 0;
 
     if (length >= keyTable.length) {
-        var totalRemainder = Math.max(length - keyTable.length, 0);
-        totalSteps = Math.floor(totalRemainder / keyTable.length);
+      var totalRemainder = Math.max(length - keyTable.length, 0);
+      totalSteps = Math.floor(totalRemainder / keyTable.length);
 
-        for (var i = 0; i < totalSteps; i++) {
-            keyDepthTable.push(availableKeyTable.pop());
-        }
+      for (var i = 0; i < totalSteps; i++) {
+        keyDepthTable.push(availableKeyTable.pop()!);
+      }
     }
 
     var prefix = "";
     if (index >= availableKeyTable.length) {
-        // Length of available keys before reset and ";"
-        var oldLength = availableKeyTable.length;
-        // The index that remains after taking away the first-level depth markers
-        var remainder = index - availableKeyTable.length;
+      // Length of available keys before reset and ";"
+      var oldLength = availableKeyTable.length;
+      // The index that remains after taking away the first-level depth markers
+      var remainder = index - availableKeyTable.length;
 
-        // ";" can be used as the last marker key, when inside a marker with depth. Reset to available keys and add ";"
-        availableKeyTable = keyTable.slice();
-        availableKeyTable.push(";");
+      // ";" can be used as the last marker key, when inside a marker with depth. Reset to available keys and add ";"
+      availableKeyTable = keyTable.slice();
+      availableKeyTable.push(";");
 
-        // Depth index counts down instead of up
-        var inverted = (length - oldLength - 1 - remainder);
-        var steps = Math.floor((inverted) / availableKeyTable.length);
+      // Depth index counts down instead of up
+      var inverted = (length - oldLength - 1 - remainder);
+      var steps = Math.floor((inverted) / availableKeyTable.length);
 
-        // Add the key to the prefix
-        prefix += keyDepthTable[steps];
+      // Add the key to the prefix
+      prefix += keyDepthTable[steps];
 
-        // Check if we're on the last depth level
-        if (steps >= totalSteps) {
-            // Return the proper key for this index
-            return new EasyMotion.Marker(prefix + availableKeyTable[remainder % availableKeyTable.length], markerPosition);
-        }
+      // Check if we're on the last depth level
+      if (steps >= totalSteps) {
+        // Return the proper key for this index
+        return new EasyMotion.Marker(prefix + availableKeyTable[remainder % availableKeyTable.length], markerPosition);
+      }
 
-        // Return the proper index for depths earlier than the last one, including prefix
-        var num = (availableKeyTable.length - 1 - inverted % availableKeyTable.length) % availableKeyTable.length;
-        return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
+      // Return the proper index for depths earlier than the last one, including prefix
+      var num = (availableKeyTable.length - 1 - inverted % availableKeyTable.length) % availableKeyTable.length;
+      return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
     }
 
     // Return the last key in the marker, including prefix
@@ -126,29 +132,62 @@ export class EasyMotion {
   /**
    * Create and cache the SVG data URI for different marker codes and colors
    */
-  private static getSvgDataUri(code: string, backgroundColor: string, fontColor: string): vscode.Uri {
-      var cache = this.svgCache[code];
-      if (cache) {
-        return cache;
-      }
+  private static getSvgDataUri(code: string, backgroundColor: string, fontFamily: string, fontColor: string,
+    fontSize: string, fontWeight: string): vscode.Uri {
 
-      const width = code.length * 8 + 1;
-      var uri = vscode.Uri.parse(
-        `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
-        `13" height="14" width="${width}"><rect width="${width}" height="14" rx="2" ry="2" ` +
-        `style="fill: ${backgroundColor};"></rect><text font-family="Consolas" font-size="14px" ` +
-        `fill="${fontColor}" x="1" y="10">${code}</text></svg>`);
+    // Clear cache if the backgroundColor or fontColor has changed
+    if (this.cachedBackgroundColor !== backgroundColor) {
+      this.svgCache = {};
+      this.cachedBackgroundColor = backgroundColor;
+    }
 
-      this.svgCache[code] = uri;
+    if (this.cachedOneFontColor !== Configuration.easymotionMarkerForegroundColorOneChar) {
+      this.svgCache = {};
+      this.cachedOneFontColor = Configuration.easymotionMarkerForegroundColorOneChar;
+    }
 
-      return uri;
+    if (this.cachedTwoFontColor !== Configuration.easymotionMarkerForegroundColorTwoChar) {
+      this.svgCache = {};
+      this.cachedTwoFontColor = Configuration.easymotionMarkerForegroundColorTwoChar;
+    }
+
+    const widthPerChar = Configuration.easymotionMarkerWidthPerChar;
+    const width = code.length * widthPerChar + 1;
+    const height = Configuration.easymotionMarkerHeight;
+
+    if (this.cachedWidthPerChar !== widthPerChar || this.cachedHeight !== height) {
+      this.svgCache = {};
+      this.cachedWidthPerChar = width;
+      this.cachedHeight = height;
+    }
+
+    if (fontFamily === undefined) { fontFamily = "Consolas"; }
+    if (fontColor === undefined) { fontColor = "white"; }
+    if (fontSize === undefined) { fontSize = "14"; }
+    if (fontWeight === undefined) { fontWeight = "normal"; }
+    if (backgroundColor === undefined) { backgroundColor = "black"; }
+
+    var cache = this.svgCache[code];
+    if (cache) {
+      return cache;
+    }
+
+    var uri = vscode.Uri.parse(
+      `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
+      `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
+      `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
+      `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`);
+
+    this.svgCache[code] = uri;
+
+    return uri;
   }
 
   /**
    * Clear all decorations
    */
   public clearDecorations() {
-    var editor = vscode.window.activeTextEditor;
+    var editor = vscode.window.activeTextEditor!;
     for (var i = 1; i <= this.decorations.length; i++) {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
@@ -224,8 +263,8 @@ export class EasyMotion {
 
         // Check if match is within bounds
         if ((options.min && pos.isBefore(options.min)) ||
-            (options.max && pos.isAfter(options.max)) ||
-            Math.abs(pos.line - position.line) > 100) { // Stop searching after 100 lines in both directions
+          (options.max && pos.isAfter(options.max)) ||
+          Math.abs(pos.line - position.line) > 100) { // Stop searching after 100 lines in both directions
 
           result = regex.exec(line);
           continue;
@@ -282,6 +321,11 @@ export class EasyMotion {
 
     this.visibleMarkers = [];
     this.decorations = [];
+
+    const fontFamily = Configuration.easymotionMarkerFontFamily;
+    const fontSize = Configuration.easymotionMarkerFontSize;
+    const fontWeight = Configuration.easymotionMarkerFontWeight;
+
     for (var i = 0; i < this.markers.length; i++) {
       var marker = this.getMarker(i);
 
@@ -294,11 +338,14 @@ export class EasyMotion {
       // Get keys after the depth we're at
       var keystroke = marker.name.substr(this.accumulation.length);
 
-      let fontColor = keystroke.length > 1 ? "orange" : "red";
-
       if (!this.decorations[keystroke.length]) {
         this.decorations[keystroke.length] = [];
       }
+
+      const fontColor = keystroke.length > 1 ?
+        Configuration.easymotionMarkerForegroundColorTwoChar
+        : Configuration.easymotionMarkerForegroundColorOneChar;
+      const backgroundColor = Configuration.easymotionMarkerBackgroundColor;
 
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
       var charPos = pos.character + 1 + (keystroke.length - 1);
@@ -307,12 +354,14 @@ export class EasyMotion {
         renderOptions: {
           dark: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, "black", fontColor)
+              contentIconPath: EasyMotion.getSvgDataUri(
+                keystroke, backgroundColor, fontFamily, fontColor, fontSize, fontWeight)
             }
           },
           light: {
             after: {
-              contentIconPath: EasyMotion.getSvgDataUri(keystroke, "black", "white")
+              contentIconPath: EasyMotion.getSvgDataUri(
+                keystroke, backgroundColor, fontFamily, fontColor, fontSize, fontWeight)
             }
           }
         }
@@ -322,7 +371,7 @@ export class EasyMotion {
     }
 
     // Set the decorations for all the different marker lengths
-    var editor = vscode.window.activeTextEditor;
+    var editor = vscode.window.activeTextEditor!;
     for (var j = 1; j < this.decorations.length; j++) {
       if (this.decorations[j]) {
         editor.setDecorations(EasyMotion.getDecorationType(j), this.decorations[j]);
@@ -371,6 +420,10 @@ export module EasyMotion {
 
     public get index(): number {
       return this._index;
+    }
+
+    public set position(position: Position) {
+      this._position = position;
     }
   }
 

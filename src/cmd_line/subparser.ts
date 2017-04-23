@@ -12,6 +12,7 @@ import { parseSubstituteCommandArgs } from './subparsers/substitute';
 import { parseReadCommandArgs } from './subparsers/read';
 import { parseRegisterCommandArgs } from './subparsers/register';
 import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
+import { parseSortCommandArgs } from './subparsers/sort';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -82,5 +83,7 @@ export const commandParsers = {
   reg: parseRegisterCommandArgs,
 
   d: parseDeleteRangeLinesCommandArgs,
+
+  sort: parseSortCommandArgs,
 
 };

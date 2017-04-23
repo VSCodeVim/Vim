@@ -1,10 +1,15 @@
 <!--
-For questions, ask us on [Slack](https://vscodevim-slackin.azurewebsites.net/) 👫. Found a bug? Delete this line and fill out the sections below.
+For questions, ask us on [Slack](https://vscodevim-slackin.azurewebsites.net/) 👫. 
+
+DONT CHANGE ANYTHING UNTIL THE -----. Thanks!
 -->
 
-Please *thumbs-up* 👍 this issue if it personally affects you! You can do this by clicking on the emoji-face on the top right of this post. Issues with more thumbs-up will be prioritized.
+* Click *thumbs-up* 👍 on this issue if you want it!
+* Click *confused* 😕 on this issue if not having it makes VSCodeVim unusable. 
 
------
+The VSCodeVim team prioritizes issues based on reaction count. 
+
+--------
 
 ### What did you do?
 

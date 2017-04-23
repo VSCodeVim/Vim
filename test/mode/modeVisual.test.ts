@@ -8,12 +8,12 @@ import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Visual", () => {
-  let modeHandler: ModeHandler = new ModeHandler();
+  let modeHandler: ModeHandler;
 
   let {
     newTest,
     newTestOnly,
-  } = getTestingFunctions(modeHandler);
+  } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

@@ -27,6 +27,11 @@ export class GlobalState {
   private static _searchStateIndex: number = 0;
 
   /**
+   * Used internally for nohl.
+   */
+  private static _hl = true;
+
+  /**
    * Getters and setters for changing global state
    */
   public get searchStatePrevious(): SearchState[]{
@@ -59,5 +64,13 @@ export class GlobalState {
 
   public set searchStateIndex(state : number) {
     GlobalState._searchStateIndex = state;
+  }
+
+  public get hl(): boolean {
+    return GlobalState._hl;
+  }
+
+  public set hl(enabled: boolean) {
+    GlobalState._hl = enabled;
   }
 }

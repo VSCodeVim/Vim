@@ -28,14 +28,14 @@ export class QuitCommand extends node.CommandBase {
   }
 
   async execute() : Promise<void> {
-    if (this.activeTextEditor.document.isDirty && !this.arguments.bang) {
+    if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.E37);
     }
 
     if (this._arguments.quitAll) {
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     } else {
-      let oldViewColumn = this.activeTextEditor.viewColumn;
+      let oldViewColumn = this.activeTextEditor!.viewColumn;
       await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
       if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.viewColumn === oldViewColumn) {

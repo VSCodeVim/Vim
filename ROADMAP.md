@@ -126,10 +126,10 @@ Status | Command | Description | Note
 :warning: | :1234: N | repeat last search, in opposite direction | {count} is not supported.
 :white_check_mark: | :1234: * | search forward for the identifier under the cursor
 :white_check_mark: | :1234: # | search backward for the identifier under the cursor
- | :1234: g* | like "*", but also find partial matches
- | :1234: g# | like "#", but also find partial matches
+:arrow_down: | :1234: g* | like "*", but also find partial matches
+:arrow_down: | :1234: g# | like "#", but also find partial matches
 :white_check_mark: | gd | goto local declaration of identifier under the cursor
- | gD | goto global declaration of identifier under the cursor
+:arrow_down: | gD | goto global declaration of identifier under the cursor
 
 ## Marks and motions
 
@@ -139,18 +139,18 @@ Status | Command | Description
 :white_check_mark:|   `{a-z}	       |  go to mark {a-z} within current file
 :white_check_mark:|    `{A-Z}	       |  go to mark {A-Z} in any file
 :white_check_mark:|    `{0-9}	       |  go to the position where Vim was previously exited
- |    ``		       |  go to the position before the last jump
- |    `"		       |  go to the position when last editing this file
- |    `[		       |  go to the start of the previously operated or put text
- |    `]		       |  go to the end of the previously operated or put text
- |    `<		       |  go to the start of the (previous) Visual area
- |    `>		       |  go to the end of the (previous) Visual area
- |    `.		       |  go to the position of the last change in this file
- |    '{a-zA-Z0-9[]'"<>.} |  same as `, but on the first non-blank in the line
- | :marks	               |  print the active marks
- | :1234:  CTRL-O	       |  go to Nth older position in jump list
- | :1234:  CTRL-I	       |  go to Nth newer position in jump list
- | :ju[mps]	       |  print the jump list
+:arrow_down: |    ``		       |  go to the position before the last jump
+:arrow_down: |    `"		       |  go to the position when last editing this file
+:arrow_down: |    `[		       |  go to the start of the previously operated or put text
+:arrow_down: |    `]		       |  go to the end of the previously operated or put text
+:arrow_down: |    `<		       |  go to the start of the (previous) Visual area
+:arrow_down: |    `>		       |  go to the end of the (previous) Visual area
+:arrow_down: |    `.		       |  go to the position of the last change in this file
+:arrow_down: |    '{a-zA-Z0-9[]'"<>.} |  same as `, but on the first non-blank in the line
+:arrow_down: | :marks	               |  print the active marks
+:arrow_down: | :1234:  CTRL-O	       |  go to Nth older position in jump list
+:arrow_down: | :1234:  CTRL-I	       |  go to Nth newer position in jump list
+:arrow_down: | :ju[mps]	       |  print the jump list
 
 ## Various motions
 
@@ -165,7 +165,7 @@ Status | Command | Description
 
 ## Using tags
 
-The following are all marked low priority because VSCode has very good support for tags with Goto Symbol. Try it from the comand palette if you haven't yet!
+The following are all marked low priority because VSCode has very good support for tags with Goto Symbol. Try it from the command palette if you haven't yet!
 
 Status | Command | Description
 ---|--------|------------------------------
@@ -271,8 +271,8 @@ Status | Command | Description | Note
 :white_check_mark: | CTRL-U		                 |  delete all entered characters in the current line
 :white_check_mark: | CTRL-T		                 |  insert one shiftwidth of indent in front of the current line
 :white_check_mark: | CTRL-D		                 |  delete one shiftwidth of indent in front of the current line
- | 0 CTRL-D	                 |  delete all indent in the current line
- | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
+:arrow_down: | 0 CTRL-D	                 |  delete all indent in the current line
+:arrow_down: | ^ CTRL-D	                 |  delete all indent in the current line, restore indent in next line
 
 ## Digraphs
 
@@ -307,6 +307,11 @@ Status | Command | Description
 
 ## Copying and moving text
 
+Miscellanea:
+
+* We don't currently support the black hole register. [associated issue](https://github.com/VSCodeVim/Vim/issues/1357)
+* We don't support read only registers.
+
 Status | Command | Description | Note
 ---|--------|-------------|-----------------
 :warning: | "{char}	        | use register {char} for the next delete, yank, or put | read only registers are not supported
@@ -329,9 +334,9 @@ Status | Command | Description | Note
 Status | Command | Description | Note
 ---|--------|------------|------------------
 :white_check_mark: | :1234:  r{char}	| replace N characters with {char}
- | :1234:  gr{char}	| replace N characters without affecting layout
+:arrow_down: | :1234:  gr{char}	| replace N characters without affecting layout
 :white_check_mark: :star: | :1234:  R		| enter Replace mode (repeat the entered text N times) | {count} is not supported
- :| :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
+:arrow_down: | :1234:  gR		| enter virtual Replace mode: Like Replace mode but without affecting layout
 :white_check_mark:|  {visual}r{char} | in Visual block, visual, or visual line modes: Replace each char of the selected text with {char}
 
 (change = delete text and enter Insert mode)
@@ -361,25 +366,25 @@ Status | Command | Description
 :white_check_mark:    | :1234:  >{motion}	|  move the lines that are moved over with {motion} one shiftwidth right
 :white_check_mark:    | :1234:  >>	|	move N lines one shiftwidth right
 :white_check_mark:| :1234:  gq{motion}|	format the lines that are moved over with {motion} to 'textwidth' length
- | :[range]ce[nter] [width] | center the lines in [range]
- | :[range]le[ft] [indent]  | left-align the lines in [range] (with [indent])
- | :[ranee]ri[ght] [width]  | right-align the lines in [range]
+:arrow_down: | :[range]ce[nter] [width] | center the lines in [range]
+:arrow_down: | :[range]le[ft] [indent]  | left-align the lines in [range] (with [indent])
+:arrow_down: | :[ranee]ri[ght] [width]  | right-align the lines in [range]
 
 ## Complex changes
 
 Status | Command | Description | Note
 ---|--------|------------------|------------
- | :1234:  `!{motion}{command}<CR>` | filter the lines that are moved over through {command}
- | :1234:  `!!{command}<CR>`       | filter N lines through {command}
- |    `{visual}!{command}<CR>`      |  filter the highlighted lines through {command}
- | `:[range]! {command}<CR>`      | filter [range] lines through {command}
+:arrow_down: | :1234:  `!{motion}{command}<CR>` | filter the lines that are moved over through {command}
+:arrow_down: | :1234:  `!!{command}<CR>`       | filter N lines through {command}
+:arrow_down: |    `{visual}!{command}<CR>`      |  filter the highlighted lines through {command}
+:arrow_down: | `:[range]! {command}<CR>`      | filter [range] lines through {command}
 :white_check_mark:   | :1234:  ={motion}           | filter the lines that are moved over through 'equalprg'
 :arrow_down:| :1234:  ==	                 |    filter N lines through 'equalprg'
 :white_check_mark:  |    {visual}=                | filter the highlighted lines through 'equalprg'
 :white_check_mark: :star: :warning:   | :[range]s[ubstitute]/{pattern}/{string}/[g][c]     | substitute {pattern} by {string} in [range] lines; with [g], replace all occurrences of {pattern}; with [c], confirm each replacement | Currently we only support JavaScript Regex and only options `gi` are implemented
- | :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
- |    &		| Repeat previous ":s" on current line without options
- | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
+:arrow_down: | :[range]s[ubstitute] [g][c] | repeat previous ":s" with new range and options
+:arrow_down: |    &		| Repeat previous ":s" on current line without options
+:arrow_down: | :[range]ret[ab][!] [tabstop] | set 'tabstop' to new value and adjust white space accordingly
 
 ## Visual mode
 
@@ -428,14 +433,14 @@ Status | Command | Description | Note
 ---|--------|--------------|----------------
 :white_check_mark: :star:  | :1234:  .		 | repeat last change (with count replaced with N) | Content changes that don't happen under cursor can not be repeated.
 :white_check_mark:|    q{a-z}	         | record typed characters into register {a-z}
- |    q{A-Z}	         | record typed characters, appended to register {a-z}
+:arrow_down: |    q{A-Z}	         | record typed characters, appended to register {a-z}
 :white_check_mark:|    q		 | stop recording
 :white_check_mark:| :1234:  @{a-z}	 | execute the contents of register {a-z} (N times)
 :white_check_mark:| :1234:  @@	         |    repeat previous @{a-z} (N times)
- | :@{a-z}	         | execute the contents of register {a-z} as an Ex command
- | :@@		 | repeat previous :@{a-z}
- | :[range]g[lobal]/{pattern}/[cmd]  | execute Ex command [cmd] (default: ":p") on the lines within [range] where {pattern} matches
- | :[range]g[lobal]!/{pattern}/[cmd]  | execute Ex command [cmd] (default: ":p") on the lines within [range] where {pattern} does NOT match
+:arrow_down: | :@{a-z}	         | execute the contents of register {a-z} as an Ex command
+:arrow_down: | :@@		 | repeat previous :@{a-z}
+:arrow_down: | :[range]g[lobal]/{pattern}/[cmd]  | execute Ex command [cmd] (default: ":p") on the lines within [range] where {pattern} matches
+:arrow_down: | :[range]g[lobal]!/{pattern}/[cmd]  | execute Ex command [cmd] (default: ":p") on the lines within [range] where {pattern} does NOT match
 :arrow_down:   | :so[urce] {file}  | read Ex commands from {file}
 :arrow_down:   | :so[urce]! {file}  | read Vim commands from {file}
 :arrow_down:   | :sl[eep] [sec]  | don't do anything for [sec] seconds
@@ -474,15 +479,13 @@ Status | Command | Default Value | Description
 :white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted
 :white_check_mark:| autoindent | true | Keep indentation when doing `cc` or `S` in normal mode to replace a line.
 
----
-
 ## Undo/Redo commands
 
 Status | Command | Description | Note
 ---|--------|-------|------------------------------
-:warning:| :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
-:warning: | :1234: CTRL-R |	redo last N undone changes | As above.
- | U | restore last changed line
+:white_check_mark: | :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
+:white_check_mark: | :1234: CTRL-R |	redo last N undone changes | As above.
+:arrow_down: | U | restore last changed line
 
 ## External commands
 
@@ -495,8 +498,8 @@ Status | Command | Description
 ## Ex ranges
 
 Status | Command | Description | Note
----|--------|-------|------------|------------------
-:white_check_mark: | , | separates two line numbers|
+---|--------|-------|------------------------------
+:white_check_mark: | , | separates two line numbers
 :white_check_mark: :star: | ; | idem, set cursor to the first line number before interpreting the second one | The cursor movement is not included.
 :white_check_mark: | {number} | an absolute line number
 :white_check_mark: | . | the current line
@@ -504,8 +507,8 @@ Status | Command | Description | Note
 :white_check_mark: | % | equal to 1,$ (the entire file)
 :white_check_mark: | * | equal to '<,'> (visual area)
 :white_check_mark: | 't | position of mark t
- |	/{pattern}[/] |	the next line where {pattern} matches
- |	?{pattern}[?] | the previous line where {pattern} matches
+:arrow_down: |	/{pattern}[/] |	the next line where {pattern} matches
+:arrow_down: |	?{pattern}[?] | the previous line where {pattern} matches
 :white_check_mark: | +[num] | add [num] to the preceding line number (default: 1)
 :white_check_mark: | -[num] | subtract [num] from the preceding line number (default: 1)
 
@@ -553,6 +556,8 @@ Status | Command | Description | Note
 The folding method can be set with the 'foldmethod' option. This is currently not possible as we are relying on Code's Fold logic.
 
 ### Fold commands
+
+Pretty much everything fold-related is blocked by [this issue](https://github.com/VSCodeVim/Vim/issues/1004).
 
 Status | Command | Description
 ---|--------|------------------------------

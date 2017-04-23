@@ -69,10 +69,10 @@ export class TabCommand extends node.CommandBase {
         break;
       case Tab.New:
         if (this.arguments.file) {
-          let currentFilePath = vscode.window.activeTextEditor.document.uri.path;
+          let currentFilePath = vscode.window.activeTextEditor!.document.uri.path;
           let newFilePath = path.isAbsolute(this._arguments.file!) ?
             this._arguments.file! :
-            path.join(path.dirname(currentFilePath), this._arguments.file);
+            path.join(path.dirname(currentFilePath), this._arguments.file!);
 
           if (newFilePath !== currentFilePath) {
             let folder = vscode.Uri.file(newFilePath);

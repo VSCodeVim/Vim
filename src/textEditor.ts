@@ -23,18 +23,18 @@ export class TextEditor {
     }
 
     if (!letVSCodeHandleKeystrokes) {
-      const selections = vscode.window.activeTextEditor.selections.slice(0);
+      const selections = vscode.window.activeTextEditor!.selections.slice(0);
 
-      await vscode.window.activeTextEditor.edit(editBuilder => {
+      await vscode.window.activeTextEditor!.edit(editBuilder => {
         if (!at) {
-          at = Position.FromVSCodePosition(vscode.window.activeTextEditor.selection.active);
+          at = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
         }
 
         editBuilder.insert(at!, text);
       });
 
       // maintain all selections in multi-cursor mode.
-      vscode.window.activeTextEditor.selections = selections;
+      vscode.window.activeTextEditor!.selections = selections;
     } else {
       await vscode.commands.executeCommand('default:type', { text });
     }
@@ -43,23 +43,23 @@ export class TextEditor {
   }
 
   static async insertAt(text: string, position: vscode.Position): Promise<boolean> {
-    return vscode.window.activeTextEditor.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.insert(position, text);
     });
   }
 
   static async delete(range: vscode.Range): Promise<boolean> {
-    return vscode.window.activeTextEditor.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.delete(range);
     });
   }
 
   static getDocumentVersion(): number {
-    return vscode.window.activeTextEditor.document.version;
+    return vscode.window.activeTextEditor!.document.version;
   }
 
   static getDocumentName(): String {
-    return vscode.window.activeTextEditor.document.fileName;
+    return vscode.window.activeTextEditor!.document.fileName;
   }
 
   /**
@@ -67,11 +67,11 @@ export class TextEditor {
    */
   static async deleteDocument(): Promise<boolean> {
     const start  = new vscode.Position(0, 0);
-    const lastLine = vscode.window.activeTextEditor.document.lineCount - 1;
-    const end    = vscode.window.activeTextEditor.document.lineAt(lastLine).range.end;
+    const lastLine = vscode.window.activeTextEditor!.document.lineCount - 1;
+    const end    = vscode.window.activeTextEditor!.document.lineAt(lastLine).range.end;
     const range  = new vscode.Range(start, end);
 
-    return vscode.window.activeTextEditor.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.delete(range);
     });
   }
@@ -81,7 +81,7 @@ export class TextEditor {
    * instead.
    */
   static async replace(range: vscode.Range, text: string): Promise<boolean> {
-    return vscode.window.activeTextEditor.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.replace(range, text);
     });
   }
@@ -104,38 +104,30 @@ export class TextEditor {
     vimState.recordedState.transformations.push(trans);
   }
 
-  static getAllText(): string {
-    if (vscode.window.activeTextEditor) {
-      return vscode.window.activeTextEditor.document.getText();
-    }
-
-    return "";
-  }
-
   static readLine(): string {
-    const lineNo = vscode.window.activeTextEditor.selection.active.line;
+    const lineNo = vscode.window.activeTextEditor!.selection.active.line;
 
-    return vscode.window.activeTextEditor.document.lineAt(lineNo).text;
+    return vscode.window.activeTextEditor!.document.lineAt(lineNo).text;
   }
 
   static readLineAt(lineNo: number): string {
     if (lineNo === null) {
-      lineNo = vscode.window.activeTextEditor.selection.active.line;
+      lineNo = vscode.window.activeTextEditor!.selection.active.line;
     }
 
-    if (lineNo >= vscode.window.activeTextEditor.document.lineCount) {
+    if (lineNo >= vscode.window.activeTextEditor!.document.lineCount) {
       throw new RangeError();
     }
 
-    return vscode.window.activeTextEditor.document.lineAt(lineNo).text;
+    return vscode.window.activeTextEditor!.document.lineAt(lineNo).text;
   }
 
   static getLineCount(): number {
-    return vscode.window.activeTextEditor.document.lineCount;
+    return vscode.window.activeTextEditor!.document.lineCount;
   }
 
   static getLineAt(position: vscode.Position): vscode.TextLine {
-    return vscode.window.activeTextEditor.document.lineAt(position);
+    return vscode.window.activeTextEditor!.document.lineAt(position);
   }
 
   static getCharAt(position: Position): string {
@@ -153,11 +145,11 @@ export class TextEditor {
   }
 
   static getSelection(): vscode.Range {
-    return vscode.window.activeTextEditor.selection;
+    return vscode.window.activeTextEditor!.selection;
   }
 
   static getText(selection: vscode.Range): string {
-    return vscode.window.activeTextEditor.document.getText(selection);
+    return vscode.window.activeTextEditor!.document.getText(selection);
   }
 
   /**
@@ -190,12 +182,18 @@ export class TextEditor {
   }
 
   static isLastLine(position : vscode.Position): boolean {
-    return position.line === (vscode.window.activeTextEditor.document.lineCount - 1);
+    return position.line === (vscode.window.activeTextEditor!.document.lineCount - 1);
   }
 
   static getIndentationLevel(line: string): number {
     let tabSize = Configuration.tabstop;
-    let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
+
+    let firstNonWhiteSpace = 0;
+    let checkLine = line.match(/^\s*/);
+    if (checkLine) {
+      firstNonWhiteSpace = checkLine[0].length;
+    }
+
     let visibleColumn: number = 0;
 
     if (firstNonWhiteSpace >= 0) {
@@ -238,7 +236,12 @@ export class TextEditor {
       indentString += new Array(screenCharacters % tabSize + 1).join(" ");
     }
 
-    let firstNonWhiteSpace = line.match(/^\s*/)[0].length;
+    let firstNonWhiteSpace = 0;
+    let lineCheck = line.match(/^\s*/);
+    if (lineCheck) {
+      firstNonWhiteSpace = lineCheck[0].length;
+    }
+
     return indentString + line.substring(firstNonWhiteSpace, line.length);
   }
 }

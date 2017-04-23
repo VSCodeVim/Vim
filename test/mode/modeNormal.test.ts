@@ -6,16 +6,16 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 
 suite("Mode Normal", () => {
-    let modeHandler: ModeHandler = new ModeHandler();
-
+    let modeHandler: ModeHandler;
     let {
         newTest,
         newTestOnly,
-    } = getTestingFunctions(modeHandler);
+    } = getTestingFunctions();
 
     setup(async () => {
         await setupWorkspace();
         setTextEditorOptions(4, false);
+        modeHandler = new ModeHandler();
     });
 
     teardown(cleanUpWorkspace);
@@ -633,6 +633,65 @@ suite("Mode Normal", () => {
       keysPressed: 'd2aw',
       end: ['one   two   three,   |.  six'],
       endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on end of word",
+      start: ['one   two   three   fou|r'],
+      keysPressed: 'daw',
+      end: ['one   two   thre|e'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on words at beginning of line with leading whitespace",
+      start: ['if (something){',
+              '  |this.method();'],
+      keysPressed: 'daw',
+      end: ['if (something){',
+            '  |.method();']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on words at ends of lines in the middle of whitespace",
+      start: ['one two | ',
+             'four'],
+      keysPressed: 'daw',
+      end: ['one tw|o']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at beginning of file",
+      start: ['o|ne'],
+      keysPressed: 'daw',
+      end: ['|']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at beginning of line",
+      start: ['one two',
+              'th|ree'],
+      keysPressed: 'daw',
+      end: ['one two',
+            '|']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at end of line with trailing whitespace",
+      start: ['one tw|o  ',
+              'three four'],
+      keysPressed: 'daw',
+      end: ['one| ',
+            'three four']
+    });
+
+    newTest({
+      title: "Can handle 'daw' around word at end of line",
+      start: ['one t|wo',
+              ' three'],
+      keysPressed: 'daw',
+      end: ['on|e',
+            ' three']
     });
 
     newTest({
@@ -1410,5 +1469,12 @@ suite("Mode Normal", () => {
         'test aaa test aaa test aaa tes|t ',
         'test aaa test aaa test aaa test '
       ]
+    });
+
+    newTest({
+      title: "cc on whitespace-only line clears line",
+      start: ["|     "],
+      keysPressed: 'cc',
+      end: ["|"],
     });
 });

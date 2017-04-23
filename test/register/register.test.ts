@@ -1,20 +1,22 @@
 "use strict";
 
+import * as vscode from 'vscode';
 import { ModeHandler } from "../../src/mode/modeHandler";
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
+import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from '../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
-import * as clipboard from 'copy-paste';
+import * as util from '../../src/util';
 
 suite("register", () => {
-  let modeHandler: ModeHandler = new ModeHandler();
+  let modeHandler: ModeHandler;
 
   let {
       newTest,
       newTestOnly,
-  } = getTestingFunctions(modeHandler);
+  } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
+    modeHandler = new ModeHandler();
   });
 
   suiteTeardown(cleanUpWorkspace);
@@ -26,7 +28,7 @@ suite("register", () => {
     end: ["two", "|one"],
   });
 
-  clipboard.copy("12345");
+  util.clipboardCopy("12345");
 
   newTest({
     title: "Can access '*' (clipboard) register",
@@ -49,7 +51,30 @@ suite("register", () => {
     end: ["one", "two", "one", "|two"],
   });
 
+  test("System clipboard works with chinese characters", async () => {
+    const testString = '你好';
+    util.clipboardCopy(testString);
+    assertEqual(testString, util.clipboardPaste());
+
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
+    // Paste from our paste handler
+    await modeHandler.handleMultipleKeyEvents([
+      '<Esc>',
+      '"', '*', 'P',
+      'a'
+    ]);
+    assertEqualLines([testString]);
+
+    // Now try the built in vscode paste
+    await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
+
+    assertEqualLines([testString + testString]);
+  });
+
   test("Yank stores text in Register '0'", async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
     await modeHandler.handleMultipleKeyEvents(
       'itest1\ntest2\ntest3'.split('')
     );
@@ -74,6 +99,8 @@ suite("register", () => {
   });
 
   test("Register '1'-'9' stores delete content", async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
     await modeHandler.handleMultipleKeyEvents(
       'itest1\ntest2\ntest3\n'.split('')
     );
@@ -98,6 +125,8 @@ suite("register", () => {
   });
 
   test("\"A appends linewise text to \"a", async() => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
     await modeHandler.handleMultipleKeyEvents(
       'itest1\ntest2\ntest3'.split('')
     );
@@ -124,6 +153,8 @@ suite("register", () => {
   });
 
   test("\"A appends character wise text to \"a", async() => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
     await modeHandler.handleMultipleKeyEvents(
       'itest1\ntest2\n'.split('')
     );
