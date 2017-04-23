@@ -26,15 +26,14 @@ export class RegisterCommand extends node.CommandBase {
     if (result instanceof Array) {
       result = result.join("\n").substr(0, 100);
     } else if (result instanceof RecordedState) {
-      // TODO
-      result = "";
+      result = result.actionsRun.map(x => x.keysPressed.join("")).join("");
     }
 
     return result;
   }
 
   async displayRegisterValue(register: string): Promise<void> {
-    let result = this.getRegisterDisplayValue(register);
+    let result = await this.getRegisterDisplayValue(register);
 
     vscode.window.showInformationMessage(`${register} ${result}`);
   }
