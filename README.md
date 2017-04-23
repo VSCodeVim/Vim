@@ -71,7 +71,7 @@ Just like real vim, your editor will now be in Normal mode, which is reported to
 
 ### Vim compatibility
 
-All common Vim commands are supported. For an in-depth look at what Vim features are supported, check out the [roadmap](ROADMAP.md). Vimscript isn't supported, so you aren't able to load your `.vimrc` or use `.vim` plugins. You have to replicated this using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
+All common Vim commands are supported. For an in-depth look at what Vim features are supported, check out the [roadmap](ROADMAP.md). Vimscript isn't supported, so you aren't able to load your `.vimrc` or use `.vim` plugins. You have to replicated these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
 
 ### Mac setup
 
