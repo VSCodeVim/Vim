@@ -140,6 +140,114 @@ export abstract class BaseMovement extends BaseAction {
   }
 }
 
+abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
+  doesntChangeDesiredColumn = true;
+  public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
+    let prevDesiredColumn = vimState.desiredColumn;
+    let prevLine = vimState.editor.selection.active.line;
+
+     await vscode.commands.executeCommand("cursorMove", {
+      to: this.movementType,
+         select: vimState.currentMode !== ModeName.Normal,
+         by: this.by,
+         value: this.value
+       });
+
+     if (vimState.currentMode === ModeName.Normal) {
+         let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+         if (prevLine !== returnedPos.line) {
+             returnedPos = returnedPos.setLocation(returnedPos.line, prevDesiredColumn);
+           }
+         return returnedPos;
+       } else {
+       /**
+       * cursorMove command is handling the selection for us.
+       * So we are not following our design principal (do no real movement inside an action) here.
+       */
+
+         let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+       let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
+
+         // We want to swap the cursor start stop positions based on which direction we are moving, up or down
+         if (start.line < position.line) {
+     [start, stop] = [stop, start];
+           }
+       if (prevLine !== start.line) {
+           start = start.setLocation(start.line, prevDesiredColumn);
+         }
+
+         return { start, stop };
+     }
+  }
+}
+
+
+ @RegisterAction
+class MoveDown extends MoveByScreenLineMaintainDesiredColumn {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [["j"]];
+  movementType: CursorMovePosition = "down";
+  by: CursorMoveByUnit = "line";
+  value = 1;
+  doesntChangeDesiredColumn = true;
+
+   public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
+    let t: Position;
+    let count = 0;
+    do {
+       t = <Position>(await new MoveDownByScreenLine().execAction(position, vimState));
+       count= 1;
+     } while (t.line === position.line);
+    if (t.line > position.line) {
+       return t;
+     }
+    while (count > 0) {
+       await new MoveUpByScreenLine().execAction(position, vimState);
+       count--;
+     }
+    return await super.execAction(position, vimState);
+  }
+}
+
+ @RegisterAction
+class MoveDownArrow extends MoveDown {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = [["<down>"]];
+}
+
+ @RegisterAction
+class MoveUp extends MoveByScreenLineMaintainDesiredColumn {
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [["k"]];
+  movementType: CursorMovePosition = "up";
+  by: CursorMoveByUnit = "line";
+  value = 1;
+  doesntChangeDesiredColumn = true;
+
+   public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
+    let t: Position;
+
+     let count = 0;
+    do {
+       t = <Position>(await new MoveUpByScreenLine().execAction(position, vimState));
+       count= 1;
+     } while (t.line === position.line);
+    if (t.line < position.line) {
+       return t;
+     }
+    while (count > 0) {
+       await new MoveDownByScreenLine().execAction(position, vimState);
+       count--;
+     }
+    return await super.execAction(position, vimState);
+  }
+}
+
+ @RegisterAction
+class MoveUpArrow extends MoveDown {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = [["<up>"]];
+}
 
 @RegisterAction
 class ArrowsInReplaceMode extends BaseMovement {
@@ -156,10 +264,10 @@ class ArrowsInReplaceMode extends BaseMovement {
 
     switch (this.keysPressed[0]) {
       case "<up>":
-        newPosition = await new MoveUpArrow().execAction(position, vimState);
+        newPosition = <Position>(await new MoveUpArrow().execAction(position, vimState));
         break;
       case "<down>":
-        newPosition = await new MoveDownArrow().execAction(position, vimState);
+        newPosition = <Position>(await new MoveDownArrow().execAction(position, vimState));
         break;
       case "<left>":
         newPosition = await new MoveLeftArrow().execAction(position, vimState);
@@ -286,48 +394,6 @@ class BackSpaceInNormalMode extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getLeftThroughLineBreaks();
   }
-}
-
-@RegisterAction
-class MoveUp extends BaseMovement {
-  keys = ["k"];
-  doesntChangeDesiredColumn = true;
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getUp(vimState.desiredColumn);
-  }
-
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUp(position.getLineEnd().character);
-  }
-}
-
-@RegisterAction
-class MoveUpArrow extends MoveUp {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["<up>"];
-}
-
-@RegisterAction
-class MoveDown extends BaseMovement {
-  keys = ["j"];
-  doesntChangeDesiredColumn = true;
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getDown(vimState.desiredColumn);
-  }
-
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDown(position.getLineEnd().character);
-  }
-}
-
-@RegisterAction
-class MoveDownArrow extends MoveDown {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = ["<down>"];
 }
 
 @RegisterAction
@@ -668,7 +734,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveUpByScreenLine extends MoveByScreenLine {
+class MoveUpByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "k"],
   ["g", "<up>"]];
@@ -678,7 +744,7 @@ class MoveUpByScreenLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByScreenLine extends MoveByScreenLine {
+class MoveDownByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "j"],
   ["g", "<down>"]];
@@ -1703,10 +1769,10 @@ export class ArrowsInInsertMode extends BaseMovement {
 
     switch (this.keys[0]) {
       case "<up>":
-        newPosition = await new MoveUpArrow().execAction(position, vimState);
+        newPosition = <Position>(await new MoveUpArrow().execAction(position, vimState));
         break;
       case "<down>":
-        newPosition = await new MoveDownArrow().execAction(position, vimState);
+        newPosition = <Position>(await new MoveDownArrow().execAction(position, vimState));
         break;
       case "<left>":
         newPosition = await new MoveLeftArrow().execAction(position, vimState);
