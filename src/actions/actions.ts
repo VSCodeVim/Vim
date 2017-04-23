@@ -5348,6 +5348,7 @@ class SelectABigWord extends TextObjectMovement {
         start = position.getLastBigWordEnd().getRight();
         stop = position.getCurrentBigWordEnd();
     } else {
+        // Check 'aw' code for much of the reasoning behind this logic.
         let nextWord = position.getBigWordRight();
         if ((nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
               vimState.recordedState.count === 0) {
