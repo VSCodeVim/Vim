@@ -5287,7 +5287,6 @@ class SelectWord extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
@@ -5307,7 +5306,8 @@ class SelectWord extends TextObjectMovement {
         // then we delete the spaces to the left of the current word. Otherwise, we delete to the right.
         // Also, if the current word is the leftmost word, we only delete from the start of the word to the end.
         if (stop.isEqual(position.getCurrentWordEnd(true)) &&
-            !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar())) {
+            !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar())
+            && vimState.recordedState.count === 0) {
           start = position.getLastWordEnd().getRight();
         } else {
           start = position.getWordLeft(true);
@@ -5349,7 +5349,8 @@ class SelectABigWord extends TextObjectMovement {
         stop = position.getCurrentBigWordEnd();
     } else {
         let nextWord = position.getBigWordRight();
-        if (nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) {
+        if ((nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
+              vimState.recordedState.count === 0) {
           start = position.getLastWordEnd().getRight();
           stop = position.getLineEnd();
         } else {
