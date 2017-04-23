@@ -5295,6 +5295,10 @@ class SelectWord extends TextObjectMovement {
         stop = position.getCurrentWordEnd();
     } else {
         stop = position.getWordRight();
+        // If the next word is not at the beginning of the next line, we want to pretend it is.
+        // This is because 'aw' has two fundamentally different behaviors distinguished by whether
+        // the next word is directly after the current word, as described in the following comment.
+        // The only case that's not true is in cases like #1350.
         if (stop.isEqual(stop.getFirstLineNonBlankChar())) {
           stop = stop.getLineBegin();
         }
@@ -5344,10 +5348,15 @@ class SelectABigWord extends TextObjectMovement {
         start = position.getLastBigWordEnd().getRight();
         stop = position.getCurrentBigWordEnd();
     } else {
-        start = position.getBigWordLeft();
-        stop = position.getBigWordRight().getLeft();
+        let nextWord = position.getBigWordRight();
+        if (nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) {
+          start = position.getLastWordEnd().getRight();
+          stop = position.getLineEnd();
+        } else {
+          start = position.getBigWordLeft(true);
+          stop = position.getBigWordRight().getLeft();
+        }
     }
-
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
         start = vimState.cursorStartPosition;
 
