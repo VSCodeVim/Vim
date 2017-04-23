@@ -12,7 +12,6 @@ import { Position, PositionDiff } from './../motion/position';
 import { PairMatcher } from './../matching/matcher';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
-import { getIndentObjectRange } from './../matching/getIndentObjectRange';
 import { Tab, TabCommand } from './../cmd_line/commands/tab';
 import { Configuration } from './../configuration/configuration';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
@@ -6287,32 +6286,95 @@ class MoveAroundTag extends MoveTagMatch {
   includeTag = true;
 }
 
-abstract class IndentObjectMatch extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+abstract class IndentObjectMatch extends TextObjectMovement {
+  setsDesiredColumnToEOL = true;
+
   protected includeLineAbove = false;
   protected includeLineBelow = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const operator = vimState.recordedState.operator;
-    let operatorString: 'change' | 'delete' | 'yank' | 'visual' | undefined;
+    const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
+    const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
+    const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
+    const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
-    if (operator instanceof ChangeOperator) { operatorString = 'change'; }
-    if (operator instanceof DeleteOperator) { operatorString = 'delete'; }
-    if (operator instanceof YankOperator)   { operatorString = 'yank'; }
-    if (vimState.currentModeName() === 'Visual') {
-      operatorString = 'visual';
+    // let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
+    let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, -1);
+    let endLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, 1);
+
+    // Adjust the start line as needed.
+    if (this.includeLineAbove) {
+      startLineNumber -= 1;
+    }
+    // Check for OOB.
+    if (startLineNumber < 0) {
+      startLineNumber = 0;
     }
 
-    const range = getIndentObjectRange(position, {
-      includeLineAbove: this.includeLineAbove,
-      includeLineBelow: this.includeLineBelow,
-      operatorString,
-    });
+    // Adjust the end line as needed.
+    if (this.includeLineBelow) {
+      endLineNumber += 1;
+    }
+    // Check for OOB.
+    if (endLineNumber > TextEditor.getLineCount() - 1) {
+      endLineNumber = TextEditor.getLineCount() - 1;
+    }
+
+    // If initiated by a change operation, adjust the cursor to the indent level
+    // of the block.
+    let startCharacter = 0;
+    if (isChangeOperator) {
+      startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0)).firstNonWhitespaceCharacterIndex;
+    }
+    // TextEditor.getLineMaxColumn throws when given line 0, which we don't
+    // care about here since it just means this text object wouldn't work on a
+    // single-line document.
+    const endCharacter = TextEditor.readLineAt(endLineNumber).length;
 
     return {
-      start: range.startPosition,
-      stop: range.endPosition
+      start: new Position(startLineNumber, startCharacter),
+      stop: new Position(endLineNumber, endCharacter),
     };
+  }
+
+  /**
+   * Searches up from the cursor for the first non-empty line.
+   */
+  public static findFirstValidLine(cursorPosition: Position): number {
+    for (let i = cursorPosition.line; i >= 0; i--) {
+      const line = TextEditor.getLineAt(new Position(i, 0));
+
+      if (!line.isEmptyOrWhitespace) {
+        return i;
+      }
+    }
+
+    return cursorPosition.line;
+  }
+
+  /**
+   * Searches up or down from a line finding the first with a lower indent level.
+   */
+  public static findRangeStartOrEnd (startIndex: number, cursorIndent: number, step: -1 | 1): number {
+    let i = startIndex;
+    let ret = startIndex;
+    const end = step === 1
+      ? TextEditor.getLineCount()
+      : -1;
+
+    for (; i !== end; i += step) {
+      const line = TextEditor.getLineAt(new Position(i, 0));
+      const isLineEmpty = line.isEmptyOrWhitespace;
+      const lineIndent = line.firstNonWhitespaceCharacterIndex;
+
+      if (lineIndent < cursorIndent && !isLineEmpty) {
+        break;
+      }
+
+      ret = i;
+    }
+
+    return ret;
   }
 }
 
