@@ -63,10 +63,32 @@ Donations help convince me to work on this project rather than my other (non-ope
 * [Contributing](#contributing)
 * [Release notes](https://github.com/VSCodeVim/Vim/releases)
 
+## Getting started
 
-## Quick example settings
+The plugin will be automatically enabled after [installing](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) it and reloading VSCode. The plugin can only be disabled from the Extension manager in VSCode, with no quick way to switch between modal and modeless editing.
 
-Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension. Move onto the [Settings](#settings) or [Key remapping](#key-remapping) sections for more in-depth documentation.
+Just like real vim, your editor will now be in Normal mode. You can see what mode you're in from the VSCode's status bar. From here, all your regular vim commands will work as normal.
+
+### Mac setup
+
+If key repeating isn't working for you, execute this in your Terminal.
+
+```sh
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
+```
+
+We also recommend going into *System Preferences -> Keyboard* and cranking up the Key Repeat and Delay Until Repeat settings to improve your speed.
+
+### Windows setup
+
+VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
+
+## Settings
+
+### Quick example settings
+
+Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension. Continue on below for more in-depth documentation.
 
 ```json
 {
@@ -103,23 +125,6 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
     }
 }
 ```
-
-### Mac setup
-
-If key repeating isn't working for you, execute this in your Terminal.
-
-```sh
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
-```
-
-We also recommend going into *System Preferences -> Keyboard* and cranking up the Key Repeat and Delay Until Repeat settings to improve your speed.
-
-### Windows setup
-
-VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
-
-## Settings
 
 The following is a subset of the supported settings; the full list is described in the `Contributions` tab for this extension, or in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L175).
 
