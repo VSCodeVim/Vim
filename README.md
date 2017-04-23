@@ -69,6 +69,10 @@ The plugin will be automatically enabled after [installing](https://marketplace.
 
 Just like real vim, your editor will now be in Normal mode. You can see what mode you're in from the VSCode's status bar. From here, all your regular vim commands will work as normal.
 
+### Vim compatibility
+
+All common Vim commands are supported. For an in-depth look at what Vim features are supported, or in the pipeline, check out the [roadmap](ROADMAP.md). Vimscript isn't supported, so you aren't able to load your `.vimrc` or use `.vim` plugins. You have to replicated this using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
+
 ### Mac setup
 
 If key repeating isn't working for you, execute this in your Terminal.
