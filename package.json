@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.6.17",
+    "version": "0.6.18",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#e3f4ff",
@@ -448,7 +448,7 @@
         "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
     },
     "dependencies": {
-        "clipboardy": "^1.1.0",
+        "clipboardy": "^1.1.1",
         "diff-match-patch": "^1.0.0",
         "lodash": "^4.12.0",
         "typescript": "^2.2.1"

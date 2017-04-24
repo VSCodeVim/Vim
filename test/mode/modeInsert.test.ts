@@ -193,6 +193,19 @@ suite("Mode Insert", () => {
     });
 
     newTest({
+      title: "Backspace works on whitespace only lines",
+      start: ['abcd', '     |    '],
+      keysPressed: 'a<BS><Esc>',
+      end: ['abcd', "   | "],
+    });
+    newTest({
+      title: "Backspace works on end of whitespace only lines",
+      start: ['abcd', '     | '],
+      keysPressed: 'a<BS><Esc>',
+      end: ['abcd', "   | "],
+    });
+
+    newTest({
       title: "Can perform <ctrl+o> to exit and perform one command in normal",
       start: ['testtest|'],
       keysPressed: 'a123<C-o>b123',

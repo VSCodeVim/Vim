@@ -564,11 +564,11 @@ export class CommandInsertInInsertMode extends BaseCommand {
           // the next lowest level of indentation.
 
           const tabSize = vimState.editor.options.tabSize as number;
-          const desiredLineLength = Math.floor((line.length - 1) / tabSize) * tabSize;
+          const desiredLineLength = Math.floor((position.character - 1) / tabSize) * tabSize;
 
           vimState.recordedState.transformations.push({
             type: "deleteRange",
-            range: new Range(new Position(position.line, desiredLineLength), position)
+            range: new Range(new Position(position.line, desiredLineLength), new Position(position.line, line.length))
           });
         } else {
           vimState.recordedState.transformations.push({
@@ -5287,16 +5287,27 @@ class SelectWord extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
         start = position.getLastWordEnd().getRight();
         stop = position.getCurrentWordEnd();
     } else {
-        stop = position.getWordRight().getLeftThroughLineBreaks();
-
-        if (stop.isEqual(position.getCurrentWordEnd())) {
+        stop = position.getWordRight();
+        // If the next word is not at the beginning of the next line, we want to pretend it is.
+        // This is because 'aw' has two fundamentally different behaviors distinguished by whether
+        // the next word is directly after the current word, as described in the following comment.
+        // The only case that's not true is in cases like #1350.
+        if (stop.isEqual(stop.getFirstLineNonBlankChar())) {
+          stop = stop.getLineBegin();
+        }
+        stop = stop.getLeftThroughLineBreaks().getLeftIfEOL();
+        // If we aren't separated from the next word by whitespace(like in "horse ca|t,dog" or at the end of the line)
+        // then we delete the spaces to the left of the current word. Otherwise, we delete to the right.
+        // Also, if the current word is the leftmost word, we only delete from the start of the word to the end.
+        if (stop.isEqual(position.getCurrentWordEnd(true)) &&
+            !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar())
+            && vimState.recordedState.count === 0) {
           start = position.getLastWordEnd().getRight();
         } else {
           start = position.getWordLeft(true);
@@ -5337,10 +5348,17 @@ class SelectABigWord extends TextObjectMovement {
         start = position.getLastBigWordEnd().getRight();
         stop = position.getCurrentBigWordEnd();
     } else {
-        start = position.getBigWordLeft();
-        stop = position.getBigWordRight().getLeft();
+        // Check 'aw' code for much of the reasoning behind this logic.
+        let nextWord = position.getBigWordRight();
+        if ((nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
+              vimState.recordedState.count === 0) {
+          start = position.getLastWordEnd().getRight();
+          stop = position.getLineEnd();
+        } else {
+          start = position.getBigWordLeft(true);
+          stop = position.getBigWordRight().getLeft();
+        }
     }
-
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
         start = vimState.cursorStartPosition;
 
