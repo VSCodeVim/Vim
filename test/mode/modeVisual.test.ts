@@ -640,14 +640,6 @@ suite("Mode Visual", () => {
     endMode: ModeName.Normal
   });
 
-  newTest({
-    title: "Changes on a firstline selection will not delete first character",
-    start: ["test|jojo", "haha"],
-    keysPressed: "vj0c",
-    end: ["test|haha"],
-    endMode: ModeName.Insert
-  });
-
   suite("D command will remove all selected lines", () => {
     newTest({
       title: "D deletes all selected lines",
