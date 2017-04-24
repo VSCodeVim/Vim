@@ -26,7 +26,8 @@ export class RegisterCommand extends node.CommandBase {
     if (result instanceof Array) {
       result = result.join("\n").substr(0, 100);
     } else if (result instanceof RecordedState) {
-      result = result.actionsRun.map(x => x.keysPressed.join("")).join("");
+      result = result.actionsRun.map(x => x.keysPressed.join(""));
+      result = result.join("");
     }
 
     return result;
@@ -34,7 +35,7 @@ export class RegisterCommand extends node.CommandBase {
 
   async displayRegisterValue(register: string): Promise<void> {
     let result = await this.getRegisterDisplayValue(register);
-
+    result = result.replace(/\n/g, "\\n");
     vscode.window.showInformationMessage(`${register} ${result}`);
   }
 
