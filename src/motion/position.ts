@@ -480,8 +480,8 @@ export class Position extends vscode.Position {
     return this.getWordLeftWithRegex(this._nonWordCharRegex, inclusive);
   }
 
-  public getBigWordLeft(): Position {
-    return this.getWordLeftWithRegex(this._nonBigWordCharRegex);
+  public getBigWordLeft(inclusive: boolean = false): Position {
+    return this.getWordLeftWithRegex(this._nonBigWordCharRegex, inclusive);
   }
 
   public getFilePathLeft(inclusive: boolean = false): Position {
@@ -495,7 +495,7 @@ export class Position extends vscode.Position {
     return this.getWordRightWithRegex(this._nonWordCharRegex, inclusive);
   }
 
-  public getBigWordRight() : Position {
+  public getBigWordRight(inclusive: boolean = false) : Position {
     return this.getWordRightWithRegex(this._nonBigWordCharRegex);
   }
 

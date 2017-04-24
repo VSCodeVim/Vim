@@ -628,6 +628,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+    title: "Can handle 'daw' on word with numeric prefix and across lines",
+      start: ['one two fo|ur', 'five  six'],
+      keysPressed: 'd2aw',
+      end: ['one two |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'daw' on word with numeric prefix and across lines, containing words end with `.`",
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'd2aw',
@@ -732,6 +740,30 @@ suite("Mode Normal", () => {
       keysPressed: 'd2aW',
       end: ['one   two   three,   |six'],
       endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on beginning of word",
+      start: ['one |two three'],
+      keysPressed: 'daW',
+      end: ['one |three'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on end of one line",
+      start: ['one |two'],
+      keysPressed: 'daW',
+      end: ['on|e'],
+      endMode: ModeName.Normal
+    });
+    newTest({
+      title: "Can handle 'daW' around word at end of line",
+      start: ['one t|wo',
+              ' three'],
+      keysPressed: 'daW',
+      end: ['on|e',
+            ' three']
     });
 
     newTest({
