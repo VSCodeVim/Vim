@@ -26,8 +26,7 @@ export class RegisterCommand extends node.CommandBase {
     if (result instanceof Array) {
       result = result.join("\n").substr(0, 100);
     } else if (result instanceof RecordedState) {
-      result = result.actionsRun.map(x => x.keysPressed.join(""));
-      result = result.join("");
+      result = result.actionsRun.map(x => x.keysPressed.join("")).join("");
     }
 
     return result;
