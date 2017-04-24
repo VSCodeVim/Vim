@@ -34,7 +34,7 @@ export class RegisterCommand extends node.CommandBase {
 
   async displayRegisterValue(register: string): Promise<void> {
     let result = await this.getRegisterDisplayValue(register);
-
+    result = result.replace(/\n/g, "\\n");
     vscode.window.showInformationMessage(`${register} ${result}`);
   }
 
