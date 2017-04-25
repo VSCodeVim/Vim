@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://cdn.rawgit.com/VSCodeVim/Vim/master/images/icon.png" height="128">
+    <img src="https://raw.githubusercontent.com/VSCodeVim/Vim/master/images/icon.png" height="128">
     <br>
     VSCodeVim
 </h1>
