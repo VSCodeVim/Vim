@@ -921,6 +921,11 @@ class CommandEsc extends BaseCommand {
       vimState.currentMode = ModeName.Normal;
     }
 
+    // Abort surround operation
+    if (vimState.currentMode === ModeName.SurroundInputMode) {
+      vimState.surround = undefined;
+    }
+
     vimState.currentMode = ModeName.Normal;
 
     if (!vimState.isMultiCursor) {
