@@ -5752,7 +5752,7 @@ class MoveToMatchingBracket extends BaseMovement {
 }
 
 abstract class MoveInsideCharacter extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
 
