@@ -51,6 +51,13 @@ suite("register", () => {
     end: ["one", "two", "one", "|two"],
   });
 
+  newTest({
+    title: "Can use black hole register",
+    start: ['|asdf', "qwer"],
+    keysPressed: 'yyj"_ddkp',
+    end: ["asdf", "|asdf"],
+  });
+
   test("System clipboard works with chinese characters", async () => {
     const testString = '你好';
     util.clipboardCopy(testString);
