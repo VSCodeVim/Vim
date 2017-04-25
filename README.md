@@ -283,6 +283,7 @@ Almost like vim-airline in VSCode!
 #### `"vim.statusBarColorControl"`
 * Control status bar color based on current mode
 * Type: Boolean (Default: `false`)
+* Notes: Experimental feature, currently due to VSCode API limitations, this function MUST modify settings.json in the workspace. This causes a slight amount of latency and a constant changing diff in your working directory. [Issue #1565](https://github.com/VSCodeVim/Vim/issues/1565)
 
 Once this is set, you need to set `"vim.statusBarColors"` as well with these exact strings for modenames. The colors can be adjusted to suit the user.
 
