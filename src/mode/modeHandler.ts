@@ -1661,16 +1661,17 @@ export class ModeHandler implements vscode.Disposable {
           // Maintain cursor position based on which direction the selection is going
           if (start.line <= stop.line) {
             vimState.cursorStartPosition = selections[0].start as Position;
-            vimState.cursorPosition = selections[0].end as Position;
+            vimState.cursorPosition = stop as Position;
           } else {
             vimState.cursorStartPosition = selections[0].end as Position;
-            vimState.cursorPosition = selections[0].start as Position;
+            vimState.cursorPosition = start as Position;
           }
 
           // Adjust the selection so that active and anchor are correct, this
           // makes relative line numbers display correctly
           if ((selections[0].start.line <= selections[0].end.line) &&
             (vimState.cursorPosition.line <= vimState.cursorStartPosition.line)) {
+
             selections = [new vscode.Selection(selections[0].end, selections[0].start)];
           }
 

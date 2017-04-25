@@ -3666,6 +3666,7 @@ abstract class MoveByScreenLine extends BaseMovement {
   value: number = 1;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    // let isStartAfterStop = Position.FromVSCodePosition(vimState.editor.selection.start).line === Position.FromVSCodePosition(vimState.editor.selection.end).line-1;
     await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
       select: vimState.currentMode !== ModeName.Normal,
@@ -3683,10 +3684,13 @@ abstract class MoveByScreenLine extends BaseMovement {
 
       let start = Position.FromVSCodePosition(vimState.editor.selection.start);
       let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
+      let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
 
       // We want to swap the cursor start stop positions based on which direction we are moving, up or down
-      if (start.line < position.line) {
+      if (start.isEqual(curPos)) {
+        position = start;
         [start, stop] = [stop, start];
+        start = start.getLeft();
       }
 
       return { start, stop };
