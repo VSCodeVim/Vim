@@ -4375,6 +4375,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
   keys = ["g", "q"];
 
   public static CommentTypes: CommentType[] = [
+    { singleLine: true, start: "///"},
     { singleLine: true, start: "//" },
     { singleLine: true, start: "--" },
     { singleLine: true, start: "#" },
