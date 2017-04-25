@@ -4555,11 +4555,10 @@ class ActionVisualReflowParagraph extends BaseCommand {
       text: textToReflow,
       start: vimState.cursorStartPosition,
       end: vimState.cursorPosition,
-      manuallySetCursorPositions : true
+      // Move cursor to front of line to realign the view
+      diff: PositionDiff.NewBOLDiff(vimState.cursorPosition.advancePositionByText(textToReflow).line, 0)
     });
 
-    // Move cursor to front of line to realign the view
-    vimState.cursorPosition = vimState.cursorPosition.advancePositionByText(textToReflow).getLineBegin();
     vimState.currentMode = ModeName.Normal;
 
     return vimState;
