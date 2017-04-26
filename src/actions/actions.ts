@@ -571,10 +571,12 @@ export class CommandInsertInInsertMode extends BaseCommand {
             range: new Range(new Position(position.line, desiredLineLength), new Position(position.line, line.length))
           });
         } else {
-          vimState.recordedState.transformations.push({
-            type: "deleteText",
-            position: position,
-          });
+          if (position.line !== 0 || position.character !== 0) {
+            vimState.recordedState.transformations.push({
+              type: "deleteText",
+              position: position,
+            });
+          }
         }
       }
 
