@@ -826,7 +826,7 @@ export class ModeHandler implements vscode.Disposable {
     let previousWasCount = true;
 
     for (const commandKey of commandList) {
-      if (previousWasCount && commandKey.match(/[0-9]/)) {
+      if (previousWasCount && commandKey.match(/[1-9]/)) {
         continue;
       } else {
         previousWasCount = false;
