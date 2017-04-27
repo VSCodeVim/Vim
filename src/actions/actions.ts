@@ -571,10 +571,12 @@ export class CommandInsertInInsertMode extends BaseCommand {
             range: new Range(new Position(position.line, desiredLineLength), new Position(position.line, line.length))
           });
         } else {
-          vimState.recordedState.transformations.push({
-            type: "deleteText",
-            position: position,
-          });
+          if (position.line !== 0 || position.character !== 0) {
+            vimState.recordedState.transformations.push({
+              type: "deleteText",
+              position: position,
+            });
+          }
         }
       }
 
@@ -919,6 +921,11 @@ class CommandEsc extends BaseCommand {
       // Escape or other termination keys were pressed, exit mode
       vimState.easyMotion.clearDecorations();
       vimState.currentMode = ModeName.Normal;
+    }
+
+    // Abort surround operation
+    if (vimState.currentMode === ModeName.SurroundInputMode) {
+      vimState.surround = undefined;
     }
 
     vimState.currentMode = ModeName.Normal;
@@ -4370,6 +4377,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
   keys = ["g", "q"];
 
   public static CommentTypes: CommentType[] = [
+    { singleLine: true, start: "///"},
     { singleLine: true, start: "//" },
     { singleLine: true, start: "--" },
     { singleLine: true, start: "#" },
@@ -4555,7 +4563,11 @@ class ActionVisualReflowParagraph extends BaseCommand {
       text: textToReflow,
       start: vimState.cursorStartPosition,
       end: vimState.cursorPosition,
+      // Move cursor to front of line to realign the view
+      diff: PositionDiff.NewBOLDiff(0, 0)
     });
+
+    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }
@@ -5287,17 +5299,27 @@ class SelectWord extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-
     const currentChar = TextEditor.getLineAt(position).text[position.character];
 
     if (/\s/.test(currentChar)) {
         start = position.getLastWordEnd().getRight();
         stop = position.getCurrentWordEnd();
     } else {
-        stop = position.getWordRight().getLeftThroughLineBreaks();
+        stop = position.getWordRight();
+        // If the next word is not at the beginning of the next line, we want to pretend it is.
+        // This is because 'aw' has two fundamentally different behaviors distinguished by whether
+        // the next word is directly after the current word, as described in the following comment.
+        // The only case that's not true is in cases like #1350.
+        if (stop.isEqual(stop.getFirstLineNonBlankChar())) {
+          stop = stop.getLineBegin();
+        }
+        stop = stop.getLeftThroughLineBreaks().getLeftIfEOL();
         // If we aren't separated from the next word by whitespace(like in "horse ca|t,dog" or at the end of the line)
         // then we delete the spaces to the left of the current word. Otherwise, we delete to the right.
-        if (stop.isEqual(position.getCurrentWordEnd(true))) {
+        // Also, if the current word is the leftmost word, we only delete from the start of the word to the end.
+        if (stop.isEqual(position.getCurrentWordEnd(true)) &&
+            !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar())
+            && vimState.recordedState.count === 0) {
           start = position.getLastWordEnd().getRight();
         } else {
           start = position.getWordLeft(true);
@@ -5338,10 +5360,17 @@ class SelectABigWord extends TextObjectMovement {
         start = position.getLastBigWordEnd().getRight();
         stop = position.getCurrentBigWordEnd();
     } else {
-        start = position.getBigWordLeft();
-        stop = position.getBigWordRight().getLeft();
+        // Check 'aw' code for much of the reasoning behind this logic.
+        let nextWord = position.getBigWordRight();
+        if ((nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
+              vimState.recordedState.count === 0) {
+          start = position.getLastWordEnd().getRight();
+          stop = position.getLineEnd();
+        } else {
+          start = position.getBigWordLeft(true);
+          stop = position.getBigWordRight().getLeft();
+        }
     }
-
     if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
         start = vimState.cursorStartPosition;
 
@@ -5731,7 +5760,7 @@ class MoveToMatchingBracket extends BaseMovement {
 }
 
 abstract class MoveInsideCharacter extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
 
@@ -6981,10 +7010,12 @@ class CommandSurroundAddToReplacement extends BaseCommand {
       stringToAdd = "<";
     }
 
-    // Convert a few shortcuts to the correct surround characters
-    if (stringToAdd === "b") { stringToAdd = "("; };
-    if (stringToAdd === "B") { stringToAdd = "{"; };
-    if (stringToAdd === "r") { stringToAdd = "["; };
+    // Convert a few shortcuts to the correct surround characters when NOT entering a tag
+    if (vimState.surround.replacement.length === 0) {
+      if (stringToAdd === "b") { stringToAdd = "("; };
+      if (stringToAdd === "B") { stringToAdd = "{"; };
+      if (stringToAdd === "r") { stringToAdd = "["; };
+    }
 
     vimState.surround.replacement += stringToAdd;
 
