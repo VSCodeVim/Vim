@@ -58,6 +58,7 @@ Donations help convince me to work on this project rather than my other (non-ope
     * [vim-easymotion](#vim-easymotion)
     * [vim-surround](#vim-surround)
     * [vim-commentary](#vim-commentary)
+    * [vim-indent-object](#vim-indent-object)
 * [VSCodeVim tricks](#vscodevim-tricks)
 * [F.A.Q / Troubleshooting](#faq)
 * [Contributing](#contributing)
@@ -446,6 +447,18 @@ If you are use to using vim-commentary you are probably use to using `gc` instea
     }
 ],
 ```
+
+### vim-indent-object
+
+Indent Objects in VSCodeVim are identical to [michaeljsmith/vim-indent-object](https://github.com/michaeljsmith/vim-indent-object) and allow you to treat blocks of code at the current indentation level as text objects. This is very useful in languages that don't use braces around statements, like Python.
+
+Provided there is a new line between the opening and closing braces / tag, it can be considered an agnostic `cib`/`ci{`/`ci[`/`cit`.
+
+Command | Description
+---|--------
+`<operator>ii`|This indentation level
+`<operator>ai`|This indentation level and the line above (think `if` statements in Python)
+`<operator>aI`|This indentation level, the line above, and the line after (think `if` statements in C/C++/Java/etc)
 
 ## VSCodeVim tricks!
 
