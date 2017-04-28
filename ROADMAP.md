@@ -309,7 +309,6 @@ Status | Command | Description
 
 Miscellanea:
 
-* We don't currently support the black hole register. [associated issue](https://github.com/VSCodeVim/Vim/issues/1357)
 * We don't support read only registers.
 
 Status | Command | Description | Note

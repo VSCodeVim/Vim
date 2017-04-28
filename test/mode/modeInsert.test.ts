@@ -198,11 +198,19 @@ suite("Mode Insert", () => {
       keysPressed: 'a<BS><Esc>',
       end: ['abcd', "   | "],
     });
+
     newTest({
       title: "Backspace works on end of whitespace only lines",
       start: ['abcd', '     | '],
       keysPressed: 'a<BS><Esc>',
       end: ['abcd', "   | "],
+    });
+
+    newTest({
+        title: "Backspace works at beginning of file",
+        start: ['|bcd'],
+        keysPressed: 'i<BS>a<Esc>',
+        end: ['|abcd'],
     });
 
     newTest({

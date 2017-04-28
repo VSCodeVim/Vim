@@ -3,7 +3,7 @@
     "displayName": "Vim",
     "description": "Vim emulation for Visual Studio Code",
     "icon": "images/icon.png",
-    "version": "0.6.18",
+    "version": "0.6.20",
     "publisher": "vscodevim",
     "galleryBanner": {
         "color": "#e3f4ff",
@@ -39,6 +39,10 @@
             {
                 "command": "extension.showCmdLine",
                 "title": "Vim: Show Command Line"
+            },
+            {
+                "command": "vim.remap",
+                "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
             }
         ],
         "keybindings": [
