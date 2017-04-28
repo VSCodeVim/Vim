@@ -1661,10 +1661,10 @@ export class ModeHandler implements vscode.Disposable {
           // Maintain cursor position based on which direction the selection is going
           if (start.line <= stop.line) {
             vimState.cursorStartPosition = selections[0].start as Position;
-            vimState.cursorPosition = stop as Position;
+            vimState.cursorPosition = selections[0].end as Position;
           } else {
             vimState.cursorStartPosition = selections[0].end as Position;
-            vimState.cursorPosition = start as Position;
+            vimState.cursorPosition = selections[0].start as Position;
           }
 
           // Adjust the selection so that active and anchor are correct, this
