@@ -39,6 +39,10 @@
             {
                 "command": "extension.showCmdLine",
                 "title": "Vim: Show Command Line"
+            },
+            {
+                "command": "vim.remap",
+                "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
             }
         ],
         "keybindings": [
