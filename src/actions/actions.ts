@@ -4513,7 +4513,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
           if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
             lines[lines.length - 1] += ` ${ word }`;
           } else {
-            lines.push(`${ word }`);
+            lines.push(` ${ word }`);
           }
         }
       }
