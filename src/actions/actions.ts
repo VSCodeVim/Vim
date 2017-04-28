@@ -3667,6 +3667,11 @@ abstract class MoveByScreenLine extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     // let isStartAfterStop = Position.FromVSCodePosition(vimState.editor.selection.start).line === Position.FromVSCodePosition(vimState.editor.selection.end).line-1;
+    if (vimState.currentMode === ModeName.VisualLine){
+      if (this.movementType === "up" || this.movementType === "down"){
+        this.by = "line";
+      }
+    }
     await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
       select: vimState.currentMode !== ModeName.Normal,
