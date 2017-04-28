@@ -4513,7 +4513,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
           if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
             lines[lines.length - 1] += ` ${ word }`;
           } else {
-            lines.push(` ${ word }`);
+            lines.push(`${ word }`);
           }
         }
       }
@@ -4544,8 +4544,11 @@ class ActionVisualReflowParagraph extends BaseCommand {
       result = result.concat(lines);
     }
 
+    // Remove extra first space if it exists.
+    if (result[0][0] === " ") {
+      result[0] = result[0].slice(1);
+    }
     // Gather up multiple empty lines into single empty lines.
-
     return result.join("\n");
   }
 
