@@ -533,7 +533,7 @@ export class ModeHandler implements vscode.Disposable {
     // position to the position that VSC set it to.
 
     // This also makes things like gd work.
-    this.updateView(this.vimState, {drawSelection: false, revealRange: false}).then(() => {
+    setTimeout(() => {
       if (this._vimState.editor) {
         this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
         this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
@@ -541,7 +541,7 @@ export class ModeHandler implements vscode.Disposable {
 
         this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
       }
-    });
+    }, 0);
 
     // Handle scenarios where mouse used to change current position.
     const disposer = vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
