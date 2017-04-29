@@ -16,6 +16,8 @@ import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
 import { ModeName } from './src/mode/mode';
 import { Configuration } from './src/configuration/configuration'
+import { ICodeKeybinding } from './src/mode/remapper';
+import { runCmdLine } from './src/cmd_line/main';
 
 interface VSCodeKeybinding {
   key: string;
@@ -245,6 +247,32 @@ export async function activate(context: vscode.ExtensionContext) {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
 
+  registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
+    taskQueue.enqueueTask({
+      promise: async () => {
+        const mh = await getAndUpdateModeHandler();
+        if (args.after) {
+          for (const key of args.after) {
+            await mh.handleKeyEvent(AngleBracketNotation.Normalize(key));
+          }
+          return;
+        }
+
+        if (args.commands) {
+          for (const command of args.commands) {
+            // Check if this is a vim command by looking for :
+            if (command.command.slice(0, 1) === ":") {
+              await runCmdLine(command.command.slice(1, command.command.length), mh);
+              await mh.updateView(mh.vimState);
+            } else {
+              await vscode.commands.executeCommand(command.command, command.args);
+            }
+          }
+        }
+      },
+      isRunning: false
+    });
+  });
   // Clear boundKeyCombinations array incase there are any entries in it so
   // that we have a clean list of keys with no duplicates
   Configuration.boundKeyCombinations = [];

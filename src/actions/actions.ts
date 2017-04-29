@@ -1647,8 +1647,8 @@ class CommandOverrideCopy extends BaseCommand {
     } else if (vimState.currentMode === ModeName.VisualLine) {
       text = vimState.allCursors.map(range => {
         return vimState.editor.document.getText(new vscode.Range(
-          range.start.getLineBegin(),
-          range.stop.getLineEnd()
+          Position.EarlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
+          Position.LaterOf(range.start.getLineEnd(), range.stop.getLineEnd())
         ));
       }).join("\n");
     } else if (vimState.currentMode === ModeName.VisualBlock) {
@@ -2206,16 +2206,13 @@ export class ChangeOperator extends BaseOperator {
 
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const isEndOfLine = end.character === end.getLineEnd().character;
-        const isBeginning =
-                end.isLineBeginning() &&
-                !start.isLineBeginning(); // to ensure this is a selection and not e.g. and s command
         let state = vimState;
 
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
         // the line. We do want to run delete if it is a multiline change though ex. c}
         if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 || (end.line !== start.line)) {
-          if (isEndOfLine || isBeginning) {
+          if (isEndOfLine) {
             state = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end.getLeftThroughLineBreaks());
           } else {
             state = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
@@ -4544,8 +4541,11 @@ class ActionVisualReflowParagraph extends BaseCommand {
       result = result.concat(lines);
     }
 
+    // Remove extra first space if it exists.
+    if (result[0][0] === " ") {
+      result[0] = result[0].slice(1);
+    }
     // Gather up multiple empty lines into single empty lines.
-
     return result.join("\n");
   }
 
@@ -6313,6 +6313,116 @@ class MoveInsideTag extends MoveTagMatch {
 class MoveAroundTag extends MoveTagMatch {
   keys = ["a", "t"];
   includeTag = true;
+}
+
+abstract class IndentObjectMatch extends TextObjectMovement {
+  setsDesiredColumnToEOL = true;
+
+  protected includeLineAbove = false;
+  protected includeLineBelow = false;
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
+    const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
+    const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
+    const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
+
+    // let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
+    let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, -1);
+    let endLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, 1);
+
+    // Adjust the start line as needed.
+    if (this.includeLineAbove) {
+      startLineNumber -= 1;
+    }
+    // Check for OOB.
+    if (startLineNumber < 0) {
+      startLineNumber = 0;
+    }
+
+    // Adjust the end line as needed.
+    if (this.includeLineBelow) {
+      endLineNumber += 1;
+    }
+    // Check for OOB.
+    if (endLineNumber > TextEditor.getLineCount() - 1) {
+      endLineNumber = TextEditor.getLineCount() - 1;
+    }
+
+    // If initiated by a change operation, adjust the cursor to the indent level
+    // of the block.
+    let startCharacter = 0;
+    if (isChangeOperator) {
+      startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0)).firstNonWhitespaceCharacterIndex;
+    }
+    // TextEditor.getLineMaxColumn throws when given line 0, which we don't
+    // care about here since it just means this text object wouldn't work on a
+    // single-line document.
+    const endCharacter = TextEditor.readLineAt(endLineNumber).length;
+
+    return {
+      start: new Position(startLineNumber, startCharacter),
+      stop: new Position(endLineNumber, endCharacter),
+    };
+  }
+
+  /**
+   * Searches up from the cursor for the first non-empty line.
+   */
+  public static findFirstValidLine(cursorPosition: Position): number {
+    for (let i = cursorPosition.line; i >= 0; i--) {
+      const line = TextEditor.getLineAt(new Position(i, 0));
+
+      if (!line.isEmptyOrWhitespace) {
+        return i;
+      }
+    }
+
+    return cursorPosition.line;
+  }
+
+  /**
+   * Searches up or down from a line finding the first with a lower indent level.
+   */
+  public static findRangeStartOrEnd (startIndex: number, cursorIndent: number, step: -1 | 1): number {
+    let i = startIndex;
+    let ret = startIndex;
+    const end = step === 1
+      ? TextEditor.getLineCount()
+      : -1;
+
+    for (; i !== end; i += step) {
+      const line = TextEditor.getLineAt(new Position(i, 0));
+      const isLineEmpty = line.isEmptyOrWhitespace;
+      const lineIndent = line.firstNonWhitespaceCharacterIndex;
+
+      if (lineIndent < cursorIndent && !isLineEmpty) {
+        break;
+      }
+
+      ret = i;
+    }
+
+    return ret;
+  }
+}
+
+@RegisterAction
+class InsideIndentObject extends IndentObjectMatch {
+  keys = ["i", "i"];
+}
+
+@RegisterAction
+class InsideIndentObjectAbove extends IndentObjectMatch {
+  keys = ["a", "i"];
+  includeLineAbove = true;
+}
+
+@RegisterAction
+class InsideIndentObjectBoth extends IndentObjectMatch {
+  keys = ["a", "I"];
+  includeLineAbove = true;
+  includeLineBelow = true;
 }
 
 @RegisterAction

@@ -332,6 +332,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' across multiple lines with last character at beginning",
+      start: ['(|a', 'b)'],
+      keysPressed: 'ci)',
+      end: ['(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
@@ -1508,5 +1516,102 @@ suite("Mode Normal", () => {
       start: ["|     "],
       keysPressed: 'cc',
       end: ["|"],
+    });
+
+    newTest({
+      title: "Can do cai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "cai",
+      end: [
+          '|',
+          'do_something_else()',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cii",
+      start: [
+          'if foo > 3:',
+          '\tlog("foo is big")',
+          '\tfoo = 3',
+          '|',
+          'do_something_else()',
+      ],
+      keysPressed: "cii",
+      end: [
+          'if foo > 3:',
+          '\t|',
+          'do_something_else()',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do caI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "caI",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do dai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "dai",
+      end: [
+          '|',
+          'do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do dii",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")',
+          '    foo = 3',
+          '|',
+          'do_something_else()',
+      ],
+      keysPressed: "dii",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do daI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "daI",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Normal
     });
 });

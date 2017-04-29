@@ -13,7 +13,8 @@ export async function showCmdLine(initialText: string, modeHandler : ModeHandler
 
   const options : vscode.InputBoxOptions = {
     prompt: "Vim command line",
-    value: initialText
+    value: initialText,
+    ignoreFocusOut: true
   };
 
   try {

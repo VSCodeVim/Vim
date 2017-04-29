@@ -640,14 +640,6 @@ suite("Mode Visual", () => {
     endMode: ModeName.Normal
   });
 
-  newTest({
-    title: "Changes on a firstline selection will not delete first character",
-    start: ["test|jojo", "haha"],
-    keysPressed: "vj0c",
-    end: ["test|haha"],
-    endMode: ModeName.Insert
-  });
-
   suite("D command will remove all selected lines", () => {
     newTest({
       title: "D deletes all selected lines",
@@ -665,4 +657,88 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
   });
+
+  suite("handles indent blocks in visual mode", () => {
+    newTest({
+      title: "Can do vai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "vaid",
+      end: [
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do vii",
+      start: [
+          'if foo > 3:',
+          '    bar|',
+          '    if baz:',
+          '        foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "viid",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Doesn't naively select the next line",
+      start: [
+          'if foo > 3:',
+          '    bar|',
+          'if foo > 3:',
+          '    bar',
+      ],
+      keysPressed: "viid",
+      end: [
+          'if foo > 3:',
+          '|if foo > 3:',
+          '    bar',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Searches backwards if cursor line is empty",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")',
+          '|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "viid",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do vaI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "vaId",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Normal
+    });
+  });
+
 });

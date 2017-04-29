@@ -1022,7 +1022,6 @@ export class ModeHandler implements vscode.Disposable {
     ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) || this.createUndoPointForBrackets(vimState);
 
     // Don't record an undo point for every action of a macro, only at the very end
-    ranRepeatableAction = ranRepeatableAction && !vimState.isReplayingMacro;
 
     ranAction = ranAction && vimState.currentMode === ModeName.Normal;
 
@@ -1065,7 +1064,8 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    if (ranRepeatableAction) {
+    // Don't record an undo point for every action of a macro, only at the very end
+    if (ranRepeatableAction && !vimState.isReplayingMacro) {
       vimState.historyTracker.finishCurrentStep();
     }
 
@@ -1883,11 +1883,11 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   setStatusBarColor(color: string): void {
-    vscode.workspace.getConfiguration("workbench.experimental").update("colorCustomizations",
+    vscode.workspace.getConfiguration("workbench").update("colorCustomizations",
       {
-        "statusBarBackground": `${color}`,
-        "statusBarNoFolderBackground": `${color}`,
-        "statusBarDebuggingBackground": `${color}`
+        "statusBar.background": `${color}`,
+        "statusBar.noFolderBackground": `${color}`,
+        "statusBar.debuggingBackground": `${color}`
       });
   }
 
