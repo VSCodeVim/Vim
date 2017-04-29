@@ -39,6 +39,7 @@ import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';
+import { waitForCursorUpdatesToHappen } from './../util'
 
 export class ViewChange {
   public command: string;
@@ -515,7 +516,6 @@ export class ModeHandler implements vscode.Disposable {
     ];
     this.vimState.historyTracker = new HistoryTracker(this.vimState);
     this.vimState.easyMotion = new EasyMotion();
-
     if (Configuration.startInInsertMode) {
       this._vimState.currentMode = ModeName.Insert;
     } else {
@@ -534,13 +534,15 @@ export class ModeHandler implements vscode.Disposable {
     // position to the position that VSC set it to.
 
     // This also makes things like gd work.
-    if (this._vimState.editor) {
-      this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-      this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-      this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
+    this.updateView(this.vimState, {drawSelection: false, revealRange: false}).then(() => {
+      if (this._vimState.editor) {
+        this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+        this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+        this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
 
-      this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
-    }
+        this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
+      }
+    });
 
     // Handle scenarios where mouse used to change current position.
     const disposer = vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
