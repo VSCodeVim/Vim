@@ -92,20 +92,38 @@ export class SearchState {
 
       let lineIdx = lineToStartAt;
 
+      let numNewLines = (searchRE.match(/\\n/g) || []).length;
       // Start at the current line and wrap the document if we hit the end.
       outer:
       do {
-        const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
+        let rangeStart = new Position(lineIdx, 0);
+        let rangeEnd = rangeStart.getLineEnd();
+        let lineLengths = [];
+        for (var i = 0; i < numNewLines; i++) {
+          lineLengths.push(rangeEnd.getLineEndIncludingEOL().character);
+          rangeEnd = rangeEnd.getDown(1).getLineEndIncludingEOL();
+        }
+        const line = TextEditor.getText(new vscode.Range(rangeStart, rangeEnd));
         let result = regex.exec(line);
 
         while (result) {
           if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
             break outer;
           }
+          let resultToPosition = function(resultIdx: number, lineIdx: number, lineLengths: Array<number>, result: RegExpExecArray){
+            let cur = resultIdx;
+            for (var idx = 0; idx < lineLengths.length; idx++) {
+              if (cur <= lineLengths[idx]) {
+                return new Position(idx + lineIdx, cur);
+              }
+              cur -= lineLengths[idx];
+            }
+            return new Position(lineLengths.length + lineIdx, cur);
+          };
 
           this.matchRanges.push(new vscode.Range(
-            new Position(lineIdx, result.index),
-            new Position(lineIdx, result.index + result[0].length)
+            resultToPosition(result.index, lineIdx, lineLengths, result),
+            resultToPosition(result.index + result[0].length, lineIdx, lineLengths, result)
           ));
 
           if (result.index === regex.lastIndex) {
