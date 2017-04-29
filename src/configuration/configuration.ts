@@ -67,7 +67,7 @@ class ConfigurationClass {
     for (const option in this) {
       const vimOptionValue = vimOptions[option] as any;
       if (vimOptionValue !== null && vimOptionValue !== undefined) {
-        this[option] = vimOptionValue;
+        ConfigurationClass[option] = vimOptionValue;
       }
     }
 
