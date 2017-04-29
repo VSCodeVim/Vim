@@ -66,7 +66,7 @@ suite("Record and execute a macro", () => {
     end: ['1.', '2.', '3.', '4.', '5.', '|6.']
   });
 
-  newTestOnly({
+  newTest({
     title: "Can execute macros with dot commands properly",
     start: ["|test", "test", "test", "test", "test", "test", "test"],
     keysPressed: 'qadd.q@a@a',
