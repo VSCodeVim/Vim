@@ -1398,6 +1398,13 @@ suite("Mode Normal", () => {
       end: ["", "one tw|o2o"]
     });
 
+    newTestOnly({
+      title: "/ can search with newline",
+      start: ["|asdf", "__asdf", "asdf"],
+      keysPressed: "/\\nasdf\n",
+      end: ["asdf", "__asd|f", "asdf"],
+    });
+
     newTest({
       title: "Can do C",
       start: ["export const options = {", "|", "};"],
