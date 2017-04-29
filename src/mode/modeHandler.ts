@@ -533,6 +533,8 @@ export class ModeHandler implements vscode.Disposable {
     // position to the position that VSC set it to.
 
     // This also makes things like gd work.
+    // For whatever reason, the editor positions aren't updated until after the
+    // stack clears, which is why this setTimeout is necessary
     setTimeout(() => {
       if (this._vimState.editor) {
         this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
