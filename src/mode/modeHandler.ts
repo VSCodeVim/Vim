@@ -39,7 +39,6 @@ import { PairMatcher } from './../matching/matcher';
 import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';
-import { waitForCursorUpdatesToHappen } from './../util'
 
 export class ViewChange {
   public command: string;
