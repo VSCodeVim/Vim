@@ -1647,8 +1647,8 @@ class CommandOverrideCopy extends BaseCommand {
     } else if (vimState.currentMode === ModeName.VisualLine) {
       text = vimState.allCursors.map(range => {
         return vimState.editor.document.getText(new vscode.Range(
-          range.start.getLineBegin(),
-          range.stop.getLineEnd()
+          Position.EarlierOf(range.start.getLineBegin(), range.stop.getLineBegin()),
+          Position.LaterOf(range.start.getLineEnd(), range.stop.getLineEnd())
         ));
       }).join("\n");
     } else if (vimState.currentMode === ModeName.VisualBlock) {
