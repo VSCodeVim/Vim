@@ -3673,6 +3673,11 @@ abstract class MoveByScreenLine extends BaseMovement {
   value: number = 1;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    // Because we can't support moving by screen line when in visualLine mode,
+    // we change to moving by regular line in visualLine mode. We can't move by
+    // screen line is that our ranges only support a start and stop attribute,
+    // and moving by screen line just snaps us back to the original position.
+    // Check PR #1600 for discussion.
     if (vimState.currentMode === ModeName.VisualLine) {
       if (this.movementType === "up" || this.movementType === "down") {
         this.by = "line";
@@ -3692,7 +3697,6 @@ abstract class MoveByScreenLine extends BaseMovement {
        * cursorMove command is handling the selection for us.
        * So we are not following our design principal (do no real movement inside an action) here.
        */
-
       let start = Position.FromVSCodePosition(vimState.editor.selection.start);
       let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
       let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
