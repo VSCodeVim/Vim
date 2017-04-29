@@ -87,7 +87,7 @@ export class SearchState {
         searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
         regex = new RegExp(searchRE, regexFlags);
       }
-      let finalPos = new Position(TextEditor.getLineCount()-1, 0).getLineEndIncludingEOL();
+      const finalPos = new Position(TextEditor.getLineCount() - 1, 0).getLineEndIncludingEOL();
       const text = TextEditor.getText(new vscode.Range(new Position(0 , 0), finalPos));
       // Start at the current line and wrap the document if we hit the end.
       const lineLengths = text.split("\n").map(x => x.length + 1);
@@ -97,7 +97,7 @@ export class SearchState {
         sumLineLengths.push(curLength);
         curLength += length;
       }
-      let binSearch = (val: number, l: number, r: number, arr: Array<number>): Position => {
+      const binSearch = (val: number, l: number, r: number, arr: Array<number>): Position => {
         const mid = Math.floor((l + r) / 2);
         if (l === r - 1) {
           return new Position(l, val - arr[mid]);
@@ -115,15 +115,17 @@ export class SearchState {
       let result = regex.exec(text);
       let wrappedOver = false;
 
-      if (!result && !wrappedOver) {
-        regex.lastIndex = 0;
-        wrappedOver = true;
-        result = regex.exec(text);
-      }
-      outer:
-      while (result && !(wrappedOver && result!.index > startPos)) {
+      do {
+        if (!result && !wrappedOver) {
+          regex.lastIndex = 0;
+          wrappedOver = true;
+          result = regex.exec(text);
+        }
+        if (!result) {
+          break;
+        }
         if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
-          break outer;
+          break;
         }
 
         this.matchRanges.push(new vscode.Range(
@@ -140,7 +142,7 @@ export class SearchState {
           wrappedOver = true;
           result = regex.exec(text);
         }
-      }
+      } while (result && !(wrappedOver && result!.index > startPos));
 
       this._matchRanges.sort((x, y) =>
         (x.start.line < y.start.line) ||
