@@ -48,14 +48,12 @@ export class SearchState {
 
   private _recalculateSearchRanges({ forceRecalc }: { forceRecalc?: boolean } = {}): void {
     const search = this.searchString;
-    const selection = vscode.window.activeTextEditor!.selection;
-    const lineToStartAt = Math.min(selection.start.line, selection.end.line);
-
     if (search === "") { return; }
 
     // checking if the tab that is worked on has changed, or the file version has changed
     const shouldRecalculate = (this._cachedDocumentName !== TextEditor.getDocumentName()) ||
       (this._cachedDocumentVersion !== TextEditor.getDocumentVersion()) || forceRecalc;
+
     if (shouldRecalculate) {
       // Calculate and store all matching ranges
       this._cachedDocumentVersion = TextEditor.getDocumentVersion();
@@ -90,55 +88,57 @@ export class SearchState {
         regex = new RegExp(searchRE, regexFlags);
       }
 
-      let lineIdx = lineToStartAt;
-
-      let numNewLines = (searchRE.match(/\\n/g) || []).length;
+      let text = TextEditor.getText(new vscode.Range(new Position(0 , 0),
+          new Position(TextEditor.getLineCount() - 1, TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1))));
       // Start at the current line and wrap the document if we hit the end.
+      const lineLengths = text.split("\n").map(x => x.length + 1);
+      let sumLineLengths = [];
+      let curLength = 0;
+      for (const length of lineLengths){
+        sumLineLengths.push(curLength);
+        curLength += length;
+      }
+      let binSearch = function(val: number, l: number, r: number, arr: Array<number>): Position {
+        const mid = Math.floor((l + r) / 2);
+        if (l === r - 1) {
+          return new Position(l, val - arr[mid]);
+        }
+        if (arr[mid] >= val) {
+          return binSearch(val, l, mid, arr);
+        } else {
+          return binSearch(val, mid, r, arr);
+        }
+      };
+      let startPos = sumLineLengths[this.searchCursorStartPosition.line] + this.searchCursorStartPosition.character;
+      regex.lastIndex = startPos;
+      let result = regex.exec(text);
+      let wrappedOver = false;
+
       outer:
-      do {
-        let rangeStart = new Position(lineIdx, 0);
-        let rangeEnd = rangeStart.getLineEnd();
-        let lineLengths = [];
-        for (var i = 0; i < numNewLines; i++) {
-          lineLengths.push(rangeEnd.getLineEndIncludingEOL().character);
-          rangeEnd = rangeEnd.getDown(1).getLineEndIncludingEOL();
-        }
-        const line = TextEditor.getText(new vscode.Range(rangeStart, rangeEnd));
-        let result = regex.exec(line);
-
-        while (result) {
-          if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
-            break outer;
-          }
-          let resultToPosition = function(resultIdx: number, lineIdx: number, lineLengths: Array<number>, result: RegExpExecArray){
-            let cur = resultIdx;
-            for (var idx = 0; idx < lineLengths.length; idx++) {
-              if (cur <= lineLengths[idx]) {
-                return new Position(idx + lineIdx, cur);
-              }
-              cur -= lineLengths[idx];
-            }
-            return new Position(lineLengths.length + lineIdx, cur);
-          };
-
-          this.matchRanges.push(new vscode.Range(
-            resultToPosition(result.index, lineIdx, lineLengths, result),
-            resultToPosition(result.index + result[0].length, lineIdx, lineLengths, result)
-          ));
-
-          if (result.index === regex.lastIndex) {
-            regex.lastIndex++;
-          }
-
-          result = regex.exec(line);
+      while (result && !(wrappedOver && result!.index > startPos)) {
+        if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
+          break outer;
         }
 
-        lineIdx === TextEditor.getLineCount() - 1 ? lineIdx = 0 : lineIdx++;
-      } while (lineIdx !== lineToStartAt);
+        this.matchRanges.push(new vscode.Range(
+          binSearch(result.index, 0, sumLineLengths.length, sumLineLengths),
+          binSearch(result.index + result[0].length, 0, sumLineLengths.length, sumLineLengths)
+        ));
+
+        if (result.index === regex.lastIndex) {
+          regex.lastIndex++;
+        }
+        result = regex.exec(text);
+        if (!result && !wrappedOver) {
+          regex.lastIndex = 0;
+          wrappedOver = true;
+          result = regex.exec(text);
+        }
+      }
 
       this._matchRanges.sort((x, y) =>
-        x.start.line < y.start.line ||
-        x.start.line === y.start.line && x.start.character < y.start.character ? -1 : 1);
+        (x.start.line < y.start.line) ||
+        (x.start.line === y.start.line && x.start.character < y.start.character) ? -1 : 1);
     }
   }
 
