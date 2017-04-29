@@ -87,9 +87,8 @@ export class SearchState {
         searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
         regex = new RegExp(searchRE, regexFlags);
       }
-
-      let text = TextEditor.getText(new vscode.Range(new Position(0 , 0),
-          new Position(TextEditor.getLineCount() - 1, TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1))));
+      let finalPos = new Position(TextEditor.getLineCount()-1, 0).getLineEndIncludingEOL();
+      const text = TextEditor.getText(new vscode.Range(new Position(0 , 0), finalPos));
       // Start at the current line and wrap the document if we hit the end.
       const lineLengths = text.split("\n").map(x => x.length + 1);
       let sumLineLengths = [];
@@ -98,22 +97,29 @@ export class SearchState {
         sumLineLengths.push(curLength);
         curLength += length;
       }
-      let binSearch = function(val: number, l: number, r: number, arr: Array<number>): Position {
+      let binSearch = (val: number, l: number, r: number, arr: Array<number>): Position => {
         const mid = Math.floor((l + r) / 2);
         if (l === r - 1) {
           return new Position(l, val - arr[mid]);
         }
-        if (arr[mid] >= val) {
+        if (arr[mid] > val) {
           return binSearch(val, l, mid, arr);
         } else {
           return binSearch(val, mid, r, arr);
         }
       };
-      let startPos = sumLineLengths[this.searchCursorStartPosition.line] + this.searchCursorStartPosition.character;
+      const selection = vscode.window.activeTextEditor!.selection;
+
+      const startPos = sumLineLengths[Math.min(selection.start.line, selection.end.line)] + selection.active.character;
       regex.lastIndex = startPos;
       let result = regex.exec(text);
       let wrappedOver = false;
 
+      if (!result && !wrappedOver) {
+        regex.lastIndex = 0;
+        wrappedOver = true;
+        result = regex.exec(text);
+      }
       outer:
       while (result && !(wrappedOver && result!.index > startPos)) {
         if (this._matchRanges.length >= SearchState.MAX_SEARCH_RANGES) {
