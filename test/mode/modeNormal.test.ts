@@ -1398,7 +1398,7 @@ suite("Mode Normal", () => {
       end: ["", "one tw|o2o"]
     });
 
-    newTestOnly({
+    newTest({
       title: "/ can search with newline",
       start: ["|asdf", "__asdf", "asdf"],
       keysPressed: "/\\nasdf\n",

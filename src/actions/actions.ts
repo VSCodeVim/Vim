@@ -1676,7 +1676,7 @@ class CommandNextSearchMatch extends BaseMovement {
 
     vimState.globalState.hl = true;
 
-    if (vimState.cursorPosition.getRight().isEqual(vimState.cursorPosition.getLineEnd())){
+    if (vimState.cursorPosition.getRight().isEqual(vimState.cursorPosition.getLineEnd())) {
       return searchState.getNextSearchMatchPosition(vimState.cursorPosition.getRight()).pos;
     }
 
