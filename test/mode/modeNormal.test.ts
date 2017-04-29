@@ -332,6 +332,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' across multiple lines with last character at beginning",
+      start: ['(|a', 'b)'],
+      keysPressed: 'ci)',
+      end: ['(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
