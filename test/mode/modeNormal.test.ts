@@ -1407,6 +1407,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "/ can search with newline",
+      start: ["|asdf", "__asdf", "asdf"],
+      keysPressed: "/\\nasdf\n",
+      end: ["asdf", "__asd|f", "asdf"],
+    });
+
+    newTest({
+      title: "/ can search through multiple newlines",
+      start: ["|asdf", "__asdf", "asdf", "abc", "   abc"],
+      keysPressed: "/\asdf\\nasdf\\nabc\n",
+      end: ["asdf", "__|asdf", "asdf", "abc", "   abc"],
+    });
+
+    newTest({
       title: "Can do C",
       start: ["export const options = {", "|", "};"],
       keysPressed: "C",

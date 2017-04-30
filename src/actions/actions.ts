@@ -1673,9 +1673,14 @@ class CommandNextSearchMatch extends BaseMovement {
     if (!searchState || searchState.searchString === "") {
       return position;
     }
-
     // Turn one of the highlighting flags back on (turned off with :nohl)
     vimState.globalState.hl = true;
+
+    if (vimState.cursorPosition.getRight().isEqual(vimState.cursorPosition.getLineEnd())) {
+      return searchState.getNextSearchMatchPosition(vimState.cursorPosition.getRight()).pos;
+    }
+
+    // Turn one of the highlighting flags back on (turned off with :nohl)
 
     return searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
   }
