@@ -40,7 +40,7 @@ export function parseWriteCommandArgs(args : string) : WriteCommand {
         scanner.expect('=');
         scanner.ignore();
         while (!scanner.isAtEof) {
-          let c = scanner.next();
+          c = scanner.next();
           if (c !== ' ' && c !== '\t') {
             continue;
           }

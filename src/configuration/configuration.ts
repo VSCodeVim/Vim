@@ -8,10 +8,19 @@ export type OptionValue = number | string | boolean;
 export type ValueMapping = {
   [key: number]: OptionValue
   [key: string]: OptionValue
-}
+};
 
 export interface IHandleKeys {
   [key: string]: boolean;
+}
+
+export interface IStatusBarColors {
+  normal: string;
+  insert: string;
+  visual: string;
+  visualline: string;
+  visualblock: string;
+  replace: string;
 }
 
 /**
@@ -89,8 +98,13 @@ class ConfigurationClass {
           useKey = false;
         }
       } else if (!this.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
-        // Check for useCtrlKeys and if it is a <C- ctrl based keybinding
-        useKey = false;
+        // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding.
+        // However, we need to still capture <C-c> due to overrideCopy.
+        if (bracketedKey === '<C-c>' && this.overrideCopy) {
+          useKey = true;
+        } else {
+          useKey = false;
+        }
       }
 
       // Set the context of whether or not this key will be used based on criteria from above
@@ -147,11 +161,6 @@ class ConfigurationClass {
   hlsearch = false;
 
   /**
-   * Used internally for nohl.
-   */
-  hl = true;
-
-  /**
    * Ignore case when searching with / or ?.
    */
   ignorecase = true;
@@ -173,9 +182,22 @@ class ConfigurationClass {
   easymotion = false;
 
   /**
-   * Use searchHighlightColor for easymotion background
+   * Use surround plugin?
    */
-  easymotionChangeBackgroundColor = false;
+  surround = true;
+
+  /**
+   * Easymotion marker appearance settings
+   */
+  easymotionMarkerBackgroundColor = "#000000";
+  easymotionMarkerForegroundColorOneChar = "#ff0000";
+  easymotionMarkerForegroundColorTwoChar = "#ffa500";
+  easymotionMarkerWidthPerChar = 8;
+  easymotionMarkerHeight = 14;
+  easymotionMarkerFontFamily = "Consolas";
+  easymotionMarkerFontSize = "14";
+  easymotionMarkerFontWeight = "normal";
+  easymotionMarkerYOffset = 11;
 
   /**
    * Timeout in milliseconds for remapped commands.
@@ -206,6 +228,23 @@ class ConfigurationClass {
    * Start in insert mode?
    */
   startInInsertMode = false;
+
+  /**
+   * Enable changing of the status bar color based on mode
+   */
+  statusBarColorControl = false;
+
+  /**
+   * Status bar colors to change to based on mode
+   */
+  statusBarColors: IStatusBarColors = {
+    "normal": "#005f5f",
+    "insert": "#5f0000",
+    "visual": "#5f00af",
+    "visualline": "#005f87",
+    "visualblock": "#86592d",
+    "replace": "#000000",
+  };
 
   /**
    * Color of search highlights.

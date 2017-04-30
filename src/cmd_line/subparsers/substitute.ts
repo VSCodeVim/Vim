@@ -19,7 +19,7 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
       return [pattern, true];
     } else if (currentChar === "\\") {
       if (!scanner.isAtEof) {
-        let currentChar = scanner.next();
+        currentChar = scanner.next();
 
         if (currentChar !== delimiter) {
           pattern += "\\";

@@ -332,6 +332,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' across multiple lines with last character at beginning",
+      start: ['(|a', 'b)'],
+      keysPressed: 'ci)',
+      end: ['(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
@@ -628,11 +636,78 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+    title: "Can handle 'daw' on word with numeric prefix and across lines",
+      start: ['one two fo|ur', 'five  six'],
+      keysPressed: 'd2aw',
+      end: ['one two |six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'daw' on word with numeric prefix and across lines, containing words end with `.`",
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'd2aw',
       end: ['one   two   three,   |.  six'],
       endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on end of word",
+      start: ['one   two   three   fou|r'],
+      keysPressed: 'daw',
+      end: ['one   two   thre|e'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daw' on words at beginning of line with leading whitespace",
+      start: ['if (something){',
+              '  |this.method();'],
+      keysPressed: 'daw',
+      end: ['if (something){',
+            '  |.method();']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on words at ends of lines in the middle of whitespace",
+      start: ['one two | ',
+             'four'],
+      keysPressed: 'daw',
+      end: ['one tw|o']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at beginning of file",
+      start: ['o|ne'],
+      keysPressed: 'daw',
+      end: ['|']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at beginning of line",
+      start: ['one two',
+              'th|ree'],
+      keysPressed: 'daw',
+      end: ['one two',
+            '|']
+    });
+
+    newTest({
+      title: "Can handle 'daw' on word at end of line with trailing whitespace",
+      start: ['one tw|o  ',
+              'three four'],
+      keysPressed: 'daw',
+      end: ['one| ',
+            'three four']
+    });
+
+    newTest({
+      title: "Can handle 'daw' around word at end of line",
+      start: ['one t|wo',
+              ' three'],
+      keysPressed: 'daw',
+      end: ['on|e',
+            ' three']
     });
 
     newTest({
@@ -673,6 +748,30 @@ suite("Mode Normal", () => {
       keysPressed: 'd2aW',
       end: ['one   two   three,   |six'],
       endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on beginning of word",
+      start: ['one |two three'],
+      keysPressed: 'daW',
+      end: ['one |three'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle 'daW' on end of one line",
+      start: ['one |two'],
+      keysPressed: 'daW',
+      end: ['on|e'],
+      endMode: ModeName.Normal
+    });
+    newTest({
+      title: "Can handle 'daW' around word at end of line",
+      start: ['one t|wo',
+              ' three'],
+      keysPressed: 'daW',
+      end: ['on|e',
+            ' three']
     });
 
     newTest({
@@ -1308,6 +1407,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "/ can search with newline",
+      start: ["|asdf", "__asdf", "asdf"],
+      keysPressed: "/\\nasdf\n",
+      end: ["asdf", "__asd|f", "asdf"],
+    });
+
+    newTest({
+      title: "/ can search through multiple newlines",
+      start: ["|asdf", "__asdf", "asdf", "abc", "   abc"],
+      keysPressed: "/\asdf\\nasdf\\nabc\n",
+      end: ["asdf", "__|asdf", "asdf", "abc", "   abc"],
+    });
+
+    newTest({
       title: "Can do C",
       start: ["export const options = {", "|", "};"],
       keysPressed: "C",
@@ -1457,5 +1570,102 @@ suite("Mode Normal", () => {
       start: ["|     "],
       keysPressed: 'cc',
       end: ["|"],
+    });
+
+    newTest({
+      title: "Can do cai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "cai",
+      end: [
+          '|',
+          'do_something_else()',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cii",
+      start: [
+          'if foo > 3:',
+          '\tlog("foo is big")',
+          '\tfoo = 3',
+          '|',
+          'do_something_else()',
+      ],
+      keysPressed: "cii",
+      end: [
+          'if foo > 3:',
+          '\t|',
+          'do_something_else()',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do caI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "caI",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do dai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "dai",
+      end: [
+          '|',
+          'do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do dii",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")',
+          '    foo = 3',
+          '|',
+          'do_something_else()',
+      ],
+      keysPressed: "dii",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do daI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "daI",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Normal
     });
 });

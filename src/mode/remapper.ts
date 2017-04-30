@@ -3,6 +3,12 @@ import * as _ from 'lodash';
 import { ModeName } from './mode';
 import { ModeHandler, VimState } from './modeHandler';
 import { AngleBracketNotation } from './../notation';
+import { runCmdLine } from '../../src/cmd_line/main';
+
+export interface ICodeKeybinding {
+  after?: string[];
+  commands?: { command: string; args: any[] }[];
+}
 
 interface IKeybinding {
   before   : string[];
@@ -129,7 +135,13 @@ class Remapper {
 
       if (remapping.commands) {
         for (const command of remapping.commands) {
-          await vscode.commands.executeCommand(command.command, command.args);
+          // Check if this is a vim command by looking for :
+          if (command.command.slice(0, 1) === ":") {
+            await runCmdLine(command.command.slice(1, command.command.length), modeHandler);
+            await modeHandler.updateView(modeHandler.vimState);
+          } else {
+            await vscode.commands.executeCommand(command.command, command.args);
+          }
         }
       }
 

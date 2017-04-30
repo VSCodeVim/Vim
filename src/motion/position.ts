@@ -480,8 +480,8 @@ export class Position extends vscode.Position {
     return this.getWordLeftWithRegex(this._nonWordCharRegex, inclusive);
   }
 
-  public getBigWordLeft(): Position {
-    return this.getWordLeftWithRegex(this._nonBigWordCharRegex);
+  public getBigWordLeft(inclusive: boolean = false): Position {
+    return this.getWordLeftWithRegex(this._nonBigWordCharRegex, inclusive);
   }
 
   public getFilePathLeft(inclusive: boolean = false): Position {
@@ -495,7 +495,7 @@ export class Position extends vscode.Position {
     return this.getWordRightWithRegex(this._nonWordCharRegex, inclusive);
   }
 
-  public getBigWordRight() : Position {
+  public getBigWordRight(inclusive: boolean = false) : Position {
     return this.getWordRightWithRegex(this._nonBigWordCharRegex);
   }
 
@@ -844,7 +844,7 @@ export class Position extends vscode.Position {
   private getLastWordEndWithRegex(regex: RegExp) : Position {
     for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
       let positions  = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
-      let index = _.findIndex(positions, index => index >= this.character || currentLine !== this.line);
+      let index = _.findIndex(positions, i => i >= this.character || currentLine !== this.line);
       let newCharacter = 0;
       if (index === -1) {
         newCharacter = positions[positions.length - 1];

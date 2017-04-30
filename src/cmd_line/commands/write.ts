@@ -61,9 +61,9 @@ export class WriteCommand extends node.CommandBase {
       return this.save(modeHandler);
     } catch (accessErr) {
       if (this.arguments.bang) {
-        fs.chmod(modeHandler.vimState.editor.document.fileName, 666, (e) => {
+        fs.chmod(modeHandler.vimState.editor.document.fileName, 666, e => {
           if (e) {
-            modeHandler.setStatusBarText(e.message);
+            return modeHandler.setStatusBarText(e.message);
           } else {
             return this.save(modeHandler);
           }
