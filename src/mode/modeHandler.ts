@@ -1368,7 +1368,7 @@ export class ModeHandler implements vscode.Disposable {
               accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
             }
           });
-        };
+        }
       } else {
         // This is the common case!
 
