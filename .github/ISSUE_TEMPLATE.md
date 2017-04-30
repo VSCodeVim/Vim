@@ -35,7 +35,7 @@ Please ensure you are on the latest VSCode + VSCodeVim
 - **VsCodeVim Version**: 
 - **OS**: 
 
-**What happened**
+**What happened**:
 
 <!--
 Exact keys you pressed.
