@@ -3673,16 +3673,6 @@ abstract class MoveByScreenLine extends BaseMovement {
   value: number = 1;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    // Because we can't support moving by screen line when in visualLine mode,
-    // we change to moving by regular line in visualLine mode. We can't move by
-    // screen line is that our ranges only support a start and stop attribute,
-    // and moving by screen line just snaps us back to the original position.
-    // Check PR #1600 for discussion.
-    if (vimState.currentMode === ModeName.VisualLine) {
-      if (this.movementType === "up" || this.movementType === "down") {
-        this.by = "line";
-      }
-    }
     await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
       select: vimState.currentMode !== ModeName.Normal,
@@ -3775,7 +3765,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 
 @RegisterAction
 class MoveUpByScreenLine extends MoveByScreenLine {
-  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "k"],
   ["g", "<up>"]];
   movementType: CursorMovePosition = "up";
@@ -3785,11 +3775,36 @@ class MoveUpByScreenLine extends MoveByScreenLine {
 
 @RegisterAction
 class MoveDownByScreenLine extends MoveByScreenLine {
-  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "j"],
   ["g", "<down>"]];
   movementType: CursorMovePosition = "down";
   by: CursorMoveByUnit = "wrappedLine";
+  value = 1;
+}
+
+// Because we can't support moving by screen line when in visualLine mode,
+// we change to moving by regular line in visualLine mode. We can't move by
+// screen line is that our ranges only support a start and stop attribute,
+// and moving by screen line just snaps us back to the original position.
+// Check PR #1600 for discussion.
+@RegisterAction
+class MoveUpByScreenLineVisualLine extends MoveByScreenLine {
+  modes = [ModeName.VisualLine];
+  keys = [["g", "k"],
+  ["g", "<up>"]];
+  movementType: CursorMovePosition = "up";
+  by: CursorMoveByUnit = "line";
+  value = 1;
+}
+
+@RegisterAction
+class MoveDownByScreenLineVisualLine extends MoveByScreenLine {
+  modes = [ModeName.VisualLine];
+  keys = [["g", "j"],
+  ["g", "<down>"]];
+  movementType: CursorMovePosition = "down";
+  by: CursorMoveByUnit = "line";
   value = 1;
 }
 
