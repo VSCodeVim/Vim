@@ -10,7 +10,7 @@
        "args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
        "stopOnEntry": false,
        "sourceMaps": true,
-       "outFiles": [ "${workspaceRoot}/out" ],
+       "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
        "preLaunchTask": "build",
       "internalConsoleOptions": "openOnSessionStart"
     },
@@ -24,7 +24,7 @@
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [ "${workspaceRoot}/out" ]
+      "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ]
     },
     {
       "name": "Run Tests",
@@ -37,7 +37,7 @@
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [ "${workspaceRoot}/out" ],
+      "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
       "preLaunchTask": "build",
       "internalConsoleOptions": "openOnSessionStart"
     }
