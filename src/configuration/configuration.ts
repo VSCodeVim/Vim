@@ -8,7 +8,7 @@ export type OptionValue = number | string | boolean;
 export type ValueMapping = {
   [key: number]: OptionValue
   [key: string]: OptionValue
-}
+};
 
 export interface IHandleKeys {
   [key: string]: boolean;
