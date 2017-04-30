@@ -1721,9 +1721,9 @@ function searchCurrentSelection (vimState: VimState, direction: SearchDirection,
     // Go back to Normal mode, otherwise the selection grows to the next match.
     vimState.currentMode = ModeName.Normal;
 
-    // If the search is going left then use `getWordLeft()` on position to start
-    // at the beginning of the word. This ensures that any matches happen
-    // outside of the currently selected word.
+    // If the search is going left then use `getLeft()` on the selection start.
+    // If going right then use `getRight()` on the selection end. This ensures
+    // that any matches happen outside of the currently selected word.
     const searchStartCursorPosition = direction === SearchDirection.Backward
       ? vimState.lastVisualSelectionStart.getLeft()
       : vimState.lastVisualSelectionEnd.getRight();
