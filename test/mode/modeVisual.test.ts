@@ -741,4 +741,49 @@ suite("Mode Visual", () => {
     });
   });
 
+  suite("visualstar", () => {
+    let originalVisualstarValue = false;
+
+    setup(() => {
+      originalVisualstarValue = Configuration.visualstar;
+      Configuration.visualstar = true;
+    });
+
+    teardown(() => {
+      Configuration.visualstar = originalVisualstarValue;
+    });
+
+    newTest({
+      title: "Works with *",
+      start: [
+          '|public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          'public modes = [ModeName.VisualLine',
+      ],
+      keysPressed: "2vfl*n",
+      end: [
+          'public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          '|public modes = [ModeName.VisualLine',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Works with #",
+      start: [
+          'public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          '|public modes = [ModeName.VisualLine',
+      ],
+      keysPressed: "2vfl#n",
+      end: [
+          '|public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          'public modes = [ModeName.VisualLine',
+      ],
+      endMode: ModeName.Normal
+    });
+
+  });
 });

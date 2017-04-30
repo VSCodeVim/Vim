@@ -1702,14 +1702,29 @@ class CommandCmdA extends BaseCommand {
 
 function searchCurrentWord(position: Position, vimState: VimState, direction: SearchDirection, isExact: boolean) {
     const currentWord = TextEditor.getWord(position);
-    if (currentWord === undefined) {
+
+    return performSearchMovement(currentWord, vimState, direction, isExact);
+}
+
+function searchCurrentSelection (vimState: VimState, direction: SearchDirection, isExact: boolean) {
+    const selection = TextEditor.getSelection();
+    const end = new Position(selection.end.line, selection.end.character + 1);
+    const currentSelection = TextEditor.getText(selection.with(selection.start, end));
+
+    // Go back to Normal mode, otherwise the selection grows to the next match.
+    vimState.currentMode = ModeName.Normal;
+
+    return performSearchMovement(currentSelection, vimState, direction, isExact);
+}
+
+function performSearchMovement (needle: string | undefined, vimState: VimState, direction: SearchDirection, isExact: boolean) {
+    if (needle === undefined || needle === null || needle.length === 0) {
       return vimState;
     }
 
-    // For an exact search we need to use a regex with word bounds.
     const searchString = isExact
-      ? `\\b${currentWord}\\b`
-      : currentWord;
+      ? `\\b${needle}\\b`
+      : needle;
 
     // Start a search for the given term.
     vimState.globalState.searchState = new SearchState(
@@ -1739,6 +1754,10 @@ class CommandSearchCurrentWordExactForward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (Configuration.visualstar && vimState.currentMode !== ModeName.Normal) {
+      return searchCurrentSelection(vimState, SearchDirection.Forward, false);
+    }
+
     return searchCurrentWord(position, vimState, SearchDirection.Forward, true);
   }
 }
@@ -1763,6 +1782,10 @@ class CommandSearchCurrentWordExactBackward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (Configuration.visualstar && vimState.currentMode !== ModeName.Normal) {
+      return searchCurrentSelection(vimState, SearchDirection.Backward, false);
+    }
+
     return searchCurrentWord(position, vimState, SearchDirection.Backward, true);
   }
 }

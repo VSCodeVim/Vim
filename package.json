@@ -441,6 +441,11 @@
         "vim.statusBarColors": {
           "type": "object",
           "description": "Customize colors per mode when VSCodeVim controls status bar colors"
+        },
+        "vim.visualstar": {
+          "type": "boolean",
+          "description": "When pressing * or # in visual mode treat it as a new search",
+          "default": true
         }
       }
     }
