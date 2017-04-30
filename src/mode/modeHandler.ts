@@ -1838,6 +1838,8 @@ export class ModeHandler implements vscode.Disposable {
     vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
     vscode.commands.executeCommand('setContext', 'vim.overrideCtrlC', Configuration.overrideCopy || Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
+    vscode.commands.executeCommand('setContext', 'vim.multiCursorSlient',
+      this.vimState.isMultiCursor && this.vimState.currentMode === ModeName.Insert);
   }
 
   private _renderStatusBar(): void {
