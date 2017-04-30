@@ -37,7 +37,6 @@
       "trace"
     ],
     "no-construct": true,
-    "no-parameter-properties": true,
     "no-debugger": true,
     "no-duplicate-variable": true,
     "no-empty": true,

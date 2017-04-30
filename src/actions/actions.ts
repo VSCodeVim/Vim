@@ -1744,11 +1744,11 @@ function searchCurrentSelection (vimState: VimState, direction: SearchDirection,
 }
 
 interface IPerformSearchMovementArgs {
-  needle: string | undefined,
-  vimState: VimState,
-  direction: SearchDirection,
-  isExact: boolean,
-  searchStartCursorPosition: Position
+    needle: string | undefined;
+    vimState: VimState;
+    direction: SearchDirection;
+    isExact: boolean;
+    searchStartCursorPosition: Position;
 }
 
 function performSearchMovement(args: IPerformSearchMovementArgs) {
