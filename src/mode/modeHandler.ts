@@ -1674,6 +1674,7 @@ export class ModeHandler implements vscode.Disposable {
           // makes relative line numbers display correctly
           if ((selections[0].start.line <= selections[0].end.line) &&
             (vimState.cursorPosition.line <= vimState.cursorStartPosition.line)) {
+
             selections = [new vscode.Selection(selections[0].end, selections[0].start)];
           }
 
