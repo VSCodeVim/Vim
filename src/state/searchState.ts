@@ -87,9 +87,13 @@ export class SearchState {
         searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
         regex = new RegExp(searchRE, regexFlags);
       }
+      // We store the entire text file as a string inside text, and run the
+      // regex against it many times to find all of our matches. In order to
+      // transform from the absolute position in the string to a Position
+      // object, we store a prefix sum of the line lengths, and binary search
+      // through it in order to find the current line and character.
       const finalPos = new Position(TextEditor.getLineCount() - 1, 0).getLineEndIncludingEOL();
       const text = TextEditor.getText(new vscode.Range(new Position(0 , 0), finalPos));
-      // Start at the current line and wrap the document if we hit the end.
       const lineLengths = text.split("\n").map(x => x.length + 1);
       let sumLineLengths = [];
       let curLength = 0;
@@ -97,25 +101,25 @@ export class SearchState {
         sumLineLengths.push(curLength);
         curLength += length;
       }
-      const binSearch = (val: number, l: number, r: number, arr: Array<number>): Position => {
+      const absPosToPosition = (val: number, l: number, r: number, arr: Array<number>): Position => {
         const mid = Math.floor((l + r) / 2);
         if (l === r - 1) {
           return new Position(l, val - arr[mid]);
         }
         if (arr[mid] > val) {
-          return binSearch(val, l, mid, arr);
+          return absPosToPosition(val, l, mid, arr);
         } else {
-          return binSearch(val, mid, r, arr);
+          return absPosToPosition(val, mid, r, arr);
         }
       };
       const selection = vscode.window.activeTextEditor!.selection;
-
       const startPos = sumLineLengths[Math.min(selection.start.line, selection.end.line)] + selection.active.character;
       regex.lastIndex = startPos;
       let result = regex.exec(text);
       let wrappedOver = false;
 
       do {
+        // We need to wrap around to the back if we reach the end.
         if (!result && !wrappedOver) {
           regex.lastIndex = 0;
           wrappedOver = true;
@@ -129,8 +133,8 @@ export class SearchState {
         }
 
         this.matchRanges.push(new vscode.Range(
-          binSearch(result.index, 0, sumLineLengths.length, sumLineLengths),
-          binSearch(result.index + result[0].length, 0, sumLineLengths.length, sumLineLengths)
+          absPosToPosition(result.index, 0, sumLineLengths.length, sumLineLengths),
+          absPosToPosition(result.index + result[0].length, 0, sumLineLengths.length, sumLineLengths)
         ));
 
         if (result.index === regex.lastIndex) {
