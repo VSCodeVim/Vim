@@ -761,6 +761,10 @@ suite("Mode Visual", () => {
           'public modes = [ModeName.VisualBlock',
           'public modes = [ModeName.VisualLine',
       ],
+      // This is doing a few things:
+      // - select to the end of "Visual"
+      // - press "*", the cursor will go to the next line since it matches
+      // - press "n", the cursor will go to the last line since it matches
       keysPressed: "2vfl*n",
       end: [
           'public modes = [ModeName.Visual',
@@ -777,6 +781,10 @@ suite("Mode Visual", () => {
           'public modes = [ModeName.VisualBlock',
           '|public modes = [ModeName.VisualLine',
       ],
+      // This is doing a few things:
+      // - select to the end of "Visual"
+      // - press "#", the cursor will go to the previous line since it matches
+      // - press "n", the cursor will go to the first line since it matches
       keysPressed: "2vfl#n",
       end: [
           '|public modes = [ModeName.Visual',
