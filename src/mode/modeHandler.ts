@@ -515,7 +515,6 @@ export class ModeHandler implements vscode.Disposable {
     ];
     this.vimState.historyTracker = new HistoryTracker(this.vimState);
     this.vimState.easyMotion = new EasyMotion();
-
     if (Configuration.startInInsertMode) {
       this._vimState.currentMode = ModeName.Insert;
     } else {
@@ -534,13 +533,17 @@ export class ModeHandler implements vscode.Disposable {
     // position to the position that VSC set it to.
 
     // This also makes things like gd work.
-    if (this._vimState.editor) {
-      this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-      this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-      this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
+    // For whatever reason, the editor positions aren't updated until after the
+    // stack clears, which is why this setTimeout is necessary
+    setTimeout(() => {
+      if (this._vimState.editor) {
+        this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+        this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+        this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
 
-      this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
-    }
+        this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
+      }
+    }, 0);
 
     // Handle scenarios where mouse used to change current position.
     const disposer = vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
