@@ -6185,9 +6185,11 @@ abstract class MoveTagMatch extends BaseMovement {
       vimState.recordedState.operatorPositionDiff = startPosition.subtract(position);
     }
 
+    vimState.recordedState.transformations.push({ type: "moveCursor",
+                    diff: new PositionDiff(endPosition.line - position.line, endPosition.character - position.character)});
     return {
       start: startPosition,
-      stop: new Position(endPosition.line, endPosition.character - 1)
+      stop: endPosition.getLeftThroughLineBreaks(true)
     };
   }
 
