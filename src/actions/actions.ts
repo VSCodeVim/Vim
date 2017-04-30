@@ -1703,7 +1703,14 @@ class CommandCmdA extends BaseCommand {
 function searchCurrentWord(position: Position, vimState: VimState, direction: SearchDirection, isExact: boolean) {
     const currentWord = TextEditor.getWord(position);
 
-    return performSearchMovement(currentWord, vimState, direction, isExact);
+    // If the search is going left then use `getWordLeft()` on position to start
+    // at the beginning of the word. This ensures that any matches happen
+    // outside of the currently selected word.
+    const searchStartCursorPosition = direction === SearchDirection.Backward
+      ? vimState.cursorPosition.getWordLeft(true)
+      : vimState.cursorPosition;
+
+    return performSearchMovement(currentWord, vimState, direction, isExact, searchStartCursorPosition);
 }
 
 function searchCurrentSelection (vimState: VimState, direction: SearchDirection, isExact: boolean) {
@@ -1714,10 +1721,17 @@ function searchCurrentSelection (vimState: VimState, direction: SearchDirection,
     // Go back to Normal mode, otherwise the selection grows to the next match.
     vimState.currentMode = ModeName.Normal;
 
-    return performSearchMovement(currentSelection, vimState, direction, isExact);
+    // If the search is going left then use `getWordLeft()` on position to start
+    // at the beginning of the word. This ensures that any matches happen
+    // outside of the currently selected word.
+    const searchStartCursorPosition = direction === SearchDirection.Backward
+      ? vimState.lastVisualSelectionStart.getLeft()
+      : vimState.lastVisualSelectionEnd.getRight();
+
+    return performSearchMovement(currentSelection, vimState, direction, isExact, searchStartCursorPosition);
 }
 
-function performSearchMovement (needle: string | undefined, vimState: VimState, direction: SearchDirection, isExact: boolean) {
+function performSearchMovement (needle: string | undefined, vimState: VimState, direction: SearchDirection, isExact: boolean, searchStartCursorPosition: Position) {
     if (needle === undefined || needle === null || needle.length === 0) {
       return vimState;
     }
@@ -1730,13 +1744,6 @@ function performSearchMovement (needle: string | undefined, vimState: VimState, 
     vimState.globalState.searchState = new SearchState(
       direction, vimState.cursorPosition, searchString, { isRegex: isExact }
     );
-
-    // If the search is going left then use `getWordLeft()` on position to start
-    // at the beginning of the word. This ensures that any matches happen
-    // outside of the currently selected word.
-    const searchStartCursorPosition = direction === SearchDirection.Backward
-      ? vimState.cursorPosition.getWordLeft(true)
-      : vimState.cursorPosition;
 
     vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(searchStartCursorPosition).pos;
 
