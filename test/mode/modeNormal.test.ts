@@ -212,6 +212,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle d}",
+      start: ["|foo", "", "bar"],
+      keysPressed: "d}",
+      end: ["|", "", "bar"],
+    });
+
+    newTest({
       title: "Can handle 'cw'",
       start: ['text text tex|t'],
       keysPressed: '^lllllllcw',
