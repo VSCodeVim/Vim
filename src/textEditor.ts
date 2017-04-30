@@ -137,7 +137,7 @@ export class TextEditor {
   }
 
   static getLineMaxColumn(lineNumber: number): number {
-    if (lineNumber < 1 || lineNumber > TextEditor.getLineCount()) {
+    if (lineNumber < 0 || lineNumber > TextEditor.getLineCount()) {
       throw new Error('Illegal value ' + lineNumber + ' for `lineNumber`');
     }
 
