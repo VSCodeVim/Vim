@@ -2212,7 +2212,10 @@ export class ChangeOperator extends BaseOperator {
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const isEndOfLine = end.character === end.getLineEnd().character;
         let state = vimState;
-
+        if (start.isEqual(end)){
+          state.currentMode = ModeName.Insert;
+          return state;
+        }
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
         // the line. We do want to run delete if it is a multiline change though ex. c}
@@ -6286,7 +6289,7 @@ abstract class MoveTagMatch extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected includeTag = false;
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const editorText = TextEditor.getText();
     const offset = TextEditor.getOffsetAt(position);
     const tagMatcher = new TagMatcher(editorText, offset);
@@ -6301,23 +6304,26 @@ abstract class MoveTagMatch extends BaseMovement {
       };
     }
 
-    if (start === end) {
-      return {
-        start: new Position(position.line, start),
-        stop: new Position(position.line, start),
-        failed: true,
-      };
-    }
 
     let startPosition = start ? TextEditor.getPositionAt(start) : position;
     let endPosition = end ? TextEditor.getPositionAt(end) : position;
 
-    if (position.isBefore(startPosition)) {
-      vimState.recordedState.operatorPositionDiff = startPosition.subtract(position);
-    }
 
-    vimState.recordedState.transformations.push({ type: "moveCursor",
-                    diff: new PositionDiff(endPosition.line - position.line, endPosition.character - position.character)});
+
+    if (position.isAfter(endPosition)){
+      vimState.recordedState.transformations.push({ type: "moveCursor",
+                    diff: endPosition.subtract(position)});
+    } else if (position.isBefore(startPosition)){
+      vimState.recordedState.transformations.push({ type: "moveCursor",
+                    diff: startPosition.subtract(position)});
+    }
+    if (start === end){
+      return {
+        start: startPosition,
+        stop: startPosition,
+        failed: false
+      }
+    }
     return {
       start: startPosition,
       stop: endPosition.getLeftThroughLineBreaks(true)
@@ -7272,7 +7278,6 @@ class CommandSurroundAddToReplacement extends BaseCommand {
 
       if (startReplaceRange) { TextEditor.replaceText(vimState, startReplace, startReplaceRange.start, startReplaceRange.stop); }
       if (endReplaceRange)   { TextEditor.replaceText(vimState, endReplace  , endReplaceRange.start  , endReplaceRange.stop  ); }
-
       if (startDeleteRange) { vimState.recordedState.transformations.push({ type: "deleteRange", range: startDeleteRange }); }
       if (endDeleteRange)   { vimState.recordedState.transformations.push({ type: "deleteRange", range: endDeleteRange   }); }
 
