@@ -1713,7 +1713,7 @@ function searchCurrentWord(position: Position, vimState: VimState, direction: Se
     return createSearchStateAndMoveToMatch(currentWord, vimState, direction, isExact, searchStartCursorPosition);
 }
 
-function searchCurrentSelection (vimState: VimState, direction: SearchDirection, isExact: boolean) {
+function searchCurrentSelection (vimState: VimState, direction: SearchDirection) {
     const selection = TextEditor.getSelection();
     const end = new Position(selection.end.line, selection.end.character + 1);
     const currentSelection = TextEditor.getText(selection.with(selection.start, end));
@@ -1761,16 +1761,12 @@ function createSearchStateAndMoveToMatch(
 
 @RegisterAction
 class CommandSearchCurrentWordExactForward extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal];
   keys = ["*"];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (Configuration.visualstar && vimState.currentMode !== ModeName.Normal) {
-      return searchCurrentSelection(vimState, SearchDirection.Forward, false);
-    }
-
     return searchCurrentWord(position, vimState, SearchDirection.Forward, true);
   }
 }
@@ -1788,17 +1784,25 @@ class CommandSearchCurrentWordForward extends BaseCommand {
 }
 
 @RegisterAction
+class CommandSearchVisualForward extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["*"];
+  isMotion = true;
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return searchCurrentSelection(vimState, SearchDirection.Forward);
+  }
+}
+
+@RegisterAction
 class CommandSearchCurrentWordExactBackward extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Normal];
   keys = ["#"];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (Configuration.visualstar && vimState.currentMode !== ModeName.Normal) {
-      return searchCurrentSelection(vimState, SearchDirection.Backward, false);
-    }
-
     return searchCurrentWord(position, vimState, SearchDirection.Backward, true);
   }
 }
@@ -1812,6 +1816,18 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return searchCurrentWord(position, vimState, SearchDirection.Backward, false);
+  }
+}
+
+@RegisterAction
+class CommandSearchVisualBackward extends BaseCommand {
+  modes = [ModeName.Visual, ModeName.VisualLine];
+  keys = ["#"];
+  isMotion = true;
+  runsOnceForEachCountPrefix = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return searchCurrentSelection(vimState, SearchDirection.Backward);
   }
 }
 
