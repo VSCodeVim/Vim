@@ -275,7 +275,7 @@ export class Position extends vscode.Position {
         word: word,
       };
 
-      if (wordEnd.isLineEnd()) {
+      if (wordEnd.getRight().isLineEnd()) {
         return;
       }
       start = start.getWordRight();
