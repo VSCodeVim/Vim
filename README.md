@@ -181,7 +181,7 @@ These settings are specific to VSCodeVim.
 ```
 
 #### `"vim.visualstar"`
-* When pressing `*` or `#` in visual mode treat it as a new search
+* In visual mode, start a search with * or # using the current selection
 * Type: Boolean (Default: `false`)
 
 ### Key remapping

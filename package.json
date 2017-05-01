@@ -444,7 +444,7 @@
         },
         "vim.visualstar": {
           "type": "boolean",
-          "description": "When pressing * or # in visual mode treat it as a new search",
+          "description": "In visual mode, start a search with * or # using the current selection",
           "default": false
         }
       }
