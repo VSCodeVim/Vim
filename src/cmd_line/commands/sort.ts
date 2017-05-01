@@ -5,6 +5,7 @@ import * as node from "../node";
 import * as token from "../token";
 import { ModeHandler } from "../../mode/modeHandler";
 import { TextEditor } from "../../textEditor";
+import { ModeName } from '../../mode/mode';
 
 export interface ISortCommandArguments extends node.ICommandArgs {
   reverse: boolean;
@@ -25,6 +26,16 @@ export class SortCommand extends node.CommandBase {
   }
 
   async execute(modeHandler : ModeHandler): Promise<void> {
+    let mode = modeHandler.vimState.currentMode;
+    if (mode in [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine]) {
+      const selection = modeHandler.vimState.editor.selection;
+      let start = selection.start;
+      let end = selection.end;
+      if (start.isAfter(end)) {
+        [start, end] = [end, start];
+      }
+      await this.sortLines(start, end);
+    }
     await this.sortLines(new vscode.Position(0, 0), new vscode.Position(TextEditor.getLineCount() - 1, 0));
   }
 
