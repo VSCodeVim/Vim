@@ -2212,10 +2212,6 @@ export class ChangeOperator extends BaseOperator {
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const isEndOfLine = end.character === end.getLineEnd().character;
         let state = vimState;
-        if (start.isEqual(end)) {
-          state.currentMode = ModeName.Insert;
-          return state;
-        }
         // If we delete to EOL, the block cursor would end on the final character,
         // which means the insert cursor would be one to the left of the end of
         // the line. We do want to run delete if it is a multiline change though ex. c}
