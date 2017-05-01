@@ -1710,13 +1710,7 @@ function searchCurrentWord(position: Position, vimState: VimState, direction: Se
       ? vimState.cursorPosition.getWordLeft(true)
       : vimState.cursorPosition;
 
-    return performSearchMovement({
-      needle: currentWord,
-      vimState,
-      direction,
-      isExact,
-      searchStartCursorPosition
-    });
+    return createSearchStateAndMoveToMatch(currentWord, vimState, direction, isExact, searchStartCursorPosition);
 }
 
 function searchCurrentSelection (vimState: VimState, direction: SearchDirection, isExact: boolean) {
@@ -1734,43 +1728,35 @@ function searchCurrentSelection (vimState: VimState, direction: SearchDirection,
       ? vimState.lastVisualSelectionStart.getLeft()
       : vimState.lastVisualSelectionEnd.getRight();
 
-    return performSearchMovement({
-      needle: currentSelection,
-      vimState,
-      direction,
-      isExact,
-      searchStartCursorPosition
-    });
+    return createSearchStateAndMoveToMatch(currentSelection, vimState, direction, false, searchStartCursorPosition);
 }
 
-interface IPerformSearchMovementArgs {
-    needle: string | undefined;
-    vimState: VimState;
-    direction: SearchDirection;
-    isExact: boolean;
-    searchStartCursorPosition: Position;
-}
-
-function performSearchMovement(args: IPerformSearchMovementArgs) {
-    if (args.needle === undefined || args.needle === null || args.needle.length === 0) {
-      return args.vimState;
+function createSearchStateAndMoveToMatch(
+  needle: string | undefined,
+  vimState: VimState,
+  direction: SearchDirection,
+  isExact: boolean,
+  searchStartCursorPosition: Position
+) {
+    if (needle === undefined || needle.length === 0) {
+      return vimState;
     }
 
-    const searchString = args.isExact
-      ? `\\b${args.needle}\\b`
-      : args.needle;
+    const searchString = isExact
+      ? `\\b${needle}\\b`
+      : needle;
 
     // Start a search for the given term.
-    args.vimState.globalState.searchState = new SearchState(
-      args.direction, args.vimState.cursorPosition, searchString, { isRegex: args.isExact }
+    vimState.globalState.searchState = new SearchState(
+      direction, vimState.cursorPosition, searchString, { isRegex: isExact }
     );
 
-    args.vimState.cursorPosition = args.vimState.globalState.searchState.getNextSearchMatchPosition(args.searchStartCursorPosition).pos;
+    vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(searchStartCursorPosition).pos;
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
-    args.vimState.globalState.hl = true;
+    vimState.globalState.hl = true;
 
-    return args.vimState;
+    return vimState;
 }
 
 @RegisterAction
