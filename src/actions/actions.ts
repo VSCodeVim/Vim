@@ -2212,7 +2212,7 @@ export class ChangeOperator extends BaseOperator {
     public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
         const isEndOfLine = end.character === end.getLineEnd().character;
         let state = vimState;
-        if (start.isEqual(end)){
+        if (start.isEqual(end)) {
           state.currentMode = ModeName.Insert;
           return state;
         }
@@ -6310,19 +6310,19 @@ abstract class MoveTagMatch extends BaseMovement {
 
 
 
-    if (position.isAfter(endPosition)){
+    if (position.isAfter(endPosition)) {
       vimState.recordedState.transformations.push({ type: "moveCursor",
                     diff: endPosition.subtract(position)});
-    } else if (position.isBefore(startPosition)){
+    } else if (position.isBefore(startPosition)) {
       vimState.recordedState.transformations.push({ type: "moveCursor",
                     diff: startPosition.subtract(position)});
     }
-    if (start === end){
+    if (start === end) {
       return {
         start: startPosition,
         stop: startPosition,
         failed: false
-      }
+      };
     }
     return {
       start: startPosition,
