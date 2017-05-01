@@ -1379,6 +1379,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can ctrl-a properly on multiple lines",
+      start: ["id: 1|,", "someOtherId: 1"],
+      keysPressed: "<C-a>",
+      end: ["id: 1|,",  "someOtherId: 1"]
+    });
+
+    newTest({
       title: "can do Y",
       start: ["|blah blah"],
       keysPressed: "Yp",

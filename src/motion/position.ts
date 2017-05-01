@@ -264,6 +264,7 @@ export class Position extends vscode.Position {
     }
   }
 
+  // Iterates through words on the same line, starting from the current position.
   public static *IterateWords(start: Position): Iterable<{ start: Position, end: Position, word: string }> {
     const text = TextEditor.getLineAt(start).text;
     let wordEnd = start.getCurrentWordEnd(true);
@@ -275,11 +276,11 @@ export class Position extends vscode.Position {
         word: word,
       };
 
-      if (wordEnd.isLineEnd()) {
+      if (wordEnd.getRight().isLineEnd()) {
         return;
       }
       start = start.getWordRight();
-      wordEnd = start.getCurrentWordEnd();
+      wordEnd = start.getCurrentWordEnd(true);
     } while (true);
   }
 
