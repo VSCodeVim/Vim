@@ -1654,8 +1654,7 @@ suite("Mode Normal", () => {
       ],
       keysPressed: "dai",
       end: [
-          '|',
-          'do_something_else()',
+          '|do_something_else()',
       ],
       endMode: ModeName.Normal
     });
