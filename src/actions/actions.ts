@@ -6314,10 +6314,13 @@ abstract class MoveTagMatch extends BaseMovement {
                     diff: startPosition.subtract(position)});
     }
     if (start === end) {
+      if (vimState.recordedState.operator instanceof ChangeOperator) {
+        vimState.currentMode = ModeName.Insert;
+      }
       return {
         start: startPosition,
         stop: startPosition,
-        failed: false
+        failed: true
       };
     }
     return {
