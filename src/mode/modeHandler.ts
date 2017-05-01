@@ -1894,7 +1894,7 @@ export class ModeHandler implements vscode.Disposable {
         "statusBar.background": `${color}`,
         "statusBar.noFolderBackground": `${color}`,
         "statusBar.debuggingBackground": `${color}`
-      });
+      }, true);
   }
 
   // Return true if a new undo point should be created based on brackets and parenthesis
