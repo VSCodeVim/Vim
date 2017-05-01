@@ -283,6 +283,11 @@ class ConfigurationClass {
    * Array of all key combinations that were registered in angle bracket notation
    */
   boundKeyCombinations: string[] = [];
+
+  /**
+   * In visual mode, start a search with * or # using the current selection
+   */
+  visualstar = false;
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {

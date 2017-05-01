@@ -180,6 +180,10 @@ These settings are specific to VSCodeVim.
     }
 ```
 
+#### `"vim.visualstar"`
+* In visual mode, start a search with * or # using the current selection
+* Type: Boolean (Default: `false`)
+
 ### Key remapping
 
 There's several different settings you can use to define custom remappings. Also related are the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.

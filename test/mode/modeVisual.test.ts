@@ -6,6 +6,7 @@ import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from 
 import { ModeName } from '../../src/mode/mode';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
+import { Configuration } from "../../src/configuration/configuration";
 
 suite("Mode Visual", () => {
   let modeHandler: ModeHandler;
@@ -741,4 +742,57 @@ suite("Mode Visual", () => {
     });
   });
 
+  suite("visualstar", () => {
+    let originalVisualstarValue = false;
+
+    setup(() => {
+      originalVisualstarValue = Configuration.visualstar;
+      Configuration.visualstar = true;
+    });
+
+    teardown(() => {
+      Configuration.visualstar = originalVisualstarValue;
+    });
+
+    newTest({
+      title: "Works with *",
+      start: [
+          '|public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          'public modes = [ModeName.VisualLine',
+      ],
+      // This is doing a few things:
+      // - select to the end of "Visual"
+      // - press "*", the cursor will go to the next line since it matches
+      // - press "n", the cursor will go to the last line since it matches
+      keysPressed: "2vfl*n",
+      end: [
+          'public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          '|public modes = [ModeName.VisualLine',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Works with #",
+      start: [
+          'public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          '|public modes = [ModeName.VisualLine',
+      ],
+      // This is doing a few things:
+      // - select to the end of "Visual"
+      // - press "#", the cursor will go to the previous line since it matches
+      // - press "n", the cursor will go to the first line since it matches
+      keysPressed: "2vfl#n",
+      end: [
+          '|public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          'public modes = [ModeName.VisualLine',
+      ],
+      endMode: ModeName.Normal
+    });
+
+  });
 });
