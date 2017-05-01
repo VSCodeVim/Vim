@@ -307,6 +307,8 @@ export async function activate(context: vscode.ExtensionContext) {
         editor.options = options;
       });
       await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+      let mh = await getAndUpdateModeHandler();
+      mh.setStatusBarText('-- VIM: DISABLED --');
     }
   });
 
