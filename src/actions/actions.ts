@@ -6650,7 +6650,10 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
         continue;
       }
 
-      vimState.easyMotion.addMarker(EasyMotion.generateMarker(index++, matches.length, position, pos));
+      let marker = EasyMotion.generateMarker(index++, matches.length, position, pos);
+      if (marker) {
+        vimState.easyMotion.addMarker(marker);
+      }
     }
   }
 
