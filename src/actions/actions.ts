@@ -1055,7 +1055,15 @@ class CommandCtrlW extends BaseCommand {
   keys = ["<C-w>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const wordBegin = position.getWordLeft();
+    let wordBegin;
+    if (position.isInLeadingWhitespace()) {
+      wordBegin = position.getLineBegin();
+    } else if (position.isLineBeginning()) {
+      wordBegin = position.getPreviousLineBegin().getLineEnd();
+    } else {
+      wordBegin = position.getWordLeft();
+    }
+
     await TextEditor.delete(new vscode.Range(wordBegin, position));
 
     vimState.cursorPosition = wordBegin;
@@ -5900,7 +5908,7 @@ abstract class MoveInsideCharacter extends BaseMovement {
     if (!this.includeSurrounding) {
       if (endPos.character === 0 && vimState.currentMode !== ModeName.Visual) {
         endPos = endPos.getLeftThroughLineBreaks();
-      } else if (/^\s+$/.test(TextEditor.getText(new vscode.Range(endPos.getLineBegin(), endPos.getLeft())))) {
+      } else if (endPos.getLeft().isInLeadingWhitespace()) {
         endPos = endPos.getPreviousLineBegin().getLineEnd();
       }
     }

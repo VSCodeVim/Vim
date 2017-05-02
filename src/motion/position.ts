@@ -745,6 +745,18 @@ export class Position extends vscode.Position {
     return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
   }
 
+  /**
+   * Returns whether the current position is in the leading whitespace of a line
+   * @param allowEmpty : Use true if "" is valid
+   */
+  public isInLeadingWhitespace(allowEmpty: boolean = false): boolean {
+    if (allowEmpty) {
+      return /^\s*$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
+    } else {
+      return /^\s+$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
+    }
+  }
+
   public static getFirstNonBlankCharAtLine(line: number): number {
     return TextEditor.readLineAt(line).match(/^\s*/)![0].length;
   }
