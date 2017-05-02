@@ -151,6 +151,20 @@ suite("Mode Insert", () => {
         assertEqualLines(["text "]);
     });
 
+    newTest({
+      title: "Can handle <C-w> on leading whitespace",
+      start: ['foo', '  |bar'],
+      keysPressed: 'i<C-w>',
+      end: ['foo', '|bar']
+    });
+
+    newTest({
+      title: "Can handle <C-w> at beginning of line",
+      start: ['foo', '|bar'],
+      keysPressed: 'i<C-w>',
+      end: ['foo|bar']
+    });
+
     test("Correctly places the cursor after deleting the previous line break", async() => {
         await modeHandler.handleMultipleKeyEvents([
             'i',

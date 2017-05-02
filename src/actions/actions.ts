@@ -1058,7 +1058,7 @@ class CommandCtrlW extends BaseCommand {
     let wordBegin;
     if (position.isInLeadingWhitespace()) {
       wordBegin = position.getLineBegin();
-    } else if (position.isLineBeginning()){
+    } else if (position.isLineBeginning()) {
       wordBegin = position.getPreviousLineBegin().getLineEnd();
     } else {
       wordBegin = position.getWordLeft();
@@ -5908,7 +5908,7 @@ abstract class MoveInsideCharacter extends BaseMovement {
     if (!this.includeSurrounding) {
       if (endPos.character === 0 && vimState.currentMode !== ModeName.Visual) {
         endPos = endPos.getLeftThroughLineBreaks();
-      } else if (/^\s+$/.test(TextEditor.getText(new vscode.Range(endPos.getLineBegin(), endPos.getLeft())))) {
+      } else if (endPos.getLeft().isInLeadingWhitespace()) {
         endPos = endPos.getPreviousLineBegin().getLineEnd();
       }
     }
