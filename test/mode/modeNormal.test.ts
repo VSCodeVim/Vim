@@ -1501,11 +1501,19 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can do cit on empty tag block, cursor moves to inside",
+      title: "Can do dit on empty tag block, cursor moves to inside",
       start: ["<bli|nk></blink>"],
       keysPressed: "dit",
       end: ["<blink>|</blink>"],
       endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do cit on empty tag block, cursor moves to inside",
+      start: ["<bli|nk></blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
     });
 
     newTest({
