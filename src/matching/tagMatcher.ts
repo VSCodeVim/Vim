@@ -1,63 +1,120 @@
+import * as vscode from "vscode";
+import { Position, } from "./../motion/position";
+import { TextEditor } from "./../textEditor";
+
+
 export class TagMatcher {
-  static openTag = "<";
-  static closeTag = ">";
-  static closeSlash = "/";
-  static tagNameRegex = /[^\s>]+/;
+  openStartPos: Position|undefined;
+  openEndPos: Position|undefined;
+  closeStartPos: Position|undefined;
+  closeEndPos: Position|undefined;
 
-  openStart: number|undefined;
-  openEnd: number|undefined;
-  closeStart: number|undefined;
-  closeEnd: number|undefined;
+  document: vscode.TextDocument;
+  documentText: string;
 
-  constructor(corpus: string, position: number) {
-    let opening = corpus.lastIndexOf(TagMatcher.openTag, position);
-    if (opening === -1) {
-      return;
-    }
+  constructor(cursorPosition: Position) {
+    this.document = TextEditor.getDocument();
+    this.documentText = TextEditor.getAllText();
 
-    // If we found the closing tag, keep searching back for the opening tag
-    if (corpus[opening + 1] === TagMatcher.closeSlash) {
-      position = opening;
+    const cursorOffset = this.document.offsetAt(cursorPosition);
+    let startOffset = cursorOffset;
 
-      opening = corpus.lastIndexOf(TagMatcher.openTag, opening - 1);
-      if (opening === -1) {
+    while (true) {
+      const closingTagOffsets = this.findClosingTag(startOffset);
+      if (!closingTagOffsets) {
         return;
+      }
+
+      const tagName = closingTagOffsets.tagName;
+      const openingTagOffsets = this.findOpeningTag(closingTagOffsets.startOffset, tagName);
+      if (openingTagOffsets && openingTagOffsets.startOffset <= cursorOffset) {
+        this.closeStartPos = Position.FromVSCodePosition(this.document.positionAt(closingTagOffsets.startOffset - 1));
+        this.closeEndPos = Position.FromVSCodePosition(this.document.positionAt(closingTagOffsets.endOffset));
+        this.openStartPos = Position.FromVSCodePosition(this.document.positionAt(openingTagOffsets.startOffset));
+        this.openEndPos = Position.FromVSCodePosition(this.document.positionAt(openingTagOffsets.endOffset + 1));
+        return;
+      } else {
+        startOffset = closingTagOffsets.endOffset + 1;
+      }
+    }
+  }
+
+  findClosingTag(startOffset: number): {startOffset: number, endOffset: number, tagName: string} | null {
+    let closeBracketOffset = startOffset;
+    let openBracketOffset = 0;
+
+    while (closeBracketOffset < this.documentText.length) {
+      closeBracketOffset = this.documentText.indexOf('>', closeBracketOffset);
+      if (closeBracketOffset < 0) {
+        return null;
+      }
+
+      openBracketOffset = closeBracketOffset - 1;
+      while (openBracketOffset >= 0) {
+        openBracketOffset = this.documentText.lastIndexOf('<', openBracketOffset);
+        if (openBracketOffset >= 0 && openBracketOffset + 1 < this.documentText.length
+              && this.documentText.charAt(openBracketOffset + 1) === '/') {
+          const tagName = this.documentText.substring(openBracketOffset + '</'.length, closeBracketOffset);
+          if (tagName.length > 0 && tagName.charAt(0) !== ' ') {
+            return {
+              startOffset: openBracketOffset,
+              endOffset: closeBracketOffset,
+              tagName
+            };
+          }
+        }
+        openBracketOffset--;
+      }
+      closeBracketOffset++;
+    }
+    return null;
+  }
+
+  findOpeningTag(startOffset: number, tagName: string): {startOffset: number, endOffset: number} | null {
+    const tagBeginning = '<' + tagName;
+    const re = new RegExp(tagBeginning, 'ig');
+
+    const possibleBeginningTags = this.matchAll(this.documentText.substr(0, startOffset), re).reverse();
+
+    for (let possibleBeginningMatch of possibleBeginningTags) {
+      const openingTagOffset = possibleBeginningMatch.index;
+      const openingTagEndOffset = openingTagOffset + tagBeginning.length;
+      const closeBracketOffset = this.documentText.substr(openingTagOffset).indexOf('>') + openingTagOffset;
+
+      if (closeBracketOffset > 0 && (closeBracketOffset === openingTagEndOffset || this.documentText.charAt(openingTagEndOffset) === ' ')) {
+        return {
+          startOffset: openingTagOffset,
+          endOffset: closeBracketOffset
+        };
       }
     }
 
-    const tagNameMatch = TagMatcher.tagNameRegex.exec(corpus.substring(opening + 1));
-    if (tagNameMatch === null) {
-      return;
-    }
-    const close = corpus.indexOf(TagMatcher.closeTag, opening + 1);
-    const tagName = tagNameMatch[0];
-
-    // We now know where the opening tag is
-    this.openStart = opening;
-    this.openEnd = close + 1;
-
-    // Search for the closing tag
-    const toFind = `</${tagName}>`;
-    const closeTag = corpus.indexOf(toFind, position);
-    if (closeTag === -1) {
-      return;
-    }
-
-    this.closeStart = closeTag;
-    this.closeEnd = closeTag + toFind.length;
+    return null;
   }
 
-  findOpening(inclusive: boolean): number|undefined {
-    if (inclusive) {
-      return this.openStart;
-    }
-    return this.openEnd;
+  matchAll(text: string, re: RegExp): Array<RegExpExecArray> {
+    let tagMatches: Array<RegExpExecArray> = [];
+    let reMatch: RegExpExecArray;
+    do {
+        reMatch = re.exec(text);
+        if (reMatch) {
+          tagMatches.push(reMatch);
+        }
+    } while (reMatch);
+    return tagMatches;
   }
 
-  findClosing(inclusive: boolean): number|undefined {
+  findOpening(inclusive: boolean): Position|undefined {
     if (inclusive) {
-      return this.closeEnd;
+      return this.openStartPos;
     }
-    return this.closeStart;
+    return this.openEndPos;
+  }
+
+  findClosing(inclusive: boolean): Position|undefined {
+    if (inclusive) {
+      return this.closeEndPos;
+    }
+    return this.closeStartPos;
   }
 }
