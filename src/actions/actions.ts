@@ -6364,7 +6364,7 @@ abstract class MoveTagMatch extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const text = TextEditor.getLineAt(position).text;
-    const tagMatcher = new TagMatcher(text, position.character);
+    const tagMatcher = new TagMatcher(position);
     const start = tagMatcher.findOpening(this.includeTag);
     const end = tagMatcher.findClosing(this.includeTag);
 
@@ -6378,14 +6378,14 @@ abstract class MoveTagMatch extends BaseMovement {
 
     if (end === start) {
       return {
-        start:  new Position(position.line, start),
-        stop:   new Position(position.line, start),
+        start:  start,
+        stop:   end,
         failed: true,
       };
     }
 
-    let startPos = new Position(position.line, start);
-    let endPos = new Position(position.line, end - 1);
+    let startPos = start;
+    let endPos=end;
 
     if (position.isBefore(startPos)) {
       vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
