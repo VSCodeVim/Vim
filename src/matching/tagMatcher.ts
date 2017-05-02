@@ -66,7 +66,7 @@ export class TagMatcher {
           i--;
         }
       }
-    };
+    }
 
     const tagsSurrounding = matchedTags.filter((n : any) => {
       return position >= n.openingTagStart && position <= n.closingTagEnd;
