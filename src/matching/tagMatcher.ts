@@ -33,7 +33,7 @@ export class TagMatcher {
     const stack : any = [];
     const matchedTags : any = [];
 
-    tags.forEach((tag) => {
+    for (let tag of tags) {
       // We have to push on the stack
       // if it is an open tag.
       if (tag.type === 'open') {
@@ -66,7 +66,7 @@ export class TagMatcher {
           i--;
         }
       }
-    });
+    };
 
     const tagsSurrounding = matchedTags.filter((n : any) => {
       return position >= n.openingTagStart && position <= n.closingTagEnd;
