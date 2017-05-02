@@ -60,7 +60,7 @@ export class TagMatcher {
             });
 
             stack.splice(i);
-
+            break;
           }
         }
       }
