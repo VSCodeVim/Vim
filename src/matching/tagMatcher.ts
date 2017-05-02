@@ -1,3 +1,6 @@
+type Tag = { name: string; type: "close" | "open"; startPos: number; endPos: number };
+type MatchedTag = {tag: string, openingTagStart: number, openingTagEnd: number, closingTagStart: number, closingTagEnd: number};
+
 export class TagMatcher {
   static TAG_REGEX = /\<(\/)?([^\>\<\s]+)[^\>\<]*(\/?)\>/g;
   static OPEN_FORWARD_SLASH = 1;
@@ -11,7 +14,7 @@ export class TagMatcher {
 
   constructor(corpus: string, position: number) {
     let match = TagMatcher.TAG_REGEX.exec(corpus);
-    const tags = [];
+    const tags : Tag[] = [];
 
     // Gather all the existing tags.
     while (match) {
@@ -30,8 +33,8 @@ export class TagMatcher {
       match = TagMatcher.TAG_REGEX.exec(corpus);
     }
 
-    const stack : any = [];
-    const matchedTags : any = [];
+    const stack : Tag[] = [];
+    const matchedTags : MatchedTag[] = [];
 
     for (let tag of tags) {
       // We have to push on the stack
@@ -41,9 +44,7 @@ export class TagMatcher {
       } else {
         // We have an unmatched closing tag,
         // so try and match it with any existing tag.
-        let i = stack.length - 1;
-        let isDone = false;
-        while (!isDone && i >= 0) {
+        for (let i = stack.length - 1; i >= 0; i--) {
           const openNode = stack[i];
 
           if (openNode.type === 'open'
@@ -60,15 +61,12 @@ export class TagMatcher {
 
             stack.splice(i);
 
-            isDone = false;
           }
-
-          i--;
         }
       }
     }
 
-    const tagsSurrounding = matchedTags.filter((n : any) => {
+    const tagsSurrounding = matchedTags.filter(n => {
       return position >= n.openingTagStart && position <= n.closingTagEnd;
     });
 
