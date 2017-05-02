@@ -3,40 +3,43 @@
   "version": "0.1.0",
   "configurations": [
     {
-       "name": "Launch Extension",
+       "name": "Build, Run Extension",
        "type": "extensionHost",
        "request": "launch",
        "runtimeExecutable": "${execPath}",
        "args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
        "stopOnEntry": false,
        "sourceMaps": true,
-       "outDir": "${workspaceRoot}/out",
+       "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
        "preLaunchTask": "build",
-       "internalConsoleOptions" : "openOnSessionStart"
-   },
-
-   {
-       "name": "Launch Tests",
-       "type": "extensionHost",
-       "request": "launch",
-       "runtimeExecutable": "${execPath}",
-       "args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionTestsPath=${workspaceRoot}/out/test" ],
-       "stopOnEntry": false,
-       "sourceMaps": true,
-       "outDir": "${workspaceRoot}/out",
-       "preLaunchTask": "build",
-       "internalConsoleOptions" : "openOnSessionStart"
+      "internalConsoleOptions": "openOnSessionStart"
     },
-
-		{
-			"name": "Yolo Extension (Don't build)",
-			"type": "extensionHost",
-			"request": "launch",
-			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
-			"stopOnEntry": false,
-			"sourceMaps": true,
-			"outDir": "${workspaceRoot}/out"
-		}
+    {
+      "name": "Run Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ]
+    },
+    {
+      "name": "Run Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}",
+        "--extensionTestsPath=${workspaceRoot}/out/test"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
+      "preLaunchTask": "build",
+      "internalConsoleOptions": "openOnSessionStart"
+    }
   ]
 }

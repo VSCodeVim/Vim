@@ -153,6 +153,10 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
   vscode.workspace.onDidChangeTextDocument((event) => {
+    if (!Globals.active) {
+      return;
+    }
+
     /**
      * Change from vscode editor should set document.isDirty to true but they initially don't!
      * There is a timing issue in vscode codebase between when the isDirty flag is set and
@@ -186,7 +190,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }, 0);
   });
 
-  registerCommand(context, 'type', async (args) => {
+  overrideCommand(context, 'type', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -201,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  registerCommand(context, 'replacePreviousChar', async (args) => {
+  overrideCommand(context, 'replacePreviousChar', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -215,13 +219,13 @@ export async function activate(context: vscode.ExtensionContext) {
           });
           mh.vimState.cursorPosition = Position.FromVSCodePosition(mh.vimState.editor.selection.start);
           mh.vimState.cursorStartPosition = Position.FromVSCodePosition(mh.vimState.editor.selection.start);
-        }
+      }
       },
       isRunning: false
     });
   });
 
-  registerCommand(context, 'compositionStart', async (args) => {
+  overrideCommand(context, 'compositionStart', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -231,7 +235,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  registerCommand(context, 'compositionEnd', async (args) => {
+  overrideCommand(context, 'compositionEnd', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -273,6 +277,43 @@ export async function activate(context: vscode.ExtensionContext) {
       isRunning: false
     });
   });
+
+  registerCommand(context, 'toggleVim', async () => {
+    Globals.active = !Globals.active;
+    if (Globals.active) {
+      await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+      compositionState = new CompositionState();
+      modeHandlerToEditorIdentity = {};
+      let mh = await getAndUpdateModeHandler();
+      mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    } else {
+      let cursorStyle = await vscode.workspace.getConfiguration('editor').get('cursorStyle', 'line');
+      vscode.window.visibleTextEditors.forEach(editor => {
+        let options = editor.options;
+        switch (cursorStyle) {
+          case 'line':
+            options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+            break;
+          case 'block':
+            options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+            break;
+          case 'underline':
+            options.cursorStyle = vscode.TextEditorCursorStyle.Underline;
+            break;
+
+          default:
+            break;
+        }
+        editor.options = options;
+      });
+      await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+      let mh = await getAndUpdateModeHandler();
+      mh.setStatusBarText('-- VIM: DISABLED --');
+    }
+  });
+
+  vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+
   // Clear boundKeyCombinations array incase there are any entries in it so
   // that we have a clean list of keys with no duplicates
   Configuration.boundKeyCombinations = [];
@@ -309,14 +350,30 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 }
 
-function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
+function overrideCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
   let disposable = vscode.commands.registerCommand(command, async (args) => {
+    if (!Globals.active) {
+      await vscode.commands.executeCommand("default:" + command, args);
+      return;
+    }
+
     if (!vscode.window.activeTextEditor) {
       return;
     }
 
     if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
       await vscode.commands.executeCommand("default:" + command, args);
+      return;
+    }
+
+    callback(args);
+  });
+  context.subscriptions.push(disposable);
+}
+
+function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
+  let disposable = vscode.commands.registerCommand(command, async (args) => {
+    if (!vscode.window.activeTextEditor) {
       return;
     }
 
@@ -344,6 +401,9 @@ function handleContentChangedFromDisk(document : vscode.TextDocument) : void {
 }
 
 async function handleActiveEditorChange(): Promise<void> {
+  if (!Globals.active) {
+    return;
+  }
 
   // Don't run this event handler during testing
   if (Globals.isTesting) {

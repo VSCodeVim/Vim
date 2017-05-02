@@ -162,7 +162,7 @@ module LexerFunctions {
         var args = emitToken(TokenType.CommandArgs, state);
         if (args) {
           tokens.push(args);
-        };
+        }
         break;
       }
     }
@@ -191,7 +191,7 @@ module LexerFunctions {
     state.ignore();
     if (!state.isAtEof) {
       state.skip("/");
-    };
+    }
     return lexRange;
   }
 

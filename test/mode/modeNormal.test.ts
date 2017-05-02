@@ -332,6 +332,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'ci(' across multiple lines with last character at beginning",
+      start: ['(|a', 'b)'],
+      keysPressed: 'ci)',
+      end: ['(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Can handle 'ca(' spanning multiple lines",
       start: ['call(', '  |arg1)'],
       keysPressed: 'ca(',
@@ -1371,6 +1379,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can ctrl-a properly on multiple lines",
+      start: ["id: 1|,", "someOtherId: 1"],
+      keysPressed: "<C-a>",
+      end: ["id: 1|,",  "someOtherId: 1"]
+    });
+
+    newTest({
       title: "can do Y",
       start: ["|blah blah"],
       keysPressed: "Yp",
@@ -1396,6 +1411,20 @@ suite("Mode Normal", () => {
       start: ["|", "one two2o"],
       keysPressed: "/o\\do\n",
       end: ["", "one tw|o2o"]
+    });
+
+    newTest({
+      title: "/ can search with newline",
+      start: ["|asdf", "__asdf", "asdf"],
+      keysPressed: "/\\nasdf\n",
+      end: ["asdf", "__asd|f", "asdf"],
+    });
+
+    newTest({
+      title: "/ can search through multiple newlines",
+      start: ["|asdf", "__asdf", "asdf", "abc", "   abc"],
+      keysPressed: "/\asdf\\nasdf\\nabc\n",
+      end: ["asdf", "__|asdf", "asdf", "abc", "   abc"],
     });
 
     newTest({

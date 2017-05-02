@@ -239,4 +239,4 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 }
 
 
-export { ITestObject, testIt }
+export { ITestObject, testIt };

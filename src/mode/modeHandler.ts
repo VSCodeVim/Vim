@@ -515,7 +515,6 @@ export class ModeHandler implements vscode.Disposable {
     ];
     this.vimState.historyTracker = new HistoryTracker(this.vimState);
     this.vimState.easyMotion = new EasyMotion();
-
     if (Configuration.startInInsertMode) {
       this._vimState.currentMode = ModeName.Insert;
     } else {
@@ -534,16 +533,24 @@ export class ModeHandler implements vscode.Disposable {
     // position to the position that VSC set it to.
 
     // This also makes things like gd work.
-    if (this._vimState.editor) {
-      this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-      this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-      this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
+    // For whatever reason, the editor positions aren't updated until after the
+    // stack clears, which is why this setTimeout is necessary
+    setTimeout(() => {
+      if (this._vimState.editor) {
+        this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+        this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+        this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
 
-      this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
-    }
+        this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
+      }
+    }, 0);
 
     // Handle scenarios where mouse used to change current position.
     const disposer = vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
+      if (!Globals.active) {
+        return;
+      }
+
       taskQueue.enqueueTask({
         promise: () => this.handleSelectionChange(e),
         isRunning: false,
@@ -611,7 +618,7 @@ export class ModeHandler implements vscode.Disposable {
     if ((e.selections.length !== this.vimState.allCursors.length || this.vimState.isMultiCursor) &&
       this.vimState.currentMode !== ModeName.VisualBlock) {
       // Number of selections changed, make sure we know about all of them still
-      this.vimState.allCursors = vscode.window.activeTextEditor!.selections.map(x =>
+      this.vimState.allCursors = e.textEditor.selections.map(x =>
         new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end)));
 
       await this.updateView(this.vimState);
@@ -1020,7 +1027,6 @@ export class ModeHandler implements vscode.Disposable {
     ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) || this.createUndoPointForBrackets(vimState);
 
     // Don't record an undo point for every action of a macro, only at the very end
-    ranRepeatableAction = ranRepeatableAction && !vimState.isReplayingMacro;
 
     ranAction = ranAction && vimState.currentMode === ModeName.Normal;
 
@@ -1063,7 +1069,8 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    if (ranRepeatableAction) {
+    // Don't record an undo point for every action of a macro, only at the very end
+    if (ranRepeatableAction && !vimState.isReplayingMacro) {
       vimState.historyTracker.finishCurrentStep();
     }
 
@@ -1365,7 +1372,7 @@ export class ModeHandler implements vscode.Disposable {
               accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
             }
           });
-        };
+        }
       } else {
         // This is the common case!
 
@@ -1671,6 +1678,7 @@ export class ModeHandler implements vscode.Disposable {
           // makes relative line numbers display correctly
           if ((selections[0].start.line <= selections[0].end.line) &&
             (vimState.cursorPosition.line <= vimState.cursorStartPosition.line)) {
+
             selections = [new vscode.Selection(selections[0].end, selections[0].start)];
           }
 
@@ -1881,12 +1889,12 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   setStatusBarColor(color: string): void {
-    vscode.workspace.getConfiguration("workbench.experimental").update("colorCustomizations",
+    vscode.workspace.getConfiguration("workbench").update("colorCustomizations",
       {
-        "statusBarBackground": `${color}`,
-        "statusBarNoFolderBackground": `${color}`,
-        "statusBarDebuggingBackground": `${color}`
-      });
+        "statusBar.background": `${color}`,
+        "statusBar.noFolderBackground": `${color}`,
+        "statusBar.debuggingBackground": `${color}`
+      }, true);
   }
 
   // Return true if a new undo point should be created based on brackets and parenthesis

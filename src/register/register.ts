@@ -13,7 +13,7 @@ export enum RegisterMode {
   CharacterWise,
   LineWise,
   BlockWise,
-};
+}
 
 export type RegisterContent = string | string[] | RecordedState;
 

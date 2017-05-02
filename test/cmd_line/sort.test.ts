@@ -59,4 +59,15 @@ suite("Basic sort", () => {
       "a"
     ]);
   });
+
+  test("#1592. Sort should work in Visual/VisualLine Mode without specifying ranges in ex commands", async () => {
+    await modeHandler.handleMultipleKeyEvents(['i', 'b', '<Esc>', 'o', 'a', '<Esc>', 'o', 'a', '<Esc>', 'g', 'g', 'V', 'j']);
+    await runCmdLine("sort", modeHandler);
+
+    assertEqualLines([
+      "a",
+      "b",
+      "a"
+    ]);
+  });
 });
