@@ -1055,7 +1055,15 @@ class CommandCtrlW extends BaseCommand {
   keys = ["<C-w>"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const wordBegin = position.getWordLeft();
+    let wordBegin;
+    if (position.isInLeadingWhitespace()) {
+      wordBegin = position.getLineBegin();
+    } else if (position.isLineBeginning()){
+      wordBegin = position.getPreviousLineBegin().getLineEnd();
+    } else {
+      wordBegin = position.getWordLeft();
+    }
+
     await TextEditor.delete(new vscode.Range(wordBegin, position));
 
     vimState.cursorPosition = wordBegin;
