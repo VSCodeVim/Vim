@@ -81,6 +81,8 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     const newModeHandler = new ModeHandler();
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
+    extensionContext.subscriptions.push(newModeHandler);
+
     curHandler = newModeHandler;
   }
 
