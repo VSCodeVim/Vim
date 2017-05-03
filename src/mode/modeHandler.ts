@@ -3,6 +3,8 @@ import { SurroundInputMode } from './surroundInputMode';
 
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
+import * as hash from 'object-hash';
+
 
 import { EditorIdentity } from './../../extension';
 import {
@@ -135,6 +137,8 @@ export class VimState {
   public keyHistory: string[] = [];
 
   public globalState: GlobalState = new GlobalState;
+
+  public prevStateHash: string = "";
 
   /**
    * The position the cursor will be when this action finishes.
@@ -1445,11 +1449,15 @@ export class ModeHandler implements vscode.Disposable {
           break;
         case "macro":
           let recordedMacro = (await Register.getByKey(command.register)).text as RecordedState;
-
+          let curStateHash = hash({text: TextEditor.getText(), cursors: vimState.allCursors});
           vimState.isReplayingMacro ++;
           if (vimState.isReplayingMacro > 1000) {
             break;
           }
+          if (vimState.prevStateHash === curStateHash) {
+            break;
+          }
+          vimState.prevStateHash = curStateHash;
           if (command.replay === "contentChange") {
             vimState = await this.runMacro(vimState, recordedMacro);
           } else {
