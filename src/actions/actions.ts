@@ -5430,407 +5430,6 @@ class ActionChangeChar extends BaseCommand {
   }
 }
 
-abstract class TextObjectMovement extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
-  canBePrefixedWithCount = true;
-
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState) as IMovement;
-    // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
-    // In normal mode, the character on the stop position will be the first character after the operator executed
-    // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
-    res.stop = new Position(res.stop.line, res.stop.character + 1);
-
-    return res;
-  }
-}
-
-@RegisterAction
-class SelectWord extends TextObjectMovement {
-  keys = ["a", "w"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    let stop: Position;
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
-
-    if (/\s/.test(currentChar)) {
-        start = position.getLastWordEnd().getRight();
-        stop = position.getCurrentWordEnd();
-    } else {
-        stop = position.getWordRight();
-        // If the next word is not at the beginning of the next line, we want to pretend it is.
-        // This is because 'aw' has two fundamentally different behaviors distinguished by whether
-        // the next word is directly after the current word, as described in the following comment.
-        // The only case that's not true is in cases like #1350.
-        if (stop.isEqual(stop.getFirstLineNonBlankChar())) {
-          stop = stop.getLineBegin();
-        }
-        stop = stop.getLeftThroughLineBreaks().getLeftIfEOL();
-        // If we aren't separated from the next word by whitespace(like in "horse ca|t,dog" or at the end of the line)
-        // then we delete the spaces to the left of the current word. Otherwise, we delete to the right.
-        // Also, if the current word is the leftmost word, we only delete from the start of the word to the end.
-        if (stop.isEqual(position.getCurrentWordEnd(true)) &&
-            !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar())
-            && vimState.recordedState.count === 0) {
-          start = position.getLastWordEnd().getRight();
-        } else {
-          start = position.getWordLeft(true);
-        }
-    }
-
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-        start = vimState.cursorStartPosition;
-
-        if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
-          // If current cursor postion is before cursor start position, we are selecting words in reverser order.
-          if (/\s/.test(currentChar)) {
-            stop = position.getWordLeft(true);
-          } else {
-            stop = position.getLastWordEnd().getRight();
-          }
-        }
-    }
-
-    return {
-      start: start,
-      stop: stop
-    };
-  }
-}
-
-@RegisterAction
-class SelectABigWord extends TextObjectMovement {
-  keys = ["a", "W"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    let stop: Position;
-
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
-
-    if (/\s/.test(currentChar)) {
-        start = position.getLastBigWordEnd().getRight();
-        stop = position.getCurrentBigWordEnd();
-    } else {
-        // Check 'aw' code for much of the reasoning behind this logic.
-        let nextWord = position.getBigWordRight();
-        if ((nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
-              vimState.recordedState.count === 0) {
-          start = position.getLastWordEnd().getRight();
-          stop = position.getLineEnd();
-        } else {
-          start = position.getBigWordLeft(true);
-          stop = position.getBigWordRight().getLeft();
-        }
-    }
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-        start = vimState.cursorStartPosition;
-
-        if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
-          // If current cursor postion is before cursor start position, we are selecting words in reverser order.
-          if (/\s/.test(currentChar)) {
-            stop = position.getBigWordLeft();
-          } else {
-            stop = position.getLastBigWordEnd().getRight();
-          }
-        }
-    }
-
-    return {
-      start: start,
-      stop: stop
-    };
-  }
-}
-
-/**
- * This is a custom action that I (johnfn) added. It selects procedurally
- * larger blocks. e.g. if you had "blah (foo [bar 'ba|z'])" then it would
- * select 'baz' first. If you pressed az again, it'd then select [bar 'baz'],
- * and if you did it a third time it would select "(foo [bar 'baz'])".
- */
-@RegisterAction
-class SelectAnExpandingBlock extends TextObjectMovement {
-  keys = ["a", "f"];
-  modes = [ModeName.Visual, ModeName.VisualLine];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const ranges = [
-      await new MoveASingleQuotes().execAction(position, vimState),
-      await new MoveADoubleQuotes().execAction(position, vimState),
-      await new MoveAClosingCurlyBrace().execAction(position, vimState),
-      await new MoveAParentheses().execAction(position, vimState),
-      await new MoveASquareBracket().execAction(position, vimState),
-    ];
-
-    let smallestRange: Range | undefined = undefined;
-
-    for (const iMotion of ranges) {
-      if (iMotion.failed) { continue; }
-
-      const range = Range.FromIMovement(iMotion);
-      let contender: Range | undefined = undefined;
-
-      if (!smallestRange) {
-        contender = range;
-      } else {
-        if (range.start.isAfter(smallestRange.start) &&
-            range.stop.isBefore(smallestRange.stop)) {
-          contender = range;
-        }
-      }
-
-      if (contender) {
-        const areTheyEqual =
-          contender.equals(new Range(vimState.cursorStartPosition, vimState.cursorPosition)) ||
-          (vimState.currentMode === ModeName.VisualLine &&
-            contender.start.line === vimState.cursorStartPosition.line &&
-            contender.stop.line === vimState.cursorPosition.line);
-
-        if (!areTheyEqual) {
-          smallestRange = contender;
-        }
-      }
-    }
-
-    if (!smallestRange) {
-      return {
-        start: vimState.cursorStartPosition,
-        stop: vimState.cursorPosition,
-      };
-    } else {
-      return {
-        start: smallestRange.start,
-        stop: smallestRange.stop,
-      };
-    }
-  }
-}
-
-@RegisterAction
-class SelectInnerWord extends TextObjectMovement {
-  modes = [ModeName.Normal, ModeName.Visual];
-  keys = ["i", "w"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    let stop: Position;
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
-
-    if (/\s/.test(currentChar)) {
-        start = position.getLastWordEnd().getRight();
-        stop = position.getWordRight().getLeft();
-    } else {
-        start = position.getWordLeft(true);
-        stop = position.getCurrentWordEnd(true);
-    }
-
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      start = vimState.cursorStartPosition;
-
-      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
-        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
-        if (/\s/.test(currentChar)) {
-          stop = position.getLastWordEnd().getRight();
-        } else {
-          stop = position.getWordLeft(true);
-        }
-      }
-    }
-
-    return {
-      start: start,
-      stop: stop
-    };
-  }
-}
-
-@RegisterAction
-class SelectInnerBigWord extends TextObjectMovement {
-  modes = [ModeName.Normal, ModeName.Visual];
-  keys = ["i", "W"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    let stop: Position;
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
-
-    if (/\s/.test(currentChar)) {
-        start = position.getLastBigWordEnd().getRight();
-        stop = position.getBigWordRight().getLeft();
-    } else {
-        start = position.getBigWordLeft();
-        stop = position.getCurrentBigWordEnd(true);
-    }
-
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      start = vimState.cursorStartPosition;
-
-      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
-        // If current cursor postion is before cursor start position, we are selecting words in reverser order.
-        if (/\s/.test(currentChar)) {
-          stop = position.getLastBigWordEnd().getRight();
-        } else {
-          stop = position.getBigWordLeft();
-        }
-      }
-    }
-
-    return {
-      start: start,
-      stop: stop
-    };
-  }
-}
-
-@RegisterAction
-class SelectSentence extends TextObjectMovement {
-  keys = ["a", "s"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    let stop: Position;
-
-    const currentSentenceBegin = position.getSentenceBegin({forward: false});
-    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getCurrentSentenceEnd();
-
-    if (currentSentenceNonWhitespaceEnd.isBefore(position)) {
-      // The cursor is on a trailing white space.
-      start = currentSentenceNonWhitespaceEnd.getRight();
-      stop = currentSentenceBegin.getSentenceBegin({forward: true}).getCurrentSentenceEnd();
-    } else {
-      const nextSentenceBegin = currentSentenceBegin.getSentenceBegin({forward: true});
-
-      // If the sentence has no trailing white spaces, `as` should include its leading white spaces.
-      if (nextSentenceBegin.isEqual(currentSentenceBegin.getCurrentSentenceEnd())) {
-        start = currentSentenceBegin.getSentenceBegin({forward: false}).getCurrentSentenceEnd().getRight();
-        stop = nextSentenceBegin;
-      } else {
-        start = currentSentenceBegin;
-        stop = nextSentenceBegin.getLeft();
-      }
-    }
-
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      start = vimState.cursorStartPosition;
-
-      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
-        // If current cursor postion is before cursor start position, we are selecting sentences in reverser order.
-        if (currentSentenceNonWhitespaceEnd.isAfter(vimState.cursorPosition)) {
-          stop = currentSentenceBegin.getSentenceBegin({forward: false}).getCurrentSentenceEnd().getRight();
-        } else {
-          stop = currentSentenceBegin;
-        }
-      }
-    }
-
-    return {
-      start: start,
-      stop: stop
-    };
-  }
-}
-
-@RegisterAction
-class SelectInnerSentence extends TextObjectMovement {
-  keys = ["i", "s"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    let stop: Position;
-
-    const currentSentenceBegin = position.getSentenceBegin({forward: false});
-    const currentSentenceNonWhitespaceEnd = currentSentenceBegin.getCurrentSentenceEnd();
-
-    if (currentSentenceNonWhitespaceEnd.isBefore(position)) {
-      // The cursor is on a trailing white space.
-      start = currentSentenceNonWhitespaceEnd.getRight();
-      stop = currentSentenceBegin.getSentenceBegin({forward: true}).getLeft();
-    } else {
-      start = currentSentenceBegin;
-      stop = currentSentenceNonWhitespaceEnd;
-    }
-
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
-      start = vimState.cursorStartPosition;
-
-      if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
-        // If current cursor postion is before cursor start position, we are selecting sentences in reverser order.
-        if (currentSentenceNonWhitespaceEnd.isAfter(vimState.cursorPosition)) {
-          stop = currentSentenceBegin;
-        } else {
-          stop = currentSentenceNonWhitespaceEnd.getRight();
-        }
-      }
-    }
-
-    return {
-      start: start,
-      stop: stop
-    };
-  }
-}
-
-@RegisterAction
-class SelectParagraph extends TextObjectMovement {
-  keys = ["a", "p"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    const currentParagraphBegin = position.getCurrentParagraphBeginning();
-
-    if (position.isLineBeginning() && position.isLineEnd()) {
-      // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
-      start = position.getCurrentParagraphBeginning().getCurrentParagraphEnd();
-    } else {
-      if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
-        start = currentParagraphBegin.getRightThroughLineBreaks();
-      } else {
-        start = currentParagraphBegin;
-      }
-    }
-
-    return {
-      start: start,
-      stop: position.getCurrentParagraphEnd()
-    };
-  }
-}
-
-@RegisterAction
-class SelectInnerParagraph extends TextObjectMovement {
-  keys = ["i", "p"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    let stop: Position = position.getCurrentParagraphEnd();
-
-    if (stop.isLineBeginning() && stop.isLineEnd()) {
-      stop = stop.getLeftThroughLineBreaks();
-    }
-
-    const currentParagraphBegin = position.getCurrentParagraphBeginning();
-
-    if (position.isLineBeginning() && position.isLineEnd()) {
-      // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
-      start = position.getCurrentParagraphBeginning().getCurrentParagraphEnd();
-      stop = position.getCurrentParagraphEnd().getCurrentParagraphBeginning();
-    } else {
-      if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
-        start = currentParagraphBegin.getRightThroughLineBreaks();
-      } else {
-        start = currentParagraphBegin;
-      }
-    }
-
-    return {
-      start: start,
-      stop: stop
-    };
-  }
-}
-
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   keys = ["%"];
@@ -5912,7 +5511,7 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-abstract class MoveInsideCharacter extends BaseMovement {
+export abstract class MoveInsideCharacter extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
@@ -6000,7 +5599,7 @@ class MoveIClosingParenthesesBlock extends MoveInsideCharacter {
 }
 
 @RegisterAction
-class MoveAParentheses extends MoveInsideCharacter {
+export class MoveAParentheses extends MoveInsideCharacter {
   keys = ["a", "("];
   charToMatch = "(";
   includeSurrounding = true;
@@ -6039,14 +5638,14 @@ class MoveIClosingCurlyBraceBlock extends MoveInsideCharacter {
 }
 
 @RegisterAction
-class MoveACurlyBrace extends MoveInsideCharacter {
+export class MoveACurlyBrace extends MoveInsideCharacter {
   keys = ["a", "{"];
   charToMatch = "{";
   includeSurrounding = true;
 }
 
 @RegisterAction
-class MoveAClosingCurlyBrace extends MoveInsideCharacter {
+export class MoveAClosingCurlyBrace extends MoveInsideCharacter {
   keys = ["a", "}"];
   charToMatch = "{";
   includeSurrounding = true;
@@ -6072,7 +5671,7 @@ class MoveIClosingCaret extends MoveInsideCharacter {
 }
 
 @RegisterAction
-class MoveACaret extends MoveInsideCharacter {
+export class MoveACaret extends MoveInsideCharacter {
   keys = ["a", "<"];
   charToMatch = "<";
   includeSurrounding = true;
@@ -6098,7 +5697,7 @@ class MoveIClosingSquareBraket extends MoveInsideCharacter {
 }
 
 @RegisterAction
-class MoveASquareBracket extends MoveInsideCharacter {
+export class MoveASquareBracket extends MoveInsideCharacter {
   keys = ["a", "["];
   charToMatch = "[";
   includeSurrounding = true;
@@ -6111,7 +5710,7 @@ class MoveAClosingSquareBracket extends MoveInsideCharacter {
   includeSurrounding = true;
 }
 
-abstract class MoveQuoteMatch extends BaseMovement {
+export abstract class MoveQuoteMatch extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
@@ -6170,7 +5769,7 @@ class MoveInsideSingleQuotes extends MoveQuoteMatch {
 }
 
 @RegisterAction
-class MoveASingleQuotes extends MoveQuoteMatch {
+export class MoveASingleQuotes extends MoveQuoteMatch {
   keys = ["a", "'"];
   charToMatch = "'";
   includeSurrounding = true;
@@ -6184,7 +5783,7 @@ class MoveInsideDoubleQuotes extends MoveQuoteMatch {
 }
 
 @RegisterAction
-class MoveADoubleQuotes extends MoveQuoteMatch {
+export class MoveADoubleQuotes extends MoveQuoteMatch {
   keys = ["a", "\""];
   charToMatch = "\"";
   includeSurrounding = true;
@@ -6198,7 +5797,7 @@ class MoveInsideBacktick extends MoveQuoteMatch {
 }
 
 @RegisterAction
-class MoveABacktick extends MoveQuoteMatch {
+export class MoveABacktick extends MoveQuoteMatch {
   keys = ["a", "`"];
   charToMatch = "`";
   includeSurrounding = true;
@@ -6466,125 +6065,15 @@ abstract class MoveTagMatch extends BaseMovement {
 }
 
 @RegisterAction
-class MoveInsideTag extends MoveTagMatch {
+export class MoveInsideTag extends MoveTagMatch {
   keys = ["i", "t"];
   includeTag = false;
 }
 
 @RegisterAction
-class MoveAroundTag extends MoveTagMatch {
+export class MoveAroundTag extends MoveTagMatch {
   keys = ["a", "t"];
   includeTag = true;
-}
-
-abstract class IndentObjectMatch extends TextObjectMovement {
-  setsDesiredColumnToEOL = true;
-
-  protected includeLineAbove = false;
-  protected includeLineBelow = false;
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
-    const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
-    const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
-    const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
-
-    // let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
-    let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, -1);
-    let endLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, 1);
-
-    // Adjust the start line as needed.
-    if (this.includeLineAbove) {
-      startLineNumber -= 1;
-    }
-    // Check for OOB.
-    if (startLineNumber < 0) {
-      startLineNumber = 0;
-    }
-
-    // Adjust the end line as needed.
-    if (this.includeLineBelow) {
-      endLineNumber += 1;
-    }
-    // Check for OOB.
-    if (endLineNumber > TextEditor.getLineCount() - 1) {
-      endLineNumber = TextEditor.getLineCount() - 1;
-    }
-
-    // If initiated by a change operation, adjust the cursor to the indent level
-    // of the block.
-    let startCharacter = 0;
-    if (isChangeOperator) {
-      startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0)).firstNonWhitespaceCharacterIndex;
-    }
-    // TextEditor.getLineMaxColumn throws when given line 0, which we don't
-    // care about here since it just means this text object wouldn't work on a
-    // single-line document.
-    const endCharacter = TextEditor.readLineAt(endLineNumber).length;
-
-    return {
-      start: new Position(startLineNumber, startCharacter),
-      stop: new Position(endLineNumber, endCharacter),
-    };
-  }
-
-  /**
-   * Searches up from the cursor for the first non-empty line.
-   */
-  public static findFirstValidLine(cursorPosition: Position): number {
-    for (let i = cursorPosition.line; i >= 0; i--) {
-      const line = TextEditor.getLineAt(new Position(i, 0));
-
-      if (!line.isEmptyOrWhitespace) {
-        return i;
-      }
-    }
-
-    return cursorPosition.line;
-  }
-
-  /**
-   * Searches up or down from a line finding the first with a lower indent level.
-   */
-  public static findRangeStartOrEnd (startIndex: number, cursorIndent: number, step: -1 | 1): number {
-    let i = startIndex;
-    let ret = startIndex;
-    const end = step === 1
-      ? TextEditor.getLineCount()
-      : -1;
-
-    for (; i !== end; i += step) {
-      const line = TextEditor.getLineAt(new Position(i, 0));
-      const isLineEmpty = line.isEmptyOrWhitespace;
-      const lineIndent = line.firstNonWhitespaceCharacterIndex;
-
-      if (lineIndent < cursorIndent && !isLineEmpty) {
-        break;
-      }
-
-      ret = i;
-    }
-
-    return ret;
-  }
-}
-
-@RegisterAction
-class InsideIndentObject extends IndentObjectMatch {
-  keys = ["i", "i"];
-}
-
-@RegisterAction
-class InsideIndentObjectAbove extends IndentObjectMatch {
-  keys = ["a", "i"];
-  includeLineAbove = true;
-}
-
-@RegisterAction
-class InsideIndentObjectBoth extends IndentObjectMatch {
-  keys = ["a", "I"];
-  includeLineAbove = true;
-  includeLineBelow = true;
 }
 
 @RegisterAction
@@ -6984,441 +6473,6 @@ class MoveEasyMotion extends BaseCommand {
     }
 
     return vimState;
-  }
-}
-
-@RegisterAction
-class CommandSurroundModeStart extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = ["s"];
-  isCompleteAction = false;
-  runsOnceForEveryCursor() { return false; }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // Only execute the action if the configuration is set
-    if (!Configuration.surround) {
-      return vimState;
-    }
-
-    const operator = vimState.recordedState.operator;
-    let operatorString: "change" | "delete" | "yank" | undefined;
-
-    if (operator instanceof ChangeOperator) { operatorString = "change"; }
-    if (operator instanceof DeleteOperator) { operatorString = "delete"; }
-    if (operator instanceof YankOperator)   { operatorString = "yank"; }
-
-    if (!operatorString) { return vimState; }
-
-    // Start to record the keys to store for playback of surround using dot
-    vimState.recordedState.surroundKeys.push(vimState.keyHistory[vimState.keyHistory.length - 2]);
-    vimState.recordedState.surroundKeys.push("s");
-    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
-
-    vimState.surround = {
-      active     : true,
-      target     : undefined,
-      operator   : operatorString,
-      replacement: undefined,
-      range      : undefined,
-      isVisualLine   : false
-    };
-
-    if (operatorString !== "yank") {
-      vimState.currentMode = ModeName.SurroundInputMode;
-    }
-
-    return vimState;
-  }
-
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const hasSomeOperator = !!vimState.recordedState.operator;
-
-    return super.doesActionApply(vimState, keysPressed) &&
-      hasSomeOperator;
-  }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const hasSomeOperator = !!vimState.recordedState.operator;
-
-    return super.doesActionApply(vimState, keysPressed) &&
-      hasSomeOperator;
-  }
-}
-
-@RegisterAction
-class CommandSurroundModeStartVisual extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
-  keys = ["S"];
-  isCompleteAction = false;
-  runsOnceForEveryCursor() { return false; }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // Only execute the action if the configuration is set
-    if (!Configuration.surround) {
-      return vimState;
-    }
-
-    // Start to record the keys to store for playback of surround using dot
-    vimState.recordedState.surroundKeys.push("S");
-    vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
-
-    // Make sure cursor positions are ordered correctly for top->down or down->top selection
-    if (vimState.cursorStartPosition.line > vimState.cursorPosition.line) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] =
-        [vimState.cursorStartPosition, vimState.cursorPosition];
-    }
-
-    // Make sure start/end cursor positions are in order
-    if (vimState.cursorPosition.line < vimState.cursorPosition.line ||
-      (vimState.cursorPosition.line === vimState.cursorStartPosition.line
-        && vimState.cursorPosition.character < vimState.cursorStartPosition.character)) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] = [vimState.cursorStartPosition, vimState.cursorPosition];
-    }
-
-    vimState.surround = {
-      active: true,
-      target: undefined,
-      operator: "yank",
-      replacement: undefined,
-      range: new Range(vimState.cursorStartPosition, vimState.cursorPosition),
-      isVisualLine : false
-    };
-
-    if (vimState.currentMode === ModeName.VisualLine) {
-      vimState.surround.isVisualLine = true;
-    }
-
-    vimState.currentMode = ModeName.SurroundInputMode;
-    vimState.cursorPosition = vimState.cursorStartPosition;
-
-    return vimState;
-  }
-}
-
-@RegisterAction
-class CommandSurroundAddTarget extends BaseCommand {
-  modes = [ModeName.SurroundInputMode];
-  keys = [
-    ["("], [")"],
-    ["{"], ["}"],
-    ["["], ["]"],
-    ["<"], [">"],
-    ["'"], ['"'], ["`"],
-    ["t"],
-    ["w"], ["W"], ["s"],
-    ["p"]
-  ];
-  isCompleteAction = false;
-  runsOnceForEveryCursor() { return false; }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (!vimState.surround) {
-      return vimState;
-    }
-
-    vimState.surround.target = this.keysPressed[this.keysPressed.length - 1];
-
-    // It's possible we're already done, e.g. dst
-    await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position);
-
-    return vimState;
-  }
-
-  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) &&
-      !!(vimState.surround && vimState.surround.active &&
-      !vimState.surround.target &&
-      !vimState.surround.range);
-  }
-
-  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) &&
-      !!(vimState.surround && vimState.surround.active &&
-      !vimState.surround.target &&
-      !vimState.surround.range);
-  }
-}
-
-@RegisterAction
-class CommandSurroundAddToReplacement extends BaseCommand {
-  modes = [ModeName.SurroundInputMode];
-  keys = ["<any>"];
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (!vimState.surround) {
-      return vimState;
-    }
-
-    // Backspace modifies the tag entry
-    if (vimState.surround.replacement !== undefined) {
-      if (this.keysPressed[this.keysPressed.length - 1] === "<BS>" &&
-        vimState.surround.replacement[0] === "<") {
-
-        // Only allow backspace up until the < character
-        if (vimState.surround.replacement.length > 1) {
-          vimState.surround.replacement =
-            vimState.surround.replacement.slice(0, vimState.surround.replacement.length - 1);
-        }
-
-        return vimState;
-      }
-    }
-
-    if (!vimState.surround.replacement) {
-      vimState.surround.replacement = "";
-    }
-
-    let stringToAdd = this.keysPressed[this.keysPressed.length - 1];
-
-    // t should start creation of a tag
-    if (this.keysPressed[0] === "t" && vimState.surround.replacement.length === 0) {
-      stringToAdd = "<";
-    }
-
-    // Convert a few shortcuts to the correct surround characters when NOT entering a tag
-    if (vimState.surround.replacement.length === 0) {
-      if (stringToAdd === "b") { stringToAdd = "("; }
-      if (stringToAdd === "B") { stringToAdd = "{"; }
-      if (stringToAdd === "r") { stringToAdd = "["; }
-    }
-
-    vimState.surround.replacement += stringToAdd;
-
-    await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position);
-
-    return vimState;
-  }
-
-  public static Finish(vimState: VimState): boolean {
-    vimState.recordedState.hasRunOperator = false;
-    vimState.recordedState.actionsRun = [];
-    vimState.recordedState.hasRunSurround = true;
-    vimState.surround = undefined;
-    vimState.currentMode = ModeName.Normal;
-
-    // Record keys that were pressed since surround started
-    for (let i = vimState.recordedState.surroundKeyIndexStart; i < vimState.keyHistory.length; i++) {
-      vimState.recordedState.surroundKeys.push(vimState.keyHistory[i]);
-    }
-
-    return false;
-  }
-
-  // we assume that we start directly on the characters we're operating over
-  // e.g. cs{' starts us with start on { end on }.
-
-  public static RemoveWhitespace(vimState: VimState, start: Position, stop: Position): void {
-    const firstRangeStart = start.getRightThroughLineBreaks();
-    let   firstRangeEnd   = start.getRightThroughLineBreaks();
-
-    let   secondRangeStart = stop.getLeftThroughLineBreaks();
-    const secondRangeEnd   = stop.getLeftThroughLineBreaks().getRight();
-
-    if (firstRangeEnd.isEqual(secondRangeStart)) { return; }
-
-    while (!firstRangeEnd.isEqual(stop) &&
-           TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/) &&
-           !firstRangeEnd.isLineEnd()) {
-      firstRangeEnd = firstRangeEnd.getRight();
-    }
-
-    while (!secondRangeStart.isEqual(firstRangeEnd) &&
-           TextEditor.getCharAt(secondRangeStart).match(/[ \t]/) &&
-           !secondRangeStart.isLineBeginning()) {
-      secondRangeStart = secondRangeStart.getLeftThroughLineBreaks(false);
-    }
-
-    // Adjust range start based on found position
-    secondRangeStart = secondRangeStart.getRight();
-
-    const firstRange  = new Range(firstRangeStart, firstRangeEnd);
-    const secondRange = new Range(secondRangeStart, secondRangeEnd);
-
-    vimState.recordedState.transformations.push({ type: "deleteRange", range: firstRange });
-    vimState.recordedState.transformations.push({ type: "deleteRange", range: secondRange });
-  }
-
-  public static GetStartAndEndReplacements(replacement: string | undefined): { startReplace: string; endReplace: string; } {
-    if (!replacement) { return { startReplace: "", endReplace: "" }; }
-
-    let startReplace = replacement;
-    let endReplace   = replacement;
-
-    if (startReplace[0] === "<") {
-      endReplace = startReplace[0] + "/" + startReplace.slice(1);
-    }
-
-    if (startReplace.length === 1 && startReplace in PairMatcher.pairings) {
-      endReplace = PairMatcher.pairings[startReplace].match;
-
-      if (!PairMatcher.pairings[startReplace].nextMatchIsForward) {
-        [startReplace, endReplace] = [endReplace, startReplace];
-      } else {
-        startReplace = startReplace + " ";
-        endReplace = " " + endReplace;
-      }
-    }
-
-    return { startReplace, endReplace };
-  }
-
-  // Returns true if it could actually find something to run surround on.
-  public static async TryToExecuteSurround(vimState: VimState, position: Position): Promise<boolean> {
-    const { target, replacement, operator } = vimState.surround!;
-
-    if (operator === "change" || operator === "yank") {
-      if (!replacement) {
-        return false;
-      }
-
-      // This is an incomplete tag. Wait for the user to finish it.
-      if (replacement[0] === "<" && replacement[replacement.length - 1] !== ">") {
-        return false;
-      }
-    }
-
-    let { startReplace, endReplace } = this.GetStartAndEndReplacements(replacement);
-
-    if (operator === "yank") {
-      if (!vimState.surround) { return false; }
-      if (!vimState.surround.range) { return false; }
-
-      let start = vimState.surround.range.start;
-      let stop  = vimState.surround.range.stop;
-
-      stop = stop.getRight();
-
-      if (vimState.surround.isVisualLine) {
-        startReplace = startReplace + "\n";
-        endReplace = "\n" + endReplace;
-      }
-
-      vimState.recordedState.transformations.push({ type: "insertText", text: startReplace, position: start });
-      vimState.recordedState.transformations.push({ type: "insertText", text: endReplace,   position: stop });
-
-      return CommandSurroundAddToReplacement.Finish(vimState);
-    }
-
-    let startReplaceRange: Range | undefined;
-    let endReplaceRange: Range | undefined;
-    let startDeleteRange: Range | undefined;
-    let endDeleteRange: Range | undefined;
-
-    const quoteMatches: { char: string; movement: () => MoveQuoteMatch }[] = [
-      { char: "'", movement: () => new MoveASingleQuotes() },
-      { char: '"', movement: () => new MoveADoubleQuotes() },
-      { char: "`", movement: () => new MoveABacktick() },
-    ];
-
-    for (const { char, movement } of quoteMatches) {
-      if (char !== target) { continue; }
-
-      const { start, stop, failed } = await movement().execAction(position, vimState);
-
-      if (failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
-
-      startReplaceRange  = new Range(start, start.getRight());
-      endReplaceRange = new Range(stop, stop.getRight());
-    }
-
-    const pairedMatchings: { open: string, close: string, movement: () => MoveInsideCharacter }[] = [
-      { open: "{", close: "}", movement: () => new MoveACurlyBrace() },
-      { open: "[", close: "]", movement: () => new MoveASquareBracket() },
-      { open: "(", close: ")", movement: () => new MoveAParentheses() },
-      { open: "<", close: ">", movement: () => new MoveACaret() },
-    ];
-
-    for (const { open, close, movement } of pairedMatchings) {
-      if (target !== open && target !== close) { continue; }
-
-      let { start, stop, failed } = await movement().execAction(position, vimState);
-
-      if (failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
-
-      stop = stop.getLeft();
-
-      startReplaceRange = new Range(start, start.getRight());
-      endReplaceRange = new Range(stop, stop.getRight());
-
-      if (target === open) {
-        CommandSurroundAddToReplacement.RemoveWhitespace(vimState, start, stop);
-      }
-    }
-
-    if (target === "t") {
-      let { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
-      let tagEnd = await new MoveInsideTag().execAction(position, vimState);
-
-      if (failed || tagEnd.failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
-
-      stop        = stop.getRight();
-      tagEnd.stop = tagEnd.stop.getRight();
-
-      if (failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
-
-      startReplaceRange = new Range(start, start.getRight());
-      endReplaceRange   = new Range(tagEnd.stop, tagEnd.stop.getRight());
-
-      startDeleteRange = new Range(start.getRight(), tagEnd.start);
-      endDeleteRange   = new Range(tagEnd.stop.getRight(), stop);
-    }
-
-    if (operator === "change") {
-      if (!replacement) { return false; }
-      const wordMatchings: { char: string, movement: () => TextObjectMovement, addNewline: "no" | "end-only" | "both" }[] = [
-        { char: "w", movement: () => new SelectInnerWord(), addNewline: "no" },
-        { char: "p", movement: () => new SelectInnerParagraph(), addNewline: "both" },
-        { char: "s", movement: () => new SelectInnerSentence(), addNewline: "end-only" },
-        { char: "W", movement: () => new SelectInnerBigWord(), addNewline: "no" },
-      ];
-
-      for (const { char, movement, addNewline } of wordMatchings) {
-        if (target !== char) { continue; }
-
-        let { stop, start, failed } = await movement().execAction(position, vimState) as IMovement;
-
-        stop = stop.getRight();
-
-        if (failed) { return CommandSurroundAddToReplacement.Finish(vimState); }
-
-        if (addNewline === "end-only" || addNewline === "both") { endReplace = "\n" + endReplace; }
-        if (addNewline === "both") { startReplace += "\n"; }
-
-        vimState.recordedState.transformations.push({ type: "insertText", text: startReplace, position: start });
-        vimState.recordedState.transformations.push({ type: "insertText", text: endReplace,   position: stop });
-
-        return CommandSurroundAddToReplacement.Finish(vimState);
-      }
-    }
-
-    // We've got our ranges. Run the surround command with the appropriate operator.
-
-    if (!startReplaceRange && !endReplaceRange && !startDeleteRange && !endDeleteRange) {
-      return false;
-    }
-
-    if (operator === "change") {
-      if (!replacement) { return false; }
-
-      if (startReplaceRange) { TextEditor.replaceText(vimState, startReplace, startReplaceRange.start, startReplaceRange.stop); }
-      if (endReplaceRange)   { TextEditor.replaceText(vimState, endReplace  , endReplaceRange.start  , endReplaceRange.stop  ); }
-      if (startDeleteRange) { vimState.recordedState.transformations.push({ type: "deleteRange", range: startDeleteRange }); }
-      if (endDeleteRange)   { vimState.recordedState.transformations.push({ type: "deleteRange", range: endDeleteRange   }); }
-
-      return CommandSurroundAddToReplacement.Finish(vimState);
-    }
-
-    if (operator === "delete") {
-      if (startReplaceRange) { vimState.recordedState.transformations.push({ type: "deleteRange", range: startReplaceRange }); }
-      if (endReplaceRange)   { vimState.recordedState.transformations.push({ type: "deleteRange", range: endReplaceRange   }); }
-
-      if (startDeleteRange) { vimState.recordedState.transformations.push({ type: "deleteRange", range: startDeleteRange   }); }
-      if (endDeleteRange)   { vimState.recordedState.transformations.push({ type: "deleteRange", range: endDeleteRange     }); }
-
-      return CommandSurroundAddToReplacement.Finish(vimState);
-    }
-
-    return false;
   }
 }
 
