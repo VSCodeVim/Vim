@@ -2883,6 +2883,28 @@ class CommandTopScroll extends BaseCommand {
         at: "top"
       }
     });
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandTopScrollFirstChar extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["z", "\n"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // In these modes you want to center on the cursor position
+    // This particular one moves cursor to first non blank char though
+    vimState.postponedCodeViewChanges.push({
+      command: "revealLine",
+      args: {
+        lineNumber: position.line,
+        at: "top"
+      }
+    });
+
+    // Move cursor to first char of line
+    vimState.cursorPosition = vimState.cursorPosition.getFirstLineNonBlankChar();
 
     return vimState;
   }
@@ -2901,6 +2923,28 @@ class CommandBottomScroll extends BaseCommand {
         at: "bottom"
       }
     });
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandBottomScrollFirstChar extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ["z", "-"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    // In these modes you want to center on the cursor position
+    // This particular one moves cursor to first non blank char though
+    vimState.postponedCodeViewChanges.push({
+      command: "revealLine",
+      args: {
+        lineNumber: position.line,
+        at: "bottom"
+      }
+    });
+
+    // Move cursor to first char of line
+    vimState.cursorPosition = vimState.cursorPosition.getFirstLineNonBlankChar();
 
     return vimState;
   }
