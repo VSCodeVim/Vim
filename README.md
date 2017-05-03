@@ -1,22 +1,6 @@
-<h1 align="center">
-    <img src="https://raw.githubusercontent.com/VSCodeVim/Vim/master/images/icon.png" height="128">
-    <br>
-    VSCodeVim
-</h1>
-
+<h1 align="center"><img src="./images/icon.png" height="128"><br>VSCodeVim</h1>
 <p align="center"><strong>Vim emulation for Visual Studio Code.</strong></p>
-<p align="center">
-    <a href="http://aka.ms/vscodevim">
-        <img src="http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg" alt="Version">
-    </a>
-    <a href="https://travis-ci.org/VSCodeVim/Vim.svg?branch=master">
-        <img src="https://travis-ci.org/VSCodeVim/Vim.svg?branch=master" alt="Build Status">
-    </a>
-    <a href="https://vscodevim-slackin.azurewebsites.net">
-        <img src="https://vscodevim-slackin.azurewebsites.net/badge.svg" alt="Slack Status">
-    </a>
-</p>
-
+<p align="center"><a href="http://aka.ms/vscodevim"><img src="http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg" alt="Version"></a><a href="https://travis-ci.org/VSCodeVim/Vim.svg?branch=master"><img src="https://travis-ci.org/VSCodeVim/Vim.svg?branch=master" alt="Build Status"></a><a href="https://vscodevim-slackin.azurewebsites.net"><img src="https://vscodevim-slackin.azurewebsites.net/badge.svg" alt="Slack Status"></a></p>
 <hr>
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables Vim keybindings, including:
