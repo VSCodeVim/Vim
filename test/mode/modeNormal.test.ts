@@ -799,6 +799,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'diw' on trailing spaces at the end of line",
+      start: ['one   two   three  | ', 'five  six'],
+      keysPressed: 'diw',
+      end: ['one   two   thre|e', 'five  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'diw' on word with numeric prefix and across lines",
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'd3iw',
