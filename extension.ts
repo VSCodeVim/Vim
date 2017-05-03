@@ -15,9 +15,16 @@ import { Position } from './src/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
 import { ModeName } from './src/mode/mode';
-import { Configuration } from './src/configuration/configuration'
+import { Configuration } from './src/configuration/configuration';
 import { ICodeKeybinding } from './src/mode/remapper';
 import { runCmdLine } from './src/cmd_line/main';
+
+
+/**
+ * Make sure they are all loaded.
+ */
+require('./src/actions/surround');
+require('./src/actions/textobject');
 
 interface VSCodeKeybinding {
   key: string;
