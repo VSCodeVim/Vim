@@ -1645,12 +1645,14 @@ class CommandOverrideCopy extends BaseCommand {
         const start = Position.EarlierOf(range.start, range.stop);
         const stop  = Position.LaterOf(range.start, range.stop);
 
-        return vimState.editor.document.getText(new vscode.Range(
-          start,
-          vimState.currentMode === ModeName.Insert ?
-            stop :
-            stop.getRight()
-        ));
+        // Insert selecting from the left to the right is a special case that
+        // selects one more on the right.
+        // The order of the if statements is to check for the case where start=stop
+        if (vimState.currentMode !== ModeName.Insert || start.isEqual(range.stop)) {
+          return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
+        } else {
+          return vimState.editor.document.getText(new vscode.Range(start, stop));
+        }
       }).join("\n");
     } else if (vimState.currentMode === ModeName.VisualLine) {
       text = vimState.allCursors.map(range => {
