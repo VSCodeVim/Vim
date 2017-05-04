@@ -73,27 +73,25 @@ let modeHandlerToEditorIdentity: { [key: string]: ModeHandler } = {};
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-  const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
+  const prevHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
-  const oldModeHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
-
-  if (!oldModeHandler ||
-      oldModeHandler.vimState.editor !== vscode.window.activeTextEditor) {
-
+  let curHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
+  if (!curHandler) {
     const newModeHandler = new ModeHandler();
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
 
-    if (oldModeHandler) {
-      oldModeHandler.dispose();
-    }
+    curHandler = newModeHandler;
   }
 
-  const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
-
-  handler.vimState.editor = vscode.window.activeTextEditor!;
+  curHandler.vimState.editor = vscode.window.activeTextEditor!;
+  if (!prevHandler || curHandler.identity !== prevHandler.identity) {
+    setTimeout(() => {
+      curHandler.syncCursors();
+    }, 0);
+  }
 
   if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
     if (!previousActiveEditorId.isEqual(activeEditorId)) {
@@ -103,32 +101,32 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   } else {
     previousActiveEditorId = activeEditorId;
 
-    await handler.updateView(handler.vimState, {drawSelection: false, revealRange: false});
+    await curHandler.updateView(curHandler.vimState, {drawSelection: false, revealRange: false});
   }
 
-  if (oldHandler && oldHandler.vimState.focusChanged) {
-    oldHandler.vimState.focusChanged = false;
-    handler.vimState.focusChanged = true;
+  if (prevHandler && curHandler.vimState.focusChanged) {
+    curHandler.vimState.focusChanged = false;
+    prevHandler.vimState.focusChanged = true;
   }
 
-  vscode.commands.executeCommand('setContext', 'vim.mode', handler.vimState.currentModeName());
+  vscode.commands.executeCommand('setContext', 'vim.mode', curHandler.vimState.currentModeName());
 
   // Temporary workaround for vscode bug not changing cursor style properly
   // https://github.com/Microsoft/vscode/issues/17472
   // https://github.com/Microsoft/vscode/issues/17513
-  const options = handler.vimState.editor.options;
+  const options = curHandler.vimState.editor.options;
   const desiredStyle = options.cursorStyle;
 
   // Temporarily change to any other cursor style besides the desired type, then change back
   if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
-    handler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-    handler.vimState.editor.options.cursorStyle = desiredStyle;
+    curHandler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+    curHandler.vimState.editor.options.cursorStyle = desiredStyle;
   } else {
-    handler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-    handler.vimState.editor.options.cursorStyle = desiredStyle;
+    curHandler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+    curHandler.vimState.editor.options.cursorStyle = desiredStyle;
   }
 
-  return handler;
+  return curHandler;
 }
 
 class CompositionState {
