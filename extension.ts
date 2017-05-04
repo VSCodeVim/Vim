@@ -149,11 +149,12 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidChangeConfiguration((e: void) => {
     Configuration.updateConfiguration();
 
+    /* tslint:disable:forin */
     // Update the remappers foreach modehandler
     for (let mh in modeHandlerToEditorIdentity) {
       modeHandlerToEditorIdentity[mh].createRemappers();
     }
-  })
+  });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
@@ -177,7 +178,7 @@ export async function activate(context: vscode.ExtensionContext) {
         modeHandler.vimState.historyTracker.currentContentChanges =
           modeHandler.vimState.historyTracker.currentContentChanges.concat(event.contentChanges);
       }
-    }
+    };
 
     if (Globals.isTesting) {
       contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
@@ -216,7 +217,8 @@ export async function activate(context: vscode.ExtensionContext) {
         const mh = await getAndUpdateModeHandler();
 
         if (compositionState.isInComposition) {
-          compositionState.composingText = compositionState.composingText.substr(0, compositionState.composingText.length - args.replaceCharCnt) + args.text;
+          compositionState.composingText = compositionState.composingText
+            .substr(0, compositionState.composingText.length - args.replaceCharCnt) + args.text;
         } else {
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: args.text,

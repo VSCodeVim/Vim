@@ -5,9 +5,11 @@ import { Range } from './../motion/range';
 import { TextEditor } from './../textEditor';
 import { RecordedState, VimState } from './../mode/modeHandler';
 
-import { BaseMovement, RegisterAction, IMovement, ChangeOperator,
+import { RegisterAction, ChangeOperator } from './actions';
+import {
+  BaseMovement, IMovement,
   MoveASingleQuotes, MoveADoubleQuotes, MoveAClosingCurlyBrace, MoveAParentheses, MoveASquareBracket
-} from './actions';
+} from './motion';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
