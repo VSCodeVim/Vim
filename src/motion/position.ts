@@ -573,8 +573,7 @@ export class Position extends vscode.Position {
     while (TextEditor.getLineAt(pos).text !== "" && pos.line < TextEditor.getLineCount() - 1) {
      pos = pos.getDown(0);
     }
-
-    return pos.getLineEnd();
+    return pos.getLeftThroughLineBreaks();
   }
 
   /**
