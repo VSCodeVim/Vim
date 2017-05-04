@@ -33,13 +33,13 @@ import {
   BaseCommand, DocumentContentChangeAction, CommandQuitRecordMacro } from './../actions/commands/actions';
 import {
   CommandInsertInInsertMode, CommandInsertPreviousText
-} from './../actions/commands/insertCommands';
-import { Position, PositionDiff } from './../motion/position';
-import { Range } from './../motion/range';
+} from './../actions/commands/insert';
+import { Position, PositionDiff } from './../common/motion/position';
+import { Range } from './../common/motion/range';
 import { RegisterMode, Register } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
-import { PairMatcher } from './../matching/matcher';
+import { PairMatcher } from './../common/matching/matcher';
 import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';

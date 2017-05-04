@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { RecordedState, VimState } from './../../mode/modeHandler';
 import { Register, RegisterMode } from './../../register/register';
-import { Position, PositionDiff } from './../../motion/position';
-import { Range } from './../../motion/range';
+import { Position, PositionDiff } from './../../common/motion/position';
+import { Range } from './../../common/motion/range';
 import { ModeName } from './../../mode/mode';
 import { Configuration } from './../../configuration/configuration';
 import { TextEditor } from './../../textEditor';
