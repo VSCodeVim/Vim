@@ -12,7 +12,8 @@
     ],
     "sourceMap": true,
     "strictNullChecks": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "baseUrl": "."
   },
   "exclude": [
     "node_modules",
