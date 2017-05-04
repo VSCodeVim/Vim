@@ -7,10 +7,13 @@ import { RecordedState, VimState } from './../mode/modeHandler';
 import { PairMatcher } from './../matching/matcher';
 import { Configuration } from './../configuration/configuration';
 import {
-  BaseCommand, BaseMovement, RegisterAction, IMovement, ChangeOperator, DeleteOperator, YankOperator,
+  BaseCommand, RegisterAction, ChangeOperator, DeleteOperator, YankOperator,
+} from './actions';
+import {
+  BaseMovement, IMovement,
   MoveQuoteMatch, MoveASingleQuotes, MoveADoubleQuotes, MoveABacktick, MoveInsideCharacter, MoveACurlyBrace, MoveInsideTag,
   MoveAParentheses, MoveASquareBracket, MoveACaret, MoveAroundTag
-} from './actions';
+} from './motion';
 import {
   TextObjectMovement, SelectInnerWord, SelectInnerBigWord, SelectInnerSentence, SelectInnerParagraph
 } from './textobject';

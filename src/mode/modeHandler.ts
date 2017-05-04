@@ -27,9 +27,14 @@ import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
 import { EasyMotion } from './../easymotion/easymotion';
 import {
-  BaseMovement, BaseCommand, Actions, BaseAction,
-  BaseOperator, DocumentContentChangeAction, CommandInsertInInsertMode, CommandInsertPreviousText, CommandQuitRecordMacro,
-  isIMovement, KeypressState } from './../actions/actions';
+  BaseCommand, Actions, BaseAction,
+  BaseOperator, DocumentContentChangeAction, CommandQuitRecordMacro, KeypressState } from './../actions/actions';
+import {
+  BaseMovement, isIMovement
+} from './../actions/motion';
+import {
+  CommandInsertInInsertMode, CommandInsertPreviousText
+} from './../actions/insertCommands';
 import { Position, PositionDiff } from './../motion/position';
 import { Range } from './../motion/range';
 import { RegisterMode, Register } from './../register/register';
