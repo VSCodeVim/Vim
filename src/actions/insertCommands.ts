@@ -6,11 +6,12 @@ import { Range } from './../motion/range';
 import { ModeName } from './../mode/mode';
 import { Configuration } from './../configuration/configuration';
 import { TextEditor } from './../textEditor';
+import { RegisterAction } from './base';
 import {
   ArrowsInInsertMode
 } from './motion';
 import {
-  RegisterAction, BaseCommand, DocumentContentChangeAction, CommandInsertAtCursor, CommandInsertAfterCursor
+  BaseCommand, DocumentContentChangeAction, CommandInsertAtCursor, CommandInsertAfterCursor
 } from './actions';
 
 @RegisterAction

@@ -1,11 +1,10 @@
-import * as vscode from 'vscode';
 import { ModeName } from './../mode/mode';
-import { Position, PositionDiff } from './../motion/position';
+import { Position } from './../motion/position';
 import { Range } from './../motion/range';
 import { TextEditor } from './../textEditor';
-import { RecordedState, VimState } from './../mode/modeHandler';
-
-import { RegisterAction, ChangeOperator } from './actions';
+import { VimState } from './../mode/modeHandler';
+import { RegisterAction } from './base';
+import { ChangeOperator } from './operator';
 import {
   BaseMovement, IMovement,
   MoveASingleQuotes, MoveADoubleQuotes, MoveAClosingCurlyBrace, MoveAParentheses, MoveASquareBracket

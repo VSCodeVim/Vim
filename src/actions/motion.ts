@@ -1,17 +1,16 @@
 import * as vscode from 'vscode';
 import { ModeName } from './../mode/mode';
 import { Position, PositionDiff } from './../motion/position';
-import { Range } from './../motion/range';
-import { TextEditor, EditorScrollByUnit, EditorScrollDirection, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
-import { RecordedState, VimState } from './../mode/modeHandler';
-import { Register, RegisterMode } from './../register/register';
+import { TextEditor, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
+import { VimState } from './../mode/modeHandler';
+import { RegisterMode } from './../register/register';
 import { PairMatcher } from './../matching/matcher';
 import { ReplaceState } from './../state/replaceState';
 import { QuoteMatcher } from './../matching/quoteMatcher';
 import { TagMatcher } from './../matching/tagMatcher';
-import {
-  RegisterAction, BaseAction, ChangeOperator
-} from './actions';
+import { RegisterAction } from './base';
+import { ChangeOperator } from './operator';
+import { BaseAction } from './base';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined &&
