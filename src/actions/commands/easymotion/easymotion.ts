@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
-
-import { Position } from './../motion/position';
-import { TextEditor } from './../textEditor';
-import { Configuration } from './../configuration/configuration';
+import { Position } from './../../../motion/position';
+import { Configuration } from './../../../configuration/configuration';
+import { TextEditor } from './../../../textEditor';
 
 export class EasyMotion {
   /**

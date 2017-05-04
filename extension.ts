@@ -19,16 +19,7 @@ import { Configuration } from './src/configuration/configuration';
 import { ICodeKeybinding } from './src/mode/remapper';
 import { runCmdLine } from './src/cmd_line/main';
 
-
-/**
- * Make sure they are all loaded.
- */
-require('./src/actions/surround');
-require('./src/actions/textobject');
-require('./src/actions/operator');
-require('./src/actions/motion');
-require('./src/actions/insertCommands');
-
+import './src/actions/vim.all';
 
 interface VSCodeKeybinding {
   key: string;
