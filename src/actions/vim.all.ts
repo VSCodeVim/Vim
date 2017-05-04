@@ -5,8 +5,15 @@ import './base';
 import './operator';
 import './motion';
 import './textobject';
-import './surround';
-import './insertCommands';
+
+// commands
+import './commands/insertCommands';
+
+/**
+ * Plugins
+ */
 
 // easymotion
-import './commands/easymotion/easymotion.cmd';
+import './plugins/easymotion/easymotion.cmd';
+// surround
+import './plugins/surround';
