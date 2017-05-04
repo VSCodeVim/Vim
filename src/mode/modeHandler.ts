@@ -26,12 +26,11 @@ import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
 import { EasyMotion } from './../easymotion/easymotion';
+import { Actions, KeypressState, BaseAction } from './../actions/base';
+import { BaseOperator } from './../actions/operator';
+import { BaseMovement, isIMovement } from './../actions/motion';
 import {
-  BaseCommand, Actions, BaseAction,
-  BaseOperator, DocumentContentChangeAction, CommandQuitRecordMacro, KeypressState } from './../actions/actions';
-import {
-  BaseMovement, isIMovement
-} from './../actions/motion';
+  BaseCommand, DocumentContentChangeAction, CommandQuitRecordMacro } from './../actions/actions';
 import {
   CommandInsertInInsertMode, CommandInsertPreviousText
 } from './../actions/insertCommands';

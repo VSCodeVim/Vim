@@ -25,6 +25,10 @@ import { runCmdLine } from './src/cmd_line/main';
  */
 require('./src/actions/surround');
 require('./src/actions/textobject');
+require('./src/actions/operator');
+require('./src/actions/motion');
+require('./src/actions/insertCommands');
+
 
 interface VSCodeKeybinding {
   key: string;
