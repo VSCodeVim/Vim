@@ -25,7 +25,7 @@ import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
-import { EasyMotion } from './../easymotion/easymotion';
+import { EasyMotion } from './../actions/commands/easymotion/easymotion';
 import { Actions, KeypressState, BaseAction } from './../actions/base';
 import { BaseOperator } from './../actions/operator';
 import { BaseMovement, isIMovement } from './../actions/motion';
