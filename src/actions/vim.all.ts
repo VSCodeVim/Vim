@@ -7,7 +7,7 @@ import './motion';
 import './textobject';
 
 // commands
-import './commands/insertCommands';
+import './commands/insert';
 
 /**
  * Plugins

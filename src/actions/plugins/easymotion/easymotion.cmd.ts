@@ -1,5 +1,5 @@
 import { EasyMotion } from './easymotion';
-import { Position } from './../../../motion/position';
+import { Position } from './../../../common/motion/position';
 import { ModeName } from './../../../mode/mode';
 import { Configuration } from './../../../configuration/configuration';
 import { BaseCommand } from './../../commands/actions';

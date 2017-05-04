@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import { ModeName } from './../mode/mode';
-import { Position, PositionDiff } from './../motion/position';
+import { Position, PositionDiff } from './../common/motion/position';
 import { TextEditor, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
 import { VimState } from './../mode/modeHandler';
 import { RegisterMode } from './../register/register';
-import { PairMatcher } from './../matching/matcher';
+import { PairMatcher } from './../common/matching/matcher';
 import { ReplaceState } from './../state/replaceState';
-import { QuoteMatcher } from './../matching/quoteMatcher';
-import { TagMatcher } from './../matching/tagMatcher';
+import { QuoteMatcher } from './../common/matching/quoteMatcher';
+import { TagMatcher } from './../common/matching/tagMatcher';
 import { RegisterAction } from './base';
 import { ChangeOperator } from './operator';
 import { BaseAction } from './base';

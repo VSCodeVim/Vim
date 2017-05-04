@@ -1,21 +1,21 @@
-import { ModeName } from './../mode/mode';
-import { Position } from './../motion/position';
-import { Range } from './../motion/range';
-import { TextEditor } from './../textEditor';
-import { VimState } from './../mode/modeHandler';
-import { PairMatcher } from './../matching/matcher';
-import { Configuration } from './../configuration/configuration';
-import { RegisterAction } from './base';
-import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
-import { BaseCommand } from './actions';
+import { ModeName } from './../../mode/mode';
+import { Position } from './../../common/motion/position';
+import { Range } from './../../common/motion/range';
+import { TextEditor } from './../../textEditor';
+import { VimState } from './../../mode/modeHandler';
+import { PairMatcher } from './../../common/matching/matcher';
+import { Configuration } from './../../configuration/configuration';
+import { RegisterAction } from './../base';
+import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
+import { BaseCommand } from './../commands/actions';
 import {
   IMovement,
   MoveQuoteMatch, MoveASingleQuotes, MoveADoubleQuotes, MoveABacktick, MoveInsideCharacter, MoveACurlyBrace, MoveInsideTag,
   MoveAParentheses, MoveASquareBracket, MoveACaret, MoveAroundTag
-} from './motion';
+} from './../motion';
 import {
   TextObjectMovement, SelectInnerWord, SelectInnerBigWord, SelectInnerSentence, SelectInnerParagraph
-} from './textobject';
+} from './../textobject';
 
 @RegisterAction
 export class CommandSurroundAddToReplacement extends BaseCommand {

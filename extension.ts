@@ -11,7 +11,7 @@ import * as _ from "lodash";
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { taskQueue } from './src/taskQueue';
-import { Position } from './src/motion/position';
+import { Position } from './src/common/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
 import { ModeName } from './src/mode/mode';

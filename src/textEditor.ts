@@ -3,7 +3,7 @@ import { ReplaceTextTransformation } from './transformations/transformations';
 import { VimState } from './mode/modeHandler';
 
 import * as vscode from 'vscode';
-import { Position, PositionDiff } from './motion/position';
+import { Position, PositionDiff } from './common/motion/position';
 import { Configuration } from './configuration/configuration';
 import { Globals } from './globals';
 

@@ -1,6 +1,6 @@
 import { ModeName } from './../mode/mode';
-import { Position } from './../motion/position';
-import { Range } from './../motion/range';
+import { Position } from './../common/motion/position';
+import { Range } from './../common/motion/range';
 import { TextEditor } from './../textEditor';
 import { VimState } from './../mode/modeHandler';
 import { RegisterAction } from './base';
