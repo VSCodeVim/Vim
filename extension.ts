@@ -230,7 +230,6 @@ export async function activate(context: vscode.ExtensionContext) {
   overrideCommand(context, 'compositionStart', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
-        const mh = await getAndUpdateModeHandler();
         compositionState.isInComposition = true;
       },
       isRunning: false
