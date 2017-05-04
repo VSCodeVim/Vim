@@ -1,25 +1,25 @@
-import { RecordedState, VimState } from './../mode/modeHandler';
-import { SearchState, SearchDirection } from './../state/searchState';
-import { ReplaceState } from './../state/replaceState';
-import { VisualBlockMode } from './../mode/modeVisualBlock';
-import { ModeName } from './../mode/mode';
-import { VisualBlockInsertionType } from './../mode/modeVisualBlock';
-import { Range } from './../motion/range';
-import { TextEditor, EditorScrollByUnit, EditorScrollDirection } from './../textEditor';
-import { Register, RegisterMode } from './../register/register';
-import { NumericString } from './../number/numericString';
-import { Position, PositionDiff } from './../motion/position';
-import { Tab, TabCommand } from './../cmd_line/commands/tab';
-import { Configuration } from './../configuration/configuration';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
-import { isTextTransformation } from './../transformations/transformations';
-import { FileCommand } from './../cmd_line/commands/file';
-import { QuitCommand } from './../cmd_line/commands/quit';
+import { RecordedState, VimState } from './../../mode/modeHandler';
+import { SearchState, SearchDirection } from './../../state/searchState';
+import { ReplaceState } from './../../state/replaceState';
+import { VisualBlockMode } from './../../mode/modeVisualBlock';
+import { ModeName } from './../../mode/mode';
+import { VisualBlockInsertionType } from './../../mode/modeVisualBlock';
+import { Range } from './../../motion/range';
+import { TextEditor, EditorScrollByUnit, EditorScrollDirection } from './../../textEditor';
+import { Register, RegisterMode } from './../../register/register';
+import { NumericString } from './../../number/numericString';
+import { Position, PositionDiff } from './../../motion/position';
+import { Tab, TabCommand } from './../../cmd_line/commands/tab';
+import { Configuration } from './../../configuration/configuration';
+import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../../util';
+import { isTextTransformation } from './../../transformations/transformations';
+import { FileCommand } from './../../cmd_line/commands/file';
+import { QuitCommand } from './../../cmd_line/commands/quit';
 import * as vscode from 'vscode';
-import * as util from './../util';
-import { RegisterAction } from './base';
-import * as operator from './operator';
-import { BaseAction } from './base';
+import * as util from './../../util';
+import { RegisterAction } from './../base';
+import * as operator from './../operator';
+import { BaseAction } from './../base';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {

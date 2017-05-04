@@ -2,7 +2,7 @@ import { EasyMotion } from './easymotion';
 import { Position } from './../../../motion/position';
 import { ModeName } from './../../../mode/mode';
 import { Configuration } from './../../../configuration/configuration';
-import { BaseCommand } from './../../actions';
+import { BaseCommand } from './../../commands/actions';
 import { RegisterAction } from './../../base';
 import { VimState } from './../../../mode/modeHandler';
 

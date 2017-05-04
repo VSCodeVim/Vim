@@ -25,15 +25,15 @@ import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
-import { EasyMotion } from './../actions/commands/easymotion/easymotion';
+import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { Actions, KeypressState, BaseAction } from './../actions/base';
 import { BaseOperator } from './../actions/operator';
 import { BaseMovement, isIMovement } from './../actions/motion';
 import {
-  BaseCommand, DocumentContentChangeAction, CommandQuitRecordMacro } from './../actions/actions';
+  BaseCommand, DocumentContentChangeAction, CommandQuitRecordMacro } from './../actions/commands/actions';
 import {
   CommandInsertInInsertMode, CommandInsertPreviousText
-} from './../actions/insertCommands';
+} from './../actions/commands/insertCommands';
 import { Position, PositionDiff } from './../motion/position';
 import { Range } from './../motion/range';
 import { RegisterMode, Register } from './../register/register';
