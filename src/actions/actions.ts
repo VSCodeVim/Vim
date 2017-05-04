@@ -3054,9 +3054,21 @@ class CommandClearLine extends BaseCommand {
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let count = vimState.recordedState.count || 1;
-    let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft();
-    return new ChangeOperator().run(vimState, position.getLineBeginRespectingIndent(), end);
+    let indentLine = position;
+    do {
+      indentLine = indentLine.getUp(1);
+    } while (indentLine.getLineEnd().character === 0 && indentLine.getDocumentBegin().line !== indentLine.line);
+    let indentLevel = TextEditor.getIndentationLevel(TextEditor.getLineAt(indentLine).text);
+    vimState.recordedState.transformations.push({
+      type: "replaceText",
+      text: TextEditor.setIndentationLevel("", indentLevel),
+      start: position.getLineBegin(),
+      end: position.getLineEnd(),
+      manuallySetCursorPositions: true
+    });
+    vimState.currentMode = ModeName.Insert;
+    vimState.cursorPosition = new Position(position.line, indentLevel);
+    return vimState;
   }
 }
 
