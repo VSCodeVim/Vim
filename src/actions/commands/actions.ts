@@ -2203,17 +2203,15 @@ class ActionDeleteCharWithDeleteKey extends BaseCommand {
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // N<del> is a no-op in Vim
-    if (vimState.recordedState.count !== 0) {
-      return vimState;
-    }
-
-    const state = await new operator.DeleteOperator(this.multicursorIndex).run(vimState, position, position);
-
-    state.currentMode = ModeName.Normal;
-
-    return state;
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+      if (vimState.recordedState.count !== 0) {
+        vimState.recordedState.count = Math.floor(vimState.recordedState.count / 10);
+        vimState.recordedState.actionKeys = vimState.recordedState.count.toString().split("");
+        vimState.recordedState.commandList = vimState.recordedState.count.toString().split("");
+        this.isCompleteAction = false;
+        return vimState;
+      }
+     return await new ActionDeleteChar().execCount(position, vimState);
   }
 }
 
