@@ -2932,7 +2932,8 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
     vimState.isMultiCursor = true;
     vimState.isBlockMultiCursor = true;
 
-    for (const {start} of Position.IterateLine(vimState)) {
+    for (const {line, start} of Position.IterateLine(vimState)) {
+      if (line === "") continue;
       vimState.allCursors.push(new Range(start, start));
     }
     vimState.allCursors = vimState.allCursors.slice(1);

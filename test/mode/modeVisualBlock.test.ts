@@ -90,13 +90,6 @@ suite("Mode Visual Block", () => {
   });
 
   newTest({
-    title: "Can handle s backwards select",
-    start: ['tes|t', 'test'],
-    keysPressed: 'h<C-v>hjs123',
-    end: ['t123|t', 't123t'],
-  });
-
-  newTest({
     title: "Can handle C",
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjC123',
