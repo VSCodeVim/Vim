@@ -203,7 +203,7 @@ export interface Tab {
   /**
    * Move the cursor this much.
    */
-  diff: PositionDiff;
+  diff?: PositionDiff;
 }
 
 /**

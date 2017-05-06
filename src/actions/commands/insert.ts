@@ -174,6 +174,21 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     return vimState;
   }
 }
+
+@RegisterAction
+export class CommandInsertTabInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<tab>"];
+  runsOnceForEveryCursor() { return false; }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type: "tab"
+    });
+    return vimState;
+  }
+}
+
 @RegisterAction
 export class CommandInsertInInsertMode extends BaseCommand {
   modes = [ModeName.Insert];
@@ -216,12 +231,6 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
       vimState.cursorPosition = vimState.cursorPosition.getLeft();
       vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
-    } else if (char === "<tab>") {
-      vimState.recordedState.transformations.push({
-        type: "tab",
-        diff: new PositionDiff(0, 0),
-        cursorIndex: this.multicursorIndex
-      });
     } else {
       if (vimState.isMultiCursor) {
         vimState.recordedState.transformations.push({
