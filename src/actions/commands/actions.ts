@@ -1352,7 +1352,7 @@ export class PutCommandVisual extends BaseCommand {
     if (start.isAfter(end)) {
       [start, end] = [end, start];
     }
-    // The reason weneed to handle Delete and Yank separately is because of
+    // The reason we need to handle Delete and Yank separately is because of
     // linewise mode. If we're in visualLine mode, then we want to copy
     // linewise but not necessarily delete linewise.
     let result =  await new PutCommand().exec(start, vimState, true);
