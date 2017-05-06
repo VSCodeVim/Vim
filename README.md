@@ -29,7 +29,7 @@ Donations help convince me to work on this project rather than my other (non-ope
 
 ## Contents
 
-* [Quick example settings](#quick-example-settings)
+* [Getting Started](#getting-started)
     * [Mac setup](#mac-setup)
     * [Windows setup](#windows-setup)
 * [Settings](#settings)
