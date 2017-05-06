@@ -2933,7 +2933,9 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
     vimState.isBlockMultiCursor = true;
 
     for (const {line, start} of Position.IterateLine(vimState)) {
-      if (line === "") continue;
+      if (line === "" && start.character !== 0) {
+        continue;
+      }
       vimState.allCursors.push(new Range(start, start));
     }
     vimState.allCursors = vimState.allCursors.slice(1);
@@ -3008,14 +3010,16 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
     vimState.isMultiCursor = true;
     vimState.isBlockMultiCursor = true;
 
-     // Make sure the cursor position is at the end since we are appending
-    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] =
-        [vimState.cursorStartPosition, vimState.cursorPosition];
-    }
-
-    // Make sure we are in the TOP right
-    for (const {end} of Position.IterateLine(vimState)) {
+    for (const {line, end} of Position.IterateLine(vimState)) {
+      if (line.trim() === "") {
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: TextEditor.setIndentationLevel(line, end.character),
+          start: new Position(end.line, 0),
+          end: new Position(end.line, end.character),
+          position: new Position(end.line, 0)
+        });
+      }
       vimState.allCursors.push(new Range(end, end));
     }
     vimState.allCursors = vimState.allCursors.slice(1);
