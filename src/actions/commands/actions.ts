@@ -1348,14 +1348,20 @@ export class PutCommandVisual extends BaseCommand {
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
     let start = vimState.cursorStartPosition;
     let end = vimState.cursorPosition;
-
+    const isLineWise = vimState.currentMode === ModeName.VisualLine;
     if (start.isAfter(end)) {
       [start, end] = [end, start];
     }
+    // The reason we need to handle Delete and Yank separately is because of
+    // linewise mode. If we're in visualLine mode, then we want to copy
+    // linewise but not necessarily delete linewise.
+    let result =  await new PutCommand().exec(start, vimState, true);
+    result.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
+    result = await new operator.YankOperator(this.multicursorIndex).run(result, start, end);
+    result.currentRegisterMode = RegisterMode.CharacterWise;
+    result = await new operator.DeleteOperator(this.multicursorIndex).run(result, start, end.getLeftIfEOL(), false);
+    return result;
 
-    const result = await new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
-
-    return await new PutCommand().exec(start, result, true);
   }
 
   // TODO - execWithCount
