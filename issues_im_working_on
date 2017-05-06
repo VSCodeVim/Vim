@@ -1,0 +1,17 @@
+https://github.com/VSCodeVim/Vim/issues/828 Support for global (:g) #828
+https://github.com/VSCodeVim/Vim/issues/1089 Marks: go to the position before the last jump #1089
+https://github.com/VSCodeVim/Vim/issues/612 Repeated commands that insert white space at from of line doesn't work #612
+https://github.com/VSCodeVim/Vim/issues/1618 Add support for Surround with repeated commands #1618
+https://github.com/VSCodeVim/Vim/issues/1334 Bug in exact word match #1334
+https://github.com/VSCodeVim/Vim/issues/1150 Supoort for Tags is missing. #1150
+https://github.com/VSCodeVim/Vim/issues/1400 776 1634 612
+Add comments to PR's I submitted.
+
+
+
+
+Better solution somewhere else:
+https://github.com/VSCodeVim/Vim/issues/651 bug: press % for matching does not work or goes to wrong locations #651(VSCode API)
+
+Somebody else is working on it:
+https://github.com/VSCodeVim/Vim/issues/1160 Multi-Cursor selection #1160

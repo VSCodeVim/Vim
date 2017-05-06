@@ -3,7 +3,6 @@ import { SearchState, SearchDirection } from './../../state/searchState';
 import { ReplaceState } from './../../state/replaceState';
 import { VisualBlockMode } from './../../mode/modeVisualBlock';
 import { ModeName } from './../../mode/mode';
-import { VisualBlockInsertionType } from './../../mode/modeVisualBlock';
 import { Range } from './../../common/motion/range';
 import { TextEditor, EditorScrollByUnit, EditorScrollDirection } from './../../textEditor';
 import { Register, RegisterMode } from './../../register/register';
