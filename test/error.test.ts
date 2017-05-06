@@ -9,6 +9,7 @@ suite("ErrorCode", () => {
     assert.equal(ErrorCode.E37, 37);
     assert.equal(ErrorCode.E208, 208);
     assert.equal(ErrorCode.E348, 348);
+    assert.equal(ErrorCode.E444, 444);
     assert.equal(ErrorCode.E488, 488);
   });
 });
@@ -28,6 +29,10 @@ suite("vimError", () => {
     e = VimError.fromCode(ErrorCode.E37);
     assert.equal(e.code, 37);
     assert.equal(e.message, "No write since last change (add ! to override)");
+
+    e = VimError.fromCode(ErrorCode.E444);
+    assert.equal(e.code, 444);
+    assert.equal(e.message, "Cannot close last window");
 
     e = VimError.fromCode(ErrorCode.E488);
     assert.equal(e.code, 488);
