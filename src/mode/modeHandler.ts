@@ -93,6 +93,8 @@ export class VimState {
    */
   public isMultiCursor = false;
 
+  public isBlockMultiCursor = false;
+
   /**
    * Tracks movements that can be repeated with ; and , (namely t, T, f, and F).
    */

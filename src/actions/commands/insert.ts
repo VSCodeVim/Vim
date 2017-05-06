@@ -23,25 +23,27 @@ class CommandEscInsertMode extends BaseCommand {
     ["<C-[>"],
   ];
 
+  runsOnceForEveryCursor() { return false; }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.cursorPosition = position.getLeft();
+    vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft()));
 
     // only remove leading spaces inserted by vscode.
     // vscode only inserts them when user enter a new line,
     // ie, o/O in Normal mode or \n in Insert mode.
-    const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
-    if (['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
-      vimState.editor.document.languageId !== 'plaintext' &&
-      /^\s+$/.test(TextEditor.getLineAt(position).text)) {
-      vimState.recordedState.transformations.push({
-        type: "deleteRange",
-        range: new Range(position.getLineBegin(), position.getLineEnd())
-      });
-      vimState.cursorPosition = position.getLineBegin();
+    for (let i = 0; i < vimState.allCursors.length; i++) {
+      const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
+      if (['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
+        vimState.editor.document.languageId !== 'plaintext' &&
+        /^\s+$/.test(TextEditor.getLineAt(vimState.allCursors[i].stop).text)) {
+        vimState.recordedState.transformations.push({
+          type: "deleteRange",
+          range: new Range(vimState.allCursors[i].stop.getLineBegin(), vimState.allCursors[i].stop.getLineEnd())
+        });
+        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(vimState.allCursors[i].stop.getLineBegin());
+      }
     }
-
     vimState.currentMode = ModeName.Normal;
-
     // If we wanted to repeat this insert (only for i and a), now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
     const typeOfInsert = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 3];
@@ -77,6 +79,11 @@ class CommandEscInsertMode extends BaseCommand {
       vimState.historyTracker.currentContentChanges = [];
     }
 
+    if (vimState.isBlockMultiCursor) {
+      vimState.allCursors = [vimState.allCursors[0]];
+      vimState.isMultiCursor = false;
+      vimState.isBlockMultiCursor = false;
+    }
     return vimState;
   }
 }
