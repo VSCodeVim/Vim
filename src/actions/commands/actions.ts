@@ -2105,6 +2105,36 @@ class MoveToRightPane extends BaseCommand {
 }
 
 @RegisterAction
+class MoveToLowerPane extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [["<C-w>", "j"], ["<C-w>", "<down>"], ["<C-w j>"]];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.navigateDown",
+      args: {}
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveToUpperPane extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [["<C-w>", "k"], ["<C-w>", "<up>"], ["<C-w k>"]];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.navigateUp",
+      args: {}
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class MoveToLeftPane  extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [["<C-w>", "h"], ["<C-w>", "<left>"], ["<C-w h>"]];
@@ -2119,14 +2149,15 @@ class MoveToLeftPane  extends BaseCommand {
   }
 }
 
+
 @RegisterAction
 class CycleThroughPanes extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<C-w>", "<C-w>"];
+  keys = [["<C-w>", "<C-w>"], ["<C-w>", "w"]];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
-      command: "workbench.action.navigateRight",
+      command: "workbench.action.navigateEditorGroups",
       args: {}
     });
 
