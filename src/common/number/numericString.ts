@@ -26,8 +26,7 @@ export class NumericString {
       let findPrefix = /^[^\d-+]+(?=[0-9]+)/i;
 
       // Regex to find any trailing characters after the number
-      let findSuffix = /[^\d]*$/i;
-
+      let findSuffix = /[^\d]*[\d]*(.*)/i;
       let newPrefix = prefix;
       let newSuffix = "";
       let newNum = input;
@@ -44,11 +43,11 @@ export class NumericString {
 
         // Find the suffix if it exists
         if (suffixFound !== null) {
-          newSuffix = suffixFound.toString();
+          newSuffix = suffixFound[1].toString();
         }
 
         // Obtain just the number with no extra letters
-        newNum = input.replace(/[^\d-+]+/ig, '');
+        newNum = newNum.slice(newPrefix.length, newNum.length - newSuffix.length);
       }
 
       return new NumericString(parseInt(newNum, base), base, newPrefix, newSuffix);
