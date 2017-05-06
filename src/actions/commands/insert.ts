@@ -216,6 +216,12 @@ export class CommandInsertInInsertMode extends BaseCommand {
 
       vimState.cursorPosition = vimState.cursorPosition.getLeft();
       vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
+    } else if (char === "<tab>") {
+      vimState.recordedState.transformations.push({
+        type: "tab",
+        diff: new PositionDiff(0, 0),
+        cursorIndex: this.multicursorIndex
+      });
     } else {
       if (vimState.isMultiCursor) {
         vimState.recordedState.transformations.push({
