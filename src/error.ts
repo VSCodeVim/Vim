@@ -11,6 +11,7 @@ export enum ErrorCode {
   E32 = 32,
   E208 = 208,
   E348 = 348,
+  E444 = 444,
   E488 = 488
 }
 
@@ -19,6 +20,7 @@ const errors : IVimErrors = {
   37: "No write since last change (add ! to override)",
   208: "Error writing to file",
   348: "No string under cursor",
+  444: "Cannot close last window",
   488: "Trailing characters"
 };
 
