@@ -2932,6 +2932,7 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
     vimState.isMultiCursor = true;
     vimState.isBlockMultiCursor = true;
 
+
     for (const {line, start} of Position.IterateLine(vimState)) {
       if (line === "" && start.character !== 0) {
         continue;
@@ -2946,7 +2947,7 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 @RegisterAction
 class ActionChangeInVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ["c"];
+  keys = [["c"], ["s"]];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -2974,7 +2975,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 @RegisterAction
 class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ["C"];
+  keys = [["C"], ["S"]];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
