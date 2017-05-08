@@ -232,7 +232,7 @@
       {
         "key": "cmd+c",
         "command": "extension.vim_cmd+c",
-        "when": "editorTextFocus && vvim.active && im.use<D-c> && vim.overrideCopy && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-c> && vim.overrideCopy && !inDebugRepl"
       },
       {
         "key": "ctrl+a",
