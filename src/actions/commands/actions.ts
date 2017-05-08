@@ -2001,17 +2001,21 @@ class CommandInsertNewLineAbove extends BaseCommand {
   keys = ["O"];
   runsOnceForEveryCursor() { return true; }
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(position).text);
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
+    let count = vimState.recordedState.count || 1;
 
-    vimState.recordedState.transformations.push({
-      type: "insertText",
-      text: TextEditor.setIndentationLevel("V", indentationWidth).replace("V", "\n"),
-      position: new Position(vimState.cursorPosition.line, 0),
-      diff: new PositionDiff(-1, indentationWidth),
-    });
-
+    for (let i=0; i < count; i++) {
+      await vscode.commands.executeCommand('editor.action.insertLineBefore');
+    }
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    for (let i=1; i<count; i++) {
+      const newPos = new Position(vimState.allCursors[0].start.line + i, vimState.allCursors[0].start.character);
+      vimState.allCursors.push(new Range(newPos, newPos));
+    }
+    vimState.allCursors = vimState.allCursors.reverse();
+    vimState.isFakeMultiCursor = true;
+    vimState.isMultiCursor = true;
     return vimState;
   }
 }
@@ -2022,12 +2026,21 @@ class CommandInsertNewLineBefore extends BaseCommand {
   keys = ["o"];
   runsOnceForEveryCursor() { return false; }
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
-    await vscode.commands.executeCommand('editor.action.insertLineAfter');
+    let count = vimState.recordedState.count || 1;
 
+    for (let i=0; i < count; i++) {
+      await vscode.commands.executeCommand('editor.action.insertLineAfter');
+    }
     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
-
+    for (let i=1; i<count; i++) {
+      const newPos = new Position(vimState.allCursors[0].start.line - i, vimState.allCursors[0].start.character)
+      vimState.allCursors.push(new Range(newPos, newPos));
+    }
+    vimState.allCursors = vimState.allCursors.reverse();
+    vimState.isFakeMultiCursor = true;
+    vimState.isMultiCursor = true;
     return vimState;
   }
 }
@@ -2930,7 +2943,7 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
     vimState.isMultiCursor = true;
-    vimState.isBlockMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
 
 
     for (const {line, start} of Position.IterateLine(vimState)) {
@@ -2961,7 +2974,7 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
 
     vimState.currentMode = ModeName.Insert;
     vimState.isMultiCursor = true;
-    vimState.isBlockMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
 
     for (const {start} of Position.IterateLine(vimState)) {
       vimState.allCursors.push(new Range(start, start));
@@ -2989,7 +3002,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
 
     vimState.currentMode = ModeName.Insert;
     vimState.isMultiCursor = true;
-    vimState.isBlockMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
 
     for (const {end} of Position.IterateLine(vimState)) {
       vimState.allCursors.push(new Range(end, end));
@@ -3009,7 +3022,7 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
     vimState.isMultiCursor = true;
-    vimState.isBlockMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
 
     for (const {line, end} of Position.IterateLine(vimState)) {
       if (line.trim() === "") {

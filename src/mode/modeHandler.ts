@@ -92,7 +92,10 @@ export class VimState {
    */
   public isMultiCursor = false;
 
-  public isBlockMultiCursor = false;
+ // Is the multicursor something like visual block "multicursor", where
+  // natively in vim there would only be one cursor whose changes were applied
+  // to all lines after edit.
+  public isFakeMultiCursor = false;
 
   /**
    * Tracks movements that can be repeated with ; and , (namely t, T, f, and F).

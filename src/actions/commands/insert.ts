@@ -79,10 +79,10 @@ class CommandEscInsertMode extends BaseCommand {
       vimState.historyTracker.currentContentChanges = [];
     }
 
-    if (vimState.isBlockMultiCursor) {
+    if (vimState.isFakeMultiCursor) {
       vimState.allCursors = [vimState.allCursors[0]];
       vimState.isMultiCursor = false;
-      vimState.isBlockMultiCursor = false;
+      vimState.isFakeMultiCursor = false;
     }
     return vimState;
   }
