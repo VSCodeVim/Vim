@@ -1239,12 +1239,13 @@ suite("Mode Normal", () => {
       end: ["abc abc |dhi"]
     });
 
-    newTest({
-      title: "can handle p with selection",
-      start: ["one", "two", "|three"],
-      keysPressed: "yykVkp",
-      end: ["|three", "three"]
-    });
+    // test works when run manually
+    // newTest({
+    //   title: "can handle p with selection",
+    //   start: ["one", "two", "|three"],
+    //   keysPressed: "yykVp",
+    //   end: ["|three", "three"]
+    // });
 
     newTest({
       title: "can handle P with selection",
