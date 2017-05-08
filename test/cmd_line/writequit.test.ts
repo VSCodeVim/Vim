@@ -43,12 +43,12 @@ async function WaitForVsCodeClose() : Promise<void> {
 suite("Basic write-quit", () => {
   let modeHandler: ModeHandler;
 
-  setup(async () => {
+  suiteSetup(async () => {
     await setupWorkspace();
     modeHandler = new ModeHandler();
   });
 
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   test("Run write and quit", async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);

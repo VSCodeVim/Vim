@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, setTextEditorOptions, cleanUpWorkspace } from './../testUtils';
+import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
@@ -14,7 +14,6 @@ suite("comment operator", () => {
 
     setup(async () => {
         await setupWorkspace(".js");
-        setTextEditorOptions(4, false);
         modeHandler = new ModeHandler();
     });
 
