@@ -2005,11 +2005,11 @@ class CommandInsertNewLineAbove extends BaseCommand {
     vimState.currentMode = ModeName.Insert;
     let count = vimState.recordedState.count || 1;
 
-    for (let i=0; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
-    for (let i=1; i<count; i++) {
+    for (let i = 1; i < count; i++) {
       const newPos = new Position(vimState.allCursors[0].start.line + i, vimState.allCursors[0].start.character);
       vimState.allCursors.push(new Range(newPos, newPos));
     }
@@ -2030,12 +2030,12 @@ class CommandInsertNewLineBefore extends BaseCommand {
     vimState.currentMode = ModeName.Insert;
     let count = vimState.recordedState.count || 1;
 
-    for (let i=0; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineAfter');
     }
     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
-    for (let i=1; i<count; i++) {
-      const newPos = new Position(vimState.allCursors[0].start.line - i, vimState.allCursors[0].start.character)
+    for (let i = 1; i < count; i++) {
+      const newPos = new Position(vimState.allCursors[0].start.line - i, vimState.allCursors[0].start.character);
       vimState.allCursors.push(new Range(newPos, newPos));
     }
     vimState.allCursors = vimState.allCursors.reverse();
