@@ -1489,8 +1489,9 @@ export class ModeHandler implements vscode.Disposable {
 
     const selections = this._vimState.editor.selections;
     const firstTransformation = transformations[0];
-    const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange" || firstTransformation.type === "replaceText" || firstTransformation.type === "insertText")
-      && firstTransformation.manuallySetCursorPositions);
+    const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange" ||
+                                       firstTransformation.type === "replaceText" || firstTransformation.type === "insertText")
+                                       && firstTransformation.manuallySetCursorPositions);
 
 
     // We handle multiple cursors in a different way in visual block mode, unfortunately.
