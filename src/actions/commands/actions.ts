@@ -2204,6 +2204,9 @@ class ActionDeleteCharWithDeleteKey extends BaseCommand {
   canBeRepeatedWithDot = true;
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
+      // If <del> has a count in front of it, then <del> deletes a character
+      // off the count. Therefore, 100<del>x, would apply 'x' 10 times.
+      // http://vimdoc.sourceforge.net/htmldoc/change.html#<Del>
       if (vimState.recordedState.count !== 0) {
         vimState.recordedState.count = Math.floor(vimState.recordedState.count / 10);
         vimState.recordedState.actionKeys = vimState.recordedState.count.toString().split("");
