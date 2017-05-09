@@ -5,14 +5,7 @@ import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from './../testUti
 import { runCmdLine } from '../../src/cmd_line/main';
 
 suite("read", () => {
-  let modeHandler: ModeHandler;
-
-  setup(async () => {
-    await setupWorkspace();
-    modeHandler = new ModeHandler();
-  });
-
-  teardown(cleanUpWorkspace);
+  let modeHandler = new ModeHandler();
 
   test("Can read shell command output", async () => {
     await runCmdLine('r! echo hey\\\\n\\\\tho', modeHandler);
@@ -22,4 +15,5 @@ suite("read", () => {
       ''
     ]);
   });
+
 });

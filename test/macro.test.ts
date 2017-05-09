@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, cleanUpWorkspace, setTextEditorOptions } from './testUtils';
+import { setupWorkspace, cleanUpWorkspace } from './testUtils';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { getTestingFunctions } from './testSimplifier';
 
@@ -12,7 +12,6 @@ suite("Record and execute a macro", () => {
 
   setup(async () => {
     await setupWorkspace();
-    setTextEditorOptions(4, false);
   });
 
   teardown(cleanUpWorkspace);
