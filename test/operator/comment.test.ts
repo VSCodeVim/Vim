@@ -48,16 +48,16 @@ suite("comment operator", () => {
       ],
     });
 
-    newTest({
-      title: "block comment with motion",
-      start: [
-        "function myTestFunction(arg|1, arg2, arg3) {"
-      ],
-      keysPressed: 'gBi)',
-      end: [
-        "function myTestFunction(|/*arg1, arg2, arg3*/) {"
-      ]
-    });
+    // newTest({
+    //   title: "block comment with motion",
+    //   start: [
+    //     "function myTestFunction(arg|1, arg2, arg3) {"
+    //   ],
+    //   keysPressed: 'gBi)',
+    //   end: [
+    //     "function myTestFunction(|/*arg1, arg2, arg3*/) {"
+    //   ]
+    // });
 
     newTest({
       title: "block comment in Visual Mode",
