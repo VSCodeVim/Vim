@@ -3354,6 +3354,29 @@ class ActionOverrideCmdD extends BaseCommand {
   }
 }
 
+ @RegisterAction
+ class ActionOverrideCmdDInsert extends BaseCommand {
+   modes = [ModeName.Insert];
+   keys = ["<D-d>"];
+   runsOnceForEveryCursor() { return false; }
+   runsOnceForEachCountPrefix = true;
+
+   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+     // Since editor.action.addSelectionToNextFindMatch uses the selection to
+     // determine where to add a word, we need to do a hack and manually set the
+     // selections to the word boundaries before we make the api call.
+     vscode.window.activeTextEditor!.selections =
+       vscode.window.activeTextEditor!.selections.map(x => {
+         const curPos = Position.FromVSCodePosition(x.active);
+         return new vscode.Selection(curPos.getWordLeft(true),
+           curPos.getLeft().getCurrentWordEnd(true).getRight());
+       });
+     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
+     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+     return vimState;
+   }
+ }
+
 @RegisterAction
 class ActionOverrideCmdAltDown extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
