@@ -2012,6 +2012,15 @@ class CommandInsertNewLineAbove extends BaseCommand {
     for (let i = 1; i < count; i++) {
       const newPos = new Position(vimState.allCursors[0].start.line + i, vimState.allCursors[0].start.character);
       vimState.allCursors.push(new Range(newPos, newPos));
+      // Ahhhhhh. We have to manually set cursor position here as we need text
+      // transformations AND to set multiple cursors.
+      vimState.recordedState.transformations.push({
+        type: "insertText",
+        text: TextEditor.setIndentationLevel("", newPos.character),
+        position: newPos,
+        cursorIndex: i,
+        manuallySetCursorPositions: true
+      });
     }
     vimState.allCursors = vimState.allCursors.reverse();
     vimState.isFakeMultiCursor = true;
@@ -2037,6 +2046,16 @@ class CommandInsertNewLineBefore extends BaseCommand {
     for (let i = 1; i < count; i++) {
       const newPos = new Position(vimState.allCursors[0].start.line - i, vimState.allCursors[0].start.character);
       vimState.allCursors.push(new Range(newPos, newPos));
+
+      // Ahhhhhh. We have to manually set cursor position here as we need text
+      // transformations AND to set multiple cursors.
+      vimState.recordedState.transformations.push({
+        type: "insertText",
+        text: TextEditor.setIndentationLevel("", newPos.character),
+        position: newPos,
+        cursorIndex: i,
+        manuallySetCursorPositions: true
+      });
     }
     vimState.allCursors = vimState.allCursors.reverse();
     vimState.isFakeMultiCursor = true;
