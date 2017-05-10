@@ -36,7 +36,6 @@ suite("Dot Operator", () => {
 
       await modeHandler.handleMultipleKeyEvents(firstTabKeys.concat(['<Esc>']));
 
-
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'T']);
       await waitForTabChange();
       modeHandler.vimState.editor = vscode.window.activeTextEditor!;

@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.6.20",
+  "version": "0.7.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -88,7 +88,7 @@
       {
         "key": "ctrl+d",
         "command": "extension.vim_ctrl+d",
-        "when": "editorTextFocus && vim.active && vim.use<C-d> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
@@ -232,7 +232,7 @@
       {
         "key": "cmd+c",
         "command": "extension.vim_cmd+c",
-        "when": "editorTextFocus && vvim.active && im.use<D-c> && vim.overrideCopy && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-c> && vim.overrideCopy && !inDebugRepl"
       },
       {
         "key": "ctrl+a",
@@ -499,11 +499,11 @@
     "gulp-inject-string": "^1.1.0",
     "gulp-shell": "^0.5.2",
     "gulp-tag-version": "^1.3.0",
-    "gulp-tslint": "^8.0.0",
+    "gulp-tslint": "^7.0.1",
     "gulp-typings": "^2.0.0",
     "merge-stream": "^1.0.0",
     "mocha": "^3.2.0",
-    "tslint": "^5.1.0",
+    "tslint": "^4.3.1",
     "typescript": "^2.3.2",
     "vscode": "^1.0.5"
   }

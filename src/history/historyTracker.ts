@@ -13,7 +13,7 @@
 import * as vscode from "vscode";
 import * as _ from "lodash";
 
-import { Position } from './../motion/position';
+import { Position } from './../common/motion/position';
 import { TextEditor } from './../textEditor';
 import { Configuration } from './../configuration/configuration';
 import { RecordedState, VimState } from './../mode/modeHandler';

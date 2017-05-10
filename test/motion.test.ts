@@ -2,7 +2,7 @@
 
 import * as assert from 'assert';
 import { TextEditor } from './../src/textEditor';
-import { Position } from './../src/motion/position';
+import { Position } from './../src/common/motion/position';
 import { setupWorkspace, cleanUpWorkspace } from './testUtils';
 import { ModeHandler } from './../src/mode/modeHandler';
 import { getTestingFunctions } from './testSimplifier';

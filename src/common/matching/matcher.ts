@@ -1,5 +1,5 @@
 import { Position, PositionDiff } from './../motion/position';
-import { TextEditor } from "./../textEditor";
+import { TextEditor } from "./../../textEditor";
 import * as vscode from 'vscode';
 
 function escapeRegExpCharacters(value: string): string {

@@ -2,7 +2,7 @@
 
 import { ModeName, Mode } from './mode';
 import { VSCodeVimCursorType } from './mode';
-import { Position } from './../motion/position';
+import { Position } from './../common/motion/position';
 
 export class VisualBlockMode extends Mode {
   public text = "Visual Block Mode";

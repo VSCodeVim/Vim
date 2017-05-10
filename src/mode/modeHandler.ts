@@ -25,17 +25,21 @@ import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
 import { HistoryTracker } from './../history/historyTracker';
-import { EasyMotion } from './../easymotion/easymotion';
+import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
+import { Actions, KeypressState, BaseAction } from './../actions/base';
+import { BaseOperator } from './../actions/operator';
+import { BaseMovement, isIMovement } from './../actions/motion';
 import {
-  BaseMovement, BaseCommand, Actions, BaseAction,
-  BaseOperator, DocumentContentChangeAction, CommandInsertInInsertMode, CommandInsertPreviousText, CommandQuitRecordMacro,
-  isIMovement, KeypressState } from './../actions/actions';
-import { Position, PositionDiff } from './../motion/position';
-import { Range } from './../motion/range';
+  BaseCommand, DocumentContentChangeAction, CommandQuitRecordMacro } from './../actions/commands/actions';
+import {
+  CommandInsertInInsertMode, CommandInsertPreviousText
+} from './../actions/commands/insert';
+import { Position, PositionDiff } from './../common/motion/position';
+import { Range } from './../common/motion/range';
 import { RegisterMode, Register } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
-import { PairMatcher } from './../matching/matcher';
+import { PairMatcher } from './../common/matching/matcher';
 import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';
@@ -536,13 +540,7 @@ export class ModeHandler implements vscode.Disposable {
     // For whatever reason, the editor positions aren't updated until after the
     // stack clears, which is why this setTimeout is necessary
     setTimeout(() => {
-      if (this._vimState.editor) {
-        this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-        this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
-        this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
-
-        this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
-      }
+      this.syncCursors();
     }, 0);
 
     // Handle scenarios where mouse used to change current position.
@@ -773,7 +771,9 @@ export class ModeHandler implements vscode.Disposable {
         key = "<copy>";
       }
     }
-
+    if (key === "<C-d>" && !Configuration.useCtrlKeys) {
+      key = "<D-d>";
+    }
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
     this._vimState.recordedState.commandList.push(key);
 
@@ -1932,5 +1932,16 @@ export class ModeHandler implements vscode.Disposable {
     for (const disposable of this._toBeDisposed) {
       disposable.dispose();
     }
+  }
+
+  // Syncs cursors between vscode representation and vim representation
+  syncCursors() {
+      if (this._vimState.editor) {
+        this._vimState.cursorStartPosition = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+        this._vimState.cursorPosition      = Position.FromVSCodePosition(this._vimState.editor.selection.start);
+        this._vimState.desiredColumn       = this._vimState.cursorPosition.character;
+
+        this._vimState.whatILastSetTheSelectionTo = this._vimState.editor.selection;
+      }
   }
 }
