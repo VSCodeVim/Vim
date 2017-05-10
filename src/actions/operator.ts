@@ -426,7 +426,7 @@ export class ChangeOperator extends BaseOperator {
     state.currentMode = ModeName.Insert;
 
     if (isEndOfLine) {
-      state.cursorPosition = state.cursorPosition.getRight();
+      state.cursorPosition = state.getRight();
     }
 
     return state;
