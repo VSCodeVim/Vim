@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -88,7 +88,7 @@
       {
         "key": "ctrl+d",
         "command": "extension.vim_ctrl+d",
-        "when": "editorTextFocus && vim.active && vim.use<C-d> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
@@ -117,7 +117,7 @@
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.active && vim.mode == 'Normal' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "tab",
@@ -232,7 +232,7 @@
       {
         "key": "cmd+c",
         "command": "extension.vim_cmd+c",
-        "when": "editorTextFocus && vvim.active && im.use<D-c> && vim.overrideCopy && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-c> && vim.overrideCopy && !inDebugRepl"
       },
       {
         "key": "ctrl+a",

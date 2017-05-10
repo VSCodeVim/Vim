@@ -49,9 +49,9 @@ export class TabCommand extends node.CommandBase {
       case Tab.Next:
         if (this._arguments.count /** not undefined or 0 */) {
           vscode.commands.executeCommand("workbench.action.openEditorAtIndex1");
-          this.executeCommandWithCount(this._arguments.count! - 1, "workbench.action.nextEditor");
+          this.executeCommandWithCount(this._arguments.count! - 1, "workbench.action.nextEditorInGroup");
         } else {
-          this.executeCommandWithCount(1, "workbench.action.nextEditor");
+          this.executeCommandWithCount(1, "workbench.action.nextEditorInGroup");
         }
         break;
       case Tab.Previous:
@@ -59,7 +59,7 @@ export class TabCommand extends node.CommandBase {
           break;
         }
 
-        this.executeCommandWithCount(this._arguments.count || 1, "workbench.action.previousEditor");
+        this.executeCommandWithCount(this._arguments.count || 1, "workbench.action.previousEditorInGroup");
         break;
       case Tab.First:
         this.executeCommandWithCount(1, "workbench.action.openEditorAtIndex1");
