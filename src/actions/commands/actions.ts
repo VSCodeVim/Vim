@@ -1348,14 +1348,20 @@ export class PutCommandVisual extends BaseCommand {
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
     let start = vimState.cursorStartPosition;
     let end = vimState.cursorPosition;
-
+    const isLineWise = vimState.currentMode === ModeName.VisualLine;
     if (start.isAfter(end)) {
       [start, end] = [end, start];
     }
+    // The reason we need to handle Delete and Yank separately is because of
+    // linewise mode. If we're in visualLine mode, then we want to copy
+    // linewise but not necessarily delete linewise.
+    let result =  await new PutCommand().exec(start, vimState, true);
+    result.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
+    result = await new operator.YankOperator(this.multicursorIndex).run(result, start, end);
+    result.currentRegisterMode = RegisterMode.CharacterWise;
+    result = await new operator.DeleteOperator(this.multicursorIndex).run(result, start, end.getLeftIfEOL(), false);
+    return result;
 
-    const result = await new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
-
-    return await new PutCommand().exec(start, result, true);
   }
 
   // TODO - execWithCount
@@ -2105,6 +2111,36 @@ class MoveToRightPane extends BaseCommand {
 }
 
 @RegisterAction
+class MoveToLowerPane extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [["<C-w>", "j"], ["<C-w>", "<down>"], ["<C-w j>"]];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.navigateDown",
+      args: {}
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class MoveToUpperPane extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [["<C-w>", "k"], ["<C-w>", "<up>"], ["<C-w k>"]];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.navigateUp",
+      args: {}
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class MoveToLeftPane  extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [["<C-w>", "h"], ["<C-w>", "<left>"], ["<C-w h>"]];
@@ -2119,14 +2155,15 @@ class MoveToLeftPane  extends BaseCommand {
   }
 }
 
+
 @RegisterAction
 class CycleThroughPanes extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ["<C-w>", "<C-w>"];
+  keys = [["<C-w>", "<C-w>"], ["<C-w>", "w"]];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
-      command: "workbench.action.navigateRight",
+      command: "workbench.action.navigateEditorGroups",
       args: {}
     });
 
@@ -3317,6 +3354,29 @@ class ActionOverrideCmdD extends BaseCommand {
     return vimState;
   }
 }
+
+ @RegisterAction
+ class ActionOverrideCmdDInsert extends BaseCommand {
+   modes = [ModeName.Insert];
+   keys = ["<D-d>"];
+   runsOnceForEveryCursor() { return false; }
+   runsOnceForEachCountPrefix = true;
+
+   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+     // Since editor.action.addSelectionToNextFindMatch uses the selection to
+     // determine where to add a word, we need to do a hack and manually set the
+     // selections to the word boundaries before we make the api call.
+     vscode.window.activeTextEditor!.selections =
+       vscode.window.activeTextEditor!.selections.map(x => {
+         const curPos = Position.FromVSCodePosition(x.active);
+         return new vscode.Selection(curPos.getWordLeft(true),
+           curPos.getLeft().getCurrentWordEnd(true).getRight());
+       });
+     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
+     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+     return vimState;
+   }
+ }
 
 @RegisterAction
 class ActionOverrideCmdAltDown extends BaseCommand {
