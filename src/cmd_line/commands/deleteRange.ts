@@ -6,7 +6,7 @@ import * as token from '../token';
 import { ModeHandler } from "../../mode/modeHandler";
 import { TextEditor } from "../../textEditor";
 import { Register, RegisterMode } from '../../register/register';
-import { Position } from '../../motion/position';
+import { Position } from '../../common/motion/position';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;

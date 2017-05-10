@@ -215,6 +215,21 @@ suite("Mode Visual", () => {
 
       assertEqualLines(["two"]);
     });
+
+    newTest({
+      title: "Paste over selection copies the selection",
+      start: ["|from to"],
+      keysPressed: "dewvep0P",
+      end: ["t|o from"]
+    });
+
+    newTest({
+      title: "Paste over selection copies the selection linewise",
+      start: ["foo", "bar", "|fun"],
+      keysPressed: "viwykVkpp",
+      end: ["fun", "|foo", "bar", "fun"]
+    });
+
   });
 
   suite("Arrow keys work perfectly in Visual Mode", () => {

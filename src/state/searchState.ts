@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Position } from './../motion/position';
+import { Position } from './../common/motion/position';
 import { TextEditor } from './../textEditor';
 import { Configuration } from '../../src/configuration/configuration';
 

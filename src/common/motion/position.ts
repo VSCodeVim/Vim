@@ -2,11 +2,11 @@
 
 import * as _ from "lodash";
 import * as vscode from "vscode";
-import { TextEditor } from "./../textEditor";
-import { VimState } from './../mode/modeHandler';
-import { VisualBlockMode } from './../mode/modeVisualBlock';
-import { Configuration } from "./../configuration/configuration";
-import { betterEscapeRegex } from "./../util";
+import { TextEditor } from "./../../textEditor";
+import { VimState } from './../../mode/modeHandler';
+import { VisualBlockMode } from './../../mode/modeVisualBlock';
+import { Configuration } from "./../../configuration/configuration";
+import { betterEscapeRegex } from "./../../util";
 
 /**
  * Represents a difference between two positions. Add it to a position

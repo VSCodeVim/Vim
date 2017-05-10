@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, setTextEditorOptions, cleanUpWorkspace } from './../testUtils';
+import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
@@ -14,7 +14,6 @@ suite("comment operator", () => {
 
     setup(async () => {
         await setupWorkspace(".js");
-        setTextEditorOptions(4, false);
         modeHandler = new ModeHandler();
     });
 
@@ -51,11 +50,11 @@ suite("comment operator", () => {
     newTest({
       title: "block comment with motion",
       start: [
-        "function myTestFunction(arg|1, arg2, arg3) {"
+        "function test(arg|1, arg2, arg3) {"
       ],
       keysPressed: 'gBi)',
       end: [
-        "function myTestFunction(|/*arg1, arg2, arg3*/) {"
+        "function test(|/*arg1, arg2, arg3*/) {"
       ]
     });
 
