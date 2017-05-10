@@ -138,15 +138,12 @@ export class DeleteOperator extends BaseOperator {
     }
 
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
-        await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, yank);
+        let newPos = await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, yank);
 
         vimState.currentMode = ModeName.Normal;
-
-        /*
-          vimState.cursorPosition      = result;
-          vimState.cursorStartPosition = result;
-        */
-
+        if (vimState.currentMode === ModeName.Visual) {
+          vimState.desiredColumn = newPos.character;
+        }
         return vimState;
     }
 }
@@ -232,12 +229,13 @@ export class ShiftYankOperatorVisual extends BaseOperator {
       vimState.currentRegisterMode = RegisterMode.LineWise;
 
       return await new YankOperator().run(vimState, start, end);
+
     }
 }
 
 @RegisterAction
 export class DeleteOperatorXVisual extends BaseOperator {
-  public keys = ["x"];
+  public keys = [["x"], ["<Del>"]];
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -428,7 +426,7 @@ export class ChangeOperator extends BaseOperator {
     state.currentMode = ModeName.Insert;
 
     if (isEndOfLine) {
-      state.cursorPosition = state.cursorPosition.getRight();
+      state.cursorPosition = end.getRight();
     }
 
     return state;
