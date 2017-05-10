@@ -34,6 +34,13 @@ suite("surround plugin", () => {
     });
 
     newTest({
+      title: "ysiw< surrounds word with tags and attributes",
+      start: ["first li|ne test"],
+      keysPressed: 'ysiw<abc attr1 attr2="test">',
+      end: ['first <abc attr1 attr2="test">|line</abc> test'],
+    });
+
+    newTest({
       title: "change surround",
       start: ["first 'li|ne' test"],
       keysPressed: "cs')",
