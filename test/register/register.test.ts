@@ -19,7 +19,7 @@ suite("register", () => {
     modeHandler = new ModeHandler();
   });
 
-  suiteTeardown(cleanUpWorkspace);
+  teardown(cleanUpWorkspace);
 
   newTest({
     title: "Can copy to a register",

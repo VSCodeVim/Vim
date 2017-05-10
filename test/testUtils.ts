@@ -24,11 +24,13 @@ async function createRandomFile(contents: string, fileExtension: string): Promis
 }
 
 export function assertEqualLines(expectedLines: string[]) {
-  assert.equal(TextEditor.getLineCount(), expectedLines.length, "Line count does not match.");
-
   for (let i = 0; i < expectedLines.length; i++) {
-    assert.equal(TextEditor.readLineAt(i), expectedLines[i], `Line ${i} is different.`);
+    let expected = expectedLines[i];
+    let actual = TextEditor.readLineAt(i);
+    assert.equal(actual, expected, `Content does not match; Expected=${expected}. Actual=${actual}`);
   }
+
+  assert.equal(TextEditor.getLineCount(), expectedLines.length, "Line count does not match.");
 }
 
 /**
