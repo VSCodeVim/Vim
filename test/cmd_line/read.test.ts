@@ -7,12 +7,12 @@ import { runCmdLine } from '../../src/cmd_line/main';
 suite("read", () => {
   let modeHandler: ModeHandler;
 
-  setup(async () => {
+  suiteSetup(async () => {
     await setupWorkspace();
     modeHandler = new ModeHandler();
   });
 
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   test("Can read shell command output", async () => {
     await runCmdLine('r! echo hey\\\\n\\\\tho', modeHandler);
@@ -22,4 +22,5 @@ suite("read", () => {
       ''
     ]);
   });
+
 });
