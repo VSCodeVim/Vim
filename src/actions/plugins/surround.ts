@@ -277,7 +277,12 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     let endReplace = replacement;
 
     if (startReplace[0] === "<") {
-      endReplace = startReplace[0] + "/" + startReplace.slice(1);
+      let tagName = /([-\w]+)/.exec(startReplace);
+      if (tagName) {
+        endReplace = `</${tagName[1]}>`;
+      } else {
+        endReplace = "</" + startReplace.slice(1);
+      }
     }
 
     if (startReplace.length === 1 && startReplace in PairMatcher.pairings) {
