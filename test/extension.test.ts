@@ -4,7 +4,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-suite("setup", () => {
+suite("package.json", () => {
   test("all keys have handlers", async () => {
     let pkg = require(__dirname + '/../../package.json');
     assert.ok(pkg);

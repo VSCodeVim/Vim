@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, setTextEditorOptions, cleanUpWorkspace, assertEqual } from './../testUtils';
+import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
@@ -17,7 +17,6 @@ suite("Mode Visual Block", () => {
 
   setup(async () => {
     await setupWorkspace();
-    setTextEditorOptions(4, false);
     modeHandler = new ModeHandler();
   });
 

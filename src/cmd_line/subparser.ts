@@ -14,6 +14,7 @@ import { parseReadCommandArgs } from './subparsers/read';
 import { parseRegisterCommandArgs } from './subparsers/register';
 import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
 import { parseSortCommandArgs } from './subparsers/sort';
+import { parseCloseCommandArgs } from './subparsers/close';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -26,6 +27,9 @@ export const commandParsers = {
   nohlsearch: parseNohlCommandArgs,
   noh: parseNohlCommandArgs,
   nohl: parseNohlCommandArgs,
+
+  close: parseCloseCommandArgs,
+  clo: parseCloseCommandArgs,
 
   quit: parseQuitCommandArgs,
   q: parseQuitCommandArgs,

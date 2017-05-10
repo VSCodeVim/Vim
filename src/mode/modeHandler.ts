@@ -765,7 +765,9 @@ export class ModeHandler implements vscode.Disposable {
         key = "<copy>";
       }
     }
-
+    if (key === "<C-d>" && !Configuration.useCtrlKeys) {
+      key = "<D-d>";
+    }
     this._vimState.cursorPositionJustBeforeAnythingHappened = this._vimState.allCursors.map(x => x.stop);
     this._vimState.recordedState.commandList.push(key);
 
