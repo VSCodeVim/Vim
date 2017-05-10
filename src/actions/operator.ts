@@ -235,7 +235,7 @@ export class ShiftYankOperatorVisual extends BaseOperator {
 
 @RegisterAction
 export class DeleteOperatorXVisual extends BaseOperator {
-  public keys = ["x", "<Del>"];
+  public keys = [["x"], ["<Del>"]];
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -426,7 +426,7 @@ export class ChangeOperator extends BaseOperator {
     state.currentMode = ModeName.Insert;
 
     if (isEndOfLine) {
-      state.cursorPosition = state.getRight();
+      state.cursorPosition = end.getRight();
     }
 
     return state;
