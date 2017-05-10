@@ -1215,16 +1215,7 @@ export class ModeHandler implements vscode.Disposable {
     vimState.recordedState.count = 0;
 
     // Keep the cursor within bounds
-
-    if (vimState.currentMode === ModeName.Normal && !recordedState.operator) {
-      for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
-        if (stop.character >= Position.getLineLength(stop.line)) {
-          vimState.allCursors[i].withNewStop(
-            stop.getLineEnd().getLeft()
-          );
-        }
-      }
-    } else {
+    if (vimState.currentMode !== ModeName.Normal || recordedState.operator) {
       let stop = vimState.cursorPosition;
 
       // Vim does this weird thing where it allows you to select and delete
@@ -1264,12 +1255,8 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (!cachedMode.isVisualMode && cachedRegister !== RegisterMode.LineWise) {
-        if (Position.EarlierOf(start, stop) === start) {
-          stop = stop.getLeft();
-        } else {
-          stop = stop.getRight();
-        }
-      }
+        stop = stop.getLeftThroughLineBreaks(true);
+     }
 
       if (this.currentModeName === ModeName.VisualLine) {
         start = start.getLineBegin();

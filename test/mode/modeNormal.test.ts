@@ -863,6 +863,22 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle d}",
+      start: ['|foo', 'bar', '', 'fun'],
+      keysPressed: 'd}',
+      end: ['|', 'fun'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle y} at beginning of line",
+      start: ['|foo', 'bar', '', 'fun'],
+      keysPressed: 'y}p',
+      end: ['foo', '|foo', 'bar', 'bar', '', 'fun'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Select sentence with trailing spaces",
       start: ["That's my sec|ret, Captain. I'm always angry."],
       keysPressed: 'das',
@@ -1658,8 +1674,7 @@ Disabling test until upstream VSCode issue is resolved: https://github.com/Micro
       ],
       keysPressed: "dai",
       end: [
-          '|',
-          'do_something_else()',
+          '|do_something_else()',
       ],
       endMode: ModeName.Normal
     });
