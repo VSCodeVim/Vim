@@ -12,7 +12,6 @@ suite("command-line parser", () => {
     assert.ok(cmd.isEmpty);
   });
 
-  // TODO: Range tests follow -- should prolly create a suite for this
   test("can parse left - dot", () => {
     var cmd : node.CommandLine = parser.parse(".");
     assert.equal(cmd.range.left[0].type, token.TokenType.Dot);

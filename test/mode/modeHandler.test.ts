@@ -6,23 +6,21 @@ import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 
 suite("Mode Handler", () => {
+  let modeHandler: ModeHandler;
 
   setup(async () => {
     await setupWorkspace();
+    modeHandler = new ModeHandler();
   });
 
   teardown(cleanUpWorkspace);
 
   test("ctor", () => {
-    var modeHandler = new ModeHandler();
-
     assert.equal(modeHandler.currentMode.name, ModeName.Normal);
     assert.equal(modeHandler.currentMode.isActive, true);
   });
 
   test("can set current mode", async () => {
-    var modeHandler = new ModeHandler();
-
     assert.equal(modeHandler.currentMode.name, ModeName.Normal);
 
     await modeHandler.handleKeyEvent("i");
