@@ -2596,14 +2596,19 @@ class ActionVisualReflowParagraph extends BaseCommand {
         }
 
         // Add word by word, wrapping when necessary.
-
-        for (const word of line.split(/\s+/)) {
+        const words = line.split(/\s+/);
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
           if (word === "") { continue; }
 
           if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            lines[lines.length - 1] += ` ${ word }`;
+            if (i === 0) {
+              lines[lines.length - 1] += `${ word }`;
+            } else {
+              lines[lines.length - 1] += ` ${ word }`;
+            }
           } else {
-            lines.push(` ${ word }`);
+              lines.push(`${ word }`);
           }
         }
       }
@@ -2619,14 +2624,14 @@ class ActionVisualReflowParagraph extends BaseCommand {
 
       for (let i = 0; i < lines.length; i++) {
         if (commentType.singleLine) {
-          lines[i] = `${ indent }${ commentType.start }${ lines[i] }`;
+          lines[i] = `${ indent }${ commentType.start } ${ lines[i] }`;
         } else {
           if (i === 0) {
-            lines[i] = `${ indent }${ commentType.start }${ lines[i] }`;
+            lines[i] = `${ indent }${ commentType.start } ${ lines[i] }`;
           } else if (i === lines.length - 1) {
             lines[i] = `${ indent } ${ commentType.final }`;
           } else {
-            lines[i] = `${ indent } ${ commentType.inner }${ lines[i] }`;
+            lines[i] = `${ indent } ${ commentType.inner } ${ lines[i] }`;
           }
         }
       }
@@ -2634,10 +2639,6 @@ class ActionVisualReflowParagraph extends BaseCommand {
       result = result.concat(lines);
     }
 
-    // Remove extra first space if it exists.
-    if (result[0][0] === " ") {
-      result[0] = result[0].slice(1);
-    }
     // Gather up multiple empty lines into single empty lines.
     return result.join("\n");
   }
