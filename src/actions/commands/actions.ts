@@ -456,7 +456,7 @@ class CommandEsc extends BaseCommand {
     }
 
     if (vimState.currentMode === ModeName.EasyMotionMode) {
-      // Escaape or other termination keys were pressed, exit mode
+      // Escape or other termination keys were pressed, exit mode
       vimState.easyMotion.clearDecorations();
       vimState.currentMode = ModeName.Normal;
     }
