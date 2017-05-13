@@ -15,8 +15,7 @@ import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { NormalMode } from './modeNormal';
 import { InsertMode } from './modeInsert';
-import { VisualBlockMode, VisualBlockInsertionType } from './modeVisualBlock';
-import { InsertVisualBlockMode } from './modeInsertVisualBlock';
+import { VisualBlockMode} from './modeVisualBlock';
 import { VisualMode } from './modeVisual';
 import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
@@ -92,6 +91,11 @@ export class VimState {
    * Are multiple cursors currently present?
    */
   public isMultiCursor = false;
+
+ // Is the multicursor something like visual block "multicursor", where
+  // natively in vim there would only be one cursor whose changes were applied
+  // to all lines after edit.
+  public isFakeMultiCursor = false;
 
   /**
    * Tracks movements that can be repeated with ; and , (namely t, T, f, and F).
@@ -235,7 +239,7 @@ export class VimState {
     if (this.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
       if (this.currentMode === ModeName.VisualLine) {
         return RegisterMode.LineWise;
-      } else if (this.currentMode === ModeName.VisualBlock || this.currentMode === ModeName.VisualBlockInsertMode) {
+      } else if (this.currentMode === ModeName.VisualBlock) {
         return RegisterMode.BlockWise;
       } else {
         return RegisterMode.CharacterWise;
@@ -352,13 +356,6 @@ export class RecordedState {
   public operatorPositionDiff: PositionDiff | undefined;
 
   public isInsertion = false;
-
-  /**
-   * If we're in Visual Block mode, the way in which we're inserting characters (either inserting
-   * at the beginning or appending at the end).
-   */
-
-  public visualBlockInsertionType = VisualBlockInsertionType.Insert;
 
   /**
    * The text transformations that we want to run. They will all be run after the action has been processed.
@@ -510,7 +507,6 @@ export class ModeHandler implements vscode.Disposable {
       new InsertMode(),
       new VisualMode(),
       new VisualBlockMode(),
-      new InsertVisualBlockMode(),
       new VisualLineMode(),
       new SearchInProgressMode(),
       new ReplaceMode(),
@@ -606,8 +602,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (this.currentModeName === ModeName.VisualBlockInsertMode ||
-        this.currentModeName === ModeName.EasyMotionMode) {
+    if (this.currentModeName === ModeName.EasyMotionMode) {
       // AArrgghhhh - johnfn
 
       return;
@@ -654,8 +649,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (this._vimState.currentMode === ModeName.SearchInProgressMode ||
-        this._vimState.currentMode === ModeName.VisualBlockInsertMode) {
+    if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
       return;
     }
 
@@ -1118,8 +1112,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if ((movement && !movement.doesntChangeDesiredColumn) ||
         (recordedState.command &&
-         vimState.currentMode !== ModeName.VisualBlock &&
-         vimState.currentMode !== ModeName.VisualBlockInsertMode)) {
+         vimState.currentMode !== ModeName.VisualBlock)) {
       // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
 
       if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
@@ -1485,13 +1478,14 @@ export class ModeHandler implements vscode.Disposable {
 
     const selections = this._vimState.editor.selections;
     const firstTransformation = transformations[0];
-    const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange" || firstTransformation.type === "replaceText")
-      && firstTransformation.manuallySetCursorPositions);
+    const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange" ||
+                                       firstTransformation.type === "replaceText" || firstTransformation.type === "insertText")
+                                       && firstTransformation.manuallySetCursorPositions);
+
 
     // We handle multiple cursors in a different way in visual block mode, unfortunately.
     // TODO - refactor that out!
-    if (vimState.currentMode !== ModeName.VisualBlockInsertMode &&
-      vimState.currentMode !== ModeName.VisualBlock &&
+    if (vimState.currentMode !== ModeName.VisualBlock &&
       !manuallySetCursorPositions) {
       vimState.allCursors = [];
 
