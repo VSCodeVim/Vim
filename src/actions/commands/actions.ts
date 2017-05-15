@@ -2502,6 +2502,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
     let chunksToReflow: {
       commentType: CommentType;
       content: string;
+      indentLevelAfterComment: number;
     }[] = [];
 
     for (const line of s.split("\n")) {
@@ -2539,10 +2540,15 @@ class ActionVisualReflowParagraph extends BaseCommand {
 
       // Did they start a new comment type?
       if (!lastChunk || commentType.start !== lastChunk.commentType.start) {
-        chunksToReflow.push({
+        let chunk = {
           commentType,
-          content: `${ trimmedLine.substr(commentType.start.length).trim() }`
-        });
+          content: `${ trimmedLine.substr(commentType.start.length).trim() }`,
+          indentLevelAfterComment: 0
+        };
+        if (commentType.singleLine) {
+          chunk.indentLevelAfterComment = trimmedLine.substr(commentType.start.length).length - chunk.content.length;
+        }
+        chunksToReflow.push(chunk);
 
         continue;
       }
@@ -2574,8 +2580,9 @@ class ActionVisualReflowParagraph extends BaseCommand {
     // Reflow each chunk.
     let result: string[] = [];
 
-    for (const { commentType, content } of chunksToReflow) {
+    for (const { commentType, content, indentLevelAfterComment } of chunksToReflow) {
       let lines: string[];
+      const indentAfterComment = Array(indentLevelAfterComment + 1).join(" ");
 
       if (commentType.singleLine) {
         lines = [``];
@@ -2602,10 +2609,10 @@ class ActionVisualReflowParagraph extends BaseCommand {
           if (word === "") { continue; }
 
           if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            if (i === 0) {
-              lines[lines.length - 1] += `${ word }`;
-            } else {
+            if (i) {
               lines[lines.length - 1] += ` ${ word }`;
+            } else {
+              lines[lines.length - 1] += `${ word }`;
             }
           } else {
               lines.push(`${ word }`);
@@ -2624,7 +2631,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
 
       for (let i = 0; i < lines.length; i++) {
         if (commentType.singleLine) {
-          lines[i] = `${ indent }${ commentType.start } ${ lines[i] }`;
+          lines[i] = `${ indent }${ commentType.start }${ indentAfterComment }${ lines[i] }`;
         } else {
           if (i === 0) {
             lines[i] = `${ indent }${ commentType.start } ${ lines[i] }`;
