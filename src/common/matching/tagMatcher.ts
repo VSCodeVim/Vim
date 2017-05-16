@@ -2,7 +2,7 @@ type Tag = { name: string; type: "close" | "open"; startPos: number; endPos: num
 type MatchedTag = {tag: string, openingTagStart: number, openingTagEnd: number, closingTagStart: number, closingTagEnd: number};
 
 export class TagMatcher {
-  static TAG_REGEX = /\<(\/)?([^\>\<\s]+)[^\>\<]*(\/?)\>/g;
+  static TAG_REGEX = /\<(\/)?([^\>\<\s]+)[^\>\<]*?(\/?)\>/g;
   static OPEN_FORWARD_SLASH = 1;
   static TAG_NAME = 2;
   static CLOSE_FORWARD_SLASH = 3;
@@ -20,6 +20,7 @@ export class TagMatcher {
     while (match) {
       // Node is a self closing tag, skip.
       if (match[TagMatcher.CLOSE_FORWARD_SLASH]) {
+        match = TagMatcher.TAG_REGEX.exec(corpus);
         continue;
       }
 
