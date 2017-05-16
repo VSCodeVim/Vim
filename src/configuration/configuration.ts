@@ -288,6 +288,11 @@ class ConfigurationClass {
    * In visual mode, start a search with * or # using the current selection
    */
   visualstar = false;
+
+  /**
+   * Uses a hack to fix moving around folds.
+   */
+  foldfix = true;
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {

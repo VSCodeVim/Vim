@@ -139,12 +139,16 @@ export class Actions {
    *
    * If no action could ever match, returns false.
    */
-  public static getRelevantAction(keysPressed: string[], vimState: VimState): BaseAction | KeypressState {
+  public static getRelevantAction(keysPressed: string[], vimState: VimState): BaseAction |KeypressState {
     let couldPotentiallyHaveMatch = false;
 
     for (const thing of Actions.allActions) {
       const { type, action } = thing!;
 
+      // It's an action that can't be called directly.
+      if (action.keys === undefined) {
+        continue;
+      }
       if (action.doesActionApply(vimState, keysPressed)) {
         const result = new type();
 

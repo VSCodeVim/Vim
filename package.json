@@ -475,6 +475,11 @@
           "type": "boolean",
           "description": "In visual mode, start a search with * or # using the current selection",
           "default": false
+        },
+        "vim.foldfix": {
+          "type": "boolean",
+          "description": "Uses a hack to move around folds properly",
+          "default": true
         }
       }
     }

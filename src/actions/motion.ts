@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ModeName } from './../mode/mode';
 import { Position, PositionDiff } from './../common/motion/position';
+import { Configuration } from './../configuration/configuration';
 import { TextEditor, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
 import { VimState } from './../mode/modeHandler';
 import { RegisterMode } from './../register/register';
@@ -14,7 +15,7 @@ import { BaseAction } from './base';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined &&
-    (o as IMovement).stop !== undefined;
+  (o as IMovement).stop !== undefined;
 }
 
 /**
@@ -42,10 +43,10 @@ export interface IMovement {
  */
 export abstract class BaseMovement extends BaseAction {
   modes = [
-    ModeName.Normal,
-    ModeName.Visual,
-    ModeName.VisualLine,
-    ModeName.VisualBlock,
+  ModeName.Normal,
+  ModeName.Visual,
+  ModeName.VisualLine,
+  ModeName.VisualBlock,
   ];
 
   isMotion = true;
@@ -107,8 +108,8 @@ export abstract class BaseMovement extends BaseAction {
       const firstIteration = (i === 0);
       const lastIteration = (i === count - 1);
       const temporaryResult = (recordedState.operator && lastIteration) ?
-        await this.execActionForOperator(position, vimState) :
-        await this.execAction(position, vimState);
+      await this.execActionForOperator(position, vimState) :
+      await this.execAction(position, vimState);
 
       if (temporaryResult instanceof Position) {
         result = temporaryResult;
@@ -140,123 +141,220 @@ export abstract class BaseMovement extends BaseAction {
   }
 }
 
+abstract class MoveByScreenLine extends BaseMovement {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  movementType: CursorMovePosition;
+  by: CursorMoveByUnit;
+  value: number = 1;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    await vscode.commands.executeCommand("cursorMove", {
+      to: this.movementType,
+      select: vimState.currentMode !== ModeName.Normal,
+      by: this.by,
+      value: this.value
+    });
+
+    if (vimState.currentMode === ModeName.Normal) {
+      return Position.FromVSCodePosition(vimState.editor.selection.active);
+    } else {
+      /**
+       * cursorMove command is handling the selection for us.
+       * So we are not following our design principal (do no real movement inside an action) here.
+       */
+      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+      let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
+      let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+
+      // We want to swap the cursor start stop positions based on which direction we are moving, up or down
+      if (start.isEqual(curPos)) {
+        position = start;
+        [start, stop] = [stop, start];
+        start = start.getLeft();
+      }
+
+      return { start, stop };
+    }
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
+    await vscode.commands.executeCommand("cursorMove", {
+      to: this.movementType,
+      select: true,
+      by: this.by,
+      value: this.value
+    });
+
+    return {
+      start: Position.FromVSCodePosition(vimState.editor.selection.start),
+      stop: Position.FromVSCodePosition(vimState.editor.selection.end)
+    };
+  }
+}
+
 abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
   doesntChangeDesiredColumn = true;
   public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
     let prevDesiredColumn = vimState.desiredColumn;
     let prevLine = vimState.editor.selection.active.line;
 
-     await vscode.commands.executeCommand("cursorMove", {
+    await vscode.commands.executeCommand("cursorMove", {
       to: this.movementType,
-         select: vimState.currentMode !== ModeName.Normal,
-         by: this.by,
-         value: this.value
-       });
+      select: vimState.currentMode !== ModeName.Normal,
+      by: this.by,
+      value: this.value
+    });
 
-     if (vimState.currentMode === ModeName.Normal) {
-         let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
-         if (prevLine !== returnedPos.line) {
-             returnedPos = returnedPos.setLocation(returnedPos.line, prevDesiredColumn);
-           }
-         return returnedPos;
-       } else {
-       /**
+    if (vimState.currentMode === ModeName.Normal) {
+      let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+      if (prevLine !== returnedPos.line) {
+        returnedPos = returnedPos.setLocation(returnedPos.line, prevDesiredColumn);
+      }
+      return returnedPos;
+    } else {
+      /**
        * cursorMove command is handling the selection for us.
        * So we are not following our design principal (do no real movement inside an action) here.
        */
+      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+      let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
+      let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
 
-         let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-       let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
+      // We want to swap the cursor start stop positions based on which direction we are moving, up or down
+      if (start.isEqual(curPos)) {
+        position = start;
+        [start, stop] = [stop, start];
+        start = start.getLeft();
+      }
 
-         // We want to swap the cursor start stop positions based on which direction we are moving, up or down
-         if (start.line < position.line) {
-     [start, stop] = [stop, start];
-           }
-       if (prevLine !== start.line) {
-           start = start.setLocation(start.line, prevDesiredColumn);
-         }
+      return { start, stop };
 
-         return { start, stop };
-     }
+    }
   }
 }
 
+class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+  movementType: CursorMovePosition = "down";
+  by: CursorMoveByUnit = "wrappedLine";
+  value = 1;
+}
 
- @RegisterAction
-class MoveDown extends MoveByScreenLineMaintainDesiredColumn {
-  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [["j"]];
+class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = "down";
   by: CursorMoveByUnit = "line";
   value = 1;
-  doesntChangeDesiredColumn = true;
 
-   public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
+  public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
+    if (position.line === TextEditor.getLineCount() - 1) {
+      return position;
+    }
     let t: Position;
     let count = 0;
     do {
-       t = <Position>(await new MoveDownByScreenLine().execAction(position, vimState));
-       count= 1;
-     } while (t.line === position.line);
-    if (t.line > position.line) {
-       return t;
-     }
+      t = <Position>(await new MoveDownByScreenLineMaintainDesiredColumn().execAction(position, vimState));
+      count = 1;
+    } while (t.line === position.line);
+    if (t.line > position.line + 1) {
+      return t;
+    }
     while (count > 0) {
-       await new MoveUpByScreenLine().execAction(position, vimState);
-       count--;
-     }
+      await new MoveUpByScreenLine().execAction(position, vimState);
+      count--;
+    }
     return await super.execAction(position, vimState);
   }
 }
 
- @RegisterAction
-class MoveDownArrow extends MoveDown {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = [["<down>"]];
+@RegisterAction
+class MoveDown extends BaseMovement {
+  keys = ["j"];
+  doesntChangeDesiredColumn = true;
+
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    if (Configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
+      return new MoveDownFoldFix().execAction(position, vimState);
+    }
+    return position.getDown(vimState.desiredColumn);
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return position.getDown(position.getLineEnd().character);
+  }
+
 }
 
- @RegisterAction
-class MoveUp extends MoveByScreenLineMaintainDesiredColumn {
-  modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [["k"]];
+@RegisterAction
+class MoveDownArrow extends MoveDown {
+  keys = ["<down>"];
+}
+
+class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDesiredColumn {
+  movementType: CursorMovePosition = "up";
+  by: CursorMoveByUnit = "wrappedLine";
+  value = 1;
+}
+
+@RegisterAction
+class MoveUp extends BaseMovement {
+  keys = ["k"];
+  doesntChangeDesiredColumn = true;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    if (Configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
+      return new MoveUpFoldFix().execAction(position, vimState);
+    }
+    return position.getUp(vimState.desiredColumn);
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return position.getUp(position.getLineEnd().character);
+  }
+}
+
+@RegisterAction
+class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = "up";
   by: CursorMoveByUnit = "line";
   value = 1;
-  doesntChangeDesiredColumn = true;
 
-   public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
+  public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
+    if (position.line === 0) {
+      return position;
+    }
     let t: Position;
 
-     let count = 0;
+    let count = 0;
     do {
-       t = <Position>(await new MoveUpByScreenLine().execAction(position, vimState));
-       count= 1;
-     } while (t.line === position.line);
-    if (t.line < position.line) {
-       return t;
-     }
+      t = <Position>(await new MoveUpByScreenLineMaintainDesiredColumn().execAction(position, vimState));
+      count = 1;
+    } while (t.line === position.line);
+    if (t.line < position.line - 1) {
+      return t;
+    }
     while (count > 0) {
-       await new MoveDownByScreenLine().execAction(position, vimState);
-       count--;
-     }
+      await new MoveDownByScreenLine().execAction(position, vimState);
+      count--;
+    }
     return await super.execAction(position, vimState);
   }
 }
 
- @RegisterAction
-class MoveUpArrow extends MoveDown {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
-  keys = [["<up>"]];
+@RegisterAction
+class MoveUpArrow extends MoveUp {
+  keys = ["<up>"];
 }
 
 @RegisterAction
 class ArrowsInReplaceMode extends BaseMovement {
   modes = [ModeName.Replace];
   keys = [
-    ["<up>"],
-    ["<down>"],
-    ["<left>"],
-    ["<right>"],
+  ["<up>"],
+  ["<down>"],
+  ["<left>"],
+  ["<right>"],
   ];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -264,19 +362,19 @@ class ArrowsInReplaceMode extends BaseMovement {
 
     switch (this.keysPressed[0]) {
       case "<up>":
-        newPosition = <Position>(await new MoveUpArrow().execAction(position, vimState));
-        break;
+      newPosition = <Position>(await new MoveUpArrow().execAction(position, vimState));
+      break;
       case "<down>":
-        newPosition = <Position>(await new MoveDownArrow().execAction(position, vimState));
-        break;
+      newPosition = <Position>(await new MoveDownArrow().execAction(position, vimState));
+      break;
       case "<left>":
-        newPosition = await new MoveLeftArrow().execAction(position, vimState);
-        break;
+      newPosition = await new MoveLeftArrow().execAction(position, vimState);
+      break;
       case "<right>":
-        newPosition = await new MoveRightArrow().execAction(position, vimState);
-        break;
+      newPosition = await new MoveRightArrow().execAction(position, vimState);
+      break;
       default:
-        break;
+      break;
     }
     vimState.replaceState = new ReplaceState(newPosition);
     return newPosition;
@@ -427,7 +525,7 @@ class MoveDownNonBlank extends BaseMovement {
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     return position.getDownByCount(Math.max(count, 1))
-      .getFirstLineNonBlankChar();
+    .getFirstLineNonBlankChar();
   }
 }
 
@@ -437,7 +535,7 @@ class MoveUpNonBlank extends BaseMovement {
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     return position.getUpByCount(Math.max(count, 1))
-      .getFirstLineNonBlankChar();
+    .getFirstLineNonBlankChar();
   }
 }
 
@@ -447,7 +545,7 @@ class MoveDownUnderscore extends BaseMovement {
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
     return position.getDownByCount(Math.max(count - 1, 0))
-      .getFirstLineNonBlankChar();
+    .getFirstLineNonBlankChar();
   }
 }
 
@@ -579,10 +677,10 @@ class MoveRepeat extends BaseMovement {
 class MoveRepeatReversed extends BaseMovement {
   keys = [","];
   static reverseMotionMapping: Map<Function, () => BaseMovement> = new Map([
-    [MoveFindForward, () => new MoveFindBackward()],
-    [MoveFindBackward, () => new MoveFindForward()],
-    [MoveTilForward, () => new MoveTilBackward()],
-    [MoveTilBackward, () => new MoveTilForward()]
+  [MoveFindForward, () => new MoveFindBackward()],
+  [MoveFindBackward, () => new MoveFindForward()],
+  [MoveTilForward, () => new MoveTilBackward()],
+  [MoveTilBackward, () => new MoveTilForward()]
   ]);
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
@@ -605,9 +703,9 @@ class MoveRepeatReversed extends BaseMovement {
 @RegisterAction
 class MoveLineEnd extends BaseMovement {
   keys = [
-    ["$"],
-    ["<end>"],
-    ["<D-right>"]];
+  ["$"],
+  ["<end>"],
+  ["<D-right>"]];
   setsDesiredColumnToEOL = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -627,65 +725,15 @@ class MoveLineBegin extends BaseMovement {
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return super.doesActionApply(vimState, keysPressed) &&
-      vimState.recordedState.count === 0;
+    vimState.recordedState.count === 0;
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return super.couldActionApply(vimState, keysPressed) &&
-      vimState.recordedState.count === 0;
+    vimState.recordedState.count === 0;
   }
 }
 
-abstract class MoveByScreenLine extends BaseMovement {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  movementType: CursorMovePosition;
-  by: CursorMoveByUnit;
-  value: number = 1;
-
-  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    await vscode.commands.executeCommand("cursorMove", {
-      to: this.movementType,
-      select: vimState.currentMode !== ModeName.Normal,
-      by: this.by,
-      value: this.value
-    });
-
-    if (vimState.currentMode === ModeName.Normal) {
-      return Position.FromVSCodePosition(vimState.editor.selection.active);
-    } else {
-      /**
-       * cursorMove command is handling the selection for us.
-       * So we are not following our design principal (do no real movement inside an action) here.
-       */
-      let start = Position.FromVSCodePosition(vimState.editor.selection.start);
-      let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
-      let curPos = Position.FromVSCodePosition(vimState.editor.selection.active);
-
-      // We want to swap the cursor start stop positions based on which direction we are moving, up or down
-      if (start.isEqual(curPos)) {
-        position = start;
-        [start, stop] = [stop, start];
-        start = start.getLeft();
-      }
-
-      return { start, stop };
-    }
-  }
-
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    await vscode.commands.executeCommand("cursorMove", {
-      to: this.movementType,
-      select: true,
-      by: this.by,
-      value: this.value
-    });
-
-    return {
-      start: Position.FromVSCodePosition(vimState.editor.selection.start),
-      stop: Position.FromVSCodePosition(vimState.editor.selection.end)
-    };
-  }
-}
 
 @RegisterAction
 class MoveScreenLineBegin extends MoveByScreenLine {
@@ -734,7 +782,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveUpByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
+class MoveUpByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "k"],
   ["g", "<up>"]];
@@ -744,7 +792,7 @@ class MoveUpByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
 }
 
 @RegisterAction
-class MoveDownByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
+class MoveDownByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "j"],
   ["g", "<down>"]];
@@ -957,7 +1005,7 @@ export class MoveWordBegin extends BaseMovement {
     }
 
     if (result.isLineEnd()) {
-        return new Position(result.line, result.character + 1);
+      return new Position(result.line, result.character + 1);
     }
 
     return result;
@@ -1769,19 +1817,19 @@ export class ArrowsInInsertMode extends BaseMovement {
 
     switch (this.keys[0]) {
       case "<up>":
-        newPosition = <Position>(await new MoveUpArrow().execAction(position, vimState));
-        break;
+      newPosition = <Position>(await new MoveUpArrow().execAction(position, vimState));
+      break;
       case "<down>":
-        newPosition = <Position>(await new MoveDownArrow().execAction(position, vimState));
-        break;
+      newPosition = <Position>(await new MoveDownArrow().execAction(position, vimState));
+      break;
       case "<left>":
-        newPosition = await new MoveLeftArrow().execAction(position, vimState);
-        break;
+      newPosition = await new MoveLeftArrow().execAction(position, vimState);
+      break;
       case "<right>":
-        newPosition = await new MoveRightArrow().execAction(position, vimState);
-        break;
+      newPosition = await new MoveRightArrow().execAction(position, vimState);
+      break;
       default:
-        break;
+      break;
     }
     vimState.replaceState = new ReplaceState(newPosition);
     return newPosition;
