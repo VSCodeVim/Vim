@@ -883,24 +883,11 @@ export class ModeHandler implements vscode.Disposable {
           // delay the macro recording
           actionToRecord = undefined;
         } else {
-          /**
-           * For these characters, VSCode will insert two characters, but put
-           * the cursor only to the right 1. We have to adjust the cursor
-           * appropriately for macros in that case.
-           */
-          const startsWithPairedCharacter = (x: string) =>
-            x.startsWith("(")  ||
-            x.startsWith("[")  ||
-            x.startsWith("[")  ||
-            x.startsWith("'")  ||
-            x.startsWith("\"") ||
-            x.startsWith("{");
-
           // Push document content change to the stack
           lastAction.contentChanges = lastAction.contentChanges.concat(
             vimState.historyTracker.currentContentChanges.map(x => ({
               textDiff: x,
-              positionDiff: startsWithPairedCharacter(x.text) ? new PositionDiff(0, -1) : new PositionDiff(0, 0),
+              positionDiff: new PositionDiff(0, 0)
             }))
           );
           vimState.historyTracker.currentContentChanges = [];
