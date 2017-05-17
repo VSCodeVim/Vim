@@ -1566,7 +1566,7 @@ suite("Mode Normal", () => {
       endMode: ModeName.Insert
     });
 
-    newTestOnly({
+    newTest({
       title: "can do cit with self closing tags",
       start: ["<div><div a=1/>{{c|ursor here}}</div>"],
       keysPressed: "cit",
