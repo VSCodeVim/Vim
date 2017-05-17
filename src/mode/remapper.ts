@@ -177,7 +177,7 @@ export class OtherModesRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
       "otherModesKeyBindings" + (recursive ? "" : "NonRecursive"),
-      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine],
+      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
       recursive
     );
   }
