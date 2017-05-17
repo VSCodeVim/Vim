@@ -3,7 +3,6 @@ import { SearchState, SearchDirection } from './../../state/searchState';
 import { ReplaceState } from './../../state/replaceState';
 import { VisualBlockMode } from './../../mode/modeVisualBlock';
 import { ModeName } from './../../mode/mode';
-import { VisualBlockInsertionType } from './../../mode/modeVisualBlock';
 import { Range } from './../../common/motion/range';
 import { TextEditor, EditorScrollByUnit, EditorScrollDirection } from './../../textEditor';
 import { Register, RegisterMode } from './../../register/register';
@@ -416,7 +415,6 @@ class CommandEsc extends BaseCommand {
   modes = [
     ModeName.Visual,
     ModeName.VisualLine,
-    ModeName.VisualBlockInsertMode,
     ModeName.VisualBlock,
     ModeName.Normal,
     ModeName.SearchInProgressMode,
@@ -444,11 +442,7 @@ class CommandEsc extends BaseCommand {
       // as that is handled for you by the state machine. ESC is
       // a special case since runsOnceForEveryCursor is false.
 
-      for (let i = 0; i < vimState.allCursors.length; i++) {
-        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-          vimState.allCursors[i].stop.getLeft()
-        );
-      }
+      vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft()));
     }
 
     if (vimState.currentMode === ModeName.SearchInProgressMode) {
@@ -517,7 +511,6 @@ class CommandCtrlOpenBracket extends CommandEsc {
     ModeName.Insert,
     ModeName.Visual,
     ModeName.VisualLine,
-    ModeName.VisualBlockInsertMode,
     ModeName.VisualBlock,
     ModeName.Replace
   ];
@@ -1853,22 +1846,26 @@ class CommandOpenFile extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
 
-    let filePath: string = "";
+    let fullFilePath: string = "";
 
     if (vimState.currentMode === ModeName.Visual) {
       const selection = TextEditor.getSelection();
       const end = new Position(selection.end.line, selection.end.character + 1);
-      filePath = TextEditor.getText(selection.with(selection.start, end));
+      fullFilePath = TextEditor.getText(selection.with(selection.start, end));
     } else {
       const start = position.getFilePathLeft(true);
       const end = position.getFilePathRight();
       const range = new vscode.Range(start, end);
 
-      filePath = TextEditor.getText(range).trim();
+      fullFilePath = TextEditor.getText(range).trim();
     }
-
-    const fileCommand = new FileCommand({name: filePath});
-    fileCommand.execute();
+    const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
+    if (fileInfo) {
+      const filePath = fileInfo[1];
+      const lineNumber = parseInt(fileInfo[2], 10);
+      const fileCommand = new FileCommand({name: filePath, lineNumber: lineNumber});
+      fileCommand.execute();
+    }
 
     return vimState;
   }
@@ -2012,19 +2009,30 @@ class CommandInsertAtLineEnd extends BaseCommand {
 class CommandInsertNewLineAbove extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["O"];
-  runsOnceForEveryCursor() { return true; }
+  runsOnceForEveryCursor() { return false; }
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(position).text);
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
+    let count = vimState.recordedState.count || 1;
+    // Why do we do this? Who fucking knows??? If the cursor is at the
+    // beginning of the line, then editor.action.insertLineBefore does some
+    // weird things with following paste command. Refer to
+    // https://github.com/VSCodeVim/Vim/pull/1663#issuecomment-300573129 for
+    // more details.
+    const tPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active).getRight();
+    vscode.window.activeTextEditor!.selection = new vscode.Selection(tPos, tPos);
+    for (let i = 0; i < count; i++) {
+      await vscode.commands.executeCommand('editor.action.insertLineBefore');
+    }
 
-    vimState.recordedState.transformations.push({
-      type: "insertText",
-      text: TextEditor.setIndentationLevel("V", indentationWidth).replace("V", "\n"),
-      position: new Position(vimState.cursorPosition.line, 0),
-      diff: new PositionDiff(-1, indentationWidth),
-    });
-
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    for (let i = 0; i < count; i++) {
+      const newPos = new Position(vimState.allCursors[0].start.line + i, vimState.allCursors[0].start.character);
+      vimState.allCursors.push(new Range(newPos, newPos));
+    }
+    vimState.allCursors = vimState.allCursors.reverse();
+    vimState.isFakeMultiCursor = true;
+    vimState.isMultiCursor = true;
     return vimState;
   }
 }
@@ -2035,12 +2043,31 @@ class CommandInsertNewLineBefore extends BaseCommand {
   keys = ["o"];
   runsOnceForEveryCursor() { return false; }
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+  public async execCount(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
-    await vscode.commands.executeCommand('editor.action.insertLineAfter');
+    let count = vimState.recordedState.count || 1;
 
+    for (let i = 0; i < count; i++) {
+      await vscode.commands.executeCommand('editor.action.insertLineAfter');
+    }
     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    for (let i = 1; i < count; i++) {
+      const newPos = new Position(vimState.allCursors[0].start.line - i, vimState.allCursors[0].start.character);
+      vimState.allCursors.push(new Range(newPos, newPos));
 
+      // Ahhhhhh. We have to manually set cursor position here as we need text
+      // transformations AND to set multiple cursors.
+      vimState.recordedState.transformations.push({
+        type: "insertText",
+        text: TextEditor.setIndentationLevel("", newPos.character),
+        position: newPos,
+        cursorIndex: i,
+        manuallySetCursorPositions: true
+      });
+    }
+    vimState.allCursors = vimState.allCursors.reverse();
+    vimState.isFakeMultiCursor = true;
+    vimState.isMultiCursor = true;
     return vimState;
   }
 }
@@ -2975,64 +3002,24 @@ class ActionShiftDVisualBlock extends BaseCommand {
 }
 
 @RegisterAction
-class ActionSVisualBlock extends BaseCommand {
-  modes = [ModeName.VisualBlock];
-  keys = [["s"], ["S"]];
-  canBeRepeatedWithDot = true;
-  runsOnceForEveryCursor() { return false; }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState)) {
-      vimState.recordedState.transformations.push({
-        type  : "deleteRange",
-        range : new Range(start, end),
-        manuallySetCursorPositions: true,
-      });
-    }
-
-    vimState.currentMode = ModeName.VisualBlockInsertMode;
-    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
-
-    // Make sure the cursor position is at the beginning since we are inserting not appending
-    if (vimState.cursorPosition.character > vimState.cursorStartPosition.character) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] =
-        [vimState.cursorStartPosition, vimState.cursorPosition];
-    }
-
-    // Make sure we are in the TOP left
-    if (vimState.cursorPosition.line > vimState.cursorStartPosition.line) {
-      let lineStart = vimState.cursorStartPosition.line;
-      vimState.cursorStartPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
-      vimState.cursorPosition = new Position(lineStart, vimState.cursorPosition.character);
-    }
-
-    return vimState;
-  }
-}
-
-@RegisterAction
 class ActionGoToInsertVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
   keys = ["I"];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.VisualBlockInsertMode;
-    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
+    vimState.currentMode = ModeName.Insert;
+    vimState.isMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
 
-    // Make sure the cursor position is at the beginning since we are inserting not appending
-    if (vimState.cursorPosition.character > vimState.cursorStartPosition.character) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] =
-        [vimState.cursorStartPosition, vimState.cursorPosition];
+
+    for (const {line, start} of Position.IterateLine(vimState)) {
+      if (line === "" && start.character !== 0) {
+        continue;
+      }
+      vimState.allCursors.push(new Range(start, start));
     }
-
-    // Make sure we are in the TOP left
-    if (vimState.cursorPosition.line > vimState.cursorStartPosition.line) {
-      let lineStart = vimState.cursorStartPosition.line;
-      vimState.cursorStartPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
-      vimState.cursorPosition = new Position(lineStart, vimState.cursorPosition.character);
-    }
-
+    vimState.allCursors = vimState.allCursors.slice(1);
     return vimState;
   }
 }
@@ -3040,7 +3027,7 @@ class ActionGoToInsertVisualBlockMode extends BaseCommand {
 @RegisterAction
 class ActionChangeInVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ["c"];
+  keys = [["c"], ["s"]];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3052,32 +3039,23 @@ class ActionChangeInVisualBlockMode extends BaseCommand {
       });
     }
 
-    vimState.currentMode = ModeName.VisualBlockInsertMode;
-    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
+    vimState.currentMode = ModeName.Insert;
+    vimState.isMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
 
-    // Make sure the cursor position is at the beginning since we are inserting not appending
-    if (vimState.cursorPosition.character > vimState.cursorStartPosition.character) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] =
-        [vimState.cursorStartPosition, vimState.cursorPosition];
+    for (const {start} of Position.IterateLine(vimState)) {
+      vimState.allCursors.push(new Range(start, start));
     }
-
-    // Make sure we are in the TOP left
-    if (vimState.cursorPosition.line > vimState.cursorStartPosition.line) {
-      let lineStart = vimState.cursorStartPosition.line;
-      vimState.cursorStartPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
-      vimState.cursorPosition = new Position(lineStart, vimState.cursorPosition.character);
-    }
+    vimState.allCursors = vimState.allCursors.slice(1);
 
     return vimState;
   }
 }
 
-// TODO - this is basically a duplicate of the above command
-
 @RegisterAction
 class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
   modes = [ModeName.VisualBlock];
-  keys = ["C"];
+  keys = [["C"], ["S"]];
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3089,23 +3067,14 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
       });
     }
 
-    vimState.currentMode = ModeName.VisualBlockInsertMode;
-    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Insert;
+    vimState.currentMode = ModeName.Insert;
+    vimState.isMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
 
-    // Make sure the cursor position is at the end since we are appending
-    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] =
-        [vimState.cursorStartPosition, vimState.cursorPosition];
+    for (const {end} of Position.IterateLine(vimState)) {
+      vimState.allCursors.push(new Range(end, end));
     }
-
-    // Make sure we are in the TOP right
-    if (vimState.cursorPosition.line > vimState.cursorStartPosition.line) {
-      let lineStart = vimState.cursorStartPosition.line;
-      vimState.cursorStartPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
-      vimState.cursorPosition = new Position(lineStart, vimState.cursorPosition.character);
-    }
-
-    vimState.cursorPosition = vimState.cursorPosition.getRight();
+    vimState.allCursors = vimState.allCursors.slice(1);
 
     return vimState;
   }
@@ -3118,83 +3087,28 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.VisualBlockInsertMode;
-    vimState.recordedState.visualBlockInsertionType = VisualBlockInsertionType.Append;
+    vimState.currentMode = ModeName.Insert;
+    vimState.isMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
 
-     // Make sure the cursor position is at the end since we are appending
-    if (vimState.cursorPosition.character < vimState.cursorStartPosition.character) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] =
-        [vimState.cursorStartPosition, vimState.cursorPosition];
+    for (const {line, end} of Position.IterateLine(vimState)) {
+      if (line.trim() === "") {
+        vimState.recordedState.transformations.push({
+          type: "replaceText",
+          text: TextEditor.setIndentationLevel(line, end.character),
+          start: new Position(end.line, 0),
+          end: new Position(end.line, end.character),
+          position: new Position(end.line, 0)
+        });
+      }
+      vimState.allCursors.push(new Range(end, end));
     }
-
-    // Make sure we are in the TOP right
-    if (vimState.cursorPosition.line > vimState.cursorStartPosition.line) {
-      let lineStart = vimState.cursorStartPosition.line;
-      vimState.cursorStartPosition = new Position(vimState.cursorPosition.line, vimState.cursorStartPosition.character);
-      vimState.cursorPosition = new Position(lineStart, vimState.cursorPosition.character);
-    }
-
-    vimState.cursorPosition = vimState.cursorPosition.getRight();
-
+    vimState.allCursors = vimState.allCursors.slice(1);
     return vimState;
   }
 }
 
 
-
-@RegisterAction
-class InsertInInsertVisualBlockMode extends BaseCommand {
-  modes = [ModeName.VisualBlockInsertMode];
-  keys = ["<any>"];
-  runsOnceForEveryCursor() { return false; }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let char = this.keysPressed[0];
-    let insertAtStart = vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Insert;
-
-    if (char === '\n') {
-      return vimState;
-    }
-
-    if (char === '<BS>' && vimState.topLeft.character === 0) {
-      return vimState;
-    }
-
-    for (const { start, end } of Position.IterateLine(vimState)) {
-      const insertPos = insertAtStart ? start : end;
-
-      // Skip line if starting position does not have content (don't insert on blank lines for example)
-      if (end.isBefore(start)) {
-        continue;
-      }
-
-      if (char === '<BS>') {
-        vimState.recordedState.transformations.push({
-          type     : "deleteText",
-          position : insertPos,
-          diff     : new PositionDiff(0, -1),
-        });
-      } else {
-        let positionToInsert: Position;
-
-        if (vimState.recordedState.visualBlockInsertionType === VisualBlockInsertionType.Append) {
-          positionToInsert = insertPos.getLeft();
-        } else {
-          positionToInsert = insertPos;
-        }
-
-        vimState.recordedState.transformations.push({
-          type    : "insertText",
-          text    : char,
-          position: positionToInsert,
-          diff     : new PositionDiff(0, 1),
-        });
-      }
-    }
-
-    return vimState;
-  }
-}
 
 @RegisterAction
 class ActionDeleteLineVisualMode extends BaseCommand {
