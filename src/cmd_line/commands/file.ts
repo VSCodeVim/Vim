@@ -87,18 +87,9 @@ export class FileCommand extends node.CommandBase {
       await vscode.commands.executeCommand("vscode.open", folder,
         this._arguments.position === FilePosition.NewWindow ? this.getViewColumnToRight() : this.getActiveViewColumn());
 
-      await vscode.commands.executeCommand("cursorMove", {
-          to: "up",
-          by: "line",
-          value: 100000000,
-          select: false
-      });
-      await vscode.commands.executeCommand("cursorMove", {
-          to: "down",
-          by: "line",
-          value: this.arguments.lineNumber ? this.arguments.lineNumber - 1 : 0,
-          select: false
-      });
+      if (this.arguments.lineNumber) {
+        vscode.window.activeTextEditor!.revealRange(new vscode.Range(new vscode.Position(this.arguments.lineNumber, 0), new vscode.Position(this.arguments.lineNumber, 0)));
+      }
     }
   }
 
