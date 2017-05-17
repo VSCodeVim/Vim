@@ -431,8 +431,9 @@ class CommandEsc extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Normal && !vimState.isMultiCursor) {
-      // If there's nothing to do on the vim side, we might as well call vscode's default "close notification" actions.
-      await vscode.commands.executeCommand('workbench.action.closeMessages');
+      // If there's nothing to do on the vim side, we might as well call some
+      // of vscode's default "close notification" actions. I think we should
+      // just add to this list as needed.
       await vscode.commands.executeCommand('closeReferenceSearchEditor');
       return vimState;
     }
