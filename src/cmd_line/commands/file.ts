@@ -88,12 +88,14 @@ export class FileCommand extends node.CommandBase {
         this._arguments.position === FilePosition.NewWindow ? this.getViewColumnToRight() : this.getActiveViewColumn());
 
       if (this.arguments.lineNumber) {
-        vscode.window.activeTextEditor!.revealRange(new vscode.Range(new vscode.Position(this.arguments.lineNumber, 0), new vscode.Position(this.arguments.lineNumber, 0)));
+        vscode.window.activeTextEditor!.revealRange(
+          new vscode.Range(new vscode.Position(this.arguments.lineNumber, 0),
+          new vscode.Position(this.arguments.lineNumber, 0)));
       }
     }
   }
 
-  protected async fileExists(filePath: string) {
+  protected fileExists(filePath: string) {
     return new Promise<boolean>((resolve, reject) => {
       fs.stat(filePath, async (error, stat) => {
         resolve(!error);
