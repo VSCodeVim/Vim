@@ -1859,7 +1859,7 @@ class CommandOpenFile extends BaseCommand {
 
       filePath = TextEditor.getText(range).trim();
     }
-    const fileInfo = filePath.match(/(.*?):?([0-9]*)$/);
+    const fileInfo = filePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
       const filePath = fileInfo[1];
       const lineNumber = parseInt(fileInfo[2], 10);
