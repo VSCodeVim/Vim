@@ -1862,7 +1862,7 @@ class CommandOpenFile extends BaseCommand {
     let fileInfo = filePath.match(/(.*?):?([0-9]*)$/);
     if (fileInfo) {
       let filePath = fileInfo[1];
-      let lineNumber = parseInt(fileInfo[2]);
+      let lineNumber = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({name: filePath, lineNumber: lineNumber});
       fileCommand.execute();
     }

@@ -86,6 +86,7 @@ export class FileCommand extends node.CommandBase {
       let folder = vscode.Uri.file(newFilePath);
       await vscode.commands.executeCommand("vscode.open", folder,
         this._arguments.position === FilePosition.NewWindow ? this.getViewColumnToRight() : this.getActiveViewColumn());
+
       await vscode.commands.executeCommand("cursorMove", {
           to: "up",
           by: "line",
