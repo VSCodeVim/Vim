@@ -16,11 +16,6 @@ export async function showError(message : string): Promise<{}> {
 const clipboardy = require('clipboardy');
 
 export function clipboardCopy(text: string) {
-  // Set utf-8 if on macOS
-  if (process.platform === 'darwin') {
-    process.env.LANG = 'en_US.UTF-8';
-  }
-
   clipboardy.writeSync(text);
 }
 
