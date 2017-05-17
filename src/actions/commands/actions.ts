@@ -1859,9 +1859,13 @@ class CommandOpenFile extends BaseCommand {
 
       filePath = TextEditor.getText(range).trim();
     }
-
-    const fileCommand = new FileCommand({name: filePath});
-    fileCommand.execute();
+    let fileInfo = filePath.match(/(.*?):?([0-9]*)$/);
+    if (fileInfo) {
+      let filePath = fileInfo[1];
+      let lineNumber = parseInt(fileInfo[2]);
+      const fileCommand = new FileCommand({name: filePath, lineNumber: lineNumber});
+      fileCommand.execute();
+    }
 
     return vimState;
   }
