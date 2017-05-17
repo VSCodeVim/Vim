@@ -586,6 +586,7 @@ abstract class MoveByScreenLine extends BaseMovement {
       value: this.value
     });
 
+
     if (vimState.currentMode === ModeName.Normal) {
       return Position.FromVSCodePosition(vimState.editor.selection.active);
     } else {
