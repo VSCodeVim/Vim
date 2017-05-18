@@ -1188,24 +1188,11 @@ class MovePreviousSectionEnd extends MoveSectionBoundary {
 // you can't run an operator if you already have one going (which is logical).
 // However there is the slightly weird behavior where dy actually deletes the whole
 // line, lol.
-@RegisterAction
-class MoveDD extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["d"];
-
-  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<Position | IMovement> {
-    return {
-      start: position.getLineBegin(),
-      stop: position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
-      registerMode: RegisterMode.LineWise
-    };
-  }
-}
 
 @RegisterAction
 class MoveYY extends BaseMovement {
   modes = [ModeName.Normal];
-  keys = ["y"];
+  keys = ["m"];
 
   public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
     return {
@@ -1239,74 +1226,6 @@ class MoveCC extends BaseMovement {
     }
   }
 }
-
-@RegisterAction
-class MoveIndent extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = [">"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start: position.getLineBegin(),
-      stop: position.getLineEnd(),
-    };
-  }
-}
-
-@RegisterAction
-class MoveOutdent extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["<"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start: position.getLineBegin(),
-      stop: position.getLineEnd(),
-    };
-  }
-}
-
-@RegisterAction
-class MoveFormat extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["="];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start: position.getLineBegin(),
-      stop: position.getLineEnd(),
-    };
-  }
-}
-
-// Used for gUU
-@RegisterAction
-class MoveUpercaseLine extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["U"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start: position.getLineBegin(),
-      stop: position.getLineEnd(),
-    };
-  }
-}
-
-// Used for guu
-@RegisterAction
-class MoveLowercaseLine extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["u"];
-
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start: position.getLineBegin(),
-      stop: position.getLineEnd(),
-    };
-  }
-}
-
 
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {

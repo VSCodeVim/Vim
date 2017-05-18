@@ -372,11 +372,12 @@ export class RecordedState {
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
   public get operator(): BaseOperator {
-    const list = _.filter(this.actionsRun, a => a instanceof BaseOperator);
-
-    if (list.length > 1) { throw new Error("Too many operators!"); }
-
+    let list = _.filter(this.actionsRun, a => a instanceof BaseOperator).reverse();
     return list[0] as any;
+  }
+
+  public get operators(): BaseOperator[] {
+    return _.filter(this.actionsRun, a => a instanceof BaseOperator).reverse() as any;
   }
 
   /**
@@ -419,9 +420,16 @@ export class RecordedState {
   }
 
   public operatorReadyToExecute(mode: ModeName): boolean {
+    if (this.hasRunOperator) {
+      return false;
+    }
+    let list = _.filter(this.actionsRun, a => a instanceof BaseOperator).reverse();
+    if (list.length > 1) {
+      return list[0].constructor === list[1].constructor;
+    }
+
     // Visual modes do not require a motion -- they ARE the motion.
     return this.operator &&
-      !this.hasRunOperator &&
       mode !== ModeName.SearchInProgressMode &&
       (this.hasRunAMovement || (
       mode === ModeName.Visual ||
@@ -1241,7 +1249,11 @@ export class ModeHandler implements vscode.Disposable {
 
       resultVimState.currentMode = startingModeName;
 
-      resultVimState = await recordedState.operator.run(resultVimState, start, stop);
+      if (recordedState.operators.length > 1) {
+        resultVimState = await recordedState.operator.runRepeat(resultVimState, start, recordedState.count);
+      } else {
+        resultVimState = await recordedState.operator.run(resultVimState, start, stop);
+      }
 
       for (const transformation of resultVimState.recordedState.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
