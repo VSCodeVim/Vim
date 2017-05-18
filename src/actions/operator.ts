@@ -456,7 +456,7 @@ export class ChangeOperator extends BaseOperator {
 
   public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
     const lineIsAllWhitespace = TextEditor.getLineAt(position).text.trim() === "";
-    vimState.currentRegisterMode = RegisterMode.CharacterWise;
+    vimState.currentRegisterMode = RegisterMode.LineWise;
     if (lineIsAllWhitespace) {
       return this.run(vimState, position.getLineBegin(), position.getDownByCount(Math.max(0, count - 1)).getLineEnd());
     } else {
