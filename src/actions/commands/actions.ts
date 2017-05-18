@@ -708,7 +708,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     if (key === "<BS>" || key === "<shift+BS>") {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
-      vimState.currentMode = ModeName.Normal;
+      vimState.currentMode = vimState.globalState.searchState!.previousMode;
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
@@ -944,7 +944,7 @@ function createSearchStateAndMoveToMatch(args: {
 
     // Start a search for the given term.
     vimState.globalState.searchState = new SearchState(
-      args.direction, vimState.cursorPosition, searchString, { isRegex: isExact }
+      args.direction, vimState.cursorPosition, searchString, { isRegex: isExact }, vimState.currentMode
     );
 
     vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(args.searchStartCursorPosition).pos;
@@ -1029,12 +1029,13 @@ class CommandSearchVisualBackward extends BaseCommand {
 
 @RegisterAction
 export class CommandSearchForwards extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["/"];
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
+    vimState.globalState.searchState = new SearchState(SearchDirection.Forward,
+                                        vimState.cursorPosition, "", { isRegex: true }, vimState.currentMode);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
@@ -1048,12 +1049,13 @@ export class CommandSearchForwards extends BaseCommand {
 
 @RegisterAction
 export class CommandSearchBackwards extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["?"];
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
+    vimState.globalState.searchState = new SearchState(SearchDirection.Backward,
+                                       vimState.cursorPosition, "", { isRegex: true }, vimState.currentMode);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
