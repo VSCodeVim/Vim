@@ -147,8 +147,6 @@ export abstract class BaseCommand extends BaseAction {
 
   canBeRepeatedWithDot = false;
 
-  // mustBeFirstKey = true;
-
   /**
    * Run the command a single time.
    */
@@ -429,7 +427,6 @@ class CommandEsc extends BaseCommand {
     ["<C-[>"],
   ];
 
-  mustBeFirstKey = false;
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -1746,6 +1743,7 @@ class CommandChangeToLineEnd extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["C"];
   runsOnceForEachCountPrefix = false;
+  mustBeFirstKey = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let count = vimState.recordedState.count || 1;
