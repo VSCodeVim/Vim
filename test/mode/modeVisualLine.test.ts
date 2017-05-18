@@ -291,7 +291,7 @@ suite("Mode Visual", () => {
       end: ['1', '|{', '  a = 1;', '}', '2']
     });
 
-    newTestOnly({
+    newTest({
       title: "can handle 'c'",
       start: ['foo', 'b|ar', 'fun'],
       keysPressed: 'Vc',
