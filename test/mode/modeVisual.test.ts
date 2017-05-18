@@ -6,6 +6,7 @@ import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from 
 import { ModeName } from '../../src/mode/mode';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
+import { Configuration } from "../../src/configuration/configuration";
 
 suite("Mode Visual", () => {
   let modeHandler: ModeHandler;
@@ -214,6 +215,21 @@ suite("Mode Visual", () => {
 
       assertEqualLines(["two"]);
     });
+
+    newTest({
+      title: "Paste over selection copies the selection",
+      start: ["|from to"],
+      keysPressed: "dewvep0P",
+      end: ["t|o from"]
+    });
+
+    newTest({
+      title: "Paste over selection copies the selection linewise",
+      start: ["foo", "bar", "|fun"],
+      keysPressed: "viwykVkpp",
+      end: ["fun", "|foo", "bar", "fun"]
+    });
+
   });
 
   suite("Arrow keys work perfectly in Visual Mode", () => {
@@ -640,14 +656,6 @@ suite("Mode Visual", () => {
     endMode: ModeName.Normal
   });
 
-  newTest({
-    title: "Changes on a firstline selection will not delete first character",
-    start: ["test|jojo", "haha"],
-    keysPressed: "vj0c",
-    end: ["test|haha"],
-    endMode: ModeName.Insert
-  });
-
   suite("D command will remove all selected lines", () => {
     newTest({
       title: "D deletes all selected lines",
@@ -672,6 +680,22 @@ suite("Mode Visual", () => {
       start: ["first line", "test| line1", "test line2", "second line"],
       keysPressed: "vjX",
       end: ["first line", "|second line"],
+      endMode: ModeName.Normal
+    });
+
+  suite("handles indent blocks in visual mode", () => {
+    newTest({
+      title: "Can do vai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "vaid",
+      end: [
+          '|do_something_else()',
+      ],
       endMode: ModeName.Normal
     });
 
@@ -746,6 +770,105 @@ suite("Mode Visual", () => {
     });
 
     newTest({
+      title: "Can do vii",
+      start: [
+          'if foo > 3:',
+          '    bar|',
+          '    if baz:',
+          '        foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "viid",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Doesn't naively select the next line",
+      start: [
+          'if foo > 3:',
+          '    bar|',
+          'if foo > 3:',
+          '    bar',
+      ],
+      keysPressed: "viid",
+      end: [
+          'if foo > 3:',
+          '|if foo > 3:',
+          '    bar',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Searches backwards if cursor line is empty",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")',
+          '|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "viid",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do vaI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "vaId",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Normal
+    });
+  });
+
+  suite("visualstar", () => {
+    let originalVisualstarValue = false;
+
+    setup(() => {
+      originalVisualstarValue = Configuration.visualstar;
+      Configuration.visualstar = true;
+    });
+
+    teardown(() => {
+      Configuration.visualstar = originalVisualstarValue;
+    });
+
+    newTest({
+      title: "Works with *",
+      start: [
+          '|public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          'public modes = [ModeName.VisualLine',
+      ],
+      // This is doing a few things:
+      // - select to the end of "Visual"
+      // - press "*", the cursor will go to the next line since it matches
+      // - press "n", the cursor will go to the last line since it matches
+      keysPressed: "2vfl*n",
+      end: [
+          'public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          '|public modes = [ModeName.VisualLine',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "yy pasted text will be inserted by P",
       start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
       keysPressed: "yyjjlllvjP",
@@ -754,4 +877,25 @@ suite("Mode Visual", () => {
     });
   });
 
+    newTest({
+      title: "Works with #",
+      start: [
+          'public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          '|public modes = [ModeName.VisualLine',
+      ],
+      // This is doing a few things:
+      // - select to the end of "Visual"
+      // - press "#", the cursor will go to the previous line since it matches
+      // - press "n", the cursor will go to the first line since it matches
+      keysPressed: "2vfl#n",
+      end: [
+          '|public modes = [ModeName.Visual',
+          'public modes = [ModeName.VisualBlock',
+          'public modes = [ModeName.VisualLine',
+      ],
+      endMode: ModeName.Normal
+    });
+
+  });
 });

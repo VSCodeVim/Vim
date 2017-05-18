@@ -1,7 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
-import { NumericString } from '../../src/number/numericString';
+import { NumericString } from '../../src/common/number/numericString';
 
 suite("numeric string", () => {
   test("fails on non-string", () => {

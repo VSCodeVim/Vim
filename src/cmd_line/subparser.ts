@@ -5,6 +5,7 @@ import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWallCommandArgs } from './subparsers/wall';
 import { parseNohlCommandArgs } from './subparsers/nohl';
 import { parseWriteQuitCommandArgs } from './subparsers/writequit';
+import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
 import * as tabCmd from './subparsers/tab';
 import * as fileCmd from './subparsers/file';
 import { parseOptionsCommandArgs } from './subparsers/setoptions';
@@ -13,6 +14,7 @@ import { parseReadCommandArgs } from './subparsers/read';
 import { parseRegisterCommandArgs } from './subparsers/register';
 import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
 import { parseSortCommandArgs } from './subparsers/sort';
+import { parseCloseCommandArgs } from './subparsers/close';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -26,6 +28,9 @@ export const commandParsers = {
   noh: parseNohlCommandArgs,
   nohl: parseNohlCommandArgs,
 
+  close: parseCloseCommandArgs,
+  clo: parseCloseCommandArgs,
+
   quit: parseQuitCommandArgs,
   q: parseQuitCommandArgs,
 
@@ -34,6 +39,12 @@ export const commandParsers = {
 
   wq: parseWriteQuitCommandArgs,
   writequit: parseWriteQuitCommandArgs,
+  x: parseWriteQuitCommandArgs,
+
+  wqa: parseWriteQuitAllCommandArgs,
+  wqall: parseWriteQuitAllCommandArgs,
+  xa: parseWriteQuitAllCommandArgs,
+  xall: parseWriteQuitAllCommandArgs,
 
   tabn: tabCmd.parseTabNCommandArgs,
   tabnext: tabCmd.parseTabNCommandArgs,

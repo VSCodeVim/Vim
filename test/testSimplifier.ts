@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { ModeName } from '../src/mode/mode';
 import { HistoryTracker } from '../src/history/historyTracker';
-import { Position } from '../src/motion/position';
+import { Position } from '../src/common/motion/position';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
@@ -99,16 +99,13 @@ class TestObjectHelper {
   }
 
   private _parse(t: ITestObject): void {
+    this._isValid = true;
     if (!this._setStartCursorPosition(t.start)) {
       this._isValid = false;
-      return;
     }
     if (!this._setEndCursorPosition(t.end)) {
       this._isValid = false;
-      return;
     }
-
-    this._isValid = true;
   }
 
   public asVimInputText(): string[] {
@@ -201,8 +198,8 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   await waitForCursorUpdatesToHappen();
 
-  // Since we bypassed VSCodeVim to add text, we need to tell the history tracker
-  // that we added it.
+  // Since we bypassed VSCodeVim to add text,
+  // we need to tell the history tracker that we added it.
   modeHandler.vimState.historyTracker.addChange();
   modeHandler.vimState.historyTracker.finishCurrentStep();
 
@@ -238,5 +235,4 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   }
 }
 
-
-export { ITestObject, testIt }
+export { ITestObject, testIt };

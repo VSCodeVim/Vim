@@ -19,7 +19,7 @@ suite("register", () => {
     modeHandler = new ModeHandler();
   });
 
-  suiteTeardown(cleanUpWorkspace);
+  teardown(cleanUpWorkspace);
 
   newTest({
     title: "Can copy to a register",
@@ -49,6 +49,13 @@ suite("register", () => {
     start: ['|one', "two"],
     keysPressed: '"ayyj"byy"ap"bp',
     end: ["one", "two", "one", "|two"],
+  });
+
+  newTest({
+    title: "Can use black hole register",
+    start: ['|asdf', "qwer"],
+    keysPressed: 'yyj"_ddkp',
+    end: ["asdf", "|asdf"],
   });
 
   test("System clipboard works with chinese characters", async () => {

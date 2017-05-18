@@ -2,11 +2,11 @@
 
 import * as _ from "lodash";
 import * as vscode from "vscode";
-import { TextEditor } from "./../textEditor";
-import { VimState } from './../mode/modeHandler';
-import { VisualBlockMode } from './../mode/modeVisualBlock';
-import { Configuration } from "./../configuration/configuration";
-import { betterEscapeRegex } from "./../util";
+import { TextEditor } from "./../../textEditor";
+import { VimState } from './../../mode/modeHandler';
+import { VisualBlockMode } from './../../mode/modeVisualBlock';
+import { Configuration } from "./../../configuration/configuration";
+import { betterEscapeRegex } from "./../../util";
 
 /**
  * Represents a difference between two positions. Add it to a position
@@ -259,11 +259,12 @@ export class Position extends vscode.Position {
       yield {
         line  : line.substring(topLeft.character, endCharacter),
         start : new Position(lineIndex, topLeft.character),
-        end   : new Position(lineIndex, endCharacter)
+        end   : new Position(lineIndex, bottomRight.character + 1)
       };
     }
   }
 
+  // Iterates through words on the same line, starting from the current position.
   public static *IterateWords(start: Position): Iterable<{ start: Position, end: Position, word: string }> {
     const text = TextEditor.getLineAt(start).text;
     let wordEnd = start.getCurrentWordEnd(true);
@@ -275,11 +276,11 @@ export class Position extends vscode.Position {
         word: word,
       };
 
-      if (wordEnd.isLineEnd()) {
+      if (wordEnd.getRight().isLineEnd()) {
         return;
       }
       start = start.getWordRight();
-      wordEnd = start.getCurrentWordEnd();
+      wordEnd = start.getCurrentWordEnd(true);
     } while (true);
   }
 
@@ -480,8 +481,8 @@ export class Position extends vscode.Position {
     return this.getWordLeftWithRegex(this._nonWordCharRegex, inclusive);
   }
 
-  public getBigWordLeft(): Position {
-    return this.getWordLeftWithRegex(this._nonBigWordCharRegex);
+  public getBigWordLeft(inclusive: boolean = false): Position {
+    return this.getWordLeftWithRegex(this._nonBigWordCharRegex, inclusive);
   }
 
   public getFilePathLeft(inclusive: boolean = false): Position {
@@ -495,7 +496,7 @@ export class Position extends vscode.Position {
     return this.getWordRightWithRegex(this._nonWordCharRegex, inclusive);
   }
 
-  public getBigWordRight() : Position {
+  public getBigWordRight(inclusive: boolean = false) : Position {
     return this.getWordRightWithRegex(this._nonBigWordCharRegex);
   }
 
@@ -744,6 +745,18 @@ export class Position extends vscode.Position {
     return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
   }
 
+  /**
+   * Returns whether the current position is in the leading whitespace of a line
+   * @param allowEmpty : Use true if "" is valid
+   */
+  public isInLeadingWhitespace(allowEmpty: boolean = false): boolean {
+    if (allowEmpty) {
+      return /^\s*$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
+    } else {
+      return /^\s+$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
+    }
+  }
+
   public static getFirstNonBlankCharAtLine(line: number): number {
     return TextEditor.readLineAt(line).match(/^\s*/)![0].length;
   }
@@ -844,7 +857,7 @@ export class Position extends vscode.Position {
   private getLastWordEndWithRegex(regex: RegExp) : Position {
     for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
       let positions  = this.getAllEndPositions(TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text, regex);
-      let index = _.findIndex(positions, index => index >= this.character || currentLine !== this.line);
+      let index = _.findIndex(positions, i => i >= this.character || currentLine !== this.line);
       let newCharacter = 0;
       if (index === -1) {
         newCharacter = positions[positions.length - 1];

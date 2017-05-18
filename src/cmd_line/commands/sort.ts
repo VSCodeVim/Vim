@@ -5,6 +5,7 @@ import * as node from "../node";
 import * as token from "../token";
 import { ModeHandler } from "../../mode/modeHandler";
 import { TextEditor } from "../../textEditor";
+import { ModeName } from '../../mode/mode';
 
 export interface ISortCommandArguments extends node.ICommandArgs {
   reverse: boolean;
@@ -25,7 +26,18 @@ export class SortCommand extends node.CommandBase {
   }
 
   async execute(modeHandler : ModeHandler): Promise<void> {
-    await this.sortLines(new vscode.Position(0, 0), new vscode.Position(TextEditor.getLineCount() - 1, 0));
+    let mode = modeHandler.vimState.currentMode;
+    if ([ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(mode) >= 0) {
+      const selection = modeHandler.vimState.editor.selection;
+      let start = selection.start;
+      let end = selection.end;
+      if (start.isAfter(end)) {
+        [start, end] = [end, start];
+      }
+      await this.sortLines(start, end);
+    } else {
+      await this.sortLines(new vscode.Position(0, 0), new vscode.Position(TextEditor.getLineCount() - 1, 0));
+    }
   }
 
   async sortLines(startLine: vscode.Position, endLine: vscode.Position) {
@@ -38,7 +50,7 @@ export class SortCommand extends node.CommandBase {
     let lastLineLength = originalLines[originalLines.length - 1].length;
     let sortedLines = originalLines.sort();
 
-    if (this._arguments.reverse) {
+     if (this._arguments.reverse) {
       sortedLines.reverse();
     }
 

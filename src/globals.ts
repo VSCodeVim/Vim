@@ -9,4 +9,7 @@ export class Globals {
   public static modeHandlerForTesting: any = undefined;
 
   public static WhitespaceRegExp = new RegExp("^ *$");
+
+  // false for disabling Vim temporarily
+  public static active = true;
 }

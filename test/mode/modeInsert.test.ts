@@ -151,6 +151,20 @@ suite("Mode Insert", () => {
         assertEqualLines(["text "]);
     });
 
+    newTest({
+      title: "Can handle <C-w> on leading whitespace",
+      start: ['foo', '  |bar'],
+      keysPressed: 'i<C-w>',
+      end: ['foo', '|bar']
+    });
+
+    newTest({
+      title: "Can handle <C-w> at beginning of line",
+      start: ['foo', '|bar'],
+      keysPressed: 'i<C-w>',
+      end: ['foo|bar']
+    });
+
     test("Correctly places the cursor after deleting the previous line break", async() => {
         await modeHandler.handleMultipleKeyEvents([
             'i',
@@ -198,11 +212,19 @@ suite("Mode Insert", () => {
       keysPressed: 'a<BS><Esc>',
       end: ['abcd', "   | "],
     });
+
     newTest({
       title: "Backspace works on end of whitespace only lines",
       start: ['abcd', '     | '],
       keysPressed: 'a<BS><Esc>',
       end: ['abcd', "   | "],
+    });
+
+    newTest({
+        title: "Backspace works at beginning of file",
+        start: ['|bcd'],
+        keysPressed: 'i<BS>a<Esc>',
+        end: ['|abcd'],
     });
 
     newTest({
@@ -233,4 +255,17 @@ suite("Mode Insert", () => {
       end: ['tes====|=st']
     });
 
+    newTest({
+      title: "Can handle 'o' with count",
+      start: ['|foobar'],
+      keysPressed: '5ofun<Esc>',
+      end: ['foobar', 'fu|n', 'fun', 'fun', 'fun', 'fun']
+    });
+
+    newTest({
+      title: "Can handle 'O' with count",
+      start: ['|foobar'],
+      keysPressed: '5Ofun<Esc>',
+      end: ['fun', 'fun', 'fun', 'fun', 'fu|n', 'foobar']
+    });
 });

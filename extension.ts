@@ -11,11 +11,15 @@ import * as _ from "lodash";
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
 import { taskQueue } from './src/taskQueue';
-import { Position } from './src/motion/position';
+import { Position } from './src/common/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
 import { ModeName } from './src/mode/mode';
-import { Configuration } from './src/configuration/configuration'
+import { Configuration } from './src/configuration/configuration';
+import { ICodeKeybinding } from './src/mode/remapper';
+import { runCmdLine } from './src/cmd_line/main';
+
+import './src/actions/vim.all';
 
 interface VSCodeKeybinding {
   key: string;
@@ -71,27 +75,25 @@ let modeHandlerToEditorIdentity: { [key: string]: ModeHandler } = {};
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-  const oldHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
+  const prevHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
-  const oldModeHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
-
-  if (!oldModeHandler ||
-      oldModeHandler.vimState.editor !== vscode.window.activeTextEditor) {
-
+  let curHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
+  if (!curHandler) {
     const newModeHandler = new ModeHandler();
 
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
 
-    if (oldModeHandler) {
-      oldModeHandler.dispose();
-    }
+    curHandler = newModeHandler;
   }
 
-  const handler = modeHandlerToEditorIdentity[activeEditorId.toString()];
-
-  handler.vimState.editor = vscode.window.activeTextEditor!;
+  curHandler.vimState.editor = vscode.window.activeTextEditor!;
+  if (!prevHandler || curHandler.identity !== prevHandler.identity) {
+    setTimeout(() => {
+      curHandler.syncCursors();
+    }, 0);
+  }
 
   if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
     if (!previousActiveEditorId.isEqual(activeEditorId)) {
@@ -101,32 +103,32 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   } else {
     previousActiveEditorId = activeEditorId;
 
-    await handler.updateView(handler.vimState, {drawSelection: false, revealRange: false});
+    await curHandler.updateView(curHandler.vimState, {drawSelection: false, revealRange: false});
   }
 
-  if (oldHandler && oldHandler.vimState.focusChanged) {
-    oldHandler.vimState.focusChanged = false;
-    handler.vimState.focusChanged = true;
+  if (prevHandler && curHandler.vimState.focusChanged) {
+    curHandler.vimState.focusChanged = false;
+    prevHandler.vimState.focusChanged = true;
   }
 
-  vscode.commands.executeCommand('setContext', 'vim.mode', handler.vimState.currentModeName());
+  vscode.commands.executeCommand('setContext', 'vim.mode', curHandler.vimState.currentModeName());
 
   // Temporary workaround for vscode bug not changing cursor style properly
   // https://github.com/Microsoft/vscode/issues/17472
   // https://github.com/Microsoft/vscode/issues/17513
-  const options = handler.vimState.editor.options;
+  const options = curHandler.vimState.editor.options;
   const desiredStyle = options.cursorStyle;
 
   // Temporarily change to any other cursor style besides the desired type, then change back
   if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
-    handler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-    handler.vimState.editor.options.cursorStyle = desiredStyle;
+    curHandler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+    curHandler.vimState.editor.options.cursorStyle = desiredStyle;
   } else {
-    handler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-    handler.vimState.editor.options.cursorStyle = desiredStyle;
+    curHandler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+    curHandler.vimState.editor.options.cursorStyle = desiredStyle;
   }
 
-  return handler;
+  return curHandler;
 }
 
 class CompositionState {
@@ -142,15 +144,20 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidChangeConfiguration((e: void) => {
     Configuration.updateConfiguration();
 
+    /* tslint:disable:forin */
     // Update the remappers foreach modehandler
     for (let mh in modeHandlerToEditorIdentity) {
       modeHandlerToEditorIdentity[mh].createRemappers();
     }
-  })
+  });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
   vscode.workspace.onDidChangeTextDocument((event) => {
+    if (!Globals.active) {
+      return;
+    }
+
     /**
      * Change from vscode editor should set document.isDirty to true but they initially don't!
      * There is a timing issue in vscode codebase between when the isDirty flag is set and
@@ -166,7 +173,7 @@ export async function activate(context: vscode.ExtensionContext) {
         modeHandler.vimState.historyTracker.currentContentChanges =
           modeHandler.vimState.historyTracker.currentContentChanges.concat(event.contentChanges);
       }
-    }
+    };
 
     if (Globals.isTesting) {
       contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
@@ -184,7 +191,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }, 0);
   });
 
-  registerCommand(context, 'type', async (args) => {
+  overrideCommand(context, 'type', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -199,13 +206,14 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  registerCommand(context, 'replacePreviousChar', async (args) => {
+  overrideCommand(context, 'replacePreviousChar', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
 
         if (compositionState.isInComposition) {
-          compositionState.composingText = compositionState.composingText.substr(0, compositionState.composingText.length - args.replaceCharCnt) + args.text;
+          compositionState.composingText = compositionState.composingText
+            .substr(0, compositionState.composingText.length - args.replaceCharCnt) + args.text;
         } else {
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: args.text,
@@ -213,23 +221,22 @@ export async function activate(context: vscode.ExtensionContext) {
           });
           mh.vimState.cursorPosition = Position.FromVSCodePosition(mh.vimState.editor.selection.start);
           mh.vimState.cursorStartPosition = Position.FromVSCodePosition(mh.vimState.editor.selection.start);
-        }
+      }
       },
       isRunning: false
     });
   });
 
-  registerCommand(context, 'compositionStart', async (args) => {
+  overrideCommand(context, 'compositionStart', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
-        const mh = await getAndUpdateModeHandler();
         compositionState.isInComposition = true;
       },
       isRunning: false
     });
   });
 
-  registerCommand(context, 'compositionEnd', async (args) => {
+  overrideCommand(context, 'compositionEnd', async (args) => {
     taskQueue.enqueueTask({
       promise: async () => {
         const mh = await getAndUpdateModeHandler();
@@ -244,6 +251,69 @@ export async function activate(context: vscode.ExtensionContext) {
   registerCommand(context, 'extension.showCmdLine', () => {
     showCmdLine("", modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]);
   });
+
+  registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
+    taskQueue.enqueueTask({
+      promise: async () => {
+        const mh = await getAndUpdateModeHandler();
+        if (args.after) {
+          for (const key of args.after) {
+            await mh.handleKeyEvent(AngleBracketNotation.Normalize(key));
+          }
+          return;
+        }
+
+        if (args.commands) {
+          for (const command of args.commands) {
+            // Check if this is a vim command by looking for :
+            if (command.command.slice(0, 1) === ":") {
+              await runCmdLine(command.command.slice(1, command.command.length), mh);
+              await mh.updateView(mh.vimState);
+            } else {
+              await vscode.commands.executeCommand(command.command, command.args);
+            }
+          }
+        }
+      },
+      isRunning: false
+    });
+  });
+
+  registerCommand(context, 'toggleVim', async () => {
+    Globals.active = !Globals.active;
+    if (Globals.active) {
+      await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+      compositionState = new CompositionState();
+      modeHandlerToEditorIdentity = {};
+      let mh = await getAndUpdateModeHandler();
+      mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    } else {
+      let cursorStyle = await vscode.workspace.getConfiguration('editor').get('cursorStyle', 'line');
+      vscode.window.visibleTextEditors.forEach(editor => {
+        let options = editor.options;
+        switch (cursorStyle) {
+          case 'line':
+            options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+            break;
+          case 'block':
+            options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+            break;
+          case 'underline':
+            options.cursorStyle = vscode.TextEditorCursorStyle.Underline;
+            break;
+
+          default:
+            break;
+        }
+        editor.options = options;
+      });
+      await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+      let mh = await getAndUpdateModeHandler();
+      mh.setStatusBarText('-- VIM: DISABLED --');
+    }
+  });
+
+  vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
 
   // Clear boundKeyCombinations array incase there are any entries in it so
   // that we have a clean list of keys with no duplicates
@@ -281,14 +351,30 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 }
 
-function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
+function overrideCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
   let disposable = vscode.commands.registerCommand(command, async (args) => {
+    if (!Globals.active) {
+      await vscode.commands.executeCommand("default:" + command, args);
+      return;
+    }
+
     if (!vscode.window.activeTextEditor) {
       return;
     }
 
     if (vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri.toString() === "debug:input") {
       await vscode.commands.executeCommand("default:" + command, args);
+      return;
+    }
+
+    callback(args);
+  });
+  context.subscriptions.push(disposable);
+}
+
+function registerCommand(context: vscode.ExtensionContext, command: string, callback: (...args: any[]) => any) {
+  let disposable = vscode.commands.registerCommand(command, async (args) => {
+    if (!vscode.window.activeTextEditor) {
       return;
     }
 
@@ -316,6 +402,9 @@ function handleContentChangedFromDisk(document : vscode.TextDocument) : void {
 }
 
 async function handleActiveEditorChange(): Promise<void> {
+  if (!Globals.active) {
+    return;
+  }
 
   // Don't run this event handler during testing
   if (Globals.isTesting) {

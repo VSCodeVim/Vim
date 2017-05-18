@@ -6,10 +6,6 @@ sudo: false
 os:
 - linux
 
-addons:
-  apt:
-    packages:
-
 language: node_js
 
 node_js:
@@ -22,18 +18,19 @@ env:
 before_install:
 - if [ $TRAVIS_OS_NAME == "linux" ]; then
     export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
-    sh -e /etc/init.d/xvfb start; sleep 3;
+    sh -e /etc/init.d/xvfb start;
+    sleep 3;
   fi
 
 install:
+- npm install -g gulp;
 - npm install;
 
 script:
-- npm install -g gulp;
-- gulp;
+- gulp
 - npm test --silent;
 
-after_success:
+before_deploy:
 - npm install -g vsce;
 - vsce package;
 
