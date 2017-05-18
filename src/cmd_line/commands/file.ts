@@ -13,6 +13,7 @@ export enum FilePosition {
 export interface IFileCommandArguments extends node.ICommandArgs {
   name?: string;
   position?: FilePosition;
+  lineNumber?: number;
 }
 
 export class FileCommand extends node.CommandBase {
@@ -85,10 +86,16 @@ export class FileCommand extends node.CommandBase {
       let folder = vscode.Uri.file(newFilePath);
       await vscode.commands.executeCommand("vscode.open", folder,
         this._arguments.position === FilePosition.NewWindow ? this.getViewColumnToRight() : this.getActiveViewColumn());
+
+      if (this.arguments.lineNumber) {
+        vscode.window.activeTextEditor!.revealRange(
+          new vscode.Range(new vscode.Position(this.arguments.lineNumber, 0),
+          new vscode.Position(this.arguments.lineNumber, 0)));
+      }
     }
   }
 
-  protected async fileExists(filePath: string) {
+  protected fileExists(filePath: string) {
     return new Promise<boolean>((resolve, reject) => {
       fs.stat(filePath, async (error, stat) => {
         resolve(!error);
