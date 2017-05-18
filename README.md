@@ -415,26 +415,10 @@ Some examples:
 
 Commentary in VSCodeVim works similarly to tpope's [vim-commentary](https://github.com/tpope/vim-commentary) but uses the VSCode native "Toggle Line Comment" and "Toggle Block Comment" features.
 
-> ⚠️ Because [`gc`](#vscodevim-tricks) is already used in VSCodeVim, the commentary operators are bound to `gb` for line comments and `gB` for block comments.
-
 Usage examples:
-* `gb` - toggles line comment. For example `gbb` to toggle line comment for current line and `gb2j` to toggle line comments for the current line and the next line.
-* `gB` - toggles block comment. For example `gBi)` to comment out everything within parenthesis.
+* `gc` - toggles line comment. For example `gcc` to toggle line comment for current line and `gc2j` to toggle line comments for the current line and the next line.
+* `gC` - toggles block comment. For example `gCi)` to comment out everything within parenthesis.
 
-If you are use to using vim-commentary you are probably use to using `gc` instead of `gb`. This can be achieved by adding the following remapping to your VSCode settings:
-
-```
-"vim.otherModesKeyBindings": [
-    {
-        "before": ["g", "c"],
-        "after": ["g", "b"]
-    },
-    {
-        "before": ["g", "C"],
-        "after": ["g", "B"]
-    }
-],
-```
 
 ### vim-indent-object
 

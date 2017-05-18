@@ -51,7 +51,8 @@ export class BaseOperator extends BaseAction {
   }
 
   runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-    throw new Error("not implemented!");
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return this.run(vimState, position.getLineBegin(), position.getDownByCount(Math.max(0, count - 1)).getLineEnd());
   }
 }
 
@@ -152,10 +153,6 @@ export class DeleteOperator extends BaseOperator {
         return vimState;
     }
 
-    public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-      vimState.currentRegisterMode = RegisterMode.LineWise;
-      return this.run(vimState, position.getLineBegin(), position.getDownByCount(Math.max(0, count - 1)).getLineEnd());
-    }
 }
 
 @RegisterAction
@@ -228,11 +225,6 @@ export class YankOperator extends BaseOperator {
 
       return vimState;
     }
-
-    public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-      vimState.currentRegisterMode = RegisterMode.LineWise;
-      return this.run(vimState, position.getLineBegin(), position.getDownByCount(Math.max(0, count - 1)).getLineEnd());
-    }
 }
 
 @RegisterAction
@@ -288,10 +280,6 @@ export class FormatOperator extends BaseOperator {
     vimState.currentMode = ModeName.Normal;
     return vimState;
   }
-
-  public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-    return this.run(vimState, position.getLineBegin(), position.getLineEnd());
-  }
 }
 
 @RegisterAction
@@ -316,9 +304,6 @@ export class UpperCaseOperator extends BaseOperator {
 export class UpperCaseWithMotion extends UpperCaseOperator {
   public keys = ["g", "U"];
   public modes = [ModeName.Normal];
-  public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-    return this.run(vimState, position.getLineBegin(), position.getLineEnd());
-  }
 }
 
 @RegisterAction
@@ -343,9 +328,6 @@ export class LowerCaseOperator extends BaseOperator {
 export class LowerCaseWithMotion extends LowerCaseOperator {
   public keys = ["g", "u"];
   public modes = [ModeName.Normal];
-  public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-    return this.run(vimState, position.getLineBegin(), position.getLineEnd());
-  }
 }
 
 
@@ -363,10 +345,6 @@ class IndentOperator extends BaseOperator {
     vimState.cursorPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
-  }
-
-  public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-    return this.run(vimState, position.getLineBegin(), position.getLineEnd());
   }
 }
 
@@ -409,10 +387,6 @@ class OutdentOperator extends BaseOperator {
     vimState.cursorPosition = start.getFirstLineNonBlankChar();
 
     return vimState;
-  }
-
-  public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-    return this.run(vimState, position.getLineBegin(), position.getLineEnd());
   }
 }
 
@@ -469,9 +443,9 @@ export class ChangeOperator extends BaseOperator {
     const lineIsAllWhitespace = TextEditor.getLineAt(position).text.trim() === "";
     vimState.currentRegisterMode = RegisterMode.CharacterWise;
     if (lineIsAllWhitespace) {
-      return this.run(vimState, position.getLineBegin(), position.getDownByCount(Math.max(0, count - 1)).getLineEnd())
+      return this.run(vimState, position.getLineBegin(), position.getDownByCount(Math.max(0, count - 1)).getLineEnd());
     } else {
-      return this.run(vimState, position.getLineBeginRespectingIndent(), position.getDownByCount(Math.max(0, count - 1)).getLineEnd())
+      return this.run(vimState, position.getLineBeginRespectingIndent(), position.getDownByCount(Math.max(0, count - 1)).getLineEnd());
     }
   }
 }
@@ -564,7 +538,7 @@ class ToggleCaseWithMotion extends ToggleCaseOperator {
 
 @RegisterAction
 export class CommentOperator extends BaseOperator {
-  public keys = ["g", "b"];
+  public keys = ["g", "c"];
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -580,7 +554,7 @@ export class CommentOperator extends BaseOperator {
 
 @RegisterAction
 export class CommentBlockOperator extends BaseOperator {
-  public keys = ["g", "B"];
+  public keys = ["g", "C"];
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {

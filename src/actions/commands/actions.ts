@@ -3274,7 +3274,7 @@ class ActionOverrideCmdD extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = [
     ["<D-d>"],
-    ["g", "c"]
+    ["g", "b"]
   ];
   runsOnceForEveryCursor() { return false; }
   runsOnceForEachCountPrefix = true;

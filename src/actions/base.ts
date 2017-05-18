@@ -157,8 +157,10 @@ export class Actions {
         result.keysPressed = vimState.recordedState.actionKeys.slice(0);
 
         return result;
-      } else if (action.isOperator && keysPressed.length === 1 && vimState.recordedState.commandList[vimState.recordedState.commandList.length - 2] === keysPressed[0] && action.modes.indexOf(vimState.currentMode) !== -1 &&
-      (action.keys instanceof Array && action.keys[0][action.keys.length-1] === keysPressed[0])) {
+      } else if (action.isOperator && keysPressed.length === 1
+      && vimState.recordedState.commandList[vimState.recordedState.commandList.length - 2] === keysPressed[0]
+      && action.modes.indexOf(vimState.currentMode) !== -1 &&
+      (action.keys instanceof Array && action.keys[0][action.keys.length - 1] === keysPressed[0])) {
         const result = new type();
 
         result.keysPressed = vimState.recordedState.actionKeys.slice(0);
