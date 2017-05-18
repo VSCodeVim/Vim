@@ -421,9 +421,6 @@ export class RecordedState {
 
   public operatorReadyToExecute(mode: ModeName): boolean {
     // Visual modes do not require a motion -- they ARE the motion.
-    console.log(this.operator);
-    console.log(!this.hasRunOperator);
-    console.log(mode !== ModeName.SearchInProgressMode);
     return this.operator &&
       !this.hasRunOperator &&
       mode !== ModeName.SearchInProgressMode &&
@@ -1245,7 +1242,8 @@ export class ModeHandler implements vscode.Disposable {
 
       resultVimState.currentMode = startingModeName;
 
-      if (recordedState.operators.length > 1) {
+      if (recordedState.operators.length > 1
+        && recordedState.operators.reverse()[0].constructor === recordedState.operators.reverse()[1].constructor) {
         resultVimState = await recordedState.operator.runRepeat(resultVimState, start, recordedState.count);
       } else {
         resultVimState = await recordedState.operator.run(resultVimState, start, stop);
