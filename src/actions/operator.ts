@@ -29,7 +29,7 @@ export class BaseOperator extends BaseAction {
     }
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys, keysPressed)) { return false; }
-    if (vimState.recordedState.actionsRun.length > 0 &&
+    if (vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length > 0 &&
       this.mustBeFirstKey) { return false; }
     if (this instanceof BaseOperator && vimState.recordedState.operator) { return false; }
 
@@ -39,7 +39,7 @@ export class BaseOperator extends BaseAction {
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) { return false; }
-    if (vimState.recordedState.actionsRun.length > 0 &&
+    if (vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length > 0 &&
       this.mustBeFirstKey) { return false; }
     if (this instanceof BaseOperator && vimState.recordedState.operator) { return false; }
 

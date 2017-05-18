@@ -330,6 +330,26 @@ export class RecordedState {
 
     return result;
   }
+  /**
+   * get the current command without the prefixed count.
+   * For instance: if the current commandList is ['2', 'h'], returns only ['h'].
+   */
+   public getCurrentCommandWithoutCountPrefix(): string[] {
+      const commandList = this.commandList;
+      const result = [];
+      let previousWasCount = true;
+
+      for (const commandKey of commandList) {
+        if (previousWasCount && commandKey.match(/[0-9]/)) {
+          continue;
+        } else {
+          previousWasCount = false;
+          result.push(commandKey);
+        }
+      }
+
+      return result;
+    }
 
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
@@ -773,7 +793,7 @@ export class ModeHandler implements vscode.Disposable {
 
     try {
       // Take the count prefix out to perform the correct remapping.
-      const keys = this.getCurrentCommandWithoutCountPrefix();
+      const keys = this._vimState.recordedState.getCurrentCommandWithoutCountPrefix();
       const withinTimeout = now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout;
 
       let handled = false;
@@ -817,26 +837,6 @@ export class ModeHandler implements vscode.Disposable {
     return true;
   }
 
-/**
- * get the current command without the prefixed count.
- * For instance: if the current commandList is ['2', 'h'], returns only ['h'].
- */
-  private getCurrentCommandWithoutCountPrefix(): string[] {
-    const commandList = this.vimState.recordedState.commandList;
-    const result = [];
-    let previousWasCount = true;
-
-    for (const commandKey of commandList) {
-      if (previousWasCount && commandKey.match(/[0-9]/)) {
-        continue;
-      } else {
-        previousWasCount = false;
-        result.push(commandKey);
-      }
-    }
-
-    return result;
-  }
 
   async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
 
