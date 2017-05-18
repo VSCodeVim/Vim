@@ -1850,22 +1850,26 @@ class CommandOpenFile extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
 
-    let filePath: string = "";
+    let fullFilePath: string = "";
 
     if (vimState.currentMode === ModeName.Visual) {
       const selection = TextEditor.getSelection();
       const end = new Position(selection.end.line, selection.end.character + 1);
-      filePath = TextEditor.getText(selection.with(selection.start, end));
+      fullFilePath = TextEditor.getText(selection.with(selection.start, end));
     } else {
       const start = position.getFilePathLeft(true);
       const end = position.getFilePathRight();
       const range = new vscode.Range(start, end);
 
-      filePath = TextEditor.getText(range).trim();
+      fullFilePath = TextEditor.getText(range).trim();
     }
-
-    const fileCommand = new FileCommand({name: filePath});
-    fileCommand.execute();
+    const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
+    if (fileInfo) {
+      const filePath = fileInfo[1];
+      const lineNumber = parseInt(fileInfo[2], 10);
+      const fileCommand = new FileCommand({name: filePath, lineNumber: lineNumber});
+      fileCommand.execute();
+    }
 
     return vimState;
   }
