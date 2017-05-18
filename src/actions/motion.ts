@@ -1181,52 +1181,6 @@ class MovePreviousSectionEnd extends MoveSectionBoundary {
   forward = false;
 }
 
-
-// DOUBLE MOTIONS
-// (dd yy cc << >> ==)
-// These work because there is a check in does/couldActionApply where
-// you can't run an operator if you already have one going (which is logical).
-// However there is the slightly weird behavior where dy actually deletes the whole
-// line, lol.
-
-@RegisterAction
-class MoveYY extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["m"];
-
-  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
-    return {
-      start: position.getLineBegin(),
-      stop: position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
-      registerMode: RegisterMode.LineWise,
-    };
-  }
-}
-
-@RegisterAction
-class MoveCC extends BaseMovement {
-  modes = [ModeName.Normal];
-  keys = ["c"];
-
-  public async execActionWithCount(position: Position, vimState: VimState, count: number): Promise<IMovement> {
-    const lineIsAllWhitespace = TextEditor.getLineAt(position).text.trim() === "";
-
-    if (lineIsAllWhitespace) {
-      return {
-        start: position.getLineBegin(),
-        stop: position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
-        registerMode: RegisterMode.CharacterWise
-      };
-    } else {
-      return {
-        start: position.getLineBeginRespectingIndent(),
-        stop: position.getDownByCount(Math.max(0, count - 1)).getLineEnd(),
-        registerMode: RegisterMode.CharacterWise
-      };
-    }
-  }
-}
-
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   keys = ["%"];
