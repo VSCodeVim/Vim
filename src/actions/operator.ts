@@ -431,25 +431,27 @@ export class ChangeOperator extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     const isEndOfLine = end.character === end.getLineEnd().character;
-    let state = vimState;
-    // If we delete to EOL, the block cursor would end on the final character,
+    vimState = await new YankOperator(this.multicursorIndex).run(vimState, start, end);
     // which means the insert cursor would be one to the left of the end of
     // the line. We do want to run delete if it is a multiline change though ex. c}
+    vimState.currentRegisterMode = RegisterMode.CharacterWise;
     if (Position.getLineLength(TextEditor.getLineAt(start).lineNumber) !== 0 || (end.line !== start.line)) {
       if (isEndOfLine) {
-        state = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end.getLeftThroughLineBreaks());
+        vimState = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end.getLeftThroughLineBreaks(), false);
       } else {
-        state = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+        vimState = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
       }
     }
+    vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
 
-    state.currentMode = ModeName.Insert;
+
+    vimState.currentMode = ModeName.Insert;
 
     if (isEndOfLine) {
-      state.cursorPosition = end.getRight();
+      vimState.cursorPosition = end.getRight();
     }
 
-    return state;
+    return vimState;
   }
 
   public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
