@@ -262,7 +262,7 @@ suite("Mode Visual", () => {
     });
   });
 
-  suite("Can handle d correctly in Visual Line Mode", () => {
+  suite("Can handle d/c correctly in Visual Line Mode", () => {
     newTest({
       title: "Can handle d key",
       start: ['|{', '  a = 1;', '}'],
@@ -289,6 +289,14 @@ suite("Mode Visual", () => {
       start: ['1', '2', '|{', '  a = 1;', '}'],
       keysPressed: 'VGdP',
       end: ['1', '|{', '  a = 1;', '}', '2']
+    });
+
+    newTestOnly({
+      title: "can handle 'c'",
+      start: ['foo', 'b|ar', 'fun'],
+      keysPressed: 'Vc',
+      end: ['foo', '|', 'fun'],
+      endMode: ModeName.Insert
     });
   });
 
