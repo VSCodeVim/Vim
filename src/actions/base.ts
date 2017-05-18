@@ -112,6 +112,16 @@ export class BaseAction {
     return true;
   }
 
+  public doesRepeatedOperatorApply(vimState: VimState, keysPressed: string[]) {
+      const prevAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1];
+      return this.isOperator && keysPressed.length === 1 && prevAction
+      && this.modes.indexOf(vimState.currentMode) !== -1
+      // The previous action is the same as the one we're testing
+      && prevAction.constructor === this.constructor
+      // The key pressed is the same as the previous action's last key.
+      && compareKeypressSequence(prevAction.keysPressed.slice(-1), keysPressed);
+  }
+
   public toString(): string {
     return this.keys.join("");
   }
@@ -157,11 +167,7 @@ export class Actions {
         result.keysPressed = vimState.recordedState.actionKeys.slice(0);
 
         return result;
-      } else if (action.isOperator && keysPressed.length === 1
-      && vimState.recordedState.commandList[vimState.recordedState.commandList.length - 2] === keysPressed[0]
-      && action.modes.indexOf(vimState.currentMode) !== -1
-      && vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1].constructor === action.constructor &&
-      (action.keys instanceof Array && action.keys[action.keys.length - 1] === keysPressed[0])) {
+      } else if (action.doesRepeatedOperatorApply(vimState, keysPressed)) {
         const result = new type();
 
         result.keysPressed = vimState.recordedState.actionKeys.slice(0);
