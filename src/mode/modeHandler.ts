@@ -420,20 +420,16 @@ export class RecordedState {
   }
 
   public operatorReadyToExecute(mode: ModeName): boolean {
-    if (this.hasRunOperator) {
-      return false;
-    }
-    let list = _.filter(this.actionsRun, a => a instanceof BaseOperator).reverse();
-    if (list.length > 1) {
-      return list[0].constructor === list[1].constructor;
-    }
-
     // Visual modes do not require a motion -- they ARE the motion.
+    console.log(this.operator);
+    console.log(!this.hasRunOperator);
+    console.log(mode !== ModeName.SearchInProgressMode);
     return this.operator &&
+      !this.hasRunOperator &&
       mode !== ModeName.SearchInProgressMode &&
-      (this.hasRunAMovement || (
-      mode === ModeName.Visual ||
-      mode === ModeName.VisualLine ));
+      (this.hasRunAMovement ||
+      (mode === ModeName.Visual || mode === ModeName.VisualLine ) ||
+      this.operators.length > 1 && this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor);
   }
 
   public get isInInitialState(): boolean {
