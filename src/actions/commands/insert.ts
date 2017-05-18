@@ -23,6 +23,7 @@ class CommandEscInsertMode extends BaseCommand {
     ["<C-[>"],
   ];
 
+  mustBeFirstKey = false;
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {

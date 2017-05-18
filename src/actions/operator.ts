@@ -24,6 +24,9 @@ export class BaseOperator extends BaseAction {
   multicursorIndex: number | undefined = undefined;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (this.doesRepeatedOperatorApply(vimState, keysPressed)) {
+      return true;
+    }
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys, keysPressed)) { return false; }
     if (vimState.recordedState.actionsRun.length > 0 &&
@@ -41,6 +44,16 @@ export class BaseOperator extends BaseAction {
     if (this instanceof BaseOperator && vimState.recordedState.operator) { return false; }
 
     return true;
+  }
+
+  public doesRepeatedOperatorApply(vimState: VimState, keysPressed: string[]) {
+      const prevAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1];
+      return this.isOperator && keysPressed.length === 1 && prevAction
+      && this.modes.indexOf(vimState.currentMode) !== -1
+      // The previous action is the same as the one we're testing
+      && prevAction.constructor === this.constructor
+      // The key pressed is the same as the previous action's last key.
+      && compareKeypressSequence(prevAction.keysPressed.slice(-1), keysPressed);
   }
 
   /**

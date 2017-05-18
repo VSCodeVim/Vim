@@ -147,6 +147,8 @@ export abstract class BaseCommand extends BaseAction {
 
   canBeRepeatedWithDot = false;
 
+  // mustBeFirstKey = true;
+
   /**
    * Run the command a single time.
    */
@@ -427,6 +429,7 @@ class CommandEsc extends BaseCommand {
     ["<C-[>"],
   ];
 
+  mustBeFirstKey = false;
   runsOnceForEveryCursor() { return false; }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {

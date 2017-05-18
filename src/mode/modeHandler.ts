@@ -680,7 +680,6 @@ export class ModeHandler implements vscode.Disposable {
 
       this._vimState.cursorPosition    = newPosition;
       this._vimState.cursorStartPosition = newPosition;
-
       this._vimState.desiredColumn     = newPosition.character;
 
       // start visual mode?
