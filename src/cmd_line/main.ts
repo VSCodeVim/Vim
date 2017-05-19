@@ -3,6 +3,15 @@
 import * as vscode from "vscode";
 import * as parser from "./parser";
 import {ModeHandler} from "../mode/modeHandler";
+import * as msgpack from "msgpack5";
+import * as net from "net";
+
+let encoder = msgpack().encode;
+let connection = net.connect("/tmp/nvim");
+let data = msgpack().encode('echo "hello world"');
+console.log(data.toString('hex'));
+connection.write(data.toString('hex'));
+
 
 // Shows the vim command line.
 export async function showCmdLine(initialText: string, modeHandler : ModeHandler): Promise<undefined> {
