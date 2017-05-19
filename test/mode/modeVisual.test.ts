@@ -844,7 +844,7 @@ suite("Mode Visual", () => {
       end: ["this is", "|the world"]
     });
 
-    newTestOnly({
+    newTest({
       title: "normal selection",
       start: ["this is",
               "the| best",
