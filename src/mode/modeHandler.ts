@@ -1241,6 +1241,7 @@ export class ModeHandler implements vscode.Disposable {
 
       resultVimState.currentMode = startingModeName;
 
+      // We run the repeat version of an operator if the last 2 operators are the same.
       if (recordedState.operators.length > 1
         && recordedState.operators.reverse()[0].constructor === recordedState.operators.reverse()[1].constructor) {
         resultVimState = await recordedState.operator.runRepeat(resultVimState, start, recordedState.count);
