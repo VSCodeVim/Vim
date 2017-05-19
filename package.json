@@ -479,7 +479,7 @@
         "vim.foldfix": {
           "type": "boolean",
           "description": "Uses a hack to move around folds properly",
-          "default": true
+          "default": false
         }
       }
     }

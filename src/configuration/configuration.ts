@@ -292,7 +292,7 @@ class ConfigurationClass {
   /**
    * Uses a hack to fix moving around folds.
    */
-  foldfix = true;
+  foldfix = false;
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {
