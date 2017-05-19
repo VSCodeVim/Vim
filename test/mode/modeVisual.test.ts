@@ -898,4 +898,48 @@ suite("Mode Visual", () => {
       end: ["this is", "|", "the world"]
     });
   });
+
+  suite("Linewise Registers will be inserted properly", () => {
+    newTest({
+      title: "downward selection",
+      start: ["i ya|nked",
+              "this line",
+              "",
+              "1.line",
+              "a123456",
+              "b123456",
+              "2.line"],
+      keysPressed: "vjY4j3lvjllp",
+      end:   ["i yanked",
+              "this line",
+              "",
+              "1.line",
+              "a12",
+              "|i yanked",
+              "this line",
+              "56",
+              "2.line"],
+    });
+
+    newTest({
+      title: "upward selection",
+      start: ["i yanked",
+              "this| line",
+              "",
+              "1.line",
+              "a123456",
+              "b123456",
+              "2.line"],
+      keysPressed: "vkY4j3lvjllp",
+      end:   ["i yanked",
+              "this line",
+              "",
+              "1.line",
+              "a12",
+              "|i yanked",
+              "this line",
+              "56",
+              "2.line"],
+    });
+  });
 });
