@@ -215,6 +215,21 @@ suite("Mode Visual", () => {
 
       assertEqualLines(["two"]);
     });
+
+    newTest({
+      title: "Paste over selection copies the selection",
+      start: ["|from to"],
+      keysPressed: "dewvep0P",
+      end: ["t|o from"]
+    });
+
+    newTest({
+      title: "Paste over selection copies the selection linewise",
+      start: ["foo", "bar", "|fun"],
+      keysPressed: "viwykVkpp",
+      end: ["fun", "|foo", "bar", "fun"]
+    });
+
   });
 
   suite("Arrow keys work perfectly in Visual Mode", () => {
@@ -794,5 +809,27 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
 
+  });
+
+  suite("search works in visual mode", () => {
+    newTest({
+      title: "Works with /",
+      start: ["f|oo",
+              "bar",
+              "fun",
+              "baz"],
+      keysPressed: "v/baz\nx",
+      end: ["f|az"]
+    });
+
+    newTest({
+      title: "Works with ?",
+      start: ["foo",
+              "bar",
+              "fun",
+              "b|az"],
+      keysPressed: "v?foo\nx",
+      end: ["|z"]
+    });
   });
 });
