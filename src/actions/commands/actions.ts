@@ -1776,6 +1776,7 @@ class CommandExitVisualMode extends BaseCommand {
 class CommandVisualMode extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["v"];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Visual;
