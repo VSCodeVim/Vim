@@ -1429,6 +1429,20 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can <C-a> on word with multiple numbers (incrementing first number)",
+      start: ["f|oo1bar2"],
+      keysPressed: "<C-a>",
+      end: ["foo|2bar2"]
+    });
+
+    newTest({
+      title: "can <C-a> on word with multiple numbers (incrementing second number)",
+      start: ["foo1|bar2"],
+      keysPressed: "<C-a>",
+      end: ["foo1bar|3"]
+    });
+
+    newTest({
       title: "can do Y",
       start: ["|blah blah"],
       keysPressed: "Yp",
