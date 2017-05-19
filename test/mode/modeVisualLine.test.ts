@@ -318,4 +318,26 @@ suite("Mode Visual", () => {
     });
   });
 
+  suite("search works in visual line mode", () => {
+    newTest({
+      title: "Works with /",
+      start: ["f|oo",
+              "bar",
+              "fun",
+              "baz"],
+      keysPressed: "V/fun\nx",
+      end: ["|baz"]
+    });
+
+    newTest({
+      title: "Works with ?",
+      start: ["foo",
+              "bar",
+              "fun",
+              "b|az"],
+      keysPressed: "V?bar\nx",
+      end: ["|foo"]
+    });
+  });
+
 });
