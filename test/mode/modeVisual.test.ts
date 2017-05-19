@@ -832,4 +832,26 @@ suite("Mode Visual", () => {
       end: ["|z"]
     });
   });
+
+  suite("X will delete linewise", () => {
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vjX",
+      end: ["this is", "|the world"]
+    });
+
+    newTestOnly({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vj$X",
+      end: ["this is", "|the world"]
+    });
+  });
 });

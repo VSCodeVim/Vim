@@ -3108,7 +3108,14 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   keys = ["X"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return await new operator.DeleteOperator(this.multicursorIndex).run(vimState, position.getLineBegin(), position.getLineEnd());
+    if (vimState.currentMode === ModeName.Visual) {
+      return await new operator.DeleteOperator(this.multicursorIndex)
+                               .run(vimState,
+                                    vimState.cursorStartPosition.getLineBegin(),
+                                    vimState.cursorPosition.getLineEnd());
+    } else {
+      return await new operator.DeleteOperator(this.multicursorIndex).run(vimState, position.getLineBegin(), position.getLineEnd());
+    }
   }
 }
 
