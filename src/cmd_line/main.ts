@@ -3,15 +3,30 @@
 import * as vscode from "vscode";
 import * as parser from "./parser";
 import {ModeHandler} from "../mode/modeHandler";
-import * as msgpack from "msgpack5";
-import * as net from "net";
+import {attach, RPCValue} from 'promised-neovim-client';
+import {spawn} from 'child_process';
+import { TextEditor } from "../textEditor";
 
-let encoder = msgpack().encode;
-let connection = net.connect("/tmp/nvim");
-let data = msgpack().encode('echo "hello world"');
-console.log(data.toString('hex'));
-connection.write(data.toString('hex'));
+async function run(currentText: string[], command: string) {
+  const proc = spawn('nvim', ['-u', 'NONE', '-N', '--embed'], {cwd: __dirname });
 
+  const nvim = await attach(proc.stdin, proc.stdout);
+  nvim.on('request', (method: string, args: RPCValue[], resp: RPCValue) => {
+      // handle msgpack-rpc request
+  });
+
+  nvim.on('notification', (method: string, args: RPCValue[]) => {
+      // handle msgpack-rpc notification
+  });
+
+  await nvim.command('vsp');
+
+  let lines: string[];
+  const buf = await nvim.getCurrentBuf();
+  await buf.setLines(0, -1, true, currentText);
+  await nvim.command(command);
+  return buf.getLines(0, -1, false);
+}
 
 // Shows the vim command line.
 export async function showCmdLine(initialText: string, modeHandler : ModeHandler): Promise<undefined> {
@@ -42,16 +57,26 @@ export async function runCmdLine(command : string, modeHandler : ModeHandler) : 
     return;
   }
 
-  try {
-    var cmd = parser.parse(command);
-    if (cmd.isEmpty) {
-      return;
-    }
+  let t: string[] = [];
+  await run(TextEditor.getText().split('\n'), command).then((res) => {
+    console.log(res);
+    t = res;
+  });
+  await TextEditor.replace(new vscode.Range(0, 0, TextEditor.getLineCount() - 1, TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1)), t.join('\n'));
 
-    await cmd.execute(modeHandler.vimState.editor, modeHandler);
-    return;
-  } catch (e) {
-    modeHandler.setStatusBarText(e.toString());
-    return;
-  }
+  return;
+
+
+  // try {
+  //   var cmd = parser.parse(command);
+  //   if (cmd.isEmpty) {
+  //     return;
+  //   }
+
+  //   await cmd.execute(modeHandler.vimState.editor, modeHandler);
+  //   return;
+  // } catch (e) {
+  //   modeHandler.setStatusBarText(e.toString());
+  //   return;
+  // }
 }
