@@ -674,15 +674,6 @@ suite("Mode Visual", () => {
     });
   });
 
-  suite("X will remove all selected lines", () => {
-    newTest({
-      title: "X deletes all selected lines",
-      start: ["first line", "test| line1", "test line2", "second line"],
-      keysPressed: "vjX",
-      end: ["first line", "|second line"],
-      endMode: ModeName.Normal
-    });
-
   suite("handles indent blocks in visual mode", () => {
     newTest({
       title: "Can do vai",
@@ -696,76 +687,6 @@ suite("Mode Visual", () => {
       end: [
           '|do_something_else()',
       ],
-      endMode: ModeName.Normal
-    });
-
-    newTest({
-      title: "X deletes the current line",
-      start: ["first line", "test| line1", "second line"],
-      keysPressed: "vlllX",
-      end: ["first line", "|second line"],
-      endMode: ModeName.Normal
-    });
-  });
-
-  suite("C will replace all selected lines", () => {
-    newTest({
-      title: "C replaces all selected lines",
-      start: ["first line", "test| line1", "test line2", "second line"],
-      keysPressed: "vjC",
-      end: ["first line", "|", "second line"],
-      endMode: ModeName.Insert
-    });
-
-    newTest({
-      title: "C replaces the current line",
-      start: ["first line", "test| line1", "second line"],
-      keysPressed: "vlllC",
-      end: ["first line", "|", "second line"],
-      endMode: ModeName.Insert
-    });
-  });
-
-  suite("R will replace all selected lines", () => {
-    newTest({
-      title: "R replaces all selected lines",
-      start: ["first line", "test| line1", "test line2", "second line"],
-      keysPressed: "vjR",
-      end: ["first line", "|", "second line"],
-      endMode: ModeName.Insert
-    });
-
-    newTest({
-      title: "R replaces the current line",
-      start: ["first line", "test| line1", "second line"],
-      keysPressed: "vlllR",
-      end: ["first line", "|", "second line"],
-      endMode: ModeName.Insert
-    });
-  });
-
-  suite("Pasting multiple line yanks done by Y or yy will be done in place with newlines", () => {
-    newTest({
-      title: "Y pasted text will be inserted by p",
-      start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
-      keysPressed: "vjYjjlllvjp",
-      end: ["aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "fir", "|aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "nd line"],
-      endMode: ModeName.Normal
-    });
-
-    newTest({
-      title: "Y pasted text will be inserted by P",
-      start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
-      keysPressed: "vjYjjlllvjP",
-      end: ["aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "fir", "|aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "nd line"],
-      endMode: ModeName.Normal
-    });
-
-    newTest({
-      title: "yy pasted text will be inserted by p",
-      start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
-      keysPressed: "yyjjlllvjp",
-      end: ["aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "first ", "|aaaaaaaaaaaaa", "line"],
       endMode: ModeName.Normal
     });
 
@@ -869,15 +790,6 @@ suite("Mode Visual", () => {
     });
 
     newTest({
-      title: "yy pasted text will be inserted by P",
-      start: ["aaa|aaaaaaaaaa", "aaaaaaaaaaaaa", "first line", "second line"],
-      keysPressed: "yyjjlllvjP",
-      end: ["aaaaaaaaaaaaa", "aaaaaaaaaaaaa", "first ", "|aaaaaaaaaaaaa", "line"],
-      endMode: ModeName.Normal
-    });
-  });
-
-    newTest({
       title: "Works with #",
       start: [
           'public modes = [ModeName.Visual',
@@ -897,5 +809,27 @@ suite("Mode Visual", () => {
       endMode: ModeName.Normal
     });
 
+  });
+
+  suite("search works in visual mode", () => {
+    newTest({
+      title: "Works with /",
+      start: ["f|oo",
+              "bar",
+              "fun",
+              "baz"],
+      keysPressed: "v/baz\nx",
+      end: ["f|az"]
+    });
+
+    newTest({
+      title: "Works with ?",
+      start: ["foo",
+              "bar",
+              "fun",
+              "b|az"],
+      keysPressed: "v?foo\nx",
+      end: ["|z"]
+    });
   });
 });
