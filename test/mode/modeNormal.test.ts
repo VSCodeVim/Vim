@@ -1136,6 +1136,24 @@ suite("Mode Normal", () => {
       end: ['testtest', 'testtest', 'testtes|t']
     });
 
+//  These tests run poorly on Travis for w.e. reason
+    // newTest({
+    //   title: "gq handles spaces after single line comments correctly",
+    //   start: ['//    We choose to write a vim extension, not because it is easy, but because it is hard|.'],
+    //   keysPressed: 'Vgq',
+    //   end: [ '//    We choose to write a vim extension, not because it is easy, but because it is',
+    //         '|//    hard.'],
+    // });
+
+    // newTest({
+    //   title: "gq handles spaces before single line comments correctly",
+    //   start: ['    // We choose to write a vim extension, not because it is easy, but because it is hard|.'],
+    //   keysPressed: 'Vgq',
+    //   end: [ '    // We choose to write a vim extension, not because it is easy, but because',
+    //         '|    // it is hard.']
+    // });
+
+
     newTest({
       title: "Can handle space",
       start: ['|abc', 'def'],
