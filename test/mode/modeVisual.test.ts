@@ -876,4 +876,26 @@ suite("Mode Visual", () => {
       end: ["this is", "|", "the world"]
     });
   });
+
+  suite("R will delete linewise", () => {
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vjR",
+      end: ["this is", "|", "the world"]
+    });
+
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vj$R",
+      end: ["this is", "|", "the world"]
+    });
+  });
 });

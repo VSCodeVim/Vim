@@ -3118,10 +3118,24 @@ class ActionDeleteLineVisualMode extends BaseCommand {
     }
   }
 }
+
 @RegisterAction
 class ActionChangeLineVisualMode extends BaseCommand {
   modes = [ModeName.Visual];
   keys = ["C"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      return await new operator.DeleteOperator(this.multicursorIndex)
+                               .run(vimState,
+                                    vimState.cursorStartPosition.getLineBegin(),
+                                    vimState.cursorPosition.getLineEndIncludingEOL());
+  }
+}
+
+@RegisterAction
+class ActionRemoveLineVisualMode extends BaseCommand {
+  modes = [ModeName.Visual];
+  keys = ["R"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
       return await new operator.DeleteOperator(this.multicursorIndex)
