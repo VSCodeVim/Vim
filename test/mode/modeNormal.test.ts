@@ -1549,6 +1549,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can do cit with self closing tags",
+      start: ["<div><div a=1/>{{c|ursor here}}</div>"],
+      keysPressed: "cit",
+      end: ["<div>|</div>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Respects indentation with cc",
       start: ["{", "  int| a;"],
       keysPressed: "cc",

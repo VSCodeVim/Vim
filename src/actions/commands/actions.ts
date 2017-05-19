@@ -708,7 +708,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     if (key === "<BS>" || key === "<shift+BS>") {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
-      vimState.currentMode = ModeName.Normal;
+      vimState.currentMode = vimState.globalState.searchState!.previousMode;
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
@@ -944,7 +944,7 @@ function createSearchStateAndMoveToMatch(args: {
 
     // Start a search for the given term.
     vimState.globalState.searchState = new SearchState(
-      args.direction, vimState.cursorPosition, searchString, { isRegex: isExact }
+      args.direction, vimState.cursorPosition, searchString, { isRegex: isExact }, vimState.currentMode
     );
 
     vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(args.searchStartCursorPosition).pos;
@@ -1029,12 +1029,13 @@ class CommandSearchVisualBackward extends BaseCommand {
 
 @RegisterAction
 export class CommandSearchForwards extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["/"];
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
+    vimState.globalState.searchState = new SearchState(SearchDirection.Forward,
+                                        vimState.cursorPosition, "", { isRegex: true }, vimState.currentMode);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
@@ -1048,12 +1049,13 @@ export class CommandSearchForwards extends BaseCommand {
 
 @RegisterAction
 export class CommandSearchBackwards extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["?"];
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
+    vimState.globalState.searchState = new SearchState(SearchDirection.Backward,
+                                       vimState.cursorPosition, "", { isRegex: true }, vimState.currentMode);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
@@ -1846,22 +1848,26 @@ class CommandOpenFile extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
 
-    let filePath: string = "";
+    let fullFilePath: string = "";
 
     if (vimState.currentMode === ModeName.Visual) {
       const selection = TextEditor.getSelection();
       const end = new Position(selection.end.line, selection.end.character + 1);
-      filePath = TextEditor.getText(selection.with(selection.start, end));
+      fullFilePath = TextEditor.getText(selection.with(selection.start, end));
     } else {
       const start = position.getFilePathLeft(true);
       const end = position.getFilePathRight();
       const range = new vscode.Range(start, end);
 
-      filePath = TextEditor.getText(range).trim();
+      fullFilePath = TextEditor.getText(range).trim();
     }
-
-    const fileCommand = new FileCommand({name: filePath});
-    fileCommand.execute();
+    const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
+    if (fileInfo) {
+      const filePath = fileInfo[1];
+      const lineNumber = parseInt(fileInfo[2], 10);
+      const fileCommand = new FileCommand({name: filePath, lineNumber: lineNumber});
+      fileCommand.execute();
+    }
 
     return vimState;
   }
