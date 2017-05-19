@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.11.0"
+    "vscode": "^1.12.0"
   },
   "categories": [
     "Other",
@@ -117,12 +117,12 @@
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.active && vim.mode == 'Normal' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.active && vim.mode == 'Normal' && !inDebugRepl"
+        "when": "editorFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "ctrl+r",
@@ -491,7 +491,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
   },
   "dependencies": {
-    "clipboardy": "^1.1.1",
+    "clipboardy": "^1.1.2",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.12.0"
   },

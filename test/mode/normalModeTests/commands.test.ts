@@ -62,10 +62,10 @@ suite("Mode Normal", () => {
     });
 
     newTest({
-      title: "Can handle 'N<Del>', which should be a no-op",
-      start: ['te|xt'],
-      keysPressed: '2<Del>',
-      end: ["te|xt"],
+      title: "Can handle '<Del>' with counts, which removes the last character of the count",
+      start: ['|text'],
+      keysPressed: '10<Del>x',
+      end: ["|ext"],
     });
 
     newTest({

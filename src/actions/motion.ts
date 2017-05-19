@@ -134,6 +134,8 @@ export abstract class BaseMovement extends BaseAction {
         } else {
           position = temporaryResult.stop.getRightThroughLineBreaks();
         }
+
+        result.registerMode = temporaryResult.registerMode;
       }
     }
 
@@ -734,7 +736,6 @@ class MoveLineBegin extends BaseMovement {
   }
 }
 
-
 @RegisterAction
 class MoveScreenLineBegin extends MoveByScreenLine {
   keys = ["g", "0"];
@@ -1114,8 +1115,14 @@ class MoveNextSentenceBegin extends BaseMovement {
 class MoveParagraphEnd extends BaseMovement {
   keys = ["}"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getCurrentParagraphEnd();
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    const isLineWise = position.isLineBeginning() && vimState.currentMode === ModeName.Normal && vimState.recordedState.operator;
+    let paragraphEnd = position.getCurrentParagraphEnd();
+    return {
+      start: position,
+      stop: (isLineWise ? paragraphEnd.getLeftThroughLineBreaks(true) : paragraphEnd),
+      registerMode: isLineWise ? RegisterMode.LineWise : RegisterMode.FigureItOutFromCurrentMode
+    };
   }
 }
 
@@ -1416,10 +1423,8 @@ export abstract class MoveInsideCharacter extends BaseMovement {
 
     // If the closing character is the first on the line, don't swallow it.
     if (!this.includeSurrounding) {
-      if (endPos.character === 0 && vimState.currentMode !== ModeName.Visual) {
-        endPos = endPos.getLeftThroughLineBreaks();
-      } else if (endPos.getLeft().isInLeadingWhitespace()) {
-        endPos = endPos.getPreviousLineBegin().getLineEnd();
+      if (endPos.getLeft().isInLeadingWhitespace()) {
+        endPos = endPos.getLineBegin();
       }
     }
 

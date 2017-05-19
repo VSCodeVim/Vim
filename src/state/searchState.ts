@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Position } from './../common/motion/position';
 import { TextEditor } from './../textEditor';
 import { Configuration } from '../../src/configuration/configuration';
+import { ModeName } from './../mode/mode';
 
 export enum SearchDirection {
   Forward = 1,
@@ -14,6 +15,7 @@ export enum SearchDirection {
 export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
   private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
+  public previousMode = ModeName.Normal;
 
   private _matchRanges: vscode.Range[] = [];
 
@@ -194,10 +196,11 @@ export class SearchState {
     }
   }
 
-  constructor(direction: SearchDirection, startPosition: Position, searchString = "", { isRegex = false } = {}) {
+  constructor(direction: SearchDirection, startPosition: Position, searchString = "", { isRegex = false } = {}, currentMode: ModeName) {
     this._searchDirection = direction;
     this._searchCursorStartPosition = startPosition;
     this.isRegex = isRegex;
     this.searchString = searchString;
+    this.previousMode = currentMode;
   }
 }

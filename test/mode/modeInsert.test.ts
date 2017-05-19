@@ -255,4 +255,17 @@ suite("Mode Insert", () => {
       end: ['tes====|=st']
     });
 
+    newTest({
+      title: "Can handle 'o' with count",
+      start: ['|foobar'],
+      keysPressed: '5ofun<Esc>',
+      end: ['foobar', 'fu|n', 'fun', 'fun', 'fun', 'fun']
+    });
+
+    newTest({
+      title: "Can handle 'O' with count",
+      start: ['|foobar'],
+      keysPressed: '5Ofun<Esc>',
+      end: ['fun', 'fun', 'fun', 'fun', 'fu|n', 'foobar']
+    });
 });
