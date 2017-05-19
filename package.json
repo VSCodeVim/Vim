@@ -293,6 +293,26 @@
         "key": "down",
         "command": "extension.vim_down",
         "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
+      },
+      {
+        "key": "j",
+        "command": "list.focusDown",
+        "when": "listFocus"
+      },
+      {
+          "key": "k",
+          "command": "list.focusUp",
+          "when": "listFocus"
+      },
+      {
+          "key": "enter",
+          "command": "list.select",
+          "when": "explorerViewletVisible && filesExplorerFocus"
+      },
+      {
+          "key": "o",
+          "command": "list.toggleExpand",
+          "when": "listFocus"
       }
     ],
     "configuration": {
