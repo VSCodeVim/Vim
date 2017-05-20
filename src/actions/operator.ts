@@ -558,6 +558,7 @@ export class CommentOperator extends BaseOperator {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    vscode.window.showErrorMessage("gc is now commentOperator. gb is now 'add new cursor'");
     vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
     await vscode.commands.executeCommand("editor.action.commentLine");
 
