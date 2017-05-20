@@ -252,18 +252,20 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     }
     let t: Position;
     let count = 0;
+    const prevDesiredColumn = vimState.desiredColumn;
     do {
-      t = <Position>(await new MoveDownByScreenLineMaintainDesiredColumn().execAction(position, vimState));
-      count = 1;
+      t = <Position>(await new MoveDownByScreenLine().execAction(position, vimState));
+      count += 1;
     } while (t.line === position.line);
-    if (t.line > position.line) {
+    if (t.line > position.line + 1) {
       return t;
     }
     while (count > 0) {
-      await new MoveUpByScreenLine().execAction(position, vimState);
+      t = <Position>await new MoveUpByScreenLine().execAction(position, vimState);
       count--;
     }
-    return await super.execAction(position, vimState);
+    vimState.desiredColumn = prevDesiredColumn;
+    return await position.getDown(vimState.desiredColumn);
   }
 }
 
@@ -327,20 +329,23 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position;
-
+    const prevDesiredColumn = vimState.desiredColumn;
     let count = 0;
+
     do {
       t = <Position>(await new MoveUpByScreenLineMaintainDesiredColumn().execAction(position, vimState));
-      count = 1;
+      count += 1;
     } while (t.line === position.line);
-    if (t.line < position.line) {
+    vimState.desiredColumn = prevDesiredColumn;
+    if (t.line < position.line - 1) {
       return t;
     }
     while (count > 0) {
-      await new MoveDownByScreenLine().execAction(position, vimState);
+      t = <Position>await new MoveDownByScreenLine().execAction(position, vimState);
       count--;
     }
-    return await super.execAction(position, vimState);
+    vimState.desiredColumn = prevDesiredColumn;
+    return await position.getUp(vimState.desiredColumn);
   }
 }
 
