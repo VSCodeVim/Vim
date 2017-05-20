@@ -1315,7 +1315,6 @@ export class ModeHandler implements vscode.Disposable {
               case "insertText":
                 edit.insert(command.position, command.text);
                 break;
-
               case "replaceText":
                 edit.replace(new vscode.Selection(command.end, command.start), command.text);
                 break;
