@@ -3,16 +3,15 @@
 import * as vscode from "vscode";
 import * as parser from "./parser";
 import {VimState, ModeHandler} from "../mode/modeHandler";
-import { ModeName } from './../mode/mode';
-import {attach, RPCValue} from 'promised-neovim-client';
+import {attach} from 'promised-neovim-client';
 import {spawn} from 'child_process';
 import { TextEditor } from "../textEditor";
 import { Configuration } from '../configuration/configuration';
 
 async function run(vimState: VimState, command: string) {
+
   const proc = spawn('nvim', ['-u', 'NONE', '-N', '--embed'], {cwd: __dirname });
   const nvim = await attach(proc.stdin, proc.stdout);
-
   const buf = await nvim.getCurrentBuf();
   await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
 
@@ -25,7 +24,11 @@ async function run(vimState: VimState, command: string) {
 
   await nvim.command(command);
 
-  await TextEditor.replace(new vscode.Range(0, 0, TextEditor.getLineCount() - 1, TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1)), (await buf.getLines(0, -1, false)).join('\n'));
+  await TextEditor.replace(
+    new vscode.Range(0, 0, TextEditor.getLineCount() - 1,
+    TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1)),
+    (await buf.getLines(0, -1, false)).join('\n')
+  );
 
   if (Configuration.expandtab) {
     await vscode.commands.executeCommand("editor.action.indentationToSpaces");
