@@ -712,7 +712,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     if (key === "<BS>" || key === "<shift+BS>") {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === "\n") {
-      vimState.currentMode = ModeName.Normal;
+      vimState.currentMode = vimState.globalState.searchState!.previousMode;
 
       // Repeat the previous search if no new string is entered
       if (searchState.searchString === "") {
@@ -948,7 +948,7 @@ function createSearchStateAndMoveToMatch(args: {
 
     // Start a search for the given term.
     vimState.globalState.searchState = new SearchState(
-      args.direction, vimState.cursorPosition, searchString, { isRegex: isExact }
+      args.direction, vimState.cursorPosition, searchString, { isRegex: isExact }, vimState.currentMode
     );
 
     vimState.cursorPosition = vimState.globalState.searchState.getNextSearchMatchPosition(args.searchStartCursorPosition).pos;
@@ -1033,12 +1033,13 @@ class CommandSearchVisualBackward extends BaseCommand {
 
 @RegisterAction
 export class CommandSearchForwards extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["/"];
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = new SearchState(SearchDirection.Forward, vimState.cursorPosition, "", { isRegex: true });
+    vimState.globalState.searchState = new SearchState(SearchDirection.Forward,
+                                        vimState.cursorPosition, "", { isRegex: true }, vimState.currentMode);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
@@ -1052,12 +1053,13 @@ export class CommandSearchForwards extends BaseCommand {
 
 @RegisterAction
 export class CommandSearchBackwards extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["?"];
   isMotion = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = new SearchState(SearchDirection.Backward, vimState.cursorPosition, "", { isRegex: true });
+    vimState.globalState.searchState = new SearchState(SearchDirection.Backward,
+                                       vimState.cursorPosition, "", { isRegex: true }, vimState.currentMode);
     vimState.currentMode = ModeName.SearchInProgressMode;
 
     // Reset search history index
@@ -1091,6 +1093,10 @@ export class PutCommand extends BaseCommand {
     runsOnceForEachCountPrefix = true;
     canBeRepeatedWithDot = true;
 
+    constructor(multicursorIndex?: number) {
+      super();
+      this.multicursorIndex = multicursorIndex;
+    }
     public static async GetText(vimState: VimState, multicursorIndex: number | undefined = undefined): Promise<string> {
       const register = await Register.get(vimState);
 
@@ -1352,11 +1358,12 @@ export class PutCommandVisual extends BaseCommand {
     // The reason we need to handle Delete and Yank separately is because of
     // linewise mode. If we're in visualLine mode, then we want to copy
     // linewise but not necessarily delete linewise.
-    let result =  await new PutCommand().exec(start, vimState, true);
+    let result =  await new PutCommand(this.multicursorIndex).exec(start, vimState, true);
     result.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
     result = await new operator.YankOperator(this.multicursorIndex).run(result, start, end);
     result.currentRegisterMode = RegisterMode.CharacterWise;
     result = await new operator.DeleteOperator(this.multicursorIndex).run(result, start, end.getLeftIfEOL(), false);
+    result.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
     return result;
 
   }
@@ -1773,6 +1780,7 @@ class CommandExitVisualMode extends BaseCommand {
 class CommandVisualMode extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["v"];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Visual;
@@ -2533,6 +2541,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
     let chunksToReflow: {
       commentType: CommentType;
       content: string;
+      indentLevelAfterComment: number;
     }[] = [];
 
     for (const line of s.split("\n")) {
@@ -2570,10 +2579,15 @@ class ActionVisualReflowParagraph extends BaseCommand {
 
       // Did they start a new comment type?
       if (!lastChunk || commentType.start !== lastChunk.commentType.start) {
-        chunksToReflow.push({
+        let chunk = {
           commentType,
-          content: `${ trimmedLine.substr(commentType.start.length).trim() }`
-        });
+          content: `${ trimmedLine.substr(commentType.start.length).trim() }`,
+          indentLevelAfterComment: 0
+        };
+        if (commentType.singleLine) {
+          chunk.indentLevelAfterComment = trimmedLine.substr(commentType.start.length).length - chunk.content.length;
+        }
+        chunksToReflow.push(chunk);
 
         continue;
       }
@@ -2605,8 +2619,9 @@ class ActionVisualReflowParagraph extends BaseCommand {
     // Reflow each chunk.
     let result: string[] = [];
 
-    for (const { commentType, content } of chunksToReflow) {
+    for (const { commentType, content, indentLevelAfterComment } of chunksToReflow) {
       let lines: string[];
+      const indentAfterComment = Array(indentLevelAfterComment + 1).join(" ");
 
       if (commentType.singleLine) {
         lines = [``];
@@ -2627,14 +2642,19 @@ class ActionVisualReflowParagraph extends BaseCommand {
         }
 
         // Add word by word, wrapping when necessary.
-
-        for (const word of line.split(/\s+/)) {
+        const words = line.split(/\s+/);
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
           if (word === "") { continue; }
 
           if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            lines[lines.length - 1] += ` ${ word }`;
+            if (i) {
+              lines[lines.length - 1] += ` ${ word }`;
+            } else {
+              lines[lines.length - 1] += `${ word }`;
+            }
           } else {
-            lines.push(` ${ word }`);
+              lines.push(`${ word }`);
           }
         }
       }
@@ -2650,14 +2670,14 @@ class ActionVisualReflowParagraph extends BaseCommand {
 
       for (let i = 0; i < lines.length; i++) {
         if (commentType.singleLine) {
-          lines[i] = `${ indent }${ commentType.start }${ lines[i] }`;
+          lines[i] = `${ indent }${ commentType.start }${ indentAfterComment }${ lines[i] }`;
         } else {
           if (i === 0) {
-            lines[i] = `${ indent }${ commentType.start }${ lines[i] }`;
+            lines[i] = `${ indent }${ commentType.start } ${ lines[i] }`;
           } else if (i === lines.length - 1) {
             lines[i] = `${ indent } ${ commentType.final }`;
           } else {
-            lines[i] = `${ indent } ${ commentType.inner }${ lines[i] }`;
+            lines[i] = `${ indent } ${ commentType.inner } ${ lines[i] }`;
           }
         }
       }
@@ -2665,10 +2685,6 @@ class ActionVisualReflowParagraph extends BaseCommand {
       result = result.concat(lines);
     }
 
-    // Remove extra first space if it exists.
-    if (result[0][0] === " ") {
-      result[0] = result[0].slice(1);
-    }
     // Gather up multiple empty lines into single empty lines.
     return result.join("\n");
   }
@@ -3178,13 +3194,19 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         word = text[start.character] + word;
       }
       // Strict number parsing so "1a" doesn't silently get converted to "1"
-      const num = NumericString.parse(word);
-
-      if (num !== null) {
-        vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
-        vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
-        return vimState;
-      }
+      do {
+        const num = NumericString.parse(word);
+        if (num !== null && position.character < start.character + num.prefix.length + num.value.toString().length) {
+          vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+          vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
+          return vimState;
+        } else if (num !== null) {
+          word = word.slice(num.prefix.length + num.value.toString().length);
+          start = new Position(start.line, start.character + num.prefix.length + num.value.toString().length);
+        } else {
+          break;
+        }
+      } while (true);
     }
     // No usable numbers, return the original position
     return vimState;

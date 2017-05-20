@@ -5,9 +5,9 @@ export class NumericString {
   suffix: string;
 
   private static matchings: { regex: RegExp, base: number, prefix: string }[] = [
-    { regex: /^([-+])?0([0-7]+)$/, base: 8, prefix: "0" },
-    { regex: /^([-+])?(\d+)$/, base: 10, prefix: "" },
-    { regex: /^([-+])?0x([\da-fA-F]+)$/, base: 16, prefix: "0x" },
+    { regex: /^([-+])?0([0-7]+)$/g, base: 8, prefix: "0" },
+    { regex: /^([-+])?(\d+)$/g, base: 10, prefix: "" },
+    { regex: /^([-+])?0x([\da-fA-F]+)$/g, base: 16, prefix: "0x" },
     { regex: /\d/, base: 10, prefix: "" }
   ];
 
@@ -20,14 +20,13 @@ export class NumericString {
 
       // Regex to determine if this number has letters around it,
       // if it doesn't then that is easy and no prefix or suffix is needed
-      let findNondigits = /[^\d-+]+/i;
+      let findNondigits = /[^\d-+]+/g;
 
       // Regex to find any leading characters before the number
-      let findPrefix = /^[^\d-+]+(?=[0-9]+)/i;
+      let findPrefix = /^[^\d-+]+(?=[0-9]+)/g;
 
       // Regex to find any trailing characters after the number
-      let findSuffix = /[^\d]*$/i;
-
+      let findSuffix = /[^\d]*[\d]*(.*)/g;
       let newPrefix = prefix;
       let newSuffix = "";
       let newNum = input;
@@ -44,11 +43,11 @@ export class NumericString {
 
         // Find the suffix if it exists
         if (suffixFound !== null) {
-          newSuffix = suffixFound.toString();
+          newSuffix = suffixFound[1].toString();
         }
 
         // Obtain just the number with no extra letters
-        newNum = input.replace(/[^\d-+]+/ig, '');
+        newNum = newNum.slice(newPrefix.length, newNum.length - newSuffix.length);
       }
 
       return new NumericString(parseInt(newNum, base), base, newPrefix, newSuffix);
