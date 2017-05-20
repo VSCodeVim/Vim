@@ -3,7 +3,7 @@
 import * as vscode from "vscode";
 import * as parser from "./parser";
 import {VimState, ModeHandler} from "../mode/modeHandler";
-import {attach} from 'promised-neovim-client';
+import {attach, RPCValue} from 'promised-neovim-client';
 import {spawn} from 'child_process';
 import { TextEditor } from "../textEditor";
 import { Configuration } from '../configuration/configuration';
@@ -12,6 +12,15 @@ async function run(vimState: VimState, command: string) {
 
   const proc = spawn('nvim', ['-u', 'NONE', '-N', '--embed'], {cwd: __dirname });
   const nvim = await attach(proc.stdin, proc.stdout);
+  nvim.on('request', (method: string, args: RPCValue[], resp: RPCValue) => {
+    console.log(method, args, resp)
+      // handle msgpack-rpc request
+  });
+
+  nvim.on('notification', (method: string, args: RPCValue[]) => {
+    console.log(method, args)
+      // handle msgpack-rpc notification
+  });
   const buf = await nvim.getCurrentBuf();
   await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
 
