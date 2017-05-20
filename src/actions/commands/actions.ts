@@ -1089,6 +1089,10 @@ export class PutCommand extends BaseCommand {
     runsOnceForEachCountPrefix = true;
     canBeRepeatedWithDot = true;
 
+    constructor(multicursorIndex?: number) {
+      super();
+      this.multicursorIndex = multicursorIndex;
+    }
     public static async GetText(vimState: VimState, multicursorIndex: number | undefined = undefined): Promise<string> {
       const register = await Register.get(vimState);
 
@@ -1350,11 +1354,12 @@ export class PutCommandVisual extends BaseCommand {
     // The reason we need to handle Delete and Yank separately is because of
     // linewise mode. If we're in visualLine mode, then we want to copy
     // linewise but not necessarily delete linewise.
-    let result =  await new PutCommand().exec(start, vimState, true);
+    let result =  await new PutCommand(this.multicursorIndex).exec(start, vimState, true);
     result.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
     result = await new operator.YankOperator(this.multicursorIndex).run(result, start, end);
     result.currentRegisterMode = RegisterMode.CharacterWise;
     result = await new operator.DeleteOperator(this.multicursorIndex).run(result, start, end.getLeftIfEOL(), false);
+    result.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
     return result;
 
   }
@@ -1771,6 +1776,7 @@ class CommandExitVisualMode extends BaseCommand {
 class CommandVisualMode extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["v"];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Visual;
