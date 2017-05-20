@@ -3053,6 +3053,9 @@ class ActionOverrideCmdD extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    if (!Configuration.disableAnnoyingGcComment) {
+      vscode.window.showErrorMessage("gc is now commentOperator. gb is now 'add new cursor'. Disable this annoying message with vim.disableAnnoyingGcComment");
+    }
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
     vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
 

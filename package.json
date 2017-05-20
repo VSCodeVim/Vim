@@ -480,6 +480,11 @@
           "type": "boolean",
           "description": "Uses a hack to move around folds properly",
           "default": false
+        },
+        "vim.disableAnnoyingGcComment": {
+          "type": "boolean",
+          "description": "Get rid of that annoying pop up that shows up everytime you type gc or gb",
+          "default": false
         }
       }
     }
