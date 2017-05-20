@@ -7,6 +7,7 @@ import { ModeName } from './../mode/mode';
 import {attach, RPCValue} from 'promised-neovim-client';
 import {spawn} from 'child_process';
 import { TextEditor } from "../textEditor";
+import { Configuration } from '../configuration/configuration';
 
 async function run(vimState: VimState, command: string) {
   const proc = spawn('nvim', ['-u', 'NONE', '-N', '--embed'], {cwd: __dirname });
@@ -25,6 +26,10 @@ async function run(vimState: VimState, command: string) {
   await nvim.command(command);
 
   await TextEditor.replace(new vscode.Range(0, 0, TextEditor.getLineCount() - 1, TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1)), (await buf.getLines(0, -1, false)).join('\n'));
+
+  if (Configuration.expandtab) {
+    await vscode.commands.executeCommand("editor.action.indentationToSpaces");
+  }
   nvim.quit();
   return;
 
