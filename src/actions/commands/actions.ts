@@ -3184,13 +3184,19 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         word = text[start.character] + word;
       }
       // Strict number parsing so "1a" doesn't silently get converted to "1"
-      const num = NumericString.parse(word);
-
-      if (num !== null) {
-        vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
-        vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
-        return vimState;
-      }
+      do {
+        const num = NumericString.parse(word);
+        if (num !== null && position.character < start.character + num.prefix.length + num.value.toString().length) {
+          vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+          vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
+          return vimState;
+        } else if (num !== null) {
+          word = word.slice(num.prefix.length + num.value.toString().length);
+          start = new Position(start.line, start.character + num.prefix.length + num.value.toString().length);
+        } else {
+          break;
+        }
+      } while (true);
     }
     // No usable numbers, return the original position
     return vimState;
