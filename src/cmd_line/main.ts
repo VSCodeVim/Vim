@@ -31,12 +31,8 @@ async function run(vimState: VimState, command: string) {
   for (const mark of vimState.historyTracker.getMarks()){
     await nvim.callFunction("setpos", [`'${mark.name}`, [0, mark.position.line + 1, mark.position.character, false]]);
   }
-
   command = ":" + command + "\n";
-  for (const key of command) {
-    await nvim.input(key);
-  }
-
+  await nvim.input(command);
 
   if ((await nvim.getMode()).blocking) {
     await nvim.input('<esc>');
