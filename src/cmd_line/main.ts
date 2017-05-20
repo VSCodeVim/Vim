@@ -16,13 +16,11 @@ async function run(vimState: VimState, command: string) {
   const buf = await nvim.getCurrentBuf();
   const window = await nvim.getCurrentWin();
   await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
-  if (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) {
-    let t : RPCValue
-    await nvim.callFunction("cursor", [vimState.cursorStartPosition.line, vimState.cursorStartPosition.character]);
-    await nvim.input("V");
-    await nvim.callFunction("cursor", [vimState.cursorPosition.line, vimState.cursorPosition.character]);
-  } else {
-    await nvim.callFunction("cursor", [vimState.cursorPosition.line, vimState.cursorPosition.character]);
+  await nvim.callFunction("setpos", [".", [0, vimState.cursorPosition.line + 1, vimState.cursorPosition.character, false]]);
+  await nvim.callFunction("setpos", ["'>", [0, vimState.cursorPosition.line + 1, vimState.cursorPosition.character, false]]);
+  await nvim.callFunction("setpos", ["'<", [0, vimState.cursorStartPosition.line + 1, vimState.cursorStartPosition.character, false]]);
+  for (const mark of vimState.historyTracker.getMarks()){
+    await nvim.callFunction("setpos", [`'${mark.name}`, [0, mark.position.line + 1, mark.position.character, false]]);
   }
   await nvim.command(command);
 
