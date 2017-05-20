@@ -2537,6 +2537,7 @@ class ActionVisualReflowParagraph extends BaseCommand {
     let chunksToReflow: {
       commentType: CommentType;
       content: string;
+      indentLevelAfterComment: number;
     }[] = [];
 
     for (const line of s.split("\n")) {
@@ -2574,10 +2575,15 @@ class ActionVisualReflowParagraph extends BaseCommand {
 
       // Did they start a new comment type?
       if (!lastChunk || commentType.start !== lastChunk.commentType.start) {
-        chunksToReflow.push({
+        let chunk = {
           commentType,
-          content: `${ trimmedLine.substr(commentType.start.length).trim() }`
-        });
+          content: `${ trimmedLine.substr(commentType.start.length).trim() }`,
+          indentLevelAfterComment: 0
+        };
+        if (commentType.singleLine) {
+          chunk.indentLevelAfterComment = trimmedLine.substr(commentType.start.length).length - chunk.content.length;
+        }
+        chunksToReflow.push(chunk);
 
         continue;
       }
@@ -2609,8 +2615,9 @@ class ActionVisualReflowParagraph extends BaseCommand {
     // Reflow each chunk.
     let result: string[] = [];
 
-    for (const { commentType, content } of chunksToReflow) {
+    for (const { commentType, content, indentLevelAfterComment } of chunksToReflow) {
       let lines: string[];
+      const indentAfterComment = Array(indentLevelAfterComment + 1).join(" ");
 
       if (commentType.singleLine) {
         lines = [``];
@@ -2631,14 +2638,19 @@ class ActionVisualReflowParagraph extends BaseCommand {
         }
 
         // Add word by word, wrapping when necessary.
-
-        for (const word of line.split(/\s+/)) {
+        const words = line.split(/\s+/);
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
           if (word === "") { continue; }
 
           if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            lines[lines.length - 1] += ` ${ word }`;
+            if (i) {
+              lines[lines.length - 1] += ` ${ word }`;
+            } else {
+              lines[lines.length - 1] += `${ word }`;
+            }
           } else {
-            lines.push(` ${ word }`);
+              lines.push(`${ word }`);
           }
         }
       }
@@ -2654,14 +2666,14 @@ class ActionVisualReflowParagraph extends BaseCommand {
 
       for (let i = 0; i < lines.length; i++) {
         if (commentType.singleLine) {
-          lines[i] = `${ indent }${ commentType.start }${ lines[i] }`;
+          lines[i] = `${ indent }${ commentType.start }${ indentAfterComment }${ lines[i] }`;
         } else {
           if (i === 0) {
-            lines[i] = `${ indent }${ commentType.start }${ lines[i] }`;
+            lines[i] = `${ indent }${ commentType.start } ${ lines[i] }`;
           } else if (i === lines.length - 1) {
             lines[i] = `${ indent } ${ commentType.final }`;
           } else {
-            lines[i] = `${ indent } ${ commentType.inner }${ lines[i] }`;
+            lines[i] = `${ indent } ${ commentType.inner } ${ lines[i] }`;
           }
         }
       }
@@ -2669,10 +2681,6 @@ class ActionVisualReflowParagraph extends BaseCommand {
       result = result.concat(lines);
     }
 
-    // Remove extra first space if it exists.
-    if (result[0][0] === " ") {
-      result[0] = result[0].slice(1);
-    }
     // Gather up multiple empty lines into single empty lines.
     return result.join("\n");
   }
@@ -3182,13 +3190,19 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         word = text[start.character] + word;
       }
       // Strict number parsing so "1a" doesn't silently get converted to "1"
-      const num = NumericString.parse(word);
-
-      if (num !== null) {
-        vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
-        vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
-        return vimState;
-      }
+      do {
+        const num = NumericString.parse(word);
+        if (num !== null && position.character < start.character + num.prefix.length + num.value.toString().length) {
+          vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+          vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
+          return vimState;
+        } else if (num !== null) {
+          word = word.slice(num.prefix.length + num.value.toString().length);
+          start = new Position(start.line, start.character + num.prefix.length + num.value.toString().length);
+        } else {
+          break;
+        }
+      } while (true);
     }
     // No usable numbers, return the original position
     return vimState;
