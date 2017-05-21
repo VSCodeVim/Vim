@@ -1,7 +1,7 @@
 notifications:
   email: false
 
-sudo: false
+sudo: required
 
 os:
 - linux
@@ -21,6 +21,7 @@ before_install:
     sh -e /etc/init.d/xvfb start;
     sleep 3;
   fi
+  - sudo apt-get install neovim
 
 install:
 - npm install -g gulp;
