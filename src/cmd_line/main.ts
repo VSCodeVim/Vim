@@ -2,12 +2,7 @@
 
 import * as vscode from "vscode";
 import * as parser from "./parser";
-import {VimState, ModeHandler} from "../mode/modeHandler";
-import { Position, PositionDiff } from './../common/motion/position';
-import {attach, RPCValue} from 'promised-neovim-client';
-import {spawn} from 'child_process';
-import { TextEditor } from "../textEditor";
-import { Configuration } from '../configuration/configuration';
+import {ModeHandler} from "../mode/modeHandler";
 import { Neovim } from "../neovim/nvimUtil";
 
 // Shows the vim command line.

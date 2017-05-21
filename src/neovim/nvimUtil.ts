@@ -1,10 +1,8 @@
 "use strict";
 
 import * as vscode from "vscode";
-import {VimState, ModeHandler} from "../mode/modeHandler";
-import { Position, PositionDiff } from './../common/motion/position';
-import {attach, RPCValue} from 'promised-neovim-client';
-import {spawn} from 'child_process';
+import { VimState } from "../mode/modeHandler";
+import { Position } from './../common/motion/position';
 import { TextEditor } from "../textEditor";
 import { Configuration } from '../configuration/configuration';
 
@@ -35,7 +33,7 @@ export class Neovim {
     );
 
     let [row, character]  = (await nvim.callFunction("getpos", ["."]) as Array<number>).slice(1, 3);
-    vimState.editor.selection = new vscode.Selection(new Position(row-1, character), new Position(row-1, character));
+    vimState.editor.selection = new vscode.Selection(new Position(row - 1, character), new Position(row - 1, character));
 
     if (Configuration.expandtab) {
       await vscode.commands.executeCommand("editor.action.indentationToSpaces");
