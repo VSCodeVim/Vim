@@ -6,6 +6,7 @@ import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from 
 import { ModeName } from '../../src/mode/mode';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Mode Visual", () => {
   let modeHandler: ModeHandler;
@@ -17,7 +18,7 @@ suite("Mode Visual", () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);

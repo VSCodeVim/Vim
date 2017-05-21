@@ -82,7 +82,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   let curHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
   if (!curHandler) {
-    const newModeHandler = new ModeHandler();
+    const newModeHandler = await new ModeHandler();
     const proc = spawn('nvim', ['-u', 'NONE', '-N', '--embed'], {cwd: __dirname });
     newModeHandler.vimState.nvim = await attach(proc.stdin, proc.stdout);
 

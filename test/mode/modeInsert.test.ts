@@ -5,6 +5,7 @@ import {ModeName} from '../../src/mode/mode';
 import {TextEditor} from '../../src/textEditor';
 import {ModeHandler} from "../../src/mode/modeHandler";
 import { getTestingFunctions } from '../testSimplifier';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Mode Insert", () => {
     let modeHandler: ModeHandler;
@@ -16,7 +17,7 @@ suite("Mode Insert", () => {
 
     setup(async () => {
         await setupWorkspace();
-        modeHandler = new ModeHandler();
+        modeHandler = await getAndUpdateModeHandler();
     });
 
     teardown(cleanUpWorkspace);

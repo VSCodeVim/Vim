@@ -4,6 +4,7 @@ import { setupWorkspace, setTextEditorOptions, cleanUpWorkspace, assertEqual } f
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Mode Normal", () => {
     let modeHandler: ModeHandler;
@@ -15,7 +16,7 @@ suite("Mode Normal", () => {
     setup(async () => {
         await setupWorkspace();
         setTextEditorOptions(4, false);
-        modeHandler = new ModeHandler();
+        modeHandler = await getAndUpdateModeHandler();
     });
 
     teardown(cleanUpWorkspace);
