@@ -62,15 +62,10 @@ export class Neovim {
   static async command(vimState: VimState, command: string) {
     const nvim = vimState.nvim;
     await this.syncVSToVim(vimState);
-    // console.log(await nvim.getMode());
-    await nvim.command(command);
-    // command = ":<C-U>" + command + "\n";
-    // for (const key of command) {
-    //   await nvim.input(key);
-    // }
-    // console.log(command);
-    // await nvim.input(command);
-    // console.log(await nvim.eval("v:errmsg"));
+    command = ":" + command + "\n";
+    command.replace('<', '<lt>')
+
+    await nvim.input(command);
     if ((await nvim.getMode()).blocking) {
       await nvim.input('<esc>');
     }
