@@ -1006,10 +1006,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     ranRepeatableAction = (ranRepeatableAction && vimState.currentMode === ModeName.Normal) || this.createUndoPointForBrackets(vimState);
-
-    // Don't record an undo point for every action of a macro, only at the very end
-
-    ranAction = ranAction && vimState.currentMode === ModeName.Normal;
+    ranAction = ranAction && (vimState.currentMode === ModeName.Normal || vimState.currentMode === ModeName.Visual);
 
     // Record down previous action and flush temporary state
     if (ranRepeatableAction) {
@@ -1017,6 +1014,20 @@ export class ModeHandler implements vscode.Disposable {
 
       if (recordedState.isInsertion) {
         Register.putByKey(recordedState, '.');
+      }
+    }
+
+    // Updated desired column
+    const movement = action instanceof BaseMovement ? action : undefined;
+
+    if ((movement && !movement.doesntChangeDesiredColumn) ||
+        (!movement && vimState.currentMode !== ModeName.VisualBlock)) {
+      // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
+
+      if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
+        vimState.desiredColumn = Number.POSITIVE_INFINITY;
+      } else {
+        vimState.desiredColumn = vimState.cursorPosition.character;
       }
     }
 
@@ -1093,21 +1104,6 @@ export class ModeHandler implements vscode.Disposable {
       this._vimState.lastVisualSelectionEnd = this._vimState.cursorPosition;
     }
 
-    // Updated desired column
-
-    const movement = action instanceof BaseMovement ? action : undefined;
-
-    if ((movement && !movement.doesntChangeDesiredColumn) ||
-        (recordedState.command &&
-         vimState.currentMode !== ModeName.VisualBlock)) {
-      // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
-
-      if (movement && movement.setsDesiredColumnToEOL && !recordedState.operator) {
-        vimState.desiredColumn = Number.POSITIVE_INFINITY;
-      } else {
-        vimState.desiredColumn = vimState.cursorPosition.character;
-      }
-    }
 
     // Make sure no two cursors are at the same location.
     // This is a consequence of the fact that allCursors is not a Set.
