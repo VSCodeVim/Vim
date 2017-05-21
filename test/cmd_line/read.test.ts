@@ -4,6 +4,8 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from './../testUtils';
 import { runCmdLine } from '../../src/cmd_line/main';
 import { getAndUpdateModeHandler } from "../../extension";
+import { TextEditor } from "../../src/textEditor";
+import { Configuration } from "../../src/configuration/configuration";
 
 suite("read", () => {
   let modeHandler: ModeHandler;
@@ -20,8 +22,7 @@ suite("read", () => {
     assertEqualLines([
       '',
       'hey',
-      '\tho',
-      ''
+      '  ho',
     ]);
   });
 
