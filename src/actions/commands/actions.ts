@@ -1480,6 +1480,7 @@ class CommandShowCommandLine extends BaseCommand {
     } else {
       vimState.commandInitialText = "'<,'>";
     }
+    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }

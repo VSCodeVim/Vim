@@ -18,6 +18,7 @@ suite("read", () => {
   test("Can read shell command output", async () => {
     await runCmdLine('r! echo hey\\\\n\\\\tho', modeHandler);
     assertEqualLines([
+      '',
       'hey',
       '\tho',
       ''

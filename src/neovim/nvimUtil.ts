@@ -19,12 +19,13 @@ export class Neovim {
     const nvim = vimState.nvim;
     const buf = await nvim.getCurrentBuf();
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
-
+    const [rangeStart, rangeEnd] = [Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
+                                     Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition)];
     await nvim.callFunction("setpos", [".", [0, vimState.cursorPosition.line + 1, vimState.cursorPosition.character, false]]);
-    await nvim.callFunction("setpos", ["'>", [0, vimState.cursorPosition.line + 1, vimState.cursorPosition.character, false]]);
-    await nvim.callFunction("setpos", ["'<", [0, vimState.cursorStartPosition.line + 1, vimState.cursorStartPosition.character, false]]);
+    await nvim.callFunction("setpos", ["'<", [0, rangeStart.line + 1, rangeEnd.character, false]]);
+    await nvim.callFunction("setpos", ["'>", [0, rangeEnd.line + 1, rangeEnd.character, false]]);
     for (const mark of vimState.historyTracker.getMarks()){
-      await nvim.callFunction("setpos", [`'${mark.name}`, [0, mark.position.line + 1, mark.position.character, false]]);
+      await nvim.callFunction("setpos", [mark.name, [0, mark.position.line + 1, mark.position.character, false]]);
     }
   }
 
@@ -50,8 +51,11 @@ export class Neovim {
   static async command(vimState: VimState, command: string) {
     const nvim = vimState.nvim;
     await this.syncVSToVim(vimState);
-    command = ":" + command + "\n";
-    await nvim.input(command);
+    await nvim.command(command);
+    // for (const key of command) {
+    //   await nvim.input(key);
+    // }
+    // await nvim.input(command);
     if ((await nvim.getMode()).blocking) {
       await nvim.input('<esc>');
     }
