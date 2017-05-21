@@ -15,7 +15,6 @@ export class Neovim {
   static async initNvim(vimState: VimState) {
     const proc = spawn(Configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {cwd: __dirname });
     vimState.nvim = await attach(proc.stdin, proc.stdout);
-    const nvim = vimState.nvim;
   }
 
   // Data flows from VS to Vim
@@ -44,14 +43,14 @@ export class Neovim {
       } else {
         return register;
       }
-    }
+    };
 
     // We only copy over " register for now, due to our weird handling of macros.
     let reg = await Register.get(vimState);
     let vsRegTovimReg = [undefined, "c", "l", "b"];
     console.log(reg.registerMode);
     console.log(effectiveRegisterMode(reg.registerMode));
-    await nvim.callFunction("setreg", [reg.text as string, vsRegTovimReg[effectiveRegisterMode(reg.registerMode)] as string] );
+    await nvim.callFunction("setreg", ['"', reg.text as string, vsRegTovimReg[effectiveRegisterMode(reg.registerMode)] as string] );
   }
 
   // Data flows from Vim to VS
@@ -73,7 +72,7 @@ export class Neovim {
     }
     // We're only syncing back the default register for now, due to the way we could
     // be storing macros in registers.
-    const vimRegToVsReg = {"v": RegisterMode.CharacterWise, "V": RegisterMode.LineWise, "\x16": RegisterMode.BlockWise}
+    const vimRegToVsReg = {"v": RegisterMode.CharacterWise, "V": RegisterMode.LineWise, "\x16": RegisterMode.BlockWise};
     vimState.currentRegisterMode = vimRegToVsReg[await nvim.callFunction("getregtype", ['"']) as string];
     Register.put(await nvim.callFunction("getreg", ['"']) as string, vimState);
   }
