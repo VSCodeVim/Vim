@@ -48,8 +48,6 @@ export class Neovim {
     // We only copy over " register for now, due to our weird handling of macros.
     let reg = await Register.get(vimState);
     let vsRegTovimReg = [undefined, "c", "l", "b"];
-    console.log(reg.registerMode);
-    console.log(effectiveRegisterMode(reg.registerMode));
     await nvim.callFunction("setreg", ['"', reg.text as string, vsRegTovimReg[effectiveRegisterMode(reg.registerMode)] as string] );
   }
 
