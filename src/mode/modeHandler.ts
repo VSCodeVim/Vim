@@ -42,6 +42,7 @@ import { PairMatcher } from './../common/matching/matcher';
 import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';
+import { Nvim } from "promised-neovim-client";
 
 export class ViewChange {
   public command: string;
@@ -277,6 +278,8 @@ export class VimState {
    * by us or by a mouse action.
    */
   public whatILastSetTheSelectionTo: vscode.Selection;
+
+  public nvim: Nvim;
 }
 
 /**
