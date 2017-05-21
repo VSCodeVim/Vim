@@ -431,6 +431,10 @@ class CommandEsc extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Normal && !vimState.isMultiCursor) {
+      // If there's nothing to do on the vim side, we might as well call some
+      // of vscode's default "close notification" actions. I think we should
+      // just add to this list as needed.
+      await vscode.commands.executeCommand('closeReferenceSearchEditor');
       return vimState;
     }
 
@@ -1089,6 +1093,10 @@ export class PutCommand extends BaseCommand {
     runsOnceForEachCountPrefix = true;
     canBeRepeatedWithDot = true;
 
+    constructor(multicursorIndex?: number) {
+      super();
+      this.multicursorIndex = multicursorIndex;
+    }
     public static async GetText(vimState: VimState, multicursorIndex: number | undefined = undefined): Promise<string> {
       const register = await Register.get(vimState);
 
@@ -1350,11 +1358,12 @@ export class PutCommandVisual extends BaseCommand {
     // The reason we need to handle Delete and Yank separately is because of
     // linewise mode. If we're in visualLine mode, then we want to copy
     // linewise but not necessarily delete linewise.
-    let result =  await new PutCommand().exec(start, vimState, true);
+    let result =  await new PutCommand(this.multicursorIndex).exec(start, vimState, true);
     result.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
     result = await new operator.YankOperator(this.multicursorIndex).run(result, start, end);
     result.currentRegisterMode = RegisterMode.CharacterWise;
     result = await new operator.DeleteOperator(this.multicursorIndex).run(result, start, end.getLeftIfEOL(), false);
+    result.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
     return result;
 
   }
@@ -1771,6 +1780,7 @@ class CommandExitVisualMode extends BaseCommand {
 class CommandVisualMode extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ["v"];
+  isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Visual;
@@ -3184,13 +3194,19 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
         word = text[start.character] + word;
       }
       // Strict number parsing so "1a" doesn't silently get converted to "1"
-      const num = NumericString.parse(word);
-
-      if (num !== null) {
-        vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
-        vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
-        return vimState;
-      }
+      do {
+        const num = NumericString.parse(word);
+        if (num !== null && position.character < start.character + num.prefix.length + num.value.toString().length) {
+          vimState.cursorPosition = await this.replaceNum(num, this.offset * (vimState.recordedState.count || 1), start, end);
+          vimState.cursorPosition = vimState.cursorPosition.getLeftByCount(num.suffix.length);
+          return vimState;
+        } else if (num !== null) {
+          word = word.slice(num.prefix.length + num.value.toString().length);
+          start = new Position(start.line, start.character + num.prefix.length + num.value.toString().length);
+        } else {
+          break;
+        }
+      } while (true);
     }
     // No usable numbers, return the original position
     return vimState;
