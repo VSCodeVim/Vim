@@ -298,6 +298,10 @@ class ConfigurationClass {
    * shows everytime you press one of them. This flag disables that.
    */
   disableAnnoyingGcComment = false;
+
+  enableNeovim = true;
+
+  neovimPath = "nvim";
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {

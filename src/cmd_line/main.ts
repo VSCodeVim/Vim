@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import * as parser from "./parser";
 import {ModeHandler} from "../mode/modeHandler";
 import { Neovim } from "../neovim/nvimUtil";
+import { Configuration } from "../configuration/configuration";
 
 // Shows the vim command line.
 export async function showCmdLine(initialText: string, modeHandler : ModeHandler): Promise<undefined> {
@@ -40,7 +41,7 @@ export async function runCmdLine(command : string, modeHandler : ModeHandler) : 
     if (cmd.isEmpty) {
       return;
     }
-    if (cmd.command.neovimCapable) {
+    if (cmd.command.neovimCapable && Configuration.enableNeovim) {
       await Neovim.command(modeHandler.vimState, command).then(() => {
         console.log("Substituted for neovim command");
       }).catch((err) => console.log(err));
@@ -49,9 +50,11 @@ export async function runCmdLine(command : string, modeHandler : ModeHandler) : 
     }
     return;
   } catch (e) {
-    await Neovim.command(modeHandler.vimState, command).then(() => {
-      console.log("SUCCESS");
-    }).catch((err) => console.log(err));
+    if (Configuration.enableNeovim) {
+      await Neovim.command(modeHandler.vimState, command).then(() => {
+        console.log("SUCCESS");
+      }).catch((err) => console.log(err));
+    }
     return;
   }
 }

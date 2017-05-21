@@ -485,6 +485,16 @@
           "type": "boolean",
           "description": "Get rid of that annoying pop up that shows up everytime you type gc or gb",
           "default": false
+        },
+        "vim.enableNeovim": {
+          "type": "boolean",
+          "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect.",
+          "default": true
+        },
+        "vim.neovimPath": {
+          "type": "string",
+          "description": "Path to run neovim",
+          "default": "nvim"
         }
       }
     }

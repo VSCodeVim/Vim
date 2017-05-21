@@ -5,8 +5,15 @@ import { VimState } from "../mode/modeHandler";
 import { Position } from './../common/motion/position';
 import { TextEditor } from "../textEditor";
 import { Configuration } from '../configuration/configuration';
+import { spawn } from "child_process";
+import { attach } from "promised-neovim-client";
 
 export class Neovim {
+
+  static async initNvim(vimState: VimState) {
+    const proc = spawn(Configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {cwd: __dirname });
+    vimState.nvim = await attach(proc.stdin, proc.stdout);
+  }
   // Data flows from VS to Vim
   static async syncVSToVim(vimState: VimState) {
     const nvim = vimState.nvim;
