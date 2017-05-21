@@ -63,7 +63,7 @@ export class Neovim {
     const nvim = vimState.nvim;
     await this.syncVSToVim(vimState);
     command = ":" + command + "\n";
-    command.replace('<', '<lt>')
+    command.replace('<', '<lt>');
 
     await nvim.input(command);
     if ((await nvim.getMode()).blocking) {

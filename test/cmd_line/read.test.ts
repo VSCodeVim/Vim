@@ -18,11 +18,10 @@ suite("read", () => {
   suiteTeardown(cleanUpWorkspace);
 
   test("Can read shell command output", async () => {
-    await runCmdLine('r! echo hey\\\\n\\\\tho', modeHandler);
+    await runCmdLine('r! echo hey', modeHandler);
     assertEqualLines([
       '',
       'hey',
-      '  ho',
     ]);
   });
 
