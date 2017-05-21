@@ -7,7 +7,8 @@ import { TextEditor } from "../textEditor";
 import { Configuration } from '../configuration/configuration';
 import { spawn } from "child_process";
 import { attach } from "promised-neovim-client";
-import { Register } from "../register/register";
+import { Register, RegisterMode } from "../register/register";
+import { ModeName } from "../mode/mode";
 
 export class Neovim {
 
@@ -15,7 +16,6 @@ export class Neovim {
     const proc = spawn(Configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {cwd: __dirname });
     vimState.nvim = await attach(proc.stdin, proc.stdout);
     const nvim = vimState.nvim;
-    await nvim.setOption("clipboard", await nvim.getOption("clipboard") + "unnamed");
   }
 
   // Data flows from VS to Vim
@@ -31,6 +31,27 @@ export class Neovim {
     for (const mark of vimState.historyTracker.getMarks()){
       await nvim.callFunction("setpos", [`'${mark.name}`, [0, mark.position.line + 1, mark.position.character, false]]);
     }
+
+    const effectiveRegisterMode = (register: RegisterMode) => {
+      if (register === RegisterMode.FigureItOutFromCurrentMode) {
+        if (vimState.currentMode === ModeName.VisualLine) {
+          return RegisterMode.LineWise;
+        } else if (vimState.currentMode === ModeName.VisualBlock) {
+          return RegisterMode.BlockWise;
+        } else {
+          return RegisterMode.CharacterWise;
+        }
+      } else {
+        return register;
+      }
+    }
+
+    // We only copy over " register for now, due to our weird handling of macros.
+    let reg = await Register.get(vimState);
+    let vsRegTovimReg = [undefined, "c", "l", "b"];
+    console.log(reg.registerMode);
+    console.log(effectiveRegisterMode(reg.registerMode));
+    await nvim.callFunction("setreg", [reg.text as string, vsRegTovimReg[effectiveRegisterMode(reg.registerMode)] as string] );
   }
 
   // Data flows from Vim to VS
@@ -52,11 +73,9 @@ export class Neovim {
     }
     // We're only syncing back the default register for now, due to the way we could
     // be storing macros in registers.
-    // I also can't figure out how to properly set register variables right
-    // now, so this is a temporary solution.
-    if (await nvim.eval('@"') !== "") {
-      Register.put(await nvim.eval('@"') as string, vimState);
-    }
+    const vimRegToVsReg = {"v": RegisterMode.CharacterWise, "V": RegisterMode.LineWise, "\x16": RegisterMode.BlockWise}
+    vimState.currentRegisterMode = vimRegToVsReg[await nvim.callFunction("getregtype", ['"']) as string];
+    Register.put(await nvim.callFunction("getreg", ['"']) as string, vimState);
   }
 
   static async command(vimState: VimState, command: string) {
