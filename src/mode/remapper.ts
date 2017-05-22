@@ -143,6 +143,7 @@ class Remapper {
             await vscode.commands.executeCommand(command.command, command.args);
           }
         }
+        vimState.recordedState.commandList = [];
       }
 
       vimState.isCurrentlyPerformingRemapping = false;
