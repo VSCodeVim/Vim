@@ -303,7 +303,7 @@ class ConfigurationClass {
 
   neovimPath = "nvim";
 
-  disableAnnoyingNeovimComment = false;
+  disableAnnoyingNeovimMessage = false;
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {
