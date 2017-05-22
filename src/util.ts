@@ -57,7 +57,6 @@ export async function waitForTabChange(): Promise<void> {
     });
   });
 }
-
 export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(): Promise<Range[]> {
   await waitForCursorUpdatesToHappen();
 
