@@ -1,4 +1,4 @@
-<h1 align="center"><img src="./images/icon.png" height="128"><br>VSCodeVim</h1>
+<h1 align="center"><img src="https://raw.githubusercontent.com/VSCodeVim/Vim/master/images/icon.png" height="128"><br>VSCodeVim</h1>
 <p align="center"><strong>Vim emulation for Visual Studio Code.</strong></p>
 <p align="center"><a href="http://aka.ms/vscodevim"><img src="http://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg" alt="Version"></a> <a href="https://travis-ci.org/VSCodeVim/Vim"><img src="https://travis-ci.org/VSCodeVim/Vim.svg?branch=master" alt="Build Status"></a> <a href="https://vscodevim-slackin.azurewebsites.net"><img src="https://vscodevim-slackin.azurewebsites.net/badge.svg" alt="Slack Status"></a></p>
 <hr>
@@ -29,7 +29,7 @@ Donations help convince me to work on this project rather than my other (non-ope
 
 ## Contents
 
-* [Quick example settings](#quick-example-settings)
+* [Getting Started](#getting-started)
     * [Mac setup](#mac-setup)
     * [Windows setup](#windows-setup)
 * [Settings](#settings)
