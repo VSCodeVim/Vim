@@ -297,11 +297,13 @@ class ConfigurationClass {
    * In a recent release, gc and gb have been swapped. An error message
    * shows everytime you press one of them. This flag disables that.
    */
-  disableAnnoyingGcComment = false;
+  disableAnnoyingGcMessage = false;
 
   enableNeovim = true;
 
   neovimPath = "nvim";
+
+  disableAnnoyingNeovimComment = false;
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {
