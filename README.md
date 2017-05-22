@@ -34,6 +34,7 @@ Donations help convince me to work on this project rather than my other (non-ope
     * [Windows setup](#windows-setup)
 * [Settings](#settings)
     * [VSCodeVim settings](#vscodevim-settings)
+    * [Neovim Integration](#neovim-integration)
     * [Key remapping](#key-remapping)
     * [Vim settings](#vim-settings)
     * [Status bar colors (vim-airline)](#status-bar-color-settings)
@@ -168,6 +169,11 @@ These settings are specific to VSCodeVim.
 * In visual mode, start a search with * or # using the current selection
 * Type: Boolean (Default: `false`)
 
+### Neovim Integration
+
+We now have neovim integration for Ex-commands. If you want to take advantage of this integration, set `"vim.enableNeovim"` to `true`, and set your `"vim.neovimPath"`. If you don't have neovim installed, [install neovim here](https://github.com/neovim/neovim/wiki/Installing-Neovim). If you don't want to install neovim, all of the old functionality should still work as is (we would really suggest neovim installing though. The new Ex support is super cool, and we'd like to integrate neovim more in the future).
+
+Please leave feedback on neovim [here](https://github.com/VSCodeVim/Vim/issues/1735).
 ### Key remapping
 
 There's several different settings you can use to define custom remappings. Also related are the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
@@ -451,6 +457,18 @@ Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest noo
 ### Help! None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
 Set the [`useCtrlKeys` setting](#vimusectrlkeys) to `true`.
+
+### Moving j and k over folds opens up the folds! This extension is unusable!
+
+You can try setting `vim.foldfix` to `true`. Note, however, that it is a hack. It works fine, but there are side effects. We are unable to fix this issue properly due to VSCode API limitations. Go to [here](https://github.com/Microsoft/vscode/issues/22276) for updates on the issue.
+
+### Key repeat doesn't work! And I'm on Mac!
+
+Take a look [here](#mac-setup).
+
+### There are annoying intellisense/notifications/popups that I can't close with `<esc>`!
+
+Press `shift+<esc>` to close all of those boxes.
 
 ## Contributing
 
