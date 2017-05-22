@@ -832,4 +832,115 @@ suite("Mode Visual", () => {
       end: ["|z"]
     });
   });
+
+  suite("X will delete linewise", () => {
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vjX",
+      end: ["this is", "|the world"]
+    });
+
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vj$X",
+      end: ["this is", "|the world"]
+    });
+  });
+
+  suite("C will delete linewise", () => {
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vjC",
+      end: ["this is", "|", "the world"]
+    });
+
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vj$C",
+      end: ["this is", "|", "the world"]
+    });
+  });
+
+  suite("R will delete linewise", () => {
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vjR",
+      end: ["this is", "|", "the world"]
+    });
+
+    newTest({
+      title: "normal selection",
+      start: ["this is",
+              "the| best",
+              "test i have seen in",
+              "the world"],
+      keysPressed: "vj$R",
+      end: ["this is", "|", "the world"]
+    });
+  });
+
+  suite("Linewise Registers will be inserted properly", () => {
+    newTest({
+      title: "downward selection",
+      start: ["i ya|nked",
+              "this line",
+              "",
+              "1.line",
+              "a123456",
+              "b123456",
+              "2.line"],
+      keysPressed: "vjY4j3lvjllp",
+      end:   ["i yanked",
+              "this line",
+              "",
+              "1.line",
+              "a12",
+              "|i yanked",
+              "this line",
+              "56",
+              "2.line"],
+    });
+
+    newTest({
+      title: "upward selection",
+      start: ["i yanked",
+              "this| line",
+              "",
+              "1.line",
+              "a123456",
+              "b123456",
+              "2.line"],
+      keysPressed: "vkY4j3lvjllp",
+      end:   ["i yanked",
+              "this line",
+              "",
+              "1.line",
+              "a12",
+              "|i yanked",
+              "this line",
+              "56",
+              "2.line"],
+    });
+  });
 });
+

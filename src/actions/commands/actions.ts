@@ -1145,6 +1145,12 @@ export class PutCommand extends BaseCommand {
         if (register.registerMode === RegisterMode.CharacterWise) {
           textToAdd = text;
           whereToAddText = dest;
+        } else if (vimState.currentMode === ModeName.Visual &&
+                   register.registerMode === RegisterMode.LineWise) {
+            // in the specific case of linewise register data during visual mode,
+            // we need extra newline feeds
+            textToAdd = "\n" + text + "\n";
+            whereToAddText = dest;
         } else {
           if (adjustIndent) {
             // Adjust indent to current line
@@ -1355,6 +1361,23 @@ export class PutCommandVisual extends BaseCommand {
     if (start.isAfter(end)) {
       [start, end] = [end, start];
     }
+
+    // If the to be inserted text is linewise
+    // we have a seperate logik
+    // delete the selection first
+    // than insert
+    let register = await Register.get(vimState);
+    if (register.registerMode === RegisterMode.LineWise) {
+      let result = await new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end.getLeft(), false);
+      // to ensure, that the put command nows this is
+      // an linewise register insertion in visual mode
+      let oldMode = result.currentMode;
+      result.currentMode = ModeName.Visual;
+      result =  await new PutCommand().exec(start, result, true);
+      result.currentMode = oldMode;
+      return result;
+    }
+
     // The reason we need to handle Delete and Yank separately is because of
     // linewise mode. If we're in visualLine mode, then we want to copy
     // linewise but not necessarily delete linewise.
@@ -2901,7 +2924,40 @@ class ActionDeleteLineVisualMode extends BaseCommand {
   keys = ["X"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return await new operator.DeleteOperator(this.multicursorIndex).run(vimState, position.getLineBegin(), position.getLineEnd());
+    if (vimState.currentMode === ModeName.Visual) {
+      return await new operator.DeleteOperator(this.multicursorIndex)
+                               .run(vimState,
+                                    vimState.cursorStartPosition.getLineBegin(),
+                                    vimState.cursorPosition.getLineEnd());
+    } else {
+      return await new operator.DeleteOperator(this.multicursorIndex).run(vimState, position.getLineBegin(), position.getLineEnd());
+    }
+  }
+}
+
+@RegisterAction
+class ActionChangeLineVisualMode extends BaseCommand {
+  modes = [ModeName.Visual];
+  keys = ["C"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      return await new operator.DeleteOperator(this.multicursorIndex)
+                               .run(vimState,
+                                    vimState.cursorStartPosition.getLineBegin(),
+                                    vimState.cursorPosition.getLineEndIncludingEOL());
+  }
+}
+
+@RegisterAction
+class ActionRemoveLineVisualMode extends BaseCommand {
+  modes = [ModeName.Visual];
+  keys = ["R"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+      return await new operator.DeleteOperator(this.multicursorIndex)
+                               .run(vimState,
+                                    vimState.cursorStartPosition.getLineBegin(),
+                                    vimState.cursorPosition.getLineEndIncludingEOL());
   }
 }
 
