@@ -1597,6 +1597,21 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can handle 'cc' on empty line",
+      start: ['foo', '|', 'bar'],
+      keysPressed: 'cc',
+      end: ['foo', '|', 'bar'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "cc copies linewise",
+      start: ['foo', '|fun', 'bar'],
+      keysPressed: 'cc<Esc>jp',
+      end: ['foo', '', 'bar', '|fun']
+    });
+
+    newTest({
       title: "Indent current line with correct Vim Mode",
       start: ["|one", "two"],
       keysPressed: ">>",

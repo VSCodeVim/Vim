@@ -41,6 +41,13 @@ suite("surround plugin", () => {
     });
 
     newTest({
+      title: "yss) surrounds entire line respecting whitespace",
+      start: ["foo", "    foob|ar  "],
+      keysPressed: 'yss)',
+      end: ["foo", "    (|foobar)  "]
+    });
+
+    newTest({
       title: "change surround",
       start: ["first 'li|ne' test"],
       keysPressed: "cs')",

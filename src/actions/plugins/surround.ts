@@ -8,6 +8,7 @@ import { Configuration } from './../../configuration/configuration';
 import { RegisterAction } from './../base';
 import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
 import { BaseCommand } from './../commands/actions';
+import { BaseMovement } from './../motion';
 import {
   IMovement,
   MoveQuoteMatch, MoveASingleQuotes, MoveADoubleQuotes, MoveABacktick, MoveInsideCharacter, MoveACurlyBrace, MoveInsideTag,
@@ -59,6 +60,33 @@ class CommandSurroundAddTarget extends BaseCommand {
       !!(vimState.surround && vimState.surround.active &&
         !vimState.surround.target &&
         !vimState.surround.range);
+  }
+}
+
+// Aaaaagghhhh. I tried so hard to make surround an operator to make use of our
+// sick new operator repeat structure, but there's just no clean way to do it.
+// In the future, if somebody wants to refactor Surround, the big problem for
+// why it's so weird is that typing `ys` loads up the Yank operator first,
+// which prevents us from making a surround operator that's `ys` or something.
+// You'd need to refactor our keybinding handling to "give up" keystrokes if it
+// can't find a match.
+
+@RegisterAction
+class CommandSurroundModeRepeat extends BaseMovement {
+  modes = [ModeName.Normal];
+  keys = ["s"];
+  isCompleteAction = false;
+  runsOnceForEveryCursor() { return false; }
+
+  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    return {
+      start: position.getLineBeginRespectingIndent(),
+      stop: position.getLineEnd().getLastWordEnd().getRight()
+    };
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && vimState.surround !== undefined;
   }
 }
 

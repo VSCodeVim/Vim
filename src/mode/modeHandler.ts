@@ -330,6 +330,26 @@ export class RecordedState {
 
     return result;
   }
+  /**
+   * get the current command without the prefixed count.
+   * For instance: if the current commandList is ['2', 'h'], returns only ['h'].
+   */
+   public getCurrentCommandWithoutCountPrefix(): string[] {
+      const commandList = this.commandList;
+      const result = [];
+      let previousWasCount = true;
+
+      for (const commandKey of commandList) {
+        if (previousWasCount && commandKey.match(/[0-9]/)) {
+          continue;
+        } else {
+          previousWasCount = false;
+          result.push(commandKey);
+        }
+      }
+
+      return result;
+    }
 
   /**
    * Keeps track of keys pressed for the next action. Comes in handy when parsing
@@ -372,11 +392,12 @@ export class RecordedState {
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
   public get operator(): BaseOperator {
-    const list = _.filter(this.actionsRun, a => a instanceof BaseOperator);
-
-    if (list.length > 1) { throw new Error("Too many operators!"); }
-
+    let list = _.filter(this.actionsRun, a => a instanceof BaseOperator).reverse();
     return list[0] as any;
+  }
+
+  public get operators(): BaseOperator[] {
+    return _.filter(this.actionsRun, a => a instanceof BaseOperator).reverse() as any;
   }
 
   /**
@@ -423,9 +444,9 @@ export class RecordedState {
     return this.operator &&
       !this.hasRunOperator &&
       mode !== ModeName.SearchInProgressMode &&
-      (this.hasRunAMovement || (
-      mode === ModeName.Visual ||
-      mode === ModeName.VisualLine ));
+      (this.hasRunAMovement ||
+      (mode === ModeName.Visual || mode === ModeName.VisualLine ) ||
+      this.operators.length > 1 && this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor);
   }
 
   public get isInInitialState(): boolean {
@@ -679,7 +700,6 @@ export class ModeHandler implements vscode.Disposable {
 
       this._vimState.cursorPosition    = newPosition;
       this._vimState.cursorStartPosition = newPosition;
-
       this._vimState.desiredColumn     = newPosition.character;
 
       // start visual mode?
@@ -773,7 +793,7 @@ export class ModeHandler implements vscode.Disposable {
 
     try {
       // Take the count prefix out to perform the correct remapping.
-      const keys = this.getCurrentCommandWithoutCountPrefix();
+      const keys = this._vimState.recordedState.getCurrentCommandWithoutCountPrefix();
       const withinTimeout = now - this._vimState.lastKeyPressedTimestamp < Configuration.timeout;
 
       let handled = false;
@@ -817,26 +837,6 @@ export class ModeHandler implements vscode.Disposable {
     return true;
   }
 
-/**
- * get the current command without the prefixed count.
- * For instance: if the current commandList is ['2', 'h'], returns only ['h'].
- */
-  private getCurrentCommandWithoutCountPrefix(): string[] {
-    const commandList = this.vimState.recordedState.commandList;
-    const result = [];
-    let previousWasCount = true;
-
-    for (const commandKey of commandList) {
-      if (previousWasCount && commandKey.match(/[0-9]/)) {
-        continue;
-      } else {
-        previousWasCount = false;
-        result.push(commandKey);
-      }
-    }
-
-    return result;
-  }
 
   async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
 
@@ -1241,7 +1241,13 @@ export class ModeHandler implements vscode.Disposable {
 
       resultVimState.currentMode = startingModeName;
 
-      resultVimState = await recordedState.operator.run(resultVimState, start, stop);
+      // We run the repeat version of an operator if the last 2 operators are the same.
+      if (recordedState.operators.length > 1
+        && recordedState.operators.reverse()[0].constructor === recordedState.operators.reverse()[1].constructor) {
+        resultVimState = await recordedState.operator.runRepeat(resultVimState, start, recordedState.count);
+      } else {
+        resultVimState = await recordedState.operator.run(resultVimState, start, stop);
+      }
 
       for (const transformation of resultVimState.recordedState.transformations) {
         if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
