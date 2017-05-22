@@ -489,7 +489,7 @@
         "vim.enableNeovim": {
           "type": "boolean",
           "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect.",
-          "default": true
+          "default": false
         },
         "vim.neovimPath": {
           "type": "string",
