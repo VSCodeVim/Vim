@@ -81,6 +81,8 @@ export class BaseAction {
 
   public mustBeFirstKey = false;
 
+  public isOperator = false;
+
   /**
    * The keys pressed at the time that this action was triggered.
    */
@@ -92,7 +94,7 @@ export class BaseAction {
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys, keysPressed)) { return false; }
-    if (vimState.recordedState.actionsRun.length > 0 &&
+    if (vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length > 0 &&
       this.mustBeFirstKey) { return false; }
 
     return true;
@@ -104,11 +106,13 @@ export class BaseAction {
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
     if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) { return false; }
-    if (vimState.recordedState.actionsRun.length > 0 &&
+    if (vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length > 0 &&
       this.mustBeFirstKey) { return false; }
+
 
     return true;
   }
+
 
   public toString(): string {
     return this.keys.join("");
@@ -139,12 +143,16 @@ export class Actions {
    *
    * If no action could ever match, returns false.
    */
-  public static getRelevantAction(keysPressed: string[], vimState: VimState): BaseAction | KeypressState {
+  public static getRelevantAction(keysPressed: string[], vimState: VimState): BaseAction |KeypressState {
     let couldPotentiallyHaveMatch = false;
 
     for (const thing of Actions.allActions) {
       const { type, action } = thing!;
 
+      // It's an action that can't be called directly.
+      if (action.keys === undefined) {
+        continue;
+      }
       if (action.doesActionApply(vimState, keysPressed)) {
         const result = new type();
 
