@@ -16,6 +16,7 @@ env:
     secure: "tzpL/lQ2L2mVDS0sPY0LnJ3idspKmiOAuKFFfBZbBk4vA6NtJYveXILiskNDWK4p3JIWux/JBxgU3auXU4t7BZy7bMfUpTm0PpsMQfvDV2/rsf3QUQgYvROZkVpeH6b73hxxyTy0wfDHrb0SIUjB9IChUiSDIBjwteVAb/HuIWNKRQ6mbmkZKiQ3xHisFOG9xTkrEO31BfA+nKxUOTtXiZtoHTOWK9+H67QKd19BTRn/vJrwhTUsYqyOBAoFQjDjpAbhRNgs4YxHJz2jn1rmeE8kotf3LsfBrws07Mu9O9CnEcJKsqgJW+ezbHCO/HjLfpul/v0HtF/UQM00v5J2mDFz/ii8OWQ41TjYgkAHhtXIkMDQiM6K1x+gsaq0wm4QDX+Akg3r4sFqzhKsIuSLr1QTAMh9nn9G2asQvVJNNgH1QFvuLMF3bX1xp4l79/xoCEAWqlxx1mScYcmGFtYtQd107U5qPcHrR66vTMV5VqiZ0XapJympE+D5xIiSb4CTFGpl9+PSBk69MjynMEbGsLsudYWp6HZA5CyosxoStXxR1fD+ypqsSyzynSpThZ6IpFJ7Pk95GR3Z78CPhkNZvBvJ62xW/6/hAykWcelRHZy0N5XT2+HP+xcx77Fpqj8ZEAI6ECHNnnZ1KQROodu5LI06oZ2hiM1P1gdBx6xrljg="
 
 before_install:
+- eval "$(curl -Ss https://raw.githubusercontent.com/neovim/bot-ci/master/scripts/travis-setup.sh) nightly-x64"
 - if [ $TRAVIS_OS_NAME == "linux" ]; then
     export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
     sh -e /etc/init.d/xvfb start;

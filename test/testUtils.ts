@@ -84,6 +84,7 @@ export async function cleanUpWorkspace(): Promise<any> {
 }
 
 export function setTextEditorOptions(tabSize: number, insertSpaces: boolean): void {
+  Configuration.enableNeovim = true;
   Configuration.tabstop = tabSize;
   Configuration.expandtab = insertSpaces;
   let options = vscode.window.activeTextEditor!.options;

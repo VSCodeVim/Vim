@@ -14,6 +14,7 @@ export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
 
 
 export class DeleteRangeCommand extends node.CommandBase {
+  neovimCapable = true;
   protected _arguments : IDeleteRangeCommandArguments;
 
   constructor(args : IDeleteRangeCommandArguments) {

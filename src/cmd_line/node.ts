@@ -122,6 +122,7 @@ export interface ICommandArgs {
 
 export abstract class CommandBase {
 
+  public neovimCapable = false;
   protected get activeTextEditor() {
     return vscode.window.activeTextEditor;
   }

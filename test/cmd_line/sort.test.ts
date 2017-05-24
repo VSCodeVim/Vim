@@ -3,13 +3,14 @@
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from './../testUtils';
 import { runCmdLine } from '../../src/cmd_line/main';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Basic sort", () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);
@@ -60,14 +61,4 @@ suite("Basic sort", () => {
     ]);
   });
 
-  test("#1592. Sort should work in Visual/VisualLine Mode without specifying ranges in ex commands", async () => {
-    await modeHandler.handleMultipleKeyEvents(['i', 'b', '<Esc>', 'o', 'a', '<Esc>', 'o', 'a', '<Esc>', 'g', 'g', 'V', 'j']);
-    await runCmdLine("sort", modeHandler);
-
-    assertEqualLines([
-      "a",
-      "b",
-      "a"
-    ]);
-  });
 });

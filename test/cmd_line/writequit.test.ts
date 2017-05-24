@@ -6,6 +6,7 @@ import { runCmdLine } from '../../src/cmd_line/main';
 import * as vscode from "vscode";
 import {join} from 'path';
 import * as assert from 'assert';
+import { getAndUpdateModeHandler } from "../../extension";
 
 async function WaitForVsCodeClose() : Promise<void> {
   // cleanUpWorkspace - testUtils.ts
@@ -45,7 +46,7 @@ suite("Basic write-quit", () => {
 
   suiteSetup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   suiteTeardown(cleanUpWorkspace);

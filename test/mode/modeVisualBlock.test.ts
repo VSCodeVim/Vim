@@ -6,6 +6,7 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 
 import * as vscode from 'vscode';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Mode Visual Block", () => {
   let modeHandler: ModeHandler;
@@ -17,7 +18,7 @@ suite("Mode Visual Block", () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);

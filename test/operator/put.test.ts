@@ -3,6 +3,7 @@
 import { ModeHandler } from "../../src/mode/modeHandler";
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("put operator", () => {
 
@@ -15,7 +16,7 @@ suite("put operator", () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);

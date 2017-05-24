@@ -8,13 +8,14 @@ import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
 import { Globals } from '../src/globals';
+import { getAndUpdateModeHandler } from "../extension";
 
 export function getTestingFunctions() {
   const newTest = (testObj: ITestObject): void => {
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
-    test(testObj.title, async () => testIt.bind(null, new ModeHandler())(testObj)
+    test(testObj.title, async () => testIt.bind(null, await getAndUpdateModeHandler())(testObj)
       .catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;
@@ -27,7 +28,7 @@ export function getTestingFunctions() {
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
-    test.only(testObj.title, async () => testIt.bind(null, new ModeHandler())(testObj)
+    test.only(testObj.title, async () => testIt.bind(null, await getAndUpdateModeHandler())(testObj)
       .catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;

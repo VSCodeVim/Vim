@@ -16,6 +16,7 @@ export interface IReadCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/insert.html#:read!
 //
 export class ReadCommand extends node.CommandBase {
+  neovimCapable = true;
   protected _arguments : IReadCommandArguments;
 
   constructor(args : IReadCommandArguments) {

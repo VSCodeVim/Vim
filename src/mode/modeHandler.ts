@@ -42,6 +42,7 @@ import { PairMatcher } from './../common/matching/matcher';
 import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';
+import { Nvim } from "promised-neovim-client";
 
 export class ViewChange {
   public command: string;
@@ -277,6 +278,8 @@ export class VimState {
    * by us or by a mouse action.
    */
   public whatILastSetTheSelectionTo: vscode.Selection;
+
+  public nvim: Nvim;
 }
 
 /**
@@ -1315,7 +1318,6 @@ export class ModeHandler implements vscode.Disposable {
               case "insertText":
                 edit.insert(command.position, command.text);
                 break;
-
               case "replaceText":
                 edit.replace(new vscode.Selection(command.end, command.start), command.text);
                 break;

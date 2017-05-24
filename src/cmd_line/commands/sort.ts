@@ -13,7 +13,7 @@ export interface ISortCommandArguments extends node.ICommandArgs {
 
 
 export class SortCommand extends node.CommandBase {
-
+  neovimCapable = true;
   protected _arguments : ISortCommandArguments;
 
   constructor(args: ISortCommandArguments) {

@@ -3,13 +3,14 @@
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from './../testUtils';
 import { runCmdLine } from '../../src/cmd_line/main';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Basic substitute", () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);

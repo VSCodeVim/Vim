@@ -20,6 +20,9 @@ import { ICodeKeybinding } from './src/mode/remapper';
 import { runCmdLine } from './src/cmd_line/main';
 
 import './src/actions/vim.all';
+import { attach } from "promised-neovim-client";
+import { spawn } from "child_process";
+import { Neovim } from "./src/neovim/nvimUtil";
 
 interface VSCodeKeybinding {
   key: string;
@@ -80,8 +83,19 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   let curHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
   if (!curHandler) {
-    const newModeHandler = new ModeHandler();
-
+    if (!Configuration.disableAnnoyingNeovimMessage) {
+      vscode.window.showInformationMessage("We have now added neovim integration for Ex-commands.\
+      Enable it with vim.enableNeovim in settings", "Never show again").then((result) => {
+          if (result === "Never show again") {
+            vscode.workspace.getConfiguration("vim").update("disableAnnoyingNeovimMessage", true, true);
+            Configuration.disableAnnoyingNeovimMessage = true;
+          }
+        });
+    }
+    const newModeHandler = await new ModeHandler();
+    if (Configuration.enableNeovim) {
+      await Neovim.initNvim(newModeHandler.vimState);
+    }
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
 
