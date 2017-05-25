@@ -3148,10 +3148,18 @@ class ActionOverrideCmdD extends BaseCommand {
      // determine where to add a word, we need to do a hack and manually set the
      // selections to the word boundaries before we make the api call.
      vscode.window.activeTextEditor!.selections =
-       vscode.window.activeTextEditor!.selections.map(x => {
+       vscode.window.activeTextEditor!.selections.map((x, idx) => {
          const curPos = Position.FromVSCodePosition(x.active);
-         return new vscode.Selection(curPos.getWordLeft(true),
-           curPos.getLeft().getCurrentWordEnd(true).getRight());
+         if (idx === 0) {
+           return new vscode.Selection(curPos.getWordLeft(false),
+             curPos.getLeft().getCurrentWordEnd(true).getRight());
+         } else {
+           const matchWordPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selections[0].active);
+           const matchWordLength = matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
+                                    matchWordPos.getWordLeft(false).character;
+           const wordBegin = curPos.getLeftByCount(matchWordLength);
+           return new vscode.Selection(wordBegin, curPos);
+         }
        });
      await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
      vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
