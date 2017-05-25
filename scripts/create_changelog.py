@@ -23,7 +23,6 @@ while True:
     f.write("# [" + tag + " " + title + "](" + GITHUB_URL + link + ")" + "  (" + date + ")\n")
     # objects are all the paragraphs, headers, tags, etc.
     objects = body.select("p,h2,li")
-
     objects = sorted(objects, key=lambda a: str(body).index(str(a)))
     for i in objects:
       obj_text = i.decode_contents()
@@ -36,7 +35,9 @@ while True:
         f.write('* ' + obj_text + '\n')
       elif re.match('<h2>', str(i)):
         f.write('## ' + obj_text + '\n')
-  next_page = bs.select('#js-repo-pjax-container > div.container.new-discussion-timeline.experiment-repo-nav > div.repository-content > div.paginate-container > div > a')[-1]
+  next_page = bs.select(
+      '#js-repo-pjax-container > div.container.new-discussion-timeline.experiment-repo-nav > div.repository-content > div.paginate-container > div > a'
+  )[-1]
   if (next_page.text == "Previous"):
     break
   print(next_page['href'])
