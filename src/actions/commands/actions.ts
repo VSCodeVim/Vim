@@ -3154,6 +3154,8 @@ class ActionOverrideCmdD extends BaseCommand {
            return new vscode.Selection(curPos.getWordLeft(false),
              curPos.getLeft().getCurrentWordEnd(true).getRight());
          } else {
+           // Since we're adding the selections ourselves, we need to make sure
+           // that our selection is actually over what our original word is
            const matchWordPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selections[0].active);
            const matchWordLength = matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
                                     matchWordPos.getWordLeft(false).character;
