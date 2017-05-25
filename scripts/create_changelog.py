@@ -3,7 +3,7 @@ import bs4
 import re
 
 GITHUB_URL = "https://github.com"
-f = open("CHANGELOG.md", "w")
+f = open("../CHANGELOG.md", "w")
 
 r = requests.get('https://github.com/VSCodeVim/Vim/releases')
 while True:
