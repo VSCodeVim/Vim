@@ -75,6 +75,8 @@ export abstract class BaseMovement extends BaseAction {
    * Run the movement a single time.
    *
    * Generally returns a new Position. If necessary, it can return an IMovement instead.
+   * Note: If returning an IMovement, make sure that repeated actions on a
+   * visual selection work. For example, V}}
    */
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     throw new Error("Not implemented!");
@@ -1120,14 +1122,11 @@ class MoveNextSentenceBegin extends BaseMovement {
 class MoveParagraphEnd extends BaseMovement {
   keys = ["}"];
 
-  public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+  public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const isLineWise = position.isLineBeginning() && vimState.currentMode === ModeName.Normal && vimState.recordedState.operator;
     let paragraphEnd = position.getCurrentParagraphEnd();
-    return {
-      start: position,
-      stop: (isLineWise ? paragraphEnd.getLeftThroughLineBreaks(true) : paragraphEnd),
-      registerMode: isLineWise ? RegisterMode.LineWise : RegisterMode.FigureItOutFromCurrentMode
-    };
+    vimState.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.FigureItOutFromCurrentMode;
+    return (isLineWise ? paragraphEnd.getLeftThroughLineBreaks(true) : paragraphEnd);
   }
 }
 
