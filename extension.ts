@@ -94,7 +94,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     }
     const newModeHandler = await new ModeHandler();
     if (Configuration.enableNeovim) {
-      await Neovim.initNvim(newModeHandler.vimState);
+        await Neovim.initNvim(newModeHandler.vimState);
     }
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
