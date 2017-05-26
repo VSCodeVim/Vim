@@ -1450,9 +1450,6 @@ export class ModeHandler implements vscode.Disposable {
           this._vimState.editor.selection = new vscode.Selection(newPos, newPos);
           break;
         case "tab":
-          // Temporary fix for #1763.
-          // TODO: Investigate into how to handle tab correctly
-          await vscode.commands.executeCommand('editor.emmet.action.expandAbbreviation');
           await vscode.commands.executeCommand('tab');
           if (command.diff) {
               if (command.cursorIndex === undefined) {
