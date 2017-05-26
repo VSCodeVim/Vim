@@ -117,12 +117,12 @@
       {
         "key": "Delete",
         "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.active && vim.mode == 'Normal' && !inDebugRepl"
+        "when": "editorFocus && vim.active && !suggestWidgetVisible && !inDebugRepl"
       },
       {
         "key": "ctrl+r",

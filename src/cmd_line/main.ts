@@ -41,7 +41,7 @@ export async function runCmdLine(command : string, modeHandler : ModeHandler) : 
     if (cmd.isEmpty) {
       return;
     }
-    if (cmd.command.neovimCapable && Configuration.enableNeovim) {
+    if (cmd && cmd.command.neovimCapable && Configuration.enableNeovim) {
       await Neovim.command(modeHandler.vimState, command).then(() => {
         console.log("Substituted for neovim command");
       }).catch((err) => console.log(err));
