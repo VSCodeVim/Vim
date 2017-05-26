@@ -122,7 +122,7 @@
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.active && !inDebugRepl"
+        "when": "editorFocus && vim.active && vim.mode == 'Normal' && !inDebugRepl"
       },
       {
         "key": "ctrl+r",
@@ -488,12 +488,12 @@
         },
         "vim.enableNeovim": {
           "type": "boolean",
-          "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect.",
+          "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect. NOTE: Neovim must be installed and neovimPath must be set the executable in order for this setting to work. Otherwise, vscodevim will crash.",
           "default": false
         },
         "vim.neovimPath": {
           "type": "string",
-          "description": "Path to run neovim",
+          "description": "Path to run neovim executable. For example, /usr/bin/nvim, or ",
           "default": "nvim"
         },
         "vim.disableAnnoyingNeovimMessage": {
