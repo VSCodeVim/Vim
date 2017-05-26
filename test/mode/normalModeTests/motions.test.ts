@@ -464,12 +464,13 @@ suite("Motions in Normal Mode", () => {
     end: ['!one', '!two', '|!three']
   });
 
-  newTest({
-    title: "Can handle dot with I with tab",
-    start: ['on|e', 'two', 'three'],
-    keysPressed: 'I<tab><Esc>j.j.',
-    end: ['  one', '  two', ' | three']
-  });
+  // https://github.com/VSCodeVim/Vim/pull/1753
+  // newTest({
+  //   title: "Can handle dot with I with tab",
+  //   start: ['on|e', 'two', 'three'],
+  //   keysPressed: 'I<tab><Esc>j.j.',
+  //   end: ['  one', '  two', ' | three']
+  // });
 
   newTest({
     title: "Can handle 0",
