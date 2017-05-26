@@ -27,7 +27,6 @@ export class DocumentContentChangeAction extends BaseAction {
   }[] = [];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-      
     if (this.contentChanges.length === 0) {
       return vimState;
     }
