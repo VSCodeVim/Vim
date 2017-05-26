@@ -617,14 +617,15 @@ class ActionVisualReflowParagraph extends BaseOperator {
   keys = ["g", "q"];
 
   public static CommentTypes: CommentType[] = [
+    { singleLine: false, start: "/**", inner: "*", final: "*/" },
+    { singleLine: false, start: "/*", inner: "*", final: "*/" },
+    { singleLine: false, start: "{-", inner: "-", final: "-}" },
     { singleLine: true, start: "///"},
     { singleLine: true, start: "//" },
     { singleLine: true, start: "--" },
     { singleLine: true, start: "#" },
     { singleLine: true, start: ";" },
-    { singleLine: false, start: "/**", inner: "*", final: "*/" },
-    { singleLine: false, start: "/*", inner: "*", final: "*/" },
-    { singleLine: false, start: "{-", inner: "-", final: "-}" },
+    { singleLine: true, start: "*" },
 
     // Needs to come last, since everything starts with the emtpy string!
     { singleLine: true, start: "" },
