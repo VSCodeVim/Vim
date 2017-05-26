@@ -182,20 +182,19 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
   }
 }
 
-// This breaks tab completion: See https://github.com/VSCodeVim/Vim/issues/1752
-// @RegisterAction
-// export class CommandInsertTabInInsertMode extends BaseCommand {
-//   modes = [ModeName.Insert];
-//   keys = ["<tab>"];
-//   runsOnceForEveryCursor() { return false; }
+@RegisterAction
+export class CommandInsertTabInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ["<tab>"];
+  runsOnceForEveryCursor() { return false; }
 
-//   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-//     vimState.recordedState.transformations.push({
-//       type: "tab"
-//     });
-//     return vimState;
-//   }
-// }
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type: "tab"
+    });
+    return vimState;
+  }
+}
 
 @RegisterAction
 export class CommandInsertInInsertMode extends BaseCommand {

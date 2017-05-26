@@ -122,7 +122,7 @@
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.active && vim.mode == 'Normal' && !inDebugRepl"
+        "when": "editorFocus && vim.active && !suggestWidgetVisible && !inDebugRepl"
       },
       {
         "key": "ctrl+r",
