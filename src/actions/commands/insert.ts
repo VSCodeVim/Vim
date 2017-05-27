@@ -219,7 +219,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
           range: new Range(selection.start as Position, selection.end as Position),
         });
       } else {
-        if (line.length > 0 && line.match(/^\s+$/) && Configuration.expandtab) {
+        if (line.length > 0 && line.match(/^ +$/) && Configuration.expandtab) {
           // If the line is empty except whitespace, backspace should return to
           // the next lowest level of indentation.
 
