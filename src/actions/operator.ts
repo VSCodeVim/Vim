@@ -9,6 +9,7 @@ import { Configuration } from './../configuration/configuration';
 import {
   BaseAction, RegisterAction, compareKeypressSequence
 } from './base';
+import { CommandNumber } from "./commands/actions";
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -48,8 +49,9 @@ export class BaseOperator extends BaseAction {
   }
 
   public doesRepeatedOperatorApply(vimState: VimState, keysPressed: string[]) {
-      const prevAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1];
-      return this.isOperator && keysPressed.length === 1 && prevAction
+    const nonCountActions = vimState.recordedState.actionsRun.filter(x => !(x instanceof CommandNumber));
+    const prevAction = nonCountActions[nonCountActions.length - 1];
+    return this.isOperator && keysPressed.length === 1 && prevAction
       && this.modes.indexOf(vimState.currentMode) !== -1
       // The previous action is the same as the one we're testing
       && prevAction.constructor === this.constructor

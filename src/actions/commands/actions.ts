@@ -213,7 +213,7 @@ export abstract class BaseCommand extends BaseAction {
 // begin actions
 
 @RegisterAction
-class CommandNumber extends BaseCommand {
+export class CommandNumber extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<number>"];
   isCompleteAction = false;
