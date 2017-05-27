@@ -26,6 +26,9 @@ export class Neovim {
   static async syncVSToVim(vimState: VimState) {
     const nvim = vimState.nvim;
     const buf = await nvim.getCurrentBuf();
+    if (Configuration.expandtab) {
+      await vscode.commands.executeCommand("editor.action.indentationToTabs");
+    }
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
     const [rangeStart, rangeEnd] = [Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
     Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition)];
