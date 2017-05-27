@@ -9,6 +9,7 @@ import { Configuration } from './../configuration/configuration';
 import {
   BaseAction, RegisterAction, compareKeypressSequence
 } from './base';
+import { CommandNumber } from "./commands/actions";
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -48,8 +49,9 @@ export class BaseOperator extends BaseAction {
   }
 
   public doesRepeatedOperatorApply(vimState: VimState, keysPressed: string[]) {
-      const prevAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 1];
-      return this.isOperator && keysPressed.length === 1 && prevAction
+    const nonCountActions = vimState.recordedState.actionsRun.filter(x => !(x instanceof CommandNumber));
+    const prevAction = nonCountActions[nonCountActions.length - 1];
+    return this.isOperator && keysPressed.length === 1 && prevAction
       && this.modes.indexOf(vimState.currentMode) !== -1
       // The previous action is the same as the one we're testing
       && prevAction.constructor === this.constructor
@@ -741,14 +743,18 @@ class ActionVisualReflowParagraph extends BaseOperator {
         lines = [``, ``];
       }
 
+      // This tracks if we're pushing the first line of a chunk. If so, then we
+      // don't want to add an extra space. In addition, when there's a blank
+      // line, this needs to be reset.
+      let curIndex = 0;
       for (const line of content.trim().split("\n")) {
-
         // Preserve newlines.
 
         if (line.trim() === "") {
           for (let i = 0; i < 2; i++) {
             lines.push(``);
           }
+          curIndex = 0;
 
           continue;
         }
@@ -760,15 +766,16 @@ class ActionVisualReflowParagraph extends BaseOperator {
           if (word === "") { continue; }
 
           if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            if (i) {
-              lines[lines.length - 1] += ` ${ word }`;
+            if (curIndex === 0 && i === 0) {
+              lines[lines.length - 1] += `${word}`;
             } else {
-              lines[lines.length - 1] += `${ word }`;
+              lines[lines.length - 1] += ` ${ word }`;
             }
           } else {
               lines.push(`${ word }`);
           }
         }
+        curIndex++;
       }
 
       if (!commentType.singleLine) {

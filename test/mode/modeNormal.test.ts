@@ -129,6 +129,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle d2d",
+      start: ['one', 'two', '|three', 'four', 'five'],
+      keysPressed: 'd2d',
+      end: ["one", "two", "|five"],
+    });
+
+    newTest({
       title: "Can handle dd empty line",
       start: ['one', '|', 'two'],
       keysPressed: 'dd',
