@@ -23,7 +23,7 @@ export class TextEditor {
     }
 
     if (!letVSCodeHandleKeystrokes) {
-      const selections = vscode.window.activeTextEditor!.selections.slice(0);
+      // const selections = vscode.window.activeTextEditor!.selections.slice(0);
 
       await vscode.window.activeTextEditor!.edit(editBuilder => {
         if (!at) {
@@ -34,7 +34,7 @@ export class TextEditor {
       });
 
       // maintain all selections in multi-cursor mode.
-      vscode.window.activeTextEditor!.selections = selections;
+      // vscode.window.activeTextEditor!.selections = selections;
     } else {
       await vscode.commands.executeCommand('default:type', { text });
     }
