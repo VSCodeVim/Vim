@@ -743,14 +743,18 @@ class ActionVisualReflowParagraph extends BaseOperator {
         lines = [``, ``];
       }
 
+      // This tracks if we're pushing the first line of a chunk. If so, then we
+      // don't want to add an extra space. In addition, when there's a blank
+      // line, this needs to be reset.
+      let curIndex = 0;
       for (const line of content.trim().split("\n")) {
-
         // Preserve newlines.
 
         if (line.trim() === "") {
           for (let i = 0; i < 2; i++) {
             lines.push(``);
           }
+          curIndex = 0;
 
           continue;
         }
@@ -762,15 +766,16 @@ class ActionVisualReflowParagraph extends BaseOperator {
           if (word === "") { continue; }
 
           if (lines[lines.length - 1].length + word.length + 1 < maximumLineLength) {
-            if (i) {
-              lines[lines.length - 1] += ` ${ word }`;
+            if (curIndex === 0 && i === 0) {
+              lines[lines.length - 1] += `${word}`;
             } else {
-              lines[lines.length - 1] += `${ word }`;
+              lines[lines.length - 1] += ` ${ word }`;
             }
           } else {
               lines.push(`${ word }`);
           }
         }
+        curIndex++;
       }
 
       if (!commentType.singleLine) {
