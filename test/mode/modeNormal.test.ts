@@ -1103,6 +1103,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle pasting in visual mode over selection",
+      start: ['|foo', 'bar', 'fun'],
+      keysPressed: 'Yjvll"ayjV"app',
+      end: ['foo', 'bar', 'bar', '|fun']
+    });
+
+    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',
