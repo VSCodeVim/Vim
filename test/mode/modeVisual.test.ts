@@ -918,7 +918,7 @@ suite("Mode Visual", () => {
               "a12",
               "|i yanked",
               "this line",
-              "56",
+              "6",
               "2.line"],
     });
 
@@ -939,7 +939,7 @@ suite("Mode Visual", () => {
               "a12",
               "|i yanked",
               "this line",
-              "56",
+              "6",
               "2.line"],
     });
   });
