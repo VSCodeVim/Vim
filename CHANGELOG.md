@@ -1,3 +1,20 @@
+# [v0.8.4 Deleted Durian](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.4)  (May 29, 2017)
+* Fixed commands like <code>d2d</code> not working
+* Fixed gq bug with deleting spaces
+* Fixed bug with backspace deleting more than one tab stop
+* Includes attempt at fixing Chinese input bug
+* Fixes named registers being overwritten if you paste over something in visual mode.
+# [v0.8.3 Earnest Emmet](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.3)  (May 26, 2017)
+* Fixes Emmet integration being broken
+* Fixes <code>}</code> not handling visual ranges correctly
+* Fixes line move not working correctly without neovim support.
+# [v0.8.2 Keylime Kombucha](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.2)  (May 26, 2017)
+* Added several patches for functionality broken by new release.
+* Stopped VSCodeVim from completely crashing when it can't connect to Neovim.
+* Added gq functionality for JSDoc comments <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="231444998" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1750" href="https://github.com/VSCodeVim/Vim/issues/1750">#1750</a>
+# [v0.8.1 Tabbed Turtle](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.1)  (May 26, 2017)
+
+Fixed autocomplete issues with previous release.
 # [v0.8.0 Neovim Nutty](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.0)  (May 25, 2017)
 
 Lots of work has gone into this release, and lots of cool features to talk about this time.
@@ -110,7 +127,7 @@ Huge props especially to <a class="user-mention" href="https://github.com/chille
 * Fix case sensitivity in remapping arrow keys <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="221709335" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1507" href="https://github.com/VSCodeVim/Vim/issues/1507">#1507</a>
 * Added <code>z.</code> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="219791649" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1475" href="https://github.com/VSCodeVim/Vim/issues/1475">#1475</a>
 * Fixes double clicking word with mouse not displaying correct selection
-# [0.6.15 0.6.15 Multi Madness](https://github.com/VSCodeVim/Vim/releases/tag/0.6.15)  (Apr 8, 2017)
+# [0.6.15 0.6.15 Multi Madness](https://github.com/VSCodeVim/Vim/releases/tag/0.6.15)  (May 24, 2017)
 
 Fix for gc and Cmd-D multicursor not working correctly
 # [0.6.14 Bingo Blocky](https://github.com/VSCodeVim/Vim/releases/tag/0.6.14)  (Apr 8, 2017)
@@ -218,10 +235,10 @@ Shout outs to:
 * <a class="user-mention" href="https://github.com/rhys-vdw">@rhys-vdw</a>
 
 <g-emoji alias="heart" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764.png" ios-version="6.0">❤️</g-emoji>
-# [v0.5.1 Fixy French Toast](https://github.com/VSCodeVim/Vim/releases/tag/v0.5.1)  (Jan 23, 2017)
+# [v0.5.1 Fixy French Toast](https://github.com/VSCodeVim/Vim/releases/tag/v0.5.1)  (Jan 24, 2017)
 
 Fix a bug introduced by surround.vim: <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="202582997" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1239" href="https://github.com/VSCodeVim/Vim/issues/1239">#1239</a>
-# [v0.5.0 Surroundy Squash](https://github.com/VSCodeVim/Vim/releases/tag/v0.5.0)  (Jan 23, 2017)
+# [v0.5.0 Surroundy Squash](https://github.com/VSCodeVim/Vim/releases/tag/v0.5.0)  (Jan 24, 2017)
 
 Add surround.vim!
 # [v0.4.8 Jittery Jalapeño](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.8)  (Dec 5, 2016)
@@ -318,7 +335,7 @@ Bugs fixed:
 * Don't require double <code>&lt;esc&gt;</code> to get to normal mode when the autocomplete window is open in insert mode.
 * We were incorrectly reporting the users were in normal mode when they weren't in some cases.
 * Editing in split editors was broken in some cases.
-# [0.3.5 Buggier Brocolli](https://github.com/VSCodeVim/Vim/releases/tag/0.3.5)  (Oct 10, 2016)
+# [0.3.5 Buggier Brocolli](https://github.com/VSCodeVim/Vim/releases/tag/0.3.5)  (Oct 11, 2016)
 
 Backspace was broken in insert mode.
 
@@ -342,7 +359,7 @@ Bug bash!
 * <a class="user-mention" href="https://github.com/johnfn">@johnfn</a> squashed a crap ton of bugs. Too many to list so I won't try.
 * <a class="user-mention" href="https://github.com/xconverge">@xconverge</a> Thanks for helping fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="180971395" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/832" href="https://github.com/VSCodeVim/Vim/issues/832">#832</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="181081813" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/841" href="https://github.com/VSCodeVim/Vim/issues/841">#841</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="177730398" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/784" href="https://github.com/VSCodeVim/Vim/issues/784">#784</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="181308717" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/846" href="https://github.com/VSCodeVim/Vim/issues/846">#846</a>, and a couple of other fixes that weren't tracked by GH issues.
 * Thanks <a class="user-mention" href="https://github.com/kevincoleman">@kevincoleman</a>. We have a new logo and it looks purrrty.
-# [v0.3.0 Furious Feline](https://github.com/VSCodeVim/Vim/releases/tag/v0.3.0)  (Oct 3, 2016)
+# [v0.3.0 Furious Feline](https://github.com/VSCodeVim/Vim/releases/tag/v0.3.0)  (Oct 4, 2016)
 
 Multi-cursor support by <a class="user-mention" href="https://github.com/johnfn">@johnfn</a>! If you have any feedback on this, please share it on <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="180737052" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/824" href="https://github.com/VSCodeVim/Vim/issues/824">#824</a>
 
@@ -517,7 +534,7 @@ This was all <a class="user-mention" href="https://github.com/johnfn">@johnfn</a
 # [v0.0.17 v0.0.17](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.17)  (May 17, 2016)
 * Add folding commands
 * bug fixes
-# [v0.0.16 v0.0.16](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.16)  (May 3, 2016)
+# [v0.0.16 v0.0.16](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.16)  (May 4, 2016)
 * copy-paste
 * bug fixes
 # [v0.0.15 v0.0.15](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.15)  (Mar 22, 2016)
@@ -540,7 +557,7 @@ This was all <a class="user-mention" href="https://github.com/johnfn">@johnfn</a
 # [v0.0.10 v0.0.10](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.10)  (Feb 1, 2016)
 * Add Swedish Keyboard (compliments of <a class="user-mention" href="https://github.com/antonaderum">@AntonAderum</a>)
 * Add Paragraph motion (compliments of <a class="user-mention" href="https://github.com/johnfn">@johnfn</a>)
-# [v0.0.9 v0.0.9](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.9)  (Jan 6, 2016)
+# [v0.0.9 v0.0.9](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.9)  (Feb 1, 2016)
 * Support Danish da-DK keyboard (compliments of <a class="user-mention" href="https://github.com/kedde">@kedde</a>)
 * Implement x command.
 # [v0.0.8 v0.0.8](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.8)  (Jan 3, 2016)
@@ -575,7 +592,7 @@ This was all <a class="user-mention" href="https://github.com/johnfn">@johnfn</a
 
 * Trigger suggest following every insert
 * Differentiate cursor (insert mode) and caret (normal mode) behaviour
-# [v0.0.2 v0.0.2](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.2)  (Nov 29, 2015)
+# [v0.0.2 v0.0.2](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.2)  (Dec 1, 2015)
 * Bug Fixes:
 <ul>
 <li>Fix cursor position entering command mode</li>
