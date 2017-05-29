@@ -1121,9 +1121,12 @@ export class PutCommand extends BaseCommand {
 
         if (register.text instanceof RecordedState) {
           /**
-           *  Paste content from recordedState. This one is actually complex as Vim has internal key code for key strokes.
-           *  For example, Backspace is stored as `<80>kb`. So if you replay a macro, which is stored in a register as `a1<80>kb2`, you
-           *  shall just get `2` inserted as `a` represents entering Insert Mode, `<80>bk` represents Backspace. However here, we shall
+           *  Paste content from recordedState. This one is actually complex as
+           *  Vim has internal key code for key strokes.For example, Backspace
+           *  is stored as `<80>kb`. So if you replay a macro, which is stored
+           *  in a register as `a1<80>kb2`, youshall just get `2` inserted as
+           *  `a` represents entering Insert Mode, `<80>bk` represents
+           *  Backspace. However here, we shall
            *  insert the plain text content of the register, which is `a1<80>kb2`.
            */
           vimState.recordedState.transformations.push({
@@ -1362,13 +1365,11 @@ export class PutCommandVisual extends BaseCommand {
       [start, end] = [end, start];
     }
 
-    // If the to be inserted text is linewise
-    // we have a seperate logik
-    // delete the selection first
-    // than insert
+    // If the to be inserted text is linewise we have a seperate logik delete the
+    // selection first than insert
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
-      let result = await new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end.getLeft(), false);
+      let result = await new operator.DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
       // to ensure, that the put command nows this is
       // an linewise register insertion in visual mode
       let oldMode = result.currentMode;
@@ -1383,12 +1384,12 @@ export class PutCommandVisual extends BaseCommand {
     // linewise but not necessarily delete linewise.
     let result =  await new PutCommand(this.multicursorIndex).exec(start, vimState, true);
     result.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
+    result.recordedState.registerName = Configuration.useSystemClipboard ? '*' : '"';
     result = await new operator.YankOperator(this.multicursorIndex).run(result, start, end);
     result.currentRegisterMode = RegisterMode.CharacterWise;
     result = await new operator.DeleteOperator(this.multicursorIndex).run(result, start, end.getLeftIfEOL(), false);
     result.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
     return result;
-
   }
 
   // TODO - execWithCount

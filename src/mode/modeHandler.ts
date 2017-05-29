@@ -306,8 +306,7 @@ export class VimState {
  */
 export class RecordedState {
   constructor() {
-    const useClipboard = Configuration.useSystemClipboard;
-    this.registerName = useClipboard ? '*' : '"';
+    this.registerName = Configuration.useSystemClipboard ? '*' : '"';
   }
 
   /**
