@@ -2242,6 +2242,21 @@ class BaseTabCommand extends BaseCommand {
 }
 
 @RegisterAction
+class VerticalSplit extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ["<C-w>", "v"];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: "workbench.action.splitEditor",
+      args: {}
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandTabNext extends BaseTabCommand {
   keys = [
     ["g", "t"],
