@@ -789,8 +789,51 @@ class MoveScreenLineCenter extends MoveByScreenLine {
   movementType: CursorMovePosition = "wrappedLineColumnCenter";
 }
 
+
+abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
+  doesntChangeDesiredColumn = true;
+  public async execAction(position: Position, vimState: VimState): Promise < Position | IMovement > {
+    let prevDesiredColumn = vimState.desiredColumn;
+    let prevLine = vimState.editor.selection.active.line;
+
+     await vscode.commands.executeCommand("cursorMove", {
+      to: this.movementType,
+         select: vimState.currentMode !== ModeName.Normal,
+         by: this.by,
+         value: this.value
+       });
+
+     if (vimState.currentMode === ModeName.Normal) {
+         let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+         if (prevLine !== returnedPos.line) {
+             returnedPos = returnedPos.setLocation(returnedPos.line, Math.max(prevDesiredColumn, returnedPos.character));
+           }
+         return returnedPos;
+       } else {
+       /**
+       * cursorMove command is handling the selection for us.
+       * So we are not following our design principal (do no real movement inside an action) here.
+       */
+
+         let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+       let stop = Position.FromVSCodePosition(vimState.editor.selection.end);
+
+         // We want to swap the cursor start stop positions based on which direction we are moving, up or down
+         if (start.line < position.line) {
+     [start, stop] = [stop, start];
+           }
+       if (prevLine !== start.line) {
+           start = start.setLocation(start.line, prevDesiredColumn);
+         }
+
+         return { start, stop };
+     }
+  }
+}
+
+
 @RegisterAction
-class MoveUpByScreenLine extends MoveByScreenLine {
+class MoveUpByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "k"],
   ["g", "<up>"]];
@@ -800,7 +843,7 @@ class MoveUpByScreenLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByScreenLine extends MoveByScreenLine {
+class MoveDownByScreenLine extends MoveByScreenLineMaintainDesiredColumn {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "j"],
   ["g", "<down>"]];
