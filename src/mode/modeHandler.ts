@@ -1712,9 +1712,17 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
     if (Configuration.useSolidBlockCursor) {
-      await vscode.workspace
-        .getConfiguration("editor")
-        .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
+      // Set the cursor type, in visual mode with mouse selections, the await can cause
+      // bad things to happen so don't await in those modes
+      if (this.currentModeName === ModeName.Normal) {
+        await vscode.workspace
+          .getConfiguration("editor")
+          .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
+      } else {
+        vscode.workspace
+          .getConfiguration("editor")
+          .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
+      }
     }
 
     // Use native cursor if possible. Default to Block.
