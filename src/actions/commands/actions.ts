@@ -1521,7 +1521,7 @@ class CommandCloseFold extends CommandFold {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand("editor.fold", {levels: timesToRepeat, direction: "up"});
-
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
     return vimState;
   }
 }

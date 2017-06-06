@@ -479,7 +479,7 @@ export class MarkMovement extends BaseMovement {
 
 
 @RegisterAction
-class MoveLeft extends BaseMovement {
+export class MoveLeft extends BaseMovement {
   keys = ["h"];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -790,7 +790,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveUpByScreenLine extends MoveByScreenLine {
+export class MoveUpByScreenLine extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual];
   keys = [["g", "k"],
   ["g", "<up>"]];
