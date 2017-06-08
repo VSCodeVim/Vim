@@ -323,6 +323,27 @@ export class UpperCaseWithMotion extends UpperCaseOperator {
 }
 
 @RegisterAction
+class UpperCaseVisualBlockOperator extends BaseOperator {
+  public keys = ["U"];
+  public modes = [ModeName.VisualBlock];
+
+  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
+    for (const { start, end } of Position.IterateLine(vimState)) {
+      const range = new vscode.Range(start, end);
+      let text = vimState.editor.document.getText(range);
+      await TextEditor.replace(range, text.toUpperCase());
+    }
+
+    const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 export class LowerCaseOperator extends BaseOperator {
     public keys = ["u"];
     public modes = [ModeName.Visual, ModeName.VisualLine];
@@ -346,6 +367,27 @@ export class LowerCaseWithMotion extends LowerCaseOperator {
   public modes = [ModeName.Normal];
 }
 
+
+@RegisterAction
+class LowerCaseVisualBlockOperator extends BaseOperator {
+  public keys = ["u"];
+  public modes = [ModeName.VisualBlock];
+
+  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
+    for (const { start, end } of Position.IterateLine(vimState)) {
+      const range = new vscode.Range(start, end);
+      let text = vimState.editor.document.getText(range);
+      await TextEditor.replace(range, text.toLowerCase());
+    }
+
+    const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
+    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStartPosition = cursorPosition;
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
 
 @RegisterAction
 class IndentOperator extends BaseOperator {
