@@ -515,7 +515,8 @@
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.12.0",
     "neovim-client": "^2.1.0",
-    "promised-neovim-client": "^2.0.2"
+    "promised-neovim-client": "^2.0.2",
+    "untildify": "^3.0.2"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.39",

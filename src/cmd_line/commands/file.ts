@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import * as node from "../node";
+const untildify = require('untildify');
 
 export enum FilePosition {
   CurrentWindow,
@@ -69,6 +70,7 @@ export class FileCommand extends node.CommandBase {
     }
 
     let currentFilePath = vscode.window.activeTextEditor!.document.uri.path;
+    this._arguments.name = <string>untildify(this._arguments.name);
     let newFilePath = path.isAbsolute(this._arguments.name) ?
       this._arguments.name :
       path.join(path.dirname(currentFilePath), this._arguments.name);
