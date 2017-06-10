@@ -198,11 +198,6 @@ export async function activate(context: vscode.ExtensionContext) {
         });
     }
 
-    setTimeout(() => {
-      if (!event.document.isDirty && !event.document.isUntitled) {
-        handleContentChangedFromDisk(event.document);
-      }
-    }, 0);
   });
 
   overrideCommand(context, 'type', async (args) => {
