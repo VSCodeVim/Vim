@@ -197,6 +197,11 @@ export async function activate(context: vscode.ExtensionContext) {
           contentChangeHandler(modeHandler);
         });
     }
+    setTimeout(() => {
+    if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
+      handleContentChangedFromDisk(event.document);
+    }}
+    , 0);
 
   });
 
