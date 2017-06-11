@@ -1,3 +1,10 @@
+# [v0.8.5 Bojack Beef](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.5)  (Jun 11, 2017)
+* Fixes regression caused by the recent VSCode update: Undo history would disappear after save. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
+* Adds expansion of tildes in :e when opening new files. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
+* Added <code>&lt;C-w&gt; v</code> to split vertically. Thanks <a class="user-mention" href="https://github.com/beefsack">@beefsack</a>!
+* Added U and u in visual block mode. <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
+* Added relative line ranges for Ex-mode (neovim only). <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
+* Fixed zc not being able to close folds if the cursor started in the middle of the fold <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
 # [v0.8.4 Deleted Durian](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.4)  (May 29, 2017)
 * Fixed commands like <code>d2d</code> not working
 * Fixed gq bug with deleting spaces
