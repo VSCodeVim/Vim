@@ -15,7 +15,6 @@ import * as _ from "lodash";
 
 import { Position } from './../common/motion/position';
 import { TextEditor } from './../textEditor';
-import { Configuration } from './../configuration/configuration';
 import { RecordedState, VimState } from './../mode/modeHandler';
 
 import DiffMatchPatch = require("diff-match-patch");
@@ -409,11 +408,6 @@ export class HistoryTracker {
         change = new DocumentChange(currentPosition, text, !!added);
 
         this.currentHistoryStep.changes.push(change);
-
-        // Make sure history length does not exceed configuration option
-        if (this.currentHistoryStep.changes.length > Configuration.history) {
-          this.currentHistoryStep.changes.splice(0, 1);
-        }
 
         if (change && this.currentHistoryStep.cursorStart === undefined) {
           this.currentHistoryStep.cursorStart = cursorPosition;
