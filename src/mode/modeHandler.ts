@@ -1694,7 +1694,9 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       this._vimState.whatILastSetTheSelectionTo = selections[0];
-      this._vimState.editor.selections = selections;
+      if (vimState.currentMode !== ModeName.Insert) {
+        this._vimState.editor.selections = selections;
+      }
     }
 
     // Scroll to position of cursor
