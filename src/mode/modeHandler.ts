@@ -1694,7 +1694,7 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       this._vimState.whatILastSetTheSelectionTo = selections[0];
-      if (vimState.currentMode !== ModeName.Insert) {
+      if (vimState.recordedState.actionsRun.filter(x => x instanceof DocumentContentChangeAction).length === 0) {
         this._vimState.editor.selections = selections;
       }
     }
