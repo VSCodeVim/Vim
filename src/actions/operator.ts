@@ -233,7 +233,10 @@ export class YankOperator extends BaseOperator {
       vimState.currentMode = ModeName.Normal;
       vimState.cursorStartPosition = start;
 
-      if (originalMode === ModeName.Normal) {
+      // Only change cursor position if we ran a movement
+      if (originalMode === ModeName.Normal && !vimState.recordedState.hasRunAMovement) {
+        vimState.allCursors = vimState.cursorPositionJustBeforeAnythingHappened.map(x => new Range(x, x));
+      } else {
         vimState.cursorPosition = start;
       }
 
