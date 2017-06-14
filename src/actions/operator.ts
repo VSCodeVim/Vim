@@ -6,6 +6,7 @@ import { Range } from './../common/motion/range';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
 import { Configuration } from './../configuration/configuration';
+import { TextObjectMovement } from './textobject';
 import {
   BaseAction, RegisterAction, compareKeypressSequence
 } from './base';
@@ -233,8 +234,15 @@ export class YankOperator extends BaseOperator {
       vimState.currentMode = ModeName.Normal;
       vimState.cursorStartPosition = start;
 
-      // Only change cursor position if we ran a movement
-      if (originalMode === ModeName.Normal && !vimState.recordedState.hasRunAMovement) {
+      // Only change cursor position if we ran a text object movement
+      let moveCursor = false;
+      if (vimState.recordedState.actionsRun.length > 1) {
+        if (vimState.recordedState.actionsRun[1] instanceof TextObjectMovement) {
+          moveCursor = true;
+        }
+      }
+
+      if (originalMode === ModeName.Normal && !moveCursor) {
         vimState.allCursors = vimState.cursorPositionJustBeforeAnythingHappened.map(x => new Range(x, x));
       } else {
         vimState.cursorPosition = start;
