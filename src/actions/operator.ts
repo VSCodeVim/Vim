@@ -234,8 +234,6 @@ export class YankOperator extends BaseOperator {
       vimState.cursorStartPosition = start;
 
       if (originalMode === ModeName.Normal) {
-        vimState.allCursors = vimState.cursorPositionJustBeforeAnythingHappened.map(x => new Range(x, x));
-      } else {
         vimState.cursorPosition = start;
       }
 
