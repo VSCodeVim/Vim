@@ -171,6 +171,8 @@ These settings are specific to VSCodeVim.
 
 ### Neovim Integration
 
+
+#### Ex Commands
 We now have neovim integration for Ex-commands. If you want to take advantage of this integration, set `"vim.enableNeovim"` to `true`, and set your `"vim.neovimPath"`. If you don't have neovim installed, [install neovim here](https://github.com/neovim/neovim/wiki/Installing-Neovim). If you don't want to install neovim, all of the old functionality should still work as is (we would really suggest neovim installing though. The new Ex support is super cool, and we'd like to integrate neovim more in the future).
 
 Please leave feedback on neovim [here](https://github.com/VSCodeVim/Vim/issues/1735).
@@ -180,6 +182,9 @@ Here's some ideas on what you can do with your newfound neovim integration!
 * [The power of g](http://vim.wikia.com/wiki/Power_of_g)
 * [The :normal command](https://vi.stackexchange.com/questions/4418/execute-normal-command-over-range)
 * Faster search and replace!
+
+#### Plugins
+We can now
 
 ### Key remapping
 

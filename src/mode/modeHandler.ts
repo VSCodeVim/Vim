@@ -43,6 +43,7 @@ import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';
 import { Nvim } from "promised-neovim-client";
+import { Neovim } from "../neovim/nvimUtil";
 
 export class ViewChange {
   public command: string;
@@ -861,6 +862,13 @@ export class ModeHandler implements vscode.Disposable {
       this._otherModesNonRecursive.couldRemappingApply;
 
     if (result === KeypressState.NoPossibleMatch && !isPotentialRemapping) {
+      const prevUndoTree = await Neovim.getUndoTree(vimState);
+      await Neovim.input(vimState, vimState.recordedState.commandString);
+      const curUndoTree = await Neovim.getUndoTree(vimState);
+      if (prevUndoTree.seq_last <= curUndoTree.seq_last + 2) {
+        vimState.globalState.previousFullAction = vimState.recordedState;
+        vimState.historyTracker.finishCurrentStep();
+      }
       vimState.recordedState = new RecordedState();
       vimState.recordedState.commandList = [];
 
@@ -1712,7 +1720,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Draw block cursor.
     if (Configuration.useSolidBlockCursor) {
-      await vscode.workspace
+      vscode.workspace
         .getConfiguration("editor")
         .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
     }

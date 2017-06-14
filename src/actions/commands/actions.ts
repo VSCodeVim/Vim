@@ -19,6 +19,7 @@ import * as util from './../../util';
 import { RegisterAction } from './../base';
 import * as operator from './../operator';
 import { BaseAction } from './../base';
+import { Neovim } from "../../neovim/nvimUtil";
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {

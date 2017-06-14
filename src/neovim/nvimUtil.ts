@@ -10,10 +10,12 @@ import { attach } from "promised-neovim-client";
 import { Register, RegisterMode } from "../register/register";
 import { ModeName } from "../mode/mode";
 
+type UndoTree = {entries: Array<{seq: number, time: number}>, save_cur: number, save_last: number, seq_cur: number, seq_last: number, synced: number, time_cur: number};
+
 export class Neovim {
 
   static async initNvim(vimState: VimState) {
-    const proc = spawn(Configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], { cwd: __dirname });
+    const proc = spawn(Configuration.neovimPath, ['-u', '~/.config/nvim/init.vim', '-N', '--embed'], { cwd: __dirname });
     proc.on('error', function (err) {
       console.log(err);
       vscode.window.showErrorMessage("Unable to setup neovim instance! Check your path.");
@@ -72,6 +74,8 @@ export class Neovim {
 
     let [row, character] = (await nvim.callFunction("getpos", ["."]) as Array<number>).slice(1, 3);
     vimState.editor.selection = new vscode.Selection(new Position(row - 1, character), new Position(row - 1, character));
+    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.active)
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.anchor);
 
     if (Configuration.expandtab) {
       await vscode.commands.executeCommand("editor.action.indentationToSpaces");
@@ -103,8 +107,14 @@ export class Neovim {
     await this.syncVSToVim(vimState);
     await nvim.input(keys);
     await this.syncVimToVs(vimState);
-
     return;
+  }
+
+  static async getUndoTree(vimState: VimState): Promise<UndoTree> {
+    return await vimState.nvim.callFunction("undotree", []) as UndoTree;
+  }
+
+  static async syncVSSettingsToVim(vimState: VimState) {
   }
 
 }
