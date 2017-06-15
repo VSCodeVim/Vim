@@ -121,25 +121,41 @@ export class Neovim {
     const settings = vscode.workspace.getConfiguration("vim");
     const settingsPath = settings.neovimSettingsPath;
     const plugins: Array<String> = settings.neovimPlugins;
-    let lines: Array<String>;
+
+    const BEGINNING_MESSAGE =
+`"Do not touch this block. These lines will be overwritten by VSCodeVim upon startup"
+"Future customization of this portion of code will come eventually"
+`;
+    const PLUGIN_BEGIN =
+`call plug#begin('~/.config/nvim/plugged')
+`;
+    const PLUGIN_LIST = plugins.map(x => `Plug '${ x }'\n`).join();
+    const PLUGIN_END =
+`call plug#end()
+PlugInstall
+hide
+`;
+    const END_MESSAGE =
+`"---VSCode Config Done---"
+`;
+
+    let origConfig: String;
     try {
-      lines = fs.readFileSync(settingsPath).toString().split('\n');
+      origConfig = fs.readFileSync(settingsPath).toString();
     } catch (err) {
-      lines = [];
+      origConfig = "";
     }
-    lines = [];
-    while (lines.length < 10) {
-      lines.push("");
-    }
-    lines[0] = '"Do not touch this block. These lines will be overwritten by VSCodeVim upon startup"';
-    lines[1] = '"Future customization of this portion of code will come eventually"';
-    lines[2] = "call plug#begin('~/.config/nvim/plugged')";
-    lines[3] = "call plug#end()";
-    lines[4] = "PlugInstall";
-    lines[5] = "hide";
-    lines[6] = '"Place your own custom configuration after here"';
-    lines.splice(3, 0, ...plugins.map(x => "Plug '" + x + "'"));
-    const text = lines.join("\n");
+
+    let newLines = [
+      BEGINNING_MESSAGE,
+      PLUGIN_BEGIN,
+      PLUGIN_LIST,
+      PLUGIN_END,
+      END_MESSAGE
+    ];
+
+    origConfig = origConfig.substring(origConfig.indexOf(END_MESSAGE) + END_MESSAGE.length);
+    const text = newLines.join('') + origConfig;
     fs.writeFileSync(settingsPath, text);
     return;
   }
