@@ -130,10 +130,6 @@ class ConfigurationClass {
     }
   }
 
-  /**
-   * Should the block cursor not blink?
-   */
-  useSolidBlockCursor = false;
 
   /**
    * Use the system's clipboard when copying.

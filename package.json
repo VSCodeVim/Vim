@@ -350,11 +350,6 @@
           "description": "Timeout in milliseconds for remapped commands",
           "default": 1000
         },
-        "vim.useSolidBlockCursor": {
-          "type": "boolean",
-          "description": "Use a non blinking block cursor.",
-          "default": false
-        },
         "vim.scroll": {
           "type": "number",
           "description": "Number of lines to scroll with CTRL-U and CTRL-D commands.",
