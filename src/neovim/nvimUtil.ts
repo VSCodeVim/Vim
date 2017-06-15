@@ -140,6 +140,8 @@ hide
       [vimSettings.smartcase, 'smartcase'],
       [vimSettings.hlsearch, 'hlsearch'],
       [vimSettings.incsearch, 'incsearch'],
+      [vimSettings.autoindent, 'autoindent'],
+      [vimSettings.scroll, 'scroll'],
       [currentFileSettings.insertSpaces, 'expandtab'],
       [currentFileSettings.tabSize, 'tabstop'],
       [currentFileSettings.tabSize, 'shiftwidth']
