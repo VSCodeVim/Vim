@@ -9,11 +9,16 @@ import { spawn } from "child_process";
 import { attach } from "promised-neovim-client";
 import { Register, RegisterMode } from "../register/register";
 import { ModeName } from "../mode/mode";
+import * as fs from "fs";
+import * as os from "os";
+
+type UndoTree = {entries: Array<{seq: number, time: number}>, save_cur: number, save_last: number, seq_cur: number, seq_last: number, synced: number, time_cur: number};
 
 export class Neovim {
 
   static async initNvim(vimState: VimState) {
-    const proc = spawn(Configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], { cwd: __dirname });
+    this.syncVSSettingsToVim();
+    const proc = spawn(Configuration.neovimPath, ['-u', '~/.config/nvim/init.vim', '-N', '--embed'], { cwd: __dirname });
     proc.on('error', function (err) {
       console.log(err);
       vscode.window.showErrorMessage("Unable to setup neovim instance! Check your path.");
@@ -26,9 +31,6 @@ export class Neovim {
   static async syncVSToVim(vimState: VimState) {
     const nvim = vimState.nvim;
     const buf = await nvim.getCurrentBuf();
-    if (Configuration.expandtab) {
-      await vscode.commands.executeCommand("editor.action.indentationToTabs");
-    }
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
     const [rangeStart, rangeEnd] = [Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
     Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition)];
@@ -72,10 +74,9 @@ export class Neovim {
 
     let [row, character] = (await nvim.callFunction("getpos", ["."]) as Array<number>).slice(1, 3);
     vimState.editor.selection = new vscode.Selection(new Position(row - 1, character), new Position(row - 1, character));
+    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.active)
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.anchor);
 
-    if (Configuration.expandtab) {
-      await vscode.commands.executeCommand("editor.action.indentationToSpaces");
-    }
     // We're only syncing back the default register for now, due to the way we could
     // be storing macros in registers.
     const vimRegToVsReg = { "v": RegisterMode.CharacterWise, "V": RegisterMode.LineWise, "\x16": RegisterMode.BlockWise };
@@ -103,7 +104,82 @@ export class Neovim {
     await this.syncVSToVim(vimState);
     await nvim.input(keys);
     await this.syncVimToVs(vimState);
+    return;
+  }
 
+  static async inputNoSync(vimState: VimState, keys: string) {
+    await vimState.nvim.input(keys);
+  }
+
+  static async getUndoTree(vimState: VimState): Promise<UndoTree> {
+    return await vimState.nvim.callFunction("undotree", []) as UndoTree;
+  }
+
+  static async syncVSSettingsToVim() {
+    const editorSettings = vscode.workspace.getConfiguration("editor");
+    const currentFileSettings = vscode.window.activeTextEditor!.options;
+    const vimSettings = vscode.workspace.getConfiguration("vim");
+    const settingsPath = vimSettings.neovimSettingsPath;
+    const plugins: Array<String> = vimSettings.neovimPlugins;
+
+    const BEGINNING_MESSAGE =
+`"Do not touch this block. These lines will be overwritten by VSCodeVim upon startup"
+"Future customization of this portion of code will come eventually"
+`;
+    const PLUGIN_BEGIN =
+`call plug#begin('~/.config/nvim/plugged')
+`;
+    const PLUGIN_LIST = plugins.map(x => `Plug '${ x }'\n`).join('');
+    const PLUGIN_END =
+`call plug#end()
+PlugInstall
+hide
+`;
+    const settingsMap = [
+      [vimSettings.ignorecase, 'ignorecase'],
+      [vimSettings.smartcase, 'smartcase'],
+      [vimSettings.hlsearch, 'hlsearch'],
+      [vimSettings.incsearch, 'incsearch'],
+      [vimSettings.autoindent, 'autoindent'],
+      [vimSettings.scroll, 'scroll'],
+      [currentFileSettings.insertSpaces, 'expandtab'],
+      [currentFileSettings.tabSize, 'tabstop'],
+      [currentFileSettings.tabSize, 'shiftwidth']
+      ]
+
+    const SETTINGS= settingsMap.map(
+      ([vsSettingVal, settingName]) =>{
+        if (typeof vsSettingVal === "boolean") {
+          return (vsSettingVal ? `set ${ settingName }\n` : '');
+        } else {
+          return `set ${ settingName }=${ vsSettingVal }\n`;
+        }
+      }).join('');
+    const END_MESSAGE =
+`"---VSCode Config Done---"
+`;
+
+    let origConfig: String;
+    try {
+      origConfig = fs.readFileSync(settingsPath).toString();
+    } catch (err) {
+      origConfig = "";
+    }
+
+    let newLines = [
+      BEGINNING_MESSAGE,
+      PLUGIN_BEGIN,
+      PLUGIN_LIST,
+      PLUGIN_END,
+      SETTINGS,
+      END_MESSAGE
+    ];
+    const endMessagePos = origConfig.indexOf(END_MESSAGE);
+    if (endMessagePos !== -1) {
+      origConfig = origConfig.substring(endMessagePos + END_MESSAGE.length);
+    }
+    const text = newLines.join('') + origConfig;
+    fs.writeFileSync(settingsPath, text);
     return;
   }
 
