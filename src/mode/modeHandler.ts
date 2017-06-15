@@ -1712,13 +1712,6 @@ export class ModeHandler implements vscode.Disposable {
 
     let cursorRange: vscode.Range[] = [];
 
-    // Draw block cursor.
-    if (Configuration.useSolidBlockCursor) {
-      await vscode.workspace
-        .getConfiguration("editor")
-        .update("cursorBlinking", this.currentMode.name !== ModeName.Insert ? "solid" : "blink", true);
-    }
-
     // Use native cursor if possible. Default to Block.
     let cursorStyle = vscode.TextEditorCursorStyle.Block;
     switch (this.currentMode.cursorType) {

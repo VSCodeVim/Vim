@@ -140,8 +140,7 @@ These settings are specific to VSCodeVim.
 * Type: Color String (Default: `rgba(150, 150, 150, 0.3)`)
 
 #### `"vim.useSolidBlockCursor"`
-* Use a non-blinking block cursor
-* Type: Boolean (Default: `false`)
+We have removed this option, due to it making VSCodeVim's performance suffer immensely.
 
 #### `"vim.useCtrlKeys"`
 * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
