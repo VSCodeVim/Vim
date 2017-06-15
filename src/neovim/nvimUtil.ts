@@ -9,12 +9,15 @@ import { spawn } from "child_process";
 import { attach } from "promised-neovim-client";
 import { Register, RegisterMode } from "../register/register";
 import { ModeName } from "../mode/mode";
+import * as fs from "fs";
+import * as os from "os";
 
 type UndoTree = {entries: Array<{seq: number, time: number}>, save_cur: number, save_last: number, seq_cur: number, seq_last: number, synced: number, time_cur: number};
 
 export class Neovim {
 
   static async initNvim(vimState: VimState) {
+    this.syncVSSettingsToVim();
     const proc = spawn(Configuration.neovimPath, ['-u', '~/.config/nvim/init.vim', '-N', '--embed'], { cwd: __dirname });
     proc.on('error', function (err) {
       console.log(err);
@@ -114,7 +117,31 @@ export class Neovim {
     return await vimState.nvim.callFunction("undotree", []) as UndoTree;
   }
 
-  static async syncVSSettingsToVim(vimState: VimState) {
+  static async syncVSSettingsToVim() {
+    const settings = vscode.workspace.getConfiguration("vim");
+    const settingsPath = settings.neovimSettingsPath;
+    const plugins: Array<String> = settings.neovimPlugins;
+    let lines: Array<String>;
+    try {
+      lines = fs.readFileSync(settingsPath).toString().split('\n');
+    } catch (err) {
+      lines = [];
+    }
+    lines = [];
+    while (lines.length < 10) {
+      lines.push("");
+    }
+    lines[0] = '"Do not touch this block. These lines will be overwritten by VSCodeVim upon startup"';
+    lines[1] = '"Future customization of this portion of code will come eventually"';
+    lines[2] = "call plug#begin('~/.config/nvim/plugged')";
+    lines[3] = "call plug#end()";
+    lines[4] = "PlugInstall";
+    lines[5] = "hide";
+    lines[6] = '"Place your own custom configuration after here"';
+    lines.splice(3, 0, ...plugins.map(x => "Plug '" + x + "'"));
+    const text = lines.join("\n");
+    fs.writeFileSync(settingsPath, text);
+    return;
   }
 
 }

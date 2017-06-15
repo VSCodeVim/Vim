@@ -496,6 +496,16 @@
           "description": "Path to run neovim executable. For example, /usr/bin/nvim, or ",
           "default": "nvim"
         },
+        "vim.neovimSettingsPath": {
+          "type": "string",
+          "description": "Path to the neovim settings file.",
+          "default": "/home/chillee/.config/nvim/init.vim"
+        },
+        "vim.neovimPlugins": {
+          "type": "array",
+          "description": "Neovim plugins you'd like to enable. Please refer to the supported plugins list for plugins we've verified play nice with VSCodeVim. We use VimPlug to manage plugins, so refer to that for usage. By default, we've enabled targets.vim as an example.",
+          "default": ["wellle/targets.vim"]
+        },
         "vim.disableAnnoyingNeovimMessage": {
           "type": "boolean",
           "description": "Get rid of that annoying message that shows up everytime you make a new file",
