@@ -186,6 +186,8 @@ Here's some ideas on what you can do with your newfound neovim integration!
 #### Plugins
 We can now support neovim plugins through the vim.neovimPlugins and vim.neovimSettingsPath.
 
+We will probably move this to the wiki when this lands.
+
 Supported plugins (we've verified these play nice with VSCode)
 * [targets.vim](https://github.com/wellle/targets.vim)
 

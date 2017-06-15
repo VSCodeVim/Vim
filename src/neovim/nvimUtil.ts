@@ -129,7 +129,7 @@ export class Neovim {
     const PLUGIN_BEGIN =
 `call plug#begin('~/.config/nvim/plugged')
 `;
-    const PLUGIN_LIST = plugins.map(x => `Plug '${ x }'\n`).join();
+    const PLUGIN_LIST = plugins.map(x => `Plug '${ x }'\n`).join('');
     const PLUGIN_END =
 `call plug#end()
 PlugInstall
