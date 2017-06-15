@@ -260,6 +260,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'yiw' with correct cursor ending position",
+      start: ['tes|t'],
+      keysPressed: 'yiwp',
+      end: ['ttes|test'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'ciw'",
       start: ['text text tex|t'],
       keysPressed: '^lllllllciw',

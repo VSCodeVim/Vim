@@ -493,7 +493,7 @@
         },
         "vim.neovimPath": {
           "type": "string",
-          "description": "Path to run neovim executable. For example, /usr/bin/nvim, or ",
+          "description": "Path to run neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe",
           "default": "nvim"
         },
         "vim.disableAnnoyingNeovimMessage": {
