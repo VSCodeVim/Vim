@@ -31,9 +31,6 @@ export class Neovim {
   static async syncVSToVim(vimState: VimState) {
     const nvim = vimState.nvim;
     const buf = await nvim.getCurrentBuf();
-    if (Configuration.expandtab) {
-      await vscode.commands.executeCommand("editor.action.indentationToTabs");
-    }
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
     const [rangeStart, rangeEnd] = [Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
     Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition)];
@@ -80,9 +77,6 @@ export class Neovim {
     vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.active)
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.anchor);
 
-    if (Configuration.expandtab) {
-      await vscode.commands.executeCommand("editor.action.indentationToSpaces");
-    }
     // We're only syncing back the default register for now, due to the way we could
     // be storing macros in registers.
     const vimRegToVsReg = { "v": RegisterMode.CharacterWise, "V": RegisterMode.LineWise, "\x16": RegisterMode.BlockWise };
@@ -113,14 +107,20 @@ export class Neovim {
     return;
   }
 
+  static async inputNoSync(vimState: VimState, keys: string) {
+    await vimState.nvim.input(keys);
+  }
+
   static async getUndoTree(vimState: VimState): Promise<UndoTree> {
     return await vimState.nvim.callFunction("undotree", []) as UndoTree;
   }
 
   static async syncVSSettingsToVim() {
-    const settings = vscode.workspace.getConfiguration("vim");
-    const settingsPath = settings.neovimSettingsPath;
-    const plugins: Array<String> = settings.neovimPlugins;
+    const editorSettings = vscode.workspace.getConfiguration("editor");
+    const currentFileSettings = vscode.window.activeTextEditor!.options;
+    const vimSettings = vscode.workspace.getConfiguration("vim");
+    const settingsPath = vimSettings.neovimSettingsPath;
+    const plugins: Array<String> = vimSettings.neovimPlugins;
 
     const BEGINNING_MESSAGE =
 `"Do not touch this block. These lines will be overwritten by VSCodeVim upon startup"
@@ -135,6 +135,24 @@ export class Neovim {
 PlugInstall
 hide
 `;
+    const settingsMap = [
+      [vimSettings.ignorecase, 'ignorecase'],
+      [vimSettings.smartcase, 'smartcase'],
+      [vimSettings.hlsearch, 'hlsearch'],
+      [vimSettings.incsearch, 'incsearch'],
+      [currentFileSettings.insertSpaces, 'expandtab'],
+      [currentFileSettings.tabSize, 'tabstop'],
+      [currentFileSettings.tabSize, 'shiftwidth']
+      ]
+
+    const SETTINGS= settingsMap.map(
+      ([vsSettingVal, settingName]) =>{
+        if (typeof vsSettingVal === "boolean") {
+          return (vsSettingVal ? `set ${ settingName }\n` : '');
+        } else {
+          return `set ${ settingName }=${ vsSettingVal }\n`;
+        }
+      }).join('');
     const END_MESSAGE =
 `"---VSCode Config Done---"
 `;
@@ -151,10 +169,13 @@ hide
       PLUGIN_BEGIN,
       PLUGIN_LIST,
       PLUGIN_END,
+      SETTINGS,
       END_MESSAGE
     ];
-
-    origConfig = origConfig.substring(origConfig.indexOf(END_MESSAGE) + END_MESSAGE.length);
+    const endMessagePos = origConfig.indexOf(END_MESSAGE);
+    if (endMessagePos !== -1) {
+      origConfig = origConfig.substring(endMessagePos + END_MESSAGE.length);
+    }
     const text = newLines.join('') + origConfig;
     fs.writeFileSync(settingsPath, text);
     return;

@@ -190,6 +190,8 @@ We will probably move this to the wiki when this lands.
 
 Supported plugins (we've verified these play nice with VSCode)
 * [targets.vim](https://github.com/wellle/targets.vim)
+* [Align (but not AlignMap for now)](https://github.com/vim-scripts/Align)
+
 
 ### Key remapping
 
