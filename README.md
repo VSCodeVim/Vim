@@ -184,7 +184,10 @@ Here's some ideas on what you can do with your newfound neovim integration!
 * Faster search and replace!
 
 #### Plugins
-We can now
+We can now support neovim plugins through the vim.neovimPlugins and vim.neovimSettingsPath.
+
+Supported plugins (we've verified these play nice with VSCode)
+* [targets.vim](https://github.com/wellle/targets.vim)
 
 ### Key remapping
 
