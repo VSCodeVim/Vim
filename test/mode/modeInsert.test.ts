@@ -250,6 +250,20 @@ suite("Mode Insert", () => {
     });
 
     newTest({
+      title: "Can perform insert at start of line command prefixed with count",
+      start: ['tes|t'],
+      keysPressed: '2I_<Esc>',
+      end: ['_|_test']
+    });
+
+    newTest({
+      title: "Can perform append to end of line command prefixed with count",
+      start: ['t|est'],
+      keysPressed: '3A=<Esc>',
+      end: ['test==|=']
+    });
+
+    newTest({
       title: "Can perform change char (s) command prefixed with count",
       start: ['tes|ttest'],
       keysPressed: '3s=====<Esc>',

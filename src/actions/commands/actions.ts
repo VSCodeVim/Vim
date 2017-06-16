@@ -1974,7 +1974,7 @@ class CommandGoForwardInChangelist extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertAtFirstCharacter extends BaseCommand {
+export class CommandInsertAtFirstCharacter extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["I"];
 
@@ -2031,7 +2031,7 @@ export class CommandInsertAfterCursor extends BaseCommand {
 }
 
 @RegisterAction
-class CommandInsertAtLineEnd extends BaseCommand {
+export class CommandInsertAtLineEnd extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ["A"];
 

@@ -9,7 +9,9 @@ import { TextEditor } from './../../textEditor';
 import { RegisterAction } from './../base';
 import { ArrowsInInsertMode } from './../motion';
 import {
-  BaseCommand, DocumentContentChangeAction, CommandInsertAtCursor, CommandInsertAfterCursor
+  BaseCommand, DocumentContentChangeAction, CommandInsertAtCursor,
+  CommandInsertAfterCursor, CommandInsertAtLineEnd,
+  CommandInsertAtFirstCharacter
 } from './actions';
 
 @RegisterAction
@@ -44,11 +46,17 @@ class CommandEscInsertMode extends BaseCommand {
       }
     }
     vimState.currentMode = ModeName.Normal;
+
     // If we wanted to repeat this insert (only for i and a), now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
     const typeOfInsert = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 3];
-    if (vimState.recordedState.count > 1 &&
-      (typeOfInsert instanceof CommandInsertAtCursor || typeOfInsert instanceof CommandInsertAfterCursor)) {
+    const isTypeToRepeatInsert = typeOfInsert instanceof CommandInsertAtCursor ||
+      typeOfInsert instanceof CommandInsertAfterCursor ||
+      typeOfInsert instanceof CommandInsertAtLineEnd ||
+      typeOfInsert instanceof CommandInsertAtFirstCharacter;
+
+    // If this is the type to repeat insert, do this now
+    if (vimState.recordedState.count > 1 && isTypeToRepeatInsert) {
       const changeAction = vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2] as DocumentContentChangeAction;
       const changesArray = changeAction.contentChanges;
       let docChanges: vscode.TextDocumentContentChangeEvent[] = [];
