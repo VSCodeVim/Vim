@@ -357,7 +357,7 @@ You can enter multi-cursor mode by:
 
 * Pressing cmd-d on OSX.
 * Running "Add Cursor Above/Below" or the shortcut on any platform.
-* Pressing `gc`, a new shortcut we added which is equivalent to cmd-d on OSX or ctrl-d on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
+* Pressing `gb`, a new shortcut we added which is equivalent to cmd-d on OSX or ctrl-d on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
 
 ### Doing stuff
 
@@ -452,7 +452,7 @@ Vim has a lot of nooks and crannies. VSCodeVim preserves some of the coolest noo
 
 * `gd` - jump to definition. _Astoundingly_ useful in any language that VSCode provides definition support for. I use this one probably hundreds of times a day.
 * `gq` - on a visual selection - Reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
-* `gc` - which adds another cursor on the next word it finds which is the same as the word under the cursor.
+* `gb` - which adds another cursor on the next word it finds which is the same as the word under the cursor.
 * `af` - a command that I added in visual mode, which selects increasingly large blocks of text. e.g. if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed `af` again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
 * `gh` - another custom VSCodeVim command. This one is equivalent to hovering your mouse over wherever the cursor is. Handy for seeing types and error messages without reaching for the mouse!
 
