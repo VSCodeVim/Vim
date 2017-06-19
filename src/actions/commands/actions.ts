@@ -14,6 +14,7 @@ import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../../util';
 import { isTextTransformation } from './../../transformations/transformations';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { QuitCommand } from './../../cmd_line/commands/quit';
+import { OnlyCommand } from './../../cmd_line/commands/only';
 import * as vscode from 'vscode';
 import * as util from './../../util';
 import { RegisterAction } from './../base';
@@ -2152,6 +2153,18 @@ class CommandQuit extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new QuitCommand({}).execute();
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandOnly extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = [["<C-w>", "o"], ["<C-w>", "C-o"]];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    new OnlyCommand({}).execute();
 
     return vimState;
   }
