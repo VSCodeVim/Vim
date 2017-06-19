@@ -15,6 +15,7 @@ import { parseRegisterCommandArgs } from './subparsers/register';
 import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
 import { parseSortCommandArgs } from './subparsers/sort';
 import { parseCloseCommandArgs } from './subparsers/close';
+import { parseOnlyCommandArgs } from './subparsers/only';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -85,6 +86,7 @@ export const commandParsers = {
   vne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
   new: fileCmd.parseEditNewFileInNewWindowCommandArgs,
   vnew: fileCmd.parseEditNewFileInNewWindowCommandArgs,
+  only: parseOnlyCommandArgs,
 
   set: parseOptionsCommandArgs,
   se: parseOptionsCommandArgs,
