@@ -334,7 +334,7 @@ export async function activate(context: vscode.ExtensionContext) {
   Configuration.boundKeyCombinations = [];
 
   for (let keybinding of packagejson.contributes.keybindings) {
-    if (keybinding.when.indexOf("editorTextFocus") === -1) {
+    if (keybinding.when.indexOf("listFocus") !== -1) {
       continue;
     }
     let keyToBeBound = "";
