@@ -313,6 +313,26 @@
           "key": "o",
           "command": "list.toggleExpand",
           "when": "listFocus"
+      },
+      {
+        "key": "g g",
+        "command": "list.focusFirst",
+        "when": "listFocus"
+      },
+      {
+        "key": "shift+G",
+        "command": "list.focusLast",
+        "when": "listFocus"
+      },
+      {
+        "key": "ctrl+d",
+        "command": "list.focusPageDown",
+        "when": "listFocus"
+      },
+      {
+        "key": "ctrl+u",
+        "command": "list.focusPageUp",
+        "when": "listFocus"
       }
     ],
     "configuration": {
