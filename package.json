@@ -305,11 +305,6 @@
           "when": "listFocus"
       },
       {
-          "key": "enter",
-          "command": "list.select",
-          "when": "explorerViewletVisible && filesExplorerFocus"
-      },
-      {
           "key": "o",
           "command": "list.toggleExpand",
           "when": "listFocus"
