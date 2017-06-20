@@ -472,7 +472,7 @@ You can try setting `vim.foldfix` to `true`. Note, however, that it is a hack. I
 
 Take a look [here](#mac-setup).
 
-### There are annoying intellisense/notifications/popups that I can't close with `<esc>`!
+### There are annoying intellisense/notifications/popups that I can't close with `<esc>`! Or I'm in a snippet and I want to close intellisense!
 
 Press `shift+<esc>` to close all of those boxes.
 
