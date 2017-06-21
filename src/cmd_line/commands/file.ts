@@ -12,7 +12,7 @@ export enum FilePosition {
 }
 
 export interface IFileCommandArguments extends node.ICommandArgs {
-  name?: string;
+  name: string | undefined;
   bang?: boolean;
   position?: FilePosition;
   lineNumber?: number;
@@ -62,14 +62,21 @@ export class FileCommand extends node.CommandBase {
     if (this._arguments.bang) {
       await vscode.commands.executeCommand("workbench.action.files.revert");
     }
-    if (!this._arguments.name) {
+    if (this._arguments.name === undefined) {
       // Open an empty file
       if (this._arguments.position === FilePosition.CurrentWindow) {
         await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
       } else {
         await vscode.commands.executeCommand("workbench.action.splitEditor");
+        await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
+        await vscode.commands.executeCommand("workbench.action.closeOtherEditors");
       }
 
+      return;
+    } else if (this._arguments.name === "") {
+      if (this._arguments.position === FilePosition.NewWindow) {
+        await vscode.commands.executeCommand("workbench.action.splitEditor");
+      }
       return;
     }
 
