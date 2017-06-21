@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
-
-import { Position } from './../motion/position';
-import { TextEditor } from './../textEditor';
-import { Configuration } from './../configuration/configuration';
+import { Position } from './../../../common/motion/position';
+import { Configuration } from './../../../configuration/configuration';
+import { TextEditor } from './../../../textEditor';
 
 export class EasyMotion {
   /**
@@ -56,7 +55,7 @@ export class EasyMotion {
   /**
    * Generate a marker following a sequence for the name and depth levels
    */
-  public static generateMarker(index: number, length: number, position: Position, markerPosition: Position): EasyMotion.Marker {
+  public static generateMarker(index: number, length: number, position: Position, markerPosition: Position): EasyMotion.Marker | null {
     let keyTable = EasyMotion.keyTable;
     var availableKeyTable = keyTable.slice();
 
@@ -68,7 +67,7 @@ export class EasyMotion {
       var totalRemainder = Math.max(length - keyTable.length, 0);
       totalSteps = Math.floor(totalRemainder / keyTable.length);
 
-      for (var i = 0; i < totalSteps; i++) {
+      for (var i = 0; i < Math.min(totalSteps, 26); i++) {
         keyDepthTable.push(availableKeyTable.pop()!);
       }
     }
@@ -89,6 +88,10 @@ export class EasyMotion {
       var steps = Math.floor((inverted) / availableKeyTable.length);
 
       // Add the key to the prefix
+      if (steps > keyDepthTable.length - 1) {
+        return null;
+      }
+
       prefix += keyDepthTable[steps];
 
       // Check if we're on the last depth level

@@ -1,6 +1,5 @@
 <!--
 For questions, ask us on [Slack](https://vscodevim-slackin.azurewebsites.net/) 👫. 
-
 DONT CHANGE ANYTHING UNTIL THE -----. Thanks!
 -->
 
@@ -11,16 +10,37 @@ The VSCodeVim team prioritizes issues based on reaction count.
 
 --------
 
-### What did you do?
+**Is this a BUG REPORT or FEATURE REQUEST?** (choose one):
 
-Put the exact keys you pressed.
+<!--
+If this is a BUG REPORT, please:
+  - Fill in as much of the template below as you can.  If you leave out
+    information, we can't help you as well.
 
-### What did you expect to happen?
+If this is a FEATURE REQUEST, please:
+  - Describe *in detail* the feature/behavior/change you'd like to see.
 
-### What happened instead?
+If we can't reproduce a bug or think a feature already exists, we
+might close your issue.  If we're wrong, PLEASE feel free to reopen it and
+explain why.
+-->
 
-### Technical details:
+**Environment**:
 
-* VSCode Version:
-* VsCodeVim Version: *[please ensure you are on the latest]*
-* OS: 
+<!--
+Please ensure you are on the latest VSCode + VSCodeVim
+-->
+
+- **VSCode Version**:
+- **VsCodeVim Version**: 
+- **OS**: 
+
+**What happened**:
+
+<!--
+Exact keys you pressed.
+-->
+
+**What did you expect to happen**: 
+
+**How to reproduce it**:

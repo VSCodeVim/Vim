@@ -43,7 +43,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 ## Custom commands
 
 * `gh` - show the hover tooltip.
-* `gc` - add an additional cursor at the next place that matches `*`.
+* `gb` - add an additional cursor at the next place that matches `*`.
 
 ## Left-right motions
 
@@ -309,7 +309,6 @@ Status | Command | Description
 
 Miscellanea:
 
-* We don't currently support the black hole register. [associated issue](https://github.com/VSCodeVim/Vim/issues/1357)
 * We don't support read only registers.
 
 Status | Command | Description | Note

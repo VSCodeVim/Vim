@@ -5,6 +5,7 @@ import { ModeHandler } from "../../src/mode/modeHandler";
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual} from '../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
 import * as util from '../../src/util';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("register", () => {
   let modeHandler: ModeHandler;
@@ -16,10 +17,10 @@ suite("register", () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
-  suiteTeardown(cleanUpWorkspace);
+  teardown(cleanUpWorkspace);
 
   newTest({
     title: "Can copy to a register",
@@ -49,6 +50,13 @@ suite("register", () => {
     start: ['|one', "two"],
     keysPressed: '"ayyj"byy"ap"bp',
     end: ["one", "two", "one", "|two"],
+  });
+
+  newTest({
+    title: "Can use black hole register",
+    start: ['|asdf', "qwer"],
+    keysPressed: 'yyj"_ddkp',
+    end: ["asdf", "|asdf"],
   });
 
   test("System clipboard works with chinese characters", async () => {

@@ -6,6 +6,7 @@ import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from 
 import { ModeName } from '../../src/mode/mode';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Mode Visual", () => {
   let modeHandler: ModeHandler;
@@ -17,7 +18,7 @@ suite("Mode Visual", () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);
@@ -262,7 +263,7 @@ suite("Mode Visual", () => {
     });
   });
 
-  suite("Can handle d correctly in Visual Line Mode", () => {
+  suite("Can handle d/c correctly in Visual Line Mode", () => {
     newTest({
       title: "Can handle d key",
       start: ['|{', '  a = 1;', '}'],
@@ -290,6 +291,14 @@ suite("Mode Visual", () => {
       keysPressed: 'VGdP',
       end: ['1', '|{', '  a = 1;', '}', '2']
     });
+
+    newTest({
+      title: "can handle 'c'",
+      start: ['foo', 'b|ar', 'fun'],
+      keysPressed: 'Vc',
+      end: ['foo', '|', 'fun'],
+      endMode: ModeName.Insert
+    });
   });
 
   suite("handles replace in visual line mode", () => {
@@ -315,6 +324,28 @@ suite("Mode Visual", () => {
       keysPressed: "Vkkr1",
       end: ["test", "|1111", "1111", "1111", "test"],
       endMode: ModeName.Normal
+    });
+  });
+
+  suite("search works in visual line mode", () => {
+    newTest({
+      title: "Works with /",
+      start: ["f|oo",
+              "bar",
+              "fun",
+              "baz"],
+      keysPressed: "V/fun\nx",
+      end: ["|baz"]
+    });
+
+    newTest({
+      title: "Works with ?",
+      start: ["foo",
+              "bar",
+              "fun",
+              "b|az"],
+      keysPressed: "V?bar\nx",
+      end: ["|foo"]
     });
   });
 

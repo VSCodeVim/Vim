@@ -36,7 +36,11 @@ export class QuitCommand extends node.CommandBase {
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     } else {
       let oldViewColumn = this.activeTextEditor!.viewColumn;
-      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      if (!this.arguments.bang) {
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      } else {
+        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+      }
 
       if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.viewColumn === oldViewColumn) {
         await vscode.commands.executeCommand('workbench.action.previousEditor');

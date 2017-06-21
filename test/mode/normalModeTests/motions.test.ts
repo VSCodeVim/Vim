@@ -4,6 +4,7 @@ import { setupWorkspace, cleanUpWorkspace } from './../../testUtils';
 import { ModeHandler } from '../../../src/mode/modeHandler';
 import { getTestingFunctions, testIt } from '../../testSimplifier';
 import { waitForTabChange } from '../../../src/util';
+import { getAndUpdateModeHandler } from "../../../extension";
 
 suite("Motions in Normal Mode", () => {
   let modeHandler: ModeHandler;
@@ -15,7 +16,7 @@ suite("Motions in Normal Mode", () => {
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);
@@ -462,6 +463,14 @@ suite("Motions in Normal Mode", () => {
     keysPressed: 'I!<Esc>j.j.',
     end: ['!one', '!two', '|!three']
   });
+
+  // This is still currently not possible.
+  // newTest({
+  //   title: "Can handle dot with I with tab",
+  //   start: ['on|e', 'two', 'three'],
+  //   keysPressed: 'I<tab><Esc>j.j.',
+  //   end: ['  one', '  two', ' | three']
+  // });
 
   newTest({
     title: "Can handle 0",

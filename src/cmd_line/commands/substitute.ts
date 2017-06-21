@@ -47,6 +47,7 @@ export enum SubstituteFlags {
 }
 
 export class SubstituteCommand extends node.CommandBase {
+  neovimCapable = true;
   protected _arguments : ISubstituteCommandArguments;
 
   constructor(args : ISubstituteCommandArguments) {

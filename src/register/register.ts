@@ -1,5 +1,6 @@
 import { VimState, RecordedState } from './../mode/modeHandler';
-import { YankOperator, CommandYankFullLine, BaseOperator, BaseCommand, CommandRegister, DeleteOperator } from './../actions/actions';
+import { YankOperator, BaseOperator, DeleteOperator } from './../actions/operator';
+import { CommandYankFullLine, BaseCommand, CommandRegister } from './../actions/commands/actions';
 import *  as util from './../util';
 
 /**
@@ -13,7 +14,7 @@ export enum RegisterMode {
   CharacterWise,
   LineWise,
   BlockWise,
-};
+}
 
 export type RegisterContent = string | string[] | RecordedState;
 
@@ -38,6 +39,7 @@ export class Register {
     '.': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '*': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
     '+': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
+    '_': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '0': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '1': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '2': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
@@ -50,6 +52,9 @@ export class Register {
     '9': { text: "", registerMode: RegisterMode.CharacterWise, isClipboardRegister: false }
   };
 
+  public static isBlackHoleRegister(registerName: string): boolean {
+    return (registerName === "_");
+  }
 
   public static isClipboardRegister(registerName: string): boolean {
     const register = Register.registers[registerName];
@@ -88,6 +93,10 @@ export class Register {
 
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
+    }
+
+    if (Register.isBlackHoleRegister(register)) {
+      return;
     }
 
     if (vimState.isMultiCursor) {
@@ -241,6 +250,10 @@ export class Register {
 
     if (Register.isClipboardRegister(register)) {
       util.clipboardCopy(content.toString());
+    }
+
+    if (Register.isBlackHoleRegister(register)) {
+      return;
     }
 
     Register.registers[register] = {

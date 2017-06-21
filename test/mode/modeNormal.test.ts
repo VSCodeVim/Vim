@@ -4,6 +4,7 @@ import { setupWorkspace, setTextEditorOptions, cleanUpWorkspace, assertEqual } f
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Mode Normal", () => {
     let modeHandler: ModeHandler;
@@ -15,7 +16,7 @@ suite("Mode Normal", () => {
     setup(async () => {
         await setupWorkspace();
         setTextEditorOptions(4, false);
-        modeHandler = new ModeHandler();
+        modeHandler = await getAndUpdateModeHandler();
     });
 
     teardown(cleanUpWorkspace);
@@ -125,6 +126,13 @@ suite("Mode Normal", () => {
       start: ['one', 'two', 'three', '|four', 'five'],
       keysPressed: '3dd',
       end: ["one", "two", "|three"],
+    });
+
+    newTest({
+      title: "Can handle d2d",
+      start: ['one', 'two', '|three', 'four', 'five'],
+      keysPressed: 'd2d',
+      end: ["one", "two", "|five"],
     });
 
     newTest({
@@ -252,6 +260,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'yiw' with correct cursor ending position",
+      start: ['tes|t'],
+      keysPressed: 'yiwp',
+      end: ['ttes|test'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'ciw'",
       start: ['text text tex|t'],
       keysPressed: '^lllllllciw',
@@ -328,6 +344,14 @@ suite("Mode Normal", () => {
       start: ['print(|"hello")'],
       keysPressed: 'cib',
       end: ['print(|)'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can handle 'ci(' across multiple lines with last character at beginning",
+      start: ['(|a', 'b)'],
+      keysPressed: 'ci)',
+      end: ['(|)'],
       endMode: ModeName.Insert
     });
 
@@ -791,6 +815,14 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle 'diw' on trailing spaces at the end of line",
+      start: ['one   two   three  | ', 'five  six'],
+      keysPressed: 'diw',
+      end: ['one   two   thre|e', 'five  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
       title: "Can handle 'diw' on word with numeric prefix and across lines",
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'd3iw',
@@ -843,6 +875,22 @@ suite("Mode Normal", () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'd3iW',
       end: ['one   two   three,   |  six'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle d}",
+      start: ['|foo', 'bar', '', 'fun'],
+      keysPressed: 'd}',
+      end: ['|', 'fun'],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can handle y} at beginning of line",
+      start: ['|foo', 'bar', '', 'fun'],
+      keysPressed: 'y}p',
+      end: ['foo', '|foo', 'bar', 'bar', '', 'fun'],
       endMode: ModeName.Normal
     });
 
@@ -1063,6 +1111,13 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can handle pasting in visual mode over selection",
+      start: ['|foo', 'bar', 'fun'],
+      keysPressed: 'Yjvll"ayjV"app',
+      end: ['foo', 'bar', 'bar', '|fun']
+    });
+
+    newTest({
       title: "Can repeat w",
       start: ['|one two three four'],
       keysPressed: '2w',
@@ -1103,6 +1158,24 @@ suite("Mode Normal", () => {
       keysPressed: '3g_',
       end: ['testtest', 'testtest', 'testtes|t']
     });
+
+//  These tests run poorly on Travis for w.e. reason
+    // newTest({
+    //   title: "gq handles spaces after single line comments correctly",
+    //   start: ['//    We choose to write a vim extension, not because it is easy, but because it is hard|.'],
+    //   keysPressed: 'Vgq',
+    //   end: [ '//    We choose to write a vim extension, not because it is easy, but because it is',
+    //         '|//    hard.'],
+    // });
+
+    // newTest({
+    //   title: "gq handles spaces before single line comments correctly",
+    //   start: ['    // We choose to write a vim extension, not because it is easy, but because it is hard|.'],
+    //   keysPressed: 'Vgq',
+    //   end: [ '    // We choose to write a vim extension, not because it is easy, but because',
+    //         '|    // it is hard.']
+    // });
+
 
     newTest({
       title: "Can handle space",
@@ -1223,12 +1296,13 @@ suite("Mode Normal", () => {
       end: ["abc abc |dhi"]
     });
 
-    newTest({
-      title: "can handle p with selection",
-      start: ["one", "two", "|three"],
-      keysPressed: "yykVkp",
-      end: ["|three", "three"]
-    });
+    // test works when run manually
+    // newTest({
+    //   title: "can handle p with selection",
+    //   start: ["one", "two", "|three"],
+    //   keysPressed: "yykVp",
+    //   end: ["|three", "three"]
+    // });
 
     newTest({
       title: "can handle P with selection",
@@ -1371,6 +1445,27 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "can ctrl-a properly on multiple lines",
+      start: ["id: 1|,", "someOtherId: 1"],
+      keysPressed: "<C-a>",
+      end: ["id: 1|,",  "someOtherId: 1"]
+    });
+
+    newTest({
+      title: "can <C-a> on word with multiple numbers (incrementing first number)",
+      start: ["f|oo1bar2"],
+      keysPressed: "<C-a>",
+      end: ["foo|2bar2"]
+    });
+
+    newTest({
+      title: "can <C-a> on word with multiple numbers (incrementing second number)",
+      start: ["foo1|bar2"],
+      keysPressed: "<C-a>",
+      end: ["foo1bar|3"]
+    });
+
+    newTest({
       title: "can do Y",
       start: ["|blah blah"],
       keysPressed: "Yp",
@@ -1396,6 +1491,20 @@ suite("Mode Normal", () => {
       start: ["|", "one two2o"],
       keysPressed: "/o\\do\n",
       end: ["", "one tw|o2o"]
+    });
+
+    newTest({
+      title: "/ can search with newline",
+      start: ["|asdf", "__asdf", "asdf"],
+      keysPressed: "/\\nasdf\n",
+      end: ["asdf", "__asd|f", "asdf"],
+    });
+
+    newTest({
+      title: "/ can search through multiple newlines",
+      start: ["|asdf", "__asdf", "asdf", "abc", "   abc"],
+      keysPressed: "/\asdf\\nasdf\\nabc\n",
+      end: ["asdf", "__|asdf", "asdf", "abc", "   abc"],
     });
 
     newTest({
@@ -1447,11 +1556,82 @@ suite("Mode Normal", () => {
     });
 
     newTest({
+      title: "Can do cit on a multiline tag",
+      start: [" <blink>\nhe|llo\ntext</blink>"],
+      keysPressed: "cit",
+      end: [" <blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit on a multiline tag with nested tags",
+      start: [" <blink>\n<h1>hello</h1>\nh<br>e|llo\nte</h1>xt</blink>"],
+      keysPressed: "cit",
+      end: [" <blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit inside of a tag with another non closing tag inside tags",
+      start: ["<blink>hello<br>wo|rld</blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cit inside of a tag with another empty closing tag inside tags",
+      start: ["<blink>hel|lo</h1>world</blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do dit on empty tag block, cursor moves to inside",
+      start: ["<bli|nk></blink>"],
+      keysPressed: "dit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do cit on empty tag block, cursor moves to inside",
+      start: ["<bli|nk></blink>"],
+      keysPressed: "cit",
+      end: ["<blink>|</blink>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "can do cit with self closing tags",
+      start: ["<div><div a=1/>{{c|ursor here}}</div>"],
+      keysPressed: "cit",
+      end: ["<div>|</div>"],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
       title: "Respects indentation with cc",
       start: ["{", "  int| a;"],
       keysPressed: "cc",
       end: ["{", "  |"],
       endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "can handle 'cc' on empty line",
+      start: ['foo', '|', 'bar'],
+      keysPressed: 'cc',
+      end: ['foo', '|', 'bar'],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "cc copies linewise",
+      start: ['foo', '|fun', 'bar'],
+      keysPressed: 'cc<Esc>jp',
+      end: ['foo', '', 'bar', '|fun']
     });
 
     newTest({
@@ -1490,6 +1670,8 @@ suite("Mode Normal", () => {
       end: ['test aaa test aaa test aaa test| ']
     });
 
+/*
+Disabling test until upstream VSCode issue is resolved: https://github.com/Microsoft/vscode/issues/26274
     newTest({
       title: "Can 'D'elete the characters under multiple cursors until the end of the line",
       start: [
@@ -1502,11 +1684,108 @@ suite("Mode Normal", () => {
         'test aaa test aaa test aaa test '
       ]
     });
+*/
 
     newTest({
       title: "cc on whitespace-only line clears line",
       start: ["|     "],
       keysPressed: 'cc',
       end: ["|"],
+    });
+
+    newTest({
+      title: "Can do cai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "cai",
+      end: [
+          '|',
+          'do_something_else()',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do cii",
+      start: [
+          'if foo > 3:',
+          '\tlog("foo is big")',
+          '\tfoo = 3',
+          '|',
+          'do_something_else()',
+      ],
+      keysPressed: "cii",
+      end: [
+          'if foo > 3:',
+          '\t|',
+          'do_something_else()',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do caI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "caI",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Insert
+    });
+
+    newTest({
+      title: "Can do dai",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "dai",
+      end: [
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do dii",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")',
+          '    foo = 3',
+          '|',
+          'do_something_else()',
+      ],
+      keysPressed: "dii",
+      end: [
+          'if foo > 3:',
+          '|do_something_else()',
+      ],
+      endMode: ModeName.Normal
+    });
+
+    newTest({
+      title: "Can do daI",
+      start: [
+          'if foo > 3:',
+          '    log("foo is big")|',
+          '    foo = 3',
+          'do_something_else()',
+      ],
+      keysPressed: "daI",
+      end: [
+          '|',
+      ],
+      endMode: ModeName.Normal
     });
 });

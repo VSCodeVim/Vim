@@ -1,11 +1,12 @@
 "use strict";
 
-import { setupWorkspace, setTextEditorOptions, cleanUpWorkspace, assertEqual } from './../testUtils';
+import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 
 import * as vscode from 'vscode';
+import { getAndUpdateModeHandler } from "../../extension";
 
 suite("Mode Visual Block", () => {
   let modeHandler: ModeHandler;
@@ -17,8 +18,7 @@ suite("Mode Visual Block", () => {
 
   setup(async () => {
     await setupWorkspace();
-    setTextEditorOptions(4, false);
-    modeHandler = new ModeHandler();
+    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);
@@ -86,13 +86,6 @@ suite("Mode Visual Block", () => {
     title: "Can handle c backwards select",
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjc123',
-    end: ['t123|t', 't123t'],
-  });
-
-  newTest({
-    title: "Can handle s backwards select",
-    start: ['tes|t', 'test'],
-    keysPressed: 'h<C-v>hjs123',
     end: ['t123|t', 't123t'],
   });
 

@@ -2,19 +2,20 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { ModeName } from '../src/mode/mode';
 import { HistoryTracker } from '../src/history/historyTracker';
-import { Position } from '../src/motion/position';
+import { Position } from '../src/common/motion/position';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
 import { Globals } from '../src/globals';
+import { getAndUpdateModeHandler } from "../extension";
 
 export function getTestingFunctions() {
   const newTest = (testObj: ITestObject): void => {
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
-    test(testObj.title, async () => testIt.bind(null, new ModeHandler())(testObj)
+    test(testObj.title, async () => testIt.bind(null, await getAndUpdateModeHandler())(testObj)
       .catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;
@@ -27,7 +28,7 @@ export function getTestingFunctions() {
     const stack = (new Error()).stack;
     let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
 
-    test.only(testObj.title, async () => testIt.bind(null, new ModeHandler())(testObj)
+    test.only(testObj.title, async () => testIt.bind(null, await getAndUpdateModeHandler())(testObj)
       .catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;
@@ -99,16 +100,13 @@ class TestObjectHelper {
   }
 
   private _parse(t: ITestObject): void {
+    this._isValid = true;
     if (!this._setStartCursorPosition(t.start)) {
       this._isValid = false;
-      return;
     }
     if (!this._setEndCursorPosition(t.end)) {
       this._isValid = false;
-      return;
     }
-
-    this._isValid = true;
   }
 
   public asVimInputText(): string[] {
@@ -201,8 +199,8 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   await waitForCursorUpdatesToHappen();
 
-  // Since we bypassed VSCodeVim to add text, we need to tell the history tracker
-  // that we added it.
+  // Since we bypassed VSCodeVim to add text,
+  // we need to tell the history tracker that we added it.
   modeHandler.vimState.historyTracker.addChange();
   modeHandler.vimState.historyTracker.finishCurrentStep();
 
@@ -238,5 +236,4 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   }
 }
 
-
-export { ITestObject, testIt }
+export { ITestObject, testIt };

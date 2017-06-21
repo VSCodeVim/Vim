@@ -6,6 +6,7 @@ import { ModeHandler } from '../../../src/mode/modeHandler';
 import { waitForTabChange } from '../../../src/util';
 import * as assert from 'assert';
 import { getTestingFunctions } from '../../testSimplifier';
+import { getAndUpdateModeHandler } from "../../../extension";
 
 suite("Dot Operator", () => {
     let modeHandler: ModeHandler;
@@ -18,7 +19,7 @@ suite("Dot Operator", () => {
     setup(async () => {
         await setupWorkspace();
         setTextEditorOptions(4, false);
-        modeHandler = new ModeHandler();
+        modeHandler = await getAndUpdateModeHandler();
     });
 
     teardown(cleanUpWorkspace);
@@ -35,7 +36,6 @@ suite("Dot Operator", () => {
       modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
       await modeHandler.handleMultipleKeyEvents(firstTabKeys.concat(['<Esc>']));
-
 
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'T']);
       await waitForTabChange();

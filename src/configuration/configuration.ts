@@ -8,7 +8,7 @@ export type OptionValue = number | string | boolean;
 export type ValueMapping = {
   [key: number]: OptionValue
   [key: string]: OptionValue
-}
+};
 
 export interface IHandleKeys {
   [key: string]: boolean;
@@ -130,10 +130,6 @@ class ConfigurationClass {
     }
   }
 
-  /**
-   * Should the block cursor not blink?
-   */
-  useSolidBlockCursor = false;
 
   /**
    * Use the system's clipboard when copying.
@@ -283,6 +279,27 @@ class ConfigurationClass {
    * Array of all key combinations that were registered in angle bracket notation
    */
   boundKeyCombinations: string[] = [];
+
+  /**
+   * In visual mode, start a search with * or # using the current selection
+   */
+  visualstar = false;
+
+  /**
+   * Uses a hack to fix moving around folds.
+   */
+  foldfix = false;
+  /**
+   * In a recent release, gc and gb have been swapped. An error message
+   * shows everytime you press one of them. This flag disables that.
+   */
+  disableAnnoyingGcMessage = false;
+
+  enableNeovim = true;
+
+  neovimPath = "nvim";
+
+  disableAnnoyingNeovimMessage = false;
 }
 
 function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {

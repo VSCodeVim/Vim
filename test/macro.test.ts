@@ -1,6 +1,6 @@
 "use strict";
 
-import { setupWorkspace, cleanUpWorkspace, setTextEditorOptions } from './testUtils';
+import { setupWorkspace, cleanUpWorkspace } from './testUtils';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { getTestingFunctions } from './testSimplifier';
 
@@ -12,7 +12,6 @@ suite("Record and execute a macro", () => {
 
   setup(async () => {
     await setupWorkspace();
-    setTextEditorOptions(4, false);
   });
 
   teardown(cleanUpWorkspace);
@@ -64,5 +63,12 @@ suite("Record and execute a macro", () => {
     start: ["1|."],
     keysPressed: 'qayyp<C-a>q4@a',
     end: ['1.', '2.', '3.', '4.', '5.', '|6.']
+  });
+
+  newTest({
+    title: "Can execute macros with dot commands properly",
+    start: ["|test", "test", "test", "test", "test", "test", "test"],
+    keysPressed: 'qadd.q@a@a',
+    end: ["|test"],
   });
 });
