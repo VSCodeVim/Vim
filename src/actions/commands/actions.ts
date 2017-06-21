@@ -522,7 +522,7 @@ class CommandCtrlOpenBracket extends CommandEsc {
 }
 
 abstract class CommandEditorScroll extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   runsOnceForEachCountPrefix = false;
   keys: string[];
   to: EditorScrollDirection;
@@ -561,7 +561,6 @@ class CommandCtrlY extends CommandEditorScroll {
 
 @RegisterAction
 class CommandMoveFullPageUp extends CommandEditorScroll {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<C-b>"];
   to: EditorScrollDirection = "up";
   by: EditorScrollByUnit = "page";
@@ -569,7 +568,6 @@ class CommandMoveFullPageUp extends CommandEditorScroll {
 
 @RegisterAction
 class CommandMoveFullPageDown extends CommandEditorScroll {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<C-f>"];
   to: EditorScrollDirection = "down";
   by: EditorScrollByUnit = "page";
@@ -577,7 +575,6 @@ class CommandMoveFullPageDown extends CommandEditorScroll {
 
 @RegisterAction
 class CommandMoveHalfPageDown extends CommandEditorScroll {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<C-d>"];
   to: EditorScrollDirection = "down";
   by: EditorScrollByUnit = "halfPage";
@@ -585,7 +582,6 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
 
 @RegisterAction
 class CommandMoveHalfPageUp extends CommandEditorScroll {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ["<C-u>"];
   to: EditorScrollDirection = "up";
   by: EditorScrollByUnit = "halfPage";
@@ -1080,7 +1076,7 @@ export class MarkCommand extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const markName = this.keysPressed[1];
 
-
+    vimState.historyTracker.addMark(position, markName);
 
     return vimState;
   }
