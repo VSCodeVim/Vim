@@ -1355,7 +1355,6 @@ export class PutCommandVisual extends BaseCommand {
   ];
   modes = [ModeName.Visual, ModeName.VisualLine];
   runsOnceForEachCountPrefix = true;
-  canBePrefixedWithDot = true;
 
   public async exec(position: Position, vimState: VimState, after: boolean = false): Promise<VimState> {
     let start = vimState.cursorStartPosition;
@@ -1399,6 +1398,8 @@ export class PutCommandVisual extends BaseCommand {
 export class PutBeforeCommand extends BaseCommand {
     public keys = ["P"];
     public modes = [ModeName.Normal];
+    canBeRepeatedWithDot = true;
+    runsOnceForEachCountPrefix = true;
 
     public async exec(position: Position, vimState: VimState): Promise<VimState> {
         const command = new PutCommand();
