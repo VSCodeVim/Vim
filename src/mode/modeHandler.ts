@@ -3,6 +3,8 @@ import { SurroundInputMode } from './surroundInputMode';
 
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
+import * as hash from 'object-hash';
+
 
 import { EditorIdentity } from './../../extension';
 import {
@@ -145,6 +147,8 @@ export class VimState {
 
   public globalState: GlobalState = new GlobalState;
 
+  public prevStateHash: string = "";
+
   /**
    * The position the cursor will be when this action finishes.
    */
@@ -191,7 +195,7 @@ export class VimState {
   public cursorPositionJustBeforeAnythingHappened = [ new Position(0, 0) ];
 
   public isRecordingMacro: boolean = false;
-  public isReplayingMacro: boolean = false;
+  public isReplayingMacro: number = 0;
 
   public replaceState: ReplaceState | undefined = undefined;
 
@@ -1415,9 +1419,15 @@ export class ModeHandler implements vscode.Disposable {
           break;
         case "macro":
           let recordedMacro = (await Register.getByKey(command.register)).text as RecordedState;
-
-          vimState.isReplayingMacro = true;
-
+          let curStateHash = hash({text: TextEditor.getText(), cursors: vimState.allCursors});
+          vimState.isReplayingMacro ++;
+          if (vimState.isReplayingMacro > 1000) {
+            break;
+          }
+          if (vimState.prevStateHash === curStateHash) {
+            break;
+          }
+          vimState.prevStateHash = curStateHash;
           if (command.replay === "contentChange") {
             vimState = await this.runMacro(vimState, recordedMacro);
           } else {
@@ -1429,7 +1439,7 @@ export class ModeHandler implements vscode.Disposable {
             await this.handleMultipleKeyEvents(keyStrokes);
           }
 
-          vimState.isReplayingMacro = false;
+          vimState.isReplayingMacro --;
           vimState.historyTracker.lastInvokedMacro = recordedMacro;
 
           if (vimState.lastMovementFailed) {
