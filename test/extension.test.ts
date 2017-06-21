@@ -20,16 +20,4 @@ suite("package.json", () => {
       assert.ok(found, "Missing handler for key=" + keybinding.key + ". Expected handler=" + keybinding.command);
     }
   });
-
-  test("duplicate keybindings", () => {
-    let pkg = require(__dirname + '/../../package.json');
-    assert.ok(pkg);
-
-    let keys = _.map(pkg.contributes.keybindings, "key");
-    let duplicateKeys = _.filter(keys, function(x, i, array) {
-      return _.includes(array, x, i + 1);
-    });
-
-    assert.equal(duplicateKeys.length, 0, "Duplicate Keybindings: " + duplicateKeys.join(','));
-  });
 });
