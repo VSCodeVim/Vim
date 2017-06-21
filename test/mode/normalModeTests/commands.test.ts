@@ -266,4 +266,11 @@ suite("Mode Normal", () => {
       end: ['on|e']
     });
 
+    newTest({
+      title: "Can handle undo with P",
+      start: ['one', '|two', 'three'],
+      keysPressed: 'ddkPjddu',
+      end: ['two', '|one', 'three'],
+    });
+
 });
