@@ -9,11 +9,21 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
   }
 
   let scanner = new Scanner(args);
+  let bang;
+  const c = scanner.next();
+  if (c === '!') {
+    bang = true;
+  }
+  if (scanner.isAtEof) {
+    return new node.FileCommand({bang: true});
+  }
+
   let name = scanner.nextWord();
 
   return new node.FileCommand({
     name: name,
-    position: node.FilePosition.CurrentWindow
+    position: node.FilePosition.CurrentWindow,
+    bang: true
   });
 }
 

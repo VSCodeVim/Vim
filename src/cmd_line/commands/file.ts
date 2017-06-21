@@ -13,6 +13,7 @@ export enum FilePosition {
 
 export interface IFileCommandArguments extends node.ICommandArgs {
   name?: string;
+  bang?: boolean;
   position?: FilePosition;
   lineNumber?: number;
 }
@@ -58,6 +59,9 @@ export class FileCommand extends node.CommandBase {
   }
 
   async execute(): Promise<void> {
+    if (this._arguments.bang) {
+      await vscode.commands.executeCommand("workbench.action.files.revert");
+    }
     if (!this._arguments.name) {
       // Open an empty file
       if (this._arguments.position === FilePosition.CurrentWindow) {
