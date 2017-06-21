@@ -537,10 +537,10 @@ abstract class CommandEditorScroll extends BaseCommand {
         to: this.to,
         by: this.by,
         value: timesToRepeat,
-        revealCursor: true
+        revealCursor: true,
+        select: [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(vimState.currentMode) >= 0
       }
     });
-
     return vimState;
   }
 }
@@ -1080,7 +1080,7 @@ export class MarkCommand extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const markName = this.keysPressed[1];
 
-    vimState.historyTracker.addMark(position, markName);
+
 
     return vimState;
   }
