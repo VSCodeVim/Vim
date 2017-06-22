@@ -1047,7 +1047,7 @@ class MoveWordEnd extends BaseMovement {
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     let end = position.getCurrentWordEnd();
 
-    return new Position(end.line, end.character + 1);
+    return new Position(end.line, end.character);
   }
 }
 

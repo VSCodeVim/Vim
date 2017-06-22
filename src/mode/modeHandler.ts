@@ -1624,9 +1624,9 @@ export class ModeHandler implements vscode.Disposable {
            * start of the selection when it precedes where we started visual mode.
            */
 
-          // if (start.compareTo(stop) > 0) {
-          //   start = start.getRight();
-          // }
+          if (start.compareTo(stop) > 0) {
+            start = start.getRight();
+          }
 
           selections = [ new vscode.Selection(start, stop) ];
         } else if (vimState.currentMode === ModeName.VisualLine) {
