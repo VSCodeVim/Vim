@@ -884,7 +884,7 @@ export class Position extends vscode.Position {
               (index >= this.character &&  inclusive)) || currentLine !== this.line);
 
       if (newCharacter !== undefined) {
-        return new Position(currentLine, newCharacter);
+        return new Position(currentLine, newCharacter + 1);
       }
     }
 
