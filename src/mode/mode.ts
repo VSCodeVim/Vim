@@ -15,6 +15,7 @@ export enum ModeName {
 export enum VSCodeVimCursorType {
   Block,
   Line,
+  LineThin,
   Underline,
   TextDecoration,
   Native

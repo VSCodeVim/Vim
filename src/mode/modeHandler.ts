@@ -738,7 +738,6 @@ export class ModeHandler implements vscode.Disposable {
           this.setCurrentModeByName(this._vimState);
 
           // double click mouse selection causes an extra character to be selected so take one less character
-          this._vimState.cursorPosition = this._vimState.cursorPosition.getLeft();
           toDraw = true;
         }
       } else {
@@ -1083,7 +1082,7 @@ export class ModeHandler implements vscode.Disposable {
         vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
           vimState.cursorPosition.getDocumentEnd()
         );
-    }
+      }
 
       const currentLineLength = TextEditor.getLineAt(stop).text.length;
 
@@ -1626,9 +1625,9 @@ export class ModeHandler implements vscode.Disposable {
            * start of the selection when it precedes where we started visual mode.
            */
 
-          if (start.compareTo(stop) > 0) {
-            start = start.getRight();
-          }
+          // if (start.compareTo(stop) > 0) {
+          //   start = start.getRight();
+          // }
 
           selections = [ new vscode.Selection(start, stop) ];
         } else if (vimState.currentMode === ModeName.VisualLine) {
@@ -1716,9 +1715,12 @@ export class ModeHandler implements vscode.Disposable {
     // Use native cursor if possible. Default to Block.
     let cursorStyle = vscode.TextEditorCursorStyle.Block;
     switch (this.currentMode.cursorType) {
-      case VSCodeVimCursorType.TextDecoration:
       case VSCodeVimCursorType.Line:
         cursorStyle = vscode.TextEditorCursorStyle.Line;
+        break;
+      case VSCodeVimCursorType.TextDecoration:
+      case VSCodeVimCursorType.LineThin:
+        cursorStyle = vscode.TextEditorCursorStyle.LineThin;
         break;
       case VSCodeVimCursorType.Underline:
         cursorStyle = vscode.TextEditorCursorStyle.Underline;
@@ -1738,8 +1740,12 @@ export class ModeHandler implements vscode.Disposable {
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
       // in the middle of a selection natively, which is what we need for Visual Mode.
 
-      for (const { stop: cursorStop } of vimState.allCursors) {
-        cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
+      for (const { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
+        if (cursorStart.isEarlierThan(cursorStop)) {
+          cursorRange.push(new vscode.Range(cursorStop.getLeft(), cursorStop));
+        } else {
+          cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
+        }
       }
     }
 

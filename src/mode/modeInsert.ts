@@ -7,7 +7,7 @@ export class InsertMode extends Mode {
   public text = "Insert Mode";
   public cursorType = VSCodeVimCursorType.Native;
 
-   constructor() {
+  constructor() {
     super(ModeName.Insert);
   }
 }
