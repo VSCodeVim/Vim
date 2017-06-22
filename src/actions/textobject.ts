@@ -332,7 +332,7 @@ export class SelectInnerSentence extends TextObjectMovement {
       stop = currentSentenceNonWhitespaceEnd;
     }
 
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition.getRight())) {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {

@@ -1180,6 +1180,9 @@ export class ModeHandler implements vscode.Disposable {
           vimState.currentRegisterMode = result.registerMode;
         }
       }
+      if (vimState.currentMode === ModeName.Visual) {
+        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(vimState.allCursors[i].stop.getRight());
+      }
 
       if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
         VimState.lastRepeatableMovement = movement;
