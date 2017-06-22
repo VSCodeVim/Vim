@@ -989,7 +989,7 @@ export class MoveWordBegin extends BaseMovement {
       if (" \t".indexOf(char) >= 0) {
         return position.getWordRight();
       } else {
-        return position.getCurrentWordEnd(true).getRight();
+        return position.getCurrentWordEnd(true);
       }
     } else {
       return position.getWordRight();
