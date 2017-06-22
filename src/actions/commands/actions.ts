@@ -438,8 +438,7 @@ class CommandEsc extends BaseCommand {
       return vimState;
     }
 
-    if (vimState.currentMode !== ModeName.Visual &&
-        vimState.currentMode !== ModeName.VisualLine &&
+    if (vimState.currentMode !== ModeName.VisualLine &&
         vimState.currentMode !== ModeName.EasyMotionMode) {
 
       // Normally, you don't have to iterate over all cursors,
@@ -1797,6 +1796,7 @@ class CommandExitVisualMode extends BaseCommand {
   keys = ["v"];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft()));
     vimState.currentMode = ModeName.Normal;
 
     return vimState;
@@ -1810,6 +1810,7 @@ class CommandVisualMode extends BaseCommand {
   isCompleteAction = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getRight()));
     vimState.currentMode = ModeName.Visual;
 
     return vimState;
