@@ -989,7 +989,7 @@ export class MoveWordBegin extends BaseMovement {
       if (" \t".indexOf(char) >= 0) {
         return position.getWordRight();
       } else {
-        return position.getCurrentWordEnd(true);
+        return position.getCurrentWordEnd(true).getRight();
       }
     } else {
       return position.getWordRight();
@@ -1047,7 +1047,7 @@ class MoveWordEnd extends BaseMovement {
   public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
     let end = position.getCurrentWordEnd();
 
-    return new Position(end.line, end.character);
+    return new Position(end.line, end.character + 1);
   }
 }
 
