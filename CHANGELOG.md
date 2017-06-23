@@ -1,3 +1,29 @@
+# [v0.8.7 File Fromage](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.7)  (Jun 23, 2017)
+
+We fixed the highest thumbed up issue in VSCodeVim history this time!
+* Added e! to revert files <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
+* Fixed P not adding an undo stop <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="237432183" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1857" href="https://github.com/VSCodeVim/Vim/issues/1857">#1857</a>
+* Added q! to close files without saving them <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
+* Added [count] A/I for adding repeated text at beginning/end of lines <a class="user-mention" href="https://github.com/xconverge">@xconverge</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="236135176" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1843" href="https://github.com/VSCodeVim/Vim/issues/1843">#1843</a>
+* Fixed README errors. Thanks <a class="user-mention" href="https://github.com/bluedrink9">@BlueDrink9</a>
+* And the big issue this time: Keybindings for navigating the explorer list! Here are the list of the current keybindings.
+<ul>
+<li><code>gg</code> navigates you to the top of the explorer list</li>
+<li><code>G</code> navigates you to the bottom</li>
+<li><code>o</code> opens and closes folders</li>
+<li><code>&lt;ctrl+d&gt;</code> navigates down half a page</li>
+<li><code>&lt;ctrl+u&gt;</code> navigates up half a page</li>
+<li>And then of course, <code>j</code> and <code>k</code> for navigating up and down.</li>
+</ul>
+
+* <code>gg</code> navigates you to the top of the explorer list
+* <code>G</code> navigates you to the bottom
+* <code>o</code> opens and closes folders
+* <code>&lt;ctrl+d&gt;</code> navigates down half a page
+* <code>&lt;ctrl+u&gt;</code> navigates up half a page
+* And then of course, <code>j</code> and <code>k</code> for navigating up and down.
+
+Please give feedback if you feel there's other keybindings we're missing.
 # [v0.8.6 Automatic Acorns](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.6)  (Jun 15, 2017)
 * Fixed jumping to line in command-mode without Neovim not working. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="235096650" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1826" href="https://github.com/VSCodeVim/Vim/issues/1826">#1826</a> <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
 * Fixed undo not restoring all changes occasionally. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="232714287" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1794" href="https://github.com/VSCodeVim/Vim/issues/1794">#1794</a> <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
@@ -146,9 +172,6 @@ Fix for gc and Cmd-D multicursor not working correctly
 # [0.6.14 Bingo Blocky](https://github.com/VSCodeVim/Vim/releases/tag/0.6.14)  (Apr 8, 2017)
 * Fix for visual block mode
 * Fix type suggestion for handleKeys object <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="219235769" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1465" href="https://github.com/VSCodeVim/Vim/pull/1465">#1465</a> (thanks <a class="user-mention" href="https://github.com/abhiranjankumar00">@abhiranjankumar00</a>)
-# [v0.6.13 Fixy Fish](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.13)  (Apr 4, 2017)
-
-The previous release had a bug with <code>.</code>.
 # [0.6.12 Rabid Rhinoceros](https://github.com/VSCodeVim/Vim/releases/tag/0.6.12)  (Apr 4, 2017)
 * Multicursor improvements, alt click to add cursor, etc
 * "vim.easymotionChangeBackgroundColor": true uses searchHighlightColor for easymotion decorations
@@ -157,6 +180,9 @@ The previous release had a bug with <code>.</code>.
 * Added setting to delegate ctrl keys back to vscode natively<br/>
 <a href="https://github.com/VSCodeVim/Vim#handlekeys">https://github.com/VSCodeVim/Vim#handlekeys</a>
 * <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="217026370" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1432" href="https://github.com/VSCodeVim/Vim/issues/1432">#1432</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="208665986" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1312" href="https://github.com/VSCodeVim/Vim/issues/1312">#1312</a>, <code>&lt;space&gt;</code> as leader, multiple other bugs fixed
+# [v0.6.13 Fixy Fish](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.13)  (Apr 4, 2017)
+
+The previous release had a bug with <code>.</code>.
 # [v0.6.11 Fixy Frankfurter](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.11)  (Mar 19, 2017)
 
 Fixes a number of issues with remappings: <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="215140612" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1405" href="https://github.com/VSCodeVim/Vim/issues/1405">#1405</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="215229819" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1410" href="https://github.com/VSCodeVim/Vim/issues/1410">#1410</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213917068" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1397" href="https://github.com/VSCodeVim/Vim/issues/1397">#1397</a>
@@ -284,6 +310,9 @@ Features:
 * Recognize and use <code>&lt;leader&gt;</code>
 * Allow remapping directly to VSCode commands.
 * Add <code>&lt;space&gt;</code> as a synonym for <code></code>.
+# [0.4.5 0.4.5](https://github.com/VSCodeVim/Vim/releases/tag/0.4.5)  (Dec 4, 2016)
+
+Pretend you don't see this.
 # [v0.4.6 v0.4.6](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.6)  (Dec 4, 2016)
 
 Features:
@@ -295,9 +324,6 @@ Features:
 Bug Fixes:
 * Fix a really obscure bug with word boundaries.
 * Fix an annoying bug where the view would jump to the top of the file when searching with /.
-# [0.4.5 0.4.5](https://github.com/VSCodeVim/Vim/releases/tag/0.4.5)  (Dec 4, 2016)
-
-Pretend you don't see this.
 # [v0.4.4 v0.4.4](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.4)  (Nov 29, 2016)
 
 Features:
@@ -419,9 +445,6 @@ This release includes <a class="user-mention" href="https://github.com/rebornix"
 * Fix cc and C on empty lines (thanks <a class="user-mention" href="https://github.com/shotaakasaka">@shotaAkasaka</a>!)
 * Default to not having Visual Block Mode active.
 * Fix jj leaving behind a stray j.
-# [v0.1.6 Blocky Banana](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.6)  (Aug 9, 2016)
-
-This was intended to be a hot-fix for <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="170147798" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/583" href="https://github.com/VSCodeVim/Vim/issues/583">#583</a>; as an apology, it also includes Visual Block mode, one of our most requested features. (And also because I just happened to finish it right after I released 0.1.5) <g-emoji alias="wink" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f609.png" ios-version="6.0">😉</g-emoji>
 # [0.1.5 Replacement Raisin](https://github.com/VSCodeVim/Vim/releases/tag/0.1.5)  (Aug 9, 2016)
 
 Another awesome release!
@@ -446,6 +469,9 @@ Another awesome release!
 * Fix remapping in modes that don't want remapping to happen
 * Fix a bug making marks inconsistent
 * Fix V in visual mode
+# [v0.1.6 Blocky Banana](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.6)  (Aug 9, 2016)
+
+This was intended to be a hot-fix for <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="170147798" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/583" href="https://github.com/VSCodeVim/Vim/issues/583">#583</a>; as an apology, it also includes Visual Block mode, one of our most requested features. (And also because I just happened to finish it right after I released 0.1.5) <g-emoji alias="wink" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f609.png" ios-version="6.0">😉</g-emoji>
 # [v0.1.4 Awesome Applepie](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.4)  (Jul 28, 2016)
 
 I'm especially excited about this version of VSCodeVim! There were a large number of contributions that really improved the quality of the extension. As usual, thanks to all contributors!
