@@ -22,10 +22,19 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
         currentChar = scanner.next();
 
         if (currentChar !== delimiter) {
-          pattern += "\\";
+          switch (currentChar) {
+            case 'r':
+              pattern += '\r';
+              break;
+            case 'n':
+              pattern += '\n';
+              break;
+            default:
+              pattern += "\\";
+              pattern += currentChar;
+              break;
+          }
         }
-
-        pattern += currentChar;
       }
 
       return parsePattern(pattern, scanner, delimiter);
@@ -124,6 +133,7 @@ export function parseSubstituteCommandArgs(args : string) : node.SubstituteComma
 
     if (searchDelimiter) {
       let replaceString = parsePattern("", scanner, delimiter)[0];
+
       scanner.skipWhiteSpace();
       let flags = parseSubstituteFlags(scanner);
       scanner.skipWhiteSpace();
