@@ -1358,6 +1358,9 @@ export class PutCommandVisual extends BaseCommand {
     if (start.isAfter(end)) {
       [start, end] = [end, start];
     }
+    if (vimState.currentMode === ModeName.Visual) {
+      end = end.getLeft();
+    }
 
     // If the to be inserted text is linewise we have a seperate logic delete the
     // selection first than insert
@@ -1380,9 +1383,6 @@ export class PutCommandVisual extends BaseCommand {
     result.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
     result.recordedState.registerName = Configuration.useSystemClipboard ? '*' : '"';
     result = await new operator.YankOperator(this.multicursorIndex).run(result, start, end);
-    if (vimState.currentMode === ModeName.Visual) {
-      end = end.getLeft();
-    }
     result.currentRegisterMode = RegisterMode.CharacterWise;
     result = await new operator.DeleteOperator(this.multicursorIndex).run(result, start, end.getLeftIfEOL(), false);
     result.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
