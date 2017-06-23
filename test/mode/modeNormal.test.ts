@@ -1314,8 +1314,8 @@ suite("Mode Normal", () => {
     newTest({
       title: "can handle p in visual to end of line",
       start: ["1234 |5678", "test test"],
-      keysPressed: "vllllyjvllllp",
-      end: ["1234 5678", "test |5678", ""]
+      keysPressed: "vlllyjvlllp",
+      end: ["1234 5678", "test |5678"]
     });
 
     newTest({
