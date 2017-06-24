@@ -161,9 +161,6 @@ export class DeleteOperator extends BaseOperator {
     }
 
     public async run(vimState: VimState, start: Position, end: Position, yank = true): Promise<VimState> {
-        if (vimState.currentMode === ModeName.Visual) {
-          end = end.getLeft();
-        }
         let newPos = await this.delete(start, end, vimState.currentMode, vimState.effectiveRegisterMode(), vimState, yank);
 
         vimState.currentMode = ModeName.Normal;

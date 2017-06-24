@@ -206,7 +206,7 @@ export class SelectInnerWord extends TextObjectMovement {
       stop = position.getCurrentWordEnd(true);
     }
 
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition.getRight())) {
+    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
