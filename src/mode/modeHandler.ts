@@ -1102,7 +1102,7 @@ export class ModeHandler implements vscode.Disposable {
           stop.character >= currentLineLength && currentLineLength > 0) {
 
         vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-          stop.getLineEnd().getLeft()
+          stop.getLineEnd().getLeftThroughLineBreaks(true)
         );
       }
     }
@@ -1637,7 +1637,7 @@ export class ModeHandler implements vscode.Disposable {
            */
 
           if (start.compareTo(stop) > 0) {
-            start = start.getRight();
+            start = start.getRightThroughLineBreaks();
           }
 
           selections = [ new vscode.Selection(start, stop) ];
