@@ -511,11 +511,6 @@
           "description": "Uses a hack to move around folds properly",
           "default": false
         },
-        "vim.disableAnnoyingGcMessage": {
-          "type": "boolean",
-          "description": "Get rid of that annoying pop up that shows up everytime you type gc or gb",
-          "default": false
-        },
         "vim.enableNeovim": {
           "type": "boolean",
           "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect. NOTE: Neovim must be installed (v0.2.0) and neovimPath must be set the executable in order for this setting to work. Otherwise, vscodevim will crash.",

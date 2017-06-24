@@ -289,11 +289,6 @@ class ConfigurationClass {
    * Uses a hack to fix moving around folds.
    */
   foldfix = false;
-  /**
-   * In a recent release, gc and gb have been swapped. An error message
-   * shows everytime you press one of them. This flag disables that.
-   */
-  disableAnnoyingGcMessage = false;
 
   enableNeovim = true;
 

@@ -608,16 +608,6 @@ export class CommentOperator extends BaseOperator {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    if (!Configuration.disableAnnoyingGcMessage) {
-      vscode.window.showInformationMessage("gc is now commentOperator. gb is now 'add new cursor'", "Never show again").then(
-        (result) => {
-          if (result === "Never show again") {
-            vscode.workspace.getConfiguration("vim").update("disableAnnoyingGcMessage", true, true);
-            Configuration.disableAnnoyingGcMessage = true;
-          }
-        });
-    }
-
     vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
     await vscode.commands.executeCommand("editor.action.commentLine");
 
