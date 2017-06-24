@@ -3,7 +3,6 @@
 
 ![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)
 ![https://travis-ci.org/VSCodeVim/Vim]( https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)
-![https://vscodevim-slackin.azurewebsites.net](https://vscodevim-slackin.azurewebsites.net/badge.svg)
 
 
 <hr>
