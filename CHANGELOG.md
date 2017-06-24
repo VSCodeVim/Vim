@@ -243,22 +243,22 @@ The last release had a little bug. This fixes that bug.
 I admit it. I sneaked this release out just because I wanted to use less buggy macros.
 
 Macro stuff:
-* 
+*
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213499873" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1382" href="https://github.com/VSCodeVim/Vim/issues/1382">#1382</a> - macros made too many history steps - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a></p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213499873" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1382" href="https://github.com/VSCodeVim/Vim/issues/1382">#1382</a> - macros made too many history steps - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* 
+*
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213575205" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1388" href="https://github.com/VSCodeVim/Vim/issues/1388">#1388</a> - macros wouldn't play back indentation removal in some cases</p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213575205" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1388" href="https://github.com/VSCodeVim/Vim/issues/1388">#1388</a> - macros wouldn't play back indentation removal in some cases
-* 
+*
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213576111" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1389" href="https://github.com/VSCodeVim/Vim/issues/1389">#1389</a> - macros weren't adjusting character position correctly in some cases</p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213576111" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1389" href="https://github.com/VSCodeVim/Vim/issues/1389">#1389</a> - macros weren't adjusting character position correctly in some cases
-* 
+*
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213514740" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1385" href="https://github.com/VSCodeVim/Vim/issues/1385">#1385</a> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a></p>
 
 
