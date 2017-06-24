@@ -254,12 +254,12 @@ export class Position extends vscode.Position {
 
     for (let lineIndex = itrStart; reverse ? lineIndex >= itrEnd : lineIndex <= itrEnd; reverse ? lineIndex-- : lineIndex++) {
       const line = TextEditor.getLineAt(new Position(lineIndex, 0)).text;
-      const endCharacter = runToLineEnd ? line.length + 1 : Math.min(line.length, bottomRight.character);
+      const endCharacter = runToLineEnd ? line.length + 1 : Math.min(line.length, bottomRight.character + 1);
 
       yield {
         line  : line.substring(topLeft.character, endCharacter),
         start : new Position(lineIndex, topLeft.character),
-        end   : new Position(lineIndex, bottomRight.character)
+        end   : new Position(lineIndex, bottomRight.character + 1)
       };
     }
   }

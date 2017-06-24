@@ -1754,10 +1754,16 @@ export class ModeHandler implements vscode.Disposable {
 
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
       // in the middle of a selection natively, which is what we need for Visual Mode.
-      for (const { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
-        if (cursorStart.isEarlierThan(cursorStop)) {
-          cursorRange.push(new vscode.Range(cursorStop.getLeft(), cursorStop));
-        } else {
+      if (this.currentModeName === ModeName.Visual) {
+        for (const { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
+          if (cursorStart.isEarlierThan(cursorStop)) {
+            cursorRange.push(new vscode.Range(cursorStop.getLeft(), cursorStop));
+          } else {
+            cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
+          }
+        }
+      } else {
+        for (const { stop: cursorStop } of vimState.allCursors) {
           cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
         }
       }
