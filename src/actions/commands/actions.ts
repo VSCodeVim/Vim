@@ -899,7 +899,7 @@ function searchCurrentWord(position: Position, vimState: VimState, direction: Se
 
 function searchCurrentSelection (vimState: VimState, direction: SearchDirection) {
     const selection = TextEditor.getSelection();
-    const end = new Position(selection.end.line, selection.end.character + 1);
+    const end = new Position(selection.end.line, selection.end.character);
     const currentSelection = TextEditor.getText(selection.with(selection.start, end));
 
     // Go back to Normal mode, otherwise the selection grows to the next match.
