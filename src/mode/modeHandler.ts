@@ -733,13 +733,11 @@ export class ModeHandler implements vscode.Disposable {
           this._vimState.lastClickWasPastEol = false;
         }
 
-        if (!this._vimState.getModeObject(this).isVisualMode &&
-             this._vimState.getModeObject(this).name !== ModeName.Insert) {
+        if (!this._vimState.getModeObject(this).isVisualMode) {
           this._vimState.currentMode = ModeName.Visual;
           this.setCurrentModeByName(this._vimState);
 
           // double click mouse selection causes an extra character to be selected so take one less character
-          toDraw = true;
         }
       } else {
         if (this._vimState.currentMode !== ModeName.Insert) {
