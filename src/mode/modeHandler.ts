@@ -1478,7 +1478,11 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    const selections = this._vimState.editor.selections;
+    const selections = this._vimState.editor.selections.map(x => {
+      let y = Range.FromVSCodeSelection(x);
+      y = y.start.isEarlierThan(y.stop) ? y.withNewStop(y.stop.getLeftThroughLineBreaks(true)) : y;
+      return new vscode.Selection(new vscode.Position(y.start.line, y.start.character), new vscode.Position(y.stop.line, y.stop.character));
+    });
     const firstTransformation = transformations[0];
     const manuallySetCursorPositions = ((firstTransformation.type === "deleteRange" ||
                                        firstTransformation.type === "replaceText" || firstTransformation.type === "insertText")
