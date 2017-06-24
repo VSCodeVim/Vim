@@ -3143,9 +3143,7 @@ class ActionOverrideCmdD extends BaseCommand {
 
     // If this is the first cursor, select 1 character less
     // so that only the word is selected, no extra character
-    if (vimState.allCursors.length === 1) {
-      vimState.allCursors[0] = vimState.allCursors[0].withNewStop(vimState.allCursors[0].stop.getLeft());
-    }
+    vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft()));
 
     vimState.currentMode = ModeName.Visual;
 
