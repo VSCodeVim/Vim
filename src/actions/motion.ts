@@ -1267,9 +1267,6 @@ export abstract class MoveInsideCharacter extends BaseMovement {
   protected includeSurrounding = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    if (vimState.currentMode === ModeName.Visual) {
-      position = position.getLeft();
-    }
     const failure = { start: position, stop: position, failed: true };
     const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
