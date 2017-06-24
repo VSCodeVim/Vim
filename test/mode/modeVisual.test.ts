@@ -46,7 +46,7 @@ suite("Mode Visual", () => {
 
     // The input cursor comes BEFORE the block cursor. Try it out, this
     // is how Vim works.
-    assert.equal(sel.end.character, 5);
+    assert.equal(sel.end.character, 6);
     assert.equal(sel.end.line, 0);
   });
 
