@@ -1359,9 +1359,6 @@ export class PutCommandVisual extends BaseCommand {
     if (start.isAfter(end)) {
       [start, end] = [end, start];
     }
-    if (vimState.currentMode === ModeName.Visual) {
-      end = end.getLeft();
-    }
 
     // If the to be inserted text is linewise we have a seperate logic delete the
     // selection first than insert
