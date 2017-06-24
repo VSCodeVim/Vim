@@ -706,6 +706,7 @@ export class ModeHandler implements vscode.Disposable {
 
       // start visual mode?
 
+
       if (selection.anchor.line === selection.active.line
         && selection.anchor.character >= newPosition.getLineEnd().character - 1
         && selection.active.character >= newPosition.getLineEnd().character - 1) {
@@ -947,6 +948,11 @@ export class ModeHandler implements vscode.Disposable {
     }
     */
 
+    if (vimState.currentMode === ModeName.Visual) {
+      vimState.allCursors =
+        vimState.allCursors.map(
+          x => x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getLeft()) : x);
+    }
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
       ranAction = true;
@@ -991,6 +997,11 @@ export class ModeHandler implements vscode.Disposable {
       ranAction = true;
     }
 
+    if (vimState.currentMode === ModeName.Visual) {
+      vimState.allCursors =
+        vimState.allCursors.map(
+          x => x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getRight()) : x);
+    }
     // And then we have to do it again because an operator could
     // have changed it as well. (TODO: do you even decomposition bro)
 
@@ -1152,7 +1163,7 @@ export class ModeHandler implements vscode.Disposable {
        * Action definitions without having to think about multiple
        * cursors in almost all cases.
        */
-      const cursorPosition = vimState.allCursors[i].stop;
+      let cursorPosition = vimState.allCursors[i].stop;
       const old = vimState.cursorPosition;
 
       vimState.cursorPosition = cursorPosition;
@@ -1164,7 +1175,6 @@ export class ModeHandler implements vscode.Disposable {
 
         if (!vimState.getModeObject(this).isVisualMode &&
           !vimState.recordedState.operator) {
-
           vimState.allCursors[i] = vimState.allCursors[i].withNewStart(result);
         }
       } else if (isIMovement(result)) {
@@ -1174,9 +1184,6 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         vimState.allCursors[i] = Range.FromIMovement(result);
-        if (vimState.currentMode === ModeName.Visual) {
-          vimState.allCursors[i] = vimState.allCursors[i].withNewStop(vimState.allCursors[i].stop.getRight());
-        }
 
         if (result.registerMode) {
           vimState.currentRegisterMode = result.registerMode;
@@ -1902,6 +1909,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   dispose() {
+    this._vimState.nvim.quit();
     for (const disposable of this._toBeDisposed) {
       disposable.dispose();
     }
