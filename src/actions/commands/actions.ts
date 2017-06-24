@@ -1826,7 +1826,7 @@ class CommandReselectVisual extends BaseCommand {
       if (vimState.lastVisualSelectionEnd.line <= (TextEditor.getLineCount() - 1)) {
         vimState.currentMode = vimState.lastVisualMode;
         vimState.cursorStartPosition = vimState.lastVisualSelectionStart;
-        vimState.cursorPosition = vimState.lastVisualSelectionEnd;
+        vimState.cursorPosition = vimState.lastVisualSelectionEnd.getLeft();
       }
 
     }

@@ -952,7 +952,7 @@ export class ModeHandler implements vscode.Disposable {
     if (vimState.currentMode === ModeName.Visual) {
       vimState.allCursors =
         vimState.allCursors.map(
-          x => x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getLeft()) : x);
+          x => x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getLeftThroughLineBreaks(true)) : x);
     }
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
@@ -1001,7 +1001,9 @@ export class ModeHandler implements vscode.Disposable {
     if (vimState.currentMode === ModeName.Visual) {
       vimState.allCursors =
         vimState.allCursors.map(
-          x => x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getRight()) : x);
+          x => x.start.isEarlierThan(x.stop) ?
+          x.withNewStop(x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight())
+          : x);
     }
     // And then we have to do it again because an operator could
     // have changed it as well. (TODO: do you even decomposition bro)
@@ -1749,7 +1751,6 @@ export class ModeHandler implements vscode.Disposable {
 
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
       // in the middle of a selection natively, which is what we need for Visual Mode.
-
       for (const { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
         if (cursorStart.isEarlierThan(cursorStop)) {
           cursorRange.push(new vscode.Range(cursorStop.getLeft(), cursorStop));
