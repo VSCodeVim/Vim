@@ -548,7 +548,7 @@
     "@types/node": "^6.0.41",
     "gulp": "^3.9.1",
     "gulp-bump": "^2.1.0",
-    "gulp-git": "^1.7.1",
+    "gulp-git": "^2.4.1",
     "gulp-inject-string": "^1.1.0",
     "gulp-shell": "^0.5.2",
     "gulp-tag-version": "^1.3.0",
