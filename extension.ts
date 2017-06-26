@@ -20,9 +20,10 @@ import { ICodeKeybinding } from './src/mode/remapper';
 import { runCmdLine } from './src/cmd_line/main';
 
 import './src/actions/vim.all';
-import { attach } from "promised-neovim-client";
+import { attach, Nvim } from "promised-neovim-client";
 import { spawn } from "child_process";
-import { Neovim } from "./src/neovim/nvimUtil";
+import { TextEditor } from "./src/textEditor";
+import { Neovim } from "./neovim";
 
 interface VSCodeKeybinding {
   key: string;
@@ -93,9 +94,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
         });
     }
     const newModeHandler = await new ModeHandler();
-    if (Configuration.enableNeovim) {
-        await Neovim.initNvim(newModeHandler.vimState);
-    }
     modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
     extensionContext.subscriptions.push(newModeHandler);
 
@@ -150,23 +148,45 @@ class CompositionState {
   public composingText: string = "";
 }
 
+export namespace Global {
+  export let nvim: Nvim;
+}
+
 export async function activate(context: vscode.ExtensionContext) {
+  vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
   const proc = spawn("nvim", ['-u', 'NONE', '-N', '--embed'], { cwd: __dirname });
   proc.on('error', function (err) {
     console.log(err);
     vscode.window.showErrorMessage("Unable to setup neovim instance! Check your path.");
     Configuration.enableNeovim = false;
   });
-  const nvim = await attach(proc.stdin, proc.stdout);
+  let nvim = await attach(proc.stdin, proc.stdout);
+  Global.nvim = nvim;
   const buf = await nvim.getCurrentBuf();
   await buf.setLines(0, -1, true, vscode.window.activeTextEditor!.document.getText().split('\n'));
 
   async function handleKeyEventNV(key: string) {
     await nvim.input(key);
-    console.log(await buf.getLines(0, -1, false));
+    await Neovim.copyTextFromNeovim(vscode.window.activeTextEditor!.document.getText());
+    let {mode: mode} = await nvim.getMode();
+
+    let [row, character] = await Neovim.getCursorPosition();
+    let [startRow, startCharacter] = await Neovim.getSelectionStartPosition();
+    console.log(mode);
+
+    switch (mode) {
+      case "v":
+        vscode.window.activeTextEditor!.selection = new vscode.Selection(new Position(startRow, startCharacter), new Position(row, character));
+        break;
+      case "i":
+      case "n":
+      default:
+        vscode.window.activeTextEditor!.selection = new vscode.Selection(new Position(row, character), new Position(row, character));
+        break;
+    }
   }
   overrideCommand(context, 'type', async (args) => {
-    handleKeyEventNV(args.text);
+    await handleKeyEventNV(args.text);
   });
 
   for (let keybinding of packagejson.contributes.keybindings) {
@@ -190,7 +210,9 @@ export async function activate(context: vscode.ExtensionContext) {
     // Store registered key bindings in bracket notation form
     Configuration.boundKeyCombinations.push(bracketedKey);
 
-    registerCommand(context, keybinding.command, () => {handleKeyEventNV(bracketedKey)});
+    registerCommand(context, keybinding.command, () => {
+      handleKeyEventNV(bracketedKey);
+    });
   }
 }
 
