@@ -151,6 +151,50 @@ class CompositionState {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
+  const proc = spawn("nvim", ['-u', 'NONE', '-N', '--embed'], { cwd: __dirname });
+  proc.on('error', function (err) {
+    console.log(err);
+    vscode.window.showErrorMessage("Unable to setup neovim instance! Check your path.");
+    Configuration.enableNeovim = false;
+  });
+  const nvim = await attach(proc.stdin, proc.stdout);
+  const buf = await nvim.getCurrentBuf();
+  await buf.setLines(0, -1, true, vscode.window.activeTextEditor!.document.getText().split('\n'));
+
+  async function handleKeyEventNV(key: string) {
+    await nvim.input(key);
+    console.log(await buf.getLines(0, -1, false));
+  }
+  overrideCommand(context, 'type', async (args) => {
+    handleKeyEventNV(args.text);
+  });
+
+  for (let keybinding of packagejson.contributes.keybindings) {
+    if (keybinding.when.indexOf("listFocus") !== -1) {
+      continue;
+    }
+    let keyToBeBound = "";
+    /**
+     * On OSX, handle mac keybindings if we specified one.
+     */
+    if (process.platform === "darwin") {
+      keyToBeBound = keybinding.mac || keybinding.key;
+    } else if (process.platform === "linux") {
+      keyToBeBound = keybinding.linux || keybinding.key;
+    } else {
+      keyToBeBound = keybinding.key;
+    }
+
+    const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+
+    // Store registered key bindings in bracket notation form
+    Configuration.boundKeyCombinations.push(bracketedKey);
+
+    registerCommand(context, keybinding.command, () => {handleKeyEventNV(bracketedKey)});
+  }
+}
+
+export async function _unused_activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   let compositionState = new CompositionState();
 
