@@ -150,6 +150,8 @@ class CompositionState {
 
 export namespace Vim {
   export let nv: Nvim;
+  export let operatorPending = false;
+  export let mode: string;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -168,21 +170,26 @@ export async function activate(context: vscode.ExtensionContext) {
   async function handleKeyEventNV(key: string) {
     const selections = vscode.window.activeTextEditor!.selections;
     for (let i=0; i<selections.length; i++) {
-      if ((await nvim.getMode()).mode === "v") {
-        await Neovim.setCursorPos(Position.FromVSCodePosition(selections[i].active).getLeftThroughLineBreaks());
-      } else {
-        await Neovim.setCursorPos(selections[i].active);
+      if (!Vim.operatorPending) {
+        if (Vim.mode === "v") {
+          await Neovim.setCursorPos(Position.FromVSCodePosition(selections[i].active).getLeftThroughLineBreaks());
+        } else {
+          await Neovim.setCursorPos(selections[i].active);
+        }
       }
       await nvim.input(key);
 
-      let {mode: mode} = await nvim.getMode();
-
       // https://github.com/neovim/neovim/issues/6166
-      if (mode === "no") {
+      if (Vim.mode === "n" && "dyc".indexOf(key) !== -1 && !Vim.operatorPending) {
+        Vim.operatorPending = true;
         return;
       }
+      Vim.operatorPending = false;
       Neovim.copyTextFromNeovim(vscode.window.activeTextEditor!.document.getText());
 
+      let {mode: mode} = await nvim.getMode();
+      Vim.mode = mode as string;
+      console.log(await nvim.getMode());
 
       let [row, character] = await Neovim.getCursorPos();
       let [startRow, startCharacter] = await Neovim.getSelectionStartPos();
@@ -197,10 +204,8 @@ export async function activate(context: vscode.ExtensionContext) {
           selections[i] = new vscode.Selection(new Position(row, character), new Position(row, character));
           break;
       }
-      console.log(await nvim.getMode());
     }
     vscode.window.activeTextEditor!.selections = selections;
-    console.log(vscode.window.activeTextEditor!.selections);
   }
   overrideCommand(context, 'type', async (args) => {
     await handleKeyEventNV(args.text);
