@@ -117,6 +117,19 @@ export class Position extends vscode.Position {
     this._nonFileNameRegex = this.makeWordRegex(Position.NonFileCharacters);
   }
 
+  public getRightThroughLineBreaks() {
+    if (this.isAtDocumentEnd()) {
+      // TODO(bell)
+      return this;
+    }
+
+    if (this.isLineEnd()) {
+      return this.getDown(0);
+    }
+
+    return this.getRight();
+  }
+
   public toString(): string {
     return `[${ this.line }, ${ this.character }]`;
   }
@@ -381,19 +394,6 @@ export class Position extends vscode.Position {
     } else {
       return this.getUp(0).getLineEnd().getLeft();
     }
-  }
-
-  public getRightThroughLineBreaks(): Position {
-    if (this.isAtDocumentEnd()) {
-      // TODO(bell)
-      return this;
-    }
-
-    if (this.getRight().isLineEnd()) {
-      return this.getDown(0);
-    }
-
-    return this.getRight();
   }
 
   public getRight(count: number = 1): Position {

@@ -148,8 +148,8 @@ class CompositionState {
   public composingText: string = "";
 }
 
-export namespace Global {
-  export let nvim: Nvim;
+export namespace Vim {
+  export let nv: Nvim;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -161,29 +161,46 @@ export async function activate(context: vscode.ExtensionContext) {
     Configuration.enableNeovim = false;
   });
   let nvim = await attach(proc.stdin, proc.stdout);
-  Global.nvim = nvim;
+  Vim.nv = nvim;
   const buf = await nvim.getCurrentBuf();
   await buf.setLines(0, -1, true, vscode.window.activeTextEditor!.document.getText().split('\n'));
 
   async function handleKeyEventNV(key: string) {
-    await nvim.input(key);
-    await Neovim.copyTextFromNeovim(vscode.window.activeTextEditor!.document.getText());
-    let {mode: mode} = await nvim.getMode();
+    const selections = vscode.window.activeTextEditor!.selections;
+    for (let i=0; i<selections.length; i++) {
+      if ((await nvim.getMode()).mode === "v") {
+        await Neovim.setCursorPos(Position.FromVSCodePosition(selections[i].active).getLeftThroughLineBreaks());
+      } else {
+        await Neovim.setCursorPos(selections[i].active);
+      }
+      await nvim.input(key);
 
-    let [row, character] = await Neovim.getCursorPosition();
-    let [startRow, startCharacter] = await Neovim.getSelectionStartPosition();
-    console.log(mode);
+      let {mode: mode} = await nvim.getMode();
 
-    switch (mode) {
-      case "v":
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(new Position(startRow, startCharacter), new Position(row, character));
-        break;
-      case "i":
-      case "n":
-      default:
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(new Position(row, character), new Position(row, character));
-        break;
+      // https://github.com/neovim/neovim/issues/6166
+      if (mode === "no") {
+        return;
+      }
+      Neovim.copyTextFromNeovim(vscode.window.activeTextEditor!.document.getText());
+
+
+      let [row, character] = await Neovim.getCursorPos();
+      let [startRow, startCharacter] = await Neovim.getSelectionStartPos();
+
+      switch (mode) {
+        case "v":
+          selections[i] = new vscode.Selection(new Position(startRow, startCharacter), new Position(row, character).getRightThroughLineBreaks());
+          break;
+        case "i":
+        case "n":
+        default:
+          selections[i] = new vscode.Selection(new Position(row, character), new Position(row, character));
+          break;
+      }
+      console.log(await nvim.getMode());
     }
+    vscode.window.activeTextEditor!.selections = selections;
+    console.log(vscode.window.activeTextEditor!.selections);
   }
   overrideCommand(context, 'type', async (args) => {
     await handleKeyEventNV(args.text);
@@ -206,9 +223,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
-
-    // Store registered key bindings in bracket notation form
-    Configuration.boundKeyCombinations.push(bracketedKey);
 
     registerCommand(context, keybinding.command, () => {
       handleKeyEventNV(bracketedKey);
