@@ -208,7 +208,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.activeTextEditor!.selections = selections;
   }
   overrideCommand(context, 'type', async (args) => {
-    await handleKeyEventNV(args.text);
+      taskQueue.enqueueTask({
+        promise: async () => {
+          await handleKeyEventNV(args.text);
+        },
+        isRunning: false
+      });
   });
 
   for (let keybinding of packagejson.contributes.keybindings) {
@@ -230,7 +235,12 @@ export async function activate(context: vscode.ExtensionContext) {
     const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
 
     registerCommand(context, keybinding.command, () => {
-      handleKeyEventNV(bracketedKey);
+      taskQueue.enqueueTask({
+        promise: async () => {
+          await handleKeyEventNV(bracketedKey);
+        },
+        isRunning: false
+      });
     });
   }
 }

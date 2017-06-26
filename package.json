@@ -300,14 +300,14 @@
         "when": "listFocus"
       },
       {
-          "key": "k",
-          "command": "list.focusUp",
-          "when": "listFocus"
+        "key": "k",
+        "command": "list.focusUp",
+        "when": "listFocus"
       },
       {
-          "key": "o",
-          "command": "list.toggleExpand",
-          "when": "listFocus"
+        "key": "o",
+        "command": "list.toggleExpand",
+        "when": "listFocus"
       },
       {
         "key": "g g",
@@ -536,6 +536,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
   },
   "dependencies": {
+    "bluebird": "^3.5.0",
     "clipboardy": "^1.1.4",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.12.0",
