@@ -19,8 +19,6 @@ import * as util from './../../util';
 import { RegisterAction } from './../base';
 import * as operator from './../operator';
 import { BaseAction } from './../base';
-import * as Bluebird from 'bluebird';
-declare global { export interface Promise<T> extends Bluebird<T> {} }
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {

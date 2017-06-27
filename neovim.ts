@@ -6,7 +6,7 @@ import { TextEditor } from "./src/textEditor";
 
 
 export class Neovim {
-  static async copyTextFromNeovim(text: string) {
+  static async copyTextFromNeovim() {
     const buf = await Vim.nv.getCurrentBuf();
     await TextEditor.replace(
       new vscode.Range(0, 0, TextEditor.getLineCount() - 1,
