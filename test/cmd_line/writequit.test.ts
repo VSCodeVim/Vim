@@ -1,14 +1,14 @@
-"use strict";
+('use strict');
 
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
 import { runCmdLine } from '../../src/cmd_line/main';
-import * as vscode from "vscode";
-import {join} from 'path';
+import * as vscode from 'vscode';
+import { join } from 'path';
 import * as assert from 'assert';
-import { getAndUpdateModeHandler } from "../../extension";
+import { getAndUpdateModeHandler } from '../../extension';
 
-async function WaitForVsCodeClose() : Promise<void> {
+async function WaitForVsCodeClose(): Promise<void> {
   // cleanUpWorkspace - testUtils.ts
   let poll = new Promise((c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
@@ -37,11 +37,11 @@ async function WaitForVsCodeClose() : Promise<void> {
   try {
     await poll;
   } catch (error) {
-    assert.fail(null, null, error.toString(), "");
+    assert.fail(null, null, error.toString(), '');
   }
 }
 
-suite("Basic write-quit", () => {
+suite('Basic write-quit', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {
@@ -51,12 +51,12 @@ suite("Basic write-quit", () => {
 
   suiteTeardown(cleanUpWorkspace);
 
-  test("Run write and quit", async () => {
+  test('Run write and quit', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
 
-    await runCmdLine("wq", modeHandler);
+    await runCmdLine('wq', modeHandler);
     await WaitForVsCodeClose();
 
-    assertEqual(vscode.window.visibleTextEditors.length, 0, "Window after 1sec still open");
+    assertEqual(vscode.window.visibleTextEditors.length, 0, 'Window after 1sec still open');
   });
 });

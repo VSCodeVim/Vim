@@ -1,4 +1,4 @@
-"use strict";
+('use strict');
 import { ReplaceTextTransformation } from './transformations/transformations';
 import { VimState } from './mode/modeHandler';
 
@@ -14,8 +14,11 @@ export class TextEditor {
    * Do not use this method! It has been deprecated. Use InsertTextTransformation
    * (or possibly InsertTextVSCodeTransformation) instead.
    */
-  static async insert(text: string, at: Position | undefined = undefined,
-            letVSCodeHandleKeystrokes: boolean | undefined = undefined): Promise<boolean> {
+  static async insert(
+    text: string,
+    at: Position | undefined = undefined,
+    letVSCodeHandleKeystrokes: boolean | undefined = undefined
+  ): Promise<boolean> {
     // If we insert "blah(" with default:type, VSCode will insert the closing ).
     // We *probably* don't want that to happen if we're inserting a lot of text.
     if (letVSCodeHandleKeystrokes === undefined) {
@@ -66,10 +69,10 @@ export class TextEditor {
    * Removes all text in the entire document.
    */
   static async deleteDocument(): Promise<boolean> {
-    const start  = new vscode.Position(0, 0);
+    const start = new vscode.Position(0, 0);
     const lastLine = vscode.window.activeTextEditor!.document.lineCount - 1;
-    const end    = vscode.window.activeTextEditor!.document.lineAt(lastLine).range.end;
-    const range  = new vscode.Range(start, end);
+    const end = vscode.window.activeTextEditor!.document.lineAt(lastLine).range.end;
+    const range = new vscode.Range(start, end);
 
     return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.delete(range);
@@ -89,17 +92,23 @@ export class TextEditor {
   /**
    * This is the correct replace method to use. (Notice how it's not async? Yep)
    */
-  static replaceText(vimState: VimState, text: string, start: Position, end: Position,
-                     diff: PositionDiff | undefined = undefined): void {
-
+  static replaceText(
+    vimState: VimState,
+    text: string,
+    start: Position,
+    end: Position,
+    diff: PositionDiff | undefined = undefined
+  ): void {
     const trans: ReplaceTextTransformation = {
-      type: "replaceText",
+      type: 'replaceText',
       text,
       start,
       end,
     };
 
-    if (diff) { trans.diff = diff; }
+    if (diff) {
+      trans.diff = diff;
+    }
 
     vimState.recordedState.transformations.push(trans);
   }
@@ -156,7 +165,7 @@ export class TextEditor {
    *  Retrieves the current word at position.
    *  If current position is whitespace, selects the right-closest word
    */
-  static getWord(position: Position) : string | undefined {
+  static getWord(position: Position): string | undefined {
     let start = position;
     let end = position.getRight();
 
@@ -177,12 +186,12 @@ export class TextEditor {
     return word;
   }
 
-  static isFirstLine(position : vscode.Position): boolean {
+  static isFirstLine(position: vscode.Position): boolean {
     return position.line === 0;
   }
 
-  static isLastLine(position : vscode.Position): boolean {
-    return position.line === (vscode.window.activeTextEditor!.document.lineCount - 1);
+  static isLastLine(position: vscode.Position): boolean {
+    return position.line === vscode.window.activeTextEditor!.document.lineCount - 1;
   }
 
   static getIndentationLevel(line: string): number {
@@ -224,16 +233,16 @@ export class TextEditor {
       screenCharacters = 0;
     }
 
-    let indentString = "";
+    let indentString = '';
 
     if (insertTabAsSpaces) {
-      indentString += new Array(screenCharacters + 1).join(" ");
+      indentString += new Array(screenCharacters + 1).join(' ');
     } else {
       if (screenCharacters / tabSize > 0) {
-        indentString += new Array(Math.floor(screenCharacters / tabSize) + 1).join("\t");
+        indentString += new Array(Math.floor(screenCharacters / tabSize) + 1).join('\t');
       }
 
-      indentString += new Array(screenCharacters % tabSize + 1).join(" ");
+      indentString += new Array(screenCharacters % tabSize + 1).join(' ');
     }
 
     let firstNonWhiteSpace = 0;
@@ -245,13 +254,13 @@ export class TextEditor {
     return indentString + line.substring(firstNonWhiteSpace, line.length);
   }
 
-  static getPositionAt(offset: number) : Position {
+  static getPositionAt(offset: number): Position {
     const pos = vscode.window.activeTextEditor!.document.positionAt(offset);
 
     return new Position(pos.line, pos.character);
   }
 
-  static getOffsetAt(position: Position) : number {
+  static getOffsetAt(position: Position): number {
     return vscode.window.activeTextEditor!.document.offsetAt(position);
   }
 }
@@ -273,10 +282,20 @@ export type RevealLineAtArgument = 'top' | 'center' | 'bottom';
 /**
  * Positions in the view for cursor move command.
  */
-export type CursorMovePosition = 'left' | 'right' | 'up' | 'down' |
-  'wrappedLineStart' |'wrappedLineFirstNonWhitespaceCharacter' |
-  'wrappedLineColumnCenter' | 'wrappedLineEnd' | 'wrappedLineLastNonWhitespaceCharacter' |
-  'viewPortTop' | 'viewPortCenter' | 'viewPortBottom' | 'viewPortIfOutside';
+export type CursorMovePosition =
+  | 'left'
+  | 'right'
+  | 'up'
+  | 'down'
+  | 'wrappedLineStart'
+  | 'wrappedLineFirstNonWhitespaceCharacter'
+  | 'wrappedLineColumnCenter'
+  | 'wrappedLineEnd'
+  | 'wrappedLineLastNonWhitespaceCharacter'
+  | 'viewPortTop'
+  | 'viewPortCenter'
+  | 'viewPortBottom'
+  | 'viewPortIfOutside';
 
 /**
  * Units for Cursor move 'by' argument

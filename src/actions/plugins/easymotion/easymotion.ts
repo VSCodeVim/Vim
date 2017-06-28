@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import { Position } from './../../../common/motion/position';
 import { Configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
@@ -7,7 +7,7 @@ export class EasyMotion {
   /**
    * Refers to the accumulated keys for depth navigation
    */
-  public accumulation = "";
+  public accumulation = '';
 
   /**
    * Array of all markers and decorations
@@ -26,9 +26,9 @@ export class EasyMotion {
    */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
   private static svgCache: { [code: string]: vscode.Uri } = {};
-  private static cachedBackgroundColor: string = "";
-  private static cachedOneFontColor: string = "";
-  private static cachedTwoFontColor: string = "";
+  private static cachedBackgroundColor: string = '';
+  private static cachedOneFontColor: string = '';
+  private static cachedTwoFontColor: string = '';
   private static cachedWidthPerChar: number = -1;
   private static cachedHeight: number = -1;
 
@@ -36,9 +36,32 @@ export class EasyMotion {
    * The key sequence for marker name generation
    */
   public static keyTable = [
-    "a", "s", "d", "g", "h", "k", "l", "q", "w", "e",
-    "r", "t", "y", "u", "i", "o", "p", "z", "x", "c",
-    "v", "b", "n", "m", "f", "j"
+    'a',
+    's',
+    'd',
+    'g',
+    'h',
+    'k',
+    'l',
+    'q',
+    'w',
+    'e',
+    'r',
+    't',
+    'y',
+    'u',
+    'i',
+    'o',
+    'p',
+    'z',
+    'x',
+    'c',
+    'v',
+    'b',
+    'n',
+    'm',
+    'f',
+    'j',
   ];
 
   /**
@@ -55,12 +78,17 @@ export class EasyMotion {
   /**
    * Generate a marker following a sequence for the name and depth levels
    */
-  public static generateMarker(index: number, length: number, position: Position, markerPosition: Position): EasyMotion.Marker | null {
+  public static generateMarker(
+    index: number,
+    length: number,
+    position: Position,
+    markerPosition: Position
+  ): EasyMotion.Marker | null {
     let keyTable = EasyMotion.keyTable;
     var availableKeyTable = keyTable.slice();
 
     // Depth table should always include a ;
-    var keyDepthTable = [";"];
+    var keyDepthTable = [';'];
     var totalSteps = 0;
 
     if (length >= keyTable.length) {
@@ -72,7 +100,7 @@ export class EasyMotion {
       }
     }
 
-    var prefix = "";
+    var prefix = '';
     if (index >= availableKeyTable.length) {
       // Length of available keys before reset and ";"
       var oldLength = availableKeyTable.length;
@@ -81,11 +109,11 @@ export class EasyMotion {
 
       // ";" can be used as the last marker key, when inside a marker with depth. Reset to available keys and add ";"
       availableKeyTable = keyTable.slice();
-      availableKeyTable.push(";");
+      availableKeyTable.push(';');
 
       // Depth index counts down instead of up
-      var inverted = (length - oldLength - 1 - remainder);
-      var steps = Math.floor((inverted) / availableKeyTable.length);
+      var inverted = length - oldLength - 1 - remainder;
+      var steps = Math.floor(inverted / availableKeyTable.length);
 
       // Add the key to the prefix
       if (steps > keyDepthTable.length - 1) {
@@ -97,16 +125,24 @@ export class EasyMotion {
       // Check if we're on the last depth level
       if (steps >= totalSteps) {
         // Return the proper key for this index
-        return new EasyMotion.Marker(prefix + availableKeyTable[remainder % availableKeyTable.length], markerPosition);
+        return new EasyMotion.Marker(
+          prefix + availableKeyTable[remainder % availableKeyTable.length],
+          markerPosition
+        );
       }
 
       // Return the proper index for depths earlier than the last one, including prefix
-      var num = (availableKeyTable.length - 1 - inverted % availableKeyTable.length) % availableKeyTable.length;
+      var num =
+        (availableKeyTable.length - 1 - inverted % availableKeyTable.length) %
+        availableKeyTable.length;
       return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
     }
 
     // Return the last key in the marker, including prefix
-    return new EasyMotion.Marker(prefix + availableKeyTable[index % availableKeyTable.length], markerPosition);
+    return new EasyMotion.Marker(
+      prefix + availableKeyTable[index % availableKeyTable.length],
+      markerPosition
+    );
   }
 
   /**
@@ -123,8 +159,8 @@ export class EasyMotion {
       after: {
         margin: `0 0 0 -${width}px`,
         height: `14px`,
-        width: `${width}px`
-      }
+        width: `${width}px`,
+      },
     });
 
     this.decorationTypeCache[length] = type;
@@ -135,9 +171,14 @@ export class EasyMotion {
   /**
    * Create and cache the SVG data URI for different marker codes and colors
    */
-  private static getSvgDataUri(code: string, backgroundColor: string, fontFamily: string, fontColor: string,
-    fontSize: string, fontWeight: string): vscode.Uri {
-
+  private static getSvgDataUri(
+    code: string,
+    backgroundColor: string,
+    fontFamily: string,
+    fontColor: string,
+    fontSize: string,
+    fontWeight: string
+  ): vscode.Uri {
     // Clear cache if the backgroundColor or fontColor has changed
     if (this.cachedBackgroundColor !== backgroundColor) {
       this.svgCache = {};
@@ -164,11 +205,21 @@ export class EasyMotion {
       this.cachedHeight = height;
     }
 
-    if (fontFamily === undefined) { fontFamily = "Consolas"; }
-    if (fontColor === undefined) { fontColor = "white"; }
-    if (fontSize === undefined) { fontSize = "14"; }
-    if (fontWeight === undefined) { fontWeight = "normal"; }
-    if (backgroundColor === undefined) { backgroundColor = "black"; }
+    if (fontFamily === undefined) {
+      fontFamily = 'Consolas';
+    }
+    if (fontColor === undefined) {
+      fontColor = 'white';
+    }
+    if (fontSize === undefined) {
+      fontSize = '14';
+    }
+    if (fontWeight === undefined) {
+      fontWeight = 'normal';
+    }
+    if (backgroundColor === undefined) {
+      backgroundColor = 'black';
+    }
 
     var cache = this.svgCache[code];
     if (cache) {
@@ -177,9 +228,10 @@ export class EasyMotion {
 
     var uri = vscode.Uri.parse(
       `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
-      `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
-      `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
-      `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`);
+        `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
+        `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
+        `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
+    );
 
     this.svgCache[code] = uri;
 
@@ -232,11 +284,15 @@ export class EasyMotion {
   /**
    * Search and sort using the index of a match compared to the index of position (usually the cursor)
    */
-  public sortedSearch(position: Position, search: string | RegExp = "", options: EasyMotion.SearchOptions = {}): EasyMotion.Match[] {
+  public sortedSearch(
+    position: Position,
+    search: string | RegExp = '',
+    options: EasyMotion.SearchOptions = {}
+  ): EasyMotion.Match[] {
     let regex: RegExp;
-    if (typeof search === "string") {
+    if (typeof search === 'string') {
       // Regex needs to be escaped
-      regex = new RegExp(search.replace(EasyMotion.specialCharactersRegex, "\\$&"), "g");
+      regex = new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g');
     } else {
       regex = search;
     }
@@ -252,8 +308,7 @@ export class EasyMotion {
     var lineMin = options.min ? Math.max(options.min.line, 0) : 0;
     var lineMax = options.max ? Math.min(options.max.line + 1, lineCount) : lineCount;
 
-    outer:
-    for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
+    outer: for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
       const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
       var result = regex.exec(line);
 
@@ -265,9 +320,12 @@ export class EasyMotion {
         let pos = new Position(lineIdx, result.index);
 
         // Check if match is within bounds
-        if ((options.min && pos.isBefore(options.min)) ||
+        if (
+          (options.min && pos.isBefore(options.min)) ||
           (options.max && pos.isAfter(options.max)) ||
-          Math.abs(pos.line - position.line) > 100) { // Stop searching after 100 lines in both directions
+          Math.abs(pos.line - position.line) > 100
+        ) {
+          // Stop searching after 100 lines in both directions
 
           result = regex.exec(line);
           continue;
@@ -278,11 +336,7 @@ export class EasyMotion {
           cursorIndex = matches.length;
         }
 
-        prevMatch = new EasyMotion.Match(
-          pos,
-          result[0],
-          matches.length
-        );
+        prevMatch = new EasyMotion.Match(pos, result[0], matches.length);
 
         // Matches on the cursor position should be ignored
         if (pos.isEqual(position)) {
@@ -318,7 +372,6 @@ export class EasyMotion {
     return matches;
   }
 
-
   public updateDecorations() {
     this.clearDecorations();
 
@@ -345,8 +398,8 @@ export class EasyMotion {
         this.decorations[keystroke.length] = [];
       }
 
-      const fontColor = keystroke.length > 1 ?
-        Configuration.easymotionMarkerForegroundColorTwoChar
+      const fontColor = keystroke.length > 1
+        ? Configuration.easymotionMarkerForegroundColorTwoChar
         : Configuration.easymotionMarkerForegroundColorOneChar;
       const backgroundColor = Configuration.easymotionMarkerBackgroundColor;
 
@@ -358,16 +411,28 @@ export class EasyMotion {
           dark: {
             after: {
               contentIconPath: EasyMotion.getSvgDataUri(
-                keystroke, backgroundColor, fontFamily, fontColor, fontSize, fontWeight)
-            }
+                keystroke,
+                backgroundColor,
+                fontFamily,
+                fontColor,
+                fontSize,
+                fontWeight
+              ),
+            },
           },
           light: {
             after: {
               contentIconPath: EasyMotion.getSvgDataUri(
-                keystroke, backgroundColor, fontFamily, fontColor, fontSize, fontWeight)
-            }
-          }
-        }
+                keystroke,
+                backgroundColor,
+                fontFamily,
+                fontColor,
+                fontSize,
+                fontWeight
+              ),
+            },
+          },
+        },
       });
 
       this.visibleMarkers.push(marker);
@@ -383,7 +448,7 @@ export class EasyMotion {
   }
 }
 
-export module EasyMotion {
+export namespace EasyMotion {
   export class Marker {
     private _name: string;
     private _position: Position;

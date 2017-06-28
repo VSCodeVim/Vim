@@ -6,8 +6,13 @@ import { VimState } from './../mode/modeHandler';
 import { RegisterAction } from './base';
 import { ChangeOperator } from './operator';
 import {
-  BaseMovement, IMovement,
-  MoveASingleQuotes, MoveADoubleQuotes, MoveAClosingCurlyBrace, MoveAParentheses, MoveASquareBracket
+  BaseMovement,
+  IMovement,
+  MoveASingleQuotes,
+  MoveADoubleQuotes,
+  MoveAClosingCurlyBrace,
+  MoveAParentheses,
+  MoveASquareBracket,
 } from './motion';
 
 export abstract class TextObjectMovement extends BaseMovement {
@@ -15,7 +20,7 @@ export abstract class TextObjectMovement extends BaseMovement {
   canBePrefixedWithCount = true;
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    const res = await this.execAction(position, vimState) as IMovement;
+    const res = (await this.execAction(position, vimState)) as IMovement;
     // Since we need to handle leading spaces, we cannot use MoveWordBegin.execActionForOperator
     // In normal mode, the character on the stop position will be the first character after the operator executed
     // and we do left-shifting in operator-pre-execution phase, here we need to right-shift the stop position accordingly.
@@ -27,7 +32,7 @@ export abstract class TextObjectMovement extends BaseMovement {
 
 @RegisterAction
 export class SelectWord extends TextObjectMovement {
-  keys = ["a", "w"];
+  keys = ['a', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -50,16 +55,21 @@ export class SelectWord extends TextObjectMovement {
       // If we aren't separated from the next word by whitespace(like in "horse ca|t,dog" or at the end of the line)
       // then we delete the spaces to the left of the current word. Otherwise, we delete to the right.
       // Also, if the current word is the leftmost word, we only delete from the start of the word to the end.
-      if (stop.isEqual(position.getCurrentWordEnd(true)) &&
-        !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar())
-        && vimState.recordedState.count === 0) {
+      if (
+        stop.isEqual(position.getCurrentWordEnd(true)) &&
+        !position.getWordLeft(true).isEqual(position.getFirstLineNonBlankChar()) &&
+        vimState.recordedState.count === 0
+      ) {
         start = position.getLastWordEnd().getRight();
       } else {
         start = position.getWordLeft(true);
       }
     }
 
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+    if (
+      vimState.currentMode === ModeName.Visual &&
+      !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)
+    ) {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
@@ -74,14 +84,14 @@ export class SelectWord extends TextObjectMovement {
 
     return {
       start: start,
-      stop: stop
+      stop: stop,
     };
   }
 }
 
 @RegisterAction
 export class SelectABigWord extends TextObjectMovement {
-  keys = ["a", "W"];
+  keys = ['a', 'W'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -95,8 +105,10 @@ export class SelectABigWord extends TextObjectMovement {
     } else {
       // Check 'aw' code for much of the reasoning behind this logic.
       let nextWord = position.getBigWordRight();
-      if ((nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
-        vimState.recordedState.count === 0) {
+      if (
+        (nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
+        vimState.recordedState.count === 0
+      ) {
         start = position.getLastWordEnd().getRight();
         stop = position.getLineEnd();
       } else {
@@ -104,7 +116,10 @@ export class SelectABigWord extends TextObjectMovement {
         stop = position.getBigWordRight().getLeft();
       }
     }
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+    if (
+      vimState.currentMode === ModeName.Visual &&
+      !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)
+    ) {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
@@ -119,7 +134,7 @@ export class SelectABigWord extends TextObjectMovement {
 
     return {
       start: start,
-      stop: stop
+      stop: stop,
     };
   }
 }
@@ -132,7 +147,7 @@ export class SelectABigWord extends TextObjectMovement {
  */
 @RegisterAction
 export class SelectAnExpandingBlock extends TextObjectMovement {
-  keys = ["a", "f"];
+  keys = ['a', 'f'];
   modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
@@ -147,7 +162,9 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
     let smallestRange: Range | undefined = undefined;
 
     for (const iMotion of ranges) {
-      if (iMotion.failed) { continue; }
+      if (iMotion.failed) {
+        continue;
+      }
 
       const range = Range.FromIMovement(iMotion);
       let contender: Range | undefined = undefined;
@@ -155,8 +172,7 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
       if (!smallestRange) {
         contender = range;
       } else {
-        if (range.start.isAfter(smallestRange.start) &&
-          range.stop.isBefore(smallestRange.stop)) {
+        if (range.start.isAfter(smallestRange.start) && range.stop.isBefore(smallestRange.stop)) {
           contender = range;
         }
       }
@@ -191,7 +207,7 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
 @RegisterAction
 export class SelectInnerWord extends TextObjectMovement {
   modes = [ModeName.Normal, ModeName.Visual];
-  keys = ["i", "w"];
+  keys = ['i', 'w'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -206,7 +222,10 @@ export class SelectInnerWord extends TextObjectMovement {
       stop = position.getCurrentWordEnd(true);
     }
 
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+    if (
+      vimState.currentMode === ModeName.Visual &&
+      !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)
+    ) {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
@@ -221,7 +240,7 @@ export class SelectInnerWord extends TextObjectMovement {
 
     return {
       start: start,
-      stop: stop
+      stop: stop,
     };
   }
 }
@@ -229,7 +248,7 @@ export class SelectInnerWord extends TextObjectMovement {
 @RegisterAction
 export class SelectInnerBigWord extends TextObjectMovement {
   modes = [ModeName.Normal, ModeName.Visual];
-  keys = ["i", "W"];
+  keys = ['i', 'W'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -244,7 +263,10 @@ export class SelectInnerBigWord extends TextObjectMovement {
       stop = position.getCurrentBigWordEnd(true);
     }
 
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+    if (
+      vimState.currentMode === ModeName.Visual &&
+      !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)
+    ) {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
@@ -259,14 +281,14 @@ export class SelectInnerBigWord extends TextObjectMovement {
 
     return {
       start: start,
-      stop: stop
+      stop: stop,
     };
   }
 }
 
 @RegisterAction
 export class SelectSentence extends TextObjectMovement {
-  keys = ["a", "s"];
+  keys = ['a', 's'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -284,7 +306,10 @@ export class SelectSentence extends TextObjectMovement {
 
       // If the sentence has no trailing white spaces, `as` should include its leading white spaces.
       if (nextSentenceBegin.isEqual(currentSentenceBegin.getCurrentSentenceEnd())) {
-        start = currentSentenceBegin.getSentenceBegin({ forward: false }).getCurrentSentenceEnd().getRight();
+        start = currentSentenceBegin
+          .getSentenceBegin({ forward: false })
+          .getCurrentSentenceEnd()
+          .getRight();
         stop = nextSentenceBegin;
       } else {
         start = currentSentenceBegin;
@@ -292,13 +317,19 @@ export class SelectSentence extends TextObjectMovement {
       }
     }
 
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+    if (
+      vimState.currentMode === ModeName.Visual &&
+      !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)
+    ) {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
         // If current cursor postion is before cursor start position, we are selecting sentences in reverser order.
         if (currentSentenceNonWhitespaceEnd.isAfter(vimState.cursorPosition)) {
-          stop = currentSentenceBegin.getSentenceBegin({ forward: false }).getCurrentSentenceEnd().getRight();
+          stop = currentSentenceBegin
+            .getSentenceBegin({ forward: false })
+            .getCurrentSentenceEnd()
+            .getRight();
         } else {
           stop = currentSentenceBegin;
         }
@@ -307,14 +338,14 @@ export class SelectSentence extends TextObjectMovement {
 
     return {
       start: start,
-      stop: stop
+      stop: stop,
     };
   }
 }
 
 @RegisterAction
 export class SelectInnerSentence extends TextObjectMovement {
-  keys = ["i", "s"];
+  keys = ['i', 's'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -332,7 +363,10 @@ export class SelectInnerSentence extends TextObjectMovement {
       stop = currentSentenceNonWhitespaceEnd;
     }
 
-    if (vimState.currentMode === ModeName.Visual && !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)) {
+    if (
+      vimState.currentMode === ModeName.Visual &&
+      !vimState.cursorPosition.isEqual(vimState.cursorStartPosition)
+    ) {
       start = vimState.cursorStartPosition;
 
       if (vimState.cursorPosition.isBefore(vimState.cursorStartPosition)) {
@@ -347,14 +381,14 @@ export class SelectInnerSentence extends TextObjectMovement {
 
     return {
       start: start,
-      stop: stop
+      stop: stop,
     };
   }
 }
 
 @RegisterAction
 export class SelectParagraph extends TextObjectMovement {
-  keys = ["a", "p"];
+  keys = ['a', 'p'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -373,14 +407,14 @@ export class SelectParagraph extends TextObjectMovement {
 
     return {
       start: start,
-      stop: position.getCurrentParagraphEnd()
+      stop: position.getCurrentParagraphEnd(),
     };
   }
 }
 
 @RegisterAction
 export class SelectInnerParagraph extends TextObjectMovement {
-  keys = ["i", "p"];
+  keys = ['i', 'p'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
@@ -406,7 +440,7 @@ export class SelectInnerParagraph extends TextObjectMovement {
 
     return {
       start: start,
-      stop: stop
+      stop: stop,
     };
   }
 }
@@ -424,8 +458,16 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     const cursorIndent = firstValidLine.firstNonWhitespaceCharacterIndex;
 
     // let startLineNumber = findRangeStart(firstValidLineNumber, cursorIndent);
-    let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, -1);
-    let endLineNumber = IndentObjectMatch.findRangeStartOrEnd(firstValidLineNumber, cursorIndent, 1);
+    let startLineNumber = IndentObjectMatch.findRangeStartOrEnd(
+      firstValidLineNumber,
+      cursorIndent,
+      -1
+    );
+    let endLineNumber = IndentObjectMatch.findRangeStartOrEnd(
+      firstValidLineNumber,
+      cursorIndent,
+      1
+    );
 
     // Adjust the start line as needed.
     if (this.includeLineAbove) {
@@ -449,13 +491,17 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     // of the block.
     let startCharacter = 0;
     if (isChangeOperator) {
-      startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0)).firstNonWhitespaceCharacterIndex;
+      startCharacter = TextEditor.getLineAt(new Position(startLineNumber, 0))
+        .firstNonWhitespaceCharacterIndex;
     }
     // TextEditor.getLineMaxColumn throws when given line 0, which we don't
     // care about here since it just means this text object wouldn't work on a
     // single-line document.
     let endCharacter;
-    if (endLineNumber === TextEditor.getLineCount() - 1 || vimState.currentMode === ModeName.Visual) {
+    if (
+      endLineNumber === TextEditor.getLineCount() - 1 ||
+      vimState.currentMode === ModeName.Visual
+    ) {
       endCharacter = TextEditor.getLineMaxColumn(endLineNumber);
     } else {
       endCharacter = 0;
@@ -489,12 +535,14 @@ abstract class IndentObjectMatch extends TextObjectMovement {
   /**
    * Searches up or down from a line finding the first with a lower indent level.
    */
-  public static findRangeStartOrEnd(startIndex: number, cursorIndent: number, step: -1 | 1): number {
+  public static findRangeStartOrEnd(
+    startIndex: number,
+    cursorIndent: number,
+    step: -1 | 1
+  ): number {
     let i = startIndex;
     let ret = startIndex;
-    const end = step === 1
-      ? TextEditor.getLineCount()
-      : -1;
+    const end = step === 1 ? TextEditor.getLineCount() : -1;
 
     for (; i !== end; i += step) {
       const line = TextEditor.getLineAt(new Position(i, 0));
@@ -514,18 +562,18 @@ abstract class IndentObjectMatch extends TextObjectMovement {
 
 @RegisterAction
 class InsideIndentObject extends IndentObjectMatch {
-  keys = ["i", "i"];
+  keys = ['i', 'i'];
 }
 
 @RegisterAction
 class InsideIndentObjectAbove extends IndentObjectMatch {
-  keys = ["a", "i"];
+  keys = ['a', 'i'];
   includeLineAbove = true;
 }
 
 @RegisterAction
 class InsideIndentObjectBoth extends IndentObjectMatch {
-  keys = ["a", "I"];
+  keys = ['a', 'I'];
   includeLineAbove = true;
   includeLineBelow = true;
 }

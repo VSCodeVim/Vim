@@ -1,14 +1,14 @@
-"use strict";
+('use strict');
 
-import * as node from "../commands/writequitall";
-import { Scanner} from '../scanner';
+import * as node from '../commands/writequitall';
+import { Scanner } from '../scanner';
 import { VimError, ErrorCode } from '../../error';
 
-export function parseWriteQuitAllCommandArgs(args : string) : node.WriteQuitAllCommand {
+export function parseWriteQuitAllCommandArgs(args: string): node.WriteQuitAllCommand {
   if (!args) {
     return new node.WriteQuitAllCommand({});
   }
-  var scannedArgs : node.IWriteQuitAllCommandArguments = {};
+  var scannedArgs: node.IWriteQuitAllCommandArguments = {};
   var scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {

@@ -1,19 +1,19 @@
-"use strict";
+('use strict');
 
-import * as node from "../commands/file";
-import {Scanner} from '../scanner';
+import * as node from '../commands/file';
+import { Scanner } from '../scanner';
 
 export function parseEditFileCommandArgs(args: string): node.FileCommand {
   if (!args) {
-    return new node.FileCommand({name: ""});
+    return new node.FileCommand({ name: '' });
   }
 
   let scanner = new Scanner(args);
   let bang;
   const c = scanner.next();
-  bang = (c === '!');
+  bang = c === '!';
   if (scanner.isAtEof) {
-    return new node.FileCommand({name: "", bang: bang});
+    return new node.FileCommand({ name: '', bang: bang });
   }
 
   let name = scanner.nextWord();
@@ -21,7 +21,7 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
   return new node.FileCommand({
     name: name.trim(),
     position: node.FilePosition.CurrentWindow,
-    bang: bang
+    bang: bang,
   });
 }
 
@@ -29,12 +29,12 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
 export function parseEditNewFileInNewWindowCommandArgs(args: string): node.FileCommand {
   return new node.FileCommand({
     name: undefined,
-    position: node.FilePosition.NewWindow
+    position: node.FilePosition.NewWindow,
   });
 }
 
 export function parseEditFileInNewWindowCommandArgs(args: string): node.FileCommand {
-  let name = "";
+  let name = '';
 
   if (args) {
     let scanner = new Scanner(args);
@@ -43,6 +43,6 @@ export function parseEditFileInNewWindowCommandArgs(args: string): node.FileComm
 
   return new node.FileCommand({
     name: name,
-    position: node.FilePosition.NewWindow
+    position: node.FilePosition.NewWindow,
   });
 }

@@ -1,4 +1,4 @@
-"use strict";
+('use strict');
 
 import * as vscode from 'vscode';
 import { taskQueue } from '../../src/taskQueue';
@@ -6,8 +6,8 @@ import { Globals } from '../../src/globals';
 
 export type OptionValue = number | string | boolean;
 export type ValueMapping = {
-  [key: number]: OptionValue
-  [key: string]: OptionValue
+  [key: number]: OptionValue;
+  [key: string]: OptionValue;
 };
 
 export interface IHandleKeys {
@@ -61,7 +61,7 @@ class ConfigurationClass {
     /**
      * Load Vim options from User Settings.
      */
-    let vimOptions = vscode.workspace.getConfiguration("vim");
+    let vimOptions = vscode.workspace.getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
@@ -72,18 +72,21 @@ class ConfigurationClass {
     }
 
     // <space> is special, change it to " " internally if it is used as leader
-    if (this.leader.toLowerCase() === "<space>") {
-      this.leader = " ";
+    if (this.leader.toLowerCase() === '<space>') {
+      this.leader = ' ';
     }
 
     // Get the cursor type from vscode
-    const cursorStyleString = vscode.workspace.getConfiguration().get("editor.cursorStyle") as string;
+    const cursorStyleString = vscode.workspace
+      .getConfiguration()
+      .get('editor.cursorStyle') as string;
     this.userCursor = this.cursorStyleFromString(cursorStyleString);
 
     // Get configuration setting for handled keys, this allows user to disable
     // certain key comboinations
-    const handleKeys = vscode.workspace.getConfiguration('vim')
-      .get<IHandleKeys[]>("handleKeys", []);
+    const handleKeys = vscode.workspace
+      .getConfiguration('vim')
+      .get<IHandleKeys[]>('handleKeys', []);
 
     for (const bracketedKey of this.boundKeyCombinations) {
       // Set context for key that is not used
@@ -97,7 +100,7 @@ class ConfigurationClass {
         if (handleKeys[bracketedKey] === false) {
           useKey = false;
         }
-      } else if (!this.useCtrlKeys && (bracketedKey.slice(1, 3) === "C-")) {
+      } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
         // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding.
         // However, we need to still capture <C-c> due to overrideCopy.
         if (bracketedKey === '<C-c>' && this.overrideCopy) {
@@ -113,14 +116,13 @@ class ConfigurationClass {
   }
 
   private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle {
-
     const cursorType = {
-      "line": vscode.TextEditorCursorStyle.Line,
-      "block": vscode.TextEditorCursorStyle.Block,
-      "underline": vscode.TextEditorCursorStyle.Underline,
-      "line-thin": vscode.TextEditorCursorStyle.LineThin,
-      "block-outline": vscode.TextEditorCursorStyle.BlockOutline,
-      "underline-thin": vscode.TextEditorCursorStyle.UnderlineThin,
+      line: vscode.TextEditorCursorStyle.Line,
+      block: vscode.TextEditorCursorStyle.Block,
+      underline: vscode.TextEditorCursorStyle.Underline,
+      'line-thin': vscode.TextEditorCursorStyle.LineThin,
+      'block-outline': vscode.TextEditorCursorStyle.BlockOutline,
+      'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
     };
 
     if (cursorType[cursorStyle] !== undefined) {
@@ -129,7 +131,6 @@ class ConfigurationClass {
       return vscode.TextEditorCursorStyle.Line;
     }
   }
-
 
   /**
    * Use the system's clipboard when copying.
@@ -185,14 +186,14 @@ class ConfigurationClass {
   /**
    * Easymotion marker appearance settings
    */
-  easymotionMarkerBackgroundColor = "#000000";
-  easymotionMarkerForegroundColorOneChar = "#ff0000";
-  easymotionMarkerForegroundColorTwoChar = "#ffa500";
+  easymotionMarkerBackgroundColor = '#000000';
+  easymotionMarkerForegroundColorOneChar = '#ff0000';
+  easymotionMarkerForegroundColorTwoChar = '#ffa500';
   easymotionMarkerWidthPerChar = 8;
   easymotionMarkerHeight = 14;
-  easymotionMarkerFontFamily = "Consolas";
-  easymotionMarkerFontSize = "14";
-  easymotionMarkerFontWeight = "normal";
+  easymotionMarkerFontFamily = 'Consolas';
+  easymotionMarkerFontSize = '14';
+  easymotionMarkerFontWeight = 'normal';
   easymotionMarkerYOffset = 11;
 
   /**
@@ -208,7 +209,7 @@ class ConfigurationClass {
   /**
    * What key should <leader> map to in key remappings?
    */
-  leader = "\\";
+  leader = '\\';
 
   /**
    * How much search or command history should be remembered
@@ -234,23 +235,23 @@ class ConfigurationClass {
    * Status bar colors to change to based on mode
    */
   statusBarColors: IStatusBarColors = {
-    "normal": "#005f5f",
-    "insert": "#5f0000",
-    "visual": "#5f00af",
-    "visualline": "#005f87",
-    "visualblock": "#86592d",
-    "replace": "#000000",
+    normal: '#005f5f',
+    insert: '#5f0000',
+    visual: '#5f00af',
+    visualline: '#005f87',
+    visualblock: '#86592d',
+    replace: '#000000',
   };
 
   /**
    * Color of search highlights.
    */
-  searchHighlightColor = "rgba(150, 150, 255, 0.3)";
+  searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
 
   /**
    * Size of a tab character.
    */
-  @overlapSetting({ codeName: "tabSize", default: 8 })
+  @overlapSetting({ codeName: 'tabSize', default: 8 })
   tabstop: number;
 
   /**
@@ -261,19 +262,27 @@ class ConfigurationClass {
   /**
    * Use spaces when the user presses tab?
    */
-  @overlapSetting({ codeName: "insertSpaces", default: false })
+  @overlapSetting({ codeName: 'insertSpaces', default: false })
   expandtab: boolean;
 
-  @overlapSetting({ codeName: "lineNumbers", default: true, codeValueMapping: { true: "on", false: "off" } })
+  @overlapSetting({
+    codeName: 'lineNumbers',
+    default: true,
+    codeValueMapping: { true: 'on', false: 'off' },
+  })
   number: boolean;
 
   /**
    * Show relative line numbers?
    */
-  @overlapSetting({ codeName: "lineNumbers", default: false, codeValueMapping: { true: "relative", false: "off" } })
+  @overlapSetting({
+    codeName: 'lineNumbers',
+    default: false,
+    codeValueMapping: { true: 'relative', false: 'off' },
+  })
   relativenumber: boolean;
 
-  iskeyword: string = "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-";
+  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
 
   /**
    * Array of all key combinations that were registered in angle bracket notation
@@ -292,31 +301,35 @@ class ConfigurationClass {
 
   enableNeovim = true;
 
-  neovimPath = "nvim";
+  neovimPath = 'nvim';
 
   disableAnnoyingNeovimMessage = false;
 }
 
-function overlapSetting(args: { codeName: string, default: OptionValue, codeValueMapping?: ValueMapping }) {
-  return function (target: any, propertyKey: string) {
+function overlapSetting(args: {
+  codeName: string;
+  default: OptionValue;
+  codeValueMapping?: ValueMapping;
+}) {
+  return function(target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
-      get: function () {
-        if (this["_" + propertyKey] !== undefined) {
-          return this["_" + propertyKey];
+      get: function() {
+        if (this['_' + propertyKey] !== undefined) {
+          return this['_' + propertyKey];
         }
 
         if (args.codeValueMapping) {
-          let val = vscode.workspace.getConfiguration("editor").get(args.codeName);
+          let val = vscode.workspace.getConfiguration('editor').get(args.codeName);
 
           if (val !== undefined) {
             return args.codeValueMapping[val as string];
           }
         } else {
-          return vscode.workspace.getConfiguration("editor").get(args.codeName, args.default);
+          return vscode.workspace.getConfiguration('editor').get(args.codeName, args.default);
         }
       },
-      set: function (value) {
-        this["_" + propertyKey] = value;
+      set: function(value) {
+        this['_' + propertyKey] = value;
 
         taskQueue.enqueueTask({
           promise: async () => {
@@ -330,14 +343,16 @@ function overlapSetting(args: { codeName: string, default: OptionValue, codeValu
               codeValue = args.codeValueMapping[value];
             }
 
-            await vscode.workspace.getConfiguration("editor").update(args.codeName, codeValue, true);
+            await vscode.workspace
+              .getConfiguration('editor')
+              .update(args.codeName, codeValue, true);
           },
           isRunning: false,
-          queue: "config"
+          queue: 'config',
         });
       },
       enumerable: true,
-      configurable: true
+      configurable: true,
     });
   };
 }

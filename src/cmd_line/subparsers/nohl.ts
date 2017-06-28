@@ -1,6 +1,6 @@
-"use strict";
+('use strict');
 
-import * as node from "../commands/nohl";
+import * as node from '../commands/nohl';
 
 export function parseNohlCommandArgs(args: string): node.NohlCommand {
   return new node.NohlCommand({});

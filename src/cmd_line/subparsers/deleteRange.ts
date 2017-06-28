@@ -1,7 +1,7 @@
-"use strict";
+('use strict');
 
-import * as node from "../commands/deleteRange";
-import {Scanner} from '../scanner';
+import * as node from '../commands/deleteRange';
+import { Scanner } from '../scanner';
 
 export function parseDeleteRangeLinesCommandArgs(args: string): node.DeleteRangeCommand {
   if (!args) {
@@ -12,6 +12,6 @@ export function parseDeleteRangeLinesCommandArgs(args: string): node.DeleteRange
   let register = scanner.nextWord();
 
   return new node.DeleteRangeCommand({
-    register: register
+    register: register,
   });
 }

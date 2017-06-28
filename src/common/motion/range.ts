@@ -1,7 +1,7 @@
-"use strict";
+('use strict');
 
-import * as vscode from "vscode";
-import { Position, PositionDiff } from "./position";
+import * as vscode from 'vscode';
+import { Position, PositionDiff } from './position';
 import { IMovement } from './../../actions/motion';
 
 export class Range {
@@ -18,20 +18,19 @@ export class Range {
 
   constructor(start: Position, stop: Position) {
     this._start = start;
-    this._stop  = stop;
+    this._stop = stop;
   }
 
   /**
    * Create a range from a VSCode selection.
    */
   public static FromVSCodeSelection(e: vscode.Selection): Range {
-    return new Range(
-      Position.FromVSCodePosition(e.start),
-      Position.FromVSCodePosition(e.end)
-    );
+    return new Range(Position.FromVSCodePosition(e.start), Position.FromVSCodePosition(e.end));
   }
 
-  public static *IterateRanges(list: Range[]): Iterable<{ start: Position; stop: Position; range: Range, i: number }> {
+  public static *IterateRanges(
+    list: Range[]
+  ): Iterable<{ start: Position; stop: Position; range: Range; i: number }> {
     for (let i = 0; i < list.length; i++) {
       yield {
         i,
@@ -48,29 +47,19 @@ export class Range {
   public static FromIMovement(i: IMovement): Range {
     // TODO: This shows a very clear need for refactoring after multi-cursor is merged!
 
-    return new Range(
-      i.start,
-      i.stop
-    );
+    return new Range(i.start, i.stop);
   }
 
   public getRight(count = 1): Range {
-    return new Range(
-      this._start.getRight(count),
-      this._stop.getRight(count)
-    );
+    return new Range(this._start.getRight(count), this._stop.getRight(count));
   }
 
   public getDown(count = 1): Range {
-    return new Range(
-      this._start.getDownByCount(count),
-      this._stop.getDownByCount(count),
-    );
+    return new Range(this._start.getDownByCount(count), this._stop.getDownByCount(count));
   }
 
   public equals(other: Range): boolean {
-    return this._start.isEqual(other._start) &&
-           this._stop.isEqual(other._stop);
+    return this._start.isEqual(other._start) && this._stop.isEqual(other._stop);
   }
 
   /**
@@ -90,7 +79,7 @@ export class Range {
   }
 
   public toString(): string {
-    return `[ ${ this.start.toString() } | ${ this.stop.toString() }]`;
+    return `[ ${this.start.toString()} | ${this.stop.toString()}]`;
   }
 
   public overlaps(other: Range): boolean {
@@ -98,9 +87,6 @@ export class Range {
   }
 
   public add(diff: PositionDiff): Range {
-    return new Range(
-      this.start.add(diff),
-      this.stop.add(diff)
-    );
+    return new Range(this.start.add(diff), this.stop.add(diff));
   }
 }

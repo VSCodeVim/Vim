@@ -8,15 +8,15 @@ import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
 import { Globals } from '../src/globals';
-import { getAndUpdateModeHandler } from "../extension";
+import { getAndUpdateModeHandler } from '../extension';
 
 export function getTestingFunctions() {
   const newTest = (testObj: ITestObject): void => {
-    const stack = (new Error()).stack;
-    let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
+    const stack = new Error().stack;
+    let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
 
-    test(testObj.title, async () => testIt.bind(null, await getAndUpdateModeHandler())(testObj)
-      .catch((reason: Error) => {
+    test(testObj.title, async () =>
+      testIt.bind(null, await getAndUpdateModeHandler())(testObj).catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;
       })
@@ -24,12 +24,12 @@ export function getTestingFunctions() {
   };
 
   const newTestOnly = (testObj: ITestObject): void => {
-    console.log("!!! Running single test !!!");
-    const stack = (new Error()).stack;
-    let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : "no stack available :(";
+    console.log('!!! Running single test !!!');
+    const stack = new Error().stack;
+    let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
 
-    test.only(testObj.title, async () => testIt.bind(null, await getAndUpdateModeHandler())(testObj)
-      .catch((reason: Error) => {
+    test.only(testObj.title, async () =>
+      testIt.bind(null, await getAndUpdateModeHandler())(testObj).catch((reason: Error) => {
         reason.stack = niceStack;
         throw reason;
       })
@@ -86,7 +86,7 @@ class TestObjectHelper {
     return result.success;
   }
 
-  private _getCursorPosition(lines: string[]): { success: boolean; position: Position} {
+  private _getCursorPosition(lines: string[]): { success: boolean; position: Position } {
     let ret = { success: false, position: new Position(0, 0) };
     for (let i = 0; i < lines.length; i++) {
       let columnIdx = lines[i].indexOf('|');
@@ -155,7 +155,7 @@ class TestObjectHelper {
  */
 function tokenizeKeySequence(sequence: string): string[] {
   let isBracketedKey = false;
-  let key = "";
+  let key = '';
   let result: string[] = [];
 
   for (const char of sequence) {
@@ -174,7 +174,7 @@ function tokenizeKeySequence(sequence: string): string[] {
     }
 
     result.push(key);
-    key = "";
+    key = '';
   }
 
   return result;
@@ -192,7 +192,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // Insert all the text as a single action.
   await modeHandler.vimState.editor.edit(builder => {
-    builder.insert(new Position(0, 0), testObj.start.join("\n").replace("|", ""));
+    builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
   });
 
   await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
@@ -221,8 +221,12 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   //
   let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
   let expectedPosition = helper.endPosition;
-  assert.equal(actualPosition.line, expectedPosition.line, "Cursor LINE position is wrong.");
-  assert.equal(actualPosition.character, expectedPosition.character, "Cursor CHARACTER position is wrong.");
+  assert.equal(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
+  assert.equal(
+    actualPosition.character,
+    expectedPosition.character,
+    'Cursor CHARACTER position is wrong.'
+  );
 
   // end: check given end output is correct
   //

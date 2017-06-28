@@ -1,4 +1,4 @@
-"use strict";
+('use strict');
 
 export enum ModeName {
   Normal,
@@ -18,7 +18,7 @@ export enum VSCodeVimCursorType {
   LineThin,
   Underline,
   TextDecoration,
-  Native
+  Native,
 }
 
 export abstract class Mode {
@@ -39,11 +39,11 @@ export abstract class Mode {
     return this._name;
   }
 
-  get isActive() : boolean {
+  get isActive(): boolean {
     return this._isActive;
   }
 
-  set isActive(val : boolean) {
+  set isActive(val: boolean) {
     this._isActive = val;
   }
 }

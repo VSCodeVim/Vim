@@ -6,7 +6,7 @@ import { ModeName } from './../mode/mode';
 
 export enum SearchDirection {
   Forward = 1,
-  Backward = -1
+  Backward = -1,
 }
 
 /**
@@ -36,12 +36,12 @@ export class SearchState {
   private _searchDirection: SearchDirection = SearchDirection.Forward;
   private isRegex: boolean;
 
-  private _searchString = "";
+  private _searchString = '';
   public get searchString(): string {
     return this._searchString;
   }
 
-  public set searchString(search: string){
+  public set searchString(search: string) {
     if (this._searchString !== search) {
       this._searchString = search;
       this._recalculateSearchRanges({ forceRecalc: true });
@@ -50,11 +50,15 @@ export class SearchState {
 
   private _recalculateSearchRanges({ forceRecalc }: { forceRecalc?: boolean } = {}): void {
     const search = this.searchString;
-    if (search === "") { return; }
+    if (search === '') {
+      return;
+    }
 
     // checking if the tab that is worked on has changed, or the file version has changed
-    const shouldRecalculate = (this._cachedDocumentName !== TextEditor.getDocumentName()) ||
-      (this._cachedDocumentVersion !== TextEditor.getDocumentVersion()) || forceRecalc;
+    const shouldRecalculate =
+      this._cachedDocumentName !== TextEditor.getDocumentName() ||
+      this._cachedDocumentVersion !== TextEditor.getDocumentVersion() ||
+      forceRecalc;
 
     if (shouldRecalculate) {
       // Calculate and store all matching ranges
@@ -76,7 +80,7 @@ export class SearchState {
 
       let searchRE = search;
       if (!this.isRegex) {
-        searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
+        searchRE = search.replace(SearchState.specialCharactersRegex, '\\$&');
       }
 
       const regexFlags = ignorecase ? 'gi' : 'g';
@@ -86,7 +90,7 @@ export class SearchState {
         regex = new RegExp(searchRE, regexFlags);
       } catch (err) {
         // Couldn't compile the regexp, try again with special characters escaped
-        searchRE = search.replace(SearchState.specialCharactersRegex, "\\$&");
+        searchRE = search.replace(SearchState.specialCharactersRegex, '\\$&');
         regex = new RegExp(searchRE, regexFlags);
       }
       // We store the entire text file as a string inside text, and run the
@@ -95,15 +99,20 @@ export class SearchState {
       // object, we store a prefix sum of the line lengths, and binary search
       // through it in order to find the current line and character.
       const finalPos = new Position(TextEditor.getLineCount() - 1, 0).getLineEndIncludingEOL();
-      const text = TextEditor.getText(new vscode.Range(new Position(0 , 0), finalPos));
-      const lineLengths = text.split("\n").map(x => x.length + 1);
+      const text = TextEditor.getText(new vscode.Range(new Position(0, 0), finalPos));
+      const lineLengths = text.split('\n').map(x => x.length + 1);
       let sumLineLengths = [];
       let curLength = 0;
-      for (const length of lineLengths){
+      for (const length of lineLengths) {
         sumLineLengths.push(curLength);
         curLength += length;
       }
-      const absPosToPosition = (val: number, l: number, r: number, arr: Array<number>): Position => {
+      const absPosToPosition = (
+        val: number,
+        l: number,
+        r: number,
+        arr: Array<number>
+      ): Position => {
         const mid = Math.floor((l + r) / 2);
         if (l === r - 1) {
           return new Position(l, val - arr[mid]);
@@ -115,7 +124,9 @@ export class SearchState {
         }
       };
       const selection = vscode.window.activeTextEditor!.selection;
-      const startPos = sumLineLengths[Math.min(selection.start.line, selection.end.line)] + selection.active.character;
+      const startPos =
+        sumLineLengths[Math.min(selection.start.line, selection.end.line)] +
+        selection.active.character;
       regex.lastIndex = startPos;
       let result = regex.exec(text);
       let wrappedOver = false;
@@ -134,10 +145,17 @@ export class SearchState {
           break;
         }
 
-        this.matchRanges.push(new vscode.Range(
-          absPosToPosition(result.index, 0, sumLineLengths.length, sumLineLengths),
-          absPosToPosition(result.index + result[0].length, 0, sumLineLengths.length, sumLineLengths)
-        ));
+        this.matchRanges.push(
+          new vscode.Range(
+            absPosToPosition(result.index, 0, sumLineLengths.length, sumLineLengths),
+            absPosToPosition(
+              result.index + result[0].length,
+              0,
+              sumLineLengths.length,
+              sumLineLengths
+            )
+          )
+        );
 
         if (result.index === regex.lastIndex) {
           regex.lastIndex++;
@@ -150,9 +168,13 @@ export class SearchState {
         }
       } while (result && !(wrappedOver && result!.index > startPos));
 
-      this._matchRanges.sort((x, y) =>
-        (x.start.line < y.start.line) ||
-        (x.start.line === y.start.line && x.start.character < y.start.character) ? -1 : 1);
+      this._matchRanges.sort(
+        (x, y) =>
+          x.start.line < y.start.line ||
+            (x.start.line === y.start.line && x.start.character < y.start.character)
+            ? -1
+            : 1
+      );
     }
   }
 
@@ -161,7 +183,10 @@ export class SearchState {
    *
    * Pass in -1 as direction to reverse the direction we search.
    */
-  public getNextSearchMatchPosition(startPosition: Position, direction = 1): { pos: Position, match: boolean } {
+  public getNextSearchMatchPosition(
+    startPosition: Position,
+    direction = 1
+  ): { pos: Position; match: boolean } {
     this._recalculateSearchRanges();
 
     if (this._matchRanges.length === 0) {
@@ -191,12 +216,18 @@ export class SearchState {
       // TODO(bell)
       return {
         pos: Position.FromVSCodePosition(this._matchRanges[this._matchRanges.length - 1].start),
-        match: true
+        match: true,
       };
     }
   }
 
-  constructor(direction: SearchDirection, startPosition: Position, searchString = "", { isRegex = false } = {}, currentMode: ModeName) {
+  constructor(
+    direction: SearchDirection,
+    startPosition: Position,
+    searchString = '',
+    { isRegex = false } = {},
+    currentMode: ModeName
+  ) {
     this._searchDirection = direction;
     this._searchCursorStartPosition = startPosition;
     this.isRegex = isRegex;

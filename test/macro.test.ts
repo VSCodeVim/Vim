@@ -1,14 +1,11 @@
-"use strict";
+('use strict');
 
 import { setupWorkspace, cleanUpWorkspace } from './testUtils';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { getTestingFunctions } from './testSimplifier';
 
-suite("Record and execute a macro", () => {
-  let {
-    newTest,
-    newTestOnly
-  } = getTestingFunctions();
+suite('Record and execute a macro', () => {
+  let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -17,58 +14,58 @@ suite("Record and execute a macro", () => {
   teardown(cleanUpWorkspace);
 
   newTest({
-    title: "Can record and execute",
-    start: ['|foo = 1', "bar = 'a'", "foobar = foo + bar"],
+    title: 'Can record and execute',
+    start: ['|foo = 1', "bar = 'a'", 'foobar = foo + bar'],
     keysPressed: 'qaA;<Esc>Ivar <Esc>qj@a',
-    end: ['var foo = 1;', "var| bar = 'a';", "foobar = foo + bar"]
+    end: ['var foo = 1;', "var| bar = 'a';", 'foobar = foo + bar'],
   });
 
   newTest({
-    title: "Can repeat last invoked macro",
-    start: ['|foo = 1', "bar = 'a'", "foobar = foo + bar"],
+    title: 'Can repeat last invoked macro',
+    start: ['|foo = 1', "bar = 'a'", 'foobar = foo + bar'],
     keysPressed: 'qaA;<Esc>Ivar <Esc>qj@aj@@',
-    end: ['var foo = 1;', "var bar = 'a';", "var| foobar = foo + bar;"]
+    end: ['var foo = 1;', "var bar = 'a';", 'var| foobar = foo + bar;'],
   });
 
   newTest({
-    title: "Can play back with count",
+    title: 'Can play back with count',
     start: ['|"("+a+","+b+","+c+","+d+","+e+")"'],
     keysPressed: 'f+s + <Esc>qq;.q8@q',
-    end: ['"(" + a + "," + b + "," + c + "," + d + "," + e +| ")"']
+    end: ['"(" + a + "," + b + "," + c + "," + d + "," + e +| ")"'],
   });
 
   newTest({
-    title: "Can play back with count, abort when a motion fails",
+    title: 'Can play back with count, abort when a motion fails',
     start: ['|"("+a+","+b+","+c+","+d+","+e+")"'],
     keysPressed: 'f+s + <Esc>qq;.q22@q',
-    end: ['"(" + a + "," + b + "," + c + "," + d + "," + e +| ")"']
+    end: ['"(" + a + "," + b + "," + c + "," + d + "," + e +| ")"'],
   });
 
   newTest({
-    title: "Repeat change on contiguous lines",
+    title: 'Repeat change on contiguous lines',
     start: ['1. |one', '2. two', '3. three', '4. four'],
     keysPressed: 'qa0f.r)w~jq3@a',
-    end: ['1) One', '2) Two', '3) Three', '4) F|our']
+    end: ['1) One', '2) Two', '3) Three', '4) F|our'],
   });
 
   newTest({
-    title: "Append command to a macro",
+    title: 'Append command to a macro',
     start: ['1. |one', '2. two', '3. three', '4. four'],
     keysPressed: 'qa0f.r)qqAw~jq3@a',
-    end: ['1) One', '2) Two', '3) Three', '4) F|our']
+    end: ['1) One', '2) Two', '3) Three', '4) F|our'],
   });
 
   newTest({
-    title: "Can record Ctrl Keys and repeat",
-    start: ["1|."],
+    title: 'Can record Ctrl Keys and repeat',
+    start: ['1|.'],
     keysPressed: 'qayyp<C-a>q4@a',
-    end: ['1.', '2.', '3.', '4.', '5.', '|6.']
+    end: ['1.', '2.', '3.', '4.', '5.', '|6.'],
   });
 
   newTest({
-    title: "Can execute macros with dot commands properly",
-    start: ["|test", "test", "test", "test", "test", "test", "test"],
+    title: 'Can execute macros with dot commands properly',
+    start: ['|test', 'test', 'test', 'test', 'test', 'test', 'test'],
     keysPressed: 'qadd.q@a@a',
-    end: ["|test"],
+    end: ['|test'],
   });
 });

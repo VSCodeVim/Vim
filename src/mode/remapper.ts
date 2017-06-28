@@ -11,8 +11,8 @@ export interface ICodeKeybinding {
 }
 
 interface IKeybinding {
-  before   : string[];
-  after?   : string[];
+  before: string[];
+  after?: string[];
   commands?: { command: string; args: any[] }[];
 }
 
@@ -37,8 +37,7 @@ class Remapper {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
 
-    let remappings = vscode.workspace.getConfiguration('vim')
-      .get<IKeybinding[]>(configKey, []);
+    let remappings = vscode.workspace.getConfiguration('vim').get<IKeybinding[]>(configKey, []);
 
     for (let remapping of remappings) {
       let before: string[] = [];
@@ -49,11 +48,13 @@ class Remapper {
         remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
       }
 
-      this._remappings.push(<IKeybinding> {
-        before: before,
-        after: after,
-        commands: remapping.commands,
-      });
+      this._remappings.push(
+        <IKeybinding>{
+          before: before,
+          after: after,
+          commands: remapping.commands,
+        }
+      );
     }
   }
 
@@ -65,7 +66,11 @@ class Remapper {
     }
   }
 
-  public async sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean> {
+  public async sendKey(
+    keys: string[],
+    modeHandler: ModeHandler,
+    vimState: VimState
+  ): Promise<boolean> {
     if (this._remappedModes.indexOf(vimState.currentMode) === -1) {
       return false;
     }
@@ -84,12 +89,12 @@ class Remapper {
 
     if (this._remappedModes.indexOf(ModeName.Insert) === -1) {
       remapping = _.find(this._remappings, map => {
-        return map.before.join("") === keys.join("");
+        return map.before.join('') === keys.join('');
       });
     } else {
       for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
         const slice = keys.slice(-sliceLength);
-        const result = _.find(this._remappings, map => map.before.join("") === slice.join(""));
+        const result = _.find(this._remappings, map => map.before.join('') === slice.join(''));
 
         if (result) {
           remapping = result;
@@ -113,7 +118,8 @@ class Remapper {
         // changes... this is a complicated problem.
 
         await vimState.historyTracker.undoAndRemoveChanges(
-          Math.max(0, (remapping.before.length - 1) * vimState.allCursors.length));
+          Math.max(0, (remapping.before.length - 1) * vimState.allCursors.length)
+        );
       }
 
       vimState.isCurrentlyPerformingRemapping = false;
@@ -136,7 +142,7 @@ class Remapper {
       if (remapping.commands) {
         for (const command of remapping.commands) {
           // Check if this is a vim command by looking for :
-          if (command.command.slice(0, 1) === ":") {
+          if (command.command.slice(0, 1) === ':') {
             await runCmdLine(command.command.slice(1, command.command.length), modeHandler);
             await modeHandler.updateView(modeHandler.vimState);
           } else {
@@ -150,7 +156,7 @@ class Remapper {
     } else {
       // Check to see if a remapping could potentially be applied when more keys are received
       for (let remap of this._remappings) {
-        if (keys.join("") === remap.before.slice(0, keys.length).join("")) {
+        if (keys.join('') === remap.before.slice(0, keys.length).join('')) {
           this._couldRemappingApply = true;
           break;
         } else {
@@ -166,7 +172,7 @@ class Remapper {
 export class InsertModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      "insertModeKeyBindings" + (recursive ? "" : "NonRecursive"),
+      'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
       [ModeName.Insert],
       recursive
     );
@@ -176,10 +182,9 @@ export class InsertModeRemapper extends Remapper {
 export class OtherModesRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      "otherModesKeyBindings" + (recursive ? "" : "NonRecursive"),
+      'otherModesKeyBindings' + (recursive ? '' : 'NonRecursive'),
       [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
       recursive
     );
   }
 }
-

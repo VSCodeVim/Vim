@@ -1,5 +1,5 @@
-import { Position, PositionDiff } from "./../common/motion/position";
-import { Range } from "./../common/motion/range";
+import { Position, PositionDiff } from './../common/motion/position';
+import { Range } from './../common/motion/range';
 import * as vscode from 'vscode';
 
 /**
@@ -20,12 +20,12 @@ export interface InsertTextTransformation {
    * Type of this insertion (used for type checking with discriminated
    * union types).
    */
-  type    : "insertText";
+  type: 'insertText';
 
   /**
    * Text content of this insertion.
    */
-  text    : string;
+  text: string;
 
   /**
    * The location to insert the text.
@@ -45,12 +45,11 @@ export interface InsertTextTransformation {
    */
   diff?: PositionDiff;
 
-
   manuallySetCursorPositions?: boolean;
 }
 
 export interface ReplaceTextTransformation {
-  type: "replaceText";
+  type: 'replaceText';
 
   /**
    * Text to insert.
@@ -92,12 +91,12 @@ export interface ReplaceTextTransformation {
  * will automatically add the closing ")").
  */
 export interface InsertTextVSCodeTransformation {
-  type : "insertTextVSCode";
+  type: 'insertTextVSCode';
 
   /**
    * Text to insert.
    */
-  text : string;
+  text: string;
 
   /**
    * The index of the cursor that this transformation applies to.
@@ -117,12 +116,12 @@ export interface InsertTextVSCodeTransformation {
  * Represents deleting a character at a position in the document.
  */
 export interface DeleteTextTransformation {
-  type         : "deleteText";
+  type: 'deleteText';
 
   /**
    * Position at which to delete a character.
    */
-  position     : Position;
+  position: Position;
 
   /**
    * The index of the cursor that this transformation applies to.
@@ -138,12 +137,11 @@ export interface DeleteTextTransformation {
   diff?: PositionDiff;
 }
 
-
 /**
  * Represents deleting a range of characters.
  */
 export interface DeleteTextRangeTransformation {
-  type         : "deleteRange";
+  type: 'deleteRange';
 
   /**
    * Range of characters to delete.
@@ -172,7 +170,7 @@ export interface DeleteTextRangeTransformation {
 }
 
 export interface MoveCursorTransformation {
-  type: "moveCursor";
+  type: 'moveCursor';
 
   cursorIndex?: number;
 
@@ -186,21 +184,21 @@ export interface MoveCursorTransformation {
  * Represents pressing ':'
  */
 export interface ShowCommandLine {
-  type: "showCommandLine";
+  type: 'showCommandLine';
 }
 
 /**
  * Represents pressing '.'
  */
 export interface Dot {
-  type: "dot";
+  type: 'dot';
 }
 
 /**
  * Represents Tab
  */
 export interface Tab {
-  type: "tab";
+  type: 'tab';
   cursorIndex?: number;
 
   /**
@@ -213,22 +211,22 @@ export interface Tab {
  * Represents macro
  */
 export interface Macro {
-  type: "macro";
+  type: 'macro';
   register: string;
-  replay: "contentChange" | "keystrokes";
+  replay: 'contentChange' | 'keystrokes';
 }
 
 /**
  * Represents updating document content changes
  */
 export interface ContentChangeTransformation {
-  type: "contentChange";
+  type: 'contentChange';
   changes: vscode.TextDocumentContentChangeEvent[];
   diff: PositionDiff;
 }
 
-export type Transformation
-  = InsertTextTransformation
+export type Transformation =
+  | InsertTextTransformation
   | InsertTextVSCodeTransformation
   | ReplaceTextTransformation
   | DeleteTextRangeTransformation
@@ -255,8 +253,8 @@ export type Transformation
  * (There are a LOT of weird edge cases with cursor behavior that we don't want to have to reimplement. Trust
  * me... I tried.)
  */
-export type TextTransformations
-  = InsertTextTransformation
+export type TextTransformations =
+  | InsertTextTransformation
   | InsertTextVSCodeTransformation
   | DeleteTextRangeTransformation
   | MoveCursorTransformation
@@ -264,11 +262,13 @@ export type TextTransformations
   | ReplaceTextTransformation;
 
 export const isTextTransformation = (x: Transformation): x is TextTransformations => {
-  return x.type === 'insertText'  ||
-         x.type === 'replaceText' ||
-         x.type === 'deleteText'  ||
-         x.type === 'moveCursor'  ||
-         x.type === 'deleteRange';
+  return (
+    x.type === 'insertText' ||
+    x.type === 'replaceText' ||
+    x.type === 'deleteText' ||
+    x.type === 'moveCursor' ||
+    x.type === 'deleteRange'
+  );
 };
 
 const getRangeFromTextTransformation = (transformation: TextTransformations): Range | undefined => {
@@ -285,7 +285,7 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
       return undefined;
   }
 
-  throw new Error("This should never happen!");
+  throw new Error('This should never happen!');
 };
 
 export const areAnyTransformationsOverlapping = (transformations: TextTransformations[]) => {
@@ -297,7 +297,9 @@ export const areAnyTransformationsOverlapping = (transformations: TextTransforma
       const firstRange = getRangeFromTextTransformation(first);
       const secondRange = getRangeFromTextTransformation(second);
 
-      if (!firstRange || !secondRange) { continue; }
+      if (!firstRange || !secondRange) {
+        continue;
+      }
 
       if (firstRange.overlaps(secondRange)) {
         return true;

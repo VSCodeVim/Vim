@@ -1,12 +1,12 @@
-"use strict";
+('use strict');
 
 import * as assert from 'assert';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { getAndUpdateModeHandler } from "../../extension";
+import { getAndUpdateModeHandler } from '../../extension';
 
-suite("Mode Handler", () => {
+suite('Mode Handler', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
@@ -16,15 +16,15 @@ suite("Mode Handler", () => {
 
   teardown(cleanUpWorkspace);
 
-  test("ctor", () => {
+  test('ctor', () => {
     assert.equal(modeHandler.currentMode.name, ModeName.Normal);
     assert.equal(modeHandler.currentMode.isActive, true);
   });
 
-  test("can set current mode", async () => {
+  test('can set current mode', async () => {
     assert.equal(modeHandler.currentMode.name, ModeName.Normal);
 
-    await modeHandler.handleKeyEvent("i");
+    await modeHandler.handleKeyEvent('i');
     assert.equal(modeHandler.currentMode.name, ModeName.Insert);
   });
 });

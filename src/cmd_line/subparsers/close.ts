@@ -1,14 +1,14 @@
-"use strict";
+('use strict');
 
-import * as node from "../commands/close";
-import {Scanner} from '../scanner';
-import {VimError, ErrorCode} from '../../error';
+import * as node from '../commands/close';
+import { Scanner } from '../scanner';
+import { VimError, ErrorCode } from '../../error';
 
-export function parseCloseCommandArgs(args : string) : node.CloseCommand {
+export function parseCloseCommandArgs(args: string): node.CloseCommand {
   if (!args) {
     return new node.CloseCommand({});
   }
-  var scannedArgs : node.ICloseCommandArguments = {};
+  var scannedArgs: node.ICloseCommandArguments = {};
   var scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {
