@@ -1,4 +1,3 @@
-
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { TextEditor } from './../src/textEditor';

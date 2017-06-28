@@ -1,4 +1,3 @@
-
 import * as node from '../node';
 import * as util from '../../util';
 import { Configuration } from '../../configuration/configuration';

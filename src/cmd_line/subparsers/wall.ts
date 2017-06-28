@@ -1,4 +1,3 @@
-
 import * as node from '../commands/wall';
 import { Scanner } from '../scanner';
 import { VimError, ErrorCode } from '../../error';

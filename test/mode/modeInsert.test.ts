@@ -1,4 +1,3 @@
-
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { TextEditor } from '../../src/textEditor';

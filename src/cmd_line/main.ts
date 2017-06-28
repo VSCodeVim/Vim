@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode';
 import * as parser from './parser';
 import { ModeHandler } from '../mode/modeHandler';

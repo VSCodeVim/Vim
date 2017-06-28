@@ -1,4 +1,3 @@
-
 import * as assert from 'assert';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';

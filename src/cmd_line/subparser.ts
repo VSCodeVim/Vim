@@ -1,4 +1,3 @@
-
 import { parseQuitCommandArgs, parseQuitAllCommandArgs } from './subparsers/quit';
 import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWallCommandArgs } from './subparsers/wall';

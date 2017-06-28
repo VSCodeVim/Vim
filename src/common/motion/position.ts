@@ -1,4 +1,3 @@
-
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import { TextEditor } from './../../textEditor';

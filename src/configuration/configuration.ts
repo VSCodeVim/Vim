@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode';
 import { taskQueue } from '../../src/taskQueue';
 import { Globals } from '../../src/globals';

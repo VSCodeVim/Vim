@@ -1,4 +1,3 @@
-
 import * as node from '../commands/tab';
 import { Scanner } from '../scanner';
 

@@ -1,4 +1,3 @@
-
 export enum ModeName {
   Normal,
   Insert,

@@ -1,4 +1,3 @@
-
 // XXX: use graceful-fs ??
 import * as fs from 'fs';
 import * as path from 'path';
