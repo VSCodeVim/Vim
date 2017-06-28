@@ -28,6 +28,8 @@ install:
 - npm install;
 
 script:
+- git ls-tree -r master --name-only | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5
+- git diff-index --quiet HEAD -- || exit 1
 - gulp
 - npm test --silent;
 
