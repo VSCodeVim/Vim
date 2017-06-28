@@ -2,7 +2,7 @@
 <p align="center"><strong>Vim emulation for Visual Studio Code.</strong></p>
 
 ![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)
-![https://travis-ci.org/VSCodeVim/Vim]( https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)
+![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)
 
 
 <hr>
