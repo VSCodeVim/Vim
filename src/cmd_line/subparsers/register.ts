@@ -1,7 +1,7 @@
-"use strict";
+('use strict');
 
-import * as node from "../commands/register";
-import {Scanner} from '../scanner';
+import * as node from '../commands/register';
+import { Scanner } from '../scanner';
 
 export function parseRegisterCommandArgs(args: string): node.RegisterCommand {
   if (!args) {
@@ -12,6 +12,6 @@ export function parseRegisterCommandArgs(args: string): node.RegisterCommand {
   let name = scanner.nextWord();
 
   return new node.RegisterCommand({
-    arg: name
+    arg: name,
   });
 }

@@ -1,9 +1,9 @@
-"use strict";
+('use strict');
 
-import * as node from "../node";
-import {readFile} from 'fs';
-import {exec} from 'child_process';
-import {TextEditor} from '../../textEditor';
+import * as node from '../node';
+import { readFile } from 'fs';
+import { exec } from 'child_process';
+import { TextEditor } from '../../textEditor';
 
 export interface IReadCommandArguments extends node.ICommandArgs {
   file?: string;
@@ -17,26 +17,26 @@ export interface IReadCommandArguments extends node.ICommandArgs {
 //
 export class ReadCommand extends node.CommandBase {
   neovimCapable = true;
-  protected _arguments : IReadCommandArguments;
+  protected _arguments: IReadCommandArguments;
 
-  constructor(args : IReadCommandArguments) {
+  constructor(args: IReadCommandArguments) {
     super();
     this._name = 'read';
     this._arguments = args;
   }
 
-  get arguments() : IReadCommandArguments {
+  get arguments(): IReadCommandArguments {
     return this._arguments;
   }
 
-  async execute() : Promise<void> {
+  async execute(): Promise<void> {
     const textToInsert = await this.getTextToInsert();
     if (textToInsert) {
       await TextEditor.insert(textToInsert);
     }
   }
 
-  async getTextToInsert() : Promise<string> {
+  async getTextToInsert(): Promise<string> {
     if (this.arguments.file && this.arguments.file.length > 0) {
       return await this.getTextToInsertFromFile();
     } else if (this.arguments.cmd && this.arguments.cmd.length > 0) {
@@ -46,7 +46,7 @@ export class ReadCommand extends node.CommandBase {
     }
   }
 
-  async getTextToInsertFromFile() : Promise<string> {
+  async getTextToInsertFromFile(): Promise<string> {
     // TODO: Read encoding from ++opt argument.
     return new Promise<string>((resolve, reject) => {
       try {
@@ -63,7 +63,7 @@ export class ReadCommand extends node.CommandBase {
     });
   }
 
-  async getTextToInsertFromCmd() : Promise<string> {
+  async getTextToInsertFromCmd(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       try {
         exec(this.arguments.cmd as string, (err, stdout, stderr) => {

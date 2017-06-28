@@ -28,7 +28,7 @@ export class ReplaceState {
     this.timesToRepeat = timesToRepeat;
 
     let text = TextEditor.getLineAt(startPosition).text.substring(startPosition.character);
-    for (let [key, value] of text.split("").entries()) {
+    for (let [key, value] of text.split('').entries()) {
       this.originalChars[key + startPosition.character] = value;
     }
   }

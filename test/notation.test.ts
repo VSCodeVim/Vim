@@ -1,10 +1,10 @@
-"use strict";
+('use strict');
 
 import * as assert from 'assert';
 import { AngleBracketNotation } from '../src/notation';
 
-suite("Notation", () => {
-  test("Normalize", () => {
+suite('Notation', () => {
+  test('Normalize', () => {
     let testCases = {
       '<cTrL+w>': '<C-w>',
       'cTrL+x': '<C-x>',

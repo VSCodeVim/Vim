@@ -1,4 +1,4 @@
-"use strict";
+('use strict');
 
 import { parseQuitCommandArgs, parseQuitAllCommandArgs } from './subparsers/quit';
 import { parseWriteCommandArgs } from './subparsers/write';
@@ -99,5 +99,4 @@ export const commandParsers = {
   d: parseDeleteRangeLinesCommandArgs,
 
   sort: parseSortCommandArgs,
-
 };

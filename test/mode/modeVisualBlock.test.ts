@@ -1,4 +1,4 @@
-"use strict";
+('use strict');
 
 import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
@@ -6,15 +6,12 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 
 import * as vscode from 'vscode';
-import { getAndUpdateModeHandler } from "../../extension";
+import { getAndUpdateModeHandler } from '../../extension';
 
-suite("Mode Visual Block", () => {
+suite('Mode Visual Block', () => {
   let modeHandler: ModeHandler;
 
-  let {
-    newTest,
-    newTestOnly,
-  } = getTestingFunctions();
+  let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -23,7 +20,7 @@ suite("Mode Visual Block", () => {
 
   teardown(cleanUpWorkspace);
 
-  test("can be activated", async () => {
+  test('can be activated', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
     await modeHandler.handleKeyEvent('<C-v>');
@@ -34,74 +31,74 @@ suite("Mode Visual Block", () => {
   });
 
   newTest({
-    title: "Can handle A forward select",
+    title: 'Can handle A forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljA123',
     end: ['tes123|t', 'tes123t'],
   });
 
   newTest({
-    title: "Can handle A backwards select",
+    title: 'Can handle A backwards select',
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjA123',
     end: ['tes123|t', 'tes123t'],
   });
 
   newTest({
-    title: "Can handle I forward select",
+    title: 'Can handle I forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljI123',
     end: ['t123|est', 't123est'],
   });
 
   newTest({
-    title: "Can handle I backwards select",
+    title: 'Can handle I backwards select',
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjI123',
     end: ['t123|est', 't123est'],
   });
 
   newTest({
-    title: "Can handle I with empty lines on first character (inserts on empty line)",
+    title: 'Can handle I with empty lines on first character (inserts on empty line)',
     start: ['|test', '', 'test'],
     keysPressed: '<C-v>lljjI123',
     end: ['123|test', '123', '123test'],
   });
 
   newTest({
-    title: "Can handle I with empty lines on non-first character (does not insert on empty line)",
+    title: 'Can handle I with empty lines on non-first character (does not insert on empty line)',
     start: ['t|est', '', 'test'],
     keysPressed: '<C-v>lljjI123',
     end: ['t123|est', '', 't123est'],
   });
 
   newTest({
-    title: "Can handle c forward select",
+    title: 'Can handle c forward select',
     start: ['|test', 'test'],
     keysPressed: 'l<C-v>ljc123',
     end: ['t123|t', 't123t'],
   });
 
   newTest({
-    title: "Can handle c backwards select",
+    title: 'Can handle c backwards select',
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjc123',
     end: ['t123|t', 't123t'],
   });
 
   newTest({
-    title: "Can handle C",
+    title: 'Can handle C',
     start: ['tes|t', 'test'],
     keysPressed: 'h<C-v>hjC123',
     end: ['t123|', 't123'],
   });
 
   newTest({
-    title: "Can do a multi line replace",
-    start: ["one |two three four five", "one two three four five"],
-    keysPressed: "<C-v>jeer1",
-    end: ["one |111111111 four five", "one 111111111 four five"],
-    endMode: ModeName.Normal
+    title: 'Can do a multi line replace',
+    start: ['one |two three four five', 'one two three four five'],
+    keysPressed: '<C-v>jeer1',
+    end: ['one |111111111 four five', 'one 111111111 four five'],
+    endMode: ModeName.Normal,
   });
 
   newTest({
@@ -110,5 +107,4 @@ suite("Mode Visual Block", () => {
     keysPressed: '<C-v>hjD',
     end: ['t|e', 'te'],
   });
-
 });

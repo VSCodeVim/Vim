@@ -1,14 +1,14 @@
 enum QuoteMatch {
   None,
   Opening,
-  Closing
+  Closing,
 }
 
 /**
  * QuoteMatcher matches quoted strings, respecting escaped quotes (\") and friends
  */
 export class QuoteMatcher {
-  static escapeChar = "\\";
+  static escapeChar = '\\';
 
   private quoteMap: QuoteMatch[] = [];
 

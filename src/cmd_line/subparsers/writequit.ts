@@ -1,13 +1,13 @@
-"use strict";
+('use strict');
 
-import {WriteQuitCommand, IWriteQuitCommandArguments} from '../commands/writequit';
-import {Scanner} from '../scanner';
+import { WriteQuitCommand, IWriteQuitCommandArguments } from '../commands/writequit';
+import { Scanner } from '../scanner';
 
-export function parseWriteQuitCommandArgs(args : string) : WriteQuitCommand {
+export function parseWriteQuitCommandArgs(args: string): WriteQuitCommand {
   if (!args) {
     return new WriteQuitCommand({});
   }
-  var scannedArgs : IWriteQuitCommandArguments = {};
+  var scannedArgs: IWriteQuitCommandArguments = {};
   var scanner = new Scanner(args);
   while (true) {
     scanner.skipWhiteSpace();
@@ -39,12 +39,12 @@ export function parseWriteQuitCommandArgs(args : string) : WriteQuitCommand {
         }
         let value = scanner.emit();
         if (!value) {
-          throw new Error("Expected value for option.");
+          throw new Error('Expected value for option.');
         }
         scannedArgs.optValue = value;
         continue;
       default:
-        throw new Error("Not implemented");
+        throw new Error('Not implemented');
     }
   }
   // TODO: parse the stuff (it's really not).

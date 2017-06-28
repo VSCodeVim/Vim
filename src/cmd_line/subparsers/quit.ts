@@ -1,14 +1,14 @@
-"use strict";
+('use strict');
 
-import * as node from "../commands/quit";
-import {Scanner} from '../scanner';
-import {VimError, ErrorCode} from '../../error';
+import * as node from '../commands/quit';
+import { Scanner } from '../scanner';
+import { VimError, ErrorCode } from '../../error';
 
-export function parseQuitCommandArgs(args : string) : node.QuitCommand {
+export function parseQuitCommandArgs(args: string): node.QuitCommand {
   if (!args) {
     return new node.QuitCommand({});
   }
-  var scannedArgs : node.IQuitCommandArguments = {};
+  var scannedArgs: node.IQuitCommandArguments = {};
   var scanner = new Scanner(args);
   const c = scanner.next();
   if (c === '!') {

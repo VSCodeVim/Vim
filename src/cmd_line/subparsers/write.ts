@@ -1,13 +1,13 @@
-"use strict";
+('use strict');
 
-import {WriteCommand, IWriteCommandArguments} from '../commands/write';
-import {Scanner} from '../scanner';
+import { WriteCommand, IWriteCommandArguments } from '../commands/write';
+import { Scanner } from '../scanner';
 
-export function parseWriteCommandArgs(args : string) : WriteCommand {
+export function parseWriteCommandArgs(args: string): WriteCommand {
   if (!args) {
     return new WriteCommand({});
   }
-  var scannedArgs : IWriteCommandArguments = {};
+  var scannedArgs: IWriteCommandArguments = {};
   var scanner = new Scanner(args);
   while (true) {
     scanner.skipWhiteSpace();
@@ -49,12 +49,12 @@ export function parseWriteCommandArgs(args : string) : WriteCommand {
         }
         let value = scanner.emit();
         if (!value) {
-          throw new Error("Expected value for option.");
+          throw new Error('Expected value for option.');
         }
         scannedArgs.optValue = value;
         continue;
       default:
-        throw new Error("Not implemented");
+        throw new Error('Not implemented');
     }
   }
   // TODO: actually parse arguments.

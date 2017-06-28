@@ -1,7 +1,7 @@
-"use strict";
+('use strict');
 
-import * as vscode from "vscode";
-import * as node from "../node";
+import * as vscode from 'vscode';
+import * as node from '../node';
 import * as error from '../../error';
 
 export interface IQuitCommandArguments extends node.ICommandArgs {
@@ -15,19 +15,19 @@ export interface IQuitCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:quit
 //
 export class QuitCommand extends node.CommandBase {
-  protected _arguments : IQuitCommandArguments;
+  protected _arguments: IQuitCommandArguments;
 
-  constructor(args : IQuitCommandArguments) {
+  constructor(args: IQuitCommandArguments) {
     super();
     this._name = 'quit';
     this._arguments = args;
   }
 
-  get arguments() : IQuitCommandArguments {
+  get arguments(): IQuitCommandArguments {
     return this._arguments;
   }
 
-  async execute() : Promise<void> {
+  async execute(): Promise<void> {
     if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.E37);
     }
@@ -42,8 +42,12 @@ export class QuitCommand extends node.CommandBase {
         await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
       }
 
-      if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.viewColumn === oldViewColumn) {
+      if (
+        vscode.window.activeTextEditor !== undefined &&
+        vscode.window.activeTextEditor.viewColumn === oldViewColumn
+      ) {
         await vscode.commands.executeCommand('workbench.action.previousEditor');
       }
     }
-  }}
+  }
+}

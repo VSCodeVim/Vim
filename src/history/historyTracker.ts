@@ -10,26 +10,26 @@
  * Undo/Redo will advance forward or backwards through Steps.
  */
 
-import * as vscode from "vscode";
-import * as _ from "lodash";
+import * as vscode from 'vscode';
+import * as _ from 'lodash';
 
 import { Position } from './../common/motion/position';
 import { TextEditor } from './../textEditor';
 import { RecordedState, VimState } from './../mode/modeHandler';
 
-import DiffMatchPatch = require("diff-match-patch");
+import DiffMatchPatch = require('diff-match-patch');
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
 
 export class DocumentChange {
-  start : Position;
-  text  : string;
-  isAdd : boolean;
+  start: Position;
+  text: string;
+  isAdd: boolean;
 
   constructor(start: Position, text: string, isAdd: boolean) {
     this.start = start;
-    this.text  = text;
+    this.text = text;
     this.isAdd = isAdd;
   }
 
@@ -71,7 +71,6 @@ class HistoryStep {
    */
   changes: DocumentChange[];
 
-
   /**
    * Whether the user is still inserting or deleting for this history step.
    */
@@ -95,17 +94,17 @@ class HistoryStep {
   vimState: VimState;
 
   constructor(init: {
-    changes?: DocumentChange[],
-    isFinished?: boolean,
-    cursorStart?: Position[] | undefined,
-    cursorEnd?: Position[] | undefined,
-    marks?: IMark[],
+    changes?: DocumentChange[];
+    isFinished?: boolean;
+    cursorStart?: Position[] | undefined;
+    cursorEnd?: Position[] | undefined;
+    marks?: IMark[];
   }) {
-    this.changes   = init.changes = [];
-    this.isFinished  = init.isFinished || false;
+    this.changes = init.changes = [];
+    this.isFinished = init.isFinished || false;
     this.cursorStart = init.cursorStart || undefined;
     this.cursorEnd = init.cursorEnd || undefined;
-    this.marks     = init.marks || [];
+    this.marks = init.marks || [];
   }
 
   /**
@@ -183,7 +182,7 @@ export class HistoryTracker {
 
   private get currentHistoryStep(): HistoryStep {
     if (this.currentHistoryStepIndex === -1) {
-      console.log("Tried to modify history at index -1");
+      console.log('Tried to modify history at index -1');
 
       throw new Error();
     }
@@ -211,12 +210,14 @@ export class HistoryTracker {
    * We add an initial, unrevertable step, which inserts the entire document.
    */
   private _initialize() {
-    this.historySteps.push(new HistoryStep({
-      changes  : [new DocumentChange(new Position(0, 0), this.getAllText(), true)],
-      isFinished : true,
-      cursorStart: [ new Position(0, 0) ],
-      cursorEnd: [ new Position(0, 0) ]
-    }));
+    this.historySteps.push(
+      new HistoryStep({
+        changes: [new DocumentChange(new Position(0, 0), this.getAllText(), true)],
+        isFinished: true,
+        cursorStart: [new Position(0, 0)],
+        cursorEnd: [new Position(0, 0)],
+      })
+    );
 
     this.finishCurrentStep();
 
@@ -226,9 +227,11 @@ export class HistoryTracker {
   }
 
   private _addNewHistoryStep(): void {
-    this.historySteps.push(new HistoryStep({
-      marks: this.currentHistoryStep.marks
-    }));
+    this.historySteps.push(
+      new HistoryStep({
+        marks: this.currentHistoryStep.marks,
+      })
+    );
 
     this.currentHistoryStepIndex++;
   }
@@ -247,9 +250,9 @@ export class HistoryTracker {
     // clone old marks into new marks
     for (const mark of previousMarks) {
       newMarks.push({
-        name            : mark.name,
-        position        : mark.position,
-        isUppercaseMark : mark.isUppercaseMark
+        name: mark.name,
+        position: mark.position,
+        isUppercaseMark: mark.isUppercaseMark,
       });
     }
 
@@ -264,20 +267,25 @@ export class HistoryTracker {
           // (Yes, I could merge these together, but that would obfusciate the logic.)
 
           for (const ch of change.text) {
-
             // Update mark
 
             if (pos.compareTo(newMark.position) <= 0) {
-              if (ch === "\n") {
-                newMark.position = new Position(newMark.position.line + 1, newMark.position.character);
-              } else if (ch !== "\n" && pos.line === newMark.position.line) {
-                newMark.position = new Position(newMark.position.line, newMark.position.character + 1);
+              if (ch === '\n') {
+                newMark.position = new Position(
+                  newMark.position.line + 1,
+                  newMark.position.character
+                );
+              } else if (ch !== '\n' && pos.line === newMark.position.line) {
+                newMark.position = new Position(
+                  newMark.position.line,
+                  newMark.position.character + 1
+                );
               }
             }
 
             // Advance position
 
-            if (ch === "\n") {
+            if (ch === '\n') {
               pos = new Position(pos.line + 1, 0);
             } else {
               pos = new Position(pos.line, pos.character + 1);
@@ -285,21 +293,26 @@ export class HistoryTracker {
           }
         } else {
           for (const ch of change.text) {
-
             // Update mark
 
             if (pos.compareTo(newMark.position) < 0) {
-              if (ch === "\n") {
-                newMark.position = new Position(newMark.position.line - 1, newMark.position.character);
+              if (ch === '\n') {
+                newMark.position = new Position(
+                  newMark.position.line - 1,
+                  newMark.position.character
+                );
               } else if (pos.line === newMark.position.line) {
-                newMark.position = new Position(newMark.position.line, newMark.position.character - 1);
+                newMark.position = new Position(
+                  newMark.position.line,
+                  newMark.position.character - 1
+                );
               }
             }
 
             // De-advance position
             // (What's the opposite of advance? Retreat position?)
 
-            if (ch === "\n") {
+            if (ch === '\n') {
               // The 99999 is a bit of a hack here. It's very difficult and
               // completely unnecessary to get the correct position, so we
               // just fake it.
@@ -330,9 +343,12 @@ export class HistoryTracker {
     const newMark: IMark = {
       position,
       name: markName,
-      isUppercaseMark: markName === markName.toUpperCase()
+      isUppercaseMark: markName === markName.toUpperCase(),
     };
-    const previousIndex = _.findIndex(this.currentHistoryStep.marks, mark => mark.name === markName);
+    const previousIndex = _.findIndex(
+      this.currentHistoryStep.marks,
+      mark => mark.name === markName
+    );
 
     if (previousIndex !== -1) {
       this.currentHistoryStep.marks[previousIndex] = newMark;
@@ -358,16 +374,19 @@ export class HistoryTracker {
    * Determines what changed by diffing the document against what it
    * used to look like.
    */
-  addChange(cursorPosition = [ new Position(0, 0) ]): void {
+  addChange(cursorPosition = [new Position(0, 0)]): void {
     const newText = this.getAllText();
 
-    if (newText === this.oldText) { return; }
+    if (newText === this.oldText) {
+      return;
+    }
 
     // Determine if we should add a new Step.
 
-    if (this.currentHistoryStepIndex === this.historySteps.length - 1 &&
-      this.currentHistoryStep.isFinished) {
-
+    if (
+      this.currentHistoryStepIndex === this.historySteps.length - 1 &&
+      this.currentHistoryStep.isFinished
+    ) {
       this._addNewHistoryStep();
     } else if (this.currentHistoryStepIndex !== this.historySteps.length - 1) {
       this.historySteps = this.historySteps.slice(0, this.currentHistoryStepIndex + 1);
@@ -397,7 +416,7 @@ export class HistoryTracker {
 
     for (const diff of diffs) {
       const [whatHappened, text] = diff;
-      const added   = whatHappened === DiffMatchPatch.DIFF_INSERT;
+      const added = whatHappened === DiffMatchPatch.DIFF_INSERT;
       const removed = whatHappened === DiffMatchPatch.DIFF_DELETE;
 
       let change: DocumentChange;
@@ -431,7 +450,7 @@ export class HistoryTracker {
    */
   async undoAndRemoveChanges(n: number): Promise<void> {
     if (this.currentHistoryStep.changes.length < n) {
-      console.log("Something bad happened in removeChange");
+      console.log('Something bad happened in removeChange');
 
       return;
     }
@@ -458,8 +477,7 @@ export class HistoryTracker {
    * and the next time we add a change, it'll be added to a new Step.
    */
   finishCurrentStep(): void {
-    if (this.currentHistoryStep.changes.length === 0 ||
-        this.currentHistoryStep.isFinished) {
+    if (this.currentHistoryStep.changes.length === 0 || this.currentHistoryStep.isFinished) {
       return;
     }
 
@@ -560,15 +578,19 @@ export class HistoryTracker {
    * means active.
    */
   toString(): string {
-    let result = "";
+    let result = '';
 
     for (let i = 0; i < this.historySteps.length; i++) {
       const step = this.historySteps[i];
 
-      result += step.changes.map(x => x.text.replace(/\n/g, "\\n")).join("");
-      if (this.currentHistoryStepIndex === i) { result += "+"; }
-      if (step.isFinished) { result += "✓"; }
-      result += "| ";
+      result += step.changes.map(x => x.text.replace(/\n/g, '\\n')).join('');
+      if (this.currentHistoryStepIndex === i) {
+        result += '+';
+      }
+      if (step.isFinished) {
+        result += '✓';
+      }
+      result += '| ';
     }
 
     return result;

@@ -1,4 +1,4 @@
-"use strict";
+('use strict');
 
 //
 // PLEASE DO NOT MODIFY / DELETE UNLESS YOU KNOW WHAT YOU ARE DOING
@@ -27,5 +27,3 @@ testRunner.configure({
 });
 
 module.exports = testRunner;
-
-

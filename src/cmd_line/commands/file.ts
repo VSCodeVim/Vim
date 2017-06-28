@@ -1,14 +1,14 @@
-"use strict";
+('use strict');
 
-import * as vscode from "vscode";
-import * as path from "path";
-import * as fs from "fs";
-import * as node from "../node";
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as node from '../node';
 const untildify = require('untildify');
 
 export enum FilePosition {
   CurrentWindow,
-  NewWindow
+  NewWindow,
 }
 
 export interface IFileCommandArguments extends node.ICommandArgs {
@@ -21,13 +21,13 @@ export interface IFileCommandArguments extends node.ICommandArgs {
 export class FileCommand extends node.CommandBase {
   protected _arguments: IFileCommandArguments;
 
-  constructor(args : IFileCommandArguments) {
+  constructor(args: IFileCommandArguments) {
     super();
     this._name = 'file';
     this._arguments = args;
   }
 
-  get arguments() : IFileCommandArguments {
+  get arguments(): IFileCommandArguments {
     return this._arguments;
   }
 
@@ -41,7 +41,7 @@ export class FileCommand extends node.CommandBase {
     return active.viewColumn!;
   }
 
-  getViewColumnToRight() : vscode.ViewColumn {
+  getViewColumnToRight(): vscode.ViewColumn {
     const active = vscode.window.activeTextEditor;
 
     if (!active) {
@@ -60,31 +60,31 @@ export class FileCommand extends node.CommandBase {
 
   async execute(): Promise<void> {
     if (this._arguments.bang) {
-      await vscode.commands.executeCommand("workbench.action.files.revert");
+      await vscode.commands.executeCommand('workbench.action.files.revert');
     }
     if (this._arguments.name === undefined) {
       // Open an empty file
       if (this._arguments.position === FilePosition.CurrentWindow) {
-        await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
+        await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
       } else {
-        await vscode.commands.executeCommand("workbench.action.splitEditor");
-        await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
-        await vscode.commands.executeCommand("workbench.action.closeOtherEditors");
+        await vscode.commands.executeCommand('workbench.action.splitEditor');
+        await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
+        await vscode.commands.executeCommand('workbench.action.closeOtherEditors');
       }
 
       return;
-    } else if (this._arguments.name === "") {
+    } else if (this._arguments.name === '') {
       if (this._arguments.position === FilePosition.NewWindow) {
-        await vscode.commands.executeCommand("workbench.action.splitEditor");
+        await vscode.commands.executeCommand('workbench.action.splitEditor');
       }
       return;
     }
 
     let currentFilePath = vscode.window.activeTextEditor!.document.uri.path;
     this._arguments.name = <string>untildify(this._arguments.name);
-    let newFilePath = path.isAbsolute(this._arguments.name) ?
-      this._arguments.name :
-      path.join(path.dirname(currentFilePath), this._arguments.name);
+    let newFilePath = path.isAbsolute(this._arguments.name)
+      ? this._arguments.name
+      : path.join(path.dirname(currentFilePath), this._arguments.name);
 
     if (newFilePath !== currentFilePath) {
       const newFileDoesntExist = !await this.fileExists(newFilePath);
@@ -97,13 +97,21 @@ export class FileCommand extends node.CommandBase {
       }
 
       let folder = vscode.Uri.file(newFilePath);
-      await vscode.commands.executeCommand("vscode.open", folder,
-        this._arguments.position === FilePosition.NewWindow ? this.getViewColumnToRight() : this.getActiveViewColumn());
+      await vscode.commands.executeCommand(
+        'vscode.open',
+        folder,
+        this._arguments.position === FilePosition.NewWindow
+          ? this.getViewColumnToRight()
+          : this.getActiveViewColumn()
+      );
 
       if (this.arguments.lineNumber) {
         vscode.window.activeTextEditor!.revealRange(
-          new vscode.Range(new vscode.Position(this.arguments.lineNumber, 0),
-          new vscode.Position(this.arguments.lineNumber, 0)));
+          new vscode.Range(
+            new vscode.Position(this.arguments.lineNumber, 0),
+            new vscode.Position(this.arguments.lineNumber, 0)
+          )
+        );
       }
     }
   }

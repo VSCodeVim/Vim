@@ -1,14 +1,14 @@
-"use strict";
+('use strict');
 
-import {Scanner} from "./scanner";
-import {Token, TokenType} from "./token";
+import { Scanner } from './scanner';
+import { Token, TokenType } from './token';
 
 // Describes a function that can lex part of a Vim command line.
 interface ILexFunction {
-  (state: Scanner, tokens: Token[]) : ILexFunction | null;
+  (state: Scanner, tokens: Token[]): ILexFunction | null;
 }
 
-export function lex(input : string) : Token[] {
+export function lex(input: string): Token[] {
   // We use a character scanner as state for the lexer.
   var state = new Scanner(input);
   var tokens: Token[] = [];
@@ -23,10 +23,10 @@ export function lex(input : string) : Token[] {
 function emitToken(type: TokenType, state: Scanner): Token | null {
   var content = state.emit();
 
-  return (content.length > 0) ? new Token(type, content) : null;
+  return content.length > 0 ? new Token(type, content) : null;
 }
 
-module LexerFunctions {
+namespace LexerFunctions {
   // Starts lexing a Vim command line and delegates on other lexer functions as needed.
   export function lexRange(state: Scanner, tokens: Token[]): ILexFunction | null {
     while (true) {
@@ -35,41 +35,41 @@ module LexerFunctions {
       }
       var c = state.next();
       switch (c) {
-        case ",":
-        case ";":
+        case ',':
+        case ';':
           tokens.push(emitToken(TokenType.Comma, state)!);
           continue;
-        case "%":
+        case '%':
           tokens.push(emitToken(TokenType.Percent, state)!);
           continue;
-        case "$":
+        case '$':
           tokens.push(emitToken(TokenType.Dollar, state)!);
           continue;
-        case ".":
+        case '.':
           tokens.push(emitToken(TokenType.Dot, state)!);
           continue;
-        case "/":
+        case '/':
           return lexForwardSearch;
-        case "?":
+        case '?':
           return lexReverseSearch;
-        case "0":
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9":
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
           return lexLineRef;
-        case "+":
+        case '+':
           tokens.push(emitToken(TokenType.Plus, state)!);
           continue;
-        case "-":
+        case '-':
           tokens.push(emitToken(TokenType.Minus, state)!);
           continue;
-        case "*":
+        case '*':
           state.emit();
           tokens.push(new Token(TokenType.SelectionFirstLine, '<')!);
           tokens.push(new Token(TokenType.Comma, ',')!);
@@ -94,15 +94,15 @@ module LexerFunctions {
     var c = state.next();
     switch (c) {
       case '<':
-        tokens.push(emitToken(TokenType.SelectionFirstLine, state) !);
+        tokens.push(emitToken(TokenType.SelectionFirstLine, state)!);
         break;
       case '>':
-        tokens.push(emitToken(TokenType.SelectionLastLine, state) !);
+        tokens.push(emitToken(TokenType.SelectionLastLine, state)!);
         break;
       default:
         if (/[a-zA-Z]/.test(c)) {
           state.emit();
-          tokens.push(new Token(TokenType.Mark, c) !);
+          tokens.push(new Token(TokenType.Mark, c)!);
         } else {
           state.backup();
         }
@@ -112,7 +112,7 @@ module LexerFunctions {
     return lexRange;
   }
 
-  function lexLineRef(state : Scanner, tokens: Token[]): ILexFunction | null {
+  function lexLineRef(state: Scanner, tokens: Token[]): ILexFunction | null {
     // The first digit has already been lexed.
     while (true) {
       if (state.isAtEof) {
@@ -122,16 +122,16 @@ module LexerFunctions {
 
       var c = state.next();
       switch (c) {
-        case "0":
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9":
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
           continue;
         default:
           state.backup();
@@ -141,7 +141,7 @@ module LexerFunctions {
     }
   }
 
-  function lexCommand(state : Scanner, tokens : Token[]): ILexFunction | null {
+  function lexCommand(state: Scanner, tokens: Token[]): ILexFunction | null {
     // The first character of the command's name has already been lexed.
     while (true) {
       if (state.isAtEof) {
@@ -150,7 +150,7 @@ module LexerFunctions {
       }
       var c = state.next();
       var lc = c.toLowerCase();
-      if (lc >= "a" && lc <= "z") {
+      if (lc >= 'a' && lc <= 'z') {
         continue;
       } else {
         state.backup();
@@ -169,54 +169,54 @@ module LexerFunctions {
     return null;
   }
 
-  function lexForwardSearch(state : Scanner, tokens : Token[]): ILexFunction  {
+  function lexForwardSearch(state: Scanner, tokens: Token[]): ILexFunction {
     // The first slash has already been lexed.
-    state.skip("/"); // XXX: really?
+    state.skip('/'); // XXX: really?
     var escaping = false;
-    var searchTerm = "";
+    var searchTerm = '';
     while (!state.isAtEof) {
       var c = state.next();
-      if (c === "/" && !escaping) {
+      if (c === '/' && !escaping) {
         break;
       }
-      if (c === "\\") {
+      if (c === '\\') {
         escaping = true;
         continue;
       } else {
         escaping = false;
       }
-      searchTerm += c !== "\\" ? c : "\\\\";
+      searchTerm += c !== '\\' ? c : '\\\\';
     }
     tokens.push(new Token(TokenType.ForwardSearch, searchTerm));
     state.ignore();
     if (!state.isAtEof) {
-      state.skip("/");
+      state.skip('/');
     }
     return lexRange;
   }
 
-  function lexReverseSearch(state : Scanner, tokens : Token[]): ILexFunction  {
+  function lexReverseSearch(state: Scanner, tokens: Token[]): ILexFunction {
     // The first question mark has already been lexed.
-    state.skip("?"); // XXX: really?
-    var escaping  = false;
-    var searchTerm = "";
+    state.skip('?'); // XXX: really?
+    var escaping = false;
+    var searchTerm = '';
     while (!state.isAtEof) {
       var c = state.next();
-      if (c === "?" && !escaping) {
+      if (c === '?' && !escaping) {
         break;
       }
-      if (c === "\\") {
+      if (c === '\\') {
         escaping = true;
         continue;
       } else {
         escaping = false;
       }
-      searchTerm += c !== "\\" ? c : "\\\\";
+      searchTerm += c !== '\\' ? c : '\\\\';
     }
     tokens.push(new Token(TokenType.ReverseSearch, searchTerm));
     state.ignore();
     if (!state.isAtEof) {
-      state.skip("?");
+      state.skip('?');
     }
     return lexRange;
   }

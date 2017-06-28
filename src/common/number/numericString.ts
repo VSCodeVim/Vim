@@ -4,11 +4,11 @@ export class NumericString {
   prefix: string;
   suffix: string;
 
-  private static matchings: { regex: RegExp, base: number, prefix: string }[] = [
-    { regex: /^([-+])?0([0-7]+)$/g, base: 8, prefix: "0" },
-    { regex: /^([-+])?(\d+)$/g, base: 10, prefix: "" },
-    { regex: /^([-+])?0x([\da-fA-F]+)$/g, base: 16, prefix: "0x" },
-    { regex: /\d/, base: 10, prefix: "" }
+  private static matchings: { regex: RegExp; base: number; prefix: string }[] = [
+    { regex: /^([-+])?0([0-7]+)$/g, base: 8, prefix: '0' },
+    { regex: /^([-+])?(\d+)$/g, base: 10, prefix: '' },
+    { regex: /^([-+])?0x([\da-fA-F]+)$/g, base: 16, prefix: '0x' },
+    { regex: /\d/, base: 10, prefix: '' },
   ];
 
   static parse(input: string): NumericString | null {
@@ -28,11 +28,14 @@ export class NumericString {
       // Regex to find any trailing characters after the number
       let findSuffix = /[^\d]*[\d]*(.*)/g;
       let newPrefix = prefix;
-      let newSuffix = "";
+      let newSuffix = '';
       let newNum = input;
 
       // Only use this section if this is a number surrounded by letters
-      if (findNondigits.exec(input) !== null && NumericString.matchings[NumericString.matchings.length - 1].regex === regex) {
+      if (
+        findNondigits.exec(input) !== null &&
+        NumericString.matchings[NumericString.matchings.length - 1].regex === regex
+      ) {
         let prefixFound = findPrefix.exec(input);
         let suffixFound = findSuffix.exec(input);
 
@@ -66,7 +69,7 @@ export class NumericString {
     // Allow signed hex represented as twos complement
     if (this.radix === 16) {
       if (this.value < 0) {
-        this.value = 0xFFFFFFFF + this.value + 1;
+        this.value = 0xffffffff + this.value + 1;
       }
     }
 

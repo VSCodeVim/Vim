@@ -1,14 +1,14 @@
-"use strict";
+('use strict');
 
-import {ReadCommand, IReadCommandArguments} from '../commands/read';
-import {Scanner} from '../scanner';
+import { ReadCommand, IReadCommandArguments } from '../commands/read';
+import { Scanner } from '../scanner';
 
-export function parseReadCommandArgs(args : string) : ReadCommand {
+export function parseReadCommandArgs(args: string): ReadCommand {
   if (!args) {
     throw Error('Expected arguments.');
   }
 
-  var scannedArgs : IReadCommandArguments = {};
+  var scannedArgs: IReadCommandArguments = {};
   var scanner = new Scanner(args);
 
   scanner.skipWhiteSpace();

@@ -1,4 +1,4 @@
-"use strict";
+('use strict');
 
 // Tokens for the Vim command line.
 
@@ -23,14 +23,14 @@ export enum TokenType {
    */
   SelectionFirstLine,
   SelectionLastLine,
-  Mark
+  Mark,
 }
 
 export class Token {
-  type : TokenType;
-  content : string;
+  type: TokenType;
+  content: string;
 
-  constructor(type : TokenType, content : string) {
+  constructor(type: TokenType, content: string) {
     this.type = type;
     this.content = content;
   }

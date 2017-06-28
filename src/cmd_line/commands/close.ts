@@ -1,7 +1,7 @@
-"use strict";
+('use strict');
 
-import * as vscode from "vscode";
-import * as node from "../node";
+import * as vscode from 'vscode';
+import * as node from '../node';
 import * as error from '../../error';
 
 export interface ICloseCommandArguments extends node.ICommandArgs {
@@ -15,19 +15,19 @@ export interface ICloseCommandArguments extends node.ICommandArgs {
 //  http://vimdoc.sourceforge.net/htmldoc/windows.html#:close
 //
 export class CloseCommand extends node.CommandBase {
-  protected _arguments : ICloseCommandArguments;
+  protected _arguments: ICloseCommandArguments;
 
-  constructor(args : ICloseCommandArguments) {
+  constructor(args: ICloseCommandArguments) {
     super();
     this._name = 'close';
     this._arguments = args;
   }
 
-  get arguments() : ICloseCommandArguments {
+  get arguments(): ICloseCommandArguments {
     return this._arguments;
   }
 
-  async execute() : Promise<void> {
+  async execute(): Promise<void> {
     if (this.activeTextEditor!.document.isDirty && !this.arguments.bang) {
       throw error.VimError.fromCode(error.ErrorCode.E37);
     }
@@ -39,7 +39,11 @@ export class CloseCommand extends node.CommandBase {
     let oldViewColumn = this.activeTextEditor!.viewColumn;
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
-    if (vscode.window.activeTextEditor !== undefined && vscode.window.activeTextEditor.viewColumn === oldViewColumn) {
+    if (
+      vscode.window.activeTextEditor !== undefined &&
+      vscode.window.activeTextEditor.viewColumn === oldViewColumn
+    ) {
       await vscode.commands.executeCommand('workbench.action.previousEditor');
     }
-  }}
+  }
+}

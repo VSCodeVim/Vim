@@ -1,9 +1,9 @@
-"use strict";
+('use strict');
 
-import {TextEditor} from '../src/textEditor';
-import * as vscode from "vscode";
+import { TextEditor } from '../src/textEditor';
+import * as vscode from 'vscode';
 import * as assert from 'assert';
-import {join} from 'path';
+import { join } from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
 import { Configuration } from '../src/configuration/configuration';
@@ -27,10 +27,14 @@ export function assertEqualLines(expectedLines: string[]) {
   for (let i = 0; i < expectedLines.length; i++) {
     let expected = expectedLines[i];
     let actual = TextEditor.readLineAt(i);
-    assert.equal(actual, expected, `Content does not match; Expected=${expected}. Actual=${actual}`);
+    assert.equal(
+      actual,
+      expected,
+      `Content does not match; Expected=${expected}. Actual=${actual}`
+    );
   }
 
-  assert.equal(TextEditor.getLineCount(), expectedLines.length, "Line count does not match.");
+  assert.equal(TextEditor.getLineCount(), expectedLines.length, 'Line count does not match.');
 }
 
 /**
@@ -39,13 +43,13 @@ export function assertEqualLines(expectedLines: string[]) {
  * The only difference between this and assert.equal is that here we
  * check to ensure the types of the variables are correct.
  */
-export function assertEqual<T>(one: T, two: T, message: string = ""): void {
+export function assertEqual<T>(one: T, two: T, message: string = ''): void {
   assert.equal(one, two, message);
 }
 
-export async function setupWorkspace(fileExtension: string = ""): Promise<any> {
-  const file   = await createRandomFile("", fileExtension);
-  const doc  = await vscode.workspace.openTextDocument(file);
+export async function setupWorkspace(fileExtension: string = ''): Promise<any> {
+  const file = await createRandomFile('', fileExtension);
+  const doc = await vscode.workspace.openTextDocument(file);
 
   await vscode.window.showTextDocument(doc);
   setTextEditorOptions(2, true);
@@ -72,11 +76,13 @@ export async function cleanUpWorkspace(): Promise<any> {
       c();
     }, 10);
 
-    vscode.commands.executeCommand('workbench.action.closeAllEditors')
-      .then(() => null, (err: any) => {
+    vscode.commands.executeCommand('workbench.action.closeAllEditors').then(
+      () => null,
+      (err: any) => {
         clearInterval(interval);
         e(err);
-      });
+      }
+    );
   }).then(() => {
     assert.equal(vscode.window.visibleTextEditors.length, 0);
     assert(!vscode.window.activeTextEditor);

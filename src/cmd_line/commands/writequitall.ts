@@ -1,9 +1,9 @@
-"use strict";
+('use strict');
 
-import * as node from "../node";
-import {ModeHandler} from "../../mode/modeHandler";
-import * as wall from "../commands/wall";
-import * as quit from "./quit";
+import * as node from '../node';
+import { ModeHandler } from '../../mode/modeHandler';
+import * as wall from '../commands/wall';
+import * as quit from './quit';
 
 //
 // Implements :writequitall
@@ -12,29 +12,29 @@ import * as quit from "./quit";
 export interface IWriteQuitAllCommandArguments extends node.ICommandArgs {
   // arguments
   // [++opt]
-  opt? : string;
-  optValue? : string;
+  opt?: string;
+  optValue?: string;
   // wqa! [++opt]
-  bang? : boolean;
+  bang?: boolean;
 }
 
 export class WriteQuitAllCommand extends node.CommandBase {
-  protected _arguments : IWriteQuitAllCommandArguments;
+  protected _arguments: IWriteQuitAllCommandArguments;
 
-  constructor(args : IWriteQuitAllCommandArguments) {
+  constructor(args: IWriteQuitAllCommandArguments) {
     super();
-    this._name = "writequitall";
+    this._name = 'writequitall';
     this._arguments = args;
   }
 
-  get arguments() : IWriteQuitAllCommandArguments {
+  get arguments(): IWriteQuitAllCommandArguments {
     return this._arguments;
   }
 
   // Writing command. Taken as a basis from the "write.ts" file.
-  async execute(modeHandler : ModeHandler) : Promise<void> {
+  async execute(modeHandler: ModeHandler): Promise<void> {
     let writeArgs: wall.IWallCommandArguments = {
-      bang: this.arguments.bang
+      bang: this.arguments.bang,
     };
 
     let quitArgs: quit.IQuitCommandArguments = {

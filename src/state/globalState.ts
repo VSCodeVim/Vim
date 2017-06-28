@@ -34,7 +34,7 @@ export class GlobalState {
   /**
    * Getters and setters for changing global state
    */
-  public get searchStatePrevious(): SearchState[]{
+  public get searchStatePrevious(): SearchState[] {
     return GlobalState._searchStatePrevious;
   }
 
@@ -46,7 +46,7 @@ export class GlobalState {
     return GlobalState._previousFullAction;
   }
 
-  public set previousFullAction(state : RecordedState | undefined) {
+  public set previousFullAction(state: RecordedState | undefined) {
     GlobalState._previousFullAction = state;
   }
 
@@ -54,7 +54,7 @@ export class GlobalState {
     return GlobalState._searchState;
   }
 
-  public set searchState(state : SearchState | undefined) {
+  public set searchState(state: SearchState | undefined) {
     GlobalState._searchState = state;
   }
 
@@ -62,7 +62,7 @@ export class GlobalState {
     return GlobalState._searchStateIndex;
   }
 
-  public set searchStateIndex(state : number) {
+  public set searchStateIndex(state: number) {
     GlobalState._searchStateIndex = state;
   }
 

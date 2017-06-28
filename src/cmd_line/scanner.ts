@@ -1,18 +1,18 @@
-"use strict";
+('use strict');
 
 // Provides state and behavior to scan an input string character by character.
 export class Scanner {
-  static EOF : string = "__EOF__";
-  start : number = 0;
-  pos : number = 0;
-  input : string;
+  static EOF: string = '__EOF__';
+  start: number = 0;
+  pos: number = 0;
+  input: string;
 
-  constructor(input : string) {
+  constructor(input: string) {
     this.input = input;
   }
 
   // Returns the next character in the input, or EOF.
-  next() : string {
+  next(): string {
     if (this.isAtEof) {
       this.pos = this.input.length;
       return Scanner.EOF;
@@ -23,7 +23,7 @@ export class Scanner {
   }
 
   // Returns the next word in the input, or EOF.
-  nextWord(wordSeparators: string[] = [" ", "\t"]): string {
+  nextWord(wordSeparators: string[] = [' ', '\t']): string {
     this.skipRun(wordSeparators);
 
     if (this.isAtEof) {
@@ -31,7 +31,7 @@ export class Scanner {
       return Scanner.EOF;
     }
 
-    let result = "";
+    let result = '';
     let c: string | undefined = undefined;
 
     while (!this.isAtEof) {
@@ -53,24 +53,24 @@ export class Scanner {
   }
 
   // Returns whether we've reached EOF.
-  get isAtEof() : boolean {
+  get isAtEof(): boolean {
     return this.pos >= this.input.length;
   }
 
   // Ignores the span of text between the current start and the current position.
-  ignore() : void {
+  ignore(): void {
     this.start = this.pos;
   }
 
   // Returns the span of text between the current start and the current position.
-  emit() : string {
+  emit(): string {
     let s = this.input.substring(this.start, this.pos);
     this.ignore();
     return s;
   }
 
   // Returns the text from the current position to the end.
-  remaining() : string {
+  remaining(): string {
     while (!this.isAtEof) {
       this.next();
     }
@@ -82,7 +82,7 @@ export class Scanner {
   }
 
   // skips over c and ignores the text span
-  skip(c : string) : void {
+  skip(c: string): void {
     if (this.isAtEof) {
       return;
     }
@@ -98,7 +98,7 @@ export class Scanner {
   }
 
   // skips text while any of chars matches and ignores the text span
-  skipRun(chars : string[]) : void {
+  skipRun(chars: string[]): void {
     if (this.isAtEof) {
       return;
     }
@@ -121,7 +121,7 @@ export class Scanner {
 
     while (!this.isAtEof) {
       c = this.next();
-      if (c === " " || c === "\t") {
+      if (c === ' ' || c === '\t') {
         continue;
       }
       break;
@@ -133,20 +133,20 @@ export class Scanner {
     this.ignore();
   }
 
-  expect(value : string) : void {
+  expect(value: string): void {
     if (!this.input.substring(this.pos).startsWith(value)) {
-      throw new Error("Unexpected character.");
+      throw new Error('Unexpected character.');
     }
     this.pos += value.length;
   }
 
-  expectOneOf(values : string[]) : void {
+  expectOneOf(values: string[]): void {
     let match = values.filter(s => this.input.substr(this.pos).startsWith(s));
     if (match.length !== 1) {
       if (match.length > 1) {
-        throw new Error("too many maches");
+        throw new Error('too many maches');
       }
-      throw new Error("Unexpected character.");
+      throw new Error('Unexpected character.');
     }
     this.pos += match[0].length;
   }

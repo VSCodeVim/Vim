@@ -1,6 +1,6 @@
-"use strict";
+('use strict');
 
-import * as node from "../node";
+import * as node from '../node';
 import * as util from '../../util';
 import { Configuration } from '../../configuration/configuration';
 
@@ -40,7 +40,7 @@ export enum SetOptionOperator {
   /**
    * Show value of {option}.
    */
-  Info
+  Info,
 }
 
 export interface IOptionArgs extends node.ICommandArgs {
@@ -52,19 +52,19 @@ export interface IOptionArgs extends node.ICommandArgs {
 export class SetOptionsCommand extends node.CommandBase {
   protected _arguments: IOptionArgs;
 
-  constructor(args : IOptionArgs) {
+  constructor(args: IOptionArgs) {
     super();
     this._name = 'setoptions';
     this._arguments = args;
   }
 
-  get arguments() : IOptionArgs {
+  get arguments(): IOptionArgs {
     return this._arguments;
   }
 
   async execute(): Promise<void> {
     if (!this._arguments.name) {
-      throw new Error("Unknown option");
+      throw new Error('Unknown option');
     }
 
     switch (this._arguments.operator) {
@@ -84,11 +84,13 @@ export class SetOptionsCommand extends node.CommandBase {
         Configuration[this._arguments.name] += this._arguments.value!;
         break;
       case SetOptionOperator.Subtract:
-        if (typeof this._arguments.value! === "number") {
+        if (typeof this._arguments.value! === 'number') {
           Configuration[this._arguments.name] -= this._arguments.value! as number;
         } else {
           let initialValue = Configuration[this._arguments.name];
-          Configuration[this._arguments.name] = initialValue.split(this._arguments.value! as string).join('');
+          Configuration[this._arguments.name] = initialValue
+            .split(this._arguments.value! as string)
+            .join('');
         }
         break;
       case SetOptionOperator.Info:

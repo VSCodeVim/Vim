@@ -1,11 +1,11 @@
 /* tslint:disable:no-bitwise */
-"use strict";
+('use strict');
 
-import * as node from "../commands/substitute";
-import {Scanner} from '../scanner';
+import * as node from '../commands/substitute';
+import { Scanner } from '../scanner';
 
 function isValidDelimiter(char: string): boolean {
-  return !! (/^[^\w\s\\|"]{1}$/g.exec(char));
+  return !!/^[^\w\s\\|"]{1}$/g.exec(char);
 }
 
 function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [string, boolean] {
@@ -17,7 +17,7 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
     if (currentChar === delimiter) {
       // TODO skip delimiter
       return [pattern, true];
-    } else if (currentChar === "\\") {
+    } else if (currentChar === '\\') {
       if (!scanner.isAtEof) {
         currentChar = scanner.next();
 
@@ -30,7 +30,7 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
               pattern += '\n';
               break;
             default:
-              pattern += "\\";
+              pattern += '\\';
               pattern += currentChar;
               break;
           }
@@ -55,7 +55,7 @@ function parseSubstituteFlags(scanner: Scanner): number {
 
     let c = scanner.next();
     switch (c) {
-      case "&":
+      case '&':
         if (index === 0) {
           flags = flags | node.SubstituteFlags.KeepPreviousFlags;
         } else {
@@ -63,34 +63,34 @@ function parseSubstituteFlags(scanner: Scanner): number {
           return node.SubstituteFlags.None;
         }
         break;
-      case "c":
+      case 'c':
         flags = flags | node.SubstituteFlags.ConfirmEach;
         break;
-      case "e":
+      case 'e':
         flags = flags | node.SubstituteFlags.SuppressError;
         break;
-      case "g":
+      case 'g':
         flags = flags | node.SubstituteFlags.ReplaceAll;
         break;
-      case "i":
+      case 'i':
         flags = flags | node.SubstituteFlags.IgnoreCase;
         break;
-      case "I":
+      case 'I':
         flags = flags | node.SubstituteFlags.NoIgnoreCase;
         break;
-      case "n":
+      case 'n':
         flags = flags | node.SubstituteFlags.PrintCount;
         break;
-      case "p":
+      case 'p':
         flags = flags | node.SubstituteFlags.PrintLastMatchedLine;
         break;
-      case "#":
+      case '#':
         flags = flags | node.SubstituteFlags.PrintLastMatchedLineWithNumber;
         break;
-      case "l":
+      case 'l':
         flags = flags | node.SubstituteFlags.PrintLastMatchedLineWithList;
         break;
-      case "r":
+      case 'r':
         flags = flags | node.SubstituteFlags.UsePreviousPattern;
         break;
       default:
@@ -104,7 +104,7 @@ function parseSubstituteFlags(scanner: Scanner): number {
 }
 
 function parseCount(scanner: Scanner): number {
-  let countStr = "";
+  let countStr = '';
 
   while (true) {
     if (scanner.isAtEof) {
@@ -124,15 +124,15 @@ function parseCount(scanner: Scanner): number {
  * For each line in [range] replace a match of {pattern} with {string}.
  * {string} can be a literal string, or something special; see |sub-replace-special|.
  */
-export function parseSubstituteCommandArgs(args : string) : node.SubstituteCommand {
+export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand {
   let delimiter = args[0];
 
   if (isValidDelimiter(delimiter)) {
     let scanner = new Scanner(args.substr(1, args.length - 1));
-    let [searchPattern, searchDelimiter] = parsePattern("", scanner, delimiter);
+    let [searchPattern, searchDelimiter] = parsePattern('', scanner, delimiter);
 
     if (searchDelimiter) {
-      let replaceString = parsePattern("", scanner, delimiter)[0];
+      let replaceString = parsePattern('', scanner, delimiter)[0];
 
       scanner.skipWhiteSpace();
       let flags = parseSubstituteFlags(scanner);
@@ -142,23 +142,22 @@ export function parseSubstituteCommandArgs(args : string) : node.SubstituteComma
         pattern: searchPattern,
         replace: replaceString,
         flags: flags,
-        count: count
+        count: count,
       });
-
     } else {
       return new node.SubstituteCommand({
         pattern: searchPattern,
-        replace: "",
+        replace: '',
         flags: node.SubstituteFlags.None,
-        count: 0
+        count: 0,
       });
     }
   }
 
   // TODO(rebornix): Can this ever happen?
   return new node.SubstituteCommand({
-    pattern: "",
-    replace: "",
-    flags: node.SubstituteFlags.None
+    pattern: '',
+    replace: '',
+    flags: node.SubstituteFlags.None,
   });
 }

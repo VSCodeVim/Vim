@@ -1,10 +1,10 @@
-"use strict";
+('use strict');
 
-import * as vscode from "vscode";
-import * as node from "../node";
+import * as vscode from 'vscode';
+import * as node from '../node';
 import * as token from '../token';
-import { ModeHandler } from "../../mode/modeHandler";
-import { TextEditor } from "../../textEditor";
+import { ModeHandler } from '../../mode/modeHandler';
+import { TextEditor } from '../../textEditor';
 import { Register, RegisterMode } from '../../register/register';
 import { Position } from '../../common/motion/position';
 
@@ -12,18 +12,17 @@ export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;
 }
 
-
 export class DeleteRangeCommand extends node.CommandBase {
   neovimCapable = true;
-  protected _arguments : IDeleteRangeCommandArguments;
+  protected _arguments: IDeleteRangeCommandArguments;
 
-  constructor(args : IDeleteRangeCommandArguments) {
+  constructor(args: IDeleteRangeCommandArguments) {
     super();
     this._name = 'delete';
     this._arguments = args;
   }
 
-  get arguments() : IDeleteRangeCommandArguments{
+  get arguments(): IDeleteRangeCommandArguments {
     return this._arguments;
   }
 
@@ -43,7 +42,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     }
 
     let text = modeHandler.vimState.editor.document.getText(new vscode.Range(start, end));
-    text = text.endsWith("\r\n") ? text.slice(0, -2) : text.slice(0, -1);
+    text = text.endsWith('\r\n') ? text.slice(0, -2) : text.slice(0, -1);
     await TextEditor.delete(new vscode.Range(start, end));
 
     let resultPosition = Position.EarlierOf(start, end);
@@ -68,7 +67,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 
-  async executeWithRange(modeHandler : ModeHandler, range: node.LineRange) {
+  async executeWithRange(modeHandler: ModeHandler, range: node.LineRange) {
     let start: vscode.Position;
     let end: vscode.Position;
 
@@ -80,7 +79,11 @@ export class DeleteRangeCommand extends node.CommandBase {
       end = range.lineRefToPosition(modeHandler.vimState.editor, range.right, modeHandler);
     }
 
-    let text = await this.deleteRange(Position.FromVSCodePosition(start), Position.FromVSCodePosition(end), modeHandler);
+    let text = await this.deleteRange(
+      Position.FromVSCodePosition(start),
+      Position.FromVSCodePosition(end),
+      modeHandler
+    );
     Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 }
