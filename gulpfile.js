@@ -47,7 +47,14 @@ gulp.task('tslint', function() {
   return merge(srcs, tests);
 });
 
-gulp.task('default', ['tslint', 'compile']);
+gulp.task(
+  'prettier',
+  shell.task([
+    'git diff --name-only HEAD | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5',
+  ])
+);
+
+gulp.task('default', ['prettier', 'tslint', 'compile']);
 
 gulp.task('compile', shell.task(['npm run vscode:prepublish']));
 gulp.task('watch', shell.task(['npm run compile']));
