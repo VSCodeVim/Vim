@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from '../testUtils';

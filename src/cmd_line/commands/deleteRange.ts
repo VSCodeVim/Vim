@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode';
 import * as node from '../node';
 import * as token from '../token';

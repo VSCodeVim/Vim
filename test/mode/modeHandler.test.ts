@@ -1,4 +1,3 @@
-
 import * as assert from 'assert';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';

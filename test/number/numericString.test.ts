@@ -1,4 +1,3 @@
-
 import * as assert from 'assert';
 import { NumericString } from '../../src/common/number/numericString';
 

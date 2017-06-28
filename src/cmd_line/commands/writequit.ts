@@ -1,4 +1,3 @@
-
 import * as node from '../node';
 import { ModeHandler } from '../../mode/modeHandler';
 import * as write from './write';

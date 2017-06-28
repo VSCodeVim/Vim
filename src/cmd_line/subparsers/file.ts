@@ -1,4 +1,3 @@
-
 import * as node from '../commands/file';
 import { Scanner } from '../scanner';
 

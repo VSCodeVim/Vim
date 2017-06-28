@@ -1,4 +1,3 @@
-
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';

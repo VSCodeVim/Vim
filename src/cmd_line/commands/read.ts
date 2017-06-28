@@ -1,4 +1,3 @@
-
 import * as node from '../node';
 import { readFile } from 'fs';
 import { exec } from 'child_process';

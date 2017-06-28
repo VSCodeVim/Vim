@@ -1,4 +1,3 @@
-
 import { WriteCommand, IWriteCommandArguments } from '../commands/write';
 import { Scanner } from '../scanner';
 

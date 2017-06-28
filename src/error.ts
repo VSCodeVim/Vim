@@ -1,4 +1,3 @@
-
 import * as util from './util';
 
 interface IErrorMessage {

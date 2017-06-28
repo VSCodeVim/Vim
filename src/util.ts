@@ -1,4 +1,3 @@
-
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import { Range } from './common/motion/range';

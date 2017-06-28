@@ -1,4 +1,3 @@
-
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
 import { runCmdLine } from '../../src/cmd_line/main';

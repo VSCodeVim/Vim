@@ -1,4 +1,3 @@
-
 import { ModeName, Mode } from './mode';
 import { VSCodeVimCursorType } from './mode';
 

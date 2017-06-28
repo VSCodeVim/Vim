@@ -1,4 +1,3 @@
-
 import * as assert from 'assert';
 import { TextEditor } from './../src/textEditor';
 import { Position } from './../src/common/motion/position';

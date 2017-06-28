@@ -1,4 +1,3 @@
-
 /**
  * Extension.ts is a lightweight wrapper around ModeHandler. It converts key
  * events to their string names and passes them on to ModeHandler via
