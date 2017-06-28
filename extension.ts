@@ -1,4 +1,3 @@
-('use strict');
 
 /**
  * Extension.ts is a lightweight wrapper around ModeHandler. It converts key

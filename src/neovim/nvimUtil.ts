@@ -1,4 +1,3 @@
-('use strict');
 
 import * as vscode from 'vscode';
 import { VimState } from '../mode/modeHandler';

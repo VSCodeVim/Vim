@@ -1,4 +1,3 @@
-('use strict');
 
 import { TextEditor } from '../src/textEditor';
 import * as vscode from 'vscode';

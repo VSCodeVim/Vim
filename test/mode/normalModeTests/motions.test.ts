@@ -1,4 +1,3 @@
-('use strict');
 
 import { setupWorkspace, cleanUpWorkspace } from './../../testUtils';
 import { ModeHandler } from '../../../src/mode/modeHandler';

@@ -1,4 +1,3 @@
-('use strict');
 
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';

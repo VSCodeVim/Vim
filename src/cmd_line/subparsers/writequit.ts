@@ -1,4 +1,3 @@
-('use strict');
 
 import { WriteQuitCommand, IWriteQuitCommandArguments } from '../commands/writequit';
 import { Scanner } from '../scanner';

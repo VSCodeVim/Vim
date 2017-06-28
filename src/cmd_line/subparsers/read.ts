@@ -1,4 +1,3 @@
-('use strict');
 
 import { ReadCommand, IReadCommandArguments } from '../commands/read';
 import { Scanner } from '../scanner';

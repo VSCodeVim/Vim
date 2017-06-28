@@ -1,4 +1,3 @@
-('use strict');
 
 // Provides state and behavior to scan an input string character by character.
 export class Scanner {

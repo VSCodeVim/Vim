@@ -109,8 +109,8 @@ export class DeleteOperator extends BaseOperator {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
 
   /**
-     * Deletes from the position of start to 1 past the position of end.
-     */
+   * Deletes from the position of start to 1 past the position of end.
+   */
   public async delete(
     start: Position,
     end: Position,

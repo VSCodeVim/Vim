@@ -1,4 +1,3 @@
-('use strict');
 import { SurroundInputMode } from './surroundInputMode';
 
 import * as vscode from 'vscode';
@@ -581,9 +580,9 @@ export class ModeHandler implements vscode.Disposable {
           isRunning: false,
 
           /**
-         * We don't want these to become backlogged! If they do, we'll update
-         * the selection to an incorrect value and see a jittering cursor.
-         */
+           * We don't want these to become backlogged! If they do, we'll update
+           * the selection to an incorrect value and see a jittering cursor.
+           */
           highPriority: true,
         });
       }
@@ -1012,11 +1011,7 @@ export class ModeHandler implements vscode.Disposable {
       this.setCurrentModeByName(vimState);
 
       // We don't want to mark any searches as a repeatable action
-      if (
-        vimState.currentMode === ModeName.Normal &&
-        prevState !== ModeName.SearchInProgressMode &&
-        vimState.currentMode !== ModeName.SearchInProgressMode
-      ) {
+      if (vimState.currentMode === ModeName.Normal && prevState !== ModeName.SearchInProgressMode) {
         ranRepeatableAction = true;
       }
     }

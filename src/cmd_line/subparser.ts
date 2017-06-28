@@ -1,4 +1,3 @@
-('use strict');
 
 import { parseQuitCommandArgs, parseQuitAllCommandArgs } from './subparsers/quit';
 import { parseWriteCommandArgs } from './subparsers/write';
