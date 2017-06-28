@@ -110,9 +110,10 @@ export abstract class BaseMovement extends BaseAction {
     for (let i = 0; i < count; i++) {
       const firstIteration = i === 0;
       const lastIteration = i === count - 1;
-      const temporaryResult = recordedState.operator && lastIteration
-        ? await this.execActionForOperator(position, vimState)
-        : await this.execAction(position, vimState);
+      const temporaryResult =
+        recordedState.operator && lastIteration
+          ? await this.execActionForOperator(position, vimState)
+          : await this.execAction(position, vimState);
 
       if (temporaryResult instanceof Position) {
         result = temporaryResult;

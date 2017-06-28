@@ -171,7 +171,7 @@ export class SearchState {
       this._matchRanges.sort(
         (x, y) =>
           x.start.line < y.start.line ||
-            (x.start.line === y.start.line && x.start.character < y.start.character)
+          (x.start.line === y.start.line && x.start.character < y.start.character)
             ? -1
             : 1
       );
