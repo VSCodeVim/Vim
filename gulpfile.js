@@ -47,6 +47,7 @@ gulp.task('tslint', function() {
   return merge(srcs, tests);
 });
 
+
 gulp.task(
   'prettier',
   shell.task([
