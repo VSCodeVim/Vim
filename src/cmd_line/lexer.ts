@@ -1,4 +1,3 @@
-('use strict');
 
 import { Scanner } from './scanner';
 import { Token, TokenType } from './token';

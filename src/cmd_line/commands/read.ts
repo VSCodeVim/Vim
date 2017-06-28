@@ -1,4 +1,3 @@
-('use strict');
 
 import * as node from '../node';
 import { readFile } from 'fs';

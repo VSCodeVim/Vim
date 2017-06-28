@@ -1,4 +1,3 @@
-('use strict');
 
 // Tokens for the Vim command line.
 

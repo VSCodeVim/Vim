@@ -1,4 +1,3 @@
-('use strict');
 
 import * as assert from 'assert';
 import { Scanner } from '../../src/cmd_line/scanner';

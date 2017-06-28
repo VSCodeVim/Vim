@@ -1213,14 +1213,14 @@ export class PutCommand extends BaseCommand {
 
     if (register.text instanceof RecordedState) {
       /**
-           *  Paste content from recordedState. This one is actually complex as
-           *  Vim has internal key code for key strokes.For example, Backspace
-           *  is stored as `<80>kb`. So if you replay a macro, which is stored
-           *  in a register as `a1<80>kb2`, youshall just get `2` inserted as
-           *  `a` represents entering Insert Mode, `<80>bk` represents
-           *  Backspace. However here, we shall
-           *  insert the plain text content of the register, which is `a1<80>kb2`.
-           */
+       *  Paste content from recordedState. This one is actually complex as
+       *  Vim has internal key code for key strokes.For example, Backspace
+       *  is stored as `<80>kb`. So if you replay a macro, which is stored
+       *  in a register as `a1<80>kb2`, youshall just get `2` inserted as
+       *  `a` represents entering Insert Mode, `<80>bk` represents
+       *  Backspace. However here, we shall
+       *  insert the plain text content of the register, which is `a1<80>kb2`.
+       */
       vimState.recordedState.transformations.push({
         type: 'macro',
         register: vimState.recordedState.registerName,

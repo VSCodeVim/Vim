@@ -1,4 +1,3 @@
-('use strict');
 
 import * as vscode from 'vscode';
 import { ModeHandler } from '../../src/mode/modeHandler';

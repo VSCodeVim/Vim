@@ -1,4 +1,3 @@
-('use strict');
 
 import * as node from '../commands/setoptions';
 import { Scanner } from '../scanner';

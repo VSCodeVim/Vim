@@ -1,4 +1,3 @@
-('use strict');
 import { ReplaceTextTransformation } from './transformations/transformations';
 import { VimState } from './mode/modeHandler';
 

@@ -1,5 +1,4 @@
 /* tslint:disable:no-bitwise */
-('use strict');
 
 import * as node from '../commands/substitute';
 import { Scanner } from '../scanner';

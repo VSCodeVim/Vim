@@ -1,4 +1,3 @@
-('use strict');
 
 import * as assert from 'assert';
 import { VimError, ErrorCode, ErrorMessage } from '../src/error';

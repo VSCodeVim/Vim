@@ -1,4 +1,3 @@
-('use strict');
 
 export enum ModeName {
   Normal,

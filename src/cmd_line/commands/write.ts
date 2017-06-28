@@ -1,4 +1,3 @@
-('use strict');
 
 // XXX: use graceful-fs ??
 import * as fs from 'fs';

@@ -1,4 +1,3 @@
-('use strict');
 
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
