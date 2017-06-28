@@ -209,7 +209,12 @@ declare module 'promised-neovim-client' {
     reader: NodeJS.ReadableStream
   ): Promise<Nvim>;
 
-  export interface NvimVersion { major: number; minor: number; patch: number; rest: string }
+  export interface NvimVersion {
+    major: number;
+    minor: number;
+    patch: number;
+    rest: string;
+  }
   export type RPCValue =
     | Buffer
     | Window

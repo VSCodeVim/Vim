@@ -207,7 +207,7 @@ export abstract class BaseCommand extends BaseAction {
       .sort(
         (a, b) =>
           a.start.line > b.start.line ||
-            (a.start.line === b.start.line && a.start.character > b.start.character)
+          (a.start.line === b.start.line && a.start.character > b.start.character)
             ? 1
             : -1
       );
@@ -961,9 +961,10 @@ function searchCurrentWord(
   // If the search is going left then use `getWordLeft()` on position to start
   // at the beginning of the word. This ensures that any matches happen
   // outside of the currently selected word.
-  const searchStartCursorPosition = direction === SearchDirection.Backward
-    ? vimState.cursorPosition.getWordLeft(true)
-    : vimState.cursorPosition;
+  const searchStartCursorPosition =
+    direction === SearchDirection.Backward
+      ? vimState.cursorPosition.getWordLeft(true)
+      : vimState.cursorPosition;
 
   return createSearchStateAndMoveToMatch({
     needle: currentWord,
@@ -985,9 +986,10 @@ function searchCurrentSelection(vimState: VimState, direction: SearchDirection) 
   // If the search is going left then use `getLeft()` on the selection start.
   // If going right then use `getRight()` on the selection end. This ensures
   // that any matches happen outside of the currently selected word.
-  const searchStartCursorPosition = direction === SearchDirection.Backward
-    ? vimState.lastVisualSelectionStart.getLeft()
-    : vimState.lastVisualSelectionEnd.getRight();
+  const searchStartCursorPosition =
+    direction === SearchDirection.Backward
+      ? vimState.lastVisualSelectionStart.getLeft()
+      : vimState.lastVisualSelectionEnd.getRight();
 
   return createSearchStateAndMoveToMatch({
     needle: currentSelection,
@@ -2667,7 +2669,7 @@ class ActionJoin extends BaseCommand {
       .sort(
         (a, b) =>
           a.start.line > b.start.line ||
-            (a.start.line === b.start.line && a.start.character > b.start.character)
+          (a.start.line === b.start.line && a.start.character > b.start.character)
             ? 1
             : -1
       );

@@ -90,9 +90,8 @@ export class PairMatcher {
     if (!toFind.nextMatchIsForward) {
       for (let lineNumber = position.line; lineNumber >= 0; lineNumber--) {
         let lineText = TextEditor.getLineAt(new Position(lineNumber, 0)).text;
-        let startOffset = lineNumber === position.line
-          ? lineText.length - position.character - 1
-          : 0;
+        let startOffset =
+          lineNumber === position.line ? lineText.length - position.character - 1 : 0;
 
         while (true) {
           let queryText = toReversedString(lineText).substr(startOffset);

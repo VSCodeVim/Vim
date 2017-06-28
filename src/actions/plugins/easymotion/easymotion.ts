@@ -398,9 +398,10 @@ export class EasyMotion {
         this.decorations[keystroke.length] = [];
       }
 
-      const fontColor = keystroke.length > 1
-        ? Configuration.easymotionMarkerForegroundColorTwoChar
-        : Configuration.easymotionMarkerForegroundColorOneChar;
+      const fontColor =
+        keystroke.length > 1
+          ? Configuration.easymotionMarkerForegroundColorTwoChar
+          : Configuration.easymotionMarkerForegroundColorOneChar;
       const backgroundColor = Configuration.easymotionMarkerBackgroundColor;
 
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
