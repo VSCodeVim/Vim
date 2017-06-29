@@ -1052,9 +1052,7 @@ export class ModeHandler implements vscode.Disposable {
     ranRepeatableAction =
       (ranRepeatableAction && vimState.currentMode === ModeName.Normal) ||
       this.createUndoPointForBrackets(vimState);
-    ranAction =
-      ranAction &&
-      (vimState.currentMode === ModeName.Normal || vimState.currentMode === ModeName.Visual);
+    ranAction = ranAction && vimState.currentMode === ModeName.Normal;
 
     // Record down previous action and flush temporary state
     if (ranRepeatableAction) {
