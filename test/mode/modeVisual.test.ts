@@ -576,6 +576,14 @@ suite('Mode Visual', () => {
   });
 
   newTest({
+    title: 'Can use . to repeat indent in visual',
+    start: ['|foobar'],
+    keysPressed: 'v>.',
+    end: ['    |foobar'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
     title: 'Can do v_x to delete to first char',
     start: ['', 'test te|st test', ''],
     keysPressed: 'v_x',
