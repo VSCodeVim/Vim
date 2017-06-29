@@ -54,6 +54,13 @@ gulp.task(
   ])
 );
 
+gulp.task(
+  'forceprettier',
+  shell.task([
+    ' find . | grep ".*\\.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5 ',
+  ])
+);
+
 gulp.task('default', ['prettier', 'tslint', 'compile']);
 
 gulp.task('compile', shell.task(['npm run vscode:prepublish']));
