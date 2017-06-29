@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-import * as vscode from "vscode";
-import * as node from "../node";
+import * as vscode from 'vscode';
+import * as node from '../node';
 
 export class OnlyCommand extends node.CommandBase {
   protected _arguments: {};
@@ -18,7 +18,7 @@ export class OnlyCommand extends node.CommandBase {
   }
 
   async execute(): Promise<void> {
-      await vscode.commands.executeCommand("workbench.action.closeEditorsInOtherGroups");
-      return;
+    await vscode.commands.executeCommand('workbench.action.closeEditorsInOtherGroups');
+    return;
   }
 }

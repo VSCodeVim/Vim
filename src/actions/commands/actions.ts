@@ -2328,7 +2328,7 @@ class CommandQuit extends BaseCommand {
 @RegisterAction
 class CommandOnly extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = [["<C-w>", "o"], ["<C-w>", "C-o"]];
+  keys = [['<C-w>', 'o'], ['<C-w>', 'C-o']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new OnlyCommand({}).execute();
