@@ -204,6 +204,9 @@ export async function activate(context: vscode.ExtensionContext) {
       Vim.operatorPending = true;
       return;
     }
+    if (key.match(/[0-9]/)) {
+      return;
+    }
     Vim.operatorPending = false;
 
     let mode = ((await nvim.mode) as any).mode;
