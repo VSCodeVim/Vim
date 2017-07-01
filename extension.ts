@@ -180,12 +180,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
-  // await nvim.command(
-  //   `autocmd BufRead * :call rpcrequest(${Vim.channelId}, "read", expand("<abuf>"), expand("<afile>"))`
-  // );
-  // nvim = nvim.addListener('read', args => {
-  //   console.log(args);
-  // });
   const buf = await nvim.buffer;
   await buf.setLines(vscode.window.activeTextEditor!.document.getText().split('\n'), {
     start: 0,
@@ -195,9 +189,20 @@ export async function activate(context: vscode.ExtensionContext) {
   async function handleKeyEventSimple(key: string) {
     await nvim.input(key);
   }
+  // await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
+  await nvim.command(
+    `autocmd BufRead * :call rpcrequest(${Vim.channelId}, "read", expand("<abuf>"), expand("<afile>"))`
+  );
+  nvim.on('notification', (args: any, x: any, y: any, z: any) => {
+    console.log(args, x, y, z);
+  });
+  nvim.on('request', (args: any, x: any, y: any) => {
+    console.log(args, x, y);
+  });
 
   async function handleKeyEventNV(key: string) {
     await nvim.input(key);
+    // const res = await nvim.eval('rpcrequest(1, "request", 1, 2, 3)');
 
     // https://github.com/neovim/neovim/issues/6166
     if (Vim.mode === 'n' && 'dyc'.indexOf(key) !== -1 && !Vim.operatorPending) {
@@ -214,10 +219,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
     let [row, character] = await NvUtil.getCursorPos();
     let [startRow, startCharacter] = await NvUtil.getSelectionStartPos();
-    await NvUtil.copyTextFromNeovim();
 
+    await NvUtil.copyTextFromNeovim();
     switch (mode) {
       case 'v':
+      case 'V':
         let startPos = new Position(startRow, startCharacter);
         let curPos = new Position(row, character);
         if (startPos.isBeforeOrEqual(curPos)) {
