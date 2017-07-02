@@ -178,7 +178,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   let nvim = await attach({ proc: proc });
   Vim.nv = nvim;
-  await nvim.command('set hidden');
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
@@ -187,7 +186,7 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
-    let buf_id = await nvim.call('bufnr', [active_editor_file]);
+    let buf_id = await nvim.call('bufnr', [`^${active_editor_file}$`]);
     if (buf_id === -1) {
       if (active_editor_file.indexOf('Untitled') !== -1) {
         await nvim.call('bufnr', [active_editor_file, 1]);
@@ -206,6 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     const newText = event.contentChanges[0].text;
 
+    // doesn't work on files with one line? Does anybody care?
     if (event.document.lineCount === event.contentChanges[0].text.split('\n').length) {
       return;
     }
@@ -213,7 +213,6 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     if (newText !== Vim.mostRecentlyPressedKey && Vim.mode === 'i') {
-      console.log(event.contentChanges[0].rangeLength);
       await nvim.input('<BS>'.repeat(event.contentChanges[0].rangeLength));
       await nvim.input(newText);
     }
@@ -233,6 +232,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   // for janky fix for tabs/backspace
   await nvim.command('set nosmarttab');
+  await nvim.command('set hidden');
 
   nvim.on('notification', (args: any, x: any) => {
     // console.log(args, x);
