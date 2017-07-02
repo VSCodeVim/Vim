@@ -107,7 +107,7 @@
       {
         "key": "Backspace",
         "command": "extension.vim_backspace",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active &&  && vim.mode !== 'i' && !inDebugRepl"
       },
       {
         "key": "shift+backspace",
@@ -122,7 +122,7 @@
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorFocus && vim.active && vim.mode != 'i' && !inDebugRepl"
       },
       {
         "key": "ctrl+r",

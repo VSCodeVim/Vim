@@ -163,6 +163,7 @@ export namespace Vim {
   export let operatorPending = false;
   export let mode: string;
   export let channelId: number;
+  export let insertModeChanges: Array<any>;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -198,6 +199,7 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log('buf_id: ', buf_id);
     await nvim.command(`${buf_id}buffer `);
   }
+
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
   async function handleKeyEventSimple(key: string) {
@@ -220,11 +222,9 @@ export async function activate(context: vscode.ExtensionContext) {
       resp.send('success');
     }
   });
-
   async function handleKeyEventNV(key: string) {
     const prevMode = Vim.mode;
     await nvim.input(key);
-    // const res = await nvim.eval('rpcrequest(1, "request", 1, 2, 3)');
 
     // https://github.com/neovim/neovim/issues/6166
     if (Vim.mode === 'n' && 'dyc'.indexOf(key) !== -1 && !Vim.operatorPending) {
@@ -235,14 +235,16 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     Vim.operatorPending = false;
+    // End of hack
 
     let mode = (await nvim.mode) as any;
     Vim.mode = mode.mode as string;
+
+    await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
     if (prevMode !== 'i' || Vim.mode !== 'i') {
       await NvUtil.copyTextFromNeovim();
     } else {
-      await vscode.commands.executeCommand;
-      await vscode.commands.executeCommand('type', { text: key });
+      await vscode.commands.executeCommand('default:type', { text: key });
     }
     await NvUtil.changeSelectionFromMode(Vim.mode);
   }
@@ -288,7 +290,23 @@ export async function activate(context: vscode.ExtensionContext) {
     await handleActiveTextEditorChange();
   }
 }
-
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 export async function _unused_activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   let compositionState = new CompositionState();
