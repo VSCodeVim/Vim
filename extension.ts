@@ -163,7 +163,7 @@ export namespace Vim {
   export let operatorPending = false;
   export let mode: string;
   export let channelId: number;
-  export let insertModeChanges: Array<any>;
+  export let mostRecentlyPressedKey: string;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -199,6 +199,28 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log('buf_id: ', buf_id);
     await nvim.command(`${buf_id}buffer `);
   }
+
+  vscode.workspace.onDidChangeTextDocument(async event => {
+    if (event.contentChanges.length === 0) {
+      return;
+    }
+    const newText = event.contentChanges[0].text;
+    console.log(event);
+    // todo: need better heuristic for determining whether or not this is a save (this doesn't capture snippets)
+    if (event.contentChanges[0].rangeLength !== 0 && newText.length !== 0) {
+      return;
+    }
+    if (event.document.fileName !== vscode.window.activeTextEditor!.document.fileName) {
+      return;
+    }
+    if (newText !== Vim.mostRecentlyPressedKey && Vim.mode === 'i') {
+      if (newText.length === 0) {
+        await nvim.input('<BS>');
+      } else {
+        await nvim.input(newText);
+      }
+    }
+  });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
@@ -244,6 +266,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (prevMode !== 'i' || Vim.mode !== 'i') {
       await NvUtil.copyTextFromNeovim();
     } else {
+      Vim.mostRecentlyPressedKey = key;
       await vscode.commands.executeCommand('default:type', { text: key });
     }
     await NvUtil.changeSelectionFromMode(Vim.mode);
