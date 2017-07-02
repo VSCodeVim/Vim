@@ -177,27 +177,38 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   let nvim = await attach({ proc: proc });
   Vim.nv = nvim;
+  await nvim.command('set hidden');
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
-  const buf = await nvim.buffer;
-  await buf.setLines(vscode.window.activeTextEditor!.document.getText().split('\n'), {
-    start: 0,
-    end: -1,
-  });
+  async function handleActiveTextEditorChange() {
+    const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
+    let buf_id = await nvim.call('bufnr', [active_editor_file]);
+    console.log(active_editor_file, buf_id);
+    if (buf_id === -1) {
+      if (active_editor_file.indexOf('Untitled') !== -1) {
+        await nvim.call('bufnr', [active_editor_file, 1]);
+      } else {
+        await nvim.command(`badd ${active_editor_file}`);
+      }
+      buf_id = await nvim.call('bufnr', [active_editor_file]);
+    }
+    await nvim.command(`${buf_id}buffer `);
+  }
+  vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
   async function handleKeyEventSimple(key: string) {
     await nvim.input(key);
   }
-  // await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
-  await nvim.command(
-    `autocmd BufRead * :call rpcrequest(${Vim.channelId}, "read", expand("<abuf>"), expand("<afile>"))`
-  );
-  nvim.on('notification', (args: any, x: any, y: any, z: any) => {
-    console.log(args, x, y, z);
+  await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
+  // await nvim.command(
+  //   `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "read", expand("<abuf>"), expand("<afile>"))`
+  // );
+  nvim.on('notification', (args: any, x: any) => {
+    // console.log(args, x);
   });
-  nvim.on('request', (args: any, x: any, y: any) => {
-    console.log(args, x, y);
+  nvim.on('request', (args: any) => {
+    // console.log(args);
   });
 
   async function handleKeyEventNV(key: string) {
@@ -214,48 +225,12 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     Vim.operatorPending = false;
 
-    let mode = ((await nvim.mode) as any).mode;
-    Vim.mode = mode as string;
-
-    let [row, character] = await NvUtil.getCursorPos();
-    let [startRow, startCharacter] = await NvUtil.getSelectionStartPos();
-
+    let mode = (await nvim.mode) as any;
+    Vim.mode = mode.mode as string;
     await NvUtil.copyTextFromNeovim();
-    switch (mode) {
-      case 'v':
-      case 'V':
-        let startPos = new Position(startRow, startCharacter);
-        let curPos = new Position(row, character);
-        if (startPos.isBeforeOrEqual(curPos)) {
-          curPos = curPos.getRightThroughLineBreaks();
-        } else {
-          startPos = startPos.getRightThroughLineBreaks();
-        }
-        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
-        break;
-      case 'i':
-        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(
-          new Position(row, character),
-          new Position(row, character)
-        );
-        break;
-      case 'n':
-        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(
-          new Position(row, character),
-          new Position(row, character)
-        );
-        break;
-      default:
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(
-          new Position(row, character),
-          new Position(row, character)
-        );
-        break;
-    }
+    await NvUtil.changeSelectionFromMode(Vim.mode);
   }
+
   overrideCommand(context, 'type', async args => {
     taskQueue.enqueueTask({
       promise: async () => {
@@ -264,6 +239,8 @@ export async function activate(context: vscode.ExtensionContext) {
       isRunning: false,
     });
   });
+
+  await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
 
   for (let keybinding of packagejson.contributes.keybindings) {
     if (keybinding.when.indexOf('listFocus') !== -1) {
@@ -282,7 +259,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
-
     registerCommand(context, keybinding.command, () => {
       taskQueue.enqueueTask({
         promise: async () => {
@@ -291,6 +267,9 @@ export async function activate(context: vscode.ExtensionContext) {
         isRunning: false,
       });
     });
+  }
+  if (vscode.window.activeTextEditor) {
+    await handleActiveTextEditorChange();
   }
 }
 
