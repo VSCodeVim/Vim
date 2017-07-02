@@ -213,6 +213,7 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     if (newText !== Vim.mostRecentlyPressedKey && Vim.mode === 'i') {
+      console.log(event.contentChanges[0].rangeLength);
       await nvim.input('<BS>'.repeat(event.contentChanges[0].rangeLength));
       await nvim.input(newText);
     }
@@ -230,6 +231,9 @@ export async function activate(context: vscode.ExtensionContext) {
   await nvim.command(
     `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "readBuf", expand("<abuf>"), expand("<afile>"))`
   );
+  // for janky fix for tabs/backspace
+  await nvim.command('set nosmarttab');
+
   nvim.on('notification', (args: any, x: any) => {
     // console.log(args, x);
   });
