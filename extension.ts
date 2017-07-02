@@ -205,20 +205,16 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     const newText = event.contentChanges[0].text;
-    console.log(event);
-    // todo: need better heuristic for determining whether or not this is a save (this doesn't capture snippets)
-    if (event.contentChanges[0].rangeLength !== 0 && newText.length !== 0) {
+
+    if (event.document.lineCount === event.contentChanges[0].text.split('\n').length) {
       return;
     }
     if (event.document.fileName !== vscode.window.activeTextEditor!.document.fileName) {
       return;
     }
     if (newText !== Vim.mostRecentlyPressedKey && Vim.mode === 'i') {
-      if (newText.length === 0) {
-        await nvim.input('<BS>');
-      } else {
-        await nvim.input(newText);
-      }
+      await nvim.input('<BS>'.repeat(event.contentChanges[0].rangeLength));
+      await nvim.input(newText);
     }
   });
 
