@@ -7,7 +7,7 @@ import { Position } from './src/common/motion/position';
 
 export class NvUtil {
   static async copyTextFromNeovim() {
-    const buf = await Vim.nv.buffer;
+    const lines = await Vim.nv.buffer.lines;
     await TextEditor.replace(
       new vscode.Range(
         0,
@@ -15,13 +15,12 @@ export class NvUtil {
         TextEditor.getLineCount() - 1,
         TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1)
       ),
-      (await buf.lines).join('\n')
+      (await lines).join('\n')
     );
   }
 
-  static async setCursorPos(pos: vscode.Position, bufNum = 0) {
-    console.log('bufnum: ' + bufNum);
-    await Vim.nv.callFunction('setpos', ['.', [bufNum, pos.line + 1, pos.character + 1, false]]);
+  static async setCursorPos(pos: vscode.Position) {
+    await Vim.nv.callFunction('setpos', ['.', [0, pos.line + 1, pos.character + 1, false]]);
   }
 
   static async setSelection(pos: vscode.Range) {

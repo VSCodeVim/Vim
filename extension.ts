@@ -158,12 +158,24 @@ class CompositionState {
   public composingText: string = '';
 }
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 export namespace Vim {
   export let nv: NeovimClient;
   export let operatorPending = false;
   export let mode: string;
   export let channelId: number;
   export let mostRecentlyPressedKey: string;
+  export let changeHandled: string | undefined;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -195,61 +207,88 @@ export async function activate(context: vscode.ExtensionContext) {
       }
       buf_id = await nvim.call('bufnr', [active_editor_file]);
     }
-    console.log('buf_id: ', buf_id);
     await nvim.command(`${buf_id}buffer `);
+    await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
+
+    const currentFileSettings = vscode.window.activeTextEditor!.options;
+    if (currentFileSettings.insertSpaces) {
+      await nvim.command(`set expandtab`);
+    }
+    await nvim.command(`set tabstop=${currentFileSettings.tabSize}`);
+    await nvim.command(`set shiftwidth=${currentFileSettings.tabSize}`);
   }
-
-  vscode.workspace.onDidChangeTextDocument(async event => {
-    if (event.contentChanges.length === 0) {
-      return;
-    }
-    const newText = event.contentChanges[0].text;
-
-    // doesn't work on files with one line? Does anybody care?
-    if (event.document.lineCount === event.contentChanges[0].text.split('\n').length) {
-      return;
-    }
-    if (event.document.fileName !== vscode.window.activeTextEditor!.document.fileName) {
-      return;
-    }
-    if (newText !== Vim.mostRecentlyPressedKey && Vim.mode === 'i') {
-      await nvim.input('<BS>'.repeat(event.contentChanges[0].rangeLength));
-      await nvim.input(newText);
-    }
+  vscode.workspace.onDidCloseTextDocument(async event => {
+    const deleted_file = event.fileName;
+    let buf_id = await nvim.call('bufnr', [`^${deleted_file}$`]);
+    await nvim.call(`${buf_id}bw!`);
   });
+  // vscode.workspace.onDidChangeTextDocument(async event => {
+  //   if (event.contentChanges.length === 0) {
+  //     return;
+  //   }
+  //   const newText = event.contentChanges[0].text;
+
+  //   // doesn't work on files with one line? Does anybody care?
+  //   if (event.document.lineCount === event.contentChanges[0].text.split('\n').length) {
+  //     return;
+  //   }
+  //   if (event.document.fileName !== vscode.window.activeTextEditor!.document.fileName) {
+  //     return;
+  //   }
+  //   if (newText !== Vim.mostRecentlyPressedKey && Vim.mode === 'i') {
+  //     await nvim.input('<BS>'.repeat(event.contentChanges[0].rangeLength));
+  //     await nvim.input(newText);
+  //   }
+  // });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
-  async function handleKeyEventSimple(key: string) {
-    await nvim.input(key);
-  }
   await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
+
   await nvim.command(
     `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "readBuf", expand("<abuf>"), expand("<afile>"))`
   );
   await nvim.command(
     `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "readBuf", expand("<abuf>"), expand("<afile>"))`
   );
+  await nvim.command(
+    `inoremap <Tab> <Esc>dv?\\_s\\zs.<CR>a<C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`
+  );
+  await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
   // for janky fix for tabs/backspace
   await nvim.command('set nosmarttab');
-  await nvim.command('set hidden');
+  await nvim.command('set noswapfile');
 
   nvim.on('notification', (args: any, x: any) => {
     // console.log(args, x);
   });
+
   nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
     if (method === 'readBuf') {
       const filePath = vscode.Uri.file(args[1]);
-      await vscode.commands.executeCommand('vscode.open', filePath);
       resp.send('success');
+    } else if (method === 'tab') {
+      Vim.changeHandled = undefined;
+      let result = new Promise((resolve, reject) => {
+        let handler = vscode.workspace.onDidChangeTextDocument(e => {
+          console.log(e);
+          handler.dispose();
+          resolve(e.contentChanges[0].text);
+        });
+      });
+      vscode.commands.executeCommand('acceptSelectedSuggestion');
+      vscode.commands.executeCommand('tab');
+      await resp.send(await result);
+      NvUtil.copyTextFromNeovim();
     }
   });
+
   async function handleKeyEventNV(key: string) {
     const prevMode = Vim.mode;
-    await nvim.input(key);
+    await nvim.input(key === '<' ? '<lt>' : key);
 
     // https://github.com/neovim/neovim/issues/6166
-    if (Vim.mode === 'n' && 'dyc'.indexOf(key) !== -1 && !Vim.operatorPending) {
+    if (Vim.mode === 'n' && 'dycg'.indexOf(key) !== -1 && !Vim.operatorPending) {
       Vim.operatorPending = true;
       return;
     }
@@ -261,12 +300,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     let mode = (await nvim.mode) as any;
     Vim.mode = mode.mode as string;
-
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
     if (prevMode !== 'i' || Vim.mode !== 'i') {
       await NvUtil.copyTextFromNeovim();
     } else {
       Vim.mostRecentlyPressedKey = key;
+      if (key === '<tab>') {
+        return;
+      }
       await vscode.commands.executeCommand('default:type', { text: key });
     }
     await NvUtil.changeSelectionFromMode(Vim.mode);
