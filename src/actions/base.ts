@@ -2,11 +2,11 @@ import { VimState } from './../mode/modeHandler';
 import { ModeName } from './../mode/mode';
 import { Configuration } from './../configuration/configuration';
 
-const is2DArray = function <T>(x: any): x is T[][] {
+const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);
 };
 
-export let compareKeypressSequence = function (one: string[] | string[][], two: string[]): boolean {
+export let compareKeypressSequence = function(one: string[] | string[][], two: string[]): boolean {
   if (is2DArray(one)) {
     for (const sequence of one) {
       if (compareKeypressSequence(sequence, two)) {
@@ -22,39 +22,64 @@ export let compareKeypressSequence = function (one: string[] | string[][], two: 
   }
 
   const isSingleNumber = (s: string): boolean => {
-    return s.length === 1 && "1234567890".indexOf(s) > -1;
+    return s.length === 1 && '1234567890'.indexOf(s) > -1;
   };
 
   const containsControlKey = (s: string): boolean => {
     // We count anything starting with < (e.g. <c-u>) as a control key, but we
     // exclude the first 3 because it's more convenient to do so.
 
-    return s.toUpperCase() !== "<BS>" &&
-      s.toUpperCase() !== "<SHIFT+BS>" &&
-      s.toUpperCase() !== "<TAB>" &&
-      s.startsWith("<") &&
-      s.length > 1;
+    return (
+      s.toUpperCase() !== '<BS>' &&
+      s.toUpperCase() !== '<SHIFT+BS>' &&
+      s.toUpperCase() !== '<TAB>' &&
+      s.startsWith('<') &&
+      s.length > 1
+    );
   };
 
-  for (let i = 0, j = 0; i < one.length; i++ , j++) {
-    const left = one[i], right = two[j];
+  for (let i = 0, j = 0; i < one.length; i++, j++) {
+    const left = one[i],
+      right = two[j];
 
-    if (left === "<any>") { continue; }
-    if (right === "<any>") { continue; }
+    if (left === '<any>') {
+      continue;
+    }
+    if (right === '<any>') {
+      continue;
+    }
 
-    if (left === "<number>" && isSingleNumber(right)) { continue; }
-    if (right === "<number>" && isSingleNumber(left)) { continue; }
+    if (left === '<number>' && isSingleNumber(right)) {
+      continue;
+    }
+    if (right === '<number>' && isSingleNumber(left)) {
+      continue;
+    }
 
-    if (left === "<character>" && !containsControlKey(right)) { continue; }
-    if (right === "<character>" && !containsControlKey(left)) { continue; }
+    if (left === '<character>' && !containsControlKey(right)) {
+      continue;
+    }
+    if (right === '<character>' && !containsControlKey(left)) {
+      continue;
+    }
 
-    if (left === "<leader>" && right === Configuration.leader) { continue; }
-    if (right === "<leader>" && left === Configuration.leader) { continue; }
+    if (left === '<leader>' && right === Configuration.leader) {
+      continue;
+    }
+    if (right === '<leader>' && left === Configuration.leader) {
+      continue;
+    }
 
-    if (left === Configuration.leader) { return false; }
-    if (right === Configuration.leader) { return false; }
+    if (left === Configuration.leader) {
+      return false;
+    }
+    if (right === Configuration.leader) {
+      return false;
+    }
 
-    if (left !== right) { return false; }
+    if (left !== right) {
+      return false;
+    }
   }
 
   return true;
@@ -92,10 +117,19 @@ export class BaseAction {
    * Is this action valid in the current Vim state?
    */
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
-    if (!compareKeypressSequence(this.keys, keysPressed)) { return false; }
-    if (vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length > 0 &&
-      this.mustBeFirstKey) { return false; }
+    if (this.modes.indexOf(vimState.currentMode) === -1) {
+      return false;
+    }
+    if (!compareKeypressSequence(this.keys, keysPressed)) {
+      return false;
+    }
+    if (
+      vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length >
+        0 &&
+      this.mustBeFirstKey
+    ) {
+      return false;
+    }
 
     return true;
   }
@@ -104,33 +138,38 @@ export class BaseAction {
    * Could the user be in the process of doing this action.
    */
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (this.modes.indexOf(vimState.currentMode) === -1) { return false; }
-    if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) { return false; }
-    if (vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length > 0 &&
-      this.mustBeFirstKey) { return false; }
-
+    if (this.modes.indexOf(vimState.currentMode) === -1) {
+      return false;
+    }
+    if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
+      return false;
+    }
+    if (
+      vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length >
+        0 &&
+      this.mustBeFirstKey
+    ) {
+      return false;
+    }
 
     return true;
   }
 
-
   public toString(): string {
-    return this.keys.join("");
+    return this.keys.join('');
   }
 }
 
 export enum KeypressState {
   WaitingOnKeys,
-  NoPossibleMatch
+  NoPossibleMatch,
 }
 
-
 export class Actions {
-
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
    */
-  public static allActions: { type: typeof BaseAction, action: BaseAction }[] = [];
+  public static allActions: { type: typeof BaseAction; action: BaseAction }[] = [];
 
   /**
    * Gets the action that should be triggered given a key
@@ -143,7 +182,10 @@ export class Actions {
    *
    * If no action could ever match, returns false.
    */
-  public static getRelevantAction(keysPressed: string[], vimState: VimState): BaseAction |KeypressState {
+  public static getRelevantAction(
+    keysPressed: string[],
+    vimState: VimState
+  ): BaseAction | KeypressState {
     let couldPotentiallyHaveMatch = false;
 
     for (const thing of Actions.allActions) {

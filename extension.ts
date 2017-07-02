@@ -182,9 +182,11 @@ export async function activate(context: vscode.ExtensionContext) {
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
   async function handleActiveTextEditorChange() {
+    if (vscode.window.activeTextEditor === undefined) {
+      return;
+    }
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
     let buf_id = await nvim.call('bufnr', [active_editor_file]);
-    console.log(active_editor_file, buf_id);
     if (buf_id === -1) {
       if (active_editor_file.indexOf('Untitled') !== -1) {
         await nvim.call('bufnr', [active_editor_file, 1]);
@@ -193,6 +195,7 @@ export async function activate(context: vscode.ExtensionContext) {
       }
       buf_id = await nvim.call('bufnr', [active_editor_file]);
     }
+    console.log('buf_id: ', buf_id);
     await nvim.command(`${buf_id}buffer `);
   }
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
@@ -201,17 +204,25 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.input(key);
   }
   await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
-  // await nvim.command(
-  //   `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "read", expand("<abuf>"), expand("<afile>"))`
-  // );
+  await nvim.command(
+    `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "readBuf", expand("<abuf>"), expand("<afile>"))`
+  );
+  await nvim.command(
+    `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "readBuf", expand("<abuf>"), expand("<afile>"))`
+  );
   nvim.on('notification', (args: any, x: any) => {
     // console.log(args, x);
   });
-  nvim.on('request', (args: any) => {
-    // console.log(args);
+  nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
+    if (method === 'readBuf') {
+      const filePath = vscode.Uri.file(args[1]);
+      await vscode.commands.executeCommand('vscode.open', filePath);
+      resp.send('success');
+    }
   });
 
   async function handleKeyEventNV(key: string) {
+    const prevMode = Vim.mode;
     await nvim.input(key);
     // const res = await nvim.eval('rpcrequest(1, "request", 1, 2, 3)');
 
@@ -227,7 +238,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
     let mode = (await nvim.mode) as any;
     Vim.mode = mode.mode as string;
-    await NvUtil.copyTextFromNeovim();
+    if (prevMode !== 'i' || Vim.mode !== 'i') {
+      await NvUtil.copyTextFromNeovim();
+    } else {
+      await vscode.commands.executeCommand;
+      await vscode.commands.executeCommand('type', { text: key });
+    }
     await NvUtil.changeSelectionFromMode(Vim.mode);
   }
 
@@ -511,6 +527,7 @@ function overrideCommand(
 ) {
   let disposable = vscode.commands.registerCommand(command, async args => {
     if (!Globals.active) {
+      console.log('YO');
       await vscode.commands.executeCommand('default:' + command, args);
       return;
     }
