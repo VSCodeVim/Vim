@@ -172,7 +172,7 @@
       {
         "key": "ctrl+o",
         "command": "extension.vim_ctrl+o",
-        "when": "editorTextFocus && vim.active && vim.use<C-o> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "ctrl+i",

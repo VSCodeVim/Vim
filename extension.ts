@@ -191,21 +191,21 @@ export async function activate(context: vscode.ExtensionContext) {
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
-  async function handleActiveTextEditorChange() {
+  async function handleVisibleTextEditorChange(event: vscode.TextEditor[]) {
     if (vscode.window.activeTextEditor === undefined) {
       return;
     }
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
-    let buf_id = await nvim.call('bufnr', [`^${active_editor_file}$`]);
-    if (buf_id === -1) {
-      if (active_editor_file.indexOf('Untitled') !== -1) {
-        await nvim.call('bufnr', [active_editor_file, 1]);
-      } else {
-        await nvim.command(`tabedit ${active_editor_file}`);
-      }
-      buf_id = await nvim.call('bufnr', [active_editor_file]);
-    }
-    await nvim.command(`${buf_id}buffer `);
+    await nvim.command(`noautocmd tab drop ${active_editor_file}`);
+
+    // if (buf_id === -1) {
+    //   if (active_editor_file.indexOf('Untitled') !== -1) {
+    //     await nvim.call('tabe');
+    //   }
+    // } else {
+    //   await nvim.command(`tab drop ${active_editor_file}`);
+    // }
+    return;
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
 
     const currentFileSettings = vscode.window.activeTextEditor!.options;
@@ -214,6 +214,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     await nvim.command(`set tabstop=${currentFileSettings.tabSize}`);
     await nvim.command(`set shiftwidth=${currentFileSettings.tabSize}`);
+    console.log(await nvim.buffer.name);
   }
 
   vscode.workspace.onDidCloseTextDocument(async event => {
@@ -225,20 +226,23 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.command(`${buf_id}bw!`);
   });
 
-  vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
+  vscode.window.onDidChangeVisibleTextEditors(handleVisibleTextEditorChange, this);
 
   await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
+  await nvim.command('autocmd BufAdd,BufNewFile * nested tab sball');
+  // As we have one buffer per tab, we are using BufEnter instead of TabEnter due to some weird cases with creating tabs.
 
   await nvim.command(
-    `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "readBuf", expand("<abuf>"), expand("<afile>"))`
+    `autocmd BufEnter * :call rpcrequest(${Vim.channelId}, "openTab", expand("<abuf>"), expand("<afile>"))`
   );
+  // await nvim.command(
+  //   `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
+  // );
   await nvim.command(
-    `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
-  );
-  await nvim.command(
-    `autocmd BufUnload * :call rpcrequest(${Vim.channelId}, "closeBuf", expand("<abuf>"), expand("<afile>"))`
+    `autocmd TabClosed * :call rpcrequest(${Vim.channelId}, "closeTab", expand("<abuf>"), expand("<afile>"))`
   );
   await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
+  await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
   await nvim.command('set noswapfile');
   await nvim.command('set hidden');
 
@@ -246,9 +250,27 @@ export async function activate(context: vscode.ExtensionContext) {
     // console.log(args, x);
   });
 
-  async function rpcRequestReadBuf(args: Array<any>, resp: any) {
+  async function rpcRequestOpenTab(args: any, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
+    if (args[1] === '') {
+      resp.send('failure');
+      return;
+    }
+    if (args[1] === vscode.window.activeTextEditor!.document.fileName) {
+      resp.send('already open');
+      return;
+    }
+    // const tabs = await nvim.tabpages;
+    // for (const tab of tabs) {
+    //   console.log('tab buffers: ', await nvim.call('tabpagebuflist', [await tab.number]));
+    // }
+    console.log('openTab: ', args[1]);
     await vscode.commands.executeCommand('vscode.open', filePath);
+    resp.send('success');
+  }
+
+  async function rpcRequestBufRead(args: any, resp: any) {
+    await nvim.command(`tab drop ${args[1]}`);
     resp.send('success');
   }
 
@@ -275,23 +297,39 @@ export async function activate(context: vscode.ExtensionContext) {
     await resp.send('success');
   }
 
-  async function rpcRequestCloseBuf(args: Array<any>, resp: any) {
-    const filePath = vscode.Uri.file(args[1]);
-    console.log('closeArgs: ', args);
+  async function rpcRequestCloseTab(args: Array<any>, resp: any) {
+    console.log(await nvim.buffers);
+    const filePath = vscode.Uri.file(await (await nvim.buffers)[parseInt(args[1], 10) - 1].name);
+    console.log('filepath: ', filePath);
+    if (args[1] !== vscode.window.activeTextEditor!.document.fileName) {
+      await vscode.commands.executeCommand('vscode.open', filePath);
+    }
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     resp.send('success');
   }
 
+  async function rpcRequestGoToDefinition(args: Array<any>, resp: any) {
+    await vscode.commands.executeCommand('editor.action.goToDeclaration');
+    resp.send('success');
+  }
+
   nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
-    console.log(method);
-    if (method === 'readBuf') {
-      rpcRequestReadBuf(args, resp);
+    console.log(method, args);
+    console.log('Buffers: ', await nvim.buffers);
+    if (method === 'openTab') {
+      rpcRequestOpenTab(args, resp);
+    } else if (method === 'bufLeave') {
+      rpcRequestBufRead(args, resp);
     } else if (method === 'tab') {
       rpcRequestTab(args, resp);
     } else if (method === 'writeBuf') {
       rpcRequestWriteBuf(args, resp);
-    } else if (method === 'closeBuf') {
-      rpcRequestCloseBuf(args, resp);
+    } else if (method === 'closeTab') {
+      rpcRequestCloseTab(args, resp);
+    } else if (method === 'goToDefinition') {
+      rpcRequestGoToDefinition(args, resp);
+    } else {
+      resp.send('K');
     }
   });
 
