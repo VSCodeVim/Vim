@@ -20,7 +20,7 @@ export class NvUtil {
   }
 
   static async setCursorPos(pos: vscode.Position) {
-    await Vim.nv.callFunction('setpos', ['.', [0, pos.line + 1, pos.character + 1, false]]);
+    await Vim.nv.call('setpos', ['.', [0, pos.line + 1, pos.character + 1, false]]);
   }
 
   static async setSelection(pos: vscode.Range) {

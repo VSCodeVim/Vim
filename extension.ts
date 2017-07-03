@@ -174,8 +174,6 @@ export namespace Vim {
   export let operatorPending = false;
   export let mode: string;
   export let channelId: number;
-  export let mostRecentlyPressedKey: string;
-  export let changeHandled: string | undefined;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -203,7 +201,7 @@ export async function activate(context: vscode.ExtensionContext) {
       if (active_editor_file.indexOf('Untitled') !== -1) {
         await nvim.call('bufnr', [active_editor_file, 1]);
       } else {
-        await nvim.command(`badd ${active_editor_file}`);
+        await nvim.command(`tabedit ${active_editor_file}`);
       }
       buf_id = await nvim.call('bufnr', [active_editor_file]);
     }
@@ -217,29 +215,15 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.command(`set tabstop=${currentFileSettings.tabSize}`);
     await nvim.command(`set shiftwidth=${currentFileSettings.tabSize}`);
   }
+
   vscode.workspace.onDidCloseTextDocument(async event => {
     const deleted_file = event.fileName;
     let buf_id = await nvim.call('bufnr', [`^${deleted_file}$`]);
-    await nvim.call(`${buf_id}bw!`);
+    if (buf_id === -1) {
+      return;
+    }
+    await nvim.command(`${buf_id}bw!`);
   });
-  // vscode.workspace.onDidChangeTextDocument(async event => {
-  //   if (event.contentChanges.length === 0) {
-  //     return;
-  //   }
-  //   const newText = event.contentChanges[0].text;
-
-  //   // doesn't work on files with one line? Does anybody care?
-  //   if (event.document.lineCount === event.contentChanges[0].text.split('\n').length) {
-  //     return;
-  //   }
-  //   if (event.document.fileName !== vscode.window.activeTextEditor!.document.fileName) {
-  //     return;
-  //   }
-  //   if (newText !== Vim.mostRecentlyPressedKey && Vim.mode === 'i') {
-  //     await nvim.input('<BS>'.repeat(event.contentChanges[0].rangeLength));
-  //     await nvim.input(newText);
-  //   }
-  // });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
@@ -249,37 +233,65 @@ export async function activate(context: vscode.ExtensionContext) {
     `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "readBuf", expand("<abuf>"), expand("<afile>"))`
   );
   await nvim.command(
-    `autocmd BufReadPre * :call rpcrequest(${Vim.channelId}, "readBuf", expand("<abuf>"), expand("<afile>"))`
+    `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
   );
   await nvim.command(
-    `inoremap <Tab> <Esc>dv?\\_s\\zs.<CR>a<C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`
+    `autocmd BufUnload * :call rpcrequest(${Vim.channelId}, "closeBuf", expand("<abuf>"), expand("<afile>"))`
   );
   await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
-  // for janky fix for tabs/backspace
-  await nvim.command('set nosmarttab');
   await nvim.command('set noswapfile');
+  await nvim.command('set hidden');
 
   nvim.on('notification', (args: any, x: any) => {
     // console.log(args, x);
   });
 
-  nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
-    if (method === 'readBuf') {
-      const filePath = vscode.Uri.file(args[1]);
-      resp.send('success');
-    } else if (method === 'tab') {
-      Vim.changeHandled = undefined;
-      let result = new Promise((resolve, reject) => {
-        let handler = vscode.workspace.onDidChangeTextDocument(e => {
-          console.log(e);
-          handler.dispose();
-          resolve(e.contentChanges[0].text);
-        });
+  async function rpcRequestReadBuf(args: Array<any>, resp: any) {
+    const filePath = vscode.Uri.file(args[1]);
+    await vscode.commands.executeCommand('vscode.open', filePath);
+    resp.send('success');
+  }
+
+  async function rpcRequestTab(args: Array<any>, resp: any) {
+    let result: Promise<vscode.TextDocumentContentChangeEvent> = new Promise((resolve, reject) => {
+      let handler = vscode.workspace.onDidChangeTextDocument(e => {
+        console.log(e);
+        handler.dispose();
+        resolve(e.contentChanges[0]);
       });
-      vscode.commands.executeCommand('acceptSelectedSuggestion');
-      vscode.commands.executeCommand('tab');
-      await resp.send(await result);
-      NvUtil.copyTextFromNeovim();
+    });
+    vscode.commands.executeCommand('acceptSelectedSuggestion');
+    vscode.commands.executeCommand('tab');
+    if ((await result).rangeLength > 0) {
+      await nvim.command(`normal! ${'x'.repeat((await result).rangeLength)}`);
+    }
+    await resp.send((await result).text);
+    NvUtil.copyTextFromNeovim();
+  }
+
+  async function rpcRequestWriteBuf(args: Array<any>, resp: any) {
+    const filePath = vscode.Uri.file(args[1]);
+    await vscode.commands.executeCommand('workbench.action.files.save', filePath);
+    await resp.send('success');
+  }
+
+  async function rpcRequestCloseBuf(args: Array<any>, resp: any) {
+    const filePath = vscode.Uri.file(args[1]);
+    console.log('closeArgs: ', args);
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    resp.send('success');
+  }
+
+  nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
+    console.log(method);
+    if (method === 'readBuf') {
+      rpcRequestReadBuf(args, resp);
+    } else if (method === 'tab') {
+      rpcRequestTab(args, resp);
+    } else if (method === 'writeBuf') {
+      rpcRequestWriteBuf(args, resp);
+    } else if (method === 'closeBuf') {
+      rpcRequestCloseBuf(args, resp);
     }
   });
 
@@ -288,6 +300,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.input(key === '<' ? '<lt>' : key);
 
     // https://github.com/neovim/neovim/issues/6166
+    // This is just for convenience sake
     if (Vim.mode === 'n' && 'dycg'.indexOf(key) !== -1 && !Vim.operatorPending) {
       Vim.operatorPending = true;
       return;
@@ -304,7 +317,6 @@ export async function activate(context: vscode.ExtensionContext) {
     if (prevMode !== 'i' || Vim.mode !== 'i') {
       await NvUtil.copyTextFromNeovim();
     } else {
-      Vim.mostRecentlyPressedKey = key;
       if (key === '<tab>') {
         return;
       }
