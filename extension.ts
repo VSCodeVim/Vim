@@ -178,9 +178,19 @@ export namespace Vim {
 
 export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
-  const proc = spawn('nvim', ['-u', 'NONE', '-N', '--embed'], {
-    cwd: __dirname,
-  });
+  const proc = spawn(
+    'nvim',
+    [
+      '-u',
+      'NONE',
+      '-N',
+      '--embed',
+      vscode.window.activeTextEditor ? vscode.window.activeTextEditor!.document.fileName : '',
+    ],
+    {
+      cwd: __dirname,
+    }
+  );
   proc.on('error', function(err) {
     console.log(err);
     vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
@@ -191,11 +201,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
-  async function handleVisibleTextEditorChange(event: vscode.TextEditor[]) {
-    if (vscode.window.activeTextEditor === undefined) {
-      return;
-    }
+  async function handleActiveTextEditorChange() {
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
+    console.log('changed editor: ', active_editor_file);
     await nvim.command(`noautocmd tab drop ${active_editor_file}`);
 
     // if (buf_id === -1) {
@@ -205,7 +213,6 @@ export async function activate(context: vscode.ExtensionContext) {
     // } else {
     //   await nvim.command(`tab drop ${active_editor_file}`);
     // }
-    return;
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
 
     const currentFileSettings = vscode.window.activeTextEditor!.options;
@@ -214,7 +221,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
     await nvim.command(`set tabstop=${currentFileSettings.tabSize}`);
     await nvim.command(`set shiftwidth=${currentFileSettings.tabSize}`);
-    console.log(await nvim.buffer.name);
   }
 
   vscode.workspace.onDidCloseTextDocument(async event => {
@@ -226,7 +232,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.command(`${buf_id}bw!`);
   });
 
-  vscode.window.onDidChangeVisibleTextEditors(handleVisibleTextEditorChange, this);
+  vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
   await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
   await nvim.command('autocmd BufAdd,BufNewFile * nested tab sball');
@@ -235,23 +241,25 @@ export async function activate(context: vscode.ExtensionContext) {
   await nvim.command(
     `autocmd BufEnter * :call rpcrequest(${Vim.channelId}, "openTab", expand("<abuf>"), expand("<afile>"))`
   );
-  // await nvim.command(
-  //   `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
-  // );
+  await nvim.command(
+    `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
+  );
   await nvim.command(
     `autocmd TabClosed * :call rpcrequest(${Vim.channelId}, "closeTab", expand("<abuf>"), expand("<afile>"))`
   );
+
   await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
   await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
   await nvim.command('set noswapfile');
   await nvim.command('set hidden');
 
   nvim.on('notification', (args: any, x: any) => {
-    // console.log(args, x);
+    console.log(args, x);
   });
 
   async function rpcRequestOpenTab(args: any, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
+    console.log(`trying to open ${args[1]}`);
     if (args[1] === '') {
       resp.send('failure');
       return;
@@ -260,10 +268,6 @@ export async function activate(context: vscode.ExtensionContext) {
       resp.send('already open');
       return;
     }
-    // const tabs = await nvim.tabpages;
-    // for (const tab of tabs) {
-    //   console.log('tab buffers: ', await nvim.call('tabpagebuflist', [await tab.number]));
-    // }
     console.log('openTab: ', args[1]);
     await vscode.commands.executeCommand('vscode.open', filePath);
     resp.send('success');
@@ -309,7 +313,9 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   async function rpcRequestGoToDefinition(args: Array<any>, resp: any) {
+    await nvim.command("normal! m'");
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
+    await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     resp.send('success');
   }
 
@@ -318,8 +324,6 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log('Buffers: ', await nvim.buffers);
     if (method === 'openTab') {
       rpcRequestOpenTab(args, resp);
-    } else if (method === 'bufLeave') {
-      rpcRequestBufRead(args, resp);
     } else if (method === 'tab') {
       rpcRequestTab(args, resp);
     } else if (method === 'writeBuf') {
@@ -328,12 +332,13 @@ export async function activate(context: vscode.ExtensionContext) {
       rpcRequestCloseTab(args, resp);
     } else if (method === 'goToDefinition') {
       rpcRequestGoToDefinition(args, resp);
-    } else {
-      resp.send('K');
     }
   });
 
   async function handleKeyEventNV(key: string) {
+    nvim.on('notification', (args: any, x: any) => {
+      console.log(args, x);
+    });
     const prevMode = Vim.mode;
     await nvim.input(key === '<' ? '<lt>' : key);
 
