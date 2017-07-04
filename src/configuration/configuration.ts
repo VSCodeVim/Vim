@@ -292,6 +292,7 @@ class ConfigurationClass {
    */
   visualstar = false;
 
+  mouseSelectionGoesIntoVisualMode = true;
   /**
    * Uses a hack to fix moving around folds.
    */
