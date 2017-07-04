@@ -203,7 +203,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   async function handleActiveTextEditorChange() {
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
-    console.log('changed editor: ', active_editor_file);
     await nvim.command(`noautocmd tab drop ${active_editor_file}`);
 
     // if (buf_id === -1) {
@@ -236,8 +235,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
   await nvim.command('autocmd BufAdd,BufNewFile * nested tab sball');
-  // As we have one buffer per tab, we are using BufEnter instead of TabEnter due to some weird cases with creating tabs.
 
+  // As we have one buffer per tab, we are using BufEnter instead of TabEnter due to some weird cases with creating tabs.
   await nvim.command(
     `autocmd BufEnter * :call rpcrequest(${Vim.channelId}, "openTab", expand("<abuf>"), expand("<afile>"))`
   );
@@ -248,33 +247,29 @@ export async function activate(context: vscode.ExtensionContext) {
     `autocmd TabClosed * :call rpcrequest(${Vim.channelId}, "closeTab", expand("<abuf>"), expand("<afile>"))`
   );
 
+  // Overriding commands to handle them on the vscode side.
   await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
   await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
+
   await nvim.command('set noswapfile');
   await nvim.command('set hidden');
 
   nvim.on('notification', (args: any, x: any) => {
-    console.log(args, x);
+    // console.log(args, x);
   });
 
   async function rpcRequestOpenTab(args: any, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
-    console.log(`trying to open ${args[1]}`);
-    if (args[1] === '') {
-      resp.send('failure');
-      return;
-    }
-    if (args[1] === vscode.window.activeTextEditor!.document.fileName) {
-      resp.send('already open');
-      return;
-    }
-    console.log('openTab: ', args[1]);
-    await vscode.commands.executeCommand('vscode.open', filePath);
-    resp.send('success');
-  }
-
-  async function rpcRequestBufRead(args: any, resp: any) {
-    await nvim.command(`tab drop ${args[1]}`);
+    // // Not sure this is necessary.
+    // if (args[1] === '') {
+    //   resp.send('failure');
+    //   return;
+    // }
+    // if (args[1] === vscode.window.activeTextEditor!.document.fileName) {
+    //   resp.send('already open');
+    //   return;
+    // }
+    vscode.commands.executeCommand('vscode.open', filePath);
     resp.send('success');
   }
 
@@ -302,7 +297,6 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   async function rpcRequestCloseTab(args: Array<any>, resp: any) {
-    console.log(await nvim.buffers);
     const filePath = vscode.Uri.file(await (await nvim.buffers)[parseInt(args[1], 10) - 1].name);
     console.log('filepath: ', filePath);
     if (args[1] !== vscode.window.activeTextEditor!.document.fileName) {
@@ -336,9 +330,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   async function handleKeyEventNV(key: string) {
-    nvim.on('notification', (args: any, x: any) => {
-      console.log(args, x);
-    });
     const prevMode = Vim.mode;
     await nvim.input(key === '<' ? '<lt>' : key);
 
@@ -355,6 +346,10 @@ export async function activate(context: vscode.ExtensionContext) {
     // End of hack
 
     let mode = (await nvim.mode) as any;
+    console.log(mode);
+    if (mode.blocking) {
+      await nvim.input('<Esc>');
+    }
     Vim.mode = mode.mode as string;
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
     if (prevMode !== 'i' || Vim.mode !== 'i') {
@@ -378,6 +373,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+  // Keybindings need to be re-evaluated.
 
   for (let keybinding of packagejson.contributes.keybindings) {
     if (keybinding.when.indexOf('listFocus') !== -1) {
