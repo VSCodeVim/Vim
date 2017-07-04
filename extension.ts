@@ -21,7 +21,7 @@ import { ICodeKeybinding } from './src/mode/remapper';
 import { runCmdLine } from './src/cmd_line/main';
 
 import { spawn } from 'child_process';
-import { NvUtil } from './neovim';
+import { NvUtil } from './srcNV/nvUtil';
 import { NeovimClient } from 'neovim/lib/api/client';
 // import { Neovim } from './neovim';
 
@@ -202,6 +202,9 @@ export async function activate(context: vscode.ExtensionContext) {
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
   async function handleActiveTextEditorChange() {
+    if (vscode.window.activeTextEditor === undefined) {
+      return;
+    }
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
     await nvim.command(`noautocmd tab drop ${active_editor_file}`);
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
@@ -276,6 +279,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('acceptSelectedSuggestion');
     vscode.commands.executeCommand('tab');
     if ((await result).rangeLength > 0) {
+      // Todo: This is double plus not good
       await nvim.command(`normal! ${'x'.repeat((await result).rangeLength)}`);
     }
     await resp.send((await result).text);
@@ -285,6 +289,7 @@ export async function activate(context: vscode.ExtensionContext) {
   async function rpcRequestWriteBuf(args: Array<any>, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
     await vscode.commands.executeCommand('workbench.action.files.save', filePath);
+    // nvim.command('e!');
     await resp.send('success');
   }
 
@@ -321,13 +326,18 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  // tslint:disable-next-line:no-unused-variable
+  async function handleSimple(key: string) {
+    await nvim.input(key);
+  }
+
   async function handleKeyEventNV(key: string) {
     const prevMode = Vim.mode;
     await nvim.input(key === '<' ? '<lt>' : key);
 
     // https://github.com/neovim/neovim/issues/6166
     // This is just for convenience sake
-    if (Vim.mode === 'n' && 'dycg'.indexOf(key) !== -1 && !Vim.operatorPending) {
+    if (Vim.mode === 'n' && 'dycg@q'.indexOf(key) !== -1 && !Vim.operatorPending) {
       Vim.operatorPending = true;
       return;
     }
@@ -338,25 +348,27 @@ export async function activate(context: vscode.ExtensionContext) {
     // End of hack
 
     let mode = (await nvim.mode) as any;
+    // More hackish stuff
     if (mode.blocking && mode.mode !== 'i') {
       console.log('FIXING BLOCK: ', mode.mode);
       await nvim.input('<Esc>');
     }
     Vim.mode = mode.mode as string;
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
-    if (mode.mode !== 'i' || !mode.blocking) {
-      await NvUtil.changeSelectionFromMode(Vim.mode);
-    }
+    // FOr insert mode keybindings jj
     if (prevMode !== 'i' || Vim.mode !== 'i') {
+      if (!mode.blocking) {
+        await NvUtil.changeSelectionFromMode(Vim.mode);
+      }
       await NvUtil.copyTextFromNeovim();
+      if (!mode.blocking) {
+        await NvUtil.changeSelectionFromMode(Vim.mode);
+      }
     } else {
       if (key === '<tab>') {
         return;
       }
       await vscode.commands.executeCommand('default:type', { text: key });
-    }
-    if (mode.mode !== 'i' || !mode.blocking) {
-      await NvUtil.changeSelectionFromMode(Vim.mode);
     }
   }
 

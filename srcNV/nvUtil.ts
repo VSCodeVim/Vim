@@ -1,11 +1,26 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Vim } from './extension';
-import { TextEditor } from './src/textEditor';
-import { Position } from './src/common/motion/position';
+import { Vim } from '../extension';
+import { TextEditor } from '../src/textEditor';
+import { Position } from '../src/common/motion/position';
 
 export class NvUtil {
+  private static _caretDecoration = vscode.window.createTextEditorDecorationType({
+    dark: {
+      // used for dark colored themes
+      backgroundColor: 'rgba(224, 224, 224, 0.4)',
+      borderColor: 'rgba(0, 0, 0, 1.0)',
+    },
+    light: {
+      // used for light colored themes
+      backgroundColor: 'rgba(32, 32, 32, 0.4)',
+      borderColor: 'rgba(0, 0, 0, 1.0)',
+    },
+    borderStyle: 'solid',
+    borderWidth: '1px',
+  });
+
   static async copyTextFromNeovim() {
     const lines = await Vim.nv.buffer.lines;
     await TextEditor.replace(
@@ -52,39 +67,60 @@ export class NvUtil {
   static async changeSelectionFromMode(mode: string): Promise<void> {
     let [row, character] = await NvUtil.getCursorPos();
     let [startRow, startCharacter] = await NvUtil.getSelectionStartPos();
+    let startPos = new Position(startRow, startCharacter);
+    let curPos = new Position(row, character);
+    const cursorPos = new Position(row, character);
+    let cursorDecorations = [];
     switch (mode) {
       case 'v':
-      case 'V':
-        let startPos = new Position(startRow, startCharacter);
-        let curPos = new Position(row, character);
         if (startPos.isBeforeOrEqual(curPos)) {
           curPos = curPos.getRightThroughLineBreaks();
         } else {
           startPos = startPos.getRightThroughLineBreaks();
         }
+        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.LineThin;
+        vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
+        break;
+      case 'V':
+        if (startPos.isBeforeOrEqual(curPos)) {
+          curPos = curPos.getLineEndIncludingEOL();
+          startPos = startPos.getLineBegin();
+        } else {
+          curPos = curPos.getLineBegin();
+          startPos = startPos.getLineEndIncludingEOL();
+        }
+        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.LineThin;
+        vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
+        break;
+      case '\x16':
+
+      case 'i':
         vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
         vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
         break;
-      case 'i':
-        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(
-          new Position(row, character),
-          new Position(row, character)
-        );
-        break;
       case 'n':
         vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(
-          new Position(row, character),
-          new Position(row, character)
-        );
+        vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
         break;
       default:
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(
-          new Position(row, character),
-          new Position(row, character)
-        );
         break;
     }
+
+    switch (mode) {
+      case 'v':
+        if (startPos.isEarlierThan(curPos)) {
+          cursorDecorations.push(new vscode.Range(curPos.getLeft(), curPos));
+        } else {
+          cursorDecorations.push(new vscode.Range(curPos, curPos.getRight()));
+        }
+        break;
+      case 'V':
+        cursorDecorations.push(new vscode.Range(cursorPos, cursorPos.getRight()));
+        break;
+      default:
+        break;
+    }
+    vscode.window.activeTextEditor!.setDecorations(this._caretDecoration, cursorDecorations);
+    vscode.window.activeTextEditor!.revealRange(new vscode.Range(cursorPos, cursorPos));
   }
 }
