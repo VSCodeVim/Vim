@@ -172,7 +172,7 @@ class CompositionState {
 export namespace Vim {
   export let nv: NeovimClient;
   export let operatorPending = false;
-  export let mode: string;
+  export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let channelId: number;
 }
 
@@ -332,12 +332,13 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   async function handleKeyEventNV(key: string) {
-    const prevMode = Vim.mode;
+    const prevMode = Vim.mode.mode;
+    const prevBlocking = Vim.mode.blocking;
     await nvim.input(key === '<' ? '<lt>' : key);
 
     // https://github.com/neovim/neovim/issues/6166
     // This is just for convenience sake
-    if (Vim.mode === 'n' && 'dycg@q'.indexOf(key) !== -1 && !Vim.operatorPending) {
+    if (Vim.mode.mode === 'n' && 'dycg@q'.indexOf(key) !== -1 && !Vim.operatorPending) {
       Vim.operatorPending = true;
       return;
     }
@@ -353,22 +354,29 @@ export async function activate(context: vscode.ExtensionContext) {
       console.log('FIXING BLOCK: ', mode.mode);
       await nvim.input('<Esc>');
     }
-    Vim.mode = mode.mode as string;
+    console.log(key, mode);
+    Vim.mode = mode;
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
     // FOr insert mode keybindings jj
-    if (prevMode !== 'i' || Vim.mode !== 'i') {
-      if (!mode.blocking) {
-        await NvUtil.changeSelectionFromMode(Vim.mode);
+    if (prevMode !== 'i' || Vim.mode.mode !== 'i') {
+      if (!Vim.mode.blocking) {
+        await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       }
       await NvUtil.copyTextFromNeovim();
       if (!mode.blocking) {
-        await NvUtil.changeSelectionFromMode(Vim.mode);
+        await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       }
     } else {
-      if (key === '<tab>') {
+      if (key.length > 1) {
         return;
       }
-      await vscode.commands.executeCommand('default:type', { text: key });
+      if (prevBlocking && !Vim.mode.blocking) {
+        console.log('YO');
+        await NvUtil.copyTextFromNeovim();
+        await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+      } else {
+        await vscode.commands.executeCommand('default:type', { text: key });
+      }
     }
   }
 
@@ -384,6 +392,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
   // Keybindings need to be re-evaluated.
 
+  Configuration.boundKeyCombinations = [];
   for (let keybinding of packagejson.contributes.keybindings) {
     if (keybinding.when.indexOf('listFocus') !== -1) {
       continue;
@@ -401,6 +410,8 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+
+    Configuration.boundKeyCombinations.push(bracketedKey);
     registerCommand(context, keybinding.command, () => {
       taskQueue.enqueueTask({
         promise: async () => {
@@ -410,6 +421,8 @@ export async function activate(context: vscode.ExtensionContext) {
       });
     });
   }
+  Configuration.updateConfiguration();
+
   if (vscode.window.activeTextEditor) {
     await handleActiveTextEditorChange();
   }

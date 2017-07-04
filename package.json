@@ -107,12 +107,12 @@
       {
         "key": "Backspace",
         "command": "extension.vim_backspace",
-        "when": "editorTextFocus && vim.active &&  && vim.mode != 'i' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active &&   && !inDebugRepl"
       },
       {
         "key": "shift+backspace",
         "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && !inDebugRepl"
       },
       {
         "key": "Delete",
@@ -182,12 +182,12 @@
       {
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
-        "when": "editorTextFocus && vim.active && vim.use<C-v> && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-v>  && !inDebugRepl"
       },
       {
         "key": "cmd+v",
         "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-v> && !inDebugRepl"
       },
       {
         "key": "ctrl+[",
@@ -227,7 +227,7 @@
       {
         "key": "ctrl+c",
         "command": "extension.vim_ctrl+c",
-        "when": "editorTextFocus && vim.active && vim.use<C-c> && !inDebugRepl && vim.overrideCtrlC"
+        "when": "editorTextFocus && vim.active && vim.use<C-c> && !inDebugRepl"
       },
       {
         "key": "cmd+c",
