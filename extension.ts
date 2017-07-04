@@ -181,8 +181,8 @@ export async function activate(context: vscode.ExtensionContext) {
   const proc = spawn(
     'nvim',
     [
-      '-u',
-      'NONE',
+      // '-u',
+      // 'NONE',
       '-N',
       '--embed',
       vscode.window.activeTextEditor ? vscode.window.activeTextEditor!.document.fileName : '',
@@ -204,14 +204,6 @@ export async function activate(context: vscode.ExtensionContext) {
   async function handleActiveTextEditorChange() {
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
     await nvim.command(`noautocmd tab drop ${active_editor_file}`);
-
-    // if (buf_id === -1) {
-    //   if (active_editor_file.indexOf('Untitled') !== -1) {
-    //     await nvim.call('tabe');
-    //   }
-    // } else {
-    //   await nvim.command(`tab drop ${active_editor_file}`);
-    // }
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
 
     const currentFileSettings = vscode.window.activeTextEditor!.options;
@@ -346,12 +338,15 @@ export async function activate(context: vscode.ExtensionContext) {
     // End of hack
 
     let mode = (await nvim.mode) as any;
-    console.log(mode);
-    if (mode.blocking) {
+    if (mode.blocking && mode.mode !== 'i') {
+      console.log('FIXING BLOCK: ', mode.mode);
       await nvim.input('<Esc>');
     }
     Vim.mode = mode.mode as string;
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
+    if (mode.mode !== 'i' || !mode.blocking) {
+      await NvUtil.changeSelectionFromMode(Vim.mode);
+    }
     if (prevMode !== 'i' || Vim.mode !== 'i') {
       await NvUtil.copyTextFromNeovim();
     } else {
@@ -360,7 +355,9 @@ export async function activate(context: vscode.ExtensionContext) {
       }
       await vscode.commands.executeCommand('default:type', { text: key });
     }
-    await NvUtil.changeSelectionFromMode(Vim.mode);
+    if (mode.mode !== 'i' || !mode.blocking) {
+      await NvUtil.changeSelectionFromMode(Vim.mode);
+    }
   }
 
   overrideCommand(context, 'type', async args => {
