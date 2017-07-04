@@ -746,7 +746,11 @@ export class ModeHandler implements vscode.Disposable {
           this._vimState.lastClickWasPastEol = false;
         }
 
-        if (!this._vimState.getModeObject(this).isVisualMode) {
+        if (
+          !this._vimState.getModeObject(this).isVisualMode &&
+          (this._vimState.getModeObject(this).name !== ModeName.Insert ||
+            Configuration.mouseSelectionGoesIntoVisualMode)
+        ) {
           this._vimState.currentMode = ModeName.Visual;
           this.setCurrentModeByName(this._vimState);
 
