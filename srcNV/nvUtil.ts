@@ -22,7 +22,9 @@ export class NvUtil {
   });
 
   static async copyTextFromNeovim() {
+    const prevTime = new Date().getTime();
     const lines = await Vim.nv.buffer.lines;
+    console.log(new Date().getTime() - prevTime);
     await TextEditor.replace(
       new vscode.Range(
         0,
@@ -30,7 +32,7 @@ export class NvUtil {
         TextEditor.getLineCount() - 1,
         TextEditor.getLineMaxColumn(TextEditor.getLineCount() - 1)
       ),
-      (await lines).join('\n')
+      lines.join('\n')
     );
   }
 

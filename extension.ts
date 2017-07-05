@@ -9,9 +9,10 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 import { attach } from 'neovim';
+import { NeovimClient } from 'neovim/lib/api/client';
+import { TaskQueue } from 'aurelia-task-queue';
 import { showCmdLine } from './src/cmd_line/main';
 import { ModeHandler } from './src/mode/modeHandler';
-import { taskQueue } from './src/taskQueue';
 import { Position } from './src/common/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
@@ -22,7 +23,7 @@ import { runCmdLine } from './src/cmd_line/main';
 
 import { spawn } from 'child_process';
 import { NvUtil } from './srcNV/nvUtil';
-import { NeovimClient } from 'neovim/lib/api/client';
+import { taskQueue } from './src/taskQueue';
 // import { Neovim } from './neovim';
 
 interface VSCodeKeybinding {
@@ -174,6 +175,7 @@ export namespace Vim {
   export let operatorPending = false;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let channelId: number;
+  export let taskQueue = new TaskQueue();
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -354,7 +356,6 @@ export async function activate(context: vscode.ExtensionContext) {
       console.log('FIXING BLOCK: ', mode.mode);
       await nvim.input('<Esc>');
     }
-    console.log('curWant: ', await NvUtil.getCurWant());
     Vim.mode = mode;
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
     // FOr insert mode keybindings jj
@@ -380,11 +381,11 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   overrideCommand(context, 'type', async args => {
-    taskQueue.enqueueTask({
-      promise: async () => {
-        await handleKeyEventNV(args.text);
-      },
-      isRunning: false,
+    if (Vim.taskQueue.flushing) {
+      return;
+    }
+    Vim.taskQueue.queueMicroTask(() => {
+      handleKeyEventNV(args.text);
     });
   });
 

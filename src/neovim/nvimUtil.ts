@@ -6,9 +6,10 @@ import { Position } from './../common/motion/position';
 import { TextEditor } from '../textEditor';
 import { Configuration } from '../configuration/configuration';
 import { spawn } from 'child_process';
-import { attach } from 'promised-neovim-client';
+// import { attach } from 'promised-neovim-client';
 import { Register, RegisterMode } from '../register/register';
 import { ModeName } from '../mode/mode';
+import { attach } from 'neovim/lib';
 
 export class Neovim {
   static async initNvim(vimState: VimState) {
@@ -20,7 +21,7 @@ export class Neovim {
       vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
       Configuration.enableNeovim = false;
     });
-    vimState.nvim = await attach(proc.stdin, proc.stdout);
+    // vimState.nvim = await attach({ proc: proc });
   }
 
   // Data flows from VS to Vim
