@@ -338,7 +338,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // https://github.com/neovim/neovim/issues/6166
     // This is just for convenience sake
-    if (Vim.mode.mode === 'n' && 'dycg@q'.indexOf(key) !== -1 && !Vim.operatorPending) {
+    if (Vim.mode.mode === 'n' && 'dycg@q"'.indexOf(key) !== -1 && !Vim.operatorPending) {
       Vim.operatorPending = true;
       return;
     }
@@ -354,7 +354,7 @@ export async function activate(context: vscode.ExtensionContext) {
       console.log('FIXING BLOCK: ', mode.mode);
       await nvim.input('<Esc>');
     }
-    console.log(key, mode);
+    console.log('curWant: ', await NvUtil.getCurWant());
     Vim.mode = mode;
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
     // FOr insert mode keybindings jj
@@ -367,14 +367,13 @@ export async function activate(context: vscode.ExtensionContext) {
         await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       }
     } else {
-      if (key.length > 1) {
-        return;
-      }
       if (prevBlocking && !Vim.mode.blocking) {
-        console.log('YO');
         await NvUtil.copyTextFromNeovim();
         await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       } else {
+        if (key.length > 1) {
+          return;
+        }
         await vscode.commands.executeCommand('default:type', { text: key });
       }
     }

@@ -56,6 +56,10 @@ export class NvUtil {
     return [row - 1, character - 1];
   }
 
+  static async getCurWant(): Promise<number> {
+    return (await Vim.nv.call('getcurpos'))[4] - 1;
+  }
+
   static async getCursorPos(): Promise<[number, number]> {
     return this.getPos('.');
   }
@@ -93,7 +97,20 @@ export class NvUtil {
         vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
         break;
       case '\x16':
+        const top = Position.EarlierOf(curPos, startPos).line;
+        const bottom = Position.LaterOf(curPos, startPos).line;
+        const left = Math.min(startPos.character, await NvUtil.getCurWant());
+        const right = Math.max(startPos.character, await NvUtil.getCurWant()) + 1;
+        let selections = [];
+        for (let line = top; line <= bottom; line++) {
+          selections.push(
+            new vscode.Selection(new Position(line, left), new Position(line, right))
+          );
+        }
+        vscode.window.activeTextEditor!.selections = selections;
+        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.LineThin;
 
+        break;
       case 'i':
         vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
         vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
@@ -116,6 +133,9 @@ export class NvUtil {
         break;
       case 'V':
         cursorDecorations.push(new vscode.Range(cursorPos, cursorPos.getRight()));
+        break;
+      case '\x16':
+        cursorDecorations.push(new vscode.Range(curPos, curPos.getRight()));
         break;
       default:
         break;
