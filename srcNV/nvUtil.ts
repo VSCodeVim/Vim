@@ -22,9 +22,7 @@ export class NvUtil {
   });
 
   static async copyTextFromNeovim() {
-    const prevTime = new Date().getTime();
     const lines = await Vim.nv.buffer.lines;
-    console.log(new Date().getTime() - prevTime);
     await TextEditor.replace(
       new vscode.Range(
         0,
