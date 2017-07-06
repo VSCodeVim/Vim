@@ -24,6 +24,7 @@ import { runCmdLine } from './src/cmd_line/main';
 import { spawn } from 'child_process';
 import { NvUtil } from './srcNV/nvUtil';
 import { taskQueue } from './src/taskQueue';
+import { TextEditor } from './src/textEditor';
 // import { Neovim } from './neovim';
 
 interface VSCodeKeybinding {
@@ -230,6 +231,38 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
+  vscode.workspace.onDidChangeTextDocument(async e => {
+    if (e.contentChanges.length === 0 || Vim.mode.mode !== 'i') {
+      return;
+    }
+    const docStart = new Position(0, 0);
+    const docEnd = new Position(0, 0).getDocumentEnd();
+    const change = e.contentChanges[0];
+    console.log(
+      JSON.stringify(change.range),
+      JSON.stringify(docStart),
+      JSON.stringify(docEnd),
+      change.text
+    );
+    console.log('\n');
+    if (
+      change.range.end.line === docEnd.line &&
+      change.range.end.character === docEnd.character &&
+      change.range.start.line === docStart.line &&
+      change.range.start.character === docStart.character
+    ) {
+      console.log('TRIGGERED');
+      await nvim.command('undojoin');
+    }
+
+    (await nvim.buffer).setLines(TextEditor.getText().split('\n'), { start: 0, end: -1 });
+    await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
+    if (Vim.mode.mode !== 'i') {
+      await nvim.command('set undolevels=1000');
+    }
+    // await nvim.input('<BS>');
+  });
+
   await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
   await nvim.command('autocmd BufAdd,BufNewFile * nested tab sball');
 
@@ -240,12 +273,12 @@ export async function activate(context: vscode.ExtensionContext) {
   await nvim.command(
     `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
   );
-  await nvim.command(
-    `autocmd TabClosed * :call rpcrequest(${Vim.channelId}, "closeTab", expand("<abuf>"), expand("<afile>"))`
-  );
+  // await nvim.command(
+  //   `autocmd TabClosed * :call rpcrequest(${Vim.channelId}, "closeTab", expand("<abuf>"), expand("<afile>"))`
+  // );
 
   // Overriding commands to handle them on the vscode side.
-  await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
+  // await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
   await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
 
   await nvim.command('set noswapfile');
@@ -257,15 +290,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   async function rpcRequestOpenTab(args: any, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
-    // // Not sure this is necessary.
-    // if (args[1] === '') {
-    //   resp.send('failure');
-    //   return;
-    // }
-    // if (args[1] === vscode.window.activeTextEditor!.document.fileName) {
-    //   resp.send('already open');
-    //   return;
-    // }
     vscode.commands.executeCommand('vscode.open', filePath);
     resp.send('success');
   }
@@ -344,7 +368,7 @@ export async function activate(context: vscode.ExtensionContext) {
       Vim.operatorPending = true;
       return;
     }
-    if (key.match(/[0-9]/)) {
+    if (key.match(/[0-9]/) && Vim.mode.mode !== 'i') {
       return;
     }
     Vim.operatorPending = false;
@@ -357,7 +381,7 @@ export async function activate(context: vscode.ExtensionContext) {
       await nvim.input('<Esc>');
     }
     Vim.mode = mode;
-    await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode);
+    await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode.mode);
     // FOr insert mode keybindings jj
     if (prevMode !== 'i' || Vim.mode.mode !== 'i') {
       if (!Vim.mode.blocking) {
