@@ -525,6 +525,11 @@
           "type": "boolean",
           "description": "Get rid of that annoying message that shows up everytime you make a new file",
           "default": false
+        },
+        "vim.substituteGlobalFlag": {
+          "type": "boolean",
+          "description": "Automatically apply the global flag, /g, to substitute commands. When set to true, use /g to mean only first match should be replaced.",
+          "default": "false"
         }
       }
     }
