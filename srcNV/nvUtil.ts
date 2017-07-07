@@ -22,6 +22,11 @@ export class NvUtil {
   });
 
   static async copyTextFromNeovim() {
+    const curTick = await Vim.nv.buffer.changedtick;
+    if (curTick === Vim.prevState.bufferTick) {
+      return;
+    }
+    Vim.prevState.bufferTick = curTick;
     const lines = await Vim.nv.buffer.lines;
     await TextEditor.replace(
       new vscode.Range(
