@@ -227,7 +227,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (buf_id === -1) {
       return;
     }
-    await nvim.command(`${buf_id}bw!`);
+    await nvim.command(`noautocmd ${buf_id}bw!`);
   });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
@@ -318,7 +318,11 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   async function rpcRequestCloseTab(args: Array<any>, resp: any) {
-    const filePath = vscode.Uri.file(await (await nvim.buffers)[parseInt(args[1], 10) - 1].name);
+    const buffers = await nvim.buffers;
+    const bufId = parseInt(args[0], 10) - 1;
+    console.log('buffers and args');
+    console.log(buffers, args);
+    const filePath = vscode.Uri.file(await buffers[bufId].name);
     console.log('filepath: ', filePath);
     if (args[1] !== vscode.window.activeTextEditor!.document.fileName) {
       await vscode.commands.executeCommand('vscode.open', filePath);
