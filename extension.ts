@@ -176,6 +176,7 @@ export namespace Vim {
   export let operatorPending = false;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let channelId: number;
+  export let prevState: { bufferTick: number } = { bufferTick: -1 };
   export let taskQueue = new TaskQueue();
 }
 
@@ -232,19 +233,14 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
   vscode.workspace.onDidChangeTextDocument(async e => {
+    // console.log(e.contentChanges[0].rangeLength);
     if (e.contentChanges.length === 0 || Vim.mode.mode !== 'i') {
       return;
     }
+    console.log(e.contentChanges[0].rangeLength);
     const docStart = new Position(0, 0);
     const docEnd = new Position(0, 0).getDocumentEnd();
     const change = e.contentChanges[0];
-    console.log(
-      JSON.stringify(change.range),
-      JSON.stringify(docStart),
-      JSON.stringify(docEnd),
-      change.text
-    );
-    console.log('\n');
     if (
       change.range.end.line === docEnd.line &&
       change.range.end.character === docEnd.character &&
@@ -273,9 +269,11 @@ export async function activate(context: vscode.ExtensionContext) {
   await nvim.command(
     `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
   );
-  // await nvim.command(
-  //   `autocmd TabClosed * :call rpcrequest(${Vim.channelId}, "closeTab", expand("<abuf>"), expand("<afile>"))`
-  // );
+  await nvim.command(
+    `autocmd TabClosed * :call rpcrequest(${Vim.channelId}, "closeTab", expand("<abuf>"), expand("<afile>"))`
+  );
+  // await nvim.command(`autocmd TextChanged * :call rpcrequest(${Vim.channelId}, "textChanged")`);
+  // await nvim.command(`autocmd TextChangedI * :call rpcrequest(${Vim.channelId}, "textChanged")`);
 
   // Overriding commands to handle them on the vscode side.
   // await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
