@@ -5,6 +5,16 @@ import { Vim } from '../extension';
 import { TextEditor } from '../src/textEditor';
 import { Position } from '../src/common/motion/position';
 
+type UndoTree = {
+  entries: Array<{ seq: number; time: number }>;
+  save_cur: number;
+  save_last: number;
+  seq_cur: number;
+  seq_last: number;
+  synced: number;
+  time_cur: number;
+};
+
 export class NvUtil {
   private static _caretDecoration = vscode.window.createTextEditorDecorationType({
     dark: {
@@ -22,11 +32,11 @@ export class NvUtil {
   });
 
   static async copyTextFromNeovim() {
-    const curTick = await Vim.nv.buffer.changedtick;
-    if (curTick === Vim.prevState.bufferTick) {
-      return;
-    }
-    Vim.prevState.bufferTick = curTick;
+    // const curTick = await Vim.nv.buffer.changedtick;
+    // if (curTick === Vim.prevState.bufferTick) {
+    //   return;
+    // }
+    // Vim.prevState.bufferTick = curTick;
     const lines = await Vim.nv.buffer.lines;
     await TextEditor.replace(
       new vscode.Range(
@@ -71,6 +81,9 @@ export class NvUtil {
 
   static async getSelectionStartPos(): Promise<[number, number]> {
     return this.getPos('v');
+  }
+  static async getUndoTree(): Promise<UndoTree> {
+    return (await Vim.nv.call('undotree', [])) as UndoTree;
   }
 
   static async changeSelectionFromMode(mode: string): Promise<void> {
