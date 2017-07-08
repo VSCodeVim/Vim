@@ -63,7 +63,6 @@ export class SubstituteCommand extends node.CommandBase {
   getRegex(args: ISubstituteCommandArguments, modeHandler: ModeHandler) {
     let jsRegexFlags = '';
 
-    console.log(`Configuration.substituteGlobalFlag=${Configuration.substituteGlobalFlag}`);
     if (Configuration.substituteGlobalFlag === true) {
       // the gdefault flag is on, then /g if on by default and /g negates that
       if (!(args.flags & SubstituteFlags.ReplaceAll)) {
