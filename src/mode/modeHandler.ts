@@ -746,7 +746,11 @@ export class ModeHandler implements vscode.Disposable {
           this._vimState.lastClickWasPastEol = false;
         }
 
-        if (!this._vimState.getModeObject(this).isVisualMode) {
+        if (
+          !this._vimState.getModeObject(this).isVisualMode &&
+          (this._vimState.getModeObject(this).name !== ModeName.Insert ||
+            Configuration.mouseSelectionGoesIntoVisualMode)
+        ) {
           this._vimState.currentMode = ModeName.Visual;
           this.setCurrentModeByName(this._vimState);
 
@@ -1052,9 +1056,7 @@ export class ModeHandler implements vscode.Disposable {
     ranRepeatableAction =
       (ranRepeatableAction && vimState.currentMode === ModeName.Normal) ||
       this.createUndoPointForBrackets(vimState);
-    ranAction =
-      ranAction &&
-      (vimState.currentMode === ModeName.Normal || vimState.currentMode === ModeName.Visual);
+    ranAction = ranAction && vimState.currentMode === ModeName.Normal;
 
     // Record down previous action and flush temporary state
     if (ranRepeatableAction) {
