@@ -815,4 +815,24 @@ suite('Mode Visual', () => {
       end: ['i yanked', 'this line', '', '1.line', 'a12', '|i yanked', 'this line', '6', '2.line'],
     });
   });
+
+  suite('Non-darwin <C-c> tests', () => {
+    if (process.platform === 'darwin') {
+      return;
+    }
+
+    test('<C-c> copies and sets mode to normal', async () => {
+      await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'e', '<C-c>']);
+
+      // ensuring we're back in normal
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+      assertEqualLines(['one two three']);
+
+      // test copy by pasting back
+      await modeHandler.handleMultipleKeyEvents(['^', '"', '+', 'P']);
+
+      assertEqualLines(['oneone two three']);
+    });
+  });
 });

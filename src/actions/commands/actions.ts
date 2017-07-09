@@ -931,6 +931,8 @@ class CommandOverrideCopy extends BaseCommand {
     }
 
     util.clipboardCopy(text);
+    // all vim yank operations return to normal mode.
+    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }
