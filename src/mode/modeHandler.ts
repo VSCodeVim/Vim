@@ -800,10 +800,12 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       if (process.platform !== 'darwin' && key === '<C-c>') {
-        if (!Configuration.useCtrlKeys ||
+        if (
+          !Configuration.useCtrlKeys ||
           this._vimState.currentMode === ModeName.Visual ||
           this._vimState.currentMode === ModeName.VisualBlock ||
-          this._vimState.currentMode === ModeName.VisualLine) {
+          this._vimState.currentMode === ModeName.VisualLine
+        ) {
           key = '<copy>';
         }
       }
