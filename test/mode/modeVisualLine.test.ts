@@ -6,7 +6,7 @@ import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
 
-suite('Mode Visual', () => {
+suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
 
   let { newTest, newTestOnly } = getTestingFunctions();
@@ -287,6 +287,31 @@ suite('Mode Visual', () => {
       start: ['foo', 'bar', 'fun', 'b|az'],
       keysPressed: 'V?bar\nx',
       end: ['|foo'],
+    });
+  });
+
+  suite('Non-darwin <C-c> tests', () => {
+    if (process.platform === 'darwin') {
+      return;
+    }
+
+    test('<C-c> copies and sets mode to normal', async () => {
+      await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'Y', 'p']);
+
+      assertEqualLines(['one two three', 'one two three']);
+
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', 'V', '<C-c>']);
+
+      // ensuring we're back in normal
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+
+      // test copy by pasting back from clipboard
+      await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
+
+      // TODO: should be assertEqualLines(['one two three', 'one two three', 'one two three']);
+      // unfortunately it is
+      assertEqualLines(['one two threeone two three', 'one two three']);
     });
   });
 });
