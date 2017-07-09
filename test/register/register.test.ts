@@ -24,20 +24,24 @@ suite('register', () => {
     end: ['two', '|one'],
   });
 
-  util.clipboardCopy('12345');
+  suite('clipboard', () => {
+    setup(async () => {
+      util.clipboardCopy('12345');
+    });
 
-  newTest({
-    title: "Can access '*' (clipboard) register",
-    start: ['|one'],
-    keysPressed: '"*P',
-    end: ['1234|5one'],
-  });
+    newTest({
+      title: "Can access '*' (clipboard) register",
+      start: ['|one'],
+      keysPressed: '"*P',
+      end: ['1234|5one'],
+    });
 
-  newTest({
-    title: "Can access '+' (clipboard) register",
-    start: ['|one'],
-    keysPressed: '"+P',
-    end: ['1234|5one'],
+    newTest({
+      title: "Can access '+' (clipboard) register",
+      start: ['|one'],
+      keysPressed: '"+P',
+      end: ['1234|5one'],
+    });
   });
 
   newTest({
