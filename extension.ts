@@ -23,10 +23,7 @@ import { runCmdLine } from './src/cmd_line/main';
 
 import { spawn } from 'child_process';
 import { NvUtil } from './srcNV/nvUtil';
-<<<<<<< HEAD
-import { taskQueue } from './src/taskQueue';
-=======
->>>>>>> VsCodeNeovim
+import { RpcRequest } from './srcNV/rpcHandlers';
 import { TextEditor } from './src/textEditor';
 // import { Neovim } from './neovim';
 
@@ -108,53 +105,49 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.workspace.onDidChangeTextDocument(async e => {
     // console.log(e.contentChanges[0].rangeLength);
-<<<<<<< HEAD
-    if (e.contentChanges.length === 0 || Vim.mode.mode !== 'i') {
-      return;
-    }
-    console.log(e.contentChanges[0].rangeLength);
-    const docStart = new Position(0, 0);
-    const docEnd = new Position(0, 0).getDocumentEnd();
-    const change = e.contentChanges[0];
-    if (
-      change.range.end.line === docEnd.line &&
-      change.range.end.character === docEnd.character &&
-      change.range.start.line === docStart.line &&
-      change.range.start.character === docStart.character
-    ) {
-      console.log('TRIGGERED');
-      await nvim.command('undojoin');
-    }
-
-    (await nvim.buffer).setLines(TextEditor.getText().split('\n'), { start: 0, end: -1 });
-    await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
-    if (Vim.mode.mode !== 'i') {
-      await nvim.command('set undolevels=1000');
-    }
-    // await nvim.input('<BS>');
-  });
-
-  await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
-=======
     if (e.contentChanges.length === 0) {
       return;
     }
     console.log(e.contentChanges[0].rangeLength);
     const change = e.contentChanges[0];
-    await nvim.callAtomic([
-      ['nvim_command', ['undojoin']],
-      ['nvim_buf_set_lines', [0, 0, -1, 1, TextEditor.getText().split('\n')]],
-    ]);
-    await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
+    const changeBegin = Position.FromVSCodePosition(change.range.start);
+    const changeEnd = Position.FromVSCodePosition(change.range.end);
+    const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
+    console.log(changeBegin, changeEnd, curPos);
+    console.log('buftick: ', await nvim.buffer.changedtick);
+    if (
+      changeBegin.isBefore(curPos) &&
+      changeEnd.isEqual(curPos) &&
+      Vim.mode.mode === 'i' &&
+      changeBegin.line === curPos.line &&
+      changeEnd.line === curPos.line
+    ) {
+      await nvim.input(change.text);
+    } else {
+      // todo: Optimize this to only replace relevant lines. Probably not worth
+      // doing until diffs come in from the neovim side though, since that's the
+      // real blocking factor.
+      await nvim.callAtomic([
+        ['nvim_command', ['undojoin']],
+        ['nvim_buf_set_lines', [0, 0, -1, 1, TextEditor.getText().split('\n')]],
+      ]);
+      // I'm assuming here that there's nothing that will happen on the vscode
+      // side that would alter cursor position if you're not in insert mode.
+      // Technically not true, but it seems like a pain to handle, and seems
+      // like something that won't be used much. Will re-evaluate at a later
+      // date.
+      if (Vim.mode.mode === 'i') {
+        await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
+      }
+    }
   });
 
   // await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
->>>>>>> VsCodeNeovim
   await nvim.command('autocmd BufAdd,BufNewFile * nested tab sball');
 
   // As we have one buffer per tab, we are using BufEnter instead of TabEnter due to some weird cases with creating tabs.
   await nvim.command(
-    `autocmd BufEnter * :call rpcrequest(${Vim.channelId}, "openTab", expand("<abuf>"), expand("<afile>"))`
+    `autocmd BufEnter * :call rpcrequest(${Vim.channelId}, "openBuf", expand("<abuf>"), expand("<afile>"))`
   );
   await nvim.command(
     `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
@@ -167,10 +160,6 @@ export async function activate(context: vscode.ExtensionContext) {
   // await nvim.command(`autocmd TextChangedI * :call rpcrequest(${Vim.channelId}, "textChanged")`);
 
   // Overriding commands to handle them on the vscode side.
-<<<<<<< HEAD
-  // await nvim.command(`inoremap <Tab> <C-R>=rpcrequest(${Vim.channelId},"tab")<CR>`);
-=======
->>>>>>> VsCodeNeovim
   await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
 
   await nvim.command('set noswapfile');
@@ -180,83 +169,19 @@ export async function activate(context: vscode.ExtensionContext) {
     // console.log(args, x);
   });
 
-  async function rpcRequestOpenTab(args: any, resp: any) {
-    const filePath = vscode.Uri.file(args[1]);
-<<<<<<< HEAD
-    vscode.commands.executeCommand('vscode.open', filePath);
-=======
-    console.log(filePath);
-    await vscode.commands.executeCommand('vscode.open', filePath);
->>>>>>> VsCodeNeovim
-    resp.send('success');
-  }
-
-  async function rpcRequestTab(args: Array<any>, resp: any) {
-    let result: Promise<vscode.TextDocumentContentChangeEvent> = new Promise((resolve, reject) => {
-      let handler = vscode.workspace.onDidChangeTextDocument(e => {
-        console.log(e);
-        handler.dispose();
-        resolve(e.contentChanges[0]);
-      });
-    });
-    vscode.commands.executeCommand('acceptSelectedSuggestion');
-    vscode.commands.executeCommand('tab');
-    if ((await result).rangeLength > 0) {
-      // Todo: This is double plus not good
-      await nvim.command(`normal! ${'x'.repeat((await result).rangeLength)}`);
-    }
-    await resp.send((await result).text);
-    NvUtil.copyTextFromNeovim();
-  }
-
-  async function rpcRequestWriteBuf(args: Array<any>, resp: any) {
-    const filePath = vscode.Uri.file(args[1]);
-    await vscode.commands.executeCommand('workbench.action.files.save', filePath);
-    // nvim.command('e!');
-    await resp.send('success');
-  }
-
-  async function rpcRequestCloseTab(args: Array<any>, resp: any) {
-    const buffers = await nvim.buffers;
-    const bufId = parseInt(args[0], 10) - 1;
-    console.log('buffers and args');
-    console.log(buffers, args);
-<<<<<<< HEAD
-=======
-    if (bufId >= buffers.length || bufId < 0) {
-      resp.send("buffer doesn't exist");
-      return;
-    }
->>>>>>> VsCodeNeovim
-    const filePath = vscode.Uri.file(await buffers[bufId].name);
-    console.log('filepath: ', filePath);
-    if (args[1] !== vscode.window.activeTextEditor!.document.fileName) {
-      await vscode.commands.executeCommand('vscode.open', filePath);
-    }
-    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-    resp.send('success');
-  }
-
-  async function rpcRequestGoToDefinition(args: Array<any>, resp: any) {
-    await vscode.commands.executeCommand('editor.action.goToDeclaration');
-    await nvim.command("normal! m'");
-    await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
-    resp.send('success');
-  }
-
   nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
     console.log(method, args);
     console.log('Buffers: ', await nvim.buffers);
     if (method === 'openTab') {
-      rpcRequestOpenTab(args, resp);
+      RpcRequest.openTab(args, resp);
     } else if (method === 'tab') {
-      rpcRequestTab(args, resp);
+      RpcRequest.tab(args, resp);
     } else if (method === 'writeBuf') {
-      rpcRequestWriteBuf(args, resp);
+      RpcRequest.writeBuf(args, resp);
     } else if (method === 'closeTab') {
-      rpcRequestCloseTab(args, resp);
+      RpcRequest.closeTab(args, resp);
     } else if (method === 'goToDefinition') {
-      rpcRequestGoToDefinition(args, resp);
+      RpcRequest.goToDefinition(args, resp);
     }
   });
 
@@ -296,7 +221,6 @@ export async function activate(context: vscode.ExtensionContext) {
         await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       }
       await NvUtil.copyTextFromNeovim();
-      console.log('Changed selection at #1');
       if (!Vim.mode.blocking) {
         await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       }

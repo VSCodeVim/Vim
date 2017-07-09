@@ -540,7 +540,7 @@
     "clipboardy": "^1.1.4",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.17.4",
-    "neovim": "^3.1.0",
+    "neovim": "next",
     "untildify": "^3.0.2"
   },
   "devDependencies": {
