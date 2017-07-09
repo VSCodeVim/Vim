@@ -28,7 +28,7 @@ export function assertEqualLines(expectedLines: string[]) {
     assert.equal(
       actual,
       expected,
-      `Content does not match; Expected=${expected}. Actual=${actual}`
+      `Content does not match; Expected=${expected}. Actual=${actual}.`
     );
   }
 
