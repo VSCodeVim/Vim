@@ -5,7 +5,7 @@ import { getTestingFunctions } from '../testSimplifier';
 import * as util from '../../src/util';
 import { getAndUpdateModeHandler } from '../../extension';
 
-suite('register', () => {
+suite.only('register', () => {
   let modeHandler: ModeHandler;
 
   let { newTest, newTestOnly } = getTestingFunctions();
@@ -26,7 +26,7 @@ suite('register', () => {
 
   util.clipboardCopy('12345');
 
-  newTestOnly({
+  newTest({
     title: "Can access '*' (clipboard) register",
     start: ['|one'],
     keysPressed: '"*P',
