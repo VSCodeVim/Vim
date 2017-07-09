@@ -5,7 +5,7 @@ import { getTestingFunctions } from '../testSimplifier';
 import * as util from '../../src/util';
 import { getAndUpdateModeHandler } from '../../extension';
 
-suite.only('register', () => {
+suite('register', () => {
   let modeHandler: ModeHandler;
 
   let { newTest, newTestOnly } = getTestingFunctions();
