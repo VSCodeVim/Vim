@@ -26,7 +26,7 @@ suite('register', () => {
 
   util.clipboardCopy('12345');
 
-  newTest({
+  newTestOnly({
     title: "Can access '*' (clipboard) register",
     start: ['|one'],
     keysPressed: '"*P',
