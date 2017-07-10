@@ -172,16 +172,10 @@ export async function activate(context: vscode.ExtensionContext) {
   nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
     console.log(method, args);
     console.log('Buffers: ', await nvim.buffers);
-    if (method === 'openTab') {
-      RpcRequest.openTab(args, resp);
-    } else if (method === 'tab') {
-      RpcRequest.tab(args, resp);
-    } else if (method === 'writeBuf') {
-      RpcRequest.writeBuf(args, resp);
-    } else if (method === 'closeTab') {
-      RpcRequest.closeTab(args, resp);
-    } else if (method === 'goToDefinition') {
-      RpcRequest.goToDefinition(args, resp);
+    if (RpcRequest.rpcFunctions[method] !== undefined) {
+      RpcRequest.rpcFunctions[method](args, resp);
+    } else {
+      console.log(`${method} is not defined!`);
     }
   });
 

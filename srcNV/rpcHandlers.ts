@@ -2,7 +2,15 @@ import * as vscode from 'vscode';
 import { Vim } from '../extension';
 import { NvUtil } from './nvUtil';
 
+function RpcRequestDecorator(nvMethodName: string) {
+  return (f: Function, vsMethodName: string) => {
+    RpcRequest.rpcFunctions[nvMethodName] = f;
+  };
+}
 export class RpcRequest {
+  static rpcFunctions = {};
+
+  @RpcRequestDecorator('openTab')
   static async openTab(args: any, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
     console.log(filePath);
@@ -10,6 +18,7 @@ export class RpcRequest {
     resp.send('success');
   }
 
+  @RpcRequestDecorator('tab')
   static async tab(args: Array<any>, resp: any) {
     let result: Promise<vscode.TextDocumentContentChangeEvent> = new Promise((resolve, reject) => {
       let handler = vscode.workspace.onDidChangeTextDocument(e => {
@@ -28,6 +37,7 @@ export class RpcRequest {
     NvUtil.copyTextFromNeovim();
   }
 
+  @RpcRequestDecorator('writeBuf')
   static async writeBuf(args: Array<any>, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
     await vscode.commands.executeCommand('workbench.action.files.save', filePath);
@@ -35,6 +45,7 @@ export class RpcRequest {
     await resp.send('success');
   }
 
+  @RpcRequestDecorator('closeTab')
   static async closeTab(args: Array<any>, resp: any) {
     const buffers = await Vim.nv.buffers;
     const bufId = parseInt(args[0], 10) - 1;
@@ -53,6 +64,7 @@ export class RpcRequest {
     resp.send('success');
   }
 
+  @RpcRequestDecorator('goToDefinition')
   static async goToDefinition(args: Array<any>, resp: any) {
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
     await Vim.nv.command("normal! m'");
