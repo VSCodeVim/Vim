@@ -46,7 +46,10 @@ export namespace Vim {
   export let operatorPending = false;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let channelId: number;
-  export let prevState: { bufferTick: number } = { bufferTick: -1 };
+  export let prevState: { bufferTick: number; prevCursorPos: Position } = {
+    bufferTick: -1,
+    prevCursorPos: new Position(0, 0),
+  };
   export let taskQueue = new TaskQueue();
 }
 
@@ -113,15 +116,17 @@ export async function activate(context: vscode.ExtensionContext) {
     const changeBegin = Position.FromVSCodePosition(change.range.start);
     const changeEnd = Position.FromVSCodePosition(change.range.end);
     const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
-    console.log(changeBegin, changeEnd, curPos);
-    console.log('buftick: ', await nvim.buffer.changedtick);
+    // console.log(changeBegin, changeEnd, curPos);
+    // console.log(change, Vim.prevState.prevCursorPos);
     if (
-      changeBegin.isBefore(curPos) &&
-      changeEnd.isEqual(curPos) &&
+      Vim.prevState.prevCursorPos.isBefore(changeEnd) &&
+      Vim.prevState.prevCursorPos.isAfter(changeBegin) &&
       Vim.mode.mode === 'i' &&
       changeBegin.line === curPos.line &&
       changeEnd.line === curPos.line
     ) {
+      console.log('TRIGGERED');
+      await nvim.input('<BS>'.repeat(Math.max(1, change.rangeLength)));
       await nvim.input(change.text);
     } else {
       // todo: Optimize this to only replace relevant lines. Probably not worth
@@ -131,14 +136,14 @@ export async function activate(context: vscode.ExtensionContext) {
         ['nvim_command', ['undojoin']],
         ['nvim_buf_set_lines', [0, 0, -1, 1, TextEditor.getText().split('\n')]],
       ]);
-      // I'm assuming here that there's nothing that will happen on the vscode
-      // side that would alter cursor position if you're not in insert mode.
-      // Technically not true, but it seems like a pain to handle, and seems
-      // like something that won't be used much. Will re-evaluate at a later
-      // date.
-      if (Vim.mode.mode === 'i') {
-        await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
-      }
+    }
+    // I'm assuming here that there's nothing that will happen on the vscode
+    // side that would alter cursor position if you're not in insert mode.
+    // Technically not true, but it seems like a pain to handle, and seems
+    // like something that won't be used much. Will re-evaluate at a later
+    // date.
+    if (Vim.mode.mode === 'i') {
+      await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     }
   });
 
@@ -187,6 +192,9 @@ export async function activate(context: vscode.ExtensionContext) {
   async function handleKeyEventNV(key: string) {
     const prevMode = Vim.mode.mode;
     const prevBlocking = Vim.mode.blocking;
+    Vim.prevState.prevCursorPos = Position.FromVSCodePosition(
+      vscode.window.activeTextEditor!.selection.active
+    );
     await nvim.input(key === '<' ? '<lt>' : key);
 
     // https://github.com/neovim/neovim/issues/6166
@@ -202,6 +210,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // End of hack
 
     let mode = (await nvim.mode) as any;
+    console.log('mode: ', mode.mode);
     // More hackish stuff
     if (mode.blocking && mode.mode !== 'i') {
       console.log('FIXING BLOCK: ', mode.mode);
