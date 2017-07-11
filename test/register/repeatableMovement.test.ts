@@ -2,7 +2,7 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
 
-suite('register', () => {
+suite('Repeatable movements with f and t', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {

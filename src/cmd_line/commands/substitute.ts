@@ -5,6 +5,7 @@ import * as node from '../node';
 import * as token from '../token';
 import { ModeHandler } from '../../mode/modeHandler';
 import { TextEditor } from '../../textEditor';
+import { Configuration } from '../../configuration/configuration';
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
   pattern: string;
@@ -62,8 +63,16 @@ export class SubstituteCommand extends node.CommandBase {
   getRegex(args: ISubstituteCommandArguments, modeHandler: ModeHandler) {
     let jsRegexFlags = '';
 
-    if (args.flags & SubstituteFlags.ReplaceAll) {
-      jsRegexFlags += 'g';
+    if (Configuration.substituteGlobalFlag === true) {
+      // the gdefault flag is on, then /g if on by default and /g negates that
+      if (!(args.flags & SubstituteFlags.ReplaceAll)) {
+        jsRegexFlags += 'g';
+      }
+    } else {
+      // the gdefault flag is off, then /g means replace all
+      if (args.flags & SubstituteFlags.ReplaceAll) {
+        jsRegexFlags += 'g';
+      }
     }
 
     if (args.flags & SubstituteFlags.IgnoreCase) {

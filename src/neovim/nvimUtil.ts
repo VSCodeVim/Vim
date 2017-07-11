@@ -28,6 +28,8 @@ export class Neovim {
     if (Configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToTabs');
     }
+
+    await nvim.setOption('gdefault', Configuration.substituteGlobalFlag === true);
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
     const [rangeStart, rangeEnd] = [
       Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),

@@ -303,6 +303,11 @@ class ConfigurationClass {
   neovimPath = 'nvim';
 
   disableAnnoyingNeovimMessage = false;
+
+  /**
+   * Automatically apply the /g flag to substitute commands.
+   */
+  substituteGlobalFlag = false;
 }
 
 function overlapSetting(args: {

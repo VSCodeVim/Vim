@@ -146,6 +146,15 @@ These settings are specific to VSCodeVim.
 #### `"vim.useSolidBlockCursor"`
 We have removed this option, due to it making VSCodeVim's performance suffer immensely.
 
+#### `"vim.substituteGlobalFlag"`
+* Similar to Vim's `gdefault` setting.
+* `/g` flag in a substitute command replaces all occurrences in the line.
+  Without this argument, replacement occurs only for the first occurrence in each line.
+* When `"vim.substituteGlobalFlag"` is `true`, the 'g' is default on.
+  This means that all matches in a line are substituted instead of one.
+  When a 'g' flag is given to a ":substitute" command, this will toggle the substitution
+  of all or one match.
+
 #### `"vim.useCtrlKeys"`
 * Enable Vim ctrl keys overriding common VS Code operations (eg. copy, paste, find, etc). Enabling this setting will:
     * `ctrl+c`, `ctrl+[` => `<Esc>`
