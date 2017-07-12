@@ -120,7 +120,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // console.log(changeBegin, changeEnd, curPos);
     console.log(change, Vim.prevState.prevCursorPos);
     if (
-      Vim.prevState.prevCursorPos.isBefore(changeEnd) &&
+      Vim.prevState.prevCursorPos.isBeforeOrEqual(changeEnd) &&
       Vim.prevState.prevCursorPos.isAfterOrEqual(changeBegin) &&
       Vim.mode.mode === 'i' &&
       changeBegin.line === curPos.line &&
