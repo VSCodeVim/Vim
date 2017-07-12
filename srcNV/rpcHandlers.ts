@@ -8,10 +8,10 @@ function RpcRequestDecorator(nvMethodName: string) {
   };
 }
 export class RpcRequest {
-  static rpcFunctions = {};
+  static rpcFunctions: { [method: string]: Function } = {};
 
-  @RpcRequestDecorator('openTab')
-  static async openTab(args: any, resp: any) {
+  @RpcRequestDecorator('openBuf')
+  static async openBuf(args: any, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
     console.log(filePath);
     await vscode.commands.executeCommand('vscode.open', filePath);

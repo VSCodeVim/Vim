@@ -116,14 +116,16 @@ export async function activate(context: vscode.ExtensionContext) {
     const changeBegin = Position.FromVSCodePosition(change.range.start);
     const changeEnd = Position.FromVSCodePosition(change.range.end);
     const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
+    const docEnd = new Position(0, 0).getDocumentEnd();
     // console.log(changeBegin, changeEnd, curPos);
-    // console.log(change, Vim.prevState.prevCursorPos);
+    console.log(change, Vim.prevState.prevCursorPos);
     if (
       Vim.prevState.prevCursorPos.isBefore(changeEnd) &&
-      Vim.prevState.prevCursorPos.isAfter(changeBegin) &&
+      Vim.prevState.prevCursorPos.isAfterOrEqual(changeBegin) &&
       Vim.mode.mode === 'i' &&
       changeBegin.line === curPos.line &&
-      changeEnd.line === curPos.line
+      changeEnd.line === curPos.line &&
+      docEnd.line !== 0
     ) {
       console.log('TRIGGERED');
       await nvim.input('<BS>'.repeat(Math.max(1, change.rangeLength)));
@@ -178,7 +180,10 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log(method, args);
     console.log('Buffers: ', await nvim.buffers);
     if (RpcRequest.rpcFunctions[method] !== undefined) {
-      RpcRequest.rpcFunctions[method](args, resp);
+      // const f = RpcRequest.rpcFunctions[method];
+      // f(args, resp);
+      const f = RpcRequest.openBuf;
+      f(args, resp);
     } else {
       console.log(`${method} is not defined!`);
     }
