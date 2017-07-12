@@ -1487,7 +1487,7 @@ export class PutCommandVisual extends BaseCommand {
       // to ensure, that the put command nows this is
       // an linewise register insertion in visual mode
       let oldMode = result.currentMode;
-      result.currentMode = ModeName.Visual;
+      result.currentMode = ModeName.VisualLine;
       result = await new PutCommand().exec(start, result, true);
       result.currentMode = oldMode;
       return result;
