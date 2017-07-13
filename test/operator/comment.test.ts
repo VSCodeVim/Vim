@@ -33,14 +33,14 @@ suite('comment operator', () => {
     title: 'block comment with motion',
     start: ['function test(arg|1, arg2, arg3) {'],
     keysPressed: 'gCi)',
-    end: ['function test(|/*arg1, arg2, arg3*/) {'],
+    end: ['function test(|/* arg1, arg2, arg3 */) {'],
   });
 
   newTest({
     title: 'block comment in Visual Mode',
     start: ['blah |blah blah'],
     keysPressed: 'vllllgC',
-    end: ['blah |/*blah*/ blah'],
+    end: ['blah |/* blah */ blah'],
     endMode: ModeName.Normal,
   });
 });
