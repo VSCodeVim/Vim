@@ -1469,6 +1469,10 @@ export class PutCommandVisual extends BaseCommand {
   ): Promise<VimState> {
     let start = vimState.cursorStartPosition;
     let end = vimState.cursorPosition;
+
+    // Store mode incase delete operator changes mode
+    const originalMode = vimState.currentMode;
+
     const isLineWise = vimState.currentMode === ModeName.VisualLine;
     if (start.isAfter(end)) {
       [start, end] = [end, start];
@@ -1484,12 +1488,11 @@ export class PutCommandVisual extends BaseCommand {
         end,
         false
       );
-      // to ensure, that the put command nows this is
-      // an linewise register insertion in visual mode
-      let oldMode = result.currentMode;
-      result.currentMode = ModeName.VisualLine;
+
+      // Restore original mode in the case that the delete operator changed it
+      result.currentMode = originalMode;
       result = await new PutCommand().exec(start, result, true);
-      result.currentMode = oldMode;
+      result.currentMode = ModeName.Normal;
       return result;
     }
 

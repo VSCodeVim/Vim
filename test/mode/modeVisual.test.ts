@@ -815,4 +815,11 @@ suite('Mode Visual', () => {
       end: ['i yanked', 'this line', '', '1.line', 'a12', '|i yanked', 'this line', '6', '2.line'],
     });
   });
+
+  newTest({
+    title: 'Put over visual line',
+    start: ['te|st', 'pizza', 'pasta'],
+    keysPressed: 'YjVp',
+    end: ['test', '|test', 'pasta'],
+  });
 });
