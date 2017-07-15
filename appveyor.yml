@@ -4,7 +4,7 @@ environment:
 
 install:
   - ps: Install-Product node $env:node_version
-  - choco install neovim --pre -vfy --ignoredependencies
+  - choco install neovim --pre -fy --ignoredependencies
   - npm install -g gulp
   - npm install
 
