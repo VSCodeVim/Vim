@@ -11,7 +11,6 @@ VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension th
 * Modes: normal, insert, command-line, visual, visual line, visual block
 * Command combinations (`c3w`, `daw`, `2dd`, etc)
 * Highly versatile command remapping (`jj` to `<Esc>`, `:` to command panel, etc.)
-* Highly versatile command remapping (`jj` to `<Esc>`, `:` to command panel, etc.)
 * Incremental search with `/` and `?`
 * Marks
 * Popular vim plugin features built-in (easymotion, surround, commentary)
