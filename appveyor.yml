@@ -1,0 +1,15 @@
+environment:
+  node_version: "6.3.1"
+  PATH: c:\tools\neovim\Neovim\bin;$(PATH)
+
+install:
+  - ps: Install-Product node $env:node_version
+  - choco install neovim -y
+  - npm install -g gulp
+  - npm install
+
+build:
+  - gulp
+
+test_script:
+  - npm test --silent
