@@ -8,7 +8,7 @@ install:
   - npm install -g gulp
   - npm install
 
-build:
+build_script:
   - gulp
 
 test_script:
