@@ -14,7 +14,7 @@ export class EasyMotion {
    */
   private markers: EasyMotion.Marker[];
   private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
-  private decorations: any[][];
+  private decorations: vscode.DecorationOptions[][];
 
   /**
    * TODO: For future motions
@@ -84,88 +84,87 @@ export class EasyMotion {
     position: Position,
     markerPosition: Position
   ): EasyMotion.Marker | null {
-    let keyTable = EasyMotion.keyTable;
-    var availableKeyTable = keyTable.slice();
+    const keyTable = EasyMotion.keyTable;
+    let availableKeyTable = keyTable.slice();
 
     // Depth table should always include a ;
-    var keyDepthTable = [';'];
-    var totalSteps = 0;
+    const keyDepthTable = [';'];
+    let totalSteps = 0;
 
     if (length >= keyTable.length) {
-      var totalRemainder = Math.max(length - keyTable.length, 0);
+      const totalRemainder = Math.max(length - keyTable.length, 0);
       totalSteps = Math.floor(totalRemainder / keyTable.length);
 
-      for (var i = 0; i < Math.min(totalSteps, 26); i++) {
-        keyDepthTable.push(availableKeyTable.pop()!);
-      }
+      Array(Math.min(totalSteps, 26))
+        .forEach(() => keyDepthTable.push(availableKeyTable.pop()!));
     }
 
-    var prefix = '';
+    let prefix = '';
     if (index >= availableKeyTable.length) {
       // Length of available keys before reset and ";"
-      var oldLength = availableKeyTable.length;
+      const oldLength = availableKeyTable.length;
       // The index that remains after taking away the first-level depth markers
-      var remainder = index - availableKeyTable.length;
+      const remainder = index - availableKeyTable.length;
 
       // ";" can be used as the last marker key, when inside a marker with depth. Reset to available keys and add ";"
       availableKeyTable = keyTable.slice();
       availableKeyTable.push(';');
 
       // Depth index counts down instead of up
-      var inverted = length - oldLength - 1 - remainder;
-      var steps = Math.floor(inverted / availableKeyTable.length);
+      const inverted = length - oldLength - 1 - remainder;
+      const steps = Math.floor(inverted / availableKeyTable.length);
 
       // Add the key to the prefix
       if (steps > keyDepthTable.length - 1) {
         return null;
+      } else {
+        prefix += keyDepthTable[steps];
+
+        // Check if we're on the last depth level
+        if (steps >= totalSteps) {
+          // Return the proper key for this index
+          return new EasyMotion.Marker(
+            prefix + availableKeyTable[remainder % availableKeyTable.length],
+            markerPosition
+          );
+        } else {
+          // Return the proper index for depths earlier than the last one, including prefix
+          const num =
+            (availableKeyTable.length - 1 - inverted % availableKeyTable.length) %
+            availableKeyTable.length;
+          return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
+        }
       }
-
-      prefix += keyDepthTable[steps];
-
-      // Check if we're on the last depth level
-      if (steps >= totalSteps) {
-        // Return the proper key for this index
-        return new EasyMotion.Marker(
-          prefix + availableKeyTable[remainder % availableKeyTable.length],
-          markerPosition
-        );
-      }
-
-      // Return the proper index for depths earlier than the last one, including prefix
-      var num =
-        (availableKeyTable.length - 1 - inverted % availableKeyTable.length) %
-        availableKeyTable.length;
-      return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
+    } else {
+      // Return the last key in the marker, including prefix
+      return new EasyMotion.Marker(
+        prefix + availableKeyTable[index % availableKeyTable.length],
+        markerPosition
+      );
     }
-
-    // Return the last key in the marker, including prefix
-    return new EasyMotion.Marker(
-      prefix + availableKeyTable[index % availableKeyTable.length],
-      markerPosition
-    );
   }
 
   /**
    * Create and cache decoration types for different marker lengths
    */
   public static getDecorationType(length: number): vscode.TextEditorDecorationType {
-    var cache = this.decorationTypeCache[length];
+    const cache = this.decorationTypeCache[length];
     if (cache) {
       return cache;
+    } else {
+      const width = length * 8;
+      const type = vscode.window.createTextEditorDecorationType({
+        after: {
+          margin: `0 0 0 -${width}px`,
+          height: `14px`,
+          width: `${width}px`,
+        },
+      });
+
+      this.decorationTypeCache[length] = type;
+
+      return type;
     }
-
-    var width = length * 8;
-    var type = vscode.window.createTextEditorDecorationType({
-      after: {
-        margin: `0 0 0 -${width}px`,
-        height: `14px`,
-        width: `${width}px`,
-      },
-    });
-
-    this.decorationTypeCache[length] = type;
-
-    return type;
   }
 
   /**
@@ -173,11 +172,11 @@ export class EasyMotion {
    */
   private static getSvgDataUri(
     code: string,
-    backgroundColor: string,
-    fontFamily: string,
-    fontColor: string,
-    fontSize: string,
-    fontWeight: string
+    backgroundColor: string | undefined = 'black',
+    fontFamily: string | undefined = 'Consolas',
+    fontColor: string | undefined = 'white',
+    fontSize: string | undefined = '14',
+    fontWeight: string | undefined = 'normal'
   ): vscode.Uri {
     // Clear cache if the backgroundColor or fontColor has changed
     if (this.cachedBackgroundColor !== backgroundColor) {
@@ -205,45 +204,29 @@ export class EasyMotion {
       this.cachedHeight = height;
     }
 
-    if (fontFamily === undefined) {
-      fontFamily = 'Consolas';
-    }
-    if (fontColor === undefined) {
-      fontColor = 'white';
-    }
-    if (fontSize === undefined) {
-      fontSize = '14';
-    }
-    if (fontWeight === undefined) {
-      fontWeight = 'normal';
-    }
-    if (backgroundColor === undefined) {
-      backgroundColor = 'black';
-    }
-
-    var cache = this.svgCache[code];
+    const cache = this.svgCache[code];
     if (cache) {
       return cache;
-    }
-
-    var uri = vscode.Uri.parse(
-      `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
+    } else {
+      const uri = vscode.Uri.parse(
+        `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
         `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
         `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
         `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
-    );
+      );
 
-    this.svgCache[code] = uri;
+      this.svgCache[code] = uri;
 
-    return uri;
+      return uri;
+    }
   }
 
   /**
    * Clear all decorations
    */
   public clearDecorations() {
-    var editor = vscode.window.activeTextEditor!;
-    for (var i = 1; i <= this.decorations.length; i++) {
+    const editor = vscode.window.activeTextEditor!;
+    for (let i = 1; i <= this.decorations.length; i++) {
       editor.setDecorations(EasyMotion.getDecorationType(i), []);
     }
   }
@@ -268,17 +251,8 @@ export class EasyMotion {
    * Find markers beginning with a string
    */
   public findMarkers(nail: string, visible = true): EasyMotion.Marker[] {
-    var arr = visible ? this.visibleMarkers : this.markers;
-    var markers: EasyMotion.Marker[] = [];
-    for (var i = 0; i < arr.length; i++) {
-      var marker = arr[i];
-
-      if (marker.name.startsWith(nail)) {
-        markers.push(marker);
-      }
-    }
-
-    return markers;
+    const markers = visible ? this.visibleMarkers : this.markers;
+    return markers.filter(marker => marker.name.startsWith(nail));
   }
 
   /**
@@ -289,84 +263,68 @@ export class EasyMotion {
     search: string | RegExp = '',
     options: EasyMotion.SearchOptions = {}
   ): EasyMotion.Match[] {
-    let regex: RegExp;
-    if (typeof search === 'string') {
-      // Regex needs to be escaped
-      regex = new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g');
-    } else {
-      regex = search;
-    }
+    const regex = typeof search === 'string'
+      ? new RegExp(search.replace(EasyMotion.specialCharactersRegex, '\\$&'), 'g')
+      : search;
 
-    var matches: EasyMotion.Match[] = [];
+    const matches: EasyMotion.Match[] = [];
 
     // Cursor index refers to the index of the marker that is on or to the right of the cursor
-    var cursorIndex = position.character;
-    var prevMatch: EasyMotion.Match | undefined;
+    let cursorIndex = position.character;
+    let prevMatch: EasyMotion.Match | undefined;
 
     // Calculate the min/max bounds for the search
-    var lineCount = TextEditor.getLineCount();
-    var lineMin = options.min ? Math.max(options.min.line, 0) : 0;
-    var lineMax = options.max ? Math.min(options.max.line + 1, lineCount) : lineCount;
+    const lineCount = TextEditor.getLineCount();
+    const lineMin = options.min ? Math.max(options.min.line, 0) : 0;
+    const lineMax = options.max ? Math.min(options.max.line + 1, lineCount) : lineCount;
 
     outer: for (let lineIdx = lineMin; lineIdx < lineMax; lineIdx++) {
       const line = TextEditor.getLineAt(new Position(lineIdx, 0)).text;
-      var result = regex.exec(line);
+      let result = regex.exec(line);
 
       while (result) {
         if (matches.length >= 1000) {
           break outer;
+        } else {
+          const pos = new Position(lineIdx, result.index);
+
+          // Check if match is within bounds
+          if (
+            (options.min && pos.isBefore(options.min)) ||
+            (options.max && pos.isAfter(options.max)) ||
+            Math.abs(pos.line - position.line) > 100
+          ) {
+            // Stop searching after 100 lines in both directions
+            result = regex.exec(line);
+          } else {
+            // Update cursor index to the marker on the right side of the cursor
+            if (!prevMatch || prevMatch.position.isBefore(position)) {
+              cursorIndex = matches.length;
+            }
+            // Matches on the cursor position should be ignored
+            if (pos.isEqual(position)) {
+              result = regex.exec(line);
+            } else {
+              prevMatch = new EasyMotion.Match(pos, result[0], matches.length);
+              matches.push(prevMatch);
+              result = regex.exec(line);
+            }
+          }
         }
-
-        let pos = new Position(lineIdx, result.index);
-
-        // Check if match is within bounds
-        if (
-          (options.min && pos.isBefore(options.min)) ||
-          (options.max && pos.isAfter(options.max)) ||
-          Math.abs(pos.line - position.line) > 100
-        ) {
-          // Stop searching after 100 lines in both directions
-
-          result = regex.exec(line);
-          continue;
-        }
-
-        // Update cursor index to the marker on the right side of the cursor
-        if (!prevMatch || prevMatch.position.isBefore(position)) {
-          cursorIndex = matches.length;
-        }
-
-        prevMatch = new EasyMotion.Match(pos, result[0], matches.length);
-
-        // Matches on the cursor position should be ignored
-        if (pos.isEqual(position)) {
-          result = regex.exec(line);
-          continue;
-        }
-
-        matches.push(prevMatch);
-
-        result = regex.exec(line);
       }
     }
 
     // Sort by the index distance from the cursor index
     matches.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
-      var diffA = cursorIndex - a.index;
-      var diffB = cursorIndex - b.index;
-
-      var absDiffA = Math.abs(diffA);
-      var absDiffB = Math.abs(diffB);
-
-      // Prioritize the matches on the right side of the cursor index
-      if (a.index < cursorIndex) {
-        absDiffA -= 0.5;
-      }
-      if (b.index < cursorIndex) {
-        absDiffB -= 0.5;
-      }
-
+      const absDiffA = computeAboluteDiff(a.index);
+      const absDiffB = computeAboluteDiff(b.index);
       return absDiffA - absDiffB;
+
+      function computeAboluteDiff(matchIndex: number) {
+        const absDiff = Math.abs(cursorIndex - matchIndex);
+        // Prioritize the matches on the right side of the cursor index
+        return matchIndex < cursorIndex ? absDiff - 0.5 : absDiff;
+      }
     });
 
     return matches;
@@ -378,21 +336,11 @@ export class EasyMotion {
     this.visibleMarkers = [];
     this.decorations = [];
 
-    const fontFamily = Configuration.easymotionMarkerFontFamily;
-    const fontSize = Configuration.easymotionMarkerFontSize;
-    const fontWeight = Configuration.easymotionMarkerFontWeight;
-
-    for (var i = 0; i < this.markers.length; i++) {
-      var marker = this.getMarker(i);
-
-      // Ignore markers that do not start with the accumulated depth level
-      if (!marker.name.startsWith(this.accumulation)) {
-        continue;
-      }
-
-      var pos = marker.position;
+    // Ignore markers that do not start with the accumulated depth level
+    for (const marker of this.markers.filter(m => m.name.startsWith(this.accumulation))) {
+      const pos = marker.position;
       // Get keys after the depth we're at
-      var keystroke = marker.name.substr(this.accumulation.length);
+      const keystroke = marker.name.substr(this.accumulation.length);
 
       if (!this.decorations[keystroke.length]) {
         this.decorations[keystroke.length] = [];
@@ -402,37 +350,26 @@ export class EasyMotion {
         keystroke.length > 1
           ? Configuration.easymotionMarkerForegroundColorTwoChar
           : Configuration.easymotionMarkerForegroundColorOneChar;
-      const backgroundColor = Configuration.easymotionMarkerBackgroundColor;
 
+      const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
+        after: {
+          contentIconPath: EasyMotion.getSvgDataUri(
+            keystroke,
+            Configuration.easymotionMarkerBackgroundColor,
+            Configuration.easymotionMarkerFontFamily,
+            fontColor,
+            Configuration.easymotionMarkerFontSize,
+            Configuration.easymotionMarkerFontWeight
+          ),
+        }
+      };
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
-      var charPos = pos.character + 1 + (keystroke.length - 1);
+      const charPos = pos.character + 1 + (keystroke.length - 1);
       this.decorations[keystroke.length].push({
         range: new vscode.Range(pos.line, charPos, pos.line, charPos),
         renderOptions: {
-          dark: {
-            after: {
-              contentIconPath: EasyMotion.getSvgDataUri(
-                keystroke,
-                backgroundColor,
-                fontFamily,
-                fontColor,
-                fontSize,
-                fontWeight
-              ),
-            },
-          },
-          light: {
-            after: {
-              contentIconPath: EasyMotion.getSvgDataUri(
-                keystroke,
-                backgroundColor,
-                fontFamily,
-                fontColor,
-                fontSize,
-                fontWeight
-              ),
-            },
-          },
+          dark: renderOptions,
+          light: renderOptions,
         },
       });
 
@@ -440,8 +377,8 @@ export class EasyMotion {
     }
 
     // Set the decorations for all the different marker lengths
-    var editor = vscode.window.activeTextEditor!;
-    for (var j = 1; j < this.decorations.length; j++) {
+    const editor = vscode.window.activeTextEditor!;
+    for (let j = 1; j < this.decorations.length; j++) {
       if (this.decorations[j]) {
         editor.setDecorations(EasyMotion.getDecorationType(j), this.decorations[j]);
       }
@@ -497,7 +434,14 @@ export namespace EasyMotion {
   }
 
   export interface SearchOptions {
-    min?: Position; // The minimum bound of the search
-    max?: Position; // The maximum bound of the search
+    /**
+     * The minimum bound of the search
+     */
+    min?: Position;
+
+    /**
+     * The maximum bound of the search
+     */
+    max?: Position;
   }
 }
