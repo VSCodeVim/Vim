@@ -48,15 +48,23 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
       if (matches.length === 0) {
         return vimState;
       } else {
-        // Enter the EasyMotion mode and await further keys
         vimState.easyMotion = new EasyMotion();
-        // Store mode to return to after performing easy motion
-        vimState.easyMotion.previousMode = vimState.currentMode;
-        vimState.currentMode = ModeName.EasyMotionMode;
-
         this.processMarkers(matches, position, vimState);
 
-        return vimState;
+        if (matches.length === 1) {
+          // Only one found, navigate to it
+          const marker = vimState.easyMotion.markers[0];
+          // Set cursor position based on marker entered
+          vimState.cursorPosition = marker.position;
+          vimState.easyMotion.clearDecorations();
+          return vimState;
+        } else {
+          // Store mode to return to after performing easy motion
+          vimState.easyMotion.previousMode = vimState.currentMode;
+          // Enter the EasyMotion mode and await further keys
+          vimState.currentMode = ModeName.EasyMotionMode;
+          return vimState;
+        }
       }
     }
   }
@@ -251,7 +259,7 @@ class MoveEasyMotion extends BaseCommand {
       vimState.easyMotion.accumulation = nail;
 
       // Find markers starting with "nail"
-      const markers = vimState.easyMotion.findMarkers(nail);
+      const markers = vimState.easyMotion.findMarkers(nail, true);
 
       // If previous mode was visual, restore visual selection
       if (

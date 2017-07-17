@@ -12,7 +12,7 @@ export class EasyMotion {
   /**
    * Array of all markers and decorations
    */
-  private markers: EasyMotion.Marker[];
+  private _markers: EasyMotion.Marker[];
   private visibleMarkers: EasyMotion.Marker[]; // Array of currently showing markers
   private decorations: vscode.DecorationOptions[][];
 
@@ -31,6 +31,10 @@ export class EasyMotion {
   private static cachedTwoFontColor: string = '';
   private static cachedWidthPerChar: number = -1;
   private static cachedHeight: number = -1;
+
+  public get markers() {
+    return this._markers;
+  }
 
   /**
    * The key sequence for marker name generation
@@ -70,7 +74,7 @@ export class EasyMotion {
   public previousMode: number;
 
   constructor() {
-    this.markers = [];
+    this._markers = [];
     this.visibleMarkers = [];
     this.decorations = [];
   }
@@ -234,23 +238,23 @@ export class EasyMotion {
    * Clear all markers
    */
   public clearMarkers() {
-    this.markers = [];
+    this._markers = [];
     this.visibleMarkers = [];
   }
 
   public addMarker(marker: EasyMotion.Marker) {
-    this.markers.push(marker);
+    this._markers.push(marker);
   }
 
   public getMarker(index: number): EasyMotion.Marker {
-    return this.markers[index];
+    return this._markers[index];
   }
 
   /**
    * Find markers beginning with a string
    */
-  public findMarkers(nail: string, visible = true): EasyMotion.Marker[] {
-    const markers = visible ? this.visibleMarkers : this.markers;
+  public findMarkers(nail: string, onlyVisible: boolean): EasyMotion.Marker[] {
+    const markers = onlyVisible ? this.visibleMarkers : this._markers;
     return markers.filter(marker => marker.name.startsWith(nail));
   }
 
@@ -337,7 +341,7 @@ export class EasyMotion {
     this.decorations = [];
 
     // Ignore markers that do not start with the accumulated depth level
-    for (const marker of this.markers.filter(m => m.name.startsWith(this.accumulation))) {
+    for (const marker of this._markers.filter(m => m.name.startsWith(this.accumulation))) {
       const pos = marker.position;
       // Get keys after the depth we're at
       const keystroke = marker.name.substr(this.accumulation.length);
