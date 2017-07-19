@@ -73,7 +73,8 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
     Configuration.enableNeovim = false;
   });
-  let nvim = await attach({ proc: proc });
+  // let nvim = await attach({ proc: proc });
+  let nvim = attach({ socket: '/tmp/nvim' });
   Vim.nv = nvim;
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
@@ -145,6 +146,10 @@ export async function activate(context: vscode.ExtensionContext) {
     // like something that won't be used much. Will re-evaluate at a later
     // date.
     if (Vim.mode.mode === 'i') {
+      // The early return lets jj and jk remappings work properly. It causes
+      // things to not work properly with regards to cursor position when you're
+      // typing very quickly though.
+      return;
       await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     }
   });
