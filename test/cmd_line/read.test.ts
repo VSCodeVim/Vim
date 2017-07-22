@@ -15,8 +15,12 @@ suite('read', () => {
 
   suiteTeardown(cleanUpWorkspace);
 
-  test('Can read shell command output', async () => {
+  test.only('Can read shell command output', async () => {
     await runCmdLine('r! echo hey', modeHandler);
-    assertEqualLines(['', 'hey']);
+    let hey = 'hey';
+    if (process.platform === 'win32' && Configuration.enableNeovim) {
+      hey = 'hey '; // echo seems to append a space in nvim on windows
+    }
+    assertEqualLines(['', hey]);
   });
 });
