@@ -15,7 +15,7 @@ suite('read', () => {
 
   suiteTeardown(cleanUpWorkspace);
 
-  test.only('Can read shell command output', async () => {
+  test('Can read shell command output', async () => {
     await runCmdLine('r! echo hey', modeHandler);
     let hey = 'hey';
     if (process.platform === 'win32' && Configuration.enableNeovim) {
