@@ -2,12 +2,15 @@ import * as vscode from 'vscode';
 import { Position } from './../../../common/motion/position';
 import { Configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
+import { EasyMotionSearchAction } from "./easymotion.cmd";
 
 export class EasyMotion {
   /**
    * Refers to the accumulated keys for depth navigation
    */
   public accumulation = '';
+
+  public searchAction: EasyMotionSearchAction;
 
   /**
    * Array of all markers and decorations
@@ -434,6 +437,10 @@ export namespace EasyMotion {
 
     public set position(position: Position) {
       this._position = position;
+    }
+
+    public toRange(): vscode.Range {
+      return new vscode.Range(this.position, this.position.translate(0, this.text.length));
     }
   }
 

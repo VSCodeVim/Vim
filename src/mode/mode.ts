@@ -7,6 +7,7 @@ export enum ModeName {
   SearchInProgressMode,
   Replace,
   EasyMotionMode,
+  EasyMotionInputMode,
   SurroundInputMode,
 }
 
