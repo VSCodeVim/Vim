@@ -740,12 +740,16 @@ class MoveRepeatReversed extends BaseMovement {
 }
 
 @RegisterAction
-class MoveLineEnd extends BaseMovement {
+class MoveDownLineEnd extends BaseMovement {
   keys = [['$'], ['<end>'], ['<D-right>']];
   setsDesiredColumnToEOL = true;
 
-  public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLineEnd();
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    return position.getDownByCount(Math.max(count - 1, 0)).getLineEnd();
   }
 }
 
