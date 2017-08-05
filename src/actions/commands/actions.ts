@@ -547,18 +547,6 @@ class CommandEscReplaceMode extends BaseCommand {
   }
 }
 
-@RegisterAction
-class CommandCtrlOpenBracket extends CommandEsc {
-  modes = [
-    ModeName.Insert,
-    ModeName.Visual,
-    ModeName.VisualLine,
-    ModeName.VisualBlock,
-    ModeName.Replace,
-  ];
-  keys = [['<C-[>']];
-}
-
 abstract class CommandEditorScroll extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   runsOnceForEachCountPrefix = false;
