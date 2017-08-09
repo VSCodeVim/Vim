@@ -19,6 +19,7 @@ before_install:
 - curl -LO https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
 - chmod u+x nvim.appimage
 - mv nvim.appimage nvim
+- export PATH=$PATH:$(pwd)
 - if [ $TRAVIS_OS_NAME == "linux" ]; then
     export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
     sh -e /etc/init.d/xvfb start;
