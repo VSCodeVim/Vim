@@ -15,36 +15,32 @@ suite('put operator', () => {
 
   teardown(cleanUpWorkspace);
 
-  test('basic put test', async () => {
-    await modeHandler.handleMultipleKeyEvents('iblah blah'.split(''));
-
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'D', 'p', 'p']);
-
-    await assertEqualLines(['blah blahblah blah']);
+  newTest({
+    title: 'basic put test',
+    start: ['blah bla|h'],
+    keysPressed: '^Dpp',
+    end: ['blah blahblah bla|h'],
   });
 
-  test('test yy end of line', async () => {
-    await modeHandler.handleMultipleKeyEvents('iblah blah\nblah'.split(''));
-
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'y', 'y', 'p']);
-
-    await assertEqualLines(['blah blah', 'blah', 'blah']);
+  newTest({
+    title: 'test yy end of line',
+    start: ['blah blah', 'bla|h'],
+    keysPressed: '^yyp',
+    end: ['blah blah', 'blah', '|blah'],
   });
 
-  test('test yy first line', async () => {
-    await modeHandler.handleMultipleKeyEvents('iblah blah\nblah'.split(''));
-
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'y', 'y', 'p']);
-
-    await assertEqualLines(['blah blah', 'blah blah', 'blah']);
+  newTest({
+    title: 'test yy first line',
+    start: ['blah blah', 'bla|h'],
+    keysPressed: 'ggyyp',
+    end: ['blah blah', '|blah blah', 'blah'],
   });
 
-  test('test yy middle line', async () => {
-    await modeHandler.handleMultipleKeyEvents('i1\n2\n3'.split(''));
-
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'k', 'y', 'y', 'p']);
-
-    await assertEqualLines(['1', '2', '2', '3']);
+  newTest({
+    title: 'test yy middle line',
+    start: ['1', '2', '|3'],
+    keysPressed: 'kyyp',
+    end: ['1', '2', '|2', '3'],
   });
 
   newTest({
