@@ -217,6 +217,9 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   // Check valid test object input
   assert(helper.isValid, "Missing '|' in test object.");
 
+  // end: check given end output is correct
+  //
+  assertEqualLines(helper.asVimOutputText());
   // Check final cursor position
   //
   let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
@@ -227,10 +230,6 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
     expectedPosition.character,
     'Cursor CHARACTER position is wrong.'
   );
-
-  // end: check given end output is correct
-  //
-  assertEqualLines(helper.asVimOutputText());
 
   // endMode: check end mode is correct if given
   if (typeof testObj.endMode !== 'undefined') {
