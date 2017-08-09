@@ -1,4 +1,4 @@
-import { setupWorkspace, cleanUpWorkspace, assertEqual } from './../testUtils';
+import { setupWorkspace, cleanUpWorkspace, assertEqual, assertEqualLines } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
@@ -104,5 +104,31 @@ suite('Mode Visual Block', () => {
     start: ['tes|t', 'test'],
     keysPressed: '<C-v>hjD',
     end: ['t|e', 'te'],
+  });
+
+  suite('Non-darwin <C-c> tests', () => {
+    if (process.platform === 'darwin') {
+      return;
+    }
+
+    test('<C-c> copies and sets mode to normal', async () => {
+      await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'Y', 'p', 'p']);
+
+      assertEqualLines(['one two three', 'one two three', 'one two three']);
+
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', '<C-v>', 'e', 'j', 'j', '<C-c>']);
+
+      // ensuring we're back in normal
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+
+      // test copy by pasting back
+      await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
+
+      // TODO: should be
+      // assertEqualLines(['oneone two three', 'oneone two three', 'oneone two three']);
+      // unfortunately it is
+      assertEqualLines(['one', 'one', 'one', 'one two three', 'one two three', 'one two three']);
+    });
   });
 });
