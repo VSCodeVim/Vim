@@ -1682,7 +1682,7 @@ class CommandCloseAllFoldsRecursively extends CommandFold {
 class CommandOpenAllFoldsRecursively extends CommandFold {
   modes = [ModeName.Normal];
   keys = ['z', 'O'];
-  commandName = 'editor.unFoldRecursively';
+  commandName = 'editor.unfoldRecursively';
 }
 
 @RegisterAction
