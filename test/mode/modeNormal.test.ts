@@ -3,7 +3,7 @@ import {
   setTextEditorOptions,
   cleanUpWorkspace,
   assertEqual,
-  crossPlatformIt
+  crossPlatformIt,
 } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';

@@ -99,7 +99,7 @@ export function setTextEditorOptions(tabSize: number, insertSpaces: boolean): vo
 
 export function crossPlatformIt(text: string): string {
   if (process.platform === 'win32') {
-    return text.replace(/\\n/g, "\\r\\n");
+    return text.replace(/\\n/g, '\\r\\n');
   }
   return text;
 }

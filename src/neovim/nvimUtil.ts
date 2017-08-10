@@ -76,13 +76,12 @@ export class Neovim {
   static async syncVimToVs(vimState: VimState) {
     const nvim = vimState.nvim;
     const buf = await nvim.getCurrentBuf();
-    const lines = (await buf.getLines(0, -1, false));
+    const lines = await buf.getLines(0, -1, false);
 
     // one Windows, lines that went to nvim and back have a '\r' at the end,
     // which causes the issues exhibited in #1914
-    const fixedLines = process.platform === 'win32'
-      ? lines.map((line, index) => line.replace(/\r$/, ''))
-      : lines;
+    const fixedLines =
+      process.platform === 'win32' ? lines.map((line, index) => line.replace(/\r$/, '')) : lines;
 
     await TextEditor.replace(
       new vscode.Range(
