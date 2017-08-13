@@ -3,6 +3,7 @@ import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
+import { Configuration } from '../../src/configuration/configuration';
 
 function easymotionCommand(trigger: string, searchWord: string, jumpKey: string) {
   return ['<leader><leader>', trigger, searchWord, jumpKey].join('');
@@ -13,11 +14,15 @@ suite('easymotion plugin', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace('.js');
+    await setupWorkspace();
     modeHandler = await getAndUpdateModeHandler();
+    Configuration.easymotion = true;
   });
 
-  teardown(cleanUpWorkspace);
+  teardown(async () => {
+    Configuration.easymotion = false;
+    await cleanUpWorkspace();
+  });
 
   newTest({
     title: 'Can handle s move',
