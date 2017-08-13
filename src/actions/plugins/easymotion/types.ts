@@ -1,7 +1,7 @@
-export type LabelPosition = "after" | "before";
+export type LabelPosition = 'after' | 'before';
 
 export interface EasyMotionMoveOptionsBase {
-  searchOptions?: "min" | "max";
+  searchOptions?: 'min' | 'max';
 }
 
 export interface EasyMotionCharMoveOpions extends EasyMotionMoveOptionsBase {

@@ -5,8 +5,11 @@ import { Configuration } from './../../../configuration/configuration';
 import { BaseCommand } from './../../commands/actions';
 import { RegisterAction } from './../../base';
 import { VimState } from './../../../mode/modeHandler';
-import { EasyMotionMoveOptionsBase, EasyMotionWordMoveOpions, EasyMotionCharMoveOpions } from "./types";
-
+import {
+  EasyMotionMoveOptionsBase,
+  EasyMotionWordMoveOpions,
+  EasyMotionCharMoveOpions,
+} from './types';
 
 abstract class BaseEasyMotionCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
@@ -43,9 +46,12 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   protected searchOptions(position: Position): EasyMotion.SearchOptions {
     switch (this._baseOptions.searchOptions) {
-      case "min": return { min: position };
-      case "max": return { max: position };
-      default: return {};
+      case 'min':
+        return { min: position };
+      case 'max':
+        return { max: position };
+      default:
+        return {};
     }
   }
 
@@ -87,7 +93,8 @@ function getMatchesForString(
   position: Position,
   vimState: VimState,
   searchString: string,
-  options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
+  options?: EasyMotion.SearchOptions
+): EasyMotion.Match[] {
   switch (searchString) {
     case '':
       return [];
@@ -96,9 +103,14 @@ function getMatchesForString(
       return vimState.easyMotion.sortedSearch(position, new RegExp(' {1,}', 'g'), options);
     default:
       // Search all occurences of the character pressed
-      const ignorecase = Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchString));
+      const ignorecase =
+        Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchString));
       const regexFlags = ignorecase ? 'gi' : 'g';
-      return vimState.easyMotion.sortedSearch(position, new RegExp(searchString, regexFlags), options);
+      return vimState.easyMotion.sortedSearch(
+        position,
+        new RegExp(searchString, regexFlags),
+        options
+      );
   }
 }
 
@@ -127,7 +139,12 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
   }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForString(position, vimState, this._searchString, this.searchOptions(position));
+    return getMatchesForString(
+      position,
+      vimState,
+      this._searchString,
+      this.searchOptions(position)
+    );
   }
 
   public updateSearchString(s: string) {
@@ -150,9 +167,9 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
   public getMatchPosition(match: EasyMotion.Match): Position {
     const { line, character } = match.position;
     switch (this._options.labelPosition) {
-      case "after":
+      case 'after':
         return new Position(line, character + this._options.charCount);
-      case "before":
+      case 'before':
         return new Position(line, Math.max(0, character - 1));
       default:
         return match.position;
@@ -163,7 +180,9 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
 export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
   private _searchString: string = '';
 
-  constructor() { super({}); }
+  constructor() {
+    super({});
+  }
 
   public updateSearchString(s: string) {
     this._searchString = s;
@@ -174,16 +193,21 @@ export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyM
   }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
-    return getMatchesForString(position, vimState, this.removeTrailingLineBreak(this._searchString), {});
+    return getMatchesForString(
+      position,
+      vimState,
+      this.removeTrailingLineBreak(this._searchString),
+      {}
+    );
   }
 
   private removeTrailingLineBreak(s: string) {
-    return s.replace(new RegExp("\n+$", "g"), "");
+    return s.replace(new RegExp('\n+$', 'g'), '');
   }
 
   public shouldFire() {
     // Fire when <CR> typed
-    return this._searchString.endsWith("\n");
+    return this._searchString.endsWith('\n');
   }
 
   public async fire(position: Position, vimState: VimState) {
@@ -232,14 +256,18 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
   public getMatchPosition(match: EasyMotion.Match): Position {
     const { line, character } = match.position;
     switch (this._options.labelPosition) {
-      case "after":
+      case 'after':
         return new Position(line, character + match.text.length - 1);
       default:
         return match.position;
     }
   }
 
-  private getMatchesForWord(position: Position, vimState: VimState, options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
+  private getMatchesForWord(
+    position: Position,
+    vimState: VimState,
+    options?: EasyMotion.SearchOptions
+  ): EasyMotion.Match[] {
     // Search for the beginning of all words after the cursor
     return vimState.easyMotion.sortedSearch(position, new RegExp('\\w{1,}', 'g'), options);
   }
@@ -258,7 +286,11 @@ export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
     return this.getMatchesForLineStart(position, vimState, this.searchOptions(position));
   }
 
-  private getMatchesForLineStart(position: Position, vimState: VimState, options?: EasyMotion.SearchOptions): EasyMotion.Match[] {
+  private getMatchesForLineStart(
+    position: Position,
+    vimState: VimState,
+    options?: EasyMotion.SearchOptions
+  ): EasyMotion.Match[] {
     // Search for the beginning of all non whitespace chars on each line before the cursor
     const matches = vimState.easyMotion.sortedSearch(position, new RegExp('^.', 'gm'), options);
     for (const match of matches) {
@@ -277,9 +309,8 @@ class EasyMotionCharInputMode extends BaseCommand {
     const key = this.keysPressed[0];
     const action = vimState.easyMotion.searchAction;
     const oldSearchString = action.getSearchString();
-    const newSearchString = key === '<BS>' || key === '<shift+BS>'
-      ? oldSearchString.slice(0, -1)
-      : oldSearchString + key;
+    const newSearchString =
+      key === '<BS>' || key === '<shift+BS>' ? oldSearchString.slice(0, -1) : oldSearchString + key;
     action.updateSearchString(newSearchString);
     if (action.shouldFire()) {
       // Skip Easymotion input mode to make sure not to back to it

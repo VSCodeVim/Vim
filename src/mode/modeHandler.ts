@@ -115,15 +115,15 @@ export class VimState {
   public focusChanged = false;
 
   public surround:
-  | undefined
-  | {
-    active: boolean;
-    operator: 'change' | 'delete' | 'yank';
-    target: string | undefined;
-    replacement: string | undefined;
-    range: Range | undefined;
-    isVisualLine: boolean;
-  } = undefined;
+    | undefined
+    | {
+        active: boolean;
+        operator: 'change' | 'delete' | 'yank';
+        target: string | undefined;
+        replacement: string | undefined;
+        range: Range | undefined;
+        isVisualLine: boolean;
+      } = undefined;
 
   /**
    * Used for command like <C-o> which allows you to return to insert after a command
@@ -557,7 +557,7 @@ export class ModeHandler implements vscode.Disposable {
     });
 
     this._easymotionHighlightDecoration = vscode.window.createTextEditorDecorationType({
-      backgroundColor: Configuration.searchHighlightColor
+      backgroundColor: Configuration.searchHighlightColor,
     });
 
     this.setCurrentModeByName(this._vimState);
@@ -1046,8 +1046,8 @@ export class ModeHandler implements vscode.Disposable {
         x =>
           x.start.isEarlierThan(x.stop)
             ? x.withNewStop(
-              x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
-            )
+                x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
+              )
             : x
       );
     }
@@ -1314,7 +1314,7 @@ export class ModeHandler implements vscode.Disposable {
       if (
         recordedState.operators.length > 1 &&
         recordedState.operators.reverse()[0].constructor ===
-        recordedState.operators.reverse()[1].constructor
+          recordedState.operators.reverse()[1].constructor
       ) {
         resultVimState = await recordedState.operator.runRepeat(
           resultVimState,
@@ -1899,10 +1899,16 @@ export class ModeHandler implements vscode.Disposable {
 
     this._vimState.editor.setDecorations(this._searchHighlightDecoration, searchRanges);
 
-    const easyMotionHighlightRanges = this.currentMode.name === ModeName.EasyMotionInputMode
-      ? vimState.easyMotion.searchAction.getMatches(vimState.cursorPosition, vimState).map(x => x.toRange())
-      : [];
-    this.vimState.editor.setDecorations(this._easymotionHighlightDecoration, easyMotionHighlightRanges);
+    const easyMotionHighlightRanges =
+      this.currentMode.name === ModeName.EasyMotionInputMode
+        ? vimState.easyMotion.searchAction
+            .getMatches(vimState.cursorPosition, vimState)
+            .map(x => x.toRange())
+        : [];
+    this.vimState.editor.setDecorations(
+      this._easymotionHighlightDecoration,
+      easyMotionHighlightRanges
+    );
 
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];

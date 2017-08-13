@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Position } from './../../../common/motion/position';
 import { Configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
-import { EasyMotionSearchAction } from "./easymotion.cmd";
+import { EasyMotionSearchAction } from './easymotion.cmd';
 
 export class EasyMotion {
   /**
