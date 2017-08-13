@@ -3,6 +3,7 @@ import {
   setTextEditorOptions,
   cleanUpWorkspace,
   assertEqual,
+  crossPlatformIt,
 } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
@@ -1485,14 +1486,14 @@ suite('Mode Normal', () => {
   newTest({
     title: '/ can search with newline',
     start: ['|asdf', '__asdf', 'asdf'],
-    keysPressed: '/\\nasdf\n',
+    keysPressed: crossPlatformIt('/\\nasdf\n'),
     end: ['asdf', '__asd|f', 'asdf'],
   });
 
   newTest({
     title: '/ can search through multiple newlines',
     start: ['|asdf', '__asdf', 'asdf', 'abc', '   abc'],
-    keysPressed: '/asdf\\nasdf\\nabc\n',
+    keysPressed: crossPlatformIt('/asdf\\nasdf\\nabc\n'),
     end: ['asdf', '__|asdf', 'asdf', 'abc', '   abc'],
   });
 
