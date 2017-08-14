@@ -275,7 +275,7 @@ suite('Mode Insert', () => {
     end: ['tes====|=st'],
   });
 
-  newTestOnly({
+  newTest({
     title: 'Can perform command prefixed with count with <C-[>',
     start: ['|'],
     keysPressed: '3i*<C-[>',
