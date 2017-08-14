@@ -96,3 +96,10 @@ export function setTextEditorOptions(tabSize: number, insertSpaces: boolean): vo
   options.insertSpaces = insertSpaces;
   vscode.window.activeTextEditor!.options = options;
 }
+
+export function crossPlatformIt(text: string): string {
+  if (process.platform === 'win32') {
+    return text.replace(/\\n/g, '\\r\\n');
+  }
+  return text;
+}
