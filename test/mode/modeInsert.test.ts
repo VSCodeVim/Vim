@@ -275,6 +275,13 @@ suite('Mode Insert', () => {
     end: ['tes====|=st'],
   });
 
+  newTestOnly({
+    title: 'Can perform command prefixed with count with <C-[>',
+    start: ['|'],
+    keysPressed: '3i*<C-[>',
+    end: ['**|*'],
+  });
+
   newTest({
     title: "Can handle 'o' with count",
     start: ['|foobar'],
