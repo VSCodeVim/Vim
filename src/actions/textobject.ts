@@ -259,7 +259,7 @@ export class SelectInnerBigWord extends TextObjectMovement {
       start = position.getLastBigWordEnd().getRight();
       stop = position.getBigWordRight().getLeft();
     } else {
-      start = position.getBigWordLeft();
+      start = position.getBigWordLeft(true);
       stop = position.getCurrentBigWordEnd(true);
     }
 
