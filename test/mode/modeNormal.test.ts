@@ -871,6 +871,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'diW' on beginning of word",
+    start: ['one |two three'],
+    keysPressed: 'diW',
+    end: ['one | three'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
     title: 'Can handle d}',
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'd}',
