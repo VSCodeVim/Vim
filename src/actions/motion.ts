@@ -740,7 +740,7 @@ class MoveRepeatReversed extends BaseMovement {
 }
 
 @RegisterAction
-class MoveDownLineEnd extends BaseMovement {
+class MoveLineEnd extends BaseMovement {
   keys = [['$'], ['<end>'], ['<D-right>']];
   setsDesiredColumnToEOL = true;
 
