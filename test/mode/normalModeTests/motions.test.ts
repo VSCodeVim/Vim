@@ -220,6 +220,34 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: 'Can handle $ with a count',
+    start: ['te|xt text', 'text', 'text text text'],
+    keysPressed: '3$',
+    end: ['text text', 'text', 'text text tex|t'],
+  });
+
+  newTest({
+    title: 'Can handle $ with a count at end of file',
+    start: ['te|xt text text'],
+    keysPressed: '3$',
+    end: ['text text tex|t'],
+  });
+
+  newTest({
+    title: 'Can handle <end> with a count',
+    start: ['te|xt text', 'text', 'text text text'],
+    keysPressed: '3<end>',
+    end: ['text text', 'text', 'text text tex|t'],
+  });
+
+  newTest({
+    title: 'Can handle <D-right> with a count',
+    start: ['te|xt text', 'text', 'text text text'],
+    keysPressed: '3<D-right>',
+    end: ['text text', 'text', 'text text tex|t'],
+  });
+
+  newTest({
     title: "Can handle 'f'",
     start: ['text tex|t'],
     keysPressed: '^ft',
