@@ -462,6 +462,7 @@ class CommandEsc extends BaseCommand {
     ModeName.SearchInProgressMode,
     ModeName.SurroundInputMode,
     ModeName.EasyMotionMode,
+    ModeName.EasyMotionInputMode,
   ];
   keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 

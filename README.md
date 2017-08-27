@@ -390,15 +390,23 @@ Once easymotion is active, you can initiate motions using the following commands
 
 Motion Command | Description
 ---|--------
-`<leader> <leader> s <char>`|Search character
-`<leader> <leader> f <char>`|Find character forwards
-`<leader> <leader> F <char>`|Find character backwards
-`<leader> <leader> t <char>`|Til character forwards
-`<leader> <leader> T <char>`|Til character backwards
-`<leader> <leader> w`|Start of word forwards
-`<leader> <leader> b`|Start of word backwards
-`<leader> <leader> e`|End of word forwards
-`<leader> <leader> g e`|End of word backwards
+`<leader><leader> s <char>`|Search character
+`<leader><leader> f <char>`|Find character forwards
+`<leader><leader> F <char>`|Find character backwards
+`<leader><leader> t <char>`|Til character forwards
+`<leader><leader> T <char>`|Til character backwards
+`<leader><leader> w`|Start of word forwards
+`<leader><leader> b`|Start of word backwards
+`<leader><leader> e`|End of word forwards
+`<leader><leader> ge`|End of word backwards
+`<leader><leader> j`|Start of line forwards
+`<leader><leader> k`|Start of line backwards
+`<leader><leader> / <char>... <CR>`|Search n-character
+
+`<leader><leader> (2s|2f|2F|2t|2T) <char><char>` are also available.
+The difference is character count required for search.
+For example, `<leader><leader> 2s <char><char>` requires two characters, and search by two characters.
+This mapping is not a standard mapping, so it is recommended to use your custom mapping.
 
 You can customize the appearance of your easymotion markers (the boxes with letters) using the following settings:
 

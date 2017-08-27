@@ -15,5 +15,6 @@ import './commands/insert';
 
 // easymotion
 import './plugins/easymotion/easymotion.cmd';
+import './plugins/easymotion/registerMoveActions';
 // surround
 import './plugins/surround';
