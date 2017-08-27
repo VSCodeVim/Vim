@@ -18,7 +18,7 @@ import { VisualBlockMode } from './modeVisualBlock';
 import { VisualMode } from './modeVisual';
 import { taskQueue } from './../taskQueue';
 import { ReplaceMode } from './modeReplace';
-import { EasyMotionMode, EasyMotionInputMode } from './modeEasyMotion';
+import { EasyMotionMode } from './modeEasyMotion';
 import { SearchInProgressMode } from './modeSearchInProgress';
 import { TextEditor } from './../textEditor';
 import { VisualLineMode } from './modeVisualLine';
@@ -507,7 +507,6 @@ export class ModeHandler implements vscode.Disposable {
   });
 
   private _searchHighlightDecoration: vscode.TextEditorDecorationType;
-  private _easymotionHighlightDecoration: vscode.TextEditorDecorationType;
 
   private get currentModeName(): ModeName {
     return this.currentMode.name;
@@ -541,7 +540,6 @@ export class ModeHandler implements vscode.Disposable {
       new SearchInProgressMode(),
       new ReplaceMode(),
       new EasyMotionMode(),
-      new EasyMotionInputMode(),
       new SurroundInputMode(),
     ];
     this.vimState.historyTracker = new HistoryTracker(this.vimState);
@@ -553,10 +551,6 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     this._searchHighlightDecoration = vscode.window.createTextEditorDecorationType({
-      backgroundColor: Configuration.searchHighlightColor,
-    });
-
-    this._easymotionHighlightDecoration = vscode.window.createTextEditorDecorationType({
       backgroundColor: Configuration.searchHighlightColor,
     });
 
@@ -1899,17 +1893,6 @@ export class ModeHandler implements vscode.Disposable {
 
     this._vimState.editor.setDecorations(this._searchHighlightDecoration, searchRanges);
 
-    const easyMotionHighlightRanges =
-      this.currentMode.name === ModeName.EasyMotionInputMode
-        ? vimState.easyMotion.searchAction
-            .getMatches(vimState.cursorPosition, vimState)
-            .map(x => x.toRange())
-        : [];
-    this.vimState.editor.setDecorations(
-      this._easymotionHighlightDecoration,
-      easyMotionHighlightRanges
-    );
-
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
@@ -1965,13 +1948,6 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
       currentCommandText = ` ${this._vimState.globalState.searchState!.searchString}`;
-    }
-
-    if (this.vimState.currentMode === ModeName.EasyMotionInputMode) {
-      const state = this.vimState.easyMotion;
-      if (state) {
-        currentCommandText = state.searchAction.getSearchString();
-      }
     }
 
     if (this._vimState.currentMode === ModeName.SurroundInputMode) {

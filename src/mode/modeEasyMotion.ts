@@ -9,12 +9,3 @@ export class EasyMotionMode extends Mode {
     super(ModeName.EasyMotionMode);
   }
 }
-
-export class EasyMotionInputMode extends Mode {
-  public text = 'EasyMotion Input';
-  public cursorType = VSCodeVimCursorType.Block;
-
-  constructor() {
-    super(ModeName.EasyMotionInputMode);
-  }
-}
