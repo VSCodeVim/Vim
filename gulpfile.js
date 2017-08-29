@@ -6,7 +6,8 @@ var gulp = require('gulp'),
   tag_version = require('gulp-tag-version'),
   tslint = require('gulp-tslint'),
   typings = require('gulp-typings'),
-  shell = require('gulp-shell');
+  shell = require('gulp-shell'),
+  exec = require('child_process').exec;
 
 var paths = {
   src_ts: 'src/**/*.ts',
@@ -47,19 +48,29 @@ gulp.task('tslint', function() {
   return merge(srcs, tests);
 });
 
-gulp.task(
-  'prettier',
-  shell.task([
-    'git diff --name-only HEAD | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5',
-  ])
-);
+gulp.task('prettier', function() {
+  runPrettier('git diff --name-only HEAD');
+});
 
-gulp.task(
-  'forceprettier',
-  shell.task([
-    ' find . | grep ".*\\.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5 ',
-  ])
-);
+gulp.task('forceprettier', function() {
+  // Enumerate files managed by git
+  runPrettier('git ls-files');
+  // Enumerate untracked files
+  runPrettier('git ls-files --others --exclude-standard');
+});
+
+function runPrettier(command) {
+  exec(command, function(err, stdout, stderr) {
+    const files = stdout.split('\n');
+    for (const file of files) {
+      if (file.endsWith('.ts') || file.endsWith('.js')) {
+        exec(
+          `node ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5 ${file}`
+        );
+      }
+    }
+  });
+}
 
 gulp.task('default', ['prettier', 'tslint', 'compile']);
 
