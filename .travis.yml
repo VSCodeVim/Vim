@@ -28,7 +28,7 @@ install:
 
 script:
 - git ls-tree -r HEAD --name-only | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5
-- if [[ $(git diff-index HEAD --) ]]; then { git diff; echo "Compile with gulp first (to format things properly with prettier) before pushing!"; sleep 1; exit 1; }; else echo "Prettier passed."; fi
+- if [[ $(git diff-index HEAD --) ]]; then { ./node_modules/prettier/bin/prettier.js -v; git diff; echo "Compile with gulp first (to format things properly with prettier) before pushing!"; sleep 1; exit 1; }; else echo "Prettier passed."; fi
 - gulp
 - npm test --silent;
 
