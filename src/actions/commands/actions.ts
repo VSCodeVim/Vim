@@ -1909,7 +1909,10 @@ class CommandChangeToLineEnd extends BaseCommand {
     return new operator.ChangeOperator().run(
       vimState,
       position,
-      position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft()
+      position
+        .getDownByCount(Math.max(0, count - 1))
+        .getLineEnd()
+        .getLeft()
     );
   }
 }
@@ -1922,7 +1925,10 @@ class CommandClearLine extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let count = vimState.recordedState.count || 1;
-    let end = position.getDownByCount(Math.max(0, count - 1)).getLineEnd().getLeft();
+    let end = position
+      .getDownByCount(Math.max(0, count - 1))
+      .getLineEnd()
+      .getLeft();
     return new operator.ChangeOperator().run(
       vimState,
       position.getLineBeginRespectingIndent(),
@@ -2737,7 +2743,10 @@ class ActionJoinNoWhitespace extends BaseCommand {
       vimState,
       position.getLineBegin(),
       lineTwo.length > 0
-        ? position.getNextLineBegin().getLineEnd().getLeft()
+        ? position
+            .getNextLineBegin()
+            .getLineEnd()
+            .getLeft()
         : position.getLineEnd()
     );
 
@@ -3393,7 +3402,10 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       if (idx === 0) {
         return new vscode.Selection(
           curPos.getWordLeft(false),
-          curPos.getLeft().getCurrentWordEnd(true).getRight()
+          curPos
+            .getLeft()
+            .getCurrentWordEnd(true)
+            .getRight()
         );
       } else {
         // Since we're adding the selections ourselves, we need to make sure
@@ -3402,8 +3414,10 @@ class ActionOverrideCmdDInsert extends BaseCommand {
           vscode.window.activeTextEditor!.selections[0].active
         );
         const matchWordLength =
-          matchWordPos.getLeft().getCurrentWordEnd(true).getRight().character -
-          matchWordPos.getWordLeft(false).character;
+          matchWordPos
+            .getLeft()
+            .getCurrentWordEnd(true)
+            .getRight().character - matchWordPos.getWordLeft(false).character;
         const wordBegin = curPos.getLeftByCount(matchWordLength);
         return new vscode.Selection(wordBegin, curPos);
       }
