@@ -115,7 +115,10 @@ class CommandSurroundModeRepeat extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     return {
       start: position.getLineBeginRespectingIndent(),
-      stop: position.getLineEnd().getLastWordEnd().getRight(),
+      stop: position
+        .getLineEnd()
+        .getLastWordEnd()
+        .getRight(),
     };
   }
 

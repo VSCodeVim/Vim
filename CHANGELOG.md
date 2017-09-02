@@ -1,3 +1,30 @@
+# [v0.10.0 Waiting Walnut](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.0)  (Aug 30, 2017)
+
+This release has been long overdue.
+* Rewrite of Easymotion (with new features!)
+<ul>
+<li>n-character move with <code>&lt;leader&gt;&lt;leader&gt;/&lt;character&gt;...</code></li>
+<li>2-character move with <code>&lt;leader&gt;&lt;leader&gt;2s&lt;character&gt;&lt;character&gt;</code></li>
+<li>Jump immediately if there's only one candidate to jump to.</li>
+<li>Added tests for Easymotion code!<br/>
+Thanks to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a>. Awesome job!</li>
+</ul>
+
+* n-character move with <code>&lt;leader&gt;&lt;leader&gt;/&lt;character&gt;...</code>
+* 2-character move with <code>&lt;leader&gt;&lt;leader&gt;2s&lt;character&gt;&lt;character&gt;</code>
+* Jump immediately if there's only one candidate to jump to.
+* Added tests for Easymotion code!<br/>
+Thanks to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a>. Awesome job!
+* Added <code>:only</code> Ex command. Thanks <a class="user-mention" href="https://github.com/leonb">@LeonB</a>
+* Added support for <code>&lt;count&gt;$</code>. Thanks <a class="user-mention" href="https://github.com/tagniam">@tagniam</a>
+* Fixed action repetition with <code>&lt;C-]&gt;</code>. Thanks <a class="user-mention" href="https://github.com/tagniam">@tagniam</a>.
+* Made all tests pass on Windows. Thanks <a class="user-mention" href="https://github.com/philipmat">@philipmat</a>
+* Added support for <code>gdefault</code> with <code>:s//</code> replacement. Thanks <a class="user-mention" href="https://github.com/philipmat">@philipmat</a>
+* Fixed <code>zO</code>. Thanks <a class="user-mention" href="https://github.com/vincentbel">@VincentBel</a>
+* Added new setting for whether double clicking in insert mode will go into visual mode. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
+* Fixed <code>.</code> repeat in certain cases. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
+
+One more thing. I apologize for less work being done on the main repo. Much of my effort recently has gone into the neovim version of this extension (still in development).
 # [v0.9.0 Hundredth Hazelnut](https://github.com/VSCodeVim/Vim/releases/tag/v0.9.0)  (Jun 24, 2017)
 
 VSCodeVim's 100th release! We've come a long way :')
@@ -243,22 +270,22 @@ The last release had a little bug. This fixes that bug.
 I admit it. I sneaked this release out just because I wanted to use less buggy macros.
 
 Macro stuff:
-*
+* 
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213499873" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1382" href="https://github.com/VSCodeVim/Vim/issues/1382">#1382</a> - macros made too many history steps - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a></p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213499873" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1382" href="https://github.com/VSCodeVim/Vim/issues/1382">#1382</a> - macros made too many history steps - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-*
+* 
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213575205" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1388" href="https://github.com/VSCodeVim/Vim/issues/1388">#1388</a> - macros wouldn't play back indentation removal in some cases</p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213575205" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1388" href="https://github.com/VSCodeVim/Vim/issues/1388">#1388</a> - macros wouldn't play back indentation removal in some cases
-*
+* 
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213576111" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1389" href="https://github.com/VSCodeVim/Vim/issues/1389">#1389</a> - macros weren't adjusting character position correctly in some cases</p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213576111" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1389" href="https://github.com/VSCodeVim/Vim/issues/1389">#1389</a> - macros weren't adjusting character position correctly in some cases
-*
+* 
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213514740" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1385" href="https://github.com/VSCodeVim/Vim/issues/1385">#1385</a> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a></p>
 
 

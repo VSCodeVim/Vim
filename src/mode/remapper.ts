@@ -48,13 +48,11 @@ class Remapper {
         remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
       }
 
-      this._remappings.push(
-        <IKeybinding>{
-          before: before,
-          after: after,
-          commands: remapping.commands,
-        }
-      );
+      this._remappings.push(<IKeybinding>{
+        before: before,
+        after: after,
+        commands: remapping.commands,
+      });
     }
   }
 

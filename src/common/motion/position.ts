@@ -403,7 +403,9 @@ export class Position extends vscode.Position {
     if (includeEol) {
       return this.getUp(0).getLineEnd();
     } else {
-      return this.getUp(0).getLineEnd().getLeft();
+      return this.getUp(0)
+        .getLineEnd()
+        .getLeft();
     }
   }
 

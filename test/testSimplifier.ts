@@ -13,7 +13,12 @@ import { getAndUpdateModeHandler } from '../extension';
 export function getTestingFunctions() {
   const newTest = (testObj: ITestObject): void => {
     const stack = new Error().stack;
-    let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
+    let niceStack = stack
+      ? stack
+          .split('\n')
+          .splice(2, 1)
+          .join('\n')
+      : 'no stack available :(';
 
     test(testObj.title, async () =>
       testIt.bind(null, await getAndUpdateModeHandler())(testObj).catch((reason: Error) => {
@@ -26,7 +31,12 @@ export function getTestingFunctions() {
   const newTestOnly = (testObj: ITestObject): void => {
     console.log('!!! Running single test !!!');
     const stack = new Error().stack;
-    let niceStack = stack ? stack.split('\n').splice(2, 1).join('\n') : 'no stack available :(';
+    let niceStack = stack
+      ? stack
+          .split('\n')
+          .splice(2, 1)
+          .join('\n')
+      : 'no stack available :(';
 
     test.only(testObj.title, async () =>
       testIt.bind(null, await getAndUpdateModeHandler())(testObj).catch((reason: Error) => {
