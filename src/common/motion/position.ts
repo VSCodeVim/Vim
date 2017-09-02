@@ -626,6 +626,10 @@ export class Position extends vscode.Position {
     return (trimWhite ? text.trim() : text) === '';
   }
 
+  public isLineWhite(): boolean {
+    return this.isLineBlank(true);
+  }
+
   public getSentenceBegin(args: { forward: boolean }): Position {
     if (args.forward) {
       return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
