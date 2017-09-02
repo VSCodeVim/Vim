@@ -1,5 +1,6 @@
 import { ModeName } from './../mode/mode';
 import { Position } from './../common/motion/position';
+import { RegisterMode } from './../register/register';
 import { Range } from './../common/motion/range';
 import { TextEditor } from './../textEditor';
 import { VimState } from './../mode/modeHandler';
@@ -391,6 +392,8 @@ export class SelectParagraph extends TextObjectMovement {
   keys = ['a', 'p'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
     let start: Position;
     const currentParagraphBegin = position.getCurrentParagraphBeginning();
 
@@ -417,6 +420,8 @@ export class SelectInnerParagraph extends TextObjectMovement {
   keys = ['i', 'p'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
     let start: Position;
     let stop: Position = position.getCurrentParagraphEnd();
 
