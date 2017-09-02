@@ -408,9 +408,18 @@ export class SelectParagraph extends TextObjectMovement {
       }
     }
 
+    // Include additional blank lines.
+    let stop = position.getCurrentParagraphEnd();
+    while (
+      TextEditor.getLineAt(stop.getDown(0)).text.trim() === '' &&
+      stop.line < TextEditor.getLineCount() - 1
+    ) {
+      stop = stop.getDown(0);
+    }
+
     return {
       start: start,
-      stop: position.getCurrentParagraphEnd(),
+      stop: stop,
     };
   }
 }
