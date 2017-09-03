@@ -23,20 +23,14 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     this._baseOptions = baseOptions;
   }
 
-  public getMatchPosition(match: EasyMotion.Match): Position {
-    return match.position;
-  }
-
   public processMarkers(matches: EasyMotion.Match[], position: Position, vimState: VimState) {
     // Clear existing markers, just in case
     vimState.easyMotion.clearMarkers();
 
     let index = 0;
     for (const match of matches) {
-      const pos = this.getMatchPosition(match);
-
       if (!match.position.isEqual(position)) {
-        const marker = EasyMotion.generateMarker(index++, matches.length, position, pos);
+        const marker = EasyMotion.generateMarker(index++, matches.length, position, match.position);
         if (marker) {
           vimState.easyMotion.addMarker(marker);
         }
