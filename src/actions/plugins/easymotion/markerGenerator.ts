@@ -1,4 +1,4 @@
-import { EasyMotion } from "./easymotion";
+import { EasyMotion } from './easymotion';
 import { Position } from './../../../common/motion/position';
 import { Configuration } from './../../../configuration/configuration';
 
