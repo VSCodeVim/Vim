@@ -460,6 +460,11 @@
           "description": "Set the Y offset of the marker text (the distance from the top).",
           "default": 11
         },
+        "vim.easymotionKeys": {
+          "type": "string",
+          "description": "Set the characters used for jump marker name",
+          "default": "hklyuiopnm,qwertzxcvbasdgjf;"
+        },
         "vim.surround": {
           "type": "boolean",
           "description": "Enable the Surround plugin for Vim.",

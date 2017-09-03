@@ -42,34 +42,13 @@ export class EasyMotion {
   /**
    * The key sequence for marker name generation
    */
-  public static keyTable = [
-    'a',
-    's',
-    'd',
-    'g',
-    'h',
-    'k',
-    'l',
-    'q',
-    'w',
-    'e',
-    'r',
-    't',
-    'y',
-    'u',
-    'i',
-    'o',
-    'p',
-    'z',
-    'x',
-    'c',
-    'v',
-    'b',
-    'n',
-    'm',
-    'f',
-    'j',
-  ];
+  public static getKeyTable(): string[] {
+    if (Configuration.easymotionKeys) {
+      return Configuration.easymotionKeys.split('');
+    } else {
+      return 'hklyuiopnm,qwertzxcvbasdgjf;'.split('');
+    }
+  }
 
   /**
    * Mode to return to after attempting easymotion
@@ -91,7 +70,7 @@ export class EasyMotion {
     position: Position,
     markerPosition: Position
   ): EasyMotion.Marker | null {
-    const keyTable = EasyMotion.keyTable;
+    const keyTable = EasyMotion.getKeyTable();
     const prefixKeyTable: string[] = [];
     const totalRemainder = Math.max(matchesCount - keyTable.length, 0);
     const totalSteps = Math.floor(totalRemainder / keyTable.length) + 1;
