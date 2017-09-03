@@ -28,10 +28,11 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
     vimState.easyMotion.clearMarkers();
 
     let index = 0;
+    const markerGenerator = EasyMotion.createMarkerGenerator(matches.length);
     for (const match of matches) {
       // Skip if the match position equals to cursor position
       if (!match.position.isEqual(cursorPosition)) {
-        const marker = EasyMotion.generateMarker(index++, matches.length, match.position);
+        const marker = markerGenerator.generateMarker(index++, match.position);
         if (marker) {
           vimState.easyMotion.addMarker(marker);
         }

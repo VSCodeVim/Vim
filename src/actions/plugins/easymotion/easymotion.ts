@@ -3,6 +3,7 @@ import { Position } from './../../../common/motion/position';
 import { Configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
+import { MarkerGenerator } from './markerGenerator';
 
 export class EasyMotion {
   /**
@@ -40,17 +41,6 @@ export class EasyMotion {
   }
 
   /**
-   * The key sequence for marker name generation
-   */
-  public static getKeyTable(): string[] {
-    if (Configuration.easymotionKeys) {
-      return Configuration.easymotionKeys.split('');
-    } else {
-      return 'hklyuiopnm,qwertzxcvbasdgjf;'.split('');
-    }
-  }
-
-  /**
    * Mode to return to after attempting easymotion
    */
   public previousMode: number;
@@ -61,40 +51,8 @@ export class EasyMotion {
     this.decorations = [];
   }
 
-  /**
-   * Generate a marker following a sequence for the name and depth levels
-   */
-  public static generateMarker(
-    index: number,
-    matchesCount: number,
-    markerPosition: Position
-  ): EasyMotion.Marker | null {
-    const keyTable = EasyMotion.getKeyTable();
-    const prefixKeyTable: string[] = [];
-    const totalRemainder = Math.max(matchesCount - keyTable.length, 0);
-    const totalSteps = Math.floor(totalRemainder / keyTable.length) + 1;
-
-    // Make prefix key table if needed
-    if (matchesCount >= keyTable.length) {
-      const reversed = keyTable.slice().reverse();
-      const count = Math.min(totalSteps, reversed.length);
-      prefixKeyTable.push(...reversed.slice(0, count));
-    }
-
-    if (index >= keyTable.length - prefixKeyTable.length) {
-      const remainder = index - (keyTable.length - prefixKeyTable.length);
-      const currentStep = Math.floor(remainder / keyTable.length) + 1;
-      if (currentStep > prefixKeyTable.length) {
-        return null;
-      } else {
-        const prefix = prefixKeyTable[currentStep - 1];
-        const label = keyTable[remainder % keyTable.length];
-        return new EasyMotion.Marker(prefix + label, markerPosition);
-      }
-    } else {
-      const label = keyTable[index];
-      return new EasyMotion.Marker(label, markerPosition);
-    }
+  public static createMarkerGenerator(matchesCount: number): MarkerGenerator {
+    return new MarkerGenerator(matchesCount);
   }
 
   /**
@@ -163,9 +121,9 @@ export class EasyMotion {
     } else {
       const uri = vscode.Uri.parse(
         `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
-        `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
-        `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
-        `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
+          `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
+          `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
+          `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
       );
 
       this.svgCache[code] = uri;
