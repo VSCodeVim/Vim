@@ -87,66 +87,35 @@ export class EasyMotion {
    */
   public static generateMarker(
     index: number,
-    length: number,
+    matchesCount: number,
     position: Position,
     markerPosition: Position
   ): EasyMotion.Marker | null {
     const keyTable = EasyMotion.keyTable;
-    let availableKeyTable = keyTable.slice();
+    const prefixKeyTable: string[] = [];
+    const totalRemainder = Math.max(matchesCount - keyTable.length, 0);
+    const totalSteps = Math.floor(totalRemainder / keyTable.length) + 1;
 
-    // Depth table should always include a ;
-    const keyDepthTable = [';'];
-    let totalSteps = 0;
-
-    if (length >= keyTable.length) {
-      const totalRemainder = Math.max(length - keyTable.length, 0);
-      totalSteps = Math.floor(totalRemainder / keyTable.length);
-
-      Array(Math.min(totalSteps, 26)).forEach(() => keyDepthTable.push(availableKeyTable.pop()!));
+    // Make prefix key table if needed
+    if (matchesCount >= keyTable.length) {
+      const reversed = keyTable.slice().reverse();
+      const count = Math.min(totalSteps, reversed.length);
+      prefixKeyTable.push(...reversed.slice(0, count));
     }
 
-    let prefix = '';
-    if (index >= availableKeyTable.length) {
-      // Length of available keys before reset and ";"
-      const oldLength = availableKeyTable.length;
-      // The index that remains after taking away the first-level depth markers
-      const remainder = index - availableKeyTable.length;
-
-      // ";" can be used as the last marker key, when inside a marker with depth. Reset to available keys and add ";"
-      availableKeyTable = keyTable.slice();
-      availableKeyTable.push(';');
-
-      // Depth index counts down instead of up
-      const inverted = length - oldLength - 1 - remainder;
-      const steps = Math.floor(inverted / availableKeyTable.length);
-
-      // Add the key to the prefix
-      if (steps > keyDepthTable.length - 1) {
+    if (index >= keyTable.length - prefixKeyTable.length) {
+      const remainder = index - (keyTable.length - prefixKeyTable.length);
+      const currentStep = Math.floor(remainder / keyTable.length) + 1;
+      if (currentStep > prefixKeyTable.length) {
         return null;
       } else {
-        prefix += keyDepthTable[steps];
-
-        // Check if we're on the last depth level
-        if (steps >= totalSteps) {
-          // Return the proper key for this index
-          return new EasyMotion.Marker(
-            prefix + availableKeyTable[remainder % availableKeyTable.length],
-            markerPosition
-          );
-        } else {
-          // Return the proper index for depths earlier than the last one, including prefix
-          const num =
-            (availableKeyTable.length - 1 - inverted % availableKeyTable.length) %
-            availableKeyTable.length;
-          return new EasyMotion.Marker(prefix + availableKeyTable[num], markerPosition);
-        }
+        const prefix = prefixKeyTable[currentStep - 1];
+        const label = keyTable[remainder % keyTable.length];
+        return new EasyMotion.Marker(prefix + label, markerPosition);
       }
     } else {
-      // Return the last key in the marker, including prefix
-      return new EasyMotion.Marker(
-        prefix + availableKeyTable[index % availableKeyTable.length],
-        markerPosition
-      );
+      const label = keyTable[index];
+      return new EasyMotion.Marker(label, markerPosition);
     }
   }
 
