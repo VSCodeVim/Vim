@@ -586,16 +586,16 @@ export class Position extends vscode.Position {
   /**
    * Get the end of the current paragraph.
    */
-  public getCurrentParagraphEnd(): Position {
+  public getCurrentParagraphEnd(trimWhite: boolean = false): Position {
     let pos: Position = this;
 
     // If we're not in a paragraph yet, go down until we are.
-    while (TextEditor.getLineAt(pos).text === '' && !TextEditor.isLastLine(pos)) {
+    while (pos.isLineBlank(trimWhite) && !TextEditor.isLastLine(pos)) {
       pos = pos.getDown(0);
     }
 
     // Go until we're outside of the paragraph, or at the end of the document.
-    while (TextEditor.getLineAt(pos).text !== '' && pos.line < TextEditor.getLineCount() - 1) {
+    while (!pos.isLineBlank(trimWhite) && pos.line < TextEditor.getLineCount() - 1) {
       pos = pos.getDown(0);
     }
 
@@ -605,20 +605,29 @@ export class Position extends vscode.Position {
   /**
    * Get the beginning of the current paragraph.
    */
-  public getCurrentParagraphBeginning(): Position {
+  public getCurrentParagraphBeginning(trimWhite: boolean = false): Position {
     let pos: Position = this;
 
     // If we're not in a paragraph yet, go up until we are.
-    while (TextEditor.getLineAt(pos).text === '' && !TextEditor.isFirstLine(pos)) {
+    while (pos.isLineBlank(trimWhite) && !TextEditor.isFirstLine(pos)) {
       pos = pos.getUp(0);
     }
 
     // Go until we're outside of the paragraph, or at the beginning of the document.
-    while (pos.line > 0 && TextEditor.getLineAt(pos).text !== '') {
+    while (pos.line > 0 && !pos.isLineBlank(trimWhite)) {
       pos = pos.getUp(0);
     }
 
     return pos.getLineBegin();
+  }
+
+  public isLineBlank(trimWhite: boolean = false): boolean {
+    let text = TextEditor.getLineAt(this).text;
+    return (trimWhite ? text.trim() : text) === '';
+  }
+
+  public isLineWhite(): boolean {
+    return this.isLineBlank(true);
   }
 
   public getSentenceBegin(args: { forward: boolean }): Position {
