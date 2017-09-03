@@ -67,7 +67,6 @@ export class EasyMotion {
   public static generateMarker(
     index: number,
     matchesCount: number,
-    position: Position,
     markerPosition: Position
   ): EasyMotion.Marker | null {
     const keyTable = EasyMotion.getKeyTable();
@@ -164,9 +163,9 @@ export class EasyMotion {
     } else {
       const uri = vscode.Uri.parse(
         `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
-          `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
-          `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
-          `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
+        `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
+        `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
+        `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
       );
 
       this.svgCache[code] = uri;
