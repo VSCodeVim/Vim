@@ -193,6 +193,7 @@ class ConfigurationClass {
   easymotionMarkerFontSize = '14';
   easymotionMarkerFontWeight = 'normal';
   easymotionMarkerYOffset = 11;
+  easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
 
   /**
    * Timeout in milliseconds for remapped commands.
