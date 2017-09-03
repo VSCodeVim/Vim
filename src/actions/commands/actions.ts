@@ -2058,7 +2058,7 @@ class CommandOpenFile extends BaseCommand {
 @RegisterAction
 class CommandGoToDefinition extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ['g', 'd'];
+  keys = [['g', 'd'], ['<C-]>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const oldActiveEditor = vimState.editor;
@@ -2271,7 +2271,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
 @RegisterAction
 class CommandNavigateBack extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ['<C-o>'];
+  keys = [['<C-o>'], ['<C-t>']];
   runsOnceForEveryCursor() {
     return false;
   }
