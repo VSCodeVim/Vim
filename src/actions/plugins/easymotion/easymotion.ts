@@ -68,7 +68,9 @@ export class EasyMotion {
         after: {
           margin: `0 0 0 -${width}px`,
           height: `14px`,
-          width: `${width}px`,
+          // This is a tricky part. Set position and z-index property along with width
+          // to bring markers to front
+          width: `${width}px; position:absoulute; z-index:99;`,
         },
       });
 
