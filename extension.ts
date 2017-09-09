@@ -207,25 +207,10 @@ export async function activate(context: vscode.ExtensionContext) {
     );
     await nvim.input(key === '<' ? '<lt>' : key);
 
-    // https://github.com/neovim/neovim/issues/6166
-    // This is just for convenience sake
-    if (Vim.mode.mode === 'n' && 'dycg@q"'.indexOf(key) !== -1 && !Vim.operatorPending) {
-      Vim.operatorPending = true;
-      return;
-    }
-    if (key.match(/[0-9]/) && Vim.mode.mode !== 'i') {
-      return;
-    }
-    Vim.operatorPending = false;
     // End of hack
 
     let mode = (await nvim.mode) as any;
-    console.log('mode: ', mode.mode);
     // More hackish stuff
-    if (mode.blocking && mode.mode !== 'i') {
-      console.log('FIXING BLOCK: ', mode.mode);
-      await nvim.input('<Esc>');
-    }
     Vim.mode = mode;
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode.mode);
     // FOr insert mode keybindings jj
