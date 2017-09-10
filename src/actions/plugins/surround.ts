@@ -408,16 +408,25 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     vimState: VimState,
     position: Position
   ): Promise<boolean> {
-    const { target, replacement, operator } = vimState.surround!;
+    const { target, operator } = vimState.surround!;
+    let replacement = vimState.surround!.replacement;
+    const lastKeyWasEnter =
+      vimState.keyHistory.length && vimState.keyHistory[vimState.keyHistory.length - 1] === '\n';
 
     if (operator === 'change' || operator === 'yank') {
       if (!replacement) {
         return false;
       }
 
-      // This is an incomplete tag. Wait for the user to finish it.
-      if (replacement[0] === '<' && replacement[replacement.length - 1] !== '>') {
-        return false;
+      if (replacement[0] === '<') {
+        if (lastKeyWasEnter) {
+          // The change was terminated with <CR> instead of >,
+          // So existing attributes should be kept. Just remove the spurious newline.
+          replacement = replacement.slice(0, -1);
+        } else if (replacement[replacement.length - 1] !== '>') {
+          // This is an incomplete tag. Wait for the user to finish it.
+          return false;
+        }
       }
     }
 
@@ -531,7 +540,13 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       startReplaceRange = new Range(start, start.getRight());
       endReplaceRange = new Range(tagEnd.stop, tagEnd.stop.getRight());
 
-      startDeleteRange = new Range(start.getRight(), tagEnd.start);
+      if (!lastKeyWasEnter) {
+        startDeleteRange = new Range(start.getRight(), tagEnd.start);
+      } else {
+        // Don't remove the attributes, just the tag name (one WORD)
+        const tagNameEnd = start.getCurrentBigWordEnd().getRight();
+        startDeleteRange = new Range(start.getRight(), tagNameEnd);
+      }
       endDeleteRange = new Range(tagEnd.stop.getRight(), stop);
     }
 
