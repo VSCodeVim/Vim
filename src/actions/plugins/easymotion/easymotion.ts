@@ -29,12 +29,6 @@ export class EasyMotion {
    * Caches for decorations
    */
   private static decorationTypeCache: vscode.TextEditorDecorationType[] = [];
-  private static svgCache: { [code: string]: vscode.Uri } = {};
-  private static cachedBackgroundColor: string = '';
-  private static cachedOneFontColor: string = '';
-  private static cachedTwoFontColor: string = '';
-  private static cachedWidthPerChar: number = -1;
-  private static cachedHeight: number = -1;
 
   public get markers() {
     return this._markers;
@@ -77,60 +71,6 @@ export class EasyMotion {
       this.decorationTypeCache[length] = type;
 
       return type;
-    }
-  }
-
-  /**
-   * Create and cache the SVG data URI for different marker codes and colors
-   */
-  private static getSvgDataUri(
-    code: string,
-    backgroundColor: string | undefined = 'black',
-    fontFamily: string | undefined = 'Consolas',
-    fontColor: string | undefined = 'white',
-    fontSize: string | undefined = '14',
-    fontWeight: string | undefined = 'normal'
-  ): vscode.Uri {
-    // Clear cache if the backgroundColor or fontColor has changed
-    if (this.cachedBackgroundColor !== backgroundColor) {
-      this.svgCache = {};
-      this.cachedBackgroundColor = backgroundColor;
-    }
-
-    if (this.cachedOneFontColor !== Configuration.easymotionMarkerForegroundColorOneChar) {
-      this.svgCache = {};
-      this.cachedOneFontColor = Configuration.easymotionMarkerForegroundColorOneChar;
-    }
-
-    if (this.cachedTwoFontColor !== Configuration.easymotionMarkerForegroundColorTwoChar) {
-      this.svgCache = {};
-      this.cachedTwoFontColor = Configuration.easymotionMarkerForegroundColorTwoChar;
-    }
-
-    const widthPerChar = Configuration.easymotionMarkerWidthPerChar;
-    const width = code.length * widthPerChar + 1;
-    const height = Configuration.easymotionMarkerHeight;
-
-    if (this.cachedWidthPerChar !== widthPerChar || this.cachedHeight !== height) {
-      this.svgCache = {};
-      this.cachedWidthPerChar = width;
-      this.cachedHeight = height;
-    }
-
-    const cache = this.svgCache[code];
-    if (cache) {
-      return cache;
-    } else {
-      const uri = vscode.Uri.parse(
-        `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ` +
-          `${height}" height="${height}" width="${width}"><rect width="${width}" height="${height}" rx="2" ry="2" ` +
-          `style="fill: ${backgroundColor}"></rect><text font-family="${fontFamily}" font-size="${fontSize}" ` +
-          `font-weight="${fontWeight}" fill="${fontColor}" x="1" y="${Configuration.easymotionMarkerYOffset}">${code}</text></svg>`
-      );
-
-      this.svgCache[code] = uri;
-
-      return uri;
     }
   }
 
@@ -244,6 +184,52 @@ export class EasyMotion {
     return matches;
   }
 
+  private themeColorApiSupported(): boolean {
+    // Theme color is available from version 1.12.
+    const vscodeVersionAsNumber = parseInt(vscode.version.replace(/\./g, ''), 10);
+    return vscodeVersionAsNumber >= 1120;
+  }
+
+  private getMarkerColor(
+    customizedValue: string,
+    defaultValue: string | vscode.ThemeColor,
+    themeColorId: string
+  ): string | vscode.ThemeColor {
+    if (!this.themeColorApiSupported()) {
+      return customizedValue || defaultValue;
+    } else {
+      if (customizedValue) {
+        return customizedValue;
+      } else {
+        return new vscode.ThemeColor(themeColorId);
+      }
+    }
+  }
+
+  private getEasymotionMarkerBackgroundColor() {
+    return this.getMarkerColor(
+      Configuration.easymotionMarkerBackgroundColor,
+      '#000',
+      'activityBarBadge.background'
+    );
+  }
+
+  private getEasymotionMarkerForegroundColorOneChar() {
+    return this.getMarkerColor(
+      Configuration.easymotionMarkerForegroundColorOneChar,
+      '#f00',
+      'activityBarBadge.foreground'
+    );
+  }
+
+  private getEasymotionMarkerForegroundColorTwoChar() {
+    return this.getMarkerColor(
+      Configuration.easymotionMarkerForegroundColorTwoChar,
+      '#f00',
+      'activityBarBadge.foreground'
+    );
+  }
+
   public updateDecorations() {
     this.clearDecorations();
 
@@ -262,19 +248,22 @@ export class EasyMotion {
 
       const fontColor =
         keystroke.length > 1
-          ? Configuration.easymotionMarkerForegroundColorTwoChar
-          : Configuration.easymotionMarkerForegroundColorOneChar;
+          ? this.getEasymotionMarkerForegroundColorTwoChar()
+          : this.getEasymotionMarkerForegroundColorOneChar();
 
       const renderOptions: vscode.ThemableDecorationInstanceRenderOptions = {
         after: {
-          contentIconPath: EasyMotion.getSvgDataUri(
-            keystroke,
-            Configuration.easymotionMarkerBackgroundColor,
-            Configuration.easymotionMarkerFontFamily,
-            fontColor,
-            Configuration.easymotionMarkerFontSize,
-            Configuration.easymotionMarkerFontWeight
-          ),
+          contentText: keystroke,
+          backgroundColor: this.getEasymotionMarkerBackgroundColor(),
+          height: `${Configuration.easymotionMarkerHeight}px`,
+          width: `${keystroke.length * Configuration.easymotionMarkerWidthPerChar}px`,
+          color: `${fontColor};
+          font-family: ${Configuration.easymotionMarkerFontFamily};
+          font-size: ${Configuration.easymotionMarkerFontSize}px;
+          font-weight: ${Configuration.easymotionMarkerFontWeight};
+          position: absolute;
+          z-index: 99;
+          bottom: ${Configuration.easymotionMarkerYOffset}px`,
         },
       };
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter
