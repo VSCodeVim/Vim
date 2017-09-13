@@ -4,9 +4,13 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Configuration } from '../../src/configuration/configuration';
+import {
+  EasymotionTrigger,
+  buildTriggerKeys,
+} from '../../src/actions/plugins/easymotion/easymotion.cmd';
 
-function easymotionCommand(trigger: string, searchWord: string, jumpKey: string) {
-  return ['<leader><leader>', trigger, searchWord, jumpKey].join('');
+function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpKey: string) {
+  return [...buildTriggerKeys(trigger), searchWord, jumpKey].join('');
 }
 
 suite('easymotion plugin', () => {
@@ -27,119 +31,161 @@ suite('easymotion plugin', () => {
   newTest({
     title: 'Can handle s move',
     start: ['a|bcdabcd'],
-    keysPressed: easymotionCommand('s', 'a', 'k'),
+    keysPressed: easymotionCommand({ key: 's' }, 'a', 'k'),
     end: ['|abcdabcd'],
   });
 
   newTest({
     title: 'Can handle 2s move',
     start: ['ab|cdabcd'],
-    keysPressed: easymotionCommand('2s', 'ab', 'k'),
+    keysPressed: easymotionCommand({ key: '2s' }, 'ab', 'k'),
     end: ['|abcdabcd'],
   });
 
   newTest({
     title: 'Can handle f move',
     start: ['a|bcdabcdabcd'],
-    keysPressed: easymotionCommand('f', 'a', 'k'),
+    keysPressed: easymotionCommand({ key: 'f' }, 'a', 'k'),
     end: ['abcdabcd|abcd'],
   });
 
   newTest({
     title: 'Can handle 2f move',
     start: ['a|bcdabcdabcd'],
-    keysPressed: easymotionCommand('2f', 'ab', 'k'),
+    keysPressed: easymotionCommand({ key: '2f' }, 'ab', 'k'),
     end: ['abcdabcd|abcd'],
   });
 
   newTest({
     title: 'Can handle F move',
     start: ['abcdabc|dabcd'],
-    keysPressed: easymotionCommand('F', 'a', 'k'),
+    keysPressed: easymotionCommand({ key: 'F' }, 'a', 'k'),
     end: ['|abcdabcdabcd'],
   });
 
   newTest({
     title: 'Can handle 2F move',
     start: ['abcdabc|dabcd'],
-    keysPressed: easymotionCommand('2F', 'ab', 'k'),
+    keysPressed: easymotionCommand({ key: '2F' }, 'ab', 'k'),
     end: ['|abcdabcdabcd'],
   });
 
   newTest({
     title: 'Can handle t move',
     start: ['abcd|abcdabcd'],
-    keysPressed: easymotionCommand('t', 'c', 'k'),
+    keysPressed: easymotionCommand({ key: 't' }, 'c', 'k'),
     end: ['abcdabcda|bcd'],
+  });
+
+  newTest({
+    title: 'Can handle bd-t move',
+    start: ['abcd|abcdabcd'],
+    keysPressed: easymotionCommand({ key: 'bdt', leaderCount: 3 }, 'c', 'k'),
+    end: ['a|bcdabcdabcd'],
   });
 
   newTest({
     title: 'Can handle 2t move',
     start: ['abcd|abcdabcd'],
-    keysPressed: easymotionCommand('2t', 'cd', 'k'),
+    keysPressed: easymotionCommand({ key: '2t' }, 'cd', 'k'),
     end: ['abcdabcda|bcd'],
+  });
+
+  newTest({
+    title: 'Can handle bd-t2 move',
+    start: ['abcd|abcdabcd'],
+    keysPressed: easymotionCommand({ key: 'bd2t', leaderCount: 3 }, 'cd', 'k'),
+    end: ['a|bcdabcdabcd'],
   });
 
   newTest({
     title: 'Can handle T move',
     start: ['abcdab|cdabcd'],
-    keysPressed: easymotionCommand('T', 'a', 'k'),
+    keysPressed: easymotionCommand({ key: 'T' }, 'a', 'k'),
     end: ['a|bcdabcdabcd'],
   });
 
   newTest({
     title: 'Can handle 2T move',
     start: ['abcdabc|dabcd'],
-    keysPressed: easymotionCommand('2T', 'ab', 'k'),
+    keysPressed: easymotionCommand({ key: '2T' }, 'ab', 'k'),
     end: ['ab|cdabcdabcd'],
   });
 
   newTest({
     title: 'Can handle w move',
     start: ['abc |def ghi jkl'],
-    keysPressed: easymotionCommand('w', '', 'k'),
+    keysPressed: easymotionCommand({ key: 'w' }, '', 'k'),
     end: ['abc def ghi |jkl'],
+  });
+
+  newTest({
+    title: 'Can handle bd-w move',
+    start: ['abc |def ghi jkl'],
+    keysPressed: easymotionCommand({ key: 'bdw', leaderCount: 3 }, '', 'k'),
+    end: ['|abc def ghi jkl'],
   });
 
   newTest({
     title: 'Can handle b move',
     start: ['abc def |ghi jkl'],
-    keysPressed: easymotionCommand('b', '', 'k'),
+    keysPressed: easymotionCommand({ key: 'b' }, '', 'k'),
     end: ['|abc def ghi jkl'],
   });
 
   newTest({
     title: 'Can handle e move',
     start: ['abc |def ghi jkl'],
-    keysPressed: easymotionCommand('e', '', 'k'),
+    keysPressed: easymotionCommand({ key: 'e' }, '', 'k'),
     end: ['abc def ghi jk|l'],
+  });
+
+  newTest({
+    title: 'Can handle bd-e move',
+    start: ['abc |def ghi jkl'],
+    keysPressed: easymotionCommand({ key: 'bde', leaderCount: 3 }, '', 'k'),
+    end: ['abc| def ghi jkl'],
   });
 
   newTest({
     title: 'Can handle ge move',
     start: ['abc def |ghi jkl'],
-    keysPressed: easymotionCommand('ge', '', 'k'),
+    keysPressed: easymotionCommand({ key: 'ge' }, '', 'k'),
     end: ['ab|c def ghi jkl'],
   });
 
   newTest({
     title: 'Can handle n-char move',
     start: ['abc |def ghi jkl', 'abc def ghi jkl'],
-    keysPressed: easymotionCommand('/', 'ghi\n', 'k'),
+    keysPressed: easymotionCommand({ key: '/' }, 'ghi\n', 'k'),
     end: ['abc def ghi jkl', 'abc def |ghi jkl'],
   });
 
   newTest({
     title: 'Can handle j move',
     start: ['abc', 'd|ef', 'ghi', 'jkl'],
-    keysPressed: easymotionCommand('j', '', 'k'),
+    keysPressed: easymotionCommand({ key: 'j' }, '', 'k'),
     end: ['abc', 'def', 'ghi', '|jkl'],
   });
 
   newTest({
     title: 'Can handle k move',
     start: ['abc', 'def', 'g|hi', 'jkl'],
-    keysPressed: easymotionCommand('k', '', 'k'),
+    keysPressed: easymotionCommand({ key: 'k' }, '', 'k'),
     end: ['abc', '|def', 'ghi', 'jkl'],
+  });
+
+  newTest({
+    title: 'Can handle bd-jk move (1)',
+    start: ['abc', 'def', '|ghi', 'jkl'],
+    keysPressed: easymotionCommand({ key: 'bdjk', leaderCount: 3 }, '', 'k'),
+    end: ['abc', '|def', 'ghi', 'jkl'],
+  });
+
+  newTest({
+    title: 'Can handle bd-jk move (2)',
+    start: ['abc', 'def', '|ghi', 'jkl'],
+    keysPressed: easymotionCommand({ key: 'bdjk', leaderCount: 3 }, '', 'h'),
+    end: ['abc', 'def', 'ghi', '|jkl'],
   });
 });

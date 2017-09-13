@@ -49,6 +49,8 @@ class EasyMotionTwoCharTilCharacterForwardCommand extends EasyMotionCharMoveComm
   }
 }
 
+// easymotion-bd-t2
+
 @RegisterAction
 class EasyMotionTwoCharTilCharacterBidirectionalCommand extends EasyMotionCharMoveCommandBase {
   constructor() {

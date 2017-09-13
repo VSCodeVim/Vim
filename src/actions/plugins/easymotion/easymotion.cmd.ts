@@ -11,12 +11,12 @@ import {
   EasyMotionCharMoveOpions,
 } from './types';
 
-interface EasymotionTrigger {
+export interface EasymotionTrigger {
   key: string;
   leaderCount?: number;
 }
 
-function buildTriggerKeys(trigger: EasymotionTrigger) {
+export function buildTriggerKeys(trigger: EasymotionTrigger) {
   return [
     ...Array.from({ length: trigger.leaderCount || 2 }, () => '<leader>'),
     ...trigger.key.split(''),
@@ -30,10 +30,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   public abstract getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
 
-  constructor(
-    baseOptions: EasyMotionMoveOptionsBase,
-    trigger?: EasymotionTrigger
-  ) {
+  constructor(baseOptions: EasyMotionMoveOptionsBase, trigger?: EasymotionTrigger) {
     super();
     this._baseOptions = baseOptions;
     if (trigger) {
@@ -264,10 +261,7 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
 export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
   private _options: EasyMotionWordMoveOpions;
 
-  constructor(
-    trigger: EasymotionTrigger,
-    options: EasyMotionWordMoveOpions = {}
-  ) {
+  constructor(trigger: EasymotionTrigger, options: EasyMotionWordMoveOpions = {}) {
     super(options, trigger);
     this._options = options;
   }
@@ -299,10 +293,7 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
 export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
   private _options: EasyMotionMoveOptionsBase;
 
-  constructor(
-    trigger: EasymotionTrigger,
-    options: EasyMotionMoveOptionsBase = {}
-  ) {
+  constructor(trigger: EasymotionTrigger, options: EasyMotionMoveOptionsBase = {}) {
     super(options, trigger);
     this._options = options;
   }
