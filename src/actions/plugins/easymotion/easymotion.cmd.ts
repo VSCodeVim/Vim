@@ -257,13 +257,18 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.easyMotion = new EasyMotion();
-    vimState.easyMotion.previousMode = vimState.currentMode;
-    vimState.easyMotion.searchAction = this._action;
-    vimState.globalState.hl = true;
+    // Only execute the action if easymotion is enabled
+    if (!Configuration.easymotion) {
+      return vimState;
+    } else {
+      vimState.easyMotion = new EasyMotion();
+      vimState.easyMotion.previousMode = vimState.currentMode;
+      vimState.easyMotion.searchAction = this._action;
+      vimState.globalState.hl = true;
 
-    vimState.currentMode = ModeName.EasyMotionInputMode;
-    return vimState;
+      vimState.currentMode = ModeName.EasyMotionInputMode;
+      return vimState;
+    }
   }
 }
 
