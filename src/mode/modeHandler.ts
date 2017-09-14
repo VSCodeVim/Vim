@@ -115,15 +115,15 @@ export class VimState {
   public focusChanged = false;
 
   public surround:
-    | undefined
-    | {
-        active: boolean;
-        operator: 'change' | 'delete' | 'yank';
-        target: string | undefined;
-        replacement: string | undefined;
-        range: Range | undefined;
-        isVisualLine: boolean;
-      } = undefined;
+  | undefined
+  | {
+    active: boolean;
+    operator: 'change' | 'delete' | 'yank';
+    target: string | undefined;
+    replacement: string | undefined;
+    range: Range | undefined;
+    isVisualLine: boolean;
+  } = undefined;
 
   /**
    * Used for command like <C-o> which allows you to return to insert after a command
@@ -1049,8 +1049,8 @@ export class ModeHandler implements vscode.Disposable {
         x =>
           x.start.isEarlierThan(x.stop)
             ? x.withNewStop(
-                x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
-              )
+              x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
+            )
             : x
       );
     }
@@ -1317,7 +1317,7 @@ export class ModeHandler implements vscode.Disposable {
       if (
         recordedState.operators.length > 1 &&
         recordedState.operators.reverse()[0].constructor ===
-          recordedState.operators.reverse()[1].constructor
+        recordedState.operators.reverse()[1].constructor
       ) {
         resultVimState = await recordedState.operator.runRepeat(
           resultVimState,
@@ -1905,8 +1905,8 @@ export class ModeHandler implements vscode.Disposable {
     const easyMotionHighlightRanges =
       this.currentMode.name === ModeName.EasyMotionInputMode
         ? vimState.easyMotion.searchAction
-            .getMatches(vimState.cursorPosition, vimState)
-            .map(x => x.toRange())
+          .getMatches(vimState.cursorPosition, vimState)
+          .map(x => x.toRange())
         : [];
     this.vimState.editor.setDecorations(
       this._easymotionHighlightDecoration,
@@ -1937,8 +1937,6 @@ export class ModeHandler implements vscode.Disposable {
     } else if (this.currentMode.name === ModeName.EasyMotionMode) {
       // Update all EasyMotion decorations
       this._vimState.easyMotion.updateDecorations();
-
-      this.setStatusBarText(`Current depth: ${this.vimState.easyMotion.accumulation}`);
     } else {
       this._renderStatusBar();
     }
@@ -1953,40 +1951,53 @@ export class ModeHandler implements vscode.Disposable {
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 
-  private _renderStatusBar(): void {
-    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor
-      ? 'MULTI CURSOR'
-      : ''} --`;
-    const macroText = ` ${this._vimState.isRecordingMacro
-      ? 'Recording @' + this._vimState.recordedMacro.registerName
-      : ''}`;
-    let currentCommandText = ` ${this._vimState.recordedState.commandString}`;
-
+  private _createCurrentCommandText(): string {
     if (this._vimState.currentMode === ModeName.Insert) {
-      currentCommandText = '';
+      return '';
     }
 
     if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
-      currentCommandText = ` ${this._vimState.globalState.searchState!.searchString}`;
+      return `${this._vimState.globalState.searchState!.searchString}`;
     }
 
     if (this.vimState.currentMode === ModeName.EasyMotionInputMode) {
       const state = this.vimState.easyMotion;
       if (state) {
-        currentCommandText = state.searchAction.getSearchString();
+        const searchCharCount = state.searchAction.searchCharCount;
+        const message =
+          searchCharCount > 0
+            ? `Search for ${searchCharCount} character(s): `
+            : 'Search for characters: ';
+        return message + state.searchAction.getSearchString();
       }
+    }
+
+    if (this._vimState.currentMode === ModeName.EasyMotionMode) {
+      return `Target key: ${this.vimState.easyMotion.accumulation}`;
     }
 
     if (this._vimState.currentMode === ModeName.SurroundInputMode) {
       if (this._vimState.surround !== undefined) {
         const surroundText = this._vimState.surround.replacement;
         if (surroundText !== undefined) {
-          currentCommandText = surroundText;
+          return surroundText;
         }
       }
     }
 
-    this.setStatusBarText(`${modeText}${currentCommandText}${macroText}`);
+    return `${this._vimState.recordedState.commandString}`;
+  }
+
+  private _renderStatusBar(): void {
+    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor
+      ? 'MULTI CURSOR'
+      : ''} --`;
+    const macroText = this._vimState.isRecordingMacro
+      ? 'Recording @' + this._vimState.recordedMacro.registerName
+      : '';
+
+    const statusBarText = [modeText, this._createCurrentCommandText(), macroText].join(' ');
+    this.setStatusBarText(statusBarText);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
