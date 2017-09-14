@@ -141,11 +141,16 @@ export interface EasyMotionSearchAction {
   updateSearchString(s: string): void;
   getSearchString(): string;
   getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
+  readonly searchCharCount: number;
 }
 
 export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
   private _searchString: string = '';
   private _options: EasyMotionCharMoveOpions;
+
+  get searchCharCount() {
+    return this._options.charCount;
+  }
 
   constructor(options: EasyMotionCharMoveOpions) {
     super(options);
@@ -193,6 +198,10 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
 
 export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
   private _searchString: string = '';
+
+  get searchCharCount() {
+    return -1;
+  }
 
   constructor() {
     super({});
