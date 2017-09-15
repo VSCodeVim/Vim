@@ -316,9 +316,9 @@ function overlapSetting(args: {
   default: OptionValue;
   codeValueMapping?: ValueMapping;
 }) {
-  return function (target: any, propertyKey: string) {
+  return function(target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
-      get: function () {
+      get: function() {
         if (this['_' + propertyKey] !== undefined) {
           return this['_' + propertyKey];
         }
@@ -333,7 +333,7 @@ function overlapSetting(args: {
           return vscode.workspace.getConfiguration('editor').get(args.codeName, args.default);
         }
       },
-      set: function (value) {
+      set: function(value) {
         this['_' + propertyKey] = value;
 
         taskQueue.enqueueTask({
