@@ -650,9 +650,7 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.currentMode !== ModeName.VisualBlock
     ) {
       // Number of selections changed, make sure we know about all of them still
-      this.vimState.allCursors = e.textEditor.selections.map(
-        x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
-      );
+      this.vimState.allCursors = e.textEditor.selections.map(x => Range.FromVSCodeSelection(x));
 
       await this.updateView(this.vimState);
 
