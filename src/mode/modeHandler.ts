@@ -115,15 +115,15 @@ export class VimState {
   public focusChanged = false;
 
   public surround:
-  | undefined
-  | {
-    active: boolean;
-    operator: 'change' | 'delete' | 'yank';
-    target: string | undefined;
-    replacement: string | undefined;
-    range: Range | undefined;
-    isVisualLine: boolean;
-  } = undefined;
+    | undefined
+    | {
+        active: boolean;
+        operator: 'change' | 'delete' | 'yank';
+        target: string | undefined;
+        replacement: string | undefined;
+        range: Range | undefined;
+        isVisualLine: boolean;
+      } = undefined;
 
   /**
    * Used for command like <C-o> which allows you to return to insert after a command
@@ -1049,8 +1049,8 @@ export class ModeHandler implements vscode.Disposable {
         x =>
           x.start.isEarlierThan(x.stop)
             ? x.withNewStop(
-              x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
-            )
+                x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
+              )
             : x
       );
     }
@@ -1317,7 +1317,7 @@ export class ModeHandler implements vscode.Disposable {
       if (
         recordedState.operators.length > 1 &&
         recordedState.operators.reverse()[0].constructor ===
-        recordedState.operators.reverse()[1].constructor
+          recordedState.operators.reverse()[1].constructor
       ) {
         resultVimState = await recordedState.operator.runRepeat(
           resultVimState,
@@ -1905,8 +1905,8 @@ export class ModeHandler implements vscode.Disposable {
     const easyMotionHighlightRanges =
       this.currentMode.name === ModeName.EasyMotionInputMode
         ? vimState.easyMotion.searchAction
-          .getMatches(vimState.cursorPosition, vimState)
-          .map(x => x.toRange())
+            .getMatches(vimState.cursorPosition, vimState)
+            .map(x => x.toRange())
         : [];
     this.vimState.editor.setDecorations(
       this._easymotionHighlightDecoration,
@@ -1930,16 +1930,11 @@ export class ModeHandler implements vscode.Disposable {
 
     this.vimState.postponedCodeViewChanges = [];
 
-    if (this.currentMode.name === ModeName.SearchInProgressMode) {
-      this.setStatusBarText(
-        `Searching for: ${this.vimState.globalState.searchState!.searchString}`
-      );
-    } else if (this.currentMode.name === ModeName.EasyMotionMode) {
+    if (this.currentMode.name === ModeName.EasyMotionMode) {
       // Update all EasyMotion decorations
       this._vimState.easyMotion.updateDecorations();
-    } else {
-      this._renderStatusBar();
     }
+    this._renderStatusBar();
 
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
@@ -1957,7 +1952,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
-      return `${this._vimState.globalState.searchState!.searchString}`;
+      return `Searching for: ${this._vimState.globalState.searchState!.searchString}`;
     }
 
     if (this.vimState.currentMode === ModeName.EasyMotionInputMode) {
