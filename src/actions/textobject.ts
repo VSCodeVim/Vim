@@ -1,5 +1,6 @@
 import { ModeName } from './../mode/mode';
 import { Position } from './../common/motion/position';
+import { RegisterMode } from './../register/register';
 import { Range } from './../common/motion/range';
 import { TextEditor } from './../textEditor';
 import { VimState } from './../mode/modeHandler';
@@ -391,12 +392,14 @@ export class SelectParagraph extends TextObjectMovement {
   keys = ['a', 'p'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    let start: Position;
-    const currentParagraphBegin = position.getCurrentParagraphBeginning();
+    vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    if (position.isLineBeginning() && position.isLineEnd()) {
+    let start: Position;
+    const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
+
+    if (position.isLineWhite()) {
       // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
-      start = position.getCurrentParagraphBeginning().getCurrentParagraphEnd();
+      start = position.getCurrentParagraphBeginning(true).getCurrentParagraphEnd(true);
     } else {
       if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
@@ -405,9 +408,15 @@ export class SelectParagraph extends TextObjectMovement {
       }
     }
 
+    // Include additional blank lines.
+    let stop = position.getCurrentParagraphEnd(true);
+    while (stop.line < TextEditor.getLineCount() - 1 && stop.getDown(0).isLineWhite()) {
+      stop = stop.getDown(0);
+    }
+
     return {
       start: start,
-      stop: position.getCurrentParagraphEnd(),
+      stop: stop,
     };
   }
 }
@@ -417,24 +426,33 @@ export class SelectInnerParagraph extends TextObjectMovement {
   keys = ['i', 'p'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
     let start: Position;
-    let stop: Position = position.getCurrentParagraphEnd();
+    let stop: Position;
 
-    if (stop.isLineBeginning() && stop.isLineEnd()) {
-      stop = stop.getLeftThroughLineBreaks();
-    }
-
-    const currentParagraphBegin = position.getCurrentParagraphBeginning();
-
-    if (position.isLineBeginning() && position.isLineEnd()) {
-      // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
-      start = position.getCurrentParagraphBeginning().getCurrentParagraphEnd();
-      stop = position.getCurrentParagraphEnd().getCurrentParagraphBeginning();
+    if (position.isLineWhite()) {
+      // The cursor is at an empty line, so white lines are the paragraph.
+      start = position.getLineBegin();
+      stop = position.getLineEnd();
+      while (start.line > 0 && start.getUp(0).isLineWhite()) {
+        start = start.getUp(0);
+      }
+      while (stop.line < TextEditor.getLineCount() - 1 && stop.getDown(0).isLineWhite()) {
+        stop = stop.getDown(0);
+      }
     } else {
-      if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
+      const currentParagraphBegin = position.getCurrentParagraphBeginning(true);
+      stop = position.getCurrentParagraphEnd(true);
+      if (currentParagraphBegin.isLineWhite()) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
       } else {
         start = currentParagraphBegin;
+      }
+
+      // Exclude additional blank lines.
+      while (stop.line > 0 && stop.isLineWhite()) {
+        stop = stop.getUp(0).getLineEnd();
       }
     }
 

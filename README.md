@@ -421,6 +421,7 @@ Setting | Description
 `vim.easymotionMarkerFontSize`|The font size used for the marker text.
 `vim.easymotionMarkerFontWeight`|The font weight used for the marker text.
 `vim.easymotionMarkerYOffset`|The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
+`vim.easymotionKeys`|The characters used for jump marker name
 
 ### vim-surround
 

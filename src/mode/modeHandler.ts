@@ -685,7 +685,10 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // See comment about whatILastSetTheSelectionTo.
-    if (this._vimState.whatILastSetTheSelectionTo.isEqual(selection)) {
+    if (
+      this._vimState.whatILastSetTheSelectionTo &&
+      this._vimState.whatILastSetTheSelectionTo.isEqual(selection)
+    ) {
       return;
     }
 
