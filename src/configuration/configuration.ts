@@ -184,7 +184,7 @@ class ConfigurationClass {
   /**
    * Easymotion marker appearance settings
    */
-  easymotionMarkerBackgroundColor = '#000000';
+  easymotionMarkerBackgroundColor = '';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
   easymotionMarkerForegroundColorTwoChar = '#ffa500';
   easymotionMarkerWidthPerChar = 8;
@@ -192,7 +192,7 @@ class ConfigurationClass {
   easymotionMarkerFontFamily = 'Consolas';
   easymotionMarkerFontSize = '14';
   easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerYOffset = 11;
+  easymotionMarkerYOffset = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
 
   /**

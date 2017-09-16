@@ -402,8 +402,12 @@ Motion Command | Description
 `<leader><leader> j`|Start of line forwards
 `<leader><leader> k`|Start of line backwards
 `<leader><leader> / <char>... <CR>`|Search n-character
+`<leader><leader><leader> bdt`|Til character
+`<leader><leader><leader> bdw`|Start of word
+`<leader><leader><leader> bde`|End of word
+`<leader><leader><leader> bdjk`|Start of line
 
-`<leader><leader> (2s|2f|2F|2t|2T) <char><char>` are also available.
+`<leader><leader> (2s|2f|2F|2t|2T) <char><char>` and `<leader><leader><leader> bd2t <char>char>` are also available.
 The difference is character count required for search.
 For example, `<leader><leader> 2s <char><char>` requires two characters, and search by two characters.
 This mapping is not a standard mapping, so it is recommended to use your custom mapping.
