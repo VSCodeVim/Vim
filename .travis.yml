@@ -1,7 +1,7 @@
 notifications:
   email: false
 
-sudo: false
+sudo: true
 
 os:
 - linux
@@ -25,6 +25,7 @@ before_install:
 install:
 - npm install -g gulp;
 - npm install;
+- sudo apt-get install libsecret-1-dev
 
 script:
 - git ls-tree -r HEAD --name-only | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5
