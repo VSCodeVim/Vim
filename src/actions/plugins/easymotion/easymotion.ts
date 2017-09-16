@@ -225,7 +225,7 @@ export class EasyMotion {
   private getEasymotionMarkerForegroundColorTwoChar() {
     return this.getMarkerColor(
       Configuration.easymotionMarkerForegroundColorTwoChar,
-      '#f00',
+      '#ffa500',
       'activityBarBadge.foreground'
     );
   }
@@ -257,7 +257,8 @@ export class EasyMotion {
           backgroundColor: this.getEasymotionMarkerBackgroundColor(),
           height: `${Configuration.easymotionMarkerHeight}px`,
           width: `${keystroke.length * Configuration.easymotionMarkerWidthPerChar}px`,
-          color: `${fontColor};
+          color: fontColor,
+          textDecoration: `none;
           font-family: ${Configuration.easymotionMarkerFontFamily};
           font-size: ${Configuration.easymotionMarkerFontSize}px;
           font-weight: ${Configuration.easymotionMarkerFontWeight};
