@@ -3,8 +3,9 @@ import { Vim } from '../extension';
 import { NvUtil } from './nvUtil';
 
 function RpcRequestDecorator(nvMethodName: string) {
-  return (f: Function, vsMethodName: string) => {
-    RpcRequest.rpcFunctions[nvMethodName] = f;
+  return (f: Object, vsMethodName: string, descriptor: TypedPropertyDescriptor<any>) => {
+    // RpcRequest.rpcFunctions[nvMethodName] = descriptor;
+    return descriptor;
   };
 }
 export class RpcRequest {
@@ -16,25 +17,6 @@ export class RpcRequest {
     console.log(filePath);
     await vscode.commands.executeCommand('vscode.open', filePath);
     resp.send('success');
-  }
-
-  @RpcRequestDecorator('tab')
-  static async tab(args: Array<any>, resp: any) {
-    let result: Promise<vscode.TextDocumentContentChangeEvent> = new Promise((resolve, reject) => {
-      let handler = vscode.workspace.onDidChangeTextDocument(e => {
-        console.log(e);
-        handler.dispose();
-        resolve(e.contentChanges[0]);
-      });
-    });
-    vscode.commands.executeCommand('acceptSelectedSuggestion');
-    vscode.commands.executeCommand('tab');
-    if ((await result).rangeLength > 0) {
-      // Todo: This is double plus not good
-      await Vim.nv.command(`normal! ${'x'.repeat((await result).rangeLength)}`);
-    }
-    await resp.send((await result).text);
-    NvUtil.copyTextFromNeovim();
   }
 
   @RpcRequestDecorator('writeBuf')

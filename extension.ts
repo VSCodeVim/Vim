@@ -129,7 +129,11 @@ export async function activate(context: vscode.ExtensionContext) {
       docEnd.line !== 0
     ) {
       console.log('TRIGGERED');
-      await nvim.input('<BS>'.repeat(Math.max(1, change.rangeLength)));
+      if (change.text.length === 1) {
+        await nvim.input('<BS>');
+      } else {
+        await nvim.input('<BS>'.repeat(Math.max(0, change.rangeLength)));
+      }
       await nvim.input(change.text);
     } else {
       // todo: Optimize this to only replace relevant lines. Probably not worth
@@ -182,13 +186,11 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
-    console.log(method, args);
-    console.log('Buffers: ', await nvim.buffers);
     if (RpcRequest.rpcFunctions[method] !== undefined) {
-      // const f = RpcRequest.rpcFunctions[method];
-      // f(args, resp);
-      const f = RpcRequest.openBuf;
+      const f = RpcRequest.rpcFunctions[method];
       f(args, resp);
+      // const f = RpcRequest.openBuf;
+      // f(args, resp);
     } else {
       console.log(`${method} is not defined!`);
     }
