@@ -1,3 +1,18 @@
+# [v0.10.1 Easy Éclair](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.1)  (Sep 16, 2017)
+
+Much credit goes to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a> and <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> for much of the work this patch!
+* Made it possible to specify custom characters for Easymotion keys as in <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="252976039" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1981" href="https://github.com/VSCodeVim/Vim/issues/1981">#1981</a>. Use <code>vim.easymotionKeys</code> for this new functionality!
+* Fix a bug with easymotion not appearing on some matches.
+* Fixed a bug with easymotion appearing under code. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="255866543" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2009" href="https://github.com/VSCodeVim/Vim/issues/2009">#2009</a>
+* Started using the vscode theme color for markers instead of red and black as the default. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="257361659" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2017" href="https://github.com/VSCodeVim/Vim/pull/2017#issuecomment-329809317">#2017 (comment)</a>
+* Support for bidirectional easymotion commands.
+
+Big thanks to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a> for all of these improvements!
+* Fix an occasional dereference of undefined that occurred occasionally on startup.  Thanks <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> !
+* Implemented <code>&lt;C-]&gt;</code> and <code>&lt;C-t&gt;</code>. Thanks <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> !
+* Fixed some pesky bugs with the paragraph objects. Thanks <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> !
+* Implemented <code>''</code> and <code>``</code> properly. This involved implementing a command on the VSCode side, so thanks <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> !
+* Corrected an incorrect behavior of the new setting <code>mouseSelectionGoesIntoVisualMode</code>. Thanks <a class="user-mention" href="https://github.com/nguymin4">@nguymin4</a> !
 # [v0.10.0 Waiting Walnut](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.0)  (Aug 30, 2017)
 
 This release has been long overdue.
