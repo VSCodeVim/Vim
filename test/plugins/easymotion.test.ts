@@ -144,7 +144,7 @@ suite('easymotion plugin', () => {
     title: 'Can handle bd-e move',
     start: ['abc |def ghi jkl'],
     keysPressed: easymotionCommand({ key: 'bde', leaderCount: 3 }, '', 'k'),
-    end: ['abc| def ghi jkl'],
+    end: ['ab|c def ghi jkl'],
   });
 
   newTest({
