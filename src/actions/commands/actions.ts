@@ -2311,6 +2311,49 @@ class CommandNavigateForward extends BaseCommand {
 }
 
 @RegisterAction
+class CommandNavigateLast extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ['`', '`'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vimState.editor;
+
+    await vscode.commands.executeCommand('workbench.action.navigateLast');
+
+    if (oldActiveEditor === vimState.editor) {
+      vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandNavigateLastBOL extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ["'", "'"];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const oldActiveEditor = vimState.editor;
+
+    await vscode.commands.executeCommand('workbench.action.navigateLast');
+
+    if (oldActiveEditor === vimState.editor) {
+      const pos = Position.FromVSCodePosition(vimState.editor.selection.start);
+      vimState.cursorPosition = pos.getFirstLineNonBlankChar();
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandQuit extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['<C-w>', 'q'];

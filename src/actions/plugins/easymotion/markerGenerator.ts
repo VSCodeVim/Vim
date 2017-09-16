@@ -36,7 +36,7 @@ export class MarkerGenerator {
   private createPrefixKeyTable(): string[] {
     const keyTable = this.keyTable;
     const totalRemainder = Math.max(this.matchesCount - keyTable.length, 0);
-    const totalSteps = Math.floor(totalRemainder / keyTable.length) + 1;
+    const totalSteps = Math.ceil(totalRemainder / keyTable.length);
     const reversed = this.keyTable.slice().reverse();
     const count = Math.min(totalSteps, reversed.length);
     return reversed.slice(0, count);
