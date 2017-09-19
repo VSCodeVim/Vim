@@ -282,7 +282,7 @@ Or bind ctrl+n to turn off search highlighting and `<leader>w` to save the curre
 * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
 ```json
-    `"vim.otherModesKeyBindingsNonRecursive": [
+    "vim.otherModesKeyBindingsNonRecursive": [
         {
             "before": ["j"],
             "after": ["g", "j"]
