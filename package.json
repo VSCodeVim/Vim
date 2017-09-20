@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.12.0"
+    "vscode": "^1.13.0"
   },
   "categories": [
     "Other",
@@ -422,18 +422,15 @@
         },
         "vim.easymotionMarkerBackgroundColor": {
           "type": "string",
-          "description": "Set a custom background color for EasyMotion markers.",
-          "default": "#000000"
+          "description": "Set a custom background color for EasyMotion markers."
         },
         "vim.easymotionMarkerForegroundColorOneChar": {
           "type": "string",
-          "description": "Set a custom color for the text on one character long markers.",
-          "default": "#ff0000"
+          "description": "Set a custom color for the text on one character long markers."
         },
         "vim.easymotionMarkerForegroundColorTwoChar": {
           "type": "string",
-          "description": "Set a custom color for the text on two character long markers.",
-          "default": "#ffa500"
+          "description": "Set a custom color for the text on two character long markers."
         },
         "vim.easymotionMarkerWidthPerChar": {
           "type": "number",
@@ -463,7 +460,7 @@
         "vim.easymotionMarkerYOffset": {
           "type": "number",
           "description": "Set the Y offset of the marker text (the distance from the top).",
-          "default": 11
+          "default": 0
         },
         "vim.easymotionKeys": {
           "type": "string",
@@ -579,6 +576,6 @@
     "mocha": "^3.2.0",
     "tslint": "^4.3.1",
     "typescript": "^2.3.2",
-    "vscode": "^1.0.5"
+    "vscode": "^1.1.5"
   }
 }

@@ -11,6 +11,18 @@ import {
   EasyMotionCharMoveOpions,
 } from './types';
 
+export interface EasymotionTrigger {
+  key: string;
+  leaderCount?: number;
+}
+
+export function buildTriggerKeys(trigger: EasymotionTrigger) {
+  return [
+    ...Array.from({ length: trigger.leaderCount || 2 }, () => '<leader>'),
+    ...trigger.key.split(''),
+  ];
+}
+
 abstract class BaseEasyMotionCommand extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
 
@@ -18,9 +30,12 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   public abstract getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
 
-  constructor(baseOptions: EasyMotionMoveOptionsBase) {
+  constructor(baseOptions: EasyMotionMoveOptionsBase, trigger?: EasymotionTrigger) {
     super();
     this._baseOptions = baseOptions;
+    if (trigger) {
+      this.keys = buildTriggerKeys(trigger);
+    }
   }
 
   public abstract resolveMatchPosition(match: EasyMotion.Match): Position;
@@ -126,11 +141,16 @@ export interface EasyMotionSearchAction {
   updateSearchString(s: string): void;
   getSearchString(): string;
   getMatches(position: Position, vimState: VimState): EasyMotion.Match[];
+  readonly searchCharCount: number;
 }
 
 export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
   private _searchString: string = '';
   private _options: EasyMotionCharMoveOpions;
+
+  get searchCharCount() {
+    return this._options.charCount;
+  }
 
   constructor(options: EasyMotionCharMoveOpions) {
     super(options);
@@ -179,6 +199,10 @@ export class SearchByCharCommand extends BaseEasyMotionCommand implements EasyMo
 export class SearchByNCharCommand extends BaseEasyMotionCommand implements EasyMotionSearchAction {
   private _searchString: string = '';
 
+  get searchCharCount() {
+    return -1;
+  }
+
   constructor() {
     super({});
   }
@@ -226,30 +250,34 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   private _action: EasyMotionSearchAction;
 
-  constructor(trigger: string, action: EasyMotionSearchAction) {
+  constructor(trigger: EasymotionTrigger, action: EasyMotionSearchAction) {
     super();
     this._action = action;
-    this.keys = ['<leader>', '<leader>', ...trigger.split('')];
+    this.keys = buildTriggerKeys(trigger);
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.easyMotion = new EasyMotion();
-    vimState.easyMotion.previousMode = vimState.currentMode;
-    vimState.easyMotion.searchAction = this._action;
-    vimState.globalState.hl = true;
+    // Only execute the action if easymotion is enabled
+    if (!Configuration.easymotion) {
+      return vimState;
+    } else {
+      vimState.easyMotion = new EasyMotion();
+      vimState.easyMotion.previousMode = vimState.currentMode;
+      vimState.easyMotion.searchAction = this._action;
+      vimState.globalState.hl = true;
 
-    vimState.currentMode = ModeName.EasyMotionInputMode;
-    return vimState;
+      vimState.currentMode = ModeName.EasyMotionInputMode;
+      return vimState;
+    }
   }
 }
 
 export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
   private _options: EasyMotionWordMoveOpions;
 
-  constructor(trigger: string, options: EasyMotionWordMoveOpions = {}) {
-    super(options);
+  constructor(trigger: EasymotionTrigger, options: EasyMotionWordMoveOpions = {}) {
+    super(options, trigger);
     this._options = options;
-    this.keys = ['<leader>', '<leader>', ...trigger.split('')];
   }
 
   public getMatches(position: Position, vimState: VimState): EasyMotion.Match[] {
@@ -279,10 +307,9 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
 export class EasyMotionLineMoveCommandBase extends BaseEasyMotionCommand {
   private _options: EasyMotionMoveOptionsBase;
 
-  constructor(trigger: string, options: EasyMotionMoveOptionsBase) {
-    super(options);
+  constructor(trigger: EasymotionTrigger, options: EasyMotionMoveOptionsBase = {}) {
+    super(options, trigger);
     this._options = options;
-    this.keys = ['<leader>', '<leader>', ...trigger.split('')];
   }
 
   public resolveMatchPosition(match: EasyMotion.Match): Position {

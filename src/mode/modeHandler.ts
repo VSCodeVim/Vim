@@ -764,9 +764,9 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (
+          Configuration.mouseSelectionGoesIntoVisualMode &&
           !this._vimState.getModeObject(this).isVisualMode &&
-          (this._vimState.getModeObject(this).name !== ModeName.Insert ||
-            Configuration.mouseSelectionGoesIntoVisualMode)
+          this._vimState.getModeObject(this).name !== ModeName.Insert
         ) {
           this._vimState.currentMode = ModeName.Visual;
           this.setCurrentModeByName(this._vimState);
@@ -1938,18 +1938,11 @@ export class ModeHandler implements vscode.Disposable {
 
     this.vimState.postponedCodeViewChanges = [];
 
-    if (this.currentMode.name === ModeName.SearchInProgressMode) {
-      this.setStatusBarText(
-        `Searching for: ${this.vimState.globalState.searchState!.searchString}`
-      );
-    } else if (this.currentMode.name === ModeName.EasyMotionMode) {
+    if (this.currentMode.name === ModeName.EasyMotionMode) {
       // Update all EasyMotion decorations
       this._vimState.easyMotion.updateDecorations();
-
-      this.setStatusBarText(`Current depth: ${this.vimState.easyMotion.accumulation}`);
-    } else {
-      this._renderStatusBar();
     }
+    this._renderStatusBar();
 
     vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.useCtrlKeys);
     vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
@@ -1961,40 +1954,53 @@ export class ModeHandler implements vscode.Disposable {
     vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 
-  private _renderStatusBar(): void {
-    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor
-      ? 'MULTI CURSOR'
-      : ''} --`;
-    const macroText = ` ${this._vimState.isRecordingMacro
-      ? 'Recording @' + this._vimState.recordedMacro.registerName
-      : ''}`;
-    let currentCommandText = ` ${this._vimState.recordedState.commandString}`;
-
+  private _createCurrentCommandText(): string {
     if (this._vimState.currentMode === ModeName.Insert) {
-      currentCommandText = '';
+      return '';
     }
 
     if (this._vimState.currentMode === ModeName.SearchInProgressMode) {
-      currentCommandText = ` ${this._vimState.globalState.searchState!.searchString}`;
+      return `Searching for: ${this._vimState.globalState.searchState!.searchString}`;
     }
 
     if (this.vimState.currentMode === ModeName.EasyMotionInputMode) {
       const state = this.vimState.easyMotion;
       if (state) {
-        currentCommandText = state.searchAction.getSearchString();
+        const searchCharCount = state.searchAction.searchCharCount;
+        const message =
+          searchCharCount > 0
+            ? `Search for ${searchCharCount} character(s): `
+            : 'Search for characters: ';
+        return message + state.searchAction.getSearchString();
       }
+    }
+
+    if (this._vimState.currentMode === ModeName.EasyMotionMode) {
+      return `Target key: ${this.vimState.easyMotion.accumulation}`;
     }
 
     if (this._vimState.currentMode === ModeName.SurroundInputMode) {
       if (this._vimState.surround !== undefined) {
         const surroundText = this._vimState.surround.replacement;
         if (surroundText !== undefined) {
-          currentCommandText = surroundText;
+          return surroundText;
         }
       }
     }
 
-    this.setStatusBarText(`${modeText}${currentCommandText}${macroText}`);
+    return `${this._vimState.recordedState.commandString}`;
+  }
+
+  private _renderStatusBar(): void {
+    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor
+      ? 'MULTI CURSOR'
+      : ''} --`;
+    const macroText = this._vimState.isRecordingMacro
+      ? 'Recording @' + this._vimState.recordedMacro.registerName
+      : '';
+
+    const statusBarText = [modeText, this._createCurrentCommandText(), macroText].join(' ');
+    this.setStatusBarText(statusBarText);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
