@@ -2120,6 +2120,39 @@ class CommandGoForwardInChangelist extends BaseCommand {
 }
 
 @RegisterAction
+class CommandGoLastChange extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = [['`', '.'], ["'", '.']];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const lastPos = vimState.historyTracker.getLastHistoryStartPosition();
+
+    if (lastPos !== undefined) {
+      vimState.cursorPosition = lastPos[0];
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandInsertAtLastChange extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ['g', 'i'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const lastPos = vimState.historyTracker.getLastChangeEndPosition();
+
+    if (lastPos !== undefined) {
+      vimState.cursorPosition = lastPos;
+      vimState.currentMode = ModeName.Insert;
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 export class CommandInsertAtFirstCharacter extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ['I'];
