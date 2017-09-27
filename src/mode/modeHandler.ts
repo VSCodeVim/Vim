@@ -651,9 +651,15 @@ export class ModeHandler implements vscode.Disposable {
     ) {
       // Number of selections changed, make sure we know about all of them still
       this.vimState.allCursors = e.textEditor.selections.map(
-        x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
+        sel =>
+          new Range(
+            // Adjust the cursor positions because cursors & selections don't match exactly
+            sel.anchor.compareTo(sel.active) > 0
+              ? Position.FromVSCodePosition(sel.anchor).getLeft()
+              : Position.FromVSCodePosition(sel.anchor),
+            Position.FromVSCodePosition(sel.active)
+          )
       );
-
       await this.updateView(this.vimState);
 
       return;
