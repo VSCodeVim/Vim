@@ -2080,13 +2080,14 @@ class CommandGoBackInChangelist extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
-    const prevPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+    const prevPos = vimState.historyTracker.getChangePositionAtindex(originalIndex - 1);
+    const currPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
 
     if (prevPos !== undefined) {
       vimState.cursorPosition = prevPos[0];
-      if (vimState.historyTracker.getChangePositionAtindex(originalIndex - 1) !== undefined) {
-        vimState.historyTracker.changelistIndex = originalIndex - 1;
-      }
+      vimState.historyTracker.changelistIndex = originalIndex - 1;
+    } else if (currPos !== undefined) {
+      vimState.cursorPosition = currPos[0];
     }
 
     return vimState;
@@ -2099,20 +2100,15 @@ class CommandGoForwardInChangelist extends BaseCommand {
   keys = ['g', ','];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let originalIndex = vimState.historyTracker.changelistIndex;
-
-    // Preincrement if on boundary to prevent seeing the same index twice
-    if (originalIndex === 1) {
-      originalIndex += 1;
-    }
-
-    const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
+    const originalIndex = vimState.historyTracker.changelistIndex;
+    const nextPos = vimState.historyTracker.getChangePositionAtindex(originalIndex + 1);
+    const currPos = vimState.historyTracker.getChangePositionAtindex(originalIndex);
 
     if (nextPos !== undefined) {
       vimState.cursorPosition = nextPos[0];
-      if (vimState.historyTracker.getChangePositionAtindex(originalIndex + 1) !== undefined) {
-        vimState.historyTracker.changelistIndex = originalIndex + 1;
-      }
+      vimState.historyTracker.changelistIndex = originalIndex + 1;
+    } else if (currPos !== undefined) {
+      vimState.cursorPosition = currPos[0];
     }
 
     return vimState;
