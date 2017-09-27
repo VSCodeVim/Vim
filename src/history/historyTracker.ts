@@ -558,7 +558,7 @@ export class HistoryTracker {
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
     }
-    let lastChangeIndex = this.historySteps[this.currentHistoryStepIndex].changes.length;
+    const lastChangeIndex = this.historySteps[this.currentHistoryStepIndex].changes.length;
     if (lastChangeIndex === 0) {
       return undefined;
     }
