@@ -25,10 +25,6 @@ export class Neovim {
   static async syncVSToVim(vimState: VimState) {
     const nvim = vimState.nvim;
     const buf = await nvim.getCurrentBuf();
-    if (Configuration.expandtab) {
-      await vscode.commands.executeCommand('editor.action.indentationToTabs');
-    }
-
     await nvim.setOption('gdefault', Configuration.substituteGlobalFlag === true);
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
     const [rangeStart, rangeEnd] = [
@@ -104,9 +100,6 @@ export class Neovim {
       new Position(row - 1, character)
     );
 
-    if (Configuration.expandtab) {
-      await vscode.commands.executeCommand('editor.action.indentationToSpaces');
-    }
     // We're only syncing back the default register for now, due to the way we could
     // be storing macros in registers.
     const vimRegToVsReg = {
