@@ -548,6 +548,31 @@ export class HistoryTracker {
     return this.historySteps[this.currentHistoryStepIndex].cursorEnd;
   }
 
+  /**
+   * Gets the ending cursor position of the last Change of the last Step.
+   *
+   * In practice, this sets the cursor position to the end of
+   * the most recent text change.
+   */
+  getLastChangeEndPosition(): Position | undefined {
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+    const lastChangeIndex = this.historySteps[this.currentHistoryStepIndex].changes.length;
+    if (lastChangeIndex === 0) {
+      return undefined;
+    }
+    return this.historySteps[this.currentHistoryStepIndex].changes[lastChangeIndex - 1].end();
+  }
+
+  getLastHistoryStartPosition(): Position[] | undefined {
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+
+    return this.historySteps[this.currentHistoryStepIndex].cursorStart;
+  }
+
   setLastHistoryEndPosition(pos: Position[]) {
     this.historySteps[this.currentHistoryStepIndex].cursorEnd = pos;
   }

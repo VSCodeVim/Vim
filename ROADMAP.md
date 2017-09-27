@@ -145,7 +145,8 @@ Status | Command | Description
 :arrow_down: |    `]		       |  go to the end of the previously operated or put text
 :arrow_down: |    `<		       |  go to the start of the (previous) Visual area
 :arrow_down: |    `>		       |  go to the end of the (previous) Visual area
-:arrow_down: |    `.		       |  go to the position of the last change in this file
+:white_check_mark: |    `.		       |  go to the position of the last change in this file
+:white_check_mark: |    '.		       |  go to the position of the last change in this file
 :arrow_down: |    '{a-zA-Z0-9[]'"<>.} |  same as `, but on the first non-blank in the line
 :arrow_down: | :marks	               |  print the active marks
 :arrow_down: | :1234:  CTRL-O	       |  go to Nth older position in jump list
@@ -221,6 +222,7 @@ Status | Command | Description
 :white_check_mark:    | :1234:  i	| insert text before the cursor (N times) (also: Insert)
 :white_check_mark:    | :1234:  I	| insert text before the first non-blank in the line (N times)
 :white_check_mark:    | :1234:  gI	| insert text in column 1 (N times)
+:white_check_mark:    | gi	| insert at the end of the last change
 :white_check_mark:    | :1234:  o	| open a new line below the current line, append text (N times)
 :white_check_mark:    | :1234:  O	| open a new line above the current line, append text (N times)
 
