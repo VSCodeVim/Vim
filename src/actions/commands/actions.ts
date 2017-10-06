@@ -32,6 +32,23 @@ export class DocumentContentChangeAction extends BaseAction {
       return vimState;
     }
 
+    // Batch the content change on replay
+    if (vimState.isRunningDotCommand) {
+      const changesArray = this.contentChanges;
+      let stringToInsert = '';
+      for (let i = 0; i < changesArray.length; i++) {
+        stringToInsert += changesArray[i].textDiff.text;
+      }
+
+      // Add a transform containing the change
+      vimState.recordedState.transformations.push({
+        type: 'insertTextVSCode',
+        text: stringToInsert,
+      });
+
+      return vimState;
+    }
+
     let originalLeftBoundary: vscode.Position;
 
     if (
