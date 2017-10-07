@@ -542,6 +542,10 @@
           "type": "boolean",
           "description": "Automatically apply the global flag, /g, to substitute commands. When set to true, use /g to mean only first match should be replaced.",
           "default": "false"
+        },
+        "vim.cursorStylePerMode": {
+          "type": "object",
+          "description": "Customize cursor style per mode"
         }
       }
     }
