@@ -32,23 +32,6 @@ export class DocumentContentChangeAction extends BaseAction {
       return vimState;
     }
 
-    // Batch the content change on replay
-    if (vimState.isRunningDotCommand) {
-      const changesArray = this.contentChanges;
-      let stringToInsert = '';
-      for (let i = 0; i < changesArray.length; i++) {
-        stringToInsert += changesArray[i].textDiff.text;
-      }
-
-      // Add a transform containing the change
-      vimState.recordedState.transformations.push({
-        type: 'insertTextVSCode',
-        text: stringToInsert,
-      });
-
-      return vimState;
-    }
-
     let originalLeftBoundary: vscode.Position;
 
     if (
@@ -133,9 +116,20 @@ export class DocumentContentChangeAction extends BaseAction {
       vimState.editor.selection = new vscode.Selection(newStart, newEnd);
 
       if (newStart.isEqual(newEnd)) {
-        await TextEditor.insert(contentChange.text, Position.FromVSCodePosition(newStart));
+        vimState.recordedState.transformations.push({
+          type: 'insertText',
+          text: contentChange.text,
+          position: Position.FromVSCodePosition(newStart),
+          manuallySetCursorPositions: true,
+        });
       } else {
-        await TextEditor.replace(vimState.editor.selection, contentChange.text);
+        vimState.recordedState.transformations.push({
+          type: 'replaceText',
+          text: contentChange.text,
+          start: vimState.editor.selection.start as Position,
+          end: vimState.editor.selection.end as Position,
+          manuallySetCursorPositions: true,
+        });
       }
     }
 
