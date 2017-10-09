@@ -12,13 +12,13 @@ export interface IHandleKeys {
   [key: string]: boolean;
 }
 
-export interface IStatusBarColors {
-  normal: string;
-  insert: string;
-  visual: string;
-  visualline: string;
-  visualblock: string;
-  replace: string;
+export interface IModeSpecificStrings {
+  normal: string | undefined;
+  insert: string | undefined;
+  visual: string | undefined;
+  visualline: string | undefined;
+  visualblock: string | undefined;
+  replace: string | undefined;
 }
 
 /**
@@ -79,6 +79,9 @@ class ConfigurationClass {
       .getConfiguration()
       .get('editor.cursorStyle') as string;
     this.userCursor = this.cursorStyleFromString(cursorStyleString);
+    if (this.userCursor === undefined) {
+      this.userCursor = this.cursorStyleFromString('line');
+    }
 
     // Get configuration setting for handled keys, this allows user to disable
     // certain key comboinations
@@ -113,7 +116,7 @@ class ConfigurationClass {
     }
   }
 
-  private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle {
+  public cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
     const cursorType = {
       line: vscode.TextEditorCursorStyle.Line,
       block: vscode.TextEditorCursorStyle.Block,
@@ -126,7 +129,7 @@ class ConfigurationClass {
     if (cursorType[cursorStyle] !== undefined) {
       return cursorType[cursorStyle];
     } else {
-      return vscode.TextEditorCursorStyle.Line;
+      return undefined;
     }
   }
 
@@ -233,7 +236,7 @@ class ConfigurationClass {
   /**
    * Status bar colors to change to based on mode
    */
-  statusBarColors: IStatusBarColors = {
+  statusBarColors: IModeSpecificStrings = {
     normal: '#005f5f',
     insert: '#5f0000',
     visual: '#5f00af',
@@ -256,7 +259,7 @@ class ConfigurationClass {
   /**
    * Type of cursor user is using native to vscode
    */
-  userCursor: number;
+  userCursor: number | undefined;
 
   /**
    * Use spaces when the user presses tab?
@@ -309,6 +312,18 @@ class ConfigurationClass {
    * Automatically apply the /g flag to substitute commands.
    */
   substituteGlobalFlag = false;
+
+  /**
+   * Cursor style to set based on mode
+   */
+  cursorStylePerMode: IModeSpecificStrings = {
+    normal: undefined,
+    insert: undefined,
+    visual: undefined,
+    visualline: undefined,
+    visualblock: undefined,
+    replace: undefined,
+  };
 }
 
 function overlapSetting(args: {

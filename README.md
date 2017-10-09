@@ -181,6 +181,19 @@ We have removed this option, due to it making VSCodeVim's performance suffer imm
 * In visual mode, start a search with * or # using the current selection
 * Type: Boolean (Default: `false`)
 
+#### `"vim.cursorStylePerMode"`
+* Configure a specific cursor style per mode, any modes omitted will use default cursor type
+* Modes available are normal, insert, replace, visual, visualline, and visualblock
+* Cursors available are line, block, underline, line-thin, block-outline, and underline-thin
+
+```
+    "vim.cursorStylePerMode" : {
+        "normal": "underline",
+        "insert": "line-thin",
+        "replace": "block-outline"
+    }
+```
+
 ### Neovim Integration
 
 We now have neovim integration for Ex-commands. If you want to take advantage of this integration, set `"vim.enableNeovim"` to `true`, and set your `"vim.neovimPath"`. If you don't have neovim installed, [install neovim here](https://github.com/neovim/neovim/wiki/Installing-Neovim). If you don't want to install neovim, all of the old functionality should still work as is (we would really suggest neovim installing though. The new Ex support is super cool, and we'd like to integrate neovim more in the future).
