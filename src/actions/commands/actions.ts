@@ -884,8 +884,7 @@ class CommandOverrideCopy extends BaseCommand {
 
     if (
       vimState.currentMode === ModeName.Visual ||
-      vimState.currentMode === ModeName.Normal ||
-      vimState.currentMode === ModeName.Insert
+      vimState.currentMode === ModeName.Normal
     ) {
       text = vimState.allCursors
         .map(range => {
@@ -917,6 +916,10 @@ class CommandOverrideCopy extends BaseCommand {
       for (const { line } of Position.IterateLine(vimState)) {
         text += line + '\n';
       }
+    } else if (vimState.currentMode === ModeName.Insert) {
+      text = vimState.editor.selections.map(selection => {
+        return vimState.editor.document.getText(new vscode.Range(selection.start, selection.end));
+      }).join('\n');
     }
 
     util.clipboardCopy(text);
