@@ -324,6 +324,11 @@ class ConfigurationClass {
     visualblock: undefined,
     replace: undefined,
   };
+
+  /**
+   * When typing a command show the initial colon ':' character
+   */
+  cmdLineInitialColon = true;
 }
 
 function overlapSetting(args: {
