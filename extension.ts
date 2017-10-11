@@ -310,6 +310,21 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
+  vscode.workspace.onDidCloseTextDocument(event => {
+    const documents = vscode.workspace.textDocuments;
+
+    // Delete modehandler if vscode knows NOTHING about this document. This does
+    // not handle the case of the same file open twice. This only handles the
+    // case of deleting a modehandler once all tabs of this document have been
+    // closed
+    for (let mh in modeHandlerToEditorIdentity) {
+      const editor = modeHandlerToEditorIdentity[mh].vimState.editor.document;
+      if (documents.indexOf(editor) === -1) {
+        delete modeHandlerToEditorIdentity[mh];
+      }
+    }
+  });
+
   registerCommand(context, 'toggleVim', async () => {
     Globals.active = !Globals.active;
     if (Globals.active) {
