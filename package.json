@@ -546,6 +546,11 @@
         "vim.cursorStylePerMode": {
           "type": "object",
           "description": "Customize cursor style per mode"
+        },
+        "vim.cmdLineInitialColon": {
+          "type": "boolean",
+          "description": "When typing a command show the initial colon ':' character",
+          "default": "true"
         }
       }
     }

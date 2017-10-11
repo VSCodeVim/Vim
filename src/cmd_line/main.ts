@@ -16,14 +16,21 @@ export async function showCmdLine(
 
   const options: vscode.InputBoxOptions = {
     prompt: 'Vim command line',
-    value: initialText,
+    value: Configuration.cmdLineInitialColon ? ':' + initialText : initialText,
     ignoreFocusOut: true,
-    valueSelection: [initialText.length, initialText.length],
+    valueSelection: [
+      Configuration.cmdLineInitialColon ? initialText.length + 1 : initialText.length,
+      Configuration.cmdLineInitialColon ? initialText.length + 1 : initialText.length,
+    ],
   };
 
   try {
     const cmdString = await vscode.window.showInputBox(options);
-    await runCmdLine(cmdString!, modeHandler);
+    const trimmedCmdString =
+      cmdString && Configuration.cmdLineInitialColon && cmdString[0] === ':'
+        ? cmdString.slice(1)
+        : cmdString;
+    await runCmdLine(trimmedCmdString!, modeHandler);
     return;
   } catch (e) {
     modeHandler.setStatusBarText(e.toString());
