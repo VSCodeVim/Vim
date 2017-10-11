@@ -882,11 +882,7 @@ class CommandOverrideCopy extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let text = '';
 
-    if (
-      vimState.currentMode === ModeName.Visual ||
-      vimState.currentMode === ModeName.Normal ||
-      vimState.currentMode === ModeName.Insert
-    ) {
+    if (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.Normal) {
       text = vimState.allCursors
         .map(range => {
           const start = Position.EarlierOf(range.start, range.stop);
@@ -917,6 +913,12 @@ class CommandOverrideCopy extends BaseCommand {
       for (const { line } of Position.IterateLine(vimState)) {
         text += line + '\n';
       }
+    } else if (vimState.currentMode === ModeName.Insert) {
+      text = vimState.editor.selections
+        .map(selection => {
+          return vimState.editor.document.getText(new vscode.Range(selection.start, selection.end));
+        })
+        .join('\n');
     }
 
     util.clipboardCopy(text);
