@@ -328,7 +328,7 @@ class ConfigurationClass {
   /**
    * When typing a command show the initial colon ':' character
    */
-  cmdLineInitialColon = true;
+  cmdLineInitialColon = false;
 }
 
 function overlapSetting(args: {
