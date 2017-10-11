@@ -550,11 +550,7 @@
         "vim.cmdLineInitialColon": {
           "type": "boolean",
           "description": "When typing a command show the initial colon ':' character",
-<<<<<<< HEAD
           "default": false
-=======
-          "default": "true"
->>>>>>> dc7602fc44b873ee881c60155fd6065cc27c29be
         }
       }
     }
