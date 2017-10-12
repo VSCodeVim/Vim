@@ -165,6 +165,10 @@ We have removed this option, due to it making VSCodeVim's performance suffer imm
     * etc.
 * Type: Boolean (Default: `true`)
 
+#### `"vim.cmdLineInitialColon"`
+* Set this to have VSCodeVim mimick Vim, showing the ':' colon character in the Vim command line when it is called.
+* Type: Boolean (Default: `false`)
+
 #### `"vim.handleKeys"`
 * Allows user to select certain modifier keybindings and delegate them back to VSCode so that VSCodeVim does not process them.
 * Complete list of keys that can be delegated back to VSCode can be found in our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json#L44). Each key that has a vim.use<C-...> in the when argument can be delegated back to vscode by doing "<C-...>":false.
