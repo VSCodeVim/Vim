@@ -1258,23 +1258,14 @@ class MoveToMatchingBracket extends BaseMovement {
         if (PairMatcher.pairings[text[i]]) {
           // We found an opening char, now move to the matching closing char
           const openPosition = new Position(position.line, i);
-          const result = PairMatcher.nextPairedChar(openPosition, text[i], true);
-
-          if (!result) {
-            return failure;
-          }
-          return result;
+          return PairMatcher.nextPairedChar(openPosition, text[i], true) || failure;
         }
       }
 
       return failure;
     }
 
-    const result = PairMatcher.nextPairedChar(position, charToMatch, true);
-    if (!result) {
-      return failure;
-    }
-    return result;
+    return PairMatcher.nextPairedChar(position, charToMatch, true) || failure;
   }
 
   public async execActionForOperator(
