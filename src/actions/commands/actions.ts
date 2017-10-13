@@ -116,9 +116,20 @@ export class DocumentContentChangeAction extends BaseAction {
       vimState.editor.selection = new vscode.Selection(newStart, newEnd);
 
       if (newStart.isEqual(newEnd)) {
-        await TextEditor.insert(contentChange.text, Position.FromVSCodePosition(newStart));
+        vimState.recordedState.transformations.push({
+          type: 'insertText',
+          text: contentChange.text,
+          position: Position.FromVSCodePosition(newStart),
+          manuallySetCursorPositions: true,
+        });
       } else {
-        await TextEditor.replace(vimState.editor.selection, contentChange.text);
+        vimState.recordedState.transformations.push({
+          type: 'replaceText',
+          text: contentChange.text,
+          start: vimState.editor.selection.start as Position,
+          end: vimState.editor.selection.end as Position,
+          manuallySetCursorPositions: true,
+        });
       }
     }
 

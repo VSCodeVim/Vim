@@ -938,19 +938,7 @@ export class ModeHandler implements vscode.Disposable {
           recordedState.actionsRun.push(action);
         }
       } else {
-        if (
-          action instanceof CommandInsertInInsertMode ||
-          action instanceof CommandInsertPreviousText
-        ) {
-          // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
-          vimState.historyTracker.currentContentChanges = [];
-          let newContentChange = new DocumentContentChangeAction();
-          newContentChange.keysPressed.push(key);
-          recordedState.actionsRun.push(newContentChange);
-          actionToRecord = newContentChange;
-        } else {
-          recordedState.actionsRun.push(action);
-        }
+        recordedState.actionsRun.push(action);
       }
     }
 
@@ -1660,9 +1648,20 @@ export class ModeHandler implements vscode.Disposable {
       await this.handleMultipleKeyEvents(surroundKeys);
     } else {
       let i = 0;
-      for (let action of actions) {
+      for (let j = 0; j < actions.length; j++) {
         recordedState.actionsRun = actions.slice(0, ++i);
-        vimState = await this.runAction(vimState, recordedState, action);
+
+        if (actions[j] instanceof CommandInsertInInsertMode) {
+          const toDo = actions[j] as BaseCommand;
+          toDo.exec(vimState.cursorPosition, vimState);
+
+          if (!(actions[j + 1] instanceof CommandInsertInInsertMode)) {
+            // No more insert after this, so run the actions
+            vimState = await this.runAction(vimState, recordedState, actions[j]);
+          }
+        } else {
+          vimState = await this.runAction(vimState, recordedState, actions[j]);
+        }
 
         if (vimState.lastMovementFailed) {
           return vimState;
