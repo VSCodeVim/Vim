@@ -581,16 +581,15 @@ export class ModeHandler implements vscode.Disposable {
           return;
         }
 
-        taskQueue.enqueueTask({
-          promise: () => this.handleSelectionChange(e),
-          isRunning: false,
-
+        taskQueue.enqueueTask(
+          () => this.handleSelectionChange(e),
+          undefined,
           /**
            * We don't want these to become backlogged! If they do, we'll update
            * the selection to an incorrect value and see a jittering cursor.
            */
-          highPriority: true,
-        });
+          true
+        );
       }
     );
 

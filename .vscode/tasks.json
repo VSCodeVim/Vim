@@ -16,17 +16,8 @@
       "taskName": "build",
       "args": [],
       "isBuildCommand": true,
-      "isWatching": false,
-      "problemMatcher": "$tsc-watch"
-    },
-
-    {
-      "taskName": "yolo",
-      "args": ["nothing"],
-      "isBuildCommand": true,
-      "isWatching": false,
+      "isBackground": false,
       "problemMatcher": "$tsc-watch"
     }
-
   ]
 }
