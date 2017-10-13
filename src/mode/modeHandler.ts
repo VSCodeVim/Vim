@@ -2008,7 +2008,20 @@ export class ModeHandler implements vscode.Disposable {
       ? 'Recording @' + this._vimState.recordedMacro.registerName
       : '';
 
-    const statusBarText = [modeText, this._createCurrentCommandText(), macroText].join(' ');
+    // Create status bar text
+    let statusBarTextArray = [];
+
+    if (Configuration.showmodename) {
+      statusBarTextArray.push(modeText);
+    }
+
+    if (Configuration.showcmd) {
+      statusBarTextArray.push(this._createCurrentCommandText());
+    }
+
+    statusBarTextArray.push(macroText);
+
+    const statusBarText = statusBarTextArray.join(' ');
     this.setStatusBarText(statusBarText);
   }
 

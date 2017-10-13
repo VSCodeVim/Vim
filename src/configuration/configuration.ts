@@ -209,6 +209,11 @@ class ConfigurationClass {
   showcmd = true;
 
   /**
+   * Display mode name text on status bar?
+   */
+  showmodename = true;
+
+  /**
    * What key should <leader> map to in key remappings?
    */
   leader = '\\';

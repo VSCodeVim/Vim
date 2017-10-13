@@ -369,6 +369,10 @@ Vim settings are loaded in the following sequence:
 * Show the text of any command you are in the middle of writing.
 * Type: Boolean (Default: `true`)
 
+#### `"vim.showmodename"`
+* Show the name of the current mode in the statusbar.
+* Type: Boolean (Default: `true`)
+
 #### `"vim.textwidth"`
 * Width to word-wrap to when using `gq`.
 * Type: number (Default: `80`)
