@@ -361,25 +361,19 @@ function overlapSetting(args: {
       set: function(value) {
         this['_' + propertyKey] = value;
 
-        taskQueue.enqueueTask({
-          promise: async () => {
-            if (value === undefined || Globals.isTesting) {
-              return;
-            }
+        taskQueue.enqueueTask(async () => {
+          if (value === undefined || Globals.isTesting) {
+            return;
+          }
 
-            let codeValue = value;
+          let codeValue = value;
 
-            if (args.codeValueMapping) {
-              codeValue = args.codeValueMapping[value];
-            }
+          if (args.codeValueMapping) {
+            codeValue = args.codeValueMapping[value];
+          }
 
-            await vscode.workspace
-              .getConfiguration('editor')
-              .update(args.codeName, codeValue, true);
-          },
-          isRunning: false,
-          queue: 'config',
-        });
+          await vscode.workspace.getConfiguration('editor').update(args.codeName, codeValue, true);
+        }, 'config');
       },
       enumerable: true,
       configurable: true,
