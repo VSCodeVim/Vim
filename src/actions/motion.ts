@@ -861,6 +861,7 @@ class MoveDownByScreenLineVisualLine extends MoveByScreenLine {
   value = 1;
 }
 
+@RegisterAction
 class MoveUpByScreenLineVisualBlock extends BaseMovement {
   modes = [ModeName.VisualBlock];
   keys = [['g', 'k'], ['g', '<up>']];
