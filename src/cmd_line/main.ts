@@ -17,7 +17,7 @@ export async function showCmdLine(
   const options: vscode.InputBoxOptions = {
     prompt: 'Vim command line',
     value: Configuration.cmdLineInitialColon ? ':' + initialText : initialText,
-    ignoreFocusOut: true,
+    ignoreFocusOut: false,
     valueSelection: [
       Configuration.cmdLineInitialColon ? initialText.length + 1 : initialText.length,
       Configuration.cmdLineInitialColon ? initialText.length + 1 : initialText.length,
