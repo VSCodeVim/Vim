@@ -139,7 +139,7 @@ Status | Command | Description
 :white_check_mark:|   `{a-z}	       |  go to mark {a-z} within current file
 :white_check_mark:|    `{A-Z}	       |  go to mark {A-Z} in any file
 :white_check_mark:|    `{0-9}	       |  go to the position where Vim was previously exited
-:arrow_down: |    ``		       |  go to the position before the last jump
+:white_check_mark: |    ``		       |  go to the position before the last jump
 :arrow_down: |    `"		       |  go to the position when last editing this file
 :arrow_down: |    `[		       |  go to the start of the previously operated or put text
 :arrow_down: |    `]		       |  go to the end of the previously operated or put text
