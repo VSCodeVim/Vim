@@ -17,7 +17,7 @@ let toReversedString = (function() {
 
   let lastInput: string = '';
   let lastOutput: string = '';
-  return function toReversedString(str: string): string {
+  return function(str: string): string {
     if (lastInput !== str) {
       lastInput = str;
       lastOutput = reverse(lastInput);

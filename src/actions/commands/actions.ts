@@ -182,9 +182,9 @@ export abstract class BaseCommand extends BaseAction {
    * Run the command the number of times VimState wants us to.
    */
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    if (!this.runsOnceForEveryCursor()) {
-      let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
+    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
+    if (!this.runsOnceForEveryCursor()) {
       for (let i = 0; i < timesToRepeat; i++) {
         vimState = await this.exec(position, vimState);
       }
@@ -198,9 +198,7 @@ export abstract class BaseCommand extends BaseAction {
       return vimState;
     }
 
-    let timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
     let resultingCursors: Range[] = [];
-    let i = 0;
 
     const cursorsToIterateOver = vimState.allCursors
       .map(x => new Range(x.start, x.stop))
@@ -212,8 +210,9 @@ export abstract class BaseCommand extends BaseAction {
             : -1
       );
 
+    let cursorIndex = 0;
     for (const { start, stop } of cursorsToIterateOver) {
-      this.multicursorIndex = i++;
+      this.multicursorIndex = cursorIndex++;
 
       vimState.cursorPosition = stop;
       vimState.cursorStartPosition = start;
@@ -882,24 +881,12 @@ class CommandOverrideCopy extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let text = '';
 
-    if (
-      vimState.currentMode === ModeName.Visual ||
-      vimState.currentMode === ModeName.Normal ||
-      vimState.currentMode === ModeName.Insert
-    ) {
+    if (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.Normal) {
       text = vimState.allCursors
         .map(range => {
           const start = Position.EarlierOf(range.start, range.stop);
           const stop = Position.LaterOf(range.start, range.stop);
-
-          // Insert selecting from the left to the right is a special case that
-          // selects one more on the right.
-          // The order of the if statements is to check for the case where start=stop
-          if (vimState.currentMode !== ModeName.Insert || start.isEqual(range.stop)) {
-            return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
-          } else {
-            return vimState.editor.document.getText(new vscode.Range(start, stop));
-          }
+          return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
         })
         .join('\n');
     } else if (vimState.currentMode === ModeName.VisualLine) {
@@ -917,6 +904,12 @@ class CommandOverrideCopy extends BaseCommand {
       for (const { line } of Position.IterateLine(vimState)) {
         text += line + '\n';
       }
+    } else if (vimState.currentMode === ModeName.Insert) {
+      text = vimState.editor.selections
+        .map(selection => {
+          return vimState.editor.document.getText(new vscode.Range(selection.start, selection.end));
+        })
+        .join('\n');
     }
 
     util.clipboardCopy(text);
@@ -1469,7 +1462,7 @@ export class PutCommandVisual extends BaseCommand {
     // selection first than insert
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
-      let result = await new operator.DeleteOperator(this.multicursorIndex).run(
+      let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
@@ -1477,29 +1470,29 @@ export class PutCommandVisual extends BaseCommand {
       );
       // to ensure, that the put command nows this is
       // an linewise register insertion in visual mode
-      let oldMode = result.currentMode;
-      result.currentMode = ModeName.Visual;
-      result = await new PutCommand().exec(start, result, true);
-      result.currentMode = oldMode;
-      return result;
+      let oldMode = deleteResult.currentMode;
+      deleteResult.currentMode = ModeName.Visual;
+      deleteResult = await new PutCommand().exec(start, deleteResult, true);
+      deleteResult.currentMode = oldMode;
+      return deleteResult;
     }
 
     // The reason we need to handle Delete and Yank separately is because of
     // linewise mode. If we're in visualLine mode, then we want to copy
     // linewise but not necessarily delete linewise.
-    let result = await new PutCommand(this.multicursorIndex).exec(start, vimState, true);
-    result.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
-    result.recordedState.registerName = Configuration.useSystemClipboard ? '*' : '"';
-    result = await new operator.YankOperator(this.multicursorIndex).run(result, start, end);
-    result.currentRegisterMode = RegisterMode.CharacterWise;
-    result = await new operator.DeleteOperator(this.multicursorIndex).run(
-      result,
+    let putResult = await new PutCommand(this.multicursorIndex).exec(start, vimState, true);
+    putResult.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
+    putResult.recordedState.registerName = Configuration.useSystemClipboard ? '*' : '"';
+    putResult = await new operator.YankOperator(this.multicursorIndex).run(putResult, start, end);
+    putResult.currentRegisterMode = RegisterMode.CharacterWise;
+    putResult = await new operator.DeleteOperator(this.multicursorIndex).run(
+      putResult,
       start,
       end.getLeftIfEOL(),
       false
     );
-    result.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
-    return result;
+    putResult.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+    return putResult;
   }
 
   // TODO - execWithCount

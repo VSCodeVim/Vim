@@ -213,66 +213,54 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   overrideCommand(context, 'type', async args => {
-    taskQueue.enqueueTask({
-      promise: async () => {
-        const mh = await getAndUpdateModeHandler();
+    taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
 
-        if (compositionState.isInComposition) {
-          compositionState.composingText += args.text;
-        } else {
-          await mh.handleKeyEvent(args.text);
-        }
-      },
-      isRunning: false,
+      if (compositionState.isInComposition) {
+        compositionState.composingText += args.text;
+      } else {
+        await mh.handleKeyEvent(args.text);
+      }
     });
   });
 
   overrideCommand(context, 'replacePreviousChar', async args => {
-    taskQueue.enqueueTask({
-      promise: async () => {
-        const mh = await getAndUpdateModeHandler();
+    taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
 
-        if (compositionState.isInComposition) {
-          compositionState.composingText =
-            compositionState.composingText.substr(
-              0,
-              compositionState.composingText.length - args.replaceCharCnt
-            ) + args.text;
-        } else {
-          await vscode.commands.executeCommand('default:replacePreviousChar', {
-            text: args.text,
-            replaceCharCnt: args.replaceCharCnt,
-          });
-          mh.vimState.cursorPosition = Position.FromVSCodePosition(
-            mh.vimState.editor.selection.start
-          );
-          mh.vimState.cursorStartPosition = Position.FromVSCodePosition(
-            mh.vimState.editor.selection.start
-          );
-        }
-      },
-      isRunning: false,
+      if (compositionState.isInComposition) {
+        compositionState.composingText =
+          compositionState.composingText.substr(
+            0,
+            compositionState.composingText.length - args.replaceCharCnt
+          ) + args.text;
+      } else {
+        await vscode.commands.executeCommand('default:replacePreviousChar', {
+          text: args.text,
+          replaceCharCnt: args.replaceCharCnt,
+        });
+        mh.vimState.cursorPosition = Position.FromVSCodePosition(
+          mh.vimState.editor.selection.start
+        );
+        mh.vimState.cursorStartPosition = Position.FromVSCodePosition(
+          mh.vimState.editor.selection.start
+        );
+      }
     });
   });
 
   overrideCommand(context, 'compositionStart', async args => {
-    taskQueue.enqueueTask({
-      promise: async () => {
-        compositionState.isInComposition = true;
-      },
-      isRunning: false,
+    taskQueue.enqueueTask(async () => {
+      compositionState.isInComposition = true;
     });
   });
 
   overrideCommand(context, 'compositionEnd', async args => {
-    taskQueue.enqueueTask({
-      promise: async () => {
-        const mh = await getAndUpdateModeHandler();
-        let text = compositionState.composingText;
-        compositionState = new CompositionState();
-        await mh.handleMultipleKeyEvents(text.split(''));
-      },
-      isRunning: false,
+    taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
+      let text = compositionState.composingText;
+      compositionState = new CompositionState();
+      await mh.handleMultipleKeyEvents(text.split(''));
     });
   });
 
@@ -284,30 +272,42 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
-    taskQueue.enqueueTask({
-      promise: async () => {
-        const mh = await getAndUpdateModeHandler();
-        if (args.after) {
-          for (const key of args.after) {
-            await mh.handleKeyEvent(AngleBracketNotation.Normalize(key));
-          }
-          return;
+    taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
+      if (args.after) {
+        for (const key of args.after) {
+          await mh.handleKeyEvent(AngleBracketNotation.Normalize(key));
         }
+        return;
+      }
 
-        if (args.commands) {
-          for (const command of args.commands) {
-            // Check if this is a vim command by looking for :
-            if (command.command.slice(0, 1) === ':') {
-              await runCmdLine(command.command.slice(1, command.command.length), mh);
-              await mh.updateView(mh.vimState);
-            } else {
-              await vscode.commands.executeCommand(command.command, command.args);
-            }
+      if (args.commands) {
+        for (const command of args.commands) {
+          // Check if this is a vim command by looking for :
+          if (command.command.slice(0, 1) === ':') {
+            await runCmdLine(command.command.slice(1, command.command.length), mh);
+            await mh.updateView(mh.vimState);
+          } else {
+            await vscode.commands.executeCommand(command.command, command.args);
           }
         }
-      },
-      isRunning: false,
+      }
     });
+  });
+
+  vscode.workspace.onDidCloseTextDocument(event => {
+    const documents = vscode.workspace.textDocuments;
+
+    // Delete modehandler if vscode knows NOTHING about this document. This does
+    // not handle the case of the same file open twice. This only handles the
+    // case of deleting a modehandler once all tabs of this document have been
+    // closed
+    for (let mh in modeHandlerToEditorIdentity) {
+      const editor = modeHandlerToEditorIdentity[mh].vimState.editor.document;
+      if (documents.indexOf(editor) === -1) {
+        delete modeHandlerToEditorIdentity[mh];
+      }
+    }
   });
 
   registerCommand(context, 'toggleVim', async () => {
@@ -432,11 +432,8 @@ function registerCommand(
 async function handleKeyEvent(key: string): Promise<void> {
   const mh = await getAndUpdateModeHandler();
 
-  taskQueue.enqueueTask({
-    promise: async () => {
-      await mh.handleKeyEvent(key);
-    },
-    isRunning: false,
+  taskQueue.enqueueTask(async () => {
+    await mh.handleKeyEvent(key);
   });
 }
 
@@ -459,15 +456,12 @@ async function handleActiveEditorChange(): Promise<void> {
     return;
   }
 
-  taskQueue.enqueueTask({
-    promise: async () => {
-      if (vscode.window.activeTextEditor !== undefined) {
-        const mh = await getAndUpdateModeHandler();
+  taskQueue.enqueueTask(async () => {
+    if (vscode.window.activeTextEditor !== undefined) {
+      const mh = await getAndUpdateModeHandler();
 
-        mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
-      }
-    },
-    isRunning: false,
+      mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    }
   });
 }
 

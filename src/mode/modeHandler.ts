@@ -581,16 +581,15 @@ export class ModeHandler implements vscode.Disposable {
           return;
         }
 
-        taskQueue.enqueueTask({
-          promise: () => this.handleSelectionChange(e),
-          isRunning: false,
-
+        taskQueue.enqueueTask(
+          () => this.handleSelectionChange(e),
+          undefined,
           /**
            * We don't want these to become backlogged! If they do, we'll update
            * the selection to an incorrect value and see a jittering cursor.
            */
-          highPriority: true,
-        });
+          true
+        );
       }
     );
 
@@ -2008,7 +2007,20 @@ export class ModeHandler implements vscode.Disposable {
       ? 'Recording @' + this._vimState.recordedMacro.registerName
       : '';
 
-    const statusBarText = [modeText, this._createCurrentCommandText(), macroText].join(' ');
+    // Create status bar text
+    let statusBarTextArray = [];
+
+    if (Configuration.showmodename) {
+      statusBarTextArray.push(modeText);
+    }
+
+    if (Configuration.showcmd) {
+      statusBarTextArray.push(this._createCurrentCommandText());
+    }
+
+    statusBarTextArray.push(macroText);
+
+    const statusBarText = statusBarTextArray.join(' ');
     this.setStatusBarText(statusBarText);
   }
 
