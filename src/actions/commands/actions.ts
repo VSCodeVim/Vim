@@ -904,6 +904,8 @@ class CommandOverrideCopy extends BaseCommand {
       for (const { line } of Position.IterateLine(vimState)) {
         text += line + '\n';
       }
+      // Remove newline for last line
+      text = text.slice(0, text.length - 1);
     } else if (vimState.currentMode === ModeName.Insert) {
       text = vimState.editor.selections
         .map(selection => {
@@ -1221,7 +1223,10 @@ export class PutCommand extends BaseCommand {
     let whereToAddText: Position;
     let diff = new PositionDiff(0, 0);
 
-    if (register.registerMode === RegisterMode.CharacterWise) {
+    if (
+      register.registerMode === RegisterMode.CharacterWise ||
+      register.registerMode === RegisterMode.BlockWise
+    ) {
       textToAdd = text;
       whereToAddText = dest;
     } else if (
@@ -1230,8 +1235,16 @@ export class PutCommand extends BaseCommand {
     ) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
-      textToAdd = '\n' + text + '\n';
+      textToAdd = text;
       whereToAddText = dest;
+
+      // Append newline if this is not the last line in the document, if it IS the last line prepend with a newline
+      if (dest.line !== TextEditor.getLineCount() - 1) {
+        textToAdd = textToAdd + '\n';
+      } else {
+        textToAdd = '\n' + textToAdd;
+        after = false;
+      }
     } else {
       if (adjustIndent) {
         // Adjust indent to current line

@@ -594,6 +594,9 @@ export class YankVisualBlockMode extends BaseOperator {
       toCopy += line + '\n';
     }
 
+    // Remove newline for last line
+    toCopy = toCopy.slice(0, toCopy.length - 1);
+
     Register.put(toCopy, vimState, this.multicursorIndex);
 
     vimState.currentMode = ModeName.Normal;
