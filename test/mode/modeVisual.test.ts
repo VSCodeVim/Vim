@@ -814,6 +814,20 @@ suite('Mode Visual', () => {
       keysPressed: 'vkY4j3lvjllp',
       end: ['i yanked', 'this line', '', '1.line', 'a12', '|i yanked', 'this line', '6', '2.line'],
     });
+
+    newTest({
+      title: 'Put over single line',
+      start: ['fir|st line', 'second line'],
+      keysPressed: 'yyjVp',
+      end: ['first line', '|first line'],
+    });
+
+    newTest({
+      title: 'Put before single line',
+      start: ['first line', 'se|cond line'],
+      keysPressed: 'Yk"+P',
+      end: ['|second line', 'first line', 'second line'],
+    });
   });
 
   suite('Non-darwin <C-c> tests', () => {
