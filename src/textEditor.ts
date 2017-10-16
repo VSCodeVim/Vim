@@ -144,13 +144,6 @@ export class TextEditor {
     return line.text[position.character];
   }
 
-  static isLastCharacterBeforeEOL(position: vscode.Position): boolean {
-    return (
-      position.character === TextEditor.getLineMaxColumn(position.line) &&
-      position.line === vscode.window.activeTextEditor!.document.lineCount - 1
-    );
-  }
-
   static getLineMaxColumn(lineNumber: number): number {
     if (lineNumber < 0 || lineNumber > TextEditor.getLineCount()) {
       throw new Error('Illegal value ' + lineNumber + ' for `lineNumber`');

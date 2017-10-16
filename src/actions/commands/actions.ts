@@ -1229,22 +1229,15 @@ export class PutCommand extends BaseCommand {
     ) {
       textToAdd = text;
       whereToAddText = dest;
-    } else if (
-      vimState.currentMode === ModeName.Visual &&
-      register.registerMode === RegisterMode.LineWise
-    ) {
+    } else if (vimState.currentMode === ModeName.Visual) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
-      textToAdd = text;
+      textToAdd = '\n' + text + '\n';
       whereToAddText = dest;
-
-      // Append newline if this is not the last line in the document, if it IS the last line prepend with a newline
-      if (dest.line !== TextEditor.getLineCount() - 1) {
-        textToAdd = textToAdd + '\n';
-      } else {
-        textToAdd = '\n' + textToAdd;
-        after = false;
-      }
+    } else if (register.registerMode === RegisterMode.LineWise) {
+      // Strip newline if linewise
+      textToAdd = text.slice(0, text.length - 1);
+      whereToAddText = dest;
     } else {
       if (adjustIndent) {
         // Adjust indent to current line
