@@ -267,9 +267,11 @@ export class YankOperator extends BaseOperator {
     let text = TextEditor.getText(new vscode.Range(start, end));
 
     // If we selected the newline character, add it as well.
+    // If this is the last line and character, append newline as well
     if (
-      vimState.currentMode === ModeName.Visual &&
-      end.character === TextEditor.getLineAt(end).text.length + 1
+      (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) &&
+      (end.character === TextEditor.getLineAt(end).text.length + 1 ||
+        TextEditor.isLastCharacterBeforeEOL(end))
     ) {
       text = text + '\n';
     }
