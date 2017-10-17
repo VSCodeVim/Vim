@@ -1233,10 +1233,10 @@ export class PutCommand extends BaseCommand {
       whereToAddText = dest;
       // } else if (vimState.currentMode === ModeName.VisualLine) {
     } else if (register.registerMode === RegisterMode.LineWise) {
-      // Strip newline if linewise
+      // Strip trailing newline if linewise
       text = text.slice(0, text.length - 1);
-      textToAdd = text;
-      whereToAddText = dest;
+      textToAdd = '\n' + text;
+      whereToAddText = dest.getLineEnd();
     } else {
       if (adjustIndent) {
         // Adjust indent to current line
