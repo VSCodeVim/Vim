@@ -261,7 +261,7 @@ export class YankOperator extends BaseOperator {
     }
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
-      end = end.getLineEndIncludingEOL();
+      end = end.getLineEndIncludingEOL().getRightThroughLineBreaks();
     }
 
     let text = TextEditor.getText(new vscode.Range(start, end));

@@ -1223,10 +1223,7 @@ export class PutCommand extends BaseCommand {
     let whereToAddText: Position;
     let diff = new PositionDiff(0, 0);
 
-    if (
-      register.registerMode === RegisterMode.CharacterWise ||
-      register.registerMode === RegisterMode.BlockWise
-    ) {
+    if (register.registerMode === RegisterMode.CharacterWise) {
       textToAdd = text;
       whereToAddText = dest;
     } else if (vimState.currentMode === ModeName.Visual) {
@@ -1234,9 +1231,11 @@ export class PutCommand extends BaseCommand {
       // we need extra newline feeds
       textToAdd = '\n' + text + '\n';
       whereToAddText = dest;
+      // } else if (vimState.currentMode === ModeName.VisualLine) {
     } else if (register.registerMode === RegisterMode.LineWise) {
       // Strip newline if linewise
-      textToAdd = text.slice(0, text.length - 1);
+      text = text.slice(0, text.length - 1);
+      textToAdd = text;
       whereToAddText = dest;
     } else {
       if (adjustIndent) {
@@ -1468,18 +1467,16 @@ export class PutCommandVisual extends BaseCommand {
     // selection first than insert
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
+      const oldMode = vimState.currentMode;
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
         false
       );
-      // to ensure, that the put command nows this is
-      // an linewise register insertion in visual mode
-      let oldMode = deleteResult.currentMode;
-      deleteResult.currentMode = ModeName.Visual;
-      deleteResult = await new PutCommand().exec(start, deleteResult, true);
       deleteResult.currentMode = oldMode;
+      deleteResult = await new PutCommand().exec(start, deleteResult, true);
+      deleteResult.currentMode = ModeName.Normal;
       return deleteResult;
     }
 
