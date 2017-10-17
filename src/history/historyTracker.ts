@@ -501,10 +501,10 @@ export class HistoryTracker {
 
     if (this.currentHistoryStep.changes.length === 0) {
       this.currentHistoryStepIndex--;
-    }
 
-    if (this.currentHistoryStepIndex === 0) {
-      return undefined;
+      if (this.currentHistoryStepIndex === 0) {
+        return undefined;
+      }
     }
 
     step = this.currentHistoryStep;
@@ -516,6 +516,59 @@ export class HistoryTracker {
     this.currentHistoryStepIndex--;
 
     return step && step.cursorStart;
+  }
+
+  /**
+   * Performs an undo action for all actions which occurred on
+   * the same line as the most recent action.
+   * Returns undefined if there's no more steps back to go.
+   * Only acts upon consecutive changes on the last-changed line.
+   */
+  async goBackHistoryStepsOnLine(): Promise<Position[] | undefined> {
+    let currentStep: HistoryStep;
+    let currentLine: number;
+    let done: boolean = false;
+    var stepsToUndo: number = 0;
+    var changesToUndo: DocumentChange[] = [];
+
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+
+    if (this.currentHistoryStep.changes.length === 0) {
+      this.currentHistoryStepIndex--;
+
+      if (this.currentHistoryStepIndex === 0) {
+        return undefined;
+      }
+    }
+
+    currentStep = this.currentHistoryStep;
+    currentLine = currentStep.changes[currentStep.changes.length - 1].start.line;
+
+    for (const step of this.historySteps.slice(1, this.currentHistoryStepIndex + 1).reverse()) {
+      for (const change of step.changes.reverse()) {
+
+        if (change.text === '\n' || change.start.line !== currentLine) {
+          done = true;
+          break;
+        }
+
+        changesToUndo.push(change);
+      }
+      if (done) {
+        break;
+      }
+      stepsToUndo++;
+    }
+
+    for (const change of changesToUndo) {
+      await change!.undo();
+    }
+
+    this.currentHistoryStepIndex -= stepsToUndo;
+
+    return currentStep && currentStep.cursorStart;
   }
 
   /**

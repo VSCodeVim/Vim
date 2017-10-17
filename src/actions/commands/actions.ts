@@ -1832,6 +1832,27 @@ class CommandUndo extends BaseCommand {
 }
 
 @RegisterAction
+class CommandUndoOnLine extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ['U'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
+  mustBeFirstKey = true;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const newPositions = await vimState.historyTracker.goBackHistoryStepsOnLine();
+
+    if (newPositions !== undefined) {
+      vimState.allCursors = newPositions.map(x => new Range(x, x));
+    }
+
+    vimState.alteredHistory = true;
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandRedo extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['<C-r>'];
