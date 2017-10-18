@@ -1267,6 +1267,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'u' to undo 'U'",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>Uu',
+    end: ['|abc'],
+  });
+
+  newTest({
+    title: "Can handle 'U' to undo 'U'",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>UU',
+    end: ['|abc'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
