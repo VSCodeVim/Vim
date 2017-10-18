@@ -526,6 +526,8 @@ export class HistoryTracker {
    */
   async goBackHistoryStepsOnLine(): Promise<Position[] | undefined> {
     let currentStep: HistoryStep;
+    let lastStep: HistoryStep;
+    let lastChange: DocumentChange;
     let currentLine: number;
     let done: boolean = false;
     var stepsToUndo: number = 0;
@@ -543,18 +545,57 @@ export class HistoryTracker {
       }
     }
 
-    currentStep = this.currentHistoryStep;
+    currentStep = lastStep = this.currentHistoryStep;
+    lastChange = currentStep.changes[0];
     currentLine = currentStep.changes[currentStep.changes.length - 1].start.line;
 
-    for (const step of this.historySteps.slice(1, this.currentHistoryStepIndex + 1).reverse()) {
-      for (const change of step.changes.reverse()) {
+    // Adjusting for the case where the latest change is newline followed by text ('\n123')
+    if (
+      currentStep.changes[0].text.includes('\n') &&
+      currentStep.changes[0].text.trim().length > 0
+    ) {
+      currentLine++;
+    }
 
-        if (change.text === '\n' || change.start.line !== currentLine) {
+    for (const step of this.historySteps.slice(1, this.currentHistoryStepIndex + 1).reverse()) {
+      for (let change of step.changes.reverse()) {
+        /*
+         * Currently, this deliberately reverses any newline changes which
+         * originated from the currentLine. This is because, in some situations,
+         * a change will have a newline at the beginning of the text ('\nabc'),
+         * while other times the newline change will be alone ('\n'), as handled above.
+         *
+         * Removing newlines does not match standard Vim behavior, but this is
+         * an easier solution than attempting to parse out the text after the
+         * newline while ensuring that the line value is correct.
+         */
+        if (change.text.includes('\n')) {
+          done = true;
+          if (change.start.line + 1 !== currentLine) {
+            break;
+          } else {
+            change = new DocumentChange(
+              new Position(change.start.line + 1, 0),
+              change.text.replace('\n', ''),
+              change.isAdd
+            );
+          }
+        }
+
+        if (
+          (change.start.line !== currentLine || change.text === '\n' || change.text === '\r\n') &&
+          !done
+        ) {
           done = true;
           break;
         }
 
         changesToUndo.push(change);
+        lastChange = change;
+        lastStep = step;
+        if (done) {
+          break;
+        }
       }
       if (done) {
         break;
@@ -568,7 +609,7 @@ export class HistoryTracker {
 
     this.currentHistoryStepIndex -= stepsToUndo;
 
-    return currentStep && currentStep.cursorStart;
+    return lastChange && [lastChange.start];
   }
 
   /**
