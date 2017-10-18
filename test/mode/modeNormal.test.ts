@@ -1263,7 +1263,7 @@ suite('Mode Normal', () => {
     title: "Can handle 'U' for consecutive changes only",
     start: ['|'],
     keysPressed: 'iabc<Esc>odef<Esc>kAghi<Esc>U',
-    end: ['abc|', 'def'],
+    end: ['ab|c', 'def'],
   });
 
   newTest({
