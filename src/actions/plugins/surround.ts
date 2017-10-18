@@ -334,8 +334,8 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
   // e.g. cs{' starts us with start on { end on }.
 
   public static RemoveWhitespace(vimState: VimState, start: Position, stop: Position): void {
-    const firstRangeStart = start.getRightThroughLineBreaks();
-    let firstRangeEnd = start.getRightThroughLineBreaks();
+    const firstRangeStart = start.getRight();
+    let firstRangeEnd = start.getRight();
 
     let secondRangeStart = stop.getLeftThroughLineBreaks();
     const secondRangeEnd = stop.getLeftThroughLineBreaks().getRight();
@@ -346,8 +346,8 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
 
     while (
       !firstRangeEnd.isEqual(stop) &&
-      TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/) &&
-      !firstRangeEnd.isLineEnd()
+      !firstRangeEnd.isLineEnd() &&
+      TextEditor.getCharAt(firstRangeEnd).match(/[ \t]/)
     ) {
       firstRangeEnd = firstRangeEnd.getRight();
     }
