@@ -100,7 +100,7 @@ class HistoryStep {
     cursorEnd?: Position[] | undefined;
     marks?: IMark[];
   }) {
-    this.changes = init.changes = [];
+    this.changes = init.changes || [];
     this.isFinished = init.isFinished || false;
     this.cursorStart = init.cursorStart || undefined;
     this.cursorEnd = init.cursorEnd || undefined;
@@ -519,19 +519,29 @@ export class HistoryTracker {
   }
 
   /**
-   * Performs an undo action for all actions which occurred on
-   * the same line as the most recent action.
+   * Logic for command U.
+   *
+   * Performs an undo action for all changes which occurred on
+   * the same line as the most recent change.
    * Returns undefined if there's no more steps back to go.
-   * Only acts upon consecutive changes on the last-changed line.
+   * Only acts upon consecutive changes on the most-recently-changed line.
+   * U itself is a change, so all the changes are reversed and added back
+   * to the history.
+   *
+   * This method contains a significant amount of extra logic to account for
+   * the edge case where a newline is embedded in a change (ex: '\nhello'), which
+   * is usually caused by the 'o' command. Vim behavior for the 'U' command does
+   * not undo newlines, so the change text needs to be checked & trimmed.
+   * Also, newline changes tend to offset line values and make it harder to
+   * determine the line of the change, so this behavior is also compensated.
    */
   async goBackHistoryStepsOnLine(): Promise<Position[] | undefined> {
     let currentStep: HistoryStep;
-    let lastStep: HistoryStep;
-    let lastChange: DocumentChange;
     let currentLine: number;
+    let lastChange: DocumentChange;
     let done: boolean = false;
-    var stepsToUndo: number = 0;
-    var changesToUndo: DocumentChange[] = [];
+    let stepsToUndo: number = 0;
+    let changesToUndo: DocumentChange[] = [];
 
     if (this.currentHistoryStepIndex === 0) {
       return undefined;
@@ -545,11 +555,12 @@ export class HistoryTracker {
       }
     }
 
-    currentStep = lastStep = this.currentHistoryStep;
+    currentStep = this.currentHistoryStep;
     lastChange = currentStep.changes[0];
+
     currentLine = currentStep.changes[currentStep.changes.length - 1].start.line;
 
-    // Adjusting for the case where the latest change is newline followed by text ('\n123')
+    // Adjusting for the case where the latest change is newline followed by text '\nhello'
     if (
       currentStep.changes[0].text.includes('\n') &&
       currentStep.changes[0].text.trim().length > 0
@@ -560,39 +571,34 @@ export class HistoryTracker {
     for (const step of this.historySteps.slice(1, this.currentHistoryStepIndex + 1).reverse()) {
       for (let change of step.changes.reverse()) {
         /*
-         * Currently, this deliberately reverses any newline changes which
-         * originated from the currentLine. This is because, in some situations,
-         * a change will have a newline at the beginning of the text ('\nabc'),
-         * while other times the newline change will be alone ('\n'), as handled above.
-         *
-         * Removing newlines does not match standard Vim behavior, but this is
-         * an easier solution than attempting to parse out the text after the
-         * newline while ensuring that the line value is correct.
+         * Currently, this avoids undoing any newline changes which
+         * originated from the currentLine. This is necessary because, in some situations,
+         * a change will have a newline at the beginning of the text (ex: '\nhello', most
+         * often caused by the 'o' command), while other times the newline change will be alone
+         * (ex: '\n').
          */
         if (change.text.includes('\n')) {
           done = true;
-          if (change.start.line + 1 !== currentLine) {
-            break;
-          } else {
+
+          // Compensating for newline offsets
+          if (change.start.line + 1 === currentLine) {
+            // Modify & replace the change to avoid undoing the newline embedded in the change
             change = new DocumentChange(
               new Position(change.start.line + 1, 0),
-              change.text.replace('\n', ''),
+              change.text.replace('\n', '').replace('\r', ''),
               change.isAdd
             );
+            stepsToUndo++;
+          } else {
+            break;
           }
-        }
-
-        if (
-          (change.start.line !== currentLine || change.text === '\n' || change.text === '\r\n') &&
-          !done
-        ) {
+        } else if (change.start.line !== currentLine) {
           done = true;
           break;
         }
 
         changesToUndo.push(change);
         lastChange = change;
-        lastStep = step;
         if (done) {
           break;
         }
@@ -603,12 +609,33 @@ export class HistoryTracker {
       stepsToUndo++;
     }
 
+    // Note that reverse() is call-by-reference, so the changes are already in reverse order
     for (const change of changesToUndo) {
       await change!.undo();
+      change.isAdd = !change.isAdd;
     }
 
-    this.currentHistoryStepIndex -= stepsToUndo;
+    for (let count = stepsToUndo; count > 0; count--) {
+      this.historySteps.pop();
+    }
 
+    const newStep = new HistoryStep({
+      changes: changesToUndo,
+      isFinished: true,
+      cursorStart: [lastChange.start],
+      cursorEnd: [lastChange.start],
+    });
+
+    this.historySteps.push(newStep);
+
+    this.currentHistoryStepIndex = this.currentHistoryStepIndex - stepsToUndo + 1;
+
+    /*
+    * Unlike the goBackHistoryStep() function, this function does not trust the
+    * HistoryStep.cursorStart property. This can lead to invalid cursor position errors.
+    * Since this function reverses change-by-change, rather than step-by-step,
+    * the cursor position is based on the start of the last change that is undone.
+    */
     return lastChange && [lastChange.start];
   }
 
