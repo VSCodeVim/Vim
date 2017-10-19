@@ -529,16 +529,13 @@ export class HistoryTracker {
    * to the history.
    *
    * This method contains a significant amount of extra logic to account for
-   * the edge case where a newline is embedded in a change (ex: '\nhello'), which
-   * is usually caused by the 'o' command. Vim behavior for the 'U' command does
+   * the difficult scenario where a newline is embedded in a change (ex: '\nhello'), which
+   * is created by the 'o' command. Vim behavior for the 'U' command does
    * not undo newlines, so the change text needs to be checked & trimmed.
-   * Also, newline changes tend to offset line values and make it harder to
+   * This worst-case scenario tends to offset line values and make it harder to
    * determine the line of the change, so this behavior is also compensated.
    */
   async goBackHistoryStepsOnLine(): Promise<Position[] | undefined> {
-    let currentStep: HistoryStep;
-    let currentLine: number;
-    let lastChange: DocumentChange;
     let done: boolean = false;
     let stepsToUndo: number = 0;
     let changesToUndo: DocumentChange[] = [];
@@ -555,44 +552,34 @@ export class HistoryTracker {
       }
     }
 
-    currentStep = this.currentHistoryStep;
-    lastChange = currentStep.changes[0];
+    let lastChange = this.currentHistoryStep.changes[0];
+    let currentLine = this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 1]
+      .start.line;
 
-    currentLine = currentStep.changes[currentStep.changes.length - 1].start.line;
-
-    // Adjusting for the case where the latest change is newline followed by text '\nhello'
-    if (
-      currentStep.changes[0].text.includes('\n') &&
-      currentStep.changes[0].text.trim().length > 0
-    ) {
+    // Adjusting for the case where the most recent change is newline followed by text
+    const mostRecentText = this.currentHistoryStep.changes[0].text;
+    if (mostRecentText.includes('\n') && mostRecentText !== '\n' && mostRecentText !== '\n\r') {
       currentLine++;
     }
 
     for (const step of this.historySteps.slice(1, this.currentHistoryStepIndex + 1).reverse()) {
       for (let change of step.changes.reverse()) {
         /*
-         * Currently, this avoids undoing any newline changes which
-         * originated from the currentLine. This is necessary because, in some situations,
-         * a change will have a newline at the beginning of the text (ex: '\nhello', most
-         * often caused by the 'o' command), while other times the newline change will be alone
-         * (ex: '\n').
+         * This conditional accounts for the behavior where the change is a newline
+         * followed by text to undo. Note the line offset behavior that must be compensated.
          */
-        if (change.text.includes('\n')) {
+        if (change.text.includes('\n') && change.start.line + 1 === currentLine) {
           done = true;
+          // Modify & replace the change to avoid undoing the newline embedded in the change
+          change = new DocumentChange(
+            new Position(change.start.line + 1, 0),
+            change.text.replace('\n', '').replace('\r', ''),
+            change.isAdd
+          );
+          stepsToUndo++;
+        }
 
-          // Compensating for newline offsets
-          if (change.start.line + 1 === currentLine) {
-            // Modify & replace the change to avoid undoing the newline embedded in the change
-            change = new DocumentChange(
-              new Position(change.start.line + 1, 0),
-              change.text.replace('\n', '').replace('\r', ''),
-              change.isAdd
-            );
-            stepsToUndo++;
-          } else {
-            break;
-          }
-        } else if (change.start.line !== currentLine) {
+        if (change.text === '\n' || change.text === '\r\n' || change.start.line !== currentLine) {
           done = true;
           break;
         }
