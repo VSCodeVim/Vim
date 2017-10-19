@@ -579,7 +579,7 @@ export class HistoryTracker {
           stepsToUndo++;
         }
 
-        if (change.text === '\n' || change.text === '\r\n' || change.start.line !== currentLine) {
+        if (change.text.includes('\n') || change.start.line !== currentLine) {
           done = true;
           break;
         }
