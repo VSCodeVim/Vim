@@ -558,7 +558,7 @@ export class HistoryTracker {
 
     // Adjusting for the case where the most recent change is newline followed by text
     const mostRecentText = this.currentHistoryStep.changes[0].text;
-    if (mostRecentText.includes('\n') && mostRecentText !== '\n' && mostRecentText !== '\n\r') {
+    if (mostRecentText.includes('\n') && mostRecentText !== '\n' && mostRecentText !== '\r\n') {
       currentLine++;
     }
 
