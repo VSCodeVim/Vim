@@ -77,4 +77,11 @@ suite('surround plugin', () => {
     keysPressed: 'cs{]',
     end: ['func() |[', ']'],
   });
+
+  newTest({
+    title: 'changing brackets with surround works again',
+    start: ['func() {', '    |foo()', '}'],
+    keysPressed: 'cs{[',
+    end: ['func() [ ', '    |foo()', ' ]'],
+  });
 });

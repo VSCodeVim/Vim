@@ -338,7 +338,11 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     let firstRangeEnd = start.getRight();
 
     let secondRangeStart = stop.getLeftThroughLineBreaks();
-    const secondRangeEnd = stop.getLeftThroughLineBreaks().getRight();
+    let secondRangeEnd = stop.getLeftThroughLineBreaks().getRight();
+    if (stop.isLineBeginning()) {
+      secondRangeStart = stop;
+      secondRangeEnd = stop.getRight();
+    }
 
     if (firstRangeEnd.isEqual(secondRangeStart)) {
       return;
