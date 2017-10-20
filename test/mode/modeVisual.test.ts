@@ -837,7 +837,7 @@ suite('Mode Visual', () => {
   });
 
   suite('vi{ will go to end of second to last line', () => {
-    newTestOnly({
+    newTest({
       title: 'select',
       start: ['    func() {', '    |    hi;', '        alw;', '    }'],
       keysPressed: 'vi{yGP',
