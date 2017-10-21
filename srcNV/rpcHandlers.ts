@@ -3,8 +3,10 @@ import { Vim } from '../extension';
 import { NvUtil } from './nvUtil';
 
 function RpcRequestDecorator(nvMethodName: string) {
-  return (f: Object, vsMethodName: string, descriptor: TypedPropertyDescriptor<any>) => {
-    // RpcRequest.rpcFunctions[nvMethodName] = descriptor;
+  return (f: Object, vsMethodName: string, descriptor: any) => {
+    // @ts-ignore
+    RpcRequest.rpcFunctions[nvMethodName] = descriptor;
+    console.log(RpcRequest.rpcFunctions);
     return descriptor;
   };
 }
@@ -27,8 +29,8 @@ export class RpcRequest {
     await resp.send('success');
   }
 
-  @RpcRequestDecorator('closeTab')
-  static async closeTab(args: Array<any>, resp: any) {
+  @RpcRequestDecorator('closeBuf')
+  static async closeBuf(args: Array<any>, resp: any) {
     const buffers = await Vim.nv.buffers;
     const bufId = parseInt(args[0], 10) - 1;
     console.log('buffers and args');

@@ -84,7 +84,7 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
-    await nvim.command(`noautocmd tab drop ${active_editor_file}`);
+    await nvim.command(`edit ${active_editor_file}`);
     await NvUtil.copyTextFromNeovim();
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
 
@@ -126,7 +126,8 @@ export async function activate(context: vscode.ExtensionContext) {
       Vim.mode.mode === 'i' &&
       changeBegin.line === curPos.line &&
       changeEnd.line === curPos.line &&
-      docEnd.line !== 0
+      docEnd.line !== 0 &&
+      change.text.length > 0
     ) {
       console.log('TRIGGERED');
       if (change.text.length === 1) {
@@ -139,6 +140,7 @@ export async function activate(context: vscode.ExtensionContext) {
       // todo: Optimize this to only replace relevant lines. Probably not worth
       // doing until diffs come in from the neovim side though, since that's the
       // real blocking factor.
+      // @ts-ignore
       await nvim.callAtomic([
         ['nvim_command', ['undojoin']],
         ['nvim_buf_set_lines', [0, 0, -1, 1, TextEditor.getText().split('\n')]],
@@ -154,23 +156,18 @@ export async function activate(context: vscode.ExtensionContext) {
       // things to not work properly with regards to cursor position when you're
       // typing very quickly though.
       return;
-      await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
+      // await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     }
   });
 
   // await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
-  await nvim.command('autocmd BufAdd,BufNewFile * nested tab sball');
 
-  // As we have one buffer per tab, we are using BufEnter instead of TabEnter due to some weird cases with creating tabs.
-  await nvim.command(
-    `autocmd BufEnter * :call rpcrequest(${Vim.channelId}, "openBuf", expand("<abuf>"), expand("<afile>"))`
-  );
   await nvim.command(
     `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
   );
   // todo: I don't think quitpre is the right autocmd here...
   await nvim.command(
-    `autocmd QuitPre * :call rpcrequest(${Vim.channelId}, "closeTab", expand("<abuf>"), expand("<afile>"))`
+    `autocmd QuitPre * :call rpcrequest(${Vim.channelId}, "closeBuf", expand("<abuf>"), expand("<afile>"))`
   );
   // await nvim.command(`autocmd TextChanged * :call rpcrequest(${Vim.channelId}, "textChanged")`);
   // await nvim.command(`autocmd TextChangedI * :call rpcrequest(${Vim.channelId}, "textChanged")`);
@@ -209,8 +206,6 @@ export async function activate(context: vscode.ExtensionContext) {
     );
     await nvim.input(key === '<' ? '<lt>' : key);
 
-    // End of hack
-
     let mode = (await nvim.mode) as any;
     // More hackish stuff
     Vim.mode = mode;
@@ -229,10 +224,15 @@ export async function activate(context: vscode.ExtensionContext) {
         await NvUtil.copyTextFromNeovim();
         await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       } else {
-        if (key.length > 1) {
-          return;
+        // if (key.length > 1) {
+        //   return;
+        // }
+        if (key === '<BS>') {
+          await vscode.commands.executeCommand('deleteLeft');
+        } else {
+          await vscode.commands.executeCommand('default:type', { text: key });
         }
-        await vscode.commands.executeCommand('default:type', { text: key });
+
       }
     }
   }

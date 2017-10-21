@@ -107,7 +107,7 @@
       {
         "key": "Backspace",
         "command": "extension.vim_backspace",
-        "when": "editorTextFocus && vim.active &&   && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "shift+backspace",
