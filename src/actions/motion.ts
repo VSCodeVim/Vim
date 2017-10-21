@@ -1366,6 +1366,9 @@ export abstract class MoveInsideCharacter extends BaseMovement {
     if (!this.includeSurrounding) {
       if (endPos.getLeft().isInLeadingWhitespace()) {
         endPos = endPos.getLineBegin();
+        if (vimState.currentMode === ModeName.Visual) {
+          endPos = endPos.getLeftThroughLineBreaks();
+        }
       }
     }
 
