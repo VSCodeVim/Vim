@@ -73,13 +73,10 @@ export class FileCommand extends node.CommandBase {
       return;
     } else if (this._arguments.name === '') {
       const fileList = await vscode.window.showOpenDialog({});
-      await vscode.commands.executeCommand(
-        'vscode.open',
-        fileList[0],
-        this._arguments.position === FilePosition.NewWindow
-          ? this.getViewColumnToRight()
-          : this.getActiveViewColumn()
-      );
+      if (fileList) {
+        const doc = await vscode.workspace.openTextDocument(fileList[0]);
+        vscode.window.showTextDocument(doc);
+      }
       return;
     }
 
