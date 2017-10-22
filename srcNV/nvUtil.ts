@@ -171,4 +171,8 @@ export class NvUtil {
     vscode.window.activeTextEditor!.setDecorations(this._caretDecoration, cursorDecorations);
     vscode.window.activeTextEditor!.revealRange(new vscode.Range(cursorPos, cursorPos));
   }
+
+  static async updateMode() {
+    Vim.mode = await Vim.nv.mode;
+  }
 }

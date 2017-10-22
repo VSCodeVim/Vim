@@ -125,11 +125,17 @@ export async function activate(context: vscode.ExtensionContext) {
       changeBegin.line === curPos.line
     ) {
       console.log('TRIGGERED');
-      const nvChar = (await NvUtil.getCursorPos())[1];
-      await NvUtil.ctrlGMove(nvChar, changeEnd.character);
+      await NvUtil.updateMode();
+      let nvChar = 0;
+      if (!Vim.mode.blocking) {
+        nvChar = (await NvUtil.getCursorPos())[1];
+        await NvUtil.ctrlGMove(nvChar, changeEnd.character);
+      }
       await nvim.input('<BS>'.repeat(Math.max(0, change.rangeLength)));
       await nvim.input(change.text);
-      await NvUtil.ctrlGMove(changeEnd.character, nvChar);
+      if (!Vim.mode.blocking) {
+        await NvUtil.ctrlGMove(changeEnd.character, nvChar);
+      }
     } else {
       // todo: Optimize this to only replace relevant lines. Probably not worth
       // doing until diffs come in from the neovim side though, since that's the
@@ -190,21 +196,19 @@ export async function activate(context: vscode.ExtensionContext) {
     Vim.prevState.prevCursorPos = Position.FromVSCodePosition(
       vscode.window.activeTextEditor!.selection.active
     );
-    if (prevMode !== 'i') {
-      await nvim.input(key === '<' ? '<lt>' : key);
-      let mode = (await nvim.mode) as any;
-      Vim.mode = mode;
+    async function input(k: string) {
+      await nvim.input(k === '<' ? '<lt>' : k);
+      await NvUtil.updateMode();
       await NvUtil.copyTextFromNeovim();
       await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+    }
+    if (prevMode !== 'i') {
+      input(key);
     } else {
       if (key === '<BS>') {
         await vscode.commands.executeCommand('deleteLeft');
       } else if (key.length > 1) {
-        await nvim.input(key === '<' ? '<lt>' : key);
-        let mode = (await nvim.mode) as any;
-        Vim.mode = mode;
-        await NvUtil.copyTextFromNeovim();
-        await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+        input(key);
       } else {
         await vscode.commands.executeCommand('default:type', { text: key });
       }

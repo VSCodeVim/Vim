@@ -2,14 +2,6 @@ import * as vscode from 'vscode';
 import { Vim } from '../extension';
 import { NvUtil } from './nvUtil';
 
-function RpcRequestDecorator(nvMethodName: string) {
-  return (f: Function, vsMethodName: string, descriptor: any) => {
-    // @ts-ignore
-    RpcRequest.rpcFunctions[nvMethodName] = f;
-    console.log(RpcRequest.rpcFunctions);
-    return descriptor;
-  };
-}
 export class RpcRequest {
   static rpcFunctions: { [method: string]: Function } = {};
 
@@ -45,7 +37,6 @@ export class RpcRequest {
     resp.send('success');
   }
 
-  @RpcRequestDecorator('goToDefinition')
   static async goToDefinition(args: Array<any>, resp: any) {
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
     await Vim.nv.command("normal! m'");
@@ -53,12 +44,12 @@ export class RpcRequest {
     resp.send('success');
   }
 
-  @RpcRequestDecorator('leaveInsert')
   static async leaveInsert(args: Array<any>, resp: any) {
     console.log('HEY');
     resp.send('success');
     const mode = await Vim.nv.mode;
     Vim.mode = mode;
     await NvUtil.changeSelectionFromMode(mode.mode);
+    await NvUtil.copyTextFromNeovim();
   }
 }
