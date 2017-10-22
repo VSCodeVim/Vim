@@ -54,6 +54,15 @@ export class NvUtil {
     await Vim.nv.call('setpos', ['.', [0, pos.line + 1, pos.character + 1, false]]);
   }
 
+  // Must be moving to same line
+  static async ctrlGMove(start: number, target: number) {
+    if (start < target) {
+      await Vim.nv.input('<C-g>U<Right>'.repeat(target - start));
+    } else if (start > target) {
+      await Vim.nv.input('<C-g>U<Left>'.repeat(start - target));
+    }
+  }
+
   static async setSelection(pos: vscode.Range) {
     await Vim.nv.callFunction('setpos', [
       '.',

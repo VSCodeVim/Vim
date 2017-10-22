@@ -157,11 +157,10 @@ export async function activate(context: vscode.ExtensionContext) {
   await nvim.command(
     `autocmd QuitPre * :call rpcrequest(${Vim.channelId}, "closeBuf", expand("<abuf>"), expand("<afile>"))`
   );
-  // await nvim.command(`autocmd TextChanged * :call rpcrequest(${Vim.channelId}, "textChanged")`);
-  // await nvim.command(`autocmd TextChangedI * :call rpcrequest(${Vim.channelId}, "textChanged")`);
+  await nvim.command(`autocmd InsertLeave * :call rpcrequest(${Vim.channelId}, "leaveInsert")`);
 
   // Overriding commands to handle them on the vscode side.
-  await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
+  // await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
 
   await nvim.command('set noswapfile');
   await nvim.command('set hidden');
@@ -171,11 +170,9 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
-    if (RpcRequest.rpcFunctions[method] !== undefined) {
-      const f = RpcRequest.rpcFunctions[method];
+    if (RpcRequest[method] !== undefined) {
+      const f = RpcRequest[method];
       f(args, resp);
-      // const f = RpcRequest.openBuf;
-      // f(args, resp);
     } else {
       console.log(`${method} is not defined!`);
     }

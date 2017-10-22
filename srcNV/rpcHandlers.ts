@@ -3,9 +3,9 @@ import { Vim } from '../extension';
 import { NvUtil } from './nvUtil';
 
 function RpcRequestDecorator(nvMethodName: string) {
-  return (f: Object, vsMethodName: string, descriptor: any) => {
+  return (f: Function, vsMethodName: string, descriptor: any) => {
     // @ts-ignore
-    RpcRequest.rpcFunctions[nvMethodName] = descriptor;
+    RpcRequest.rpcFunctions[nvMethodName] = f;
     console.log(RpcRequest.rpcFunctions);
     return descriptor;
   };
@@ -13,7 +13,6 @@ function RpcRequestDecorator(nvMethodName: string) {
 export class RpcRequest {
   static rpcFunctions: { [method: string]: Function } = {};
 
-  @RpcRequestDecorator('openBuf')
   static async openBuf(args: any, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
     console.log(filePath);
@@ -21,7 +20,6 @@ export class RpcRequest {
     resp.send('success');
   }
 
-  @RpcRequestDecorator('writeBuf')
   static async writeBuf(args: Array<any>, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
     await vscode.commands.executeCommand('workbench.action.files.save', filePath);
@@ -29,7 +27,6 @@ export class RpcRequest {
     await resp.send('success');
   }
 
-  @RpcRequestDecorator('closeBuf')
   static async closeBuf(args: Array<any>, resp: any) {
     const buffers = await Vim.nv.buffers;
     const bufId = parseInt(args[0], 10) - 1;
@@ -54,5 +51,14 @@ export class RpcRequest {
     await Vim.nv.command("normal! m'");
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     resp.send('success');
+  }
+
+  @RpcRequestDecorator('leaveInsert')
+  static async leaveInsert(args: Array<any>, resp: any) {
+    console.log('HEY');
+    resp.send('success');
+    const mode = await Vim.nv.mode;
+    Vim.mode = mode;
+    await NvUtil.changeSelectionFromMode(mode.mode);
   }
 }
