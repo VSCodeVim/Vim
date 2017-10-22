@@ -122,7 +122,8 @@ export async function activate(context: vscode.ExtensionContext) {
       Vim.prevState.prevCursorPos.isBeforeOrEqual(changeEnd) &&
       Vim.prevState.prevCursorPos.isAfterOrEqual(changeBegin) &&
       Vim.mode.mode === 'i' &&
-      changeBegin.line === curPos.line
+      changeBegin.line === curPos.line &&
+      changeBegin.line === changeEnd.line
     ) {
       console.log('TRIGGERED');
       await NvUtil.updateMode();
