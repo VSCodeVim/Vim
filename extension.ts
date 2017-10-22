@@ -112,30 +112,24 @@ export async function activate(context: vscode.ExtensionContext) {
     if (e.contentChanges.length === 0) {
       return;
     }
-    console.log(e.contentChanges[0].rangeLength);
     const change = e.contentChanges[0];
     const changeBegin = Position.FromVSCodePosition(change.range.start);
     const changeEnd = Position.FromVSCodePosition(change.range.end);
     const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
     const docEnd = new Position(0, 0).getDocumentEnd();
     // console.log(changeBegin, changeEnd, curPos);
-    console.log(change, Vim.prevState.prevCursorPos);
     if (
       Vim.prevState.prevCursorPos.isBeforeOrEqual(changeEnd) &&
       Vim.prevState.prevCursorPos.isAfterOrEqual(changeBegin) &&
       Vim.mode.mode === 'i' &&
-      changeBegin.line === curPos.line &&
-      changeEnd.line === curPos.line &&
-      docEnd.line !== 0 &&
-      change.text.length > 0
+      changeBegin.line === curPos.line
     ) {
       console.log('TRIGGERED');
-      if (change.text.length === 1) {
-        await nvim.input('<BS>');
-      } else {
-        await nvim.input('<BS>'.repeat(Math.max(0, change.rangeLength)));
-      }
+      const nvChar = (await NvUtil.getCursorPos())[1];
+      await NvUtil.ctrlGMove(nvChar, changeEnd.character);
+      await nvim.input('<BS>'.repeat(Math.max(0, change.rangeLength)));
       await nvim.input(change.text);
+      await NvUtil.ctrlGMove(changeEnd.character, nvChar);
     } else {
       // todo: Optimize this to only replace relevant lines. Probably not worth
       // doing until diffs come in from the neovim side though, since that's the
@@ -151,17 +145,11 @@ export async function activate(context: vscode.ExtensionContext) {
     // Technically not true, but it seems like a pain to handle, and seems
     // like something that won't be used much. Will re-evaluate at a later
     // date.
-    if (Vim.mode.mode === 'i') {
-      // The early return lets jj and jk remappings work properly. It causes
-      // things to not work properly with regards to cursor position when you're
-      // typing very quickly though.
-      return;
-      // await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
-    }
   });
 
   // await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
 
+  await nvim.command('autocmd!');
   await nvim.command(
     `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
   );
@@ -201,40 +189,56 @@ export async function activate(context: vscode.ExtensionContext) {
   async function handleKeyEventNV(key: string) {
     const prevMode = Vim.mode.mode;
     const prevBlocking = Vim.mode.blocking;
+
     Vim.prevState.prevCursorPos = Position.FromVSCodePosition(
       vscode.window.activeTextEditor!.selection.active
     );
-    await nvim.input(key === '<' ? '<lt>' : key);
-
-    let mode = (await nvim.mode) as any;
-    // More hackish stuff
-    Vim.mode = mode;
-    await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode.mode);
-    // FOr insert mode keybindings jj
-    if (prevMode !== 'i' || Vim.mode.mode !== 'i') {
-      if (!Vim.mode.blocking) {
-        await NvUtil.changeSelectionFromMode(Vim.mode.mode);
-      }
+    if (prevMode !== 'i') {
+      await nvim.input(key === '<' ? '<lt>' : key);
+      let mode = (await nvim.mode) as any;
+      Vim.mode = mode;
       await NvUtil.copyTextFromNeovim();
-      if (!Vim.mode.blocking) {
-        await NvUtil.changeSelectionFromMode(Vim.mode.mode);
-      }
+      await NvUtil.changeSelectionFromMode(Vim.mode.mode);
     } else {
-      if (prevBlocking && !Vim.mode.blocking) {
+      if (key === '<BS>') {
+        await vscode.commands.executeCommand('deleteLeft');
+      } else if (key.length > 1) {
+        await nvim.input(key === '<' ? '<lt>' : key);
+        let mode = (await nvim.mode) as any;
+        Vim.mode = mode;
         await NvUtil.copyTextFromNeovim();
         await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       } else {
-        // if (key.length > 1) {
-        //   return;
-        // }
-        if (key === '<BS>') {
-          await vscode.commands.executeCommand('deleteLeft');
-        } else {
-          await vscode.commands.executeCommand('default:type', { text: key });
-        }
-
+        await vscode.commands.executeCommand('default:type', { text: key });
       }
     }
+
+    // More hackish stuff
+    await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode.mode);
+    // FOr insert mode keybindings jj
+    // if (prevMode !== 'i' || Vim.mode.mode !== 'i') {
+    //   if (!Vim.mode.blocking) {
+    //     await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+    //   }
+    //   await NvUtil.copyTextFromNeovim();
+    //   if (!Vim.mode.blocking) {
+    //     await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+    //   }
+    // } else {
+    //   if (prevBlocking && !Vim.mode.blocking) {
+    //     await NvUtil.copyTextFromNeovim();
+    //     await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+    //   } else {
+    //     if (key === '<BS>') {
+    //       await vscode.commands.executeCommand('deleteLeft');
+    //     } else {
+    //       if (key.length > 1) {
+    //         return;
+    //       }
+    //       await vscode.commands.executeCommand('default:type', { text: key });
+    //     }
+    //   }
+    // }
   }
 
   overrideCommand(context, 'type', async args => {
