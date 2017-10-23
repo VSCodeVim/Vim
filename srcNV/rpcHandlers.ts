@@ -19,16 +19,11 @@ export class RpcRequest {
     await resp.send('success');
   }
 
-  static async closeBuf(args: Array<any>, resp: any) {
-    const buffers = await Vim.nv.buffers;
-    const bufId = parseInt(args[0], 10) - 1;
-    console.log('buffers and args');
-    console.log(buffers, args);
-    if (bufId >= buffers.length || bufId < 0) {
-      resp.send("buffer doesn't exist");
-      return;
-    }
-    const filePath = vscode.Uri.file(await buffers[bufId].name);
+  static async closeBuf(args: Array<string>, resp: any) {
+    // const buffers = await Vim.nv.buffers;
+    // const bufId = parseInt(args[0], 10) - 1;
+    const bufName = args[1];
+    const filePath = vscode.Uri.file(bufName);
     console.log('filepath: ', filePath);
     if (args[1] !== vscode.window.activeTextEditor!.document.fileName) {
       await vscode.commands.executeCommand('vscode.open', filePath);

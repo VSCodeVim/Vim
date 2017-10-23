@@ -73,11 +73,51 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
     Configuration.enableNeovim = false;
   });
-  // let nvim = await attach({ proc: proc });
-  let nvim = attach({ socket: '/tmp/nvim' });
+  let nvim: NeovimClient;
+  try {
+    nvim = attach({ socket: '/tmp/nvim' });
+  } catch {
+    nvim = await attach({ proc: proc });
+  }
   Vim.nv = nvim;
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
+
+  // await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
+
+  await nvim.command('autocmd!');
+  const autocmdMap: { [autocmd: string]: string } = {
+    BufWriteCmd: 'writeBuf',
+    QuitPre: 'closeBuf',
+    InsertLeave: 'leaveInsert',
+    BufEnter: 'openBuf',
+  };
+  for (const autocmd of Object.keys(autocmdMap)) {
+    await nvim.command(
+      `autocmd ${autocmd} * :call rpcrequest(${Vim.channelId}, "${autocmdMap[
+        autocmd
+      ]}", expand("<abuf>"), fnamemodify(expand('<afile>'), ':p'))`
+    );
+  }
+
+  // Overriding commands to handle them on the vscode side.
+  // await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
+
+  await nvim.command('set noswapfile');
+  await nvim.command('set hidden');
+
+  nvim.on('notification', (args: any, x: any) => {
+    // console.log(args, x);
+  });
+
+  nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
+    if (RpcRequest[method] !== undefined) {
+      const f = RpcRequest[method];
+      f(args, resp);
+    } else {
+      console.log(`${method} is not defined!`);
+    }
+  });
 
   async function handleActiveTextEditorChange() {
     if (vscode.window.activeTextEditor === undefined) {
@@ -119,8 +159,8 @@ export async function activate(context: vscode.ExtensionContext) {
     // console.log(changeBegin, changeEnd, curPos);
     if (
       Vim.mode.mode === 'i' &&
-      changeBegin.line === curPos.line &&
-      changeBegin.line === changeEnd.line
+      ((changeBegin.line === curPos.line && changeBegin.line === changeEnd.line) ||
+        change.text === '')
     ) {
       await NvUtil.updateMode();
       if (!Vim.mode.blocking) {
@@ -144,45 +184,12 @@ export async function activate(context: vscode.ExtensionContext) {
         ['nvim_command', ['undojoin']],
         ['nvim_buf_set_lines', [0, 0, -1, 1, TextEditor.getText().split('\n')]],
       ]);
-      console.log('YO');
     }
-    console.log('TRIGGERED');
     // I'm assuming here that there's nothing that will happen on the vscode
     // side that would alter cursor position if you're not in insert mode.
     // Technically not true, but it seems like a pain to handle, and seems
     // like something that won't be used much. Will re-evaluate at a later
     // date.
-  });
-
-  // await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
-
-  await nvim.command('autocmd!');
-  await nvim.command(
-    `autocmd BufWriteCmd * :call rpcrequest(${Vim.channelId}, "writeBuf", expand("<abuf>"), expand("<afile>"))`
-  );
-  // todo: I don't think quitpre is the right autocmd here...
-  await nvim.command(
-    `autocmd QuitPre * :call rpcrequest(${Vim.channelId}, "closeBuf", expand("<abuf>"), expand("<afile>"))`
-  );
-  await nvim.command(`autocmd InsertLeave * :call rpcrequest(${Vim.channelId}, "leaveInsert")`);
-
-  // Overriding commands to handle them on the vscode side.
-  // await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
-
-  await nvim.command('set noswapfile');
-  await nvim.command('set hidden');
-
-  nvim.on('notification', (args: any, x: any) => {
-    // console.log(args, x);
-  });
-
-  nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
-    if (RpcRequest[method] !== undefined) {
-      const f = RpcRequest[method];
-      f(args, resp);
-    } else {
-      console.log(`${method} is not defined!`);
-    }
   });
 
   // tslint:disable-next-line:no-unused-variable
@@ -217,31 +224,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // More hackish stuff
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode.mode);
-    console.log('YO');
-    // FOr insert mode keybindings jj
-    // if (prevMode !== 'i' || Vim.mode.mode !== 'i') {
-    //   if (!Vim.mode.blocking) {
-    //     await NvUtil.changeSelectionFromMode(Vim.mode.mode);
-    //   }
-    //   await NvUtil.copyTextFromNeovim();
-    //   if (!Vim.mode.blocking) {
-    //     await NvUtil.changeSelectionFromMode(Vim.mode.mode);
-    //   }
-    // } else {
-    //   if (prevBlocking && !Vim.mode.blocking) {
-    //     await NvUtil.copyTextFromNeovim();
-    //     await NvUtil.changeSelectionFromMode(Vim.mode.mode);
-    //   } else {
-    //     if (key === '<BS>') {
-    //       await vscode.commands.executeCommand('deleteLeft');
-    //     } else {
-    //       if (key.length > 1) {
-    //         return;
-    //       }
-    //       await vscode.commands.executeCommand('default:type', { text: key });
-    //     }
-    //   }
-    // }
   }
 
   overrideCommand(context, 'type', async args => {
