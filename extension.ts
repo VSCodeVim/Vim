@@ -108,7 +108,6 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
   vscode.workspace.onDidChangeTextDocument(async e => {
-    // console.log(e.contentChanges[0].rangeLength);
     if (e.contentChanges.length === 0) {
       return;
     }
@@ -119,24 +118,23 @@ export async function activate(context: vscode.ExtensionContext) {
     const docEnd = new Position(0, 0).getDocumentEnd();
     // console.log(changeBegin, changeEnd, curPos);
     if (
-      Vim.prevState.prevCursorPos.isBeforeOrEqual(changeEnd) &&
-      Vim.prevState.prevCursorPos.isAfterOrEqual(changeBegin) &&
       Vim.mode.mode === 'i' &&
       changeBegin.line === curPos.line &&
       changeBegin.line === changeEnd.line
     ) {
-      console.log('TRIGGERED');
       await NvUtil.updateMode();
-      let nvChar = 0;
       if (!Vim.mode.blocking) {
-        nvChar = (await NvUtil.getCursorPos())[1];
-        await NvUtil.ctrlGMove(nvChar, changeEnd.character);
+        const nvPos = await NvUtil.getCursorPos();
+        const nvLine = nvPos[0];
+        const nvChar = nvPos[1];
+        if (nvLine !== curPos.line) {
+          await NvUtil.setCursorPos(curPos);
+        } else {
+          await NvUtil.ctrlGMove(nvChar, changeEnd.character);
+        }
       }
       await nvim.input('<BS>'.repeat(Math.max(0, change.rangeLength)));
       await nvim.input(change.text);
-      if (!Vim.mode.blocking) {
-        await NvUtil.ctrlGMove(changeEnd.character, nvChar);
-      }
     } else {
       // todo: Optimize this to only replace relevant lines. Probably not worth
       // doing until diffs come in from the neovim side though, since that's the
@@ -146,7 +144,9 @@ export async function activate(context: vscode.ExtensionContext) {
         ['nvim_command', ['undojoin']],
         ['nvim_buf_set_lines', [0, 0, -1, 1, TextEditor.getText().split('\n')]],
       ]);
+      console.log('YO');
     }
+    console.log('TRIGGERED');
     // I'm assuming here that there's nothing that will happen on the vscode
     // side that would alter cursor position if you're not in insert mode.
     // Technically not true, but it seems like a pain to handle, and seems
@@ -204,12 +204,12 @@ export async function activate(context: vscode.ExtensionContext) {
       await NvUtil.changeSelectionFromMode(Vim.mode.mode);
     }
     if (prevMode !== 'i') {
-      input(key);
+      await input(key);
     } else {
       if (key === '<BS>') {
         await vscode.commands.executeCommand('deleteLeft');
       } else if (key.length > 1) {
-        input(key);
+        await input(key);
       } else {
         await vscode.commands.executeCommand('default:type', { text: key });
       }
@@ -217,6 +217,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // More hackish stuff
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode.mode);
+    console.log('YO');
     // FOr insert mode keybindings jj
     // if (prevMode !== 'i' || Vim.mode.mode !== 'i') {
     //   if (!Vim.mode.blocking) {
