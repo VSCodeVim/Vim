@@ -20,7 +20,9 @@ Other helpful documentation links:
 https://vscodevim.slack.com/files/U3EUW86U9/F62R31A5V/Integrating_Neovim_into_VSCode "Design" doc  
 https://neovim.io/doc/user/api.html#api-global Neovim RPC API documentation  
 https://neovim.io/doc/user/msgpack_rpc.html#rpc-remote-ui Neovim remote UI documentation. We currently aren't using it but will likely use it at some point in the future.   
-https://github.com/neovim/node-client The node client we're using  
+https://github.com/neovim/node-client The node client we're using
+https://github.com/lunixbochs/ActualVim Another neovim backed vim plugin (for sublime)
+
 
 Important discussions links: 
 https://gitter.im/neovim/neovim For talking to the neovim devs
