@@ -9,7 +9,7 @@
 
 VSCodeNeoVim is a [Visual Studio Code](https://code.visualstudio.com/) rewrite of VSCodeVim, changing everything to be backed by Neovim.
 
-This is the temporary repo for VSCodeNeovim for development purposes. 
+This is the temporary repo for VSCodeNeovim for development purposes. Please submit PRs/issues here. This extension will not be released on the marketplace, but I will be providing a .vsix for testing purposes.
 
 Some notes on contributing:
 * Much of the VSCodeVim code is still in here. I'll probably delete most of it soon.
