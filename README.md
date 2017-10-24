@@ -12,7 +12,7 @@ VSCodeNeoVim is a [Visual Studio Code](https://code.visualstudio.com/) rewrite o
 This is the temporary repo for VSCodeNeovim for development purposes. Please submit PRs/issues here. This extension will not be released on the marketplace, but I will be providing a .vsix for testing purposes.
 
 Some notes on contributing:
-* Much of the VSCodeVim code is still in here. I'll probably delete most of it soon.
+* Much of the VSCodeVim code is still in here. The only places it's used are things like AngleBracketNotation, some utility Position functions, etc.
 * Most of the "hard" work is in extension.ts.
 * The rest of the work is in srcNV. NvUtil contains a lot of utility functions with working with neovim rpc requests. RPCHandlers contain handlers for RPC requests.
 * The easiest way to test is to have the neovim instance for VSCode be created by connecting to a pipe. In order to do so, set NVIM_LISTEN_ADDRESS equal to `/tmp/nvim`, open a neovim instance, and then open the extension. This allows you to see what's happening on the neovim side (any errors/prompts/etc.) This is how my typical setup for development looks: ![](https://i.imgur.com/gwck9Do.jpg)
