@@ -21,6 +21,7 @@ import { spawn } from 'child_process';
 import { NvUtil } from './srcNV/nvUtil';
 import { RpcRequest } from './srcNV/rpcHandlers';
 import { TextEditor } from './src/textEditor';
+import { Screen } from './srcNV/screen';
 
 interface VSCodeKeybinding {
   key: string;
@@ -40,6 +41,7 @@ export namespace Vim {
   export let nv: NeovimClient;
   export let operatorPending = false;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
+  export let screen: Screen;
   export let channelId: number;
   export let prevState: { bufferTick: number; prevCursorPos: Position } = {
     bufferTick: -1,
@@ -78,7 +80,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
-  // await nvim.uiAttach(100, 100, { ext_cmdline: true, ext_tabline: true });
+  const SIZE = 100;
+  await nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
+  Vim.screen = new Screen(SIZE);
 
   await nvim.command('autocmd!');
   const autocmdMap: { [autocmd: string]: string } = {
@@ -100,9 +104,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await nvim.command('set noswapfile');
   await nvim.command('set hidden');
-
-  nvim.on('notification', (args: any, x: any) => {
-    // console.log(args, x);
+  nvim.on('notification', (y: any, x: any) => {
+    if (y === 'redraw') {
+      Vim.screen.redraw(x);
+    }
   });
 
   nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
@@ -131,26 +136,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.command(`set shiftwidth=${currentFileSettings.tabSize}`);
   }
 
-  vscode.workspace.onDidCloseTextDocument(async event => {
-    const deleted_file = event.fileName;
-    let buf_id = await nvim.call('bufnr', [`^${deleted_file}$`]);
-    if (buf_id === -1) {
-      return;
-    }
-    await nvim.command(`noautocmd ${buf_id}bw!`);
-  });
-
-  vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
-
-  vscode.window.onDidChangeTextEditorSelection(async e => {
-    if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
-      if (e.selections[0]) {
-        await NvUtil.setSelection(e.selections[0]);
-      }
-    }
-  });
-
-  vscode.workspace.onDidChangeTextDocument(async e => {
+  async function handleTextDocumentChange(e: vscode.TextDocumentChangeEvent) {
     if (e.contentChanges.length === 0) {
       return;
     }
@@ -217,7 +203,28 @@ export async function activate(context: vscode.ExtensionContext) {
     // Technically not true, but it seems like a pain to handle, and seems
     // like something that won't be used much. Will re-evaluate at a later
     // date.
+  }
+
+  vscode.workspace.onDidCloseTextDocument(async event => {
+    const deleted_file = event.fileName;
+    let buf_id = await nvim.call('bufnr', [`^${deleted_file}$`]);
+    if (buf_id === -1) {
+      return;
+    }
+    await nvim.command(`noautocmd ${buf_id}bw!`);
   });
+
+  vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
+
+  vscode.window.onDidChangeTextEditorSelection(async e => {
+    if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
+      if (e.selections[0]) {
+        await NvUtil.setSelection(e.selections[0]);
+      }
+    }
+  });
+
+  vscode.workspace.onDidChangeTextDocument(handleTextDocumentChange);
 
   // tslint:disable-next-line:no-unused-variable
   async function handleSimple(key: string) {
@@ -249,7 +256,6 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
 
-    // More hackish stuff
     await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode.mode);
   }
 
@@ -263,8 +269,8 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
-  // Keybindings need to be re-evaluated.
 
+  // Keybindings need to be re-evaluated.
   Configuration.boundKeyCombinations = [];
   for (let keybinding of packagejson.contributes.keybindings) {
     if (keybinding.when.indexOf('listFocus') !== -1) {
@@ -305,7 +311,6 @@ function overrideCommand(
 ) {
   let disposable = vscode.commands.registerCommand(command, async args => {
     if (!Globals.active) {
-      console.log('YO');
       await vscode.commands.executeCommand('default:' + command, args);
       return;
     }

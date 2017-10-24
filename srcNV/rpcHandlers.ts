@@ -44,7 +44,6 @@ export class RpcRequest {
   }
 
   static async leaveInsert(args: Array<any>, resp: any) {
-    console.log('HEY');
     resp.send('success');
     const mode = await Vim.nv.mode;
     Vim.mode = mode;

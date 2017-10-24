@@ -88,10 +88,15 @@ export class NvUtil {
     return ['nvim_feed_keys', [keys, mode, escapeCsi]];
   }
 
+  // An utility function for joining multiple arrays for use in nvim_atomic_call
   static atomJoin(...arrays: Array<any>): Array<any> {
     let ret: Array<any> = [];
     for (const a of arrays) {
-      ret = ret.concat([a]);
+      if (a[0] instanceof Array) {
+        ret.concat(a);
+      } else {
+        ret = ret.concat([a]);
+      }
     }
     return ret;
   }
