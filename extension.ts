@@ -12,15 +12,10 @@ import * as _ from 'lodash';
 import { attach } from 'neovim';
 import { NeovimClient } from 'neovim/lib/api/client';
 import { TaskQueue } from 'aurelia-task-queue';
-import { showCmdLine } from './src/cmd_line/main';
-import { ModeHandler } from './src/mode/modeHandler';
 import { Position } from './src/common/motion/position';
 import { Globals } from './src/globals';
 import { AngleBracketNotation } from './src/notation';
-import { ModeName } from './src/mode/mode';
 import { Configuration } from './src/configuration/configuration';
-import { ICodeKeybinding } from './src/mode/remapper';
-import { runCmdLine } from './src/cmd_line/main';
 
 import { spawn } from 'child_process';
 import { NvUtil } from './srcNV/nvUtil';

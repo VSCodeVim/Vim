@@ -1,6 +1,4 @@
 'use strict';
-import { ReplaceTextTransformation } from './transformations/transformations';
-import { VimState } from './mode/modeHandler';
 
 import * as vscode from 'vscode';
 import { Position, PositionDiff } from './common/motion/position';
@@ -87,30 +85,6 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.replace(range, text);
     });
-  }
-
-  /**
-   * This is the correct replace method to use. (Notice how it's not async? Yep)
-   */
-  static replaceText(
-    vimState: VimState,
-    text: string,
-    start: Position,
-    end: Position,
-    diff: PositionDiff | undefined = undefined
-  ): void {
-    const trans: ReplaceTextTransformation = {
-      type: 'replaceText',
-      text,
-      start,
-      end,
-    };
-
-    if (diff) {
-      trans.diff = diff;
-    }
-
-    vimState.recordedState.transformations.push(trans);
   }
 
   static readLine(): string {

@@ -536,6 +536,9 @@
     "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
   },
   "dependencies": {
+    "@types/msgpack-lite": "^0.1.5",
+    "@types/winston": "^2.3.6",
+    "aurelia-pal": "^1.4.0",
     "aurelia-task-queue": "^1.2.0",
     "clipboardy": "^1.1.4",
     "diff-match-patch": "^1.0.0",
