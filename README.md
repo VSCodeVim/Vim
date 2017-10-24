@@ -31,7 +31,7 @@ https://gitter.im/neovim/neovim For talking to the neovim devs
 https://gitter.im/neovim/node-client For talking to the neovim node-client devs  
 https://vscodevim.slack.com/ For talking to the VSCodeVim devs  
 
-Important Neovim PRs to follow:
+Important Neovim PRs to follow:  
 https://github.com/neovim/neovim/pull/5269 Text Diffs (so we don't have to sync the entire buffer each time)  
 https://github.com/neovim/neovim/pull/7173 For CmdLine syncing (it's a continuation of https://github.com/neovim/neovim/pull/6162)
 
