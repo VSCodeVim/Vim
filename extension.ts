@@ -39,9 +39,9 @@ const packagejson: {
 
 export namespace Vim {
   export let nv: NeovimClient;
+  export let channelId: number;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let screen: Screen;
-  export let channelId: number;
   export let prevState: { bufferTick: number } = {
     bufferTick: -1,
   };
@@ -77,8 +77,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
-  const SIZE = 100;
-  // await nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
+  const SIZE = 50;
+  await nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
   Vim.screen = new Screen(SIZE);
 
   await nvim.command('autocmd!');

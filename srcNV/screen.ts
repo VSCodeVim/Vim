@@ -29,6 +29,7 @@ export class Screen {
   y: number;
   size: number;
   highlighter: Object;
+  cmdline: vscode.StatusBarItem;
   constructor(size: number) {
     this.size = size;
     for (let i = 0; i < this.size; i++) {
@@ -40,6 +41,8 @@ export class Screen {
     this.x = 0;
     this.y = 0;
     this.highlighter = {};
+    this.cmdline = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10000);
+    this.cmdline.show();
   }
   redraw(changes: Array<any>) {
     for (let change of changes) {
@@ -111,6 +114,7 @@ export class Screen {
         }
       }
     }
+    this.cmdline.text = this.term[this.size - 1].map(x => x.v).join('');
     // vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
     // _caretDecoration.dispose();
     console.log(highlighted);
