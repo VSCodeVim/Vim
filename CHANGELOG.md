@@ -1,3 +1,16 @@
+# [v0.10.2 Pesky Penguin](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.2)  (Oct 14, 2017)
+
+* g; and g, index fixes <a href="https://github.com/VSCodeVim/Vim/issues/1824" class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="235039316" data-permission-text="Issue title is private" aria-label="#1824, g; and g, lag, off by one">#1824</a> <a class="user-mention" href="https://github.com/westim">@westim</a>
+* visual selection fixes <a href="https://github.com/VSCodeVim/Vim/issues/1860" class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="237705862" data-permission-text="Issue title is private" aria-label="#1860, Selecting left while in visual multi cursor mode causes jumping cursors">#1860</a> <a class="user-mention" href="https://github.com/westim">@westim</a>
+* gi \`. and '. commands added <a href="https://github.com/VSCodeVim/Vim/issues/1248" class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="203110910" data-permission-text="Issue title is private" aria-label="#1248, Add support for gi, '., and `.">#1248</a> <a class="user-mention" href="https://github.com/westim">@westim</a>
+* Configurable cursor style for specific modes <a href="https://github.com/VSCodeVim/Vim/issues/2050" class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="262657399" data-permission-text="Issue title is private" aria-label="#2050, [Feature Request] Configurable cursor style">#2050</a>
+* Fixes text selection in insert mode <a href="https://github.com/VSCodeVim/Vim/issues/1951" class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="248015183" data-permission-text="Issue title is private" aria-label="#1951, Selecting text backwards in insert mode only selects first character">#1951</a> <a class="user-mention" href="https://github.com/DanEEStar">@DanEEStar</a>
+* Add configuration option to have preceding : for commands <a class="user-mention" href="https://github.com/gadkadosh">@gadkadosh</a>
+* Add configuration option to disable mode string in status bar <a href="https://github.com/VSCodeVim/Vim/issues/1576" class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="224309300" data-permission-text="Issue title is private" aria-label="#1576, REQUEST: Setting to disable the vim mode text in the status bar">#1576</a> <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
+* Minor internal cleanup <a class="user-mention" href="https://github.com/jpoon">@jpoon</a> <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
+
+Thanks <a class="user-mention" href="https://github.com/joonro">@joonro</a> <a class="user-mention" href="https://github.com/westim">@westim</a> <a class="user-mention" href="https://github.com/DanEEStar">@DanEEStar</a> and <a class="user-mention" href="https://github.com/gadkadosh">@gadkadosh</a> for your contributions!
+
 # [v0.10.1 Easy Éclair](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.1)  (Sep 16, 2017)
 
 Much credit goes to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a> and <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> for much of the work this patch!
@@ -285,22 +298,22 @@ The last release had a little bug. This fixes that bug.
 I admit it. I sneaked this release out just because I wanted to use less buggy macros.
 
 Macro stuff:
-* 
+*
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213499873" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1382" href="https://github.com/VSCodeVim/Vim/issues/1382">#1382</a> - macros made too many history steps - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a></p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213499873" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1382" href="https://github.com/VSCodeVim/Vim/issues/1382">#1382</a> - macros made too many history steps - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* 
+*
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213575205" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1388" href="https://github.com/VSCodeVim/Vim/issues/1388">#1388</a> - macros wouldn't play back indentation removal in some cases</p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213575205" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1388" href="https://github.com/VSCodeVim/Vim/issues/1388">#1388</a> - macros wouldn't play back indentation removal in some cases
-* 
+*
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213576111" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1389" href="https://github.com/VSCodeVim/Vim/issues/1389">#1389</a> - macros weren't adjusting character position correctly in some cases</p>
 
 
 <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213576111" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1389" href="https://github.com/VSCodeVim/Vim/issues/1389">#1389</a> - macros weren't adjusting character position correctly in some cases
-* 
+*
 <p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213514740" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1385" href="https://github.com/VSCodeVim/Vim/issues/1385">#1385</a> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a></p>
 
 
