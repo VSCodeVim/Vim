@@ -28,6 +28,10 @@ export class RpcRequest {
     if (args[1] !== vscode.window.activeTextEditor!.document.fileName) {
       await vscode.commands.executeCommand('vscode.open', filePath);
     }
+    if (args[1] !== vscode.window.activeTextEditor!.document.fileName) {
+      resp.send('failure');
+      return;
+    }
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     resp.send('success');
   }

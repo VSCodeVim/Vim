@@ -205,6 +205,8 @@ export async function activate(context: vscode.ExtensionContext) {
       if (isRealChange) {
         nvPos = await NvUtil.getCursorPos();
       }
+      // todo(chilli): Doesn't work if there was just an undo command (undojoin
+      // fails and prevents the following command from executing)
       const result = await nvim.callAtomic(
         NvUtil.atomJoin(
           NvUtil.atomCommand('undojoin'),
