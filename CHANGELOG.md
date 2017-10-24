@@ -8,7 +8,7 @@
 * Add configuration option to have preceding : for commands <a class="user-mention" href="https://github.com/gadkadosh">@gadkadosh</a>
 * Add configuration option to disable mode string in status bar <a href="https://github.com/VSCodeVim/Vim/issues/1576" class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="224309300" data-permission-text="Issue title is private" aria-label="#1576, REQUEST: Setting to disable the vim mode text in the status bar">#1576</a> <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
 * Minor internal cleanup <a class="user-mention" href="https://github.com/jpoon">@jpoon</a> <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-Thanks @joonro <a class="user-mention" href="https://github.com/westim">@westim</a> <a class="user-mention" href="https://github.com/DanEEStar">@DanEEStar</a> and <a class="user-mention" href="https://github.com/gadkadosh">@gadkadosh</a> for your contributions!
+Thanks <a class="user-mention" href="https://github.com/joonro">@joonro</a> <a class="user-mention" href="https://github.com/westim">@westim</a> <a class="user-mention" href="https://github.com/DanEEStar">@DanEEStar</a> and <a class="user-mention" href="https://github.com/gadkadosh">@gadkadosh</a> for your contributions!
 
 # [v0.10.1 Easy Éclair](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.1)  (Sep 16, 2017)
 
