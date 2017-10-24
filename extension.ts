@@ -148,6 +148,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
 
+  vscode.window.onDidChangeTextEditorSelection(async e => {
+    if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
+      if (e.selections[0]) {
+        await NvUtil.setSelection(e.selections[0]);
+      }
+    }
+  });
+
   vscode.workspace.onDidChangeTextDocument(async e => {
     if (e.contentChanges.length === 0) {
       return;
@@ -157,21 +165,28 @@ export async function activate(context: vscode.ExtensionContext) {
     const changeEnd = Position.FromVSCodePosition(change.range.end);
     const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
     const docEnd = new Position(0, 0).getDocumentEnd();
-    // console.log(changeBegin, changeEnd, curPos);
+    // This ugly if statement is to differentiate the "real" vscode changes that
+    // should be included in dot repeat(like autocomplete, auto-close parens,
+    // all regular typing, etc.) from the vscode changes that should not be
+    // included (the entire buffer syncing, autoformatting, etc.)
     if (
       Vim.mode.mode === 'i' &&
-      ((changeBegin.line === curPos.line && changeBegin.line === changeEnd.line) ||
-        change.text === '')
+      ((changeBegin.line === curPos.line &&
+        changeBegin.line === changeEnd.line &&
+        !(
+          changeBegin.line === 0 &&
+          changeBegin.character === 0 &&
+          change.text[change.text.length - 1] === '\n'
+        )) ||
+        (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1))
     ) {
       await NvUtil.updateMode();
       if (!Vim.mode.blocking) {
         const nvPos = await NvUtil.getCursorPos();
-        const nvLine = nvPos[0];
-        const nvChar = nvPos[1];
-        if (nvLine !== curPos.line) {
+        if (nvPos.line !== curPos.line) {
           await NvUtil.setCursorPos(curPos);
         } else {
-          await NvUtil.ctrlGMove(nvChar, changeEnd.character);
+          await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
         }
       }
       await nvim.input('<BS>'.repeat(Math.max(0, change.rangeLength)));
@@ -181,10 +196,25 @@ export async function activate(context: vscode.ExtensionContext) {
       // doing until diffs come in from the neovim side though, since that's the
       // real blocking factor.
       // @ts-ignore
-      await nvim.callAtomic([
-        ['nvim_command', ['undojoin']],
-        ['nvim_buf_set_lines', [0, 0, -1, 1, TextEditor.getText().split('\n')]],
-      ]);
+      const isRealChange = change.text.length !== change.rangeLength;
+      let nvPos: Position = new Position(0, 0);
+      let atomicCommands = [];
+      // Tests if change is a change that replaces the entire text (ie: the copy
+      // from neovim buffer to vscode buffer). Doesn't always work, hence why we
+      // have 2 cases
+      if (isRealChange) {
+        nvPos = await NvUtil.getCursorPos();
+      }
+      const result = await nvim.callAtomic(
+        NvUtil.atomJoin(
+          NvUtil.atomCommand('undojoin'),
+          NvUtil.atomBufSetLines(TextEditor.getText().split('\n'))
+        )
+      );
+
+      if (isRealChange) {
+        await NvUtil.setCursorPos(nvPos);
+      }
     }
     // I'm assuming here that there's nothing that will happen on the vscode
     // side that would alter cursor position if you're not in insert mode.

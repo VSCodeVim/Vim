@@ -62,34 +62,67 @@ export class NvUtil {
       await Vim.nv.input('<C-g>U<Left>'.repeat(start - target));
     }
   }
-
-  static async setSelection(pos: vscode.Range) {
-    await Vim.nv.callFunction('setpos', [
-      '.',
-      [0, pos.start.line + 1, pos.start.character + 1, false],
-    ]);
-    await Vim.nv.feedKeys('v', '', false);
-    await Vim.nv.callFunction('setpos', ['.', [0, pos.end.line + 1, pos.end.character + 1, false]]);
-    // await Vim.nv.callFunction("setpos", ["'", [0, pos.line + 1, pos.character + 1, false]]);
+  static atomCall(funcName: string, args?: any[]): Array<any> {
+    if (args) {
+      return ['nvim_call_function', [funcName, args]];
+    } else {
+      return ['nvim_call_function', [funcName, []]];
+    }
   }
 
-  private static async getPos(name: string): Promise<[number, number]> {
+  static atomCommand(command: string): Array<any> {
+    return ['nvim_command', [command]];
+  }
+
+  static atomBufSetLines(
+    lines: Array<string>,
+    buffer = 0,
+    start = 0,
+    end = -1,
+    strictIndexing = 1
+  ) {
+    return ['nvim_buf_set_lines', [buffer, start, end, strictIndexing, lines]];
+  }
+
+  static atomFeedKeys(keys: string, mode = '', escapeCsi = false) {
+    return ['nvim_feed_keys', [keys, mode, escapeCsi]];
+  }
+
+  static atomJoin(...arrays: Array<any>): Array<any> {
+    let ret: Array<any> = [];
+    for (const a of arrays) {
+      ret = ret.concat([a]);
+    }
+    return ret;
+  }
+
+  static async setSelection(pos: vscode.Range) {
+    await Vim.nv.callAtomic(
+      NvUtil.atomJoin(
+        NvUtil.atomCall('setpos', ['.', [0, pos.start.line + 1, pos.start.character + 1, false]]),
+        NvUtil.atomFeedKeys('v'),
+        NvUtil.atomCall('setpos', ['.', [0, pos.end.line + 1, pos.end.character + 1, false]])
+      )
+    );
+  }
+
+  private static async getPos(name: string): Promise<Position> {
     let [row, character] = ((await Vim.nv.callFunction('getpos', [name])) as Array<number>).slice(
       1,
       3
     );
-    return [row - 1, character - 1];
+    return new Position(row - 1, character - 1);
   }
 
   static async getCurWant(): Promise<number> {
     return (await Vim.nv.call('getcurpos'))[4] - 1;
   }
 
-  static async getCursorPos(): Promise<[number, number]> {
+  static async getCursorPos(): Promise<Position> {
     return this.getPos('.');
   }
 
-  static async getSelectionStartPos(): Promise<[number, number]> {
+  static async getSelectionStartPos(): Promise<Position> {
     return this.getPos('v');
   }
   static async getUndoTree(): Promise<UndoTree> {
@@ -97,11 +130,9 @@ export class NvUtil {
   }
 
   static async changeSelectionFromMode(mode: string): Promise<void> {
-    let [row, character] = await NvUtil.getCursorPos();
-    let [startRow, startCharacter] = await NvUtil.getSelectionStartPos();
-    let startPos = new Position(startRow, startCharacter);
-    let curPos = new Position(row, character);
-    const cursorPos = new Position(row, character);
+    let curPos = await NvUtil.getCursorPos();
+    let startPos = await NvUtil.getSelectionStartPos();
+    const cursorPos = new Position(curPos.line, curPos.character);
     let cursorDecorations = [];
     switch (mode) {
       case 'v':
