@@ -7,6 +7,7 @@
  */
 
 import * as vscode from 'vscode';
+import { existsSync } from 'fs';
 import * as _ from 'lodash';
 import { attach } from 'neovim';
 import { NeovimClient } from 'neovim/lib/api/client';
@@ -74,9 +75,9 @@ export async function activate(context: vscode.ExtensionContext) {
     Configuration.enableNeovim = false;
   });
   let nvim: NeovimClient;
-  try {
+  if (existsSync('/tmp/nvim')) {
     nvim = attach({ socket: '/tmp/nvim' });
-  } catch {
+  } else {
     nvim = await attach({ proc: proc });
   }
   Vim.nv = nvim;
