@@ -39,13 +39,11 @@ const packagejson: {
 
 export namespace Vim {
   export let nv: NeovimClient;
-  export let operatorPending = false;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let screen: Screen;
   export let channelId: number;
-  export let prevState: { bufferTick: number; prevCursorPos: Position } = {
+  export let prevState: { bufferTick: number } = {
     bufferTick: -1,
-    prevCursorPos: new Position(0, 0),
   };
   export let taskQueue = new TaskQueue();
 }
@@ -68,20 +66,19 @@ export async function activate(context: vscode.ExtensionContext) {
   proc.on('error', function(err) {
     console.log(err);
     vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
-    Configuration.enableNeovim = false;
   });
   let nvim: NeovimClient;
   if (existsSync('/tmp/nvim')) {
     nvim = attach({ socket: '/tmp/nvim' });
   } else {
-    nvim = await attach({ proc: proc });
+    nvim = attach({ proc: proc });
   }
   Vim.nv = nvim;
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
   const SIZE = 100;
-  await nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
+  // await nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
   Vim.screen = new Screen(SIZE);
 
   await nvim.command('autocmd!');
@@ -104,6 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await nvim.command('set noswapfile');
   await nvim.command('set hidden');
+  // await nvim.command('set noautoindent nocindent nosmartindent indentexpr=');
   nvim.on('notification', (y: any, x: any) => {
     if (y === 'redraw') {
       Vim.screen.redraw(x);
@@ -235,13 +233,12 @@ export async function activate(context: vscode.ExtensionContext) {
     const prevMode = Vim.mode.mode;
     const prevBlocking = Vim.mode.blocking;
 
-    Vim.prevState.prevCursorPos = Position.FromVSCodePosition(
-      vscode.window.activeTextEditor!.selection.active
-    );
     async function input(k: string) {
+      console.log('YO');
       await nvim.input(k === '<' ? '<lt>' : k);
       await NvUtil.updateMode();
       await NvUtil.copyTextFromNeovim();
+      console.log('DONE');
       await NvUtil.changeSelectionFromMode(Vim.mode.mode);
     }
     if (prevMode !== 'i') {
@@ -260,9 +257,9 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   overrideCommand(context, 'type', async args => {
-    if (Vim.taskQueue.flushing) {
-      return;
-    }
+    // if (Vim.taskQueue.flushing) {
+    //   return;
+    // }
     Vim.taskQueue.queueMicroTask(() => {
       handleKeyEventNV(args.text);
     });

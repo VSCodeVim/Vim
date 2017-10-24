@@ -111,7 +111,7 @@ export class Screen {
         }
       }
     }
-    vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
+    // vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
     // _caretDecoration.dispose();
     console.log(highlighted);
     console.log('----------------');
