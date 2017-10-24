@@ -19,12 +19,12 @@ export class NvUtil {
   private static _caretDecoration = vscode.window.createTextEditorDecorationType({
     dark: {
       // used for dark colored themes
-      backgroundColor: 'rgba(224, 224, 224, 0.4)',
+      backgroundColor: 'rgba(240, 240, 240, 0.6)',
       borderColor: 'rgba(0, 0, 0, 1.0)',
     },
     light: {
       // used for light colored themes
-      backgroundColor: 'rgba(32, 32, 32, 0.4)',
+      backgroundColor: 'rgba(32, 32, 32, 0.6)',
       borderColor: 'rgba(0, 0, 0, 1.0)',
     },
     borderStyle: 'solid',
@@ -175,10 +175,9 @@ export class NvUtil {
         vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
         break;
       case 'n':
+      default:
         vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
         vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
-        break;
-      default:
         break;
     }
 

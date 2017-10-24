@@ -21,7 +21,6 @@ import { spawn } from 'child_process';
 import { NvUtil } from './srcNV/nvUtil';
 import { RpcRequest } from './srcNV/rpcHandlers';
 import { TextEditor } from './src/textEditor';
-// import { Neovim } from './neovim';
 
 interface VSCodeKeybinding {
   key: string;
