@@ -9,6 +9,21 @@ export class Cell {
   }
 }
 
+const foregroundDec = vscode.window.createTextEditorDecorationType({
+  dark: {
+    // used for dark colored themes
+    backgroundColor: 'rgba(240, 120, 120, 0.6)',
+    borderColor: 'rgba(0, 0, 0, 1.0)',
+  },
+  light: {
+    // used for light colored themes
+    backgroundColor: 'rgba(32, 32, 32, 0.6)',
+    borderColor: 'rgba(0, 0, 0, 1.0)',
+  },
+  borderStyle: 'solid',
+  borderWidth: '1px',
+});
+
 const _caretDecoration = vscode.window.createTextEditorDecorationType({
   dark: {
     // used for dark colored themes
@@ -29,7 +44,7 @@ export class Screen {
   y: number;
   size: number;
   highlighter: Object;
-  cmdline: vscode.StatusBarItem;
+  cmdline: vscode.StatusBarItem[];
   constructor(size: number) {
     this.size = size;
     for (let i = 0; i < this.size; i++) {
@@ -41,8 +56,14 @@ export class Screen {
     this.x = 0;
     this.y = 0;
     this.highlighter = {};
-    this.cmdline = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10000);
-    this.cmdline.show();
+    this.cmdline = [];
+    for (let i = 0; i < 10; i++) {
+      this.cmdline.push(
+        vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10000 - i)
+      );
+      this.cmdline[i].show();
+    }
+    // this.cmdline.show();
   }
   redraw(changes: Array<any>) {
     for (let change of changes) {
@@ -93,20 +114,6 @@ export class Screen {
       ) {
         try {
           if (i[2][0] === 'foreground') {
-            const foregroundDec = vscode.window.createTextEditorDecorationType({
-              dark: {
-                // used for dark colored themes
-                backgroundColor: 'rgba(240, 120, 120, 0.6)',
-                borderColor: 'rgba(0, 0, 0, 1.0)',
-              },
-              light: {
-                // used for light colored themes
-                backgroundColor: 'rgba(32, 32, 32, 0.6)',
-                borderColor: 'rgba(0, 0, 0, 1.0)',
-              },
-              borderStyle: 'solid',
-              borderWidth: '1px',
-            });
             const pos = new Position(i[0] as number, i[1] as number);
             decorations.push(new vscode.Range(pos, pos.getRight()));
           } else {
@@ -118,19 +125,32 @@ export class Screen {
         }
       }
     }
-    this.cmdline.text = this.term[this.size - 1].map(x => x.v).join('');
-    const wildmenu = this.term[this.size - 2]
+    this.cmdline[0].text = this.term[this.size - 1].map(x => x.v).join('');
+    const wildmenuText = this.term[this.size - 2]
       .map(x => x.v)
       .join('')
-      .trim()
-      .split(/\s+/);
+      .replace(/\s+$/, '');
+    let wildmenu: string[] = wildmenuText.split(/\s+/);
+    let wildmenuIdx = wildmenu.map(x => wildmenuText.search(x));
     if (wildmenu[0] === '<' || wildmenu[wildmenu.length - 1] === '>') {
-      this.cmdline.text += '|  ' + wildmenu.join(' ');
-      // console.log(wildmenu);
+      for (let i = 0; i < wildmenu.length; i++) {
+        this.cmdline[i + 1].text = wildmenu[i];
+        this.cmdline[i + 1].show();
+        if (this.term[this.size - 2][wildmenuIdx[i]].highlight.hasOwnProperty('foreground')) {
+          this.cmdline[i + 1].color = 'red';
+        } else {
+          this.cmdline[i + 1].color = 'white';
+        }
+      }
+      for (let i = wildmenu.length; i < this.cmdline.length - 1; i++) {
+        this.cmdline[i + 1].hide();
+      }
+    } else {
+      for (let i = 1; i < this.cmdline.length; i++) {
+        this.cmdline[i].hide();
+      }
     }
-    // vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
+    vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
     // _caretDecoration.dispose();
-    console.log(highlighted);
-    console.log('----------------');
   }
 }

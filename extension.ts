@@ -79,7 +79,7 @@ export async function activate(context: vscode.ExtensionContext) {
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
   const SIZE = 50;
-  // await nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
+  nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
   Vim.screen = new Screen(SIZE);
 
   await nvim.command('autocmd!');
