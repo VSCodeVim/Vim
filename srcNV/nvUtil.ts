@@ -182,7 +182,7 @@ export class NvUtil {
       case 'n':
       default:
         vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
+        vscode.window.activeTextEditor!.selection = new vscode.Selection(curPos, curPos);
         break;
     }
 

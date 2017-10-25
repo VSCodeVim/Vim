@@ -169,25 +169,20 @@ export async function activate(context: vscode.ExtensionContext) {
       // real blocking factor.
       // @ts-ignore
       const isRealChange = change.text.length !== change.rangeLength;
-      let nvPos: Position = new Position(0, 0);
-      let atomicCommands = [];
       // Tests if change is a change that replaces the entire text (ie: the copy
       // from neovim buffer to vscode buffer). Doesn't always work, hence why we
       // have 2 cases
       if (isRealChange) {
-        nvPos = await NvUtil.getCursorPos();
-      }
-      // todo(chilli): Doesn't work if there was just an undo command (undojoin
-      // fails and prevents the following command from executing)
-      const result = await nvim.callAtomic(
-        NvUtil.atomJoin(
+        // todo(chilli): Doesn't work if there was just an undo command (undojoin
+        // fails and prevents the following command from executing)
+        let atomicCommands = [
+          NvUtil.atomCommand("let g:foo = getpos('.')"),
           NvUtil.atomCommand('undojoin'),
-          NvUtil.atomBufSetLines(TextEditor.getText().split('\n'))
-        )
-      );
+          NvUtil.atomBufSetLines(TextEditor.getText().split('\n')),
+          NvUtil.atomCommand("call setpos('.', [g:foo[0], g:foo[1], g:foo[2], g:foo[3]])"),
+        ];
 
-      if (isRealChange) {
-        await NvUtil.setCursorPos(nvPos);
+        const result = await nvim.callAtomic(atomicCommands);
       }
     }
     // I'm assuming here that there's nothing that will happen on the vscode
@@ -228,11 +223,9 @@ export async function activate(context: vscode.ExtensionContext) {
     const prevBlocking = Vim.mode.blocking;
 
     async function input(k: string) {
-      console.log('YO');
       await nvim.input(k === '<' ? '<lt>' : k);
       await NvUtil.updateMode();
       await NvUtil.copyTextFromNeovim();
-      console.log('DONE');
       await NvUtil.changeSelectionFromMode(Vim.mode.mode);
     }
     if (prevMode !== 'i') {
