@@ -35,7 +35,7 @@ https://vscodevim.slack.com/ For talking to the VSCodeVim devs
 Important Neovim PRs to follow:  
 https://github.com/neovim/neovim/pull/5269 Text Diffs (so we don't have to sync the entire buffer each time)  
 https://github.com/neovim/neovim/pull/7173 For CmdLine syncing (it's a continuation of https://github.com/neovim/neovim/pull/6162)
-https://github.com/neovim/neovim/issues/6166 For allowing UI to update immediately (should allow Easymotion to work!)
+https://github.com/neovim/neovim/issues/6166 For allowing UI to update immediately (should allow Easymotion to work!)  
 https://github.com/neovim/neovim/pull/6168 For externalizing the wildmenu
 
 
