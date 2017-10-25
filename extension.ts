@@ -132,57 +132,62 @@ export async function activate(context: vscode.ExtensionContext) {
     if (e.contentChanges.length === 0) {
       return;
     }
-    const change = e.contentChanges[0];
-    const changeBegin = Position.FromVSCodePosition(change.range.start);
-    const changeEnd = Position.FromVSCodePosition(change.range.end);
-    const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
-    const docEnd = new Position(0, 0).getDocumentEnd();
-    // This ugly if statement is to differentiate the "real" vscode changes that
-    // should be included in dot repeat(like autocomplete, auto-close parens,
-    // all regular typing, etc.) from the vscode changes that should not be
-    // included (the entire buffer syncing, autoformatting, etc.)
-    if (
-      Vim.mode.mode === 'i' &&
-      ((changeBegin.line === curPos.line &&
-        changeBegin.line === changeEnd.line &&
-        !(
-          changeBegin.line === 0 &&
-          changeBegin.character === 0 &&
-          change.text[change.text.length - 1] === '\n'
-        )) ||
-        (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1))
-    ) {
-      await NvUtil.updateMode();
-      if (!Vim.mode.blocking) {
-        const nvPos = await NvUtil.getCursorPos();
-        if (nvPos.line !== curPos.line) {
-          await NvUtil.setCursorPos(curPos);
-        } else {
-          await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
+    for (const change of e.contentChanges) {
+      const changeBegin = Position.FromVSCodePosition(change.range.start);
+      const changeEnd = Position.FromVSCodePosition(change.range.end);
+      const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
+      const docEnd = new Position(0, 0).getDocumentEnd();
+      // This ugly if statement is to differentiate the "real" vscode changes that
+      // should be included in dot repeat(like autocomplete, auto-close parens,
+      // all regular typing, etc.) from the vscode changes that should not be
+      // included (the entire buffer syncing, autoformatting, etc.)
+      if (
+        Vim.mode.mode === 'i' &&
+        ((changeBegin.line === curPos.line &&
+          changeBegin.line === changeEnd.line &&
+          !(
+            changeBegin.line === 0 &&
+            changeBegin.character === 0 &&
+            change.text[change.text.length - 1] === '\n'
+          )) ||
+          (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1))
+      ) {
+        await NvUtil.updateMode();
+        if (!Vim.mode.blocking) {
+          const nvPos = await NvUtil.getCursorPos();
+          if (nvPos.line !== curPos.line) {
+            await NvUtil.setCursorPos(curPos);
+          } else {
+            // Is necessary for parentheses autocompletion but causes issues when non-atomic with fast text.
+            await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
+          }
         }
-      }
-      await nvim.input('<BS>'.repeat(Math.max(0, change.rangeLength)));
-      await nvim.input(change.text);
-    } else {
-      // todo: Optimize this to only replace relevant lines. Probably not worth
-      // doing until diffs come in from the neovim side though, since that's the
-      // real blocking factor.
-      // @ts-ignore
-      const isRealChange = change.text.length !== change.rangeLength;
-      // Tests if change is a change that replaces the entire text (ie: the copy
-      // from neovim buffer to vscode buffer). Doesn't always work, hence why we
-      // have 2 cases
-      if (isRealChange) {
-        // todo(chilli): Doesn't work if there was just an undo command (undojoin
-        // fails and prevents the following command from executing)
-        let atomicCommands = [
-          NvUtil.atomCommand("let g:foo = getpos('.')"),
-          NvUtil.atomCommand('undojoin'),
-          NvUtil.atomBufSetLines(TextEditor.getText().split('\n')),
-          NvUtil.atomCommand("call setpos('.', [g:foo[0], g:foo[1], g:foo[2], g:foo[3]])"),
-        ];
+        await nvim.input('<BS>'.repeat(change.rangeLength));
+        await nvim.input(change.text);
+      } else {
+        // todo: Optimize this to only replace relevant lines. Probably not worth
+        // doing until diffs come in from the neovim side though, since that's the
+        // real blocking factor.
+        // @ts-ignore
+        // todo(chilli):  Tests if change is a change that replaces the entire text (ie: the copy
+        // from neovim buffer to vscode buffer). It's a hack. Won't work if your
+        // change (refactor) for example, doesn't modify the length of the file
+        const isRealChange = change.text.length !== change.rangeLength;
+        if (isRealChange) {
+          // todo(chilli): Doesn't work if there was just an undo command (undojoin
+          // fails and prevents the following command from executing)
+          let atomicCommands = [
+            NvUtil.atomCommand("let g:foo = getpos('.')"),
+            NvUtil.atomCommand('undojoin'),
+            NvUtil.atomBufSetLines(TextEditor.getText().split('\n')),
+            ['nvim_get_var', ['foo']],
+            NvUtil.atomCommand("call setpos('.', [g:foo[0], g:foo[1], g:foo[2], g:foo[3]])"),
+          ];
 
-        const result = await nvim.callAtomic(atomicCommands);
+          const result = await nvim.callAtomic(atomicCommands);
+          // console.log(result[0][3][1]);
+        }
+        break;
       }
     }
     // I'm assuming here that there's nothing that will happen on the vscode
@@ -221,7 +226,6 @@ export async function activate(context: vscode.ExtensionContext) {
   async function handleKeyEventNV(key: string) {
     const prevMode = Vim.mode.mode;
     const prevBlocking = Vim.mode.blocking;
-
     async function input(k: string) {
       await nvim.input(k === '<' ? '<lt>' : k);
       await NvUtil.updateMode();

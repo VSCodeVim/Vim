@@ -38,7 +38,7 @@ export class NvUtil {
     //   return;
     // }
     // Vim.prevState.bufferTick = curTick;
-    const lines = await Vim.nv.buffer.lines;
+    let lines = await Vim.nv.buffer.lines;
     await TextEditor.replace(
       new vscode.Range(
         0,
