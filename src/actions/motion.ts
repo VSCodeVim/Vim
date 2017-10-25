@@ -162,6 +162,9 @@ abstract class MoveByScreenLine extends BaseMovement {
     });
 
     if (vimState.currentMode === ModeName.Normal) {
+      if (this.movementType === "wrappedLineEnd") {
+        return Position.FromVSCodePosition(vimState.editor.selection.active).getLeft();
+      }
       return Position.FromVSCodePosition(vimState.editor.selection.active);
     } else {
       /**
