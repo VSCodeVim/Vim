@@ -22,6 +22,7 @@ import { NvUtil } from './srcNV/nvUtil';
 import { RpcRequest } from './srcNV/rpcHandlers';
 import { TextEditor } from './src/textEditor';
 import { Screen } from './srcNV/screen';
+import { VimSettings } from './srcNV/vimSettings';
 
 interface VSCodeKeybinding {
   key: string;
@@ -78,7 +79,7 @@ export async function activate(context: vscode.ExtensionContext) {
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
   const SIZE = 50;
-  await nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
+  // await nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
   Vim.screen = new Screen(SIZE);
 
   await nvim.command('autocmd!');
@@ -86,6 +87,7 @@ export async function activate(context: vscode.ExtensionContext) {
     BufWriteCmd: 'writeBuf',
     QuitPre: 'closeBuf',
     InsertLeave: 'leaveInsert',
+    InsertEnter: 'enterInsert',
     BufEnter: 'openBuf',
   };
   for (const autocmd of Object.keys(autocmdMap)) {
@@ -99,9 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Overriding commands to handle them on the vscode side.
   // await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
 
-  await nvim.command('set noswapfile');
-  await nvim.command('set hidden');
-  // await nvim.command('set noautoindent nocindent nosmartindent indentexpr=');
+  await NvUtil.setSettings(['noswapfile', 'hidden']);
   nvim.on('notification', (y: any, x: any) => {
     if (y === 'redraw') {
       Vim.screen.redraw(x);
@@ -125,13 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.command(`edit ${active_editor_file}`);
     await NvUtil.copyTextFromNeovim();
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
-
-    const currentFileSettings = vscode.window.activeTextEditor!.options;
-    if (currentFileSettings.insertSpaces) {
-      await nvim.command(`set expandtab`);
-    }
-    await nvim.command(`set tabstop=${currentFileSettings.tabSize}`);
-    await nvim.command(`set shiftwidth=${currentFileSettings.tabSize}`);
+    await NvUtil.setSettings(VimSettings.enterFileSettings);
   }
 
   async function handleTextDocumentChange(e: vscode.TextDocumentChangeEvent) {

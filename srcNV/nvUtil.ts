@@ -210,4 +210,8 @@ export class NvUtil {
   static async updateMode() {
     Vim.mode = await Vim.nv.mode;
   }
+
+  static async setSettings(arg: Array<string>) {
+    Vim.nv.command(`set ${arg.join(' ')}`);
+  }
 }

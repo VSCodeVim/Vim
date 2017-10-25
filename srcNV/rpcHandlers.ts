@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Vim } from '../extension';
 import { NvUtil } from './nvUtil';
+import { VimSettings } from './vimSettings';
 
 export class RpcRequest {
   static rpcFunctions: { [method: string]: Function } = {};
@@ -43,9 +44,14 @@ export class RpcRequest {
     resp.send('success');
   }
 
+  static async enterInsert(args: Array<any>, resp: any) {
+    resp.send('success');
+    await NvUtil.setSettings(VimSettings.insertModeSettings);
+  }
   static async leaveInsert(args: Array<any>, resp: any) {
     resp.send('success');
     const mode = await Vim.nv.mode;
+    await NvUtil.setSettings(VimSettings.normalModeSettings);
     Vim.mode = mode;
     await NvUtil.changeSelectionFromMode(mode.mode);
     await NvUtil.copyTextFromNeovim();
