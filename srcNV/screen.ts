@@ -131,12 +131,14 @@ export class Screen {
       .join('')
       .replace(/\s+$/, '');
     let wildmenu: string[] = wildmenuText.split(/\s+/);
+    // Doesn't always work, who cares??? What a pain in the ass. I don't want to not use regex.
     let wildmenuIdx = wildmenu.map(x => wildmenuText.search(x));
     if (wildmenu[0] === '<' || wildmenu[wildmenu.length - 1] === '>') {
       for (let i = 0; i < wildmenu.length; i++) {
         this.cmdline[i + 1].text = wildmenu[i];
         this.cmdline[i + 1].show();
         if (this.term[this.size - 2][wildmenuIdx[i]].highlight.hasOwnProperty('foreground')) {
+          // console.log(this.term[this.size - 2][wil]);
           this.cmdline[i + 1].color = 'red';
         } else {
           this.cmdline[i + 1].color = 'white';
