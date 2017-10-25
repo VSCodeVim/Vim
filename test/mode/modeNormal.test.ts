@@ -1145,6 +1145,41 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'gi works correctly',
+    start: ['|'],
+    keysPressed: 'ione<Esc>otwo<Esc>0gi',
+    end: ['one', 'two|'],
+  });
+
+  newTest({
+    title: '`. works correctly',
+    start: ['one|'],
+    keysPressed: 'atwo<Esc>`.',
+    end: ['one|two'],
+  });
+
+  newTest({
+    title: "'. works correctly",
+    start: ['one|'],
+    keysPressed: "atwo<Esc>'.",
+    end: ['one|two'],
+  });
+
+  newTest({
+    title: 'g; works correctly',
+    start: ['|'],
+    keysPressed: 'ione<Esc>atwo<Esc>g;g;',
+    end: ['one|two'],
+  });
+
+  newTest({
+    title: 'g, works correctly',
+    start: ['|'],
+    keysPressed: 'ione<Esc>atwo<Esc>g;g;g,',
+    end: ['onetw|o'],
+  });
+
+  newTest({
     title: 'g_ works correctly',
     start: ['te|sttest'],
     keysPressed: 'g_',
