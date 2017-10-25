@@ -345,8 +345,7 @@
   "dependencies": {
     "@types/msgpack-lite": "^0.1.5",
     "@types/winston": "^2.3.6",
-    "aurelia-pal": "^1.4.0",
-    "aurelia-task-queue": "^1.2.0",
+    "aurelia-task-queue": "^1.2.1",
     "clipboardy": "^1.1.4",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.17.4",
@@ -355,9 +354,9 @@
   },
   "devDependencies": {
     "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.9",
+    "@types/node": "^8.0.47",
     "gulp": "^3.9.1",
-    "gulp-bump": "^2.7.0",
+    "gulp-bump": "^2.8.0",
     "gulp-git": "^2.4.1",
     "gulp-inject-string": "^1.1.0",
     "gulp-shell": "^0.6.3",
@@ -367,7 +366,7 @@
     "merge-stream": "^1.0.1",
     "mocha": "^3.4.2",
     "tslint": "^5.5.0",
-    "typescript": "^2.4.1",
-    "vscode": "^1.1.2"
+    "typescript": "^2.5.3",
+    "vscode": "^1.1.6"
   }
 }

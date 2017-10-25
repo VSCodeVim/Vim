@@ -8,7 +8,8 @@
     "noImplicitReturns": true,
     "suppressImplicitAnyIndexErrors": true,
     "lib": [
-      "es6"
+      "es6",
+      "dom"
     ],
     "sourceMap": true,
     "strictNullChecks": true,
