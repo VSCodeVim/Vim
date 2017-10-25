@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.13.0"
+    "vscode": "^1.17.0"
   },
   "categories": [
     "Other",
@@ -590,6 +590,6 @@
     "mocha": "^4.0.1",
     "tslint": "^5.7.0",
     "typescript": "^2.5.3",
-    "vscode": "^1.1.5"
+    "vscode": "^1.1.6"
   }
 }
