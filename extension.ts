@@ -158,8 +158,9 @@ export async function activate(context: vscode.ExtensionContext) {
           if (nvPos.line !== curPos.line) {
             await NvUtil.setCursorPos(curPos);
           } else {
-            // Is necessary for parentheses autocompletion but causes issues when non-atomic with fast text.
-            await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
+            // Is necessary for parentheses autocompletion but causes issues
+            // when non-atomic with fast text. Move this into lua
+            // await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
           }
         }
         await nvim.input('<BS>'.repeat(change.rangeLength));
