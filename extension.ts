@@ -127,7 +127,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.command(`edit ${active_editor_file}`);
     await NvUtil.copyTextFromNeovim();
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
-    await NvUtil.setSettings(VimSettings.enterFileSettings);
+    await NvUtil.setSettings(await VimSettings.enterFileSettings());
   }
 
   async function handleTextDocumentChange(e: vscode.TextDocumentChangeEvent) {

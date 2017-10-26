@@ -46,11 +46,12 @@ export class RpcRequest {
 
   static async enterInsert(args: Array<any>, resp: any) {
     resp.send('success');
-    await NvUtil.setSettings(VimSettings.insertModeSettings);
+    await NvUtil.setSettings(await VimSettings.insertModeSettings());
   }
   static async leaveInsert(args: Array<any>, resp: any) {
     resp.send('success');
     const mode = await Vim.nv.mode;
+    console.log(VimSettings.normalModeSettings);
     await NvUtil.setSettings(VimSettings.normalModeSettings);
     Vim.mode = mode;
     await NvUtil.changeSelectionFromMode(mode.mode);
