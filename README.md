@@ -3,7 +3,7 @@
 
 [![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
 [![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
-[Slack](https://vscodevim-slackin.azurewebsites.net)
+[![Slack Status](https://vscodevim-slackin.azurewebsites.net/badge.svg)](https://vscodevim-slackin.azurewebsites.net)
 
 <hr>
 
@@ -533,4 +533,4 @@ This project is maintained by a group of awesome [people](https://github.com/VSC
 * Thanks to @Metamist for implementing EasyMotion!
 * Thanks to @sectioneight for implementing text objects!
 * Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
-* Shoutout to @chillee aka Horace He for his contributions and hard work. 
+* Shoutout to @chillee aka Horace He for his contributions and hard work.
