@@ -333,7 +333,11 @@
     "configuration": {
       "title": "Vim Configuration",
       "type": "object",
-      "properties": {}
+      "properties": {
+        "vim.enableScreenEvents": {
+          "default": true
+        }
+      }
     }
   },
   "scripts": {
