@@ -95,21 +95,6 @@ class ConfigurationClass {
       // By default, all key combinations are used so start with true
       let useKey = true;
 
-      // Check for configuration setting disabling combo
-      if (handleKeys[bracketedKey] !== undefined) {
-        if (handleKeys[bracketedKey] === false) {
-          useKey = false;
-        }
-      } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
-        // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding.
-        // However, we need to still capture <C-c> due to overrideCopy.
-        if (bracketedKey === '<C-c>' && this.overrideCopy) {
-          useKey = true;
-        } else {
-          useKey = false;
-        }
-      }
-
       // Set the context of whether or not this key will be used based on criteria from above
       vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
     }
