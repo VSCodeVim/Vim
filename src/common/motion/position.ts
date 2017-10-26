@@ -279,7 +279,7 @@ export class Position extends vscode.Position {
       yield {
         line: line.substring(topLeft.character, endCharacter),
         start: new Position(lineIndex, topLeft.character),
-        end: new Position(lineIndex, bottomRight.character + 1),
+        end: new Position(lineIndex, endCharacter),
       };
     }
   }
