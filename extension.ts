@@ -26,10 +26,9 @@ import { VimSettings } from './srcNV/vimSettings';
 
 interface VSCodeKeybinding {
   key: string;
-  mac?: string;
-  linux?: string;
   command: string;
   when: string;
+  vimKey: string;
 }
 
 const packagejson: {
@@ -171,7 +170,6 @@ export async function activate(context: vscode.ExtensionContext) {
         // todo: Optimize this to only replace relevant lines. Probably not worth
         // doing until diffs come in from the neovim side though, since that's the
         // real blocking factor.
-        // @ts-ignore
         // todo(chilli):  Tests if change is a change that replaces the entire text (ie: the copy
         // from neovim buffer to vscode buffer). It's a hack. Won't work if your
         // change (refactor) for example, doesn't modify the length of the file
@@ -261,34 +259,21 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
 
-  // Keybindings need to be re-evaluated.
-  Configuration.boundKeyCombinations = [];
-  for (let keybinding of packagejson.contributes.keybindings) {
-    if (keybinding.when.indexOf('listFocus') !== -1) {
+  const keysToBind = packagejson.contributes.keybindings;
+  const ignoreKeys: string[] = vscode.workspace
+    .getConfiguration('vim')
+    .get('ignoreKeys') as string[];
+  for (let key of keysToBind) {
+    if (ignoreKeys.indexOf(key.vimKey) !== -1) {
       continue;
     }
-    let keyToBeBound = '';
-    /**
-     * On OSX, handle mac keybindings if we specified one.
-     */
-    if (process.platform === 'darwin') {
-      keyToBeBound = keybinding.mac || keybinding.key;
-    } else if (process.platform === 'linux') {
-      keyToBeBound = keybinding.linux || keybinding.key;
-    } else {
-      keyToBeBound = keybinding.key;
-    }
-
-    const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
-
-    Configuration.boundKeyCombinations.push(bracketedKey);
-    registerCommand(context, keybinding.command, () => {
+    await vscode.commands.executeCommand('setContext', `vim.use_${key.vimKey}`, true);
+    registerCommand(context, key.command, () => {
       Vim.taskQueue.queueMicroTask(() => {
-        handleKeyEventNV(bracketedKey);
+        handleKeyEventNV(`${key.vimKey}`);
       });
     });
   }
-  Configuration.updateConfiguration();
 
   if (vscode.window.activeTextEditor) {
     await handleActiveTextEditorChange();
