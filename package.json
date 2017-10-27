@@ -22,12 +22,15 @@
               "<s-esc>",
               "<c-`>",
               "<c-p>",
-              "<c-k>"
+              "<c-k>",
+              "<c-b>"
             ],
             "normal": [],
             "insert": [
               "<c-c>",
-              "<c-a>"
+              "<c-a>",
+              "<tab>",
+              "<bs>"
             ],
             "visual": []
           }
@@ -110,142 +113,40 @@
         "vimKey": "<esc>"
       },
       {
-        "key": "ctrl+p",
-        "command": "vim.<c-p>",
-        "when": "vim.use_<c-p>",
-        "vimKey": "<c-p>"
+        "key": "ctrl+backspace",
+        "command": "vim.<c-bs>",
+        "when": "vim.use_<c-bs>",
+        "vimKey": "<c-bs>"
       },
       {
-        "key": "ctrl+_",
-        "command": "vim.<c-_>",
-        "when": "vim.use_<c-_>",
-        "vimKey": "<c-_>"
+        "key": "backspace",
+        "command": "vim.<bs>",
+        "when": "vim.use_<bs>",
+        "vimKey": "<bs>"
       },
       {
-        "key": "ctrl+$",
-        "command": "vim.<c-$>",
-        "when": "vim.use_<c-$>",
-        "vimKey": "<c-$>"
+        "key": "ctrl+tab",
+        "command": "vim.<c-tab>",
+        "when": "vim.use_<c-tab>",
+        "vimKey": "<c-tab>"
       },
       {
-        "key": "ctrl+7",
-        "command": "vim.<c-7>",
-        "when": "vim.use_<c-7>",
-        "vimKey": "<c-7>"
+        "key": "tab",
+        "command": "vim.<tab>",
+        "when": "vim.use_<tab>",
+        "vimKey": "<tab>"
       },
       {
-        "key": "ctrl+>",
-        "command": "vim.<c->>",
-        "when": "vim.use_<c->>",
-        "vimKey": "<c->>"
+        "key": "ctrl+v",
+        "command": "vim.<c-v>",
+        "when": "vim.use_<c-v>",
+        "vimKey": "<c-v>"
       },
       {
-        "key": "ctrl+c",
-        "command": "vim.<c-c>",
-        "when": "vim.use_<c-c>",
-        "vimKey": "<c-c>"
-      },
-      {
-        "key": "ctrl+9",
-        "command": "vim.<c-9>",
-        "when": "vim.use_<c-9>",
-        "vimKey": "<c-9>"
-      },
-      {
-        "key": "ctrl+6",
-        "command": "vim.<c-6>",
-        "when": "vim.use_<c-6>",
-        "vimKey": "<c-6>"
-      },
-      {
-        "key": "ctrl+j",
-        "command": "vim.<c-j>",
-        "when": "vim.use_<c-j>",
-        "vimKey": "<c-j>"
-      },
-      {
-        "key": "ctrl+]",
-        "command": "vim.<c-]>",
-        "when": "vim.use_<c-]>",
-        "vimKey": "<c-]>"
-      },
-      {
-        "key": "ctrl+^",
-        "command": "vim.<c-^>",
-        "when": "vim.use_<c-^>",
-        "vimKey": "<c-^>"
-      },
-      {
-        "key": "ctrl+)",
-        "command": "vim.<c-)>",
-        "when": "vim.use_<c-)>",
-        "vimKey": "<c-)>"
-      },
-      {
-        "key": "ctrl+<",
-        "command": "vim.<c-<>",
-        "when": "vim.use_<c-<>",
-        "vimKey": "<c-<>"
-      },
-      {
-        "key": "ctrl+m",
-        "command": "vim.<c-m>",
-        "when": "vim.use_<c-m>",
-        "vimKey": "<c-m>"
-      },
-      {
-        "key": "ctrl+!",
-        "command": "vim.<c-!>",
-        "when": "vim.use_<c-!>",
-        "vimKey": "<c-!>"
-      },
-      {
-        "key": "ctrl+8",
-        "command": "vim.<c-8>",
-        "when": "vim.use_<c-8>",
-        "vimKey": "<c-8>"
-      },
-      {
-        "key": "ctrl++",
-        "command": "vim.<c-+>",
-        "when": "vim.use_<c-+>",
-        "vimKey": "<c-+>"
-      },
-      {
-        "key": "ctrl+u",
-        "command": "vim.<c-u>",
-        "when": "vim.use_<c-u>",
-        "vimKey": "<c-u>"
-      },
-      {
-        "key": "ctrl+,",
-        "command": "vim.<c-,>",
-        "when": "vim.use_<c-,>",
-        "vimKey": "<c-,>"
-      },
-      {
-        "key": "ctrl+z",
-        "command": "vim.<c-z>",
-        "when": "vim.use_<c-z>",
-        "vimKey": "<c-z>"
-      },
-      {
-        "key": "ctrl+}",
-        "command": "vim.<c-}>",
-        "when": "vim.use_<c-}>",
-        "vimKey": "<c-}>"
-      },
-      {
-        "key": "ctrl+;",
-        "command": "vim.<c-;>",
-        "when": "vim.use_<c-;>",
-        "vimKey": "<c-;>"
-      },
-      {
-        "key": "ctrl+:",
-        "command": "vim.<c-:>",
-        "when": "vim.use_<c-:>",
-        "vimKey": "<c-:>"
+        "key": "ctrl+b",
+        "command": "vim.<c-b>",
+        "when": "vim.use_<c-b>",
+        "vimKey": "<c-b>"
       },
       {
         "key": "ctrl+n",
@@ -254,46 +155,22 @@
         "vimKey": "<c-n>"
       },
       {
-        "key": "ctrl+o",
-        "command": "vim.<c-o>",
-        "when": "vim.use_<c-o>",
-        "vimKey": "<c-o>"
+        "key": "ctrl+3",
+        "command": "vim.<c-3>",
+        "when": "vim.use_<c-3>",
+        "vimKey": "<c-3>"
       },
       {
-        "key": "ctrl+0",
-        "command": "vim.<c-0>",
-        "when": "vim.use_<c-0>",
-        "vimKey": "<c-0>"
+        "key": "ctrl+j",
+        "command": "vim.<c-j>",
+        "when": "vim.use_<c-j>",
+        "vimKey": "<c-j>"
       },
       {
-        "key": "ctrl+s",
-        "command": "vim.<c-s>",
-        "when": "vim.use_<c-s>",
-        "vimKey": "<c-s>"
-      },
-      {
-        "key": "ctrl+\\",
-        "command": "vim.<c-\\>",
-        "when": "vim.use_<c-\\>",
-        "vimKey": "<c-\\>"
-      },
-      {
-        "key": "ctrl+*",
-        "command": "vim.<c-*>",
-        "when": "vim.use_<c-*>",
-        "vimKey": "<c-*>"
-      },
-      {
-        "key": "ctrl+\"",
-        "command": "vim.<c-\">",
-        "when": "vim.use_<c-\">",
-        "vimKey": "<c-\">"
-      },
-      {
-        "key": "ctrl+=",
-        "command": "vim.<c-=>",
-        "when": "vim.use_<c-=>",
-        "vimKey": "<c-=>"
+        "key": "ctrl+<",
+        "command": "vim.<c-<>",
+        "when": "vim.use_<c-<>",
+        "vimKey": "<c-<>"
       },
       {
         "key": "ctrl+2",
@@ -302,10 +179,118 @@
         "vimKey": "<c-2>"
       },
       {
+        "key": "ctrl+o",
+        "command": "vim.<c-o>",
+        "when": "vim.use_<c-o>",
+        "vimKey": "<c-o>"
+      },
+      {
+        "key": "ctrl+m",
+        "command": "vim.<c-m>",
+        "when": "vim.use_<c-m>",
+        "vimKey": "<c-m>"
+      },
+      {
+        "key": "ctrl+i",
+        "command": "vim.<c-i>",
+        "when": "vim.use_<c-i>",
+        "vimKey": "<c-i>"
+      },
+      {
+        "key": "ctrl+&",
+        "command": "vim.<c-&>",
+        "when": "vim.use_<c-&>",
+        "vimKey": "<c-&>"
+      },
+      {
         "key": "ctrl+/",
         "command": "vim.<c-/>",
         "when": "vim.use_<c-/>",
         "vimKey": "<c-/>"
+      },
+      {
+        "key": "ctrl+0",
+        "command": "vim.<c-0>",
+        "when": "vim.use_<c-0>",
+        "vimKey": "<c-0>"
+      },
+      {
+        "key": "ctrl++",
+        "command": "vim.<c-+>",
+        "when": "vim.use_<c-+>",
+        "vimKey": "<c-+>"
+      },
+      {
+        "key": "ctrl+(",
+        "command": "vim.<c-(>",
+        "when": "vim.use_<c-(>",
+        "vimKey": "<c-(>"
+      },
+      {
+        "key": "ctrl+%",
+        "command": "vim.<c-%>",
+        "when": "vim.use_<c-%>",
+        "vimKey": "<c-%>"
+      },
+      {
+        "key": "ctrl+t",
+        "command": "vim.<c-t>",
+        "when": "vim.use_<c-t>",
+        "vimKey": "<c-t>"
+      },
+      {
+        "key": "ctrl+z",
+        "command": "vim.<c-z>",
+        "when": "vim.use_<c-z>",
+        "vimKey": "<c-z>"
+      },
+      {
+        "key": "ctrl+\"",
+        "command": "vim.<c-\">",
+        "when": "vim.use_<c-\">",
+        "vimKey": "<c-\">"
+      },
+      {
+        "key": "ctrl+.",
+        "command": "vim.<c-.>",
+        "when": "vim.use_<c-.>",
+        "vimKey": "<c-.>"
+      },
+      {
+        "key": "ctrl+d",
+        "command": "vim.<c-d>",
+        "when": "vim.use_<c-d>",
+        "vimKey": "<c-d>"
+      },
+      {
+        "key": "ctrl+}",
+        "command": "vim.<c-}>",
+        "when": "vim.use_<c-}>",
+        "vimKey": "<c-}>"
+      },
+      {
+        "key": "ctrl+g",
+        "command": "vim.<c-g>",
+        "when": "vim.use_<c-g>",
+        "vimKey": "<c-g>"
+      },
+      {
+        "key": "ctrl+_",
+        "command": "vim.<c-_>",
+        "when": "vim.use_<c-_>",
+        "vimKey": "<c-_>"
+      },
+      {
+        "key": "ctrl+!",
+        "command": "vim.<c-!>",
+        "when": "vim.use_<c-!>",
+        "vimKey": "<c-!>"
+      },
+      {
+        "key": "ctrl+e",
+        "command": "vim.<c-e>",
+        "when": "vim.use_<c-e>",
+        "vimKey": "<c-e>"
       },
       {
         "key": "ctrl+`",
@@ -320,58 +305,10 @@
         "vimKey": "<c-~>"
       },
       {
-        "key": "ctrl+#",
-        "command": "vim.<c-#>",
-        "when": "vim.use_<c-#>",
-        "vimKey": "<c-#>"
-      },
-      {
-        "key": "ctrl+'",
-        "command": "vim.<c-'>",
-        "when": "vim.use_<c-'>",
-        "vimKey": "<c-'>"
-      },
-      {
-        "key": "ctrl+1",
-        "command": "vim.<c-1>",
-        "when": "vim.use_<c-1>",
-        "vimKey": "<c-1>"
-      },
-      {
-        "key": "ctrl+3",
-        "command": "vim.<c-3>",
-        "when": "vim.use_<c-3>",
-        "vimKey": "<c-3>"
-      },
-      {
-        "key": "ctrl+4",
-        "command": "vim.<c-4>",
-        "when": "vim.use_<c-4>",
-        "vimKey": "<c-4>"
-      },
-      {
-        "key": "ctrl+a",
-        "command": "vim.<c-a>",
-        "when": "vim.use_<c-a>",
-        "vimKey": "<c-a>"
-      },
-      {
-        "key": "ctrl+-",
-        "command": "vim.<c-->",
-        "when": "vim.use_<c-->",
-        "vimKey": "<c-->"
-      },
-      {
-        "key": "ctrl+d",
-        "command": "vim.<c-d>",
-        "when": "vim.use_<c-d>",
-        "vimKey": "<c-d>"
-      },
-      {
-        "key": "ctrl+h",
-        "command": "vim.<c-h>",
-        "when": "vim.use_<c-h>",
-        "vimKey": "<c-h>"
+        "key": "ctrl+$",
+        "command": "vim.<c-$>",
+        "when": "vim.use_<c-$>",
+        "vimKey": "<c-$>"
       },
       {
         "key": "ctrl+@",
@@ -380,28 +317,40 @@
         "vimKey": "<c-@>"
       },
       {
-        "key": "ctrl+l",
-        "command": "vim.<c-l>",
-        "when": "vim.use_<c-l>",
-        "vimKey": "<c-l>"
+        "key": "ctrl+k",
+        "command": "vim.<c-k>",
+        "when": "vim.use_<c-k>",
+        "vimKey": "<c-k>"
       },
       {
-        "key": "ctrl+g",
-        "command": "vim.<c-g>",
-        "when": "vim.use_<c-g>",
-        "vimKey": "<c-g>"
+        "key": "ctrl+s",
+        "command": "vim.<c-s>",
+        "when": "vim.use_<c-s>",
+        "vimKey": "<c-s>"
       },
       {
-        "key": "ctrl+.",
-        "command": "vim.<c-.>",
-        "when": "vim.use_<c-.>",
-        "vimKey": "<c-.>"
+        "key": "ctrl+y",
+        "command": "vim.<c-y>",
+        "when": "vim.use_<c-y>",
+        "vimKey": "<c-y>"
       },
       {
-        "key": "ctrl+&",
-        "command": "vim.<c-&>",
-        "when": "vim.use_<c-&>",
-        "vimKey": "<c-&>"
+        "key": "ctrl+)",
+        "command": "vim.<c-)>",
+        "when": "vim.use_<c-)>",
+        "vimKey": "<c-)>"
+      },
+      {
+        "key": "ctrl+h",
+        "command": "vim.<c-h>",
+        "when": "vim.use_<c-h>",
+        "vimKey": "<c-h>"
+      },
+      {
+        "key": "ctrl+|",
+        "command": "vim.<c-|>",
+        "when": "vim.use_<c-|>",
+        "vimKey": "<c-|>"
       },
       {
         "key": "ctrl+q",
@@ -410,10 +359,178 @@
         "vimKey": "<c-q>"
       },
       {
+        "key": "ctrl+f",
+        "command": "vim.<c-f>",
+        "when": "vim.use_<c-f>",
+        "vimKey": "<c-f>"
+      },
+      {
+        "key": "ctrl+*",
+        "command": "vim.<c-*>",
+        "when": "vim.use_<c-*>",
+        "vimKey": "<c-*>"
+      },
+      {
+        "key": "ctrl+1",
+        "command": "vim.<c-1>",
+        "when": "vim.use_<c-1>",
+        "vimKey": "<c-1>"
+      },
+      {
+        "key": "ctrl+4",
+        "command": "vim.<c-4>",
+        "when": "vim.use_<c-4>",
+        "vimKey": "<c-4>"
+      },
+      {
         "key": "ctrl+5",
         "command": "vim.<c-5>",
         "when": "vim.use_<c-5>",
         "vimKey": "<c-5>"
+      },
+      {
+        "key": "ctrl+a",
+        "command": "vim.<c-a>",
+        "when": "vim.use_<c-a>",
+        "vimKey": "<c-a>"
+      },
+      {
+        "key": "ctrl+w",
+        "command": "vim.<c-w>",
+        "when": "vim.use_<c-w>",
+        "vimKey": "<c-w>"
+      },
+      {
+        "key": "ctrl+,",
+        "command": "vim.<c-,>",
+        "when": "vim.use_<c-,>",
+        "vimKey": "<c-,>"
+      },
+      {
+        "key": "ctrl+p",
+        "command": "vim.<c-p>",
+        "when": "vim.use_<c-p>",
+        "vimKey": "<c-p>"
+      },
+      {
+        "key": "ctrl+^",
+        "command": "vim.<c-^>",
+        "when": "vim.use_<c-^>",
+        "vimKey": "<c-^>"
+      },
+      {
+        "key": "ctrl+]",
+        "command": "vim.<c-]>",
+        "when": "vim.use_<c-]>",
+        "vimKey": "<c-]>"
+      },
+      {
+        "key": "ctrl+=",
+        "command": "vim.<c-=>",
+        "when": "vim.use_<c-=>",
+        "vimKey": "<c-=>"
+      },
+      {
+        "key": "ctrl+9",
+        "command": "vim.<c-9>",
+        "when": "vim.use_<c-9>",
+        "vimKey": "<c-9>"
+      },
+      {
+        "key": "ctrl+7",
+        "command": "vim.<c-7>",
+        "when": "vim.use_<c-7>",
+        "vimKey": "<c-7>"
+      },
+      {
+        "key": "ctrl+-",
+        "command": "vim.<c-->",
+        "when": "vim.use_<c-->",
+        "vimKey": "<c-->"
+      },
+      {
+        "key": "ctrl+\\",
+        "command": "vim.<c-\\>",
+        "when": "vim.use_<c-\\>",
+        "vimKey": "<c-\\>"
+      },
+      {
+        "key": "ctrl+r",
+        "command": "vim.<c-r>",
+        "when": "vim.use_<c-r>",
+        "vimKey": "<c-r>"
+      },
+      {
+        "key": "ctrl+;",
+        "command": "vim.<c-;>",
+        "when": "vim.use_<c-;>",
+        "vimKey": "<c-;>"
+      },
+      {
+        "key": "ctrl+:",
+        "command": "vim.<c-:>",
+        "when": "vim.use_<c-:>",
+        "vimKey": "<c-:>"
+      },
+      {
+        "key": "ctrl+[",
+        "command": "vim.<c-[>",
+        "when": "vim.use_<c-[>",
+        "vimKey": "<c-[>"
+      },
+      {
+        "key": "ctrl+#",
+        "command": "vim.<c-#>",
+        "when": "vim.use_<c-#>",
+        "vimKey": "<c-#>"
+      },
+      {
+        "key": "ctrl+>",
+        "command": "vim.<c->>",
+        "when": "vim.use_<c->>",
+        "vimKey": "<c->>"
+      },
+      {
+        "key": "ctrl+6",
+        "command": "vim.<c-6>",
+        "when": "vim.use_<c-6>",
+        "vimKey": "<c-6>"
+      },
+      {
+        "key": "ctrl+8",
+        "command": "vim.<c-8>",
+        "when": "vim.use_<c-8>",
+        "vimKey": "<c-8>"
+      },
+      {
+        "key": "ctrl+u",
+        "command": "vim.<c-u>",
+        "when": "vim.use_<c-u>",
+        "vimKey": "<c-u>"
+      },
+      {
+        "key": "ctrl+c",
+        "command": "vim.<c-c>",
+        "when": "vim.use_<c-c>",
+        "vimKey": "<c-c>"
+      },
+      {
+        "key": "ctrl+'",
+        "command": "vim.<c-'>",
+        "when": "vim.use_<c-'>",
+        "vimKey": "<c-'>"
+      },
+      {
+        "key": "ctrl+l",
+        "command": "vim.<c-l>",
+        "when": "vim.use_<c-l>",
+        "vimKey": "<c-l>"
+      },
+      {
+        "key": "ctrl+{",
+        "command": "vim.<c-{>",
+        "when": "vim.use_<c-{>",
+        "vimKey": "<c-{>"
       },
       {
         "key": "ctrl+x",
@@ -426,96 +543,6 @@
         "command": "vim.<c-?>",
         "when": "vim.use_<c-?>",
         "vimKey": "<c-?>"
-      },
-      {
-        "key": "ctrl+v",
-        "command": "vim.<c-v>",
-        "when": "vim.use_<c-v>",
-        "vimKey": "<c-v>"
-      },
-      {
-        "key": "ctrl+|",
-        "command": "vim.<c-|>",
-        "when": "vim.use_<c-|>",
-        "vimKey": "<c-|>"
-      },
-      {
-        "key": "ctrl+b",
-        "command": "vim.<c-b>",
-        "when": "vim.use_<c-b>",
-        "vimKey": "<c-b>"
-      },
-      {
-        "key": "ctrl+w",
-        "command": "vim.<c-w>",
-        "when": "vim.use_<c-w>",
-        "vimKey": "<c-w>"
-      },
-      {
-        "key": "ctrl+y",
-        "command": "vim.<c-y>",
-        "when": "vim.use_<c-y>",
-        "vimKey": "<c-y>"
-      },
-      {
-        "key": "ctrl+(",
-        "command": "vim.<c-(>",
-        "when": "vim.use_<c-(>",
-        "vimKey": "<c-(>"
-      },
-      {
-        "key": "ctrl+k",
-        "command": "vim.<c-k>",
-        "when": "vim.use_<c-k>",
-        "vimKey": "<c-k>"
-      },
-      {
-        "key": "ctrl+[",
-        "command": "vim.<c-[>",
-        "when": "vim.use_<c-[>",
-        "vimKey": "<c-[>"
-      },
-      {
-        "key": "ctrl+%",
-        "command": "vim.<c-%>",
-        "when": "vim.use_<c-%>",
-        "vimKey": "<c-%>"
-      },
-      {
-        "key": "ctrl+{",
-        "command": "vim.<c-{>",
-        "when": "vim.use_<c-{>",
-        "vimKey": "<c-{>"
-      },
-      {
-        "key": "ctrl+e",
-        "command": "vim.<c-e>",
-        "when": "vim.use_<c-e>",
-        "vimKey": "<c-e>"
-      },
-      {
-        "key": "ctrl+f",
-        "command": "vim.<c-f>",
-        "when": "vim.use_<c-f>",
-        "vimKey": "<c-f>"
-      },
-      {
-        "key": "ctrl+r",
-        "command": "vim.<c-r>",
-        "when": "vim.use_<c-r>",
-        "vimKey": "<c-r>"
-      },
-      {
-        "key": "ctrl+i",
-        "command": "vim.<c-i>",
-        "when": "vim.use_<c-i>",
-        "vimKey": "<c-i>"
-      },
-      {
-        "key": "ctrl+t",
-        "command": "vim.<c-t>",
-        "when": "vim.use_<c-t>",
-        "vimKey": "<c-t>"
       }
     ]
   },
@@ -526,7 +553,8 @@
     "clipboardy": "^1.1.4",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.17.4",
-    "neovim": "next",
+    "neovim": "3.5.0",
+    "tmp": "0.0.33",
     "untildify": "^3.0.2"
   },
   "description": "Vim emulation for Visual Studio Code",

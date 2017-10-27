@@ -7,7 +7,7 @@
  */
 
 import * as vscode from 'vscode';
-import { existsSync } from 'fs';
+import * as fs from 'fs';
 import * as _ from 'lodash';
 import { attach } from 'neovim';
 import { NeovimClient } from 'neovim/lib/api/client';
@@ -68,7 +68,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
   });
   let nvim: NeovimClient;
-  if (existsSync('/tmp/nvim')) {
+  if (fs.existsSync('/tmp/nvim') && fs.lstatSync('/tmp/nvim').isSocket()) {
     nvim = attach({ socket: '/tmp/nvim' });
   } else {
     nvim = attach({ proc: proc });
@@ -91,7 +91,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await nvim.command(
       `autocmd ${autocmd} * :call rpcrequest(${Vim.channelId}, "${autocmdMap[
         autocmd
-      ]}", expand("<abuf>"), fnamemodify(expand('<afile>'), ':p'))`
+      ]}", expand("<abuf>"), fnamemodify(expand('<afile>'), ':p'), expand("<afile>"))`
     );
   }
 
@@ -119,7 +119,7 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
-    await nvim.command(`edit ${active_editor_file}`);
+    await nvim.command(`edit! ${active_editor_file}`);
     await NvUtil.copyTextFromNeovim();
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     await NvUtil.setSettings(await VimSettings.enterFileSettings());
@@ -200,7 +200,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (buf_id === -1) {
       return;
     }
-    await nvim.command(`noautocmd ${buf_id}bw!`);
+    // await nvim.command(`noautocmd ${buf_id}bw!`);
   });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
@@ -240,9 +240,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (prevMode !== 'i') {
       await input(key);
     } else {
-      if (key === '<BS>') {
-        await vscode.commands.executeCommand('deleteLeft');
-      } else if (key.length > 1) {
+      if (key.length > 1) {
         await input(key);
       } else {
         await vscode.commands.executeCommand('default:type', { text: key });

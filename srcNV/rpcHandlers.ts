@@ -2,22 +2,23 @@ import * as vscode from 'vscode';
 import { Vim } from '../extension';
 import { NvUtil } from './nvUtil';
 import { VimSettings } from './vimSettings';
+import * as fs from 'fs';
 
 export class RpcRequest {
   static rpcFunctions: { [method: string]: Function } = {};
 
   static async openBuf(args: any, resp: any) {
-    const filePath = vscode.Uri.file(args[1]);
+    const filePath = args[1] as string;
+    const fileURI = vscode.Uri.file(filePath);
     console.log(filePath);
-    if (
-      vscode.window.activeTextEditor &&
-      filePath.fsPath === vscode.window.activeTextEditor!.document.fileName
-    ) {
-      resp.send('success');
+    if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
+      await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(filePath));
     } else {
-      await vscode.commands.executeCommand('vscode.open', filePath);
-      resp.send('success');
+      console.log('Opening non-existing files currently not implemented (and not working well).');
+      // await vscode.window.showTextDocument(t);
+      // console.log(t);
     }
+    resp.send('success');
   }
 
   static async writeBuf(args: Array<any>, resp: any) {

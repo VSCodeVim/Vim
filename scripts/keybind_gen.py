@@ -1,9 +1,8 @@
 import json
 package = open('../package.json').read()
 package = json.loads(package)
-print(package['contributes']['keybindings'])
-keysToBind = ['space', 'left', 'right', 'up', 'down', 'esc']
-vimKeyToVS = {'esc': 'Escape'}
+keysToBind = ['space', 'left', 'right', 'up', 'down', 'esc', 'bs', 'tab']
+vimKeyToVS = {'esc': 'Escape', 'bs': 'backspace'}
 keybindings = []
 for key in keysToBind:
     vsKey = key
@@ -26,7 +25,6 @@ for key in keysToBind:
 keysToBind = []
 for i in range(ord('!'), ord('~') + 1):
     keysToBind.append(chr(i).lower())
-    print(chr(i))
 
 keysToBind = list(set(keysToBind))
 
