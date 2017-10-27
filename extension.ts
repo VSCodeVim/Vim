@@ -85,7 +85,8 @@ export async function activate(context: vscode.ExtensionContext) {
   const autocmdMap: { [autocmd: string]: string } = {
     BufWriteCmd: 'writeBuf',
     QuitPre: 'closeBuf',
-    BufEnter: 'openBuf',
+    BufEnter: 'enterBuf',
+    TabNewEntered: 'newTabEntered',
   };
   for (const autocmd of Object.keys(autocmdMap)) {
     await nvim.command(
@@ -145,7 +146,7 @@ export async function activate(context: vscode.ExtensionContext) {
           !(
             changeBegin.line === 0 &&
             changeBegin.character === 0 &&
-            change.text[change.text.length - 1] === '\n'
+            (change.text[change.text.length - 1] === '\n' || TextEditor.getLineCount() === 1)
           )) ||
           (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1))
       ) {

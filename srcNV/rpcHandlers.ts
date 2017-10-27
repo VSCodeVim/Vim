@@ -7,7 +7,7 @@ import * as fs from 'fs';
 export class RpcRequest {
   static rpcFunctions: { [method: string]: Function } = {};
 
-  static async openBuf(args: any, resp: any) {
+  static async enterBuf(args: any, resp: any) {
     const filePath = args[1] as string;
     const fileURI = vscode.Uri.file(filePath);
     console.log(filePath);
@@ -21,6 +21,11 @@ export class RpcRequest {
     resp.send('success');
   }
 
+  static async newTabEntered(args: any, resp: any) {
+    await Vim.nv.command('tabonly');
+    await resp.send('success');
+  }
+
   static async writeBuf(args: Array<any>, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
     await vscode.commands.executeCommand('workbench.action.files.save', filePath);
@@ -29,8 +34,6 @@ export class RpcRequest {
   }
 
   static async closeBuf(args: Array<string>, resp: any) {
-    // const buffers = await Vim.nv.buffers;
-    // const bufId = parseInt(args[0], 10) - 1;
     const bufName = args[1];
     const filePath = vscode.Uri.file(bufName);
     console.log('filepath: ', filePath);
