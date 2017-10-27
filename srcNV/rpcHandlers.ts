@@ -9,8 +9,15 @@ export class RpcRequest {
   static async openBuf(args: any, resp: any) {
     const filePath = vscode.Uri.file(args[1]);
     console.log(filePath);
-    await vscode.commands.executeCommand('vscode.open', filePath);
-    resp.send('success');
+    if (
+      vscode.window.activeTextEditor &&
+      filePath.fsPath === vscode.window.activeTextEditor!.document.fileName
+    ) {
+      resp.send('success');
+    } else {
+      await vscode.commands.executeCommand('vscode.open', filePath);
+      resp.send('success');
+    }
   }
 
   static async writeBuf(args: Array<any>, resp: any) {

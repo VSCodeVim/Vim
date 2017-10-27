@@ -25,7 +25,10 @@
               "<c-k>"
             ],
             "normal": [],
-            "insert": [],
+            "insert": [
+              "<c-c>",
+              "<c-a>"
+            ],
             "visual": []
           }
         }
