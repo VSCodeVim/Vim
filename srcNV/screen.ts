@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Position } from '../src/common/motion/position';
+import { TextEditor } from '../src/textEditor';
 export class Cell {
   v: string;
   highlight: Object;
@@ -10,31 +11,15 @@ export class Cell {
 }
 
 const foregroundDec = vscode.window.createTextEditorDecorationType({
-  dark: {
-    // used for dark colored themes
-    backgroundColor: 'rgba(240, 120, 120, 0.6)',
-    borderColor: 'rgba(0, 0, 0, 1.0)',
-  },
-  light: {
-    // used for light colored themes
-    backgroundColor: 'rgba(32, 32, 32, 0.6)',
-    borderColor: 'rgba(0, 0, 0, 1.0)',
-  },
+  backgroundColor: 'rgba(240, 120, 120, 0.6)',
+  borderColor: 'rgba(0, 0, 0, 1.0)',
   borderStyle: 'solid',
   borderWidth: '1px',
 });
 
 const _caretDecoration = vscode.window.createTextEditorDecorationType({
-  dark: {
-    // used for dark colored themes
-    backgroundColor: 'rgba(240, 240, 240, 0.6)',
-    borderColor: 'rgba(0, 0, 0, 1.0)',
-  },
-  light: {
-    // used for light colored themes
-    backgroundColor: 'rgba(32, 32, 32, 0.6)',
-    borderColor: 'rgba(0, 0, 0, 1.0)',
-  },
+  backgroundColor: 'rgba(240, 240, 240, 0.6)',
+  borderColor: 'rgba(0, 0, 0, 1.0)',
   borderStyle: 'solid',
   borderWidth: '1px',
 });
@@ -103,8 +88,8 @@ export class Screen {
       }
       result += '\n';
     }
-    // console.log(result);
     let decorations = [];
+    console.log(`highlighted length ${highlighted.length}`);
     for (const i of highlighted) {
       if (
         i[2][0] === 'background' ||
@@ -112,27 +97,30 @@ export class Screen {
         i[2][0] === 'foreground' ||
         ((i[2] as string[]).length > 0 && i[2][0] !== 'bold')
       ) {
-        try {
-          if (i[2][0] === 'foreground') {
-            const pos = new Position(i[0] as number, i[1] as number);
-            decorations.push(new vscode.Range(pos, pos.getRight()));
-          } else {
-            const pos = new Position(i[0] as number, i[1] as number);
-            decorations.push(new vscode.Range(pos, pos.getRight()));
-          }
-        } catch {
+        if (
+          i[0] >= TextEditor.getLineCount() ||
+          i[1] >= TextEditor.getLineMaxColumn(i[0] as number)
+        ) {
           continue;
+        }
+        if ((i[2] as string[]).indexOf('background') !== -1) {
+          const pos = new Position(i[0] as number, i[1] as number);
+          decorations.push(new vscode.Range(pos, pos.getRight()));
         }
       }
     }
-    this.cmdline[0].text = this.term[this.size - 1].map(x => x.v).join('');
+    if (this.term[this.size - 1][0].v === ':') {
+      this.cmdline[0].text = this.term[this.size - 1].map(x => x.v).join('');
+    } else {
+      this.cmdline[0].text = '';
+    }
     const wildmenuText = this.term[this.size - 2]
       .map(x => x.v)
       .join('')
       .replace(/\s+$/, '');
     let wildmenu: string[] = wildmenuText.split(/\s+/);
     // Doesn't always work, who cares??? What a pain in the ass. I don't want to not use regex.
-    let wildmenuIdx = wildmenu.map(x => wildmenuText.search(x));
+    let wildmenuIdx = wildmenu.map(x => wildmenuText.indexOf(x));
     if (wildmenu[0] === '<' || wildmenu[wildmenu.length - 1] === '>') {
       for (let i = 0; i < wildmenu.length; i++) {
         this.cmdline[i + 1].text = wildmenu[i];
@@ -152,7 +140,9 @@ export class Screen {
         this.cmdline[i].hide();
       }
     }
-    vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
+    if (vscode.window.activeTextEditor) {
+      vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
+    }
     // _caretDecoration.dispose();
   }
 }
