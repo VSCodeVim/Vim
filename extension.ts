@@ -63,7 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
       cwd: __dirname,
     }
   );
-  proc.on('error', function (err) {
+  proc.on('error', function(err) {
     console.log(err);
     vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
   });
@@ -94,7 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
   for (const autocmd of Object.keys(autocmdMap)) {
     await nvim.command(
       `autocmd ${autocmd} * :call rpcrequest(${Vim.channelId}, "${autocmdMap[
-      autocmd
+        autocmd
       ]}", expand("<abuf>"), fnamemodify(expand('<afile>'), ':p'))`
     );
   }
@@ -323,6 +323,6 @@ function registerCommand(
   context.subscriptions.push(disposable);
 }
 
-process.on('unhandledRejection', function (reason: any, p: any) {
+process.on('unhandledRejection', function(reason: any, p: any) {
   console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
 });
