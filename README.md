@@ -35,5 +35,8 @@ https://github.com/neovim/neovim/pull/7173 For CmdLine syncing (it's a continuat
 https://github.com/neovim/neovim/pull/6544 For allowing UI to update immediately (should allow Easymotion to work!)  
 https://github.com/neovim/neovim/pull/6168 For externalizing the wildmenu
 
-
-
+Some screenshots (kinda hard to show what's changed without at least a gif...):
+Wildmenu working!
+![](https://i.imgur.com/7zMEd1G.jpg)
+Autocomplete working!
+![](https://i.imgur.com/aQ7jQyY.jpg)
