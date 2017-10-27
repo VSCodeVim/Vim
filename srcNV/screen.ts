@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { Position } from '../src/common/motion/position';
 import { TextEditor } from '../src/textEditor';
+import { VimSettings } from './vimSettings';
+import { NvUtil } from './nvUtil';
 export class Cell {
   v: string;
   highlight: Object;
@@ -8,6 +10,13 @@ export class Cell {
     this.v = v;
     this.highlight = {};
   }
+}
+
+export interface IgnoredKeys {
+  all: string[];
+  normal: string[];
+  insert: string[];
+  visual: string[];
 }
 
 const foregroundDec = vscode.window.createTextEditorDecorationType({
@@ -50,6 +59,43 @@ export class Screen {
     }
     // this.cmdline.show();
   }
+  private async handleModeChange(mode: [string, number]) {
+    if (mode[0] === 'insert') {
+      await NvUtil.setSettings(await VimSettings.insertModeSettings());
+    } else {
+      await NvUtil.setSettings(VimSettings.normalModeSettings);
+    }
+    const ignoreKeys: IgnoredKeys = vscode.workspace
+      .getConfiguration('vim')
+      .get('ignoreKeys') as IgnoredKeys;
+    if (mode[0] === 'insert') {
+      for (const key of ignoreKeys.visual.concat(ignoreKeys.normal)) {
+        vscode.commands.executeCommand('setContext', `vim.use_${key}`, true);
+      }
+      for (const key of ignoreKeys.insert) {
+        vscode.commands.executeCommand('setContext', `vim.use_${key}`, false);
+      }
+    } else if (mode[0] === 'visual') {
+      for (const key of ignoreKeys.normal.concat(ignoreKeys.insert)) {
+        vscode.commands.executeCommand('setContext', `vim.use_${key}`, true);
+      }
+      for (const key of ignoreKeys.visual) {
+        vscode.commands.executeCommand('setContext', `vim.use_${key}`, false);
+      }
+    } else {
+      // I assume normal is just all "other" modes.
+      for (const key of ignoreKeys.visual.concat(ignoreKeys.insert)) {
+        vscode.commands.executeCommand('setContext', `vim.use_${key}`, true);
+      }
+      for (const key of ignoreKeys.normal) {
+        vscode.commands.executeCommand('setContext', `vim.use_${key}`, false);
+      }
+    }
+    for (const key of ignoreKeys.all) {
+      vscode.commands.executeCommand('setContext', `vim.use_${key}`, false);
+    }
+  }
+
   redraw(changes: Array<any>) {
     for (let change of changes) {
       change = change as Array<any>;
@@ -72,10 +118,16 @@ export class Screen {
         }
       } else if (name === 'highlight_set') {
         this.highlighter = args[0][0];
+      } else if (name === 'mode_change') {
+        this.handleModeChange(args[0]);
       } else {
         console.log(name);
         console.log(args);
       }
+    }
+
+    if (!vscode.workspace.getConfiguration('vim').get('enableHighlights')) {
+      return;
     }
     let highlighted = [];
     let result = '';

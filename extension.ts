@@ -21,7 +21,7 @@ import { spawn } from 'child_process';
 import { NvUtil } from './srcNV/nvUtil';
 import { RpcRequest } from './srcNV/rpcHandlers';
 import { TextEditor } from './src/textEditor';
-import { Screen } from './srcNV/screen';
+import { Screen, IgnoredKeys } from './srcNV/screen';
 import { VimSettings } from './srcNV/vimSettings';
 
 interface VSCodeKeybinding {
@@ -78,17 +78,13 @@ export async function activate(context: vscode.ExtensionContext) {
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
   const SIZE = 50;
-  if (vscode.workspace.getConfiguration('vim').get('enableScreenEvents')) {
-    nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
-  }
+  nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
   Vim.screen = new Screen(SIZE);
 
   await nvim.command('autocmd!');
   const autocmdMap: { [autocmd: string]: string } = {
     BufWriteCmd: 'writeBuf',
     QuitPre: 'closeBuf',
-    InsertLeave: 'leaveInsert',
-    InsertEnter: 'enterInsert',
     BufEnter: 'openBuf',
   };
   for (const autocmd of Object.keys(autocmdMap)) {
@@ -230,6 +226,14 @@ export async function activate(context: vscode.ExtensionContext) {
     async function input(k: string) {
       await nvim.input(k === '<' ? '<lt>' : k);
       await NvUtil.updateMode();
+      // Optimization that makes movement very smooth. However, occasionally
+      // makes it more difficult to debug so it's turned off for now.
+      // const curTick = await Vim.nv.buffer.changedtick;
+      // if (curTick === Vim.prevState.bufferTick) {
+      //   await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+      //   return;
+      // }
+      // Vim.prevState.bufferTick = curTick;
       await NvUtil.copyTextFromNeovim();
       await NvUtil.changeSelectionFromMode(Vim.mode.mode);
     }
@@ -260,14 +264,15 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
 
   const keysToBind = packagejson.contributes.keybindings;
-  const ignoreKeys: string[] = vscode.workspace
+  const ignoreKeys: IgnoredKeys = vscode.workspace
     .getConfiguration('vim')
-    .get('ignoreKeys') as string[];
+    .get('ignoreKeys') as IgnoredKeys;
+
   for (let key of keysToBind) {
-    if (ignoreKeys.indexOf(key.vimKey) !== -1) {
+    if (ignoreKeys.all.indexOf(key.vimKey) !== -1) {
       continue;
     }
-    await vscode.commands.executeCommand('setContext', `vim.use_${key.vimKey}`, true);
+    vscode.commands.executeCommand('setContext', `vim.use_${key.vimKey}`, true);
     registerCommand(context, key.command, () => {
       Vim.taskQueue.queueMicroTask(() => {
         handleKeyEventNV(`${key.vimKey}`);

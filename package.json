@@ -13,16 +13,21 @@
     "commands": [],
     "configuration": {
       "properties": {
-        "vim.enableScreenEvents": {
+        "vim.enableHighlights": {
           "default": true
         },
         "vim.ignoreKeys": {
-          "default": [
-            "<s-esc>",
-            "<c-k>",
-            "<c-`>",
-            "<c-b>"
-          ]
+          "default": {
+            "all": [
+              "<s-esc>",
+              "<c-`>",
+              "<c-p>",
+              "<c-k>"
+            ],
+            "normal": [],
+            "insert": [],
+            "visual": []
+          }
         }
       },
       "title": "Vim Configuration",

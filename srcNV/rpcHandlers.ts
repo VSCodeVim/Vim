@@ -43,18 +43,4 @@ export class RpcRequest {
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     resp.send('success');
   }
-
-  static async enterInsert(args: Array<any>, resp: any) {
-    resp.send('success');
-    await NvUtil.setSettings(await VimSettings.insertModeSettings());
-  }
-  static async leaveInsert(args: Array<any>, resp: any) {
-    resp.send('success');
-    const mode = await Vim.nv.mode;
-    console.log(VimSettings.normalModeSettings);
-    await NvUtil.setSettings(VimSettings.normalModeSettings);
-    Vim.mode = mode;
-    await NvUtil.changeSelectionFromMode(mode.mode);
-    await NvUtil.copyTextFromNeovim();
-  }
 }
