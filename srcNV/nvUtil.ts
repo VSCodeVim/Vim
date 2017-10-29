@@ -190,6 +190,10 @@ export class NvUtil {
         vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
         vscode.window.activeTextEditor!.selection = new vscode.Selection(curPos, curPos);
         break;
+      case 'R':
+        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Underline;
+        vscode.window.activeTextEditor!.selection = new vscode.Selection(curPos, curPos);
+        break;
       case 'n':
       default:
         vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
