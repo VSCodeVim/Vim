@@ -135,31 +135,55 @@ export async function activate(context: vscode.ExtensionContext) {
       const changeBegin = Position.FromVSCodePosition(change.range.start);
       const changeEnd = Position.FromVSCodePosition(change.range.end);
       const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
+      const curSel = vscode.window.activeTextEditor!.selection;
       const docEnd = new Position(0, 0).getDocumentEnd();
       // This ugly if statement is to differentiate the "real" vscode changes that
       // should be included in dot repeat(like autocomplete, auto-close parens,
       // all regular typing, etc.) from the vscode changes that should not be
       // included (the entire buffer syncing, autoformatting, etc.)
-      if (
-        Vim.mode.mode === 'i' &&
-        ((changeBegin.line === curPos.line &&
-          changeBegin.line === changeEnd.line &&
-          !(
-            changeBegin.line === 0 &&
-            changeBegin.character === 0 &&
-            (change.text[change.text.length - 1] === '\n' || TextEditor.getLineCount() === 1)
-          )) ||
-          (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1))
-      ) {
-        await NvUtil.updateMode();
+
+      const isInsertModeChange = () => {
+        if (Vim.mode.mode !== 'i') {
+          return false;
+        }
+        // Handles the case where we press backsapce at the beginning of a line.
+        if (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1) {
+          return true;
+        }
+        // If the change is spanning multiple lines then it's almost definitely
+        // not an insert mode change (except for a couple of special cases.)
+        if (!(changeBegin.line === curPos.line && changeBegin.line === changeEnd.line)) {
+          return false;
+        }
+        // Mainly for mouse cursor selection/multicursor stuff.
+        if (
+          curSel.active.line !== curSel.anchor.line ||
+          curSel.active.character !== curSel.anchor.character
+        ) {
+          return false;
+        }
+        // Tries to handle the case about editing on the first line.
+        if (changeBegin.line === 0 && changeBegin.character === 0) {
+          if (change.text[change.text.length - 1] === '\n') {
+            return false;
+          } else if (TextEditor.getLineCount() === 1) {
+            return false;
+          } else if (change.rangeLength === 1) {
+            return false;
+          }
+        }
+        return true;
+      };
+      await NvUtil.updateMode();
+      if (isInsertModeChange()) {
         if (!Vim.mode.blocking) {
           const nvPos = await NvUtil.getCursorPos();
           if (nvPos.line !== curPos.line) {
             await NvUtil.setCursorPos(curPos);
           } else {
             // Is necessary for parentheses autocompletion but causes issues
-            // when non-atomic with fast text. Move this into lua
-            // await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
+            // when non-atomic with fast text.
+            await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
           }
         }
         await nvim.input('<BS>'.repeat(change.rangeLength));
@@ -172,24 +196,25 @@ export async function activate(context: vscode.ExtensionContext) {
         // from neovim buffer to vscode buffer). It's a hack. Won't work if your
         // change (refactor) for example, doesn't modify the length of the file
         const isRealChange = change.text.length !== change.rangeLength;
-        if (isRealChange || true) {
+        if (isRealChange) {
           // todo(chilli): Doesn't work if there was just an undo command (undojoin
           // fails and prevents the following command from executing)
 
           const code = `
-function _vscode_copy_text(text)
-  local foo = vim.api.nvim_call_function('getpos', {'.'})
+function _vscode_copy_text(text, line, char)
   vim.api.nvim_command('undojoin')
   vim.api.nvim_buf_set_lines(0, 0, -1, true, text)
-  vim.api.nvim_call_function('setpos', {'.', foo})
-  return foo
+  vim.api.nvim_call_function('setpos', {'.', {0, line, char, false}})
 end
 `;
           await Vim.nv.lua(code, []);
+          await NvUtil.updateMode();
+          const newPos = vscode.window.activeTextEditor!.selection.active;
           let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
             TextEditor.getText().split('\n'),
+            newPos.line + 1,
+            newPos.character + 1,
           ]);
-          console.log(t);
         }
         break;
       }

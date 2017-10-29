@@ -20,13 +20,6 @@ export interface IgnoredKeys {
   visual: string[];
 }
 
-const foregroundDec = vscode.window.createTextEditorDecorationType({
-  backgroundColor: 'rgba(240, 120, 120, 0.6)',
-  borderColor: 'rgba(0, 0, 0, 1.0)',
-  borderStyle: 'solid',
-  borderWidth: '1px',
-});
-
 const _caretDecoration = vscode.window.createTextEditorDecorationType({
   backgroundColor: 'rgba(240, 240, 240, 0.6)',
   borderColor: 'rgba(0, 0, 0, 1.0)',
@@ -58,12 +51,14 @@ export class Screen {
       );
       this.cmdline[i].show();
     }
-    // this.cmdline.show();
   }
   private async handleModeChange(mode: [string, number]) {
     if (mode[0] === 'insert') {
       await NvUtil.setSettings(await VimSettings.insertModeSettings());
     } else {
+      await NvUtil.updateMode();
+      await NvUtil.copyTextFromNeovim();
+      await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       await NvUtil.setSettings(VimSettings.normalModeSettings);
     }
     const ignoreKeys: IgnoredKeys = vscode.workspace
@@ -107,12 +102,13 @@ export class Screen {
         this.x = args[0][1];
       } else if (name === 'eol_clear') {
         for (let i = 0; i < this.size - this.x; i++) {
-          this.term[this.y][this.x + i] = new Cell(' ');
+          this.term[this.y][this.x + i].v = ' ';
+          this.term[this.y][this.x + i].highlight = {};
         }
       } else if (name === 'put') {
         for (const cs of args) {
           for (const c of cs) {
-            this.term[this.y][this.x] = new Cell(c);
+            this.term[this.y][this.x].v = c;
             this.term[this.y][this.x].highlight = this.highlighter;
             this.x += 1;
           }

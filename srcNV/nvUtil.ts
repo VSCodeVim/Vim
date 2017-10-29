@@ -57,7 +57,7 @@ export class NvUtil {
   // Must be moving to same line
   static async ctrlGMove(start: number, target: number) {
     if (start < target) {
-      await Vim.nv.input('<C-g>U<Right>'.repeat(target - start));
+      // await Vim.nv.input('<C-g>U<Right>'.repeat(target - start));
     } else if (start > target) {
       await Vim.nv.input('<C-g>U<Left>'.repeat(start - target));
     }
@@ -177,7 +177,7 @@ export class NvUtil {
         break;
       case 'i':
         vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-        vscode.window.activeTextEditor!.selection = new vscode.Selection(startPos, curPos);
+        vscode.window.activeTextEditor!.selection = new vscode.Selection(curPos, curPos);
         break;
       case 'n':
       default:
