@@ -47,84 +47,10 @@ export namespace Vim {
     prevPos: new Position(0, 0),
   };
   export let taskQueue = new TaskQueue();
+  export let DEBUG = true;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
-  vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
-  const proc = spawn(
-    'nvim',
-    [
-      // '-u',
-      // 'NONE',
-      '-N',
-      '--embed',
-      vscode.window.activeTextEditor ? vscode.window.activeTextEditor!.document.fileName : '',
-    ],
-    {
-      cwd: __dirname,
-    }
-  );
-  proc.on('error', function(err) {
-    console.log(err);
-    vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
-  });
-  let nvim: NeovimClient;
-  if (fs.existsSync('/tmp/nvim') && fs.lstatSync('/tmp/nvim').isSocket()) {
-    nvim = attach({ socket: '/tmp/nvim' });
-  } else {
-    nvim = attach({ proc: proc });
-  }
-  Vim.nv = nvim;
-
-  Vim.channelId = (await nvim.requestApi())[0] as number;
-
-  const SIZE = 50;
-  nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
-  Vim.screen = new Screen(SIZE);
-
-  const code = `
-function _vscode_copy_text(text, line, char)
-  vim.api.nvim_command('undojoin')
-  vim.api.nvim_buf_set_lines(0, 0, -1, true, text)
-  vim.api.nvim_call_function('setpos', {'.', {0, line, char, false}})
-end
-`;
-
-  await Vim.nv.lua(code, []);
-  await nvim.command('autocmd!');
-  const autocmdMap: { [autocmd: string]: string } = {
-    BufWriteCmd: 'writeBuf',
-    QuitPre: 'closeBuf',
-    BufEnter: 'enterBuf',
-    TabNewEntered: 'newTabEntered',
-  };
-  for (const autocmd of Object.keys(autocmdMap)) {
-    await nvim.command(
-      `autocmd ${autocmd} * :call rpcrequest(${Vim.channelId}, "${autocmdMap[
-        autocmd
-      ]}", expand("<abuf>"), fnamemodify(expand('<afile>'), ':p'), expand("<afile>"))`
-    );
-  }
-
-  // Overriding commands to handle them on the vscode side.
-  // await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
-
-  await NvUtil.setSettings(['noswapfile', 'hidden']);
-  nvim.on('notification', (y: any, x: any) => {
-    if (vscode.window.activeTextEditor && y === 'redraw') {
-      Vim.screen.redraw(x);
-    }
-  });
-
-  nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
-    if (RpcRequest[method] !== undefined) {
-      const f = RpcRequest[method];
-      f(args, resp);
-    } else {
-      console.log(`${method} is not defined!`);
-    }
-  });
-
   async function handleActiveTextEditorChange() {
     if (vscode.window.activeTextEditor === undefined) {
       return;
@@ -243,7 +169,6 @@ end
       }
     }
   });
-
   vscode.workspace.onDidChangeTextDocument(handleTextDocumentChange);
 
   // tslint:disable-next-line:no-unused-variable
@@ -270,9 +195,10 @@ end
       // Vim.prevState.bufferTick = curTick;
       const curPos = await NvUtil.getCursorPos();
       const startPos = await NvUtil.getSelectionStartPos();
-      NvUtil.changeSelectionFromMode(Vim.mode.mode, curPos, startPos);
+      const curWant = await NvUtil.getCurWant();
+      NvUtil.changeSelectionFromModeSync(Vim.mode.mode, curPos, startPos, curWant);
       await NvUtil.copyTextFromNeovim();
-      await NvUtil.changeSelectionFromMode(Vim.mode.mode, curPos, startPos);
+      NvUtil.changeSelectionFromModeSync(Vim.mode.mode, curPos, startPos, curWant);
     }
     if (prevMode !== 'i') {
       await input(key);
@@ -288,9 +214,6 @@ end
   }
 
   overrideCommand(context, 'type', async args => {
-    // if (Vim.taskQueue.flushing) {
-    //   return;
-    // }
     Vim.taskQueue.queueMicroTask(() => {
       handleKeyEventNV(args.text);
     });
@@ -314,6 +237,81 @@ end
       });
     });
   }
+
+  const proc = spawn(
+    'nvim',
+    [
+      // '-u',
+      // 'NONE',
+      '-N',
+      '--embed',
+      vscode.window.activeTextEditor ? vscode.window.activeTextEditor!.document.fileName : '',
+    ],
+    {
+      cwd: __dirname,
+    }
+  );
+
+  proc.on('error', function(err) {
+    console.log(err);
+    vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
+  });
+  let nvim: NeovimClient;
+  if (fs.existsSync('/tmp/nvim') && fs.lstatSync('/tmp/nvim').isSocket()) {
+    nvim = attach({ socket: '/tmp/nvim' });
+  } else {
+    nvim = attach({ proc: proc });
+  }
+  Vim.nv = nvim;
+
+  Vim.channelId = (await nvim.requestApi())[0] as number;
+
+  const SIZE = 50;
+  nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true, ext_wildmenu: true });
+  Vim.screen = new Screen(SIZE);
+
+  const code = `
+function _vscode_copy_text(text, line, char)
+  vim.api.nvim_command('undojoin')
+  vim.api.nvim_buf_set_lines(0, 0, -1, true, text)
+  vim.api.nvim_call_function('setpos', {'.', {0, line, char, false}})
+end
+`;
+
+  await Vim.nv.lua(code, []);
+  await nvim.command('autocmd!');
+  const autocmdMap: { [autocmd: string]: string } = {
+    BufWriteCmd: 'writeBuf',
+    QuitPre: 'closeBuf',
+    BufEnter: 'enterBuf',
+    TabNewEntered: 'newTabEntered',
+  };
+  for (const autocmd of Object.keys(autocmdMap)) {
+    await nvim.command(
+      `autocmd ${autocmd} * :call rpcrequest(${Vim.channelId}, "${autocmdMap[
+        autocmd
+      ]}", expand("<abuf>"), fnamemodify(expand('<afile>'), ':p'), expand("<afile>"))`
+    );
+  }
+
+  // Overriding commands to handle them on the vscode side.
+  // await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
+
+  await NvUtil.setSettings(['noswapfile', 'hidden']);
+  nvim.on('notification', (y: any, x: any) => {
+    if (vscode.window.activeTextEditor && y === 'redraw') {
+      Vim.screen.redraw(x);
+    }
+  });
+
+  nvim.on('request', async (method: string, args: Array<any>, resp: any) => {
+    if (RpcRequest[method] !== undefined) {
+      const f = RpcRequest[method];
+      f(args, resp);
+    } else {
+      console.log(`${method} is not defined!`);
+    }
+  });
 
   if (vscode.window.activeTextEditor) {
     await handleActiveTextEditorChange();

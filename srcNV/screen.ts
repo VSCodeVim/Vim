@@ -38,7 +38,8 @@ export class Screen {
   y: number;
   size: number;
   highlighter: any;
-  cmdline: vscode.StatusBarItem[];
+  cmdline: vscode.StatusBarItem;
+  wildmenu: vscode.StatusBarItem[];
   highlightGroups: HighlightGroup[];
 
   constructor(size: number) {
@@ -52,12 +53,13 @@ export class Screen {
     this.x = 0;
     this.y = 0;
     this.highlighter = {};
-    this.cmdline = [];
+    this.cmdline = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10001);
+    this.wildmenu = [];
     for (let i = 0; i < 10; i++) {
-      this.cmdline.push(
+      this.wildmenu.push(
         vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10000 - i)
       );
-      this.cmdline[i].show();
+      // this.wildmenu[i].show();
     }
     let idx = 1;
     let hlGroups = [
@@ -87,11 +89,7 @@ export class Screen {
     } else {
       await NvUtil.updateMode();
       await NvUtil.copyTextFromNeovim();
-      await NvUtil.changeSelectionFromMode(
-        Vim.mode.mode,
-        await NvUtil.getCursorPos(),
-        await NvUtil.getSelectionStartPos()
-      );
+      await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       await NvUtil.setSettings(VimSettings.normalModeSettings);
     }
     const ignoreKeys: IgnoredKeys = vscode.workspace
@@ -149,17 +147,48 @@ export class Screen {
         this.highlighter = args[args.length - 1][0];
       } else if (name === 'mode_change') {
         this.handleModeChange(args[0]);
+      } else if (name === 'cmdline_show') {
+        console.log(name);
+        let text = '';
+        for (let hlText of args[0][0]) {
+          text += hlText[1];
+        }
+        this.cmdline.text =
+          args[0][2] +
+          args[0][3] +
+          ' '.repeat(args[0][4]) +
+          text.slice(0, args[0][1]) +
+          '|' +
+          text.slice(args[0][1]);
+        this.cmdline.show();
+        console.log(args);
+      } else if (
+        [
+          'cmdline_show',
+          'cmdline_pos',
+          'cmdline_special_char',
+          'cmdline_hide',
+          'cmdline_block_show',
+          'cmdline_block_append',
+          'cmdline_block_hide',
+        ].indexOf(name) !== -1
+      ) {
+        // console.log(name);
+        // console.log(args);
       } else {
         console.log(name);
         console.log(args);
       }
     }
 
-    console.log(Vim.mode);
-    if (Vim.mode.mode === 'c' || '-:'.indexOf(this.term[this.size - 1][0].v) !== -1) {
-      this.cmdline[0].text = this.term[this.size - 1].map(x => x.v).join('');
-    } else {
-      this.cmdline[0].text = '';
+    // If nvim is connected to a TUI, then we can't get external ui for cmdline/wildmenu.
+    if (Vim.DEBUG) {
+      if (Vim.mode.mode === 'c' || '-:'.indexOf(this.term[this.size - 1][0].v) !== -1) {
+        this.cmdline.text = this.term[this.size - 1].map(x => x.v).join('');
+        this.cmdline.show();
+      } else {
+        this.cmdline.text = '';
+      }
     }
     const wildmenuText = this.term[this.size - 2]
       .map(x => x.v)
@@ -170,21 +199,20 @@ export class Screen {
     let wildmenuIdx = wildmenu.map(x => wildmenuText.indexOf(x));
     if (wildmenu[0] === '<' || wildmenu[wildmenu.length - 1] === '>') {
       for (let i = 0; i < wildmenu.length; i++) {
-        this.cmdline[i + 1].text = wildmenu[i];
-        this.cmdline[i + 1].show();
+        this.wildmenu[i].text = wildmenu[i];
+        this.wildmenu[i].show();
         if (this.term[this.size - 2][wildmenuIdx[i]].highlight.hasOwnProperty('foreground')) {
-          // console.log(this.term[this.size - 2][wil]);
-          this.cmdline[i + 1].color = 'red';
+          this.wildmenu[i].color = 'red';
         } else {
-          this.cmdline[i + 1].color = 'white';
+          this.wildmenu[i].color = 'white';
         }
       }
-      for (let i = wildmenu.length; i < this.cmdline.length - 1; i++) {
-        this.cmdline[i + 1].hide();
+      for (let i = wildmenu.length; i < this.wildmenu.length; i++) {
+        this.wildmenu[i].hide();
       }
     } else {
-      for (let i = 1; i < this.cmdline.length; i++) {
-        this.cmdline[i].hide();
+      for (let i = 0; i < this.wildmenu.length; i++) {
+        this.wildmenu[i].hide();
       }
     }
     if (!vscode.workspace.getConfiguration('vim').get('enableHighlights')) {

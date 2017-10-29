@@ -133,8 +133,21 @@ export class NvUtil {
   static async getUndoTree(): Promise<UndoTree> {
     return (await Vim.nv.call('undotree', [])) as UndoTree;
   }
+  static async changeSelectionFromMode(mode: string) {
+    return this.changeSelectionFromModeSync(
+      mode,
+      await this.getCursorPos(),
+      await this.getSelectionStartPos(),
+      await this.getCurWant()
+    );
+  }
 
-  static async changeSelectionFromMode(mode: string, curPos: Position, startPos: Position) {
+  static changeSelectionFromModeSync(
+    mode: string,
+    curPos: Position,
+    startPos: Position,
+    curWant: number
+  ) {
     const cursorPos = new Position(curPos.line, curPos.character);
     let cursorDecorations = [];
     switch (mode) {
@@ -161,8 +174,8 @@ export class NvUtil {
       case '\x16':
         const top = Position.EarlierOf(curPos, startPos).line;
         const bottom = Position.LaterOf(curPos, startPos).line;
-        const left = Math.min(startPos.character, await NvUtil.getCurWant());
-        const right = Math.max(startPos.character, await NvUtil.getCurWant()) + 1;
+        const left = Math.min(startPos.character, curWant);
+        const right = Math.max(startPos.character, curWant) + 1;
         let selections = [];
         for (let line = top; line <= bottom; line++) {
           selections.push(
