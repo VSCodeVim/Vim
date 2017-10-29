@@ -179,6 +179,7 @@ export class Screen {
 
       let startPos = new Position(highlighted[0][0] as number, highlighted[0][1] as number);
       let endPos = new Position(highlighted[0][0] as number, highlighted[0][1] as number);
+      let prevX = highlighted[0][1] as number;
       let newRange = true;
 
       for (const i of highlighted) {
@@ -196,7 +197,10 @@ export class Screen {
           }
           if ((i[2] as string[]).indexOf('background') !== -1) {
 
-            if (i[0] as number !== startPos.line) {
+            // This is a new decoration if it is a different line OR if it is
+            // not continuous on the same line
+            if ((i[0] as number !== startPos.line) ||
+              (i[0] as number === startPos.line && i[1] as number !== prevX + 1)) {
               newRange = true;
               decorations.push(new vscode.Range(startPos, endPos.getRight()));
             }
@@ -207,6 +211,7 @@ export class Screen {
             }
 
             endPos = new Position(i[0] as number, i[1] as number);
+            prevX = endPos.character;
           }
         }
       }
