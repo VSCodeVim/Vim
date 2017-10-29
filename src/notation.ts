@@ -29,10 +29,6 @@ export class AngleBracketNotation {
       return '\n';
     }
 
-    if (key.toLowerCase() === '<leader>') {
-      return Configuration.leader;
-    }
-
     if (_.includes(['<up>', '<down>', '<left>', '<right>'], key.toLocaleLowerCase())) {
       key = key.toLocaleLowerCase();
     }

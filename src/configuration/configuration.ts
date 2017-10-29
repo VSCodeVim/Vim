@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { taskQueue } from '../../src/taskQueue';
+import { IgnoredKeys } from '../../srcNV/screen';
 import { Globals } from '../../src/globals';
 
 export type OptionValue = number | string | boolean;
@@ -9,19 +9,6 @@ export type ValueMapping = {
   [key: number]: OptionValue;
   [key: string]: OptionValue;
 };
-
-export interface IHandleKeys {
-  [key: string]: boolean;
-}
-
-export interface IStatusBarColors {
-  normal: string;
-  insert: string;
-  visual: string;
-  visualline: string;
-  visualblock: string;
-  replace: string;
-}
 
 /**
  * Every Vim option we support should
@@ -71,33 +58,11 @@ class ConfigurationClass {
       }
     }
 
-    // <space> is special, change it to " " internally if it is used as leader
-    if (this.leader.toLowerCase() === '<space>') {
-      this.leader = ' ';
-    }
-
     // Get the cursor type from vscode
     const cursorStyleString = vscode.workspace
       .getConfiguration()
       .get('editor.cursorStyle') as string;
     this.userCursor = this.cursorStyleFromString(cursorStyleString);
-
-    // Get configuration setting for handled keys, this allows user to disable
-    // certain key comboinations
-    const handleKeys = vscode.workspace
-      .getConfiguration('vim')
-      .get<IHandleKeys[]>('handleKeys', []);
-
-    for (const bracketedKey of this.boundKeyCombinations) {
-      // Set context for key that is not used
-      // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
-      // Or if user usese vim.handleKeys configuration option to set certain combinations to false
-      // By default, all key combinations are used so start with true
-      let useKey = true;
-
-      // Set the context of whether or not this key will be used based on criteria from above
-      vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
-    }
   }
 
   private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle {
@@ -118,120 +83,30 @@ class ConfigurationClass {
   }
 
   /**
-   * Use the system's clipboard when copying.
-   */
-  useSystemClipboard = false;
-
-  /**
-   * Enable ctrl- actions that would override existing VSCode actions.
-   */
-  useCtrlKeys = false;
-
-  /**
-   * Override default VSCode copy behavior.
-   */
-  overrideCopy = true;
-
-  /**
-   * Width in characters to word-wrap to.
-   */
-  textwidth = 80;
-
-  /**
-   * Should we highlight incremental search matches?
-   */
-  hlsearch = false;
-
-  /**
-   * Ignore case when searching with / or ?.
-   */
-  ignorecase = true;
-
-  /**
-   * In / or ?, default to ignorecase=true unless the user types a capital
-   * letter.
-   */
-  smartcase = true;
-
-  /**
    * Indent automatically?
    */
   autoindent = true;
 
-  /**
-   * Use EasyMotion plugin?
-   */
-  easymotion = false;
+  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
 
   /**
-   * Use surround plugin?
+   * Keys to be ignored and NOT handled by the extensions
    */
-  surround = true;
-
-  /**
-   * Easymotion marker appearance settings
-   */
-  easymotionMarkerBackgroundColor = '#000000';
-  easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500';
-  easymotionMarkerWidthPerChar = 8;
-  easymotionMarkerHeight = 14;
-  easymotionMarkerFontFamily = 'Consolas';
-  easymotionMarkerFontSize = '14';
-  easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerYOffset = 11;
-
-  /**
-   * Timeout in milliseconds for remapped commands.
-   */
-  timeout = 1000;
-
-  /**
-   * Display partial commands on status bar?
-   */
-  showcmd = true;
-
-  /**
-   * What key should <leader> map to in key remappings?
-   */
-  leader = '\\';
-
-  /**
-   * How much search or command history should be remembered
-   */
-  history = 50;
-
-  /**
-   * Show results of / or ? search as user is typing?
-   */
-  incsearch = true;
-
-  /**
-   * Start in insert mode?
-   */
-  startInInsertMode = false;
-
-  /**
-   * Enable changing of the status bar color based on mode
-   */
-  statusBarColorControl = false;
-
-  /**
-   * Status bar colors to change to based on mode
-   */
-  statusBarColors: IStatusBarColors = {
-    normal: '#005f5f',
-    insert: '#5f0000',
-    visual: '#5f00af',
-    visualline: '#005f87',
-    visualblock: '#86592d',
-    replace: '#000000',
+  ignoreKeys: IgnoredKeys =
+  {
+    all: [''],
+    normal: [''],
+    insert: [''],
+    visual: ['']
   };
 
+
   /**
-   * Color of search highlights.
+   * Type of cursor user is using native to vscode
    */
-  searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
+  userCursor: number | undefined;
+
+  neovimPath: string = '';
 
   /**
    * Size of a tab character.
@@ -240,55 +115,10 @@ class ConfigurationClass {
   tabstop: number;
 
   /**
-   * Type of cursor user is using native to vscode
-   */
-  userCursor: number;
-
-  /**
    * Use spaces when the user presses tab?
    */
   @overlapSetting({ codeName: 'insertSpaces', default: false })
   expandtab: boolean;
-
-  @overlapSetting({
-    codeName: 'lineNumbers',
-    default: true,
-    codeValueMapping: { true: 'on', false: 'off' },
-  })
-  number: boolean;
-
-  /**
-   * Show relative line numbers?
-   */
-  @overlapSetting({
-    codeName: 'lineNumbers',
-    default: false,
-    codeValueMapping: { true: 'relative', false: 'off' },
-  })
-  relativenumber: boolean;
-
-  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
-
-  /**
-   * Array of all key combinations that were registered in angle bracket notation
-   */
-  boundKeyCombinations: string[] = [];
-
-  /**
-   * In visual mode, start a search with * or # using the current selection
-   */
-  visualstar = false;
-
-  /**
-   * Uses a hack to fix moving around folds.
-   */
-  foldfix = false;
-
-  enableNeovim = true;
-
-  neovimPath = 'nvim';
-
-  disableAnnoyingNeovimMessage = false;
 }
 
 function overlapSetting(args: {
@@ -296,9 +126,9 @@ function overlapSetting(args: {
   default: OptionValue;
   codeValueMapping?: ValueMapping;
 }) {
-  return function(target: any, propertyKey: string) {
+  return function (target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
-      get: function() {
+      get: function () {
         if (this['_' + propertyKey] !== undefined) {
           return this['_' + propertyKey];
         }
@@ -313,28 +143,20 @@ function overlapSetting(args: {
           return vscode.workspace.getConfiguration('editor').get(args.codeName, args.default);
         }
       },
-      set: function(value) {
+      set: async function (value) {
         this['_' + propertyKey] = value;
 
-        taskQueue.enqueueTask({
-          promise: async () => {
-            if (value === undefined || Globals.isTesting) {
-              return;
-            }
+        if (value === undefined || Globals.isTesting) {
+          return;
+        }
 
-            let codeValue = value;
+        let codeValue = value;
 
-            if (args.codeValueMapping) {
-              codeValue = args.codeValueMapping[value];
-            }
+        if (args.codeValueMapping) {
+          codeValue = args.codeValueMapping[value];
+        }
 
-            await vscode.workspace
-              .getConfiguration('editor')
-              .update(args.codeName, codeValue, true);
-          },
-          isRunning: false,
-          queue: 'config',
-        });
+        await vscode.workspace.getConfiguration('editor').update(args.codeName, codeValue, true);
       },
       enumerable: true,
       configurable: true,

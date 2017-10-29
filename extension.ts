@@ -172,6 +172,11 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   vscode.workspace.onDidChangeTextDocument(handleTextDocumentChange);
 
+  // Event to update active configuration items when changed without restarting vscode
+  vscode.workspace.onDidChangeConfiguration((e: void) => {
+    Configuration.updateConfiguration();
+  });
+
   // tslint:disable-next-line:no-unused-variable
   async function handleSimple(key: string) {
     await nvim.input(key);
@@ -194,6 +199,7 @@ export async function activate(context: vscode.ExtensionContext) {
       //   return;
       // }
       // Vim.prevState.bufferTick = curTick;
+
       const curPos = await NvUtil.getCursorPos();
       const startPos = await NvUtil.getSelectionStartPos();
       const curWant = await NvUtil.getCurWant();
@@ -223,9 +229,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
 
   const keysToBind = packagejson.contributes.keybindings;
-  const ignoreKeys: IgnoredKeys = vscode.workspace
-    .getConfiguration('vim')
-    .get('ignoreKeys') as IgnoredKeys;
+  const ignoreKeys = Configuration.ignoreKeys;
 
   for (let key of keysToBind) {
     if (ignoreKeys.all.indexOf(key.vimKey) !== -1) {
@@ -240,7 +244,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   const proc = spawn(
-    'nvim',
+    Configuration.neovimPath,
     [
       // '-u',
       // 'NONE',
@@ -253,7 +257,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  proc.on('error', function(err) {
+  proc.on('error', function (err) {
     console.log(err);
     vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
   });
@@ -290,7 +294,7 @@ end
   for (const autocmd of Object.keys(autocmdMap)) {
     await nvim.command(
       `autocmd ${autocmd} * :call rpcrequest(${Vim.channelId}, "${autocmdMap[
-        autocmd
+      autocmd
       ]}", expand("<abuf>"), fnamemodify(expand('<afile>'), ':p'), expand("<afile>"))`
     );
   }
@@ -362,6 +366,6 @@ function registerCommand(
   context.subscriptions.push(disposable);
 }
 
-process.on('unhandledRejection', function(reason: any, p: any) {
+process.on('unhandledRejection', function (reason: any, p: any) {
   console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
 });

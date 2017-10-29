@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { Vim } from '../extension';
 import { TextEditor } from '../src/textEditor';
 import { Position } from '../src/common/motion/position';
+import { Configuration } from '../src/configuration/configuration';
 
 type UndoTree = {
   entries: Array<{ seq: number; time: number }>;
@@ -32,12 +33,6 @@ export class NvUtil {
   });
 
   static async copyTextFromNeovim() {
-    // const curTick = await Vim.nv.buffer.changedtick;
-    // console.log(curTick, Vim.prevState.bufferTick);
-    // if (curTick === Vim.prevState.bufferTick) {
-    //   return;
-    // }
-    // Vim.prevState.bufferTick = curTick;
     let lines = await Vim.nv.buffer.lines;
     TextEditor.replace(
       new vscode.Range(
@@ -187,7 +182,7 @@ export class NvUtil {
 
         break;
       case 'i':
-        vscode.window.activeTextEditor!.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
+        vscode.window.activeTextEditor!.options.cursorStyle = Configuration.userCursor;
         vscode.window.activeTextEditor!.selection = new vscode.Selection(curPos, curPos);
         break;
       case 'R':
