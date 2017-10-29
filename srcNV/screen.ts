@@ -25,13 +25,6 @@ export interface HighlightGroup {
   decorator: vscode.TextEditorDecorationType;
 }
 
-const _caretDecoration = vscode.window.createTextEditorDecorationType({
-  backgroundColor: 'rgba(240, 240, 240, 0.6)',
-  borderColor: 'rgba(0, 0, 0, 1.0)',
-  borderStyle: 'solid',
-  borderWidth: '1px',
-});
-
 export class Screen {
   term: Array<Array<Cell>> = [];
   x: number;
