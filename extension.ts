@@ -60,6 +60,7 @@ export async function activate(context: vscode.ExtensionContext) {
     await NvUtil.copyTextFromNeovim();
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     await NvUtil.setSettings(await VimSettings.enterFileSettings());
+    await NvUtil.changeSelectionFromMode(Vim.mode.mode);
   }
 
   async function handleTextDocumentChange(e: vscode.TextDocumentChangeEvent) {
