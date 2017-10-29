@@ -107,12 +107,13 @@ export class Screen {
         this.x = args[0][1];
       } else if (name === 'eol_clear') {
         for (let i = 0; i < this.size - this.x; i++) {
-          this.term[this.y][this.x + i] = new Cell(' ');
+          this.term[this.y][this.x + i].v = ' ';
+          this.term[this.y][this.x + i].highlight = {};
         }
       } else if (name === 'put') {
         for (const cs of args) {
           for (const c of cs) {
-            this.term[this.y][this.x] = new Cell(c);
+            this.term[this.y][this.x].v = c;
             this.term[this.y][this.x].highlight = this.highlighter;
             this.x += 1;
           }

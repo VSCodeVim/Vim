@@ -140,26 +140,48 @@ export async function activate(context: vscode.ExtensionContext) {
       // should be included in dot repeat(like autocomplete, auto-close parens,
       // all regular typing, etc.) from the vscode changes that should not be
       // included (the entire buffer syncing, autoformatting, etc.)
-      if (
-        Vim.mode.mode === 'i' &&
-        ((changeBegin.line === curPos.line &&
-          changeBegin.line === changeEnd.line &&
-          !(
-            changeBegin.line === 0 &&
-            changeBegin.character === 0 &&
-            (change.text[change.text.length - 1] === '\n' || TextEditor.getLineCount() === 1)
-          )) ||
-          (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1))
-      ) {
-        await NvUtil.updateMode();
+
+      const isInsertModeChange = () => {
+        if (Vim.mode.mode !== 'i') {
+          return false;
+        }
+        // Handles the case where we press backsapce at the beginning of a line.
+        if (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1) {
+          return true;
+        }
+        // If the change is spanning multiple lines then it's almost definitely
+        // not an insert mode change (except for a couple of special cases.)
+        if (!(changeBegin.line === curPos.line && changeBegin.line === changeEnd.line)) {
+          return false;
+        }
+        const curSel = vscode.window.activeTextEditor!.selection;
+        if (
+          curSel.active.line !== curSel.anchor.line ||
+          curSel.active.character !== curSel.anchor.character
+        ) {
+          return false;
+        }
+        if (changeBegin.line === 0 && changeBegin.character === 0) {
+          if (change.text[change.text.length - 1] === '\n') {
+            return false;
+          } else if (TextEditor.getLineCount() === 1) {
+            return false;
+          } else if (change.rangeLength === 1) {
+            return false;
+          }
+        }
+        return true;
+      };
+      await NvUtil.updateMode();
+      if (isInsertModeChange()) {
         if (!Vim.mode.blocking) {
           const nvPos = await NvUtil.getCursorPos();
           if (nvPos.line !== curPos.line) {
             await NvUtil.setCursorPos(curPos);
           } else {
             // Is necessary for parentheses autocompletion but causes issues
-            // when non-atomic with fast text. Move this into lua
-            // await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
+            // when non-atomic with fast text.
+            await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
           }
         }
         await nvim.input('<BS>'.repeat(change.rangeLength));
