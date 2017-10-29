@@ -23,14 +23,19 @@
               "<c-`>",
               "<c-p>",
               "<c-k>",
-              "<c-b>"
+              "<c-b>",
+              "<c-space>",
+              "<c-bs>"
             ],
             "normal": [],
             "insert": [
               "<c-c>",
               "<c-a>",
               "<tab>",
-              "<bs>"
+              "<bs>",
+              "<down>",
+              "<up>",
+              "<space>"
             ],
             "visual": []
           }

@@ -3,6 +3,7 @@ import { Position } from '../src/common/motion/position';
 import { TextEditor } from '../src/textEditor';
 import { VimSettings } from './vimSettings';
 import { NvUtil } from './nvUtil';
+import { Vim } from '../extension';
 export class Cell {
   v: string;
   highlight: Object;
@@ -126,6 +127,38 @@ export class Screen {
       }
     }
 
+    console.log(Vim.mode);
+    if (Vim.mode.mode === 'c' || '-:'.indexOf(this.term[this.size - 1][0].v) !== -1) {
+      this.cmdline[0].text = this.term[this.size - 1].map(x => x.v).join('');
+    } else {
+      this.cmdline[0].text = '';
+    }
+    const wildmenuText = this.term[this.size - 2]
+      .map(x => x.v)
+      .join('')
+      .replace(/\s+$/, '');
+    let wildmenu: string[] = wildmenuText.split(/\s+/);
+    // Doesn't always work, who cares??? What a pain in the ass. I don't want to not use regex.
+    let wildmenuIdx = wildmenu.map(x => wildmenuText.indexOf(x));
+    if (wildmenu[0] === '<' || wildmenu[wildmenu.length - 1] === '>') {
+      for (let i = 0; i < wildmenu.length; i++) {
+        this.cmdline[i + 1].text = wildmenu[i];
+        this.cmdline[i + 1].show();
+        if (this.term[this.size - 2][wildmenuIdx[i]].highlight.hasOwnProperty('foreground')) {
+          // console.log(this.term[this.size - 2][wil]);
+          this.cmdline[i + 1].color = 'red';
+        } else {
+          this.cmdline[i + 1].color = 'white';
+        }
+      }
+      for (let i = wildmenu.length; i < this.cmdline.length - 1; i++) {
+        this.cmdline[i + 1].hide();
+      }
+    } else {
+      for (let i = 1; i < this.cmdline.length; i++) {
+        this.cmdline[i].hide();
+      }
+    }
     if (!vscode.workspace.getConfiguration('vim').get('enableHighlights')) {
       return;
     }
@@ -159,37 +192,6 @@ export class Screen {
           const pos = new Position(i[0] as number, i[1] as number);
           decorations.push(new vscode.Range(pos, pos.getRight()));
         }
-      }
-    }
-    if (this.term[this.size - 1][0].v === ':') {
-      this.cmdline[0].text = this.term[this.size - 1].map(x => x.v).join('');
-    } else {
-      this.cmdline[0].text = '';
-    }
-    const wildmenuText = this.term[this.size - 2]
-      .map(x => x.v)
-      .join('')
-      .replace(/\s+$/, '');
-    let wildmenu: string[] = wildmenuText.split(/\s+/);
-    // Doesn't always work, who cares??? What a pain in the ass. I don't want to not use regex.
-    let wildmenuIdx = wildmenu.map(x => wildmenuText.indexOf(x));
-    if (wildmenu[0] === '<' || wildmenu[wildmenu.length - 1] === '>') {
-      for (let i = 0; i < wildmenu.length; i++) {
-        this.cmdline[i + 1].text = wildmenu[i];
-        this.cmdline[i + 1].show();
-        if (this.term[this.size - 2][wildmenuIdx[i]].highlight.hasOwnProperty('foreground')) {
-          // console.log(this.term[this.size - 2][wil]);
-          this.cmdline[i + 1].color = 'red';
-        } else {
-          this.cmdline[i + 1].color = 'white';
-        }
-      }
-      for (let i = wildmenu.length; i < this.cmdline.length - 1; i++) {
-        this.cmdline[i + 1].hide();
-      }
-    } else {
-      for (let i = 1; i < this.cmdline.length; i++) {
-        this.cmdline[i].hide();
       }
     }
     if (vscode.window.activeTextEditor) {

@@ -42,8 +42,9 @@ export namespace Vim {
   export let channelId: number;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let screen: Screen;
-  export let prevState: { bufferTick: number } = {
+  export let prevState: { bufferTick: number; prevPos: Position } = {
     bufferTick: -1,
+    prevPos: new Position(0, 0),
   };
   export let taskQueue = new TaskQueue();
 }
@@ -171,28 +172,29 @@ export async function activate(context: vscode.ExtensionContext) {
         // from neovim buffer to vscode buffer). It's a hack. Won't work if your
         // change (refactor) for example, doesn't modify the length of the file
         const isRealChange = change.text.length !== change.rangeLength;
-        if (isRealChange) {
+        if (isRealChange || true) {
           // todo(chilli): Doesn't work if there was just an undo command (undojoin
           // fails and prevents the following command from executing)
-          let atomicCommands = [
-            NvUtil.atomCommand("let g:foo = getpos('.')"),
-            NvUtil.atomCommand('undojoin'),
-            NvUtil.atomBufSetLines(TextEditor.getText().split('\n')),
-            ['nvim_get_var', ['foo']],
-            NvUtil.atomCommand("call setpos('.', [g:foo[0], g:foo[1], g:foo[2], g:foo[3]])"),
-          ];
 
-          const result = await nvim.callAtomic(atomicCommands);
-          // console.log(result[0][3][1]);
+          const code = `
+function _vscode_copy_text(text)
+  local foo = vim.api.nvim_call_function('getpos', {'.'})
+  vim.api.nvim_command('undojoin')
+  vim.api.nvim_buf_set_lines(0, 0, -1, true, text)
+  vim.api.nvim_call_function('setpos', {'.', foo})
+  return foo
+end
+`;
+          await Vim.nv.lua(code, []);
+          let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
+            TextEditor.getText().split('\n'),
+          ]);
+          console.log(t);
         }
         break;
       }
+      Vim.prevState.prevPos = curPos;
     }
-    // I'm assuming here that there's nothing that will happen on the vscode
-    // side that would alter cursor position if you're not in insert mode.
-    // Technically not true, but it seems like a pain to handle, and seems
-    // like something that won't be used much. Will re-evaluate at a later
-    // date.
   }
 
   vscode.workspace.onDidCloseTextDocument(async event => {
@@ -227,6 +229,9 @@ export async function activate(context: vscode.ExtensionContext) {
     async function input(k: string) {
       await nvim.input(k === '<' ? '<lt>' : k);
       await NvUtil.updateMode();
+      if (Vim.mode.mode === 'r') {
+        await nvim.input('<CR>');
+      }
       // Optimization that makes movement very smooth. However, occasionally
       // makes it more difficult to debug so it's turned off for now.
       // const curTick = await Vim.nv.buffer.changedtick;
