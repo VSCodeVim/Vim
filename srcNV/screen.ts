@@ -173,30 +173,48 @@ export class Screen {
       }
       result += '\n';
     }
-    let decorations = [];
-    console.log(`highlighted length ${highlighted.length}`);
-    for (const i of highlighted) {
-      if (
-        i[2][0] === 'background' ||
-        i[2][0] === 'reverse' ||
-        i[2][0] === 'foreground' ||
-        ((i[2] as string[]).length > 0 && i[2][0] !== 'bold')
-      ) {
+
+    if (highlighted.length > 0) {
+      let decorations = [];
+
+      let startPos = new Position(highlighted[0][0] as number, highlighted[0][1] as number);
+      let endPos = new Position(highlighted[0][0] as number, highlighted[0][1] as number);
+      let newRange = true;
+
+      for (const i of highlighted) {
         if (
-          i[0] >= TextEditor.getLineCount() ||
-          i[1] >= TextEditor.getLineMaxColumn(i[0] as number)
+          i[2][0] === 'background' ||
+          i[2][0] === 'reverse' ||
+          i[2][0] === 'foreground' ||
+          ((i[2] as string[]).length > 0 && i[2][0] !== 'bold')
         ) {
-          continue;
-        }
-        if ((i[2] as string[]).indexOf('background') !== -1) {
-          const pos = new Position(i[0] as number, i[1] as number);
-          decorations.push(new vscode.Range(pos, pos.getRight()));
+          if (
+            i[0] >= TextEditor.getLineCount() ||
+            i[1] >= TextEditor.getLineMaxColumn(i[0] as number)
+          ) {
+            continue;
+          }
+          if ((i[2] as string[]).indexOf('background') !== -1) {
+
+            if (i[0] as number !== startPos.line) {
+              newRange = true;
+              decorations.push(new vscode.Range(startPos, endPos.getRight()));
+            }
+
+            if (newRange) {
+              startPos = new Position(i[0] as number, i[1] as number);
+              newRange = false;
+            }
+
+            endPos = new Position(i[0] as number, i[1] as number);
+          }
         }
       }
+
+      if (vscode.window.activeTextEditor) {
+        vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
+      }
     }
-    if (vscode.window.activeTextEditor) {
-      vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
-    }
-    // _caretDecoration.dispose();
+
   }
 }
