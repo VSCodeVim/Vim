@@ -58,12 +58,14 @@ export class Screen {
       );
       this.cmdline[i].show();
     }
-    // this.cmdline.show();
   }
   private async handleModeChange(mode: [string, number]) {
     if (mode[0] === 'insert') {
       await NvUtil.setSettings(await VimSettings.insertModeSettings());
     } else {
+      await NvUtil.updateMode();
+      await NvUtil.copyTextFromNeovim();
+      await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       await NvUtil.setSettings(VimSettings.normalModeSettings);
     }
     const ignoreKeys: IgnoredKeys = vscode.workspace

@@ -154,6 +154,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (!(changeBegin.line === curPos.line && changeBegin.line === changeEnd.line)) {
           return false;
         }
+        // Mainly for mouse cursor selection/multicursor stuff.
         const curSel = vscode.window.activeTextEditor!.selection;
         if (
           curSel.active.line !== curSel.anchor.line ||
@@ -161,6 +162,7 @@ export async function activate(context: vscode.ExtensionContext) {
         ) {
           return false;
         }
+        // Tries to handle the case about editing on the first line.
         if (changeBegin.line === 0 && changeBegin.character === 0) {
           if (change.text[change.text.length - 1] === '\n') {
             return false;
