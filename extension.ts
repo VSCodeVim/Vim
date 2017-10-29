@@ -196,7 +196,7 @@ export async function activate(context: vscode.ExtensionContext) {
         // from neovim buffer to vscode buffer). It's a hack. Won't work if your
         // change (refactor) for example, doesn't modify the length of the file
         const isRealChange = change.text.length !== change.rangeLength;
-        if (isRealChange || true) {
+        if (isRealChange) {
           // todo(chilli): Doesn't work if there was just an undo command (undojoin
           // fails and prevents the following command from executing)
 

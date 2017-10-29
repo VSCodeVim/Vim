@@ -33,7 +33,9 @@
               "<c-a>",
               "<tab>",
               "<bs>",
-              "<space>"
+              "<space>",
+              "<up>",
+              "<down>"
             ],
             "visual": []
           }

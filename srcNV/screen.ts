@@ -20,13 +20,6 @@ export interface IgnoredKeys {
   visual: string[];
 }
 
-const foregroundDec = vscode.window.createTextEditorDecorationType({
-  backgroundColor: 'rgba(240, 120, 120, 0.6)',
-  borderColor: 'rgba(0, 0, 0, 1.0)',
-  borderStyle: 'solid',
-  borderWidth: '1px',
-});
-
 const _caretDecoration = vscode.window.createTextEditorDecorationType({
   backgroundColor: 'rgba(240, 240, 240, 0.6)',
   borderColor: 'rgba(0, 0, 0, 1.0)',
