@@ -57,7 +57,7 @@ export class NvUtil {
   // Must be moving to same line
   static async ctrlGMove(start: number, target: number) {
     if (start < target) {
-      await Vim.nv.input('<C-g>U<Right>'.repeat(target - start));
+      // await Vim.nv.input('<C-g>U<Right>'.repeat(target - start));
     } else if (start > target) {
       await Vim.nv.input('<C-g>U<Left>'.repeat(start - target));
     }

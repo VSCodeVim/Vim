@@ -135,6 +135,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const changeBegin = Position.FromVSCodePosition(change.range.start);
       const changeEnd = Position.FromVSCodePosition(change.range.end);
       const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
+      const curSel = vscode.window.activeTextEditor!.selection;
       const docEnd = new Position(0, 0).getDocumentEnd();
       // This ugly if statement is to differentiate the "real" vscode changes that
       // should be included in dot repeat(like autocomplete, auto-close parens,
@@ -155,7 +156,6 @@ export async function activate(context: vscode.ExtensionContext) {
           return false;
         }
         // Mainly for mouse cursor selection/multicursor stuff.
-        const curSel = vscode.window.activeTextEditor!.selection;
         if (
           curSel.active.line !== curSel.anchor.line ||
           curSel.active.character !== curSel.anchor.character
@@ -201,19 +201,20 @@ export async function activate(context: vscode.ExtensionContext) {
           // fails and prevents the following command from executing)
 
           const code = `
-function _vscode_copy_text(text)
-  local foo = vim.api.nvim_call_function('getpos', {'.'})
+function _vscode_copy_text(text, line, char)
   vim.api.nvim_command('undojoin')
   vim.api.nvim_buf_set_lines(0, 0, -1, true, text)
-  vim.api.nvim_call_function('setpos', {'.', foo})
-  return foo
+  vim.api.nvim_call_function('setpos', {'.', {0, line, char, false}})
 end
 `;
           await Vim.nv.lua(code, []);
+          await NvUtil.updateMode();
+          const newPos = vscode.window.activeTextEditor!.selection.active;
           let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
             TextEditor.getText().split('\n'),
+            newPos.line + 1,
+            newPos.character + 1,
           ]);
-          console.log(t);
         }
         break;
       }
