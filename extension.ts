@@ -82,6 +82,15 @@ export async function activate(context: vscode.ExtensionContext) {
   nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true });
   Vim.screen = new Screen(SIZE);
 
+  const code = `
+function _vscode_copy_text(text, line, char)
+  vim.api.nvim_command('undojoin')
+  vim.api.nvim_buf_set_lines(0, 0, -1, true, text)
+  vim.api.nvim_call_function('setpos', {'.', {0, line, char, false}})
+end
+`;
+
+  await Vim.nv.lua(code, []);
   await nvim.command('autocmd!');
   const autocmdMap: { [autocmd: string]: string } = {
     BufWriteCmd: 'writeBuf',
@@ -163,12 +172,10 @@ export async function activate(context: vscode.ExtensionContext) {
           return false;
         }
         // Tries to handle the case about editing on the first line.
-        if (changeBegin.line === 0 && changeBegin.character === 0) {
+        if (changeBegin.line === 0 && changeBegin.character === 0 && change.rangeLength !== 0) {
           if (change.text[change.text.length - 1] === '\n') {
             return false;
           } else if (TextEditor.getLineCount() === 1) {
-            return false;
-          } else if (change.rangeLength === 1) {
             return false;
           }
         }
@@ -200,21 +207,17 @@ export async function activate(context: vscode.ExtensionContext) {
           // todo(chilli): Doesn't work if there was just an undo command (undojoin
           // fails and prevents the following command from executing)
 
-          const code = `
-function _vscode_copy_text(text, line, char)
-  vim.api.nvim_command('undojoin')
-  vim.api.nvim_buf_set_lines(0, 0, -1, true, text)
-  vim.api.nvim_call_function('setpos', {'.', {0, line, char, false}})
-end
-`;
-          await Vim.nv.lua(code, []);
-          await NvUtil.updateMode();
           const newPos = vscode.window.activeTextEditor!.selection.active;
           let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
             TextEditor.getText().split('\n'),
             newPos.line + 1,
             newPos.character + 1,
           ]);
+          // const newPos = vscode.window.activeTextEditor!.selection.active;
+          // await nvim.command('undojoin');
+          // await nvim.buffer.setLines(TextEditor.getText().split('\n'));
+          // await NvUtil.setCursorPos(newPos);
+          // await NvUtil.updateMode();
         }
         break;
       }
@@ -265,8 +268,11 @@ end
       //   return;
       // }
       // Vim.prevState.bufferTick = curTick;
+      const curPos = await NvUtil.getCursorPos();
+      const startPos = await NvUtil.getSelectionStartPos();
+      NvUtil.changeSelectionFromMode(Vim.mode.mode, curPos, startPos);
       await NvUtil.copyTextFromNeovim();
-      await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+      await NvUtil.changeSelectionFromMode(Vim.mode.mode, curPos, startPos);
     }
     if (prevMode !== 'i') {
       await input(key);

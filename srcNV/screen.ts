@@ -6,7 +6,7 @@ import { NvUtil } from './nvUtil';
 import { Vim } from '../extension';
 export class Cell {
   v: string;
-  highlight: Object;
+  highlight: any;
   constructor(v: string) {
     this.v = v;
     this.highlight = {};
@@ -19,6 +19,11 @@ export interface IgnoredKeys {
   insert: string[];
   visual: string[];
 }
+export interface HighlightGroup {
+  hlGroup: string;
+  vimColor: number;
+  decorator: vscode.TextEditorDecorationType;
+}
 
 const _caretDecoration = vscode.window.createTextEditorDecorationType({
   backgroundColor: 'rgba(240, 240, 240, 0.6)',
@@ -26,13 +31,16 @@ const _caretDecoration = vscode.window.createTextEditorDecorationType({
   borderStyle: 'solid',
   borderWidth: '1px',
 });
+
 export class Screen {
   term: Array<Array<Cell>> = [];
   x: number;
   y: number;
   size: number;
-  highlighter: Object;
+  highlighter: any;
   cmdline: vscode.StatusBarItem[];
+  highlightGroups: HighlightGroup[];
+
   constructor(size: number) {
     this.size = size;
     for (let i = 0; i < this.size; i++) {
@@ -51,6 +59,27 @@ export class Screen {
       );
       this.cmdline[i].show();
     }
+    let idx = 1;
+    let hlGroups = [
+      {
+        hlGroup: 'IncSearch',
+        vimColor: idx++,
+        decorator: vscode.window.createTextEditorDecorationType({
+          backgroundColor: new vscode.ThemeColor('editor.findMatchBackground'),
+        }),
+      },
+      {
+        hlGroup: 'Search',
+        vimColor: idx++,
+        decorator: vscode.window.createTextEditorDecorationType({
+          backgroundColor: new vscode.ThemeColor('editor.findMatchHighlightBackground'),
+        }),
+      },
+    ];
+    for (const group of hlGroups) {
+      Vim.nv.command(`highlight ${group.hlGroup} guibg='#00000${group.vimColor}'`);
+    }
+    this.highlightGroups = hlGroups;
   }
   private async handleModeChange(mode: [string, number]) {
     if (mode[0] === 'insert') {
@@ -58,7 +87,11 @@ export class Screen {
     } else {
       await NvUtil.updateMode();
       await NvUtil.copyTextFromNeovim();
-      await NvUtil.changeSelectionFromMode(Vim.mode.mode);
+      await NvUtil.changeSelectionFromMode(
+        Vim.mode.mode,
+        await NvUtil.getCursorPos(),
+        await NvUtil.getSelectionStartPos()
+      );
       await NvUtil.setSettings(VimSettings.normalModeSettings);
     }
     const ignoreKeys: IgnoredKeys = vscode.workspace
@@ -91,7 +124,6 @@ export class Screen {
       vscode.commands.executeCommand('setContext', `vim.use_${key}`, false);
     }
   }
-
   redraw(changes: Array<any>) {
     for (let change of changes) {
       change = change as Array<any>;
@@ -114,7 +146,7 @@ export class Screen {
           }
         }
       } else if (name === 'highlight_set') {
-        this.highlighter = args[0][0];
+        this.highlighter = args[args.length - 1][0];
       } else if (name === 'mode_change') {
         this.handleModeChange(args[0]);
       } else {
@@ -158,64 +190,30 @@ export class Screen {
     if (!vscode.workspace.getConfiguration('vim').get('enableHighlights')) {
       return;
     }
-    let highlighted = [];
-    let result = '';
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        result += this.term[i][j].v;
-        if (Object.keys(this.term[i][j].highlight).length !== 0) {
-          highlighted.push([i, j, Object.keys(this.term[i][j].highlight)]);
-        }
-      }
-      result += '\n';
-    }
-
-    if (highlighted.length > 0) {
-      let decorations = [];
-
-      let startPos = new Position(highlighted[0][0] as number, highlighted[0][1] as number);
-      let endPos = new Position(highlighted[0][0] as number, highlighted[0][1] as number);
-      let prevX = highlighted[0][1] as number;
-      let newRange = true;
-
-      for (const i of highlighted) {
-        if (
-          i[2][0] === 'background' ||
-          i[2][0] === 'reverse' ||
-          i[2][0] === 'foreground' ||
-          ((i[2] as string[]).length > 0 && i[2][0] !== 'bold')
-        ) {
-          if (
-            i[0] >= TextEditor.getLineCount() ||
-            i[1] >= TextEditor.getLineMaxColumn(i[0] as number)
-          ) {
-            continue;
-          }
-          if ((i[2] as string[]).indexOf('background') !== -1) {
-
-            // This is a new decoration if it is a different line OR if it is
-            // not continuous on the same line
-            if ((i[0] as number !== startPos.line) ||
-              (i[0] as number === startPos.line && i[1] as number !== prevX + 1)) {
-              newRange = true;
-              decorations.push(new vscode.Range(startPos, endPos.getRight()));
-            }
-
-            if (newRange) {
-              startPos = new Position(i[0] as number, i[1] as number);
-              newRange = false;
-            }
-
-            endPos = new Position(i[0] as number, i[1] as number);
-            prevX = endPos.character;
+    for (const group of this.highlightGroups) {
+      let decorations: vscode.Range[] = [];
+      let result = '';
+      for (let i = 0; i < this.size; i++) {
+        let isRange = false;
+        let start = 0;
+        for (let j = 0; j < this.size; j++) {
+          result += this.term[i][j].v;
+          if (!isRange && this.term[i][j].highlight.background === group.vimColor) {
+            start = j;
+            isRange = true;
+          } else if (isRange && !(this.term[i][j].highlight.background === group.vimColor)) {
+            isRange = false;
+            decorations.push(
+              new vscode.Range(new vscode.Position(i, start), new vscode.Position(i, j))
+            );
           }
         }
+        result += '\n';
       }
 
       if (vscode.window.activeTextEditor) {
-        vscode.window.activeTextEditor!.setDecorations(_caretDecoration, decorations);
+        vscode.window.activeTextEditor!.setDecorations(group.decorator, decorations);
       }
     }
-
   }
 }

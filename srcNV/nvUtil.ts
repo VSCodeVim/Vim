@@ -39,7 +39,7 @@ export class NvUtil {
     // }
     // Vim.prevState.bufferTick = curTick;
     let lines = await Vim.nv.buffer.lines;
-    await TextEditor.replace(
+    TextEditor.replace(
       new vscode.Range(
         0,
         0,
@@ -134,9 +134,7 @@ export class NvUtil {
     return (await Vim.nv.call('undotree', [])) as UndoTree;
   }
 
-  static async changeSelectionFromMode(mode: string): Promise<void> {
-    let curPos = await NvUtil.getCursorPos();
-    let startPos = await NvUtil.getSelectionStartPos();
+  static async changeSelectionFromMode(mode: string, curPos: Position, startPos: Position) {
     const cursorPos = new Position(curPos.line, curPos.character);
     let cursorDecorations = [];
     switch (mode) {
