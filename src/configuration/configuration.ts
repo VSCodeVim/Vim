@@ -13,12 +13,12 @@ export interface IHandleKeys {
 }
 
 export interface IModeSpecificStrings {
-  normal: string | undefined;
-  insert: string | undefined;
-  visual: string | undefined;
-  visualline: string | undefined;
-  visualblock: string | undefined;
-  replace: string | undefined;
+  normal: string | string[] | undefined;
+  insert: string | string[] | undefined;
+  visual: string | string[] | undefined;
+  visualline: string | string[] | undefined;
+  visualblock: string | string[] | undefined;
+  replace: string | string[] | undefined;
 }
 
 /**
