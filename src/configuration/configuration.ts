@@ -83,13 +83,6 @@ class ConfigurationClass {
   }
 
   /**
-   * Indent automatically?
-   */
-  autoindent = true;
-
-  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
-
-  /**
    * Keys to be ignored and NOT handled by the extensions
    */
   ignoreKeys: IgnoredKeys =
@@ -107,61 +100,6 @@ class ConfigurationClass {
   userCursor: number | undefined;
 
   neovimPath: string = '';
-
-  /**
-   * Size of a tab character.
-   */
-  @overlapSetting({ codeName: 'tabSize', default: 8 })
-  tabstop: number;
-
-  /**
-   * Use spaces when the user presses tab?
-   */
-  @overlapSetting({ codeName: 'insertSpaces', default: false })
-  expandtab: boolean;
-}
-
-function overlapSetting(args: {
-  codeName: string;
-  default: OptionValue;
-  codeValueMapping?: ValueMapping;
-}) {
-  return function (target: any, propertyKey: string) {
-    Object.defineProperty(target, propertyKey, {
-      get: function () {
-        if (this['_' + propertyKey] !== undefined) {
-          return this['_' + propertyKey];
-        }
-
-        if (args.codeValueMapping) {
-          let val = vscode.workspace.getConfiguration('editor').get(args.codeName);
-
-          if (val !== undefined) {
-            return args.codeValueMapping[val as string];
-          }
-        } else {
-          return vscode.workspace.getConfiguration('editor').get(args.codeName, args.default);
-        }
-      },
-      set: async function (value) {
-        this['_' + propertyKey] = value;
-
-        if (value === undefined || Globals.isTesting) {
-          return;
-        }
-
-        let codeValue = value;
-
-        if (args.codeValueMapping) {
-          codeValue = args.codeValueMapping[value];
-        }
-
-        await vscode.workspace.getConfiguration('editor').update(args.codeName, codeValue, true);
-      },
-      enumerable: true,
-      configurable: true,
-    });
-  };
 }
 
 export const Configuration = ConfigurationClass.getInstance();

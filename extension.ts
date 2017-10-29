@@ -14,7 +14,6 @@ import { NeovimClient } from 'neovim/lib/api/client';
 import { TaskQueue } from 'aurelia-task-queue';
 import { Position } from './src/common/motion/position';
 import { Globals } from './src/globals';
-import { AngleBracketNotation } from './src/notation';
 import { Configuration } from './src/configuration/configuration';
 
 import { spawn } from 'child_process';

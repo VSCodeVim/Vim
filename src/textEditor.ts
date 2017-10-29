@@ -2,7 +2,6 @@
 
 import * as vscode from 'vscode';
 import { Position, PositionDiff } from './common/motion/position';
-import { Configuration } from './configuration/configuration';
 import { Globals } from './globals';
 
 export class TextEditor {
@@ -166,66 +165,6 @@ export class TextEditor {
 
   static isLastLine(position: vscode.Position): boolean {
     return position.line === vscode.window.activeTextEditor!.document.lineCount - 1;
-  }
-
-  static getIndentationLevel(line: string): number {
-    let tabSize = Configuration.tabstop;
-
-    let firstNonWhiteSpace = 0;
-    let checkLine = line.match(/^\s*/);
-    if (checkLine) {
-      firstNonWhiteSpace = checkLine[0].length;
-    }
-
-    let visibleColumn: number = 0;
-
-    if (firstNonWhiteSpace >= 0) {
-      for (const char of line.substring(0, firstNonWhiteSpace)) {
-        switch (char) {
-          case '\t':
-            visibleColumn += tabSize;
-            break;
-          case ' ':
-            visibleColumn += 1;
-            break;
-          default:
-            break;
-        }
-      }
-    } else {
-      return -1;
-    }
-
-    return visibleColumn;
-  }
-
-  static setIndentationLevel(line: string, screenCharacters: number): string {
-    let tabSize = Configuration.tabstop;
-    let insertTabAsSpaces = Configuration.expandtab;
-
-    if (screenCharacters < 0) {
-      screenCharacters = 0;
-    }
-
-    let indentString = '';
-
-    if (insertTabAsSpaces) {
-      indentString += new Array(screenCharacters + 1).join(' ');
-    } else {
-      if (screenCharacters / tabSize > 0) {
-        indentString += new Array(Math.floor(screenCharacters / tabSize) + 1).join('\t');
-      }
-
-      indentString += new Array(screenCharacters % tabSize + 1).join(' ');
-    }
-
-    let firstNonWhiteSpace = 0;
-    let lineCheck = line.match(/^\s*/);
-    if (lineCheck) {
-      firstNonWhiteSpace = lineCheck[0].length;
-    }
-
-    return indentString + line.substring(firstNonWhiteSpace, line.length);
   }
 
   static getPositionAt(offset: number): Position {

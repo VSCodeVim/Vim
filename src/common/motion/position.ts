@@ -3,7 +3,6 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import { TextEditor } from './../../textEditor';
-import { Configuration } from './../../configuration/configuration';
 import { betterEscapeRegex } from './../../util';
 
 /**
@@ -95,7 +94,7 @@ export class PositionDiff {
 }
 
 export class Position extends vscode.Position {
-  private static NonWordCharacters = Configuration.iskeyword!;
+  private static NonWordCharacters = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
   private static NonBigWordCharacters = '';
   private static NonFileCharacters = '"\'`;<>{}[]()';
 
@@ -327,21 +326,6 @@ export class Position extends vscode.Position {
   public setLocation(line: number, character: number): Position {
     let position = new Position(line, character);
     return position;
-  }
-
-  public getLeftTabStop(): Position {
-    if (!this.isLineBeginning()) {
-      let indentationWidth = TextEditor.getIndentationLevel(TextEditor.getLineAt(this).text);
-      let tabSize = vscode.window.activeTextEditor!.options.tabSize as number;
-
-      if (indentationWidth % tabSize > 0) {
-        return new Position(this.line, Math.max(0, this.character - indentationWidth % tabSize));
-      } else {
-        return new Position(this.line, Math.max(0, this.character - tabSize));
-      }
-    }
-
-    return this;
   }
 
   /**
@@ -597,18 +581,6 @@ export class Position extends vscode.Position {
    */
   public getLineBegin(): Position {
     return new Position(this.line, 0);
-  }
-
-  /**
-   * Get the beginning of the line, excluding preceeding whitespace.
-   * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent
-   * is disabled.
-   */
-  public getLineBeginRespectingIndent(): Position {
-    if (!Configuration.autoindent) {
-      return this.getLineBegin();
-    }
-    return this.getFirstLineNonBlankChar();
   }
 
   /**
