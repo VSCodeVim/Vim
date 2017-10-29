@@ -582,7 +582,7 @@
   },
   "displayName": "Vim",
   "engines": {
-    "vscode": "^1.12.0"
+    "vscode": "^1.13.0"
   },
   "galleryBanner": {
     "color": "#e3f4ff",
