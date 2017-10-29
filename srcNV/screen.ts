@@ -20,9 +20,8 @@ export interface IgnoredKeys {
   visual: string[];
 }
 export interface HighlightGroup {
-  hlGroup: string;
   vimColor: number;
-  decorator: vscode.TextEditorDecorationType;
+  decorator?: vscode.TextEditorDecorationType;
 }
 
 export class Screen {
@@ -33,7 +32,10 @@ export class Screen {
   highlighter: any;
   cmdline: vscode.StatusBarItem;
   wildmenu: vscode.StatusBarItem[];
-  highlightGroups: HighlightGroup[];
+  highlightGroups: {
+    IncSearch: HighlightGroup;
+    Search: HighlightGroup;
+  };
 
   constructor(size: number) {
     this.size = size;
@@ -54,25 +56,22 @@ export class Screen {
       );
       // this.wildmenu[i].show();
     }
-    let idx = 1;
-    let hlGroups = [
-      {
-        hlGroup: 'IncSearch',
-        vimColor: idx++,
+    let hlGroups = {
+      IncSearch: {
+        vimColor: 1,
         decorator: vscode.window.createTextEditorDecorationType({
           backgroundColor: new vscode.ThemeColor('editor.findMatchBackground'),
         }),
       },
-      {
-        hlGroup: 'Search',
-        vimColor: idx++,
+      Search: {
+        vimColor: 2,
         decorator: vscode.window.createTextEditorDecorationType({
           backgroundColor: new vscode.ThemeColor('editor.findMatchHighlightBackground'),
         }),
       },
-    ];
-    for (const group of hlGroups) {
-      Vim.nv.command(`highlight ${group.hlGroup} guibg='#00000${group.vimColor}'`);
+    };
+    for (const hlGroup of Object.keys(hlGroups)) {
+      Vim.nv.command(`highlight ${hlGroup} guibg='#00000${hlGroups[hlGroup].vimColor}'`);
     }
     this.highlightGroups = hlGroups;
   }
@@ -211,7 +210,11 @@ export class Screen {
     if (!vscode.workspace.getConfiguration('vim').get('enableHighlights')) {
       return;
     }
-    for (const group of this.highlightGroups) {
+    for (const hlGroup of Object.keys(this.highlightGroups)) {
+      const group = this.highlightGroups[hlGroup];
+      if (group.decorator === undefined) {
+        continue;
+      }
       let decorations: vscode.Range[] = [];
       let result = '';
       for (let i = 0; i < this.size; i++) {
