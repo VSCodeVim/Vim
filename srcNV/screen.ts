@@ -69,6 +69,18 @@ export class Screen {
           backgroundColor: new vscode.ThemeColor('editor.findMatchHighlightBackground'),
         }),
       },
+      multiple_cursors_visual: {
+        vimColor: 3,
+        decorator: vscode.window.createTextEditorDecorationType({
+          backgroundColor: new vscode.ThemeColor('editor.selectionBackground'),
+        }),
+      },
+      multiple_cursors_cursor: {
+        vimColor: 4,
+        decorator: vscode.window.createTextEditorDecorationType({
+          backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
+        }),
+      },
     };
     for (const hlGroup of Object.keys(hlGroups)) {
       Vim.nv.command(`highlight ${hlGroup} guibg='#00000${hlGroups[hlGroup].vimColor}'`);

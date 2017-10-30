@@ -12,7 +12,8 @@ export class RpcRequest {
     const fileURI = vscode.Uri.file(filePath);
     console.log(filePath);
     if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
-      await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(filePath));
+      // await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(filePath));
+      // await NvUtil.changeSelectionFromMode(Vim.mode.mode);
     } else {
       console.log('Opening non-existing files currently not implemented (and not working well).');
       // await vscode.window.showTextDocument(t);
@@ -49,8 +50,8 @@ export class RpcRequest {
   }
 
   static async goToDefinition(args: Array<any>, resp: any) {
-    await vscode.commands.executeCommand('editor.action.goToDeclaration');
     await Vim.nv.command("normal! m'");
+    await vscode.commands.executeCommand('editor.action.goToDeclaration');
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     resp.send('success');
   }

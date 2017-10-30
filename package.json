@@ -25,7 +25,7 @@
               "<c-k>",
               "<c-b>",
               "<c-space>",
-              "<c-bs>"
+              "<c-z>"
             ],
             "normal": [],
             "insert": [
@@ -35,7 +35,10 @@
               "<bs>",
               "<space>",
               "<up>",
-              "<down>"
+              "<down>",
+              "<left>",
+              "<right>",
+              "<c-bs>"
             ],
             "visual": []
           }
