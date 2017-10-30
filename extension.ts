@@ -45,6 +45,7 @@ export namespace Vim {
     bufferTick: -1,
     prevPos: new Position(0, 0),
   };
+  export let numVimChangesToApply = 0;
   export let taskQueue = new TaskQueue();
   export let DEBUG = true;
 }
@@ -125,6 +126,12 @@ export async function activate(context: vscode.ExtensionContext) {
       await nvim.input('<BS>'.repeat(change.rangeLength));
       await nvim.input(change.text);
     } else {
+      // Should handle race conditions. If we have more than one Vim copy to
+      // VSCode that we haven't processed, then we don't copy back to neovim.
+      Vim.numVimChangesToApply--;
+      if (Vim.numVimChangesToApply !== 0) {
+        return;
+      }
       // todo: Optimize this to only replace relevant lines. Probably not worth
       // doing until diffs come in from the neovim side though, since that's the
       // real blocking factor.
@@ -132,25 +139,26 @@ export async function activate(context: vscode.ExtensionContext) {
       // from neovim buffer to vscode buffer). It's a hack. Won't work if your
       // change (refactor) for example, doesn't modify the length of the file
       const isRealChange = change.text.length !== change.rangeLength;
-      if (isRealChange) {
+      if (isRealChange || true) {
         // todo(chilli): Doesn't work if there was just an undo command (undojoin
         // fails and prevents the following command from executing)
 
-        // Doing it atomically in Lua seems to introduce delays when first using it (luaJIT?)
-        // const newPos = vscode.window.activeTextEditor!.selection.active;
-        // let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
-        //   TextEditor.getText().split('\n'),
-        //   newPos.line + 1,
-        //   newPos.character + 1,
-        // ]);
+        const startTime = new Date().getTime();
         const newPos = vscode.window.activeTextEditor!.selection.active;
-        await nvim.command('undojoin');
-        await nvim.buffer.setLines(TextEditor.getText().split('\n'), {
-          start: 0,
-          end: -1,
-          strictIndexing: false,
-        });
-        await NvUtil.setCursorPos(newPos);
+        let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
+          TextEditor.getText().split('\n'),
+          newPos.line + 1,
+          newPos.character + 1,
+        ]);
+        console.log(`timeTaken: ${new Date().getTime() - startTime}`);
+        // const newPos = vscode.window.activeTextEditor!.selection.active;
+        // await nvim.command('undojoin');
+        // await nvim.buffer.setLines(TextEditor.getText().split('\n'), {
+        //   start: 0,
+        //   end: -1,
+        //   strictIndexing: false,
+        // });
+        // await NvUtil.setCursorPos(newPos);
       }
     }
     Vim.prevState.prevPos = curPos;

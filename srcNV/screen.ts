@@ -180,8 +180,8 @@ export class Screen {
         // console.log(name);
         // console.log(args);
       } else {
-        console.log(name);
-        console.log(args);
+        // console.log(name);
+        // console.log(args);
       }
     }
 

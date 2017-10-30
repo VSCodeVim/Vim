@@ -33,6 +33,7 @@ export class NvUtil {
   });
 
   static async copyTextFromNeovim() {
+    Vim.numVimChangesToApply++;
     let lines = await Vim.nv.buffer.lines;
     TextEditor.replace(
       new vscode.Range(
