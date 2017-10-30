@@ -133,17 +133,17 @@ export async function activate(context: vscode.ExtensionContext) {
           // todo(chilli): Doesn't work if there was just an undo command (undojoin
           // fails and prevents the following command from executing)
 
-          const newPos = vscode.window.activeTextEditor!.selection.active;
-          let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
-            TextEditor.getText().split('\n'),
-            newPos.line + 1,
-            newPos.character + 1,
-          ]);
+          // Doing it atomically in Lua seems to introduce delays when first using it (luaJIT?)
           // const newPos = vscode.window.activeTextEditor!.selection.active;
-          // await nvim.command('undojoin');
-          // await nvim.buffer.setLines(TextEditor.getText().split('\n'));
-          // await NvUtil.setCursorPos(newPos);
-          // await NvUtil.updateMode();
+          // let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
+          //   TextEditor.getText().split('\n'),
+          //   newPos.line + 1,
+          //   newPos.character + 1,
+          // ]);
+          const newPos = vscode.window.activeTextEditor!.selection.active;
+          await nvim.command('undojoin');
+          await nvim.buffer.setLines(TextEditor.getText().split('\n'));
+          await NvUtil.setCursorPos(newPos);
         }
         break;
       }
