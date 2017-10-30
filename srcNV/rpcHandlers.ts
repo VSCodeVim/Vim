@@ -22,7 +22,7 @@ export class RpcRequest {
     resp.send('success');
   }
 
-  static async newTabEntered(args: any, resp: any) {
+  static async newTabEntered(_: any, resp: any) {
     await Vim.nv.command('tabonly');
     await resp.send('success');
   }

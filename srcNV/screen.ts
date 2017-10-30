@@ -56,6 +56,7 @@ export class Screen {
       );
       // this.wildmenu[i].show();
     }
+    // todo(chilli): Offer some way of binding these from the client side.
     let hlGroups = {
       IncSearch: {
         vimColor: 1,
@@ -96,6 +97,7 @@ export class Screen {
       await NvUtil.changeSelectionFromMode(Vim.mode.mode);
       await NvUtil.setSettings(VimSettings.normalModeSettings);
     }
+    // todo(chilli): Do this in a smarter way that generalizes to more categories ...
     const ignoreKeys: IgnoredKeys = vscode.workspace
       .getConfiguration('vim')
       .get('ignoreKeys') as IgnoredKeys;
@@ -126,6 +128,7 @@ export class Screen {
       vscode.commands.executeCommand('setContext', `vim.use_${key}`, false);
     }
   }
+
   redraw(changes: Array<any>) {
     for (let change of changes) {
       change = change as Array<any>;

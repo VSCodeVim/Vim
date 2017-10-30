@@ -36,12 +36,12 @@ export namespace Vim {
   export let channelId: number;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let screen: Screen;
-  export let prevS: { bufferTick: number } = {
+  export let prevState: { bufferTick: number } = {
     bufferTick: -1,
   };
   export let numVimChangesToApply = 0;
   export let taskQueue = new TaskQueue();
-  // We're potentially connecting to an already existing terminal instance, so externalized ui won't work.
+  // We're connecting to an already existing terminal instance, so externalized ui won't work.
   export let DEBUG: boolean;
 }
 
@@ -137,7 +137,7 @@ end
   await Vim.nv.lua(code, []);
   await nvim.command('autocmd!');
 
-  // todo(chilli): Draw this map just from RPCHandlers and a decorator.
+  // todo(chilli): Create this map just from RPCHandlers and a decorator.
   const autocmdMap: { [autocmd: string]: string } = {
     BufWriteCmd: 'writeBuf',
     QuitPre: 'closeBuf',
@@ -157,9 +157,9 @@ end
   // await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
 
   await NvUtil.setSettings(['noswapfile', 'hidden']);
-  nvim.on('notification', (y: any, x: any) => {
-    if (vscode.window.activeTextEditor && y === 'redraw') {
-      Vim.screen.redraw(x);
+  nvim.on('notification', (method: any, args: any) => {
+    if (vscode.window.activeTextEditor && method === 'redraw') {
+      Vim.screen.redraw(args);
     }
   });
 
