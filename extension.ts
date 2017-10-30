@@ -55,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
     const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
-    await nvim.command(`noautocmd edit! ${active_editor_file}`);
+    await nvim.command(`edit! ${active_editor_file}`);
     await NvUtil.copyTextFromNeovim();
     await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
     await NvUtil.setSettings(await VimSettings.enterFileSettings());
