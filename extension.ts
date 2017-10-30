@@ -1,11 +1,5 @@
 'use strict';
 
-/**
- * Extension.ts is a lightweight wrapper around ModeHandler. It converts key
- * events to their string names and passes them on to ModeHandler via
- * handleKeyEvent().
- */
-
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as _ from 'lodash';
@@ -22,6 +16,7 @@ import { RpcRequest } from './srcNV/rpcHandlers';
 import { TextEditor } from './src/textEditor';
 import { Screen, IgnoredKeys } from './srcNV/screen';
 import { VimSettings } from './srcNV/vimSettings';
+import { VscHandlers } from './srcNV/vscHandlers';
 
 interface VSCodeKeybinding {
   key: string;
@@ -41,129 +36,16 @@ export namespace Vim {
   export let channelId: number;
   export let mode: { mode: string; blocking: boolean } = { mode: 'n', blocking: false };
   export let screen: Screen;
-  export let prevState: { bufferTick: number; prevPos: Position } = {
+  export let prevS: { bufferTick: number } = {
     bufferTick: -1,
-    prevPos: new Position(0, 0),
   };
   export let numVimChangesToApply = 0;
   export let taskQueue = new TaskQueue();
-  export let DEBUG = true;
+  // We're potentially connecting to an already existing terminal instance, so externalized ui won't work.
+  export let DEBUG: boolean;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
-  async function handleActiveTextEditorChange() {
-    if (vscode.window.activeTextEditor === undefined) {
-      return;
-    }
-    const active_editor_file = vscode.window.activeTextEditor!.document.fileName;
-    await nvim.command(`edit! ${active_editor_file}`);
-    await NvUtil.copyTextFromNeovim();
-    await NvUtil.setCursorPos(vscode.window.activeTextEditor!.selection.active);
-    await NvUtil.setSettings(await VimSettings.enterFileSettings());
-    await NvUtil.changeSelectionFromMode(Vim.mode.mode);
-  }
-
-  async function handleTextDocumentChange(e: vscode.TextDocumentChangeEvent) {
-    if (e.contentChanges.length === 0) {
-      return;
-    }
-    const change = e.contentChanges[0];
-    const changeBegin = Position.FromVSCodePosition(change.range.start);
-    const changeEnd = Position.FromVSCodePosition(change.range.end);
-    const curPos = Position.FromVSCodePosition(vscode.window.activeTextEditor!.selection.active);
-    const curSel = vscode.window.activeTextEditor!.selection;
-    const docEnd = new Position(0, 0).getDocumentEnd();
-    // This ugly if statement is to differentiate the "real" vscode changes that
-    // should be included in dot repeat(like autocomplete, auto-close parens,
-    // all regular typing, etc.) from the vscode changes that should not be
-    // included (the entire buffer syncing, autoformatting, etc.)
-
-    const isInsertModeChange = () => {
-      if (e.contentChanges.length > 1 || vscode.window.activeTextEditor!.selections.length > 1) {
-        return false;
-      }
-      if (Vim.mode.mode !== 'i') {
-        return false;
-      }
-      // Handles the case where we press backsapce at the beginning of a line.
-      if (change.text === '' && changeEnd.character === 0 && change.rangeLength === 1) {
-        return true;
-      }
-      // If the change is spanning multiple lines then it's almost definitely
-      // not an insert mode change (except for a couple of special cases.)
-      if (!(changeBegin.line === curPos.line && changeBegin.line === changeEnd.line)) {
-        return false;
-      }
-      // Mainly for mouse cursor selection/multicursor stuff.
-      if (
-        curSel.active.line !== curSel.anchor.line ||
-        curSel.active.character !== curSel.anchor.character
-      ) {
-        return false;
-      }
-      // Tries to handle the case about editing on the first line.
-      if (changeBegin.line === 0 && changeBegin.character === 0 && change.rangeLength !== 0) {
-        if (change.text[change.text.length - 1] === '\n') {
-          return false;
-        } else if (TextEditor.getLineCount() === 1) {
-          return false;
-        }
-      }
-      return true;
-    };
-    await NvUtil.updateMode();
-    if (isInsertModeChange()) {
-      if (!Vim.mode.blocking) {
-        const nvPos = await NvUtil.getCursorPos();
-        if (nvPos.line !== curPos.line) {
-          await NvUtil.setCursorPos(curPos);
-        } else {
-          // Is necessary for parentheses autocompletion but causes issues
-          // when non-atomic with fast text.
-          await NvUtil.ctrlGMove(nvPos.character, changeEnd.character);
-        }
-      }
-      await nvim.input('<BS>'.repeat(change.rangeLength));
-      await nvim.input(change.text);
-    } else {
-      // Should handle race conditions. If we have more than one Vim copy to
-      // VSCode that we haven't processed, then we don't copy back to neovim.
-      Vim.numVimChangesToApply--;
-      if (Vim.numVimChangesToApply !== 0) {
-        return;
-      }
-      // todo: Optimize this to only replace relevant lines. Probably not worth
-      // doing until diffs come in from the neovim side though, since that's the
-      // real blocking factor.
-      // todo(chilli):  Tests if change is a change that replaces the entire text (ie: the copy
-      // from neovim buffer to vscode buffer). It's a hack. Won't work if your
-      // change (refactor) for example, doesn't modify the length of the file
-      const isRealChange = change.text.length !== change.rangeLength;
-      if (isRealChange || true) {
-        // todo(chilli): Doesn't work if there was just an undo command (undojoin
-        // fails and prevents the following command from executing)
-
-        const startTime = new Date().getTime();
-        const newPos = vscode.window.activeTextEditor!.selection.active;
-        let t = await Vim.nv.lua('return _vscode_copy_text(...)', [
-          TextEditor.getText().split('\n'),
-          newPos.line + 1,
-          newPos.character + 1,
-        ]);
-        console.log(`timeTaken: ${new Date().getTime() - startTime}`);
-        // const newPos = vscode.window.activeTextEditor!.selection.active;
-        // await nvim.command('undojoin');
-        // await nvim.buffer.setLines(TextEditor.getText().split('\n'), {
-        //   start: 0,
-        //   end: -1,
-        //   strictIndexing: false,
-        // });
-        // await NvUtil.setCursorPos(newPos);
-      }
-    }
-    Vim.prevState.prevPos = curPos;
-  }
-
   vscode.workspace.onDidCloseTextDocument(async event => {
     const deleted_file = event.fileName;
     let buf_id = await nvim.call('bufnr', [`^${deleted_file}$`]);
@@ -173,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // await nvim.command(`noautocmd ${buf_id}bw!`);
   });
 
-  vscode.window.onDidChangeActiveTextEditor(handleActiveTextEditorChange, this);
+  vscode.window.onDidChangeActiveTextEditor(VscHandlers.handleActiveTextEditorChange, this);
 
   vscode.window.onDidChangeTextEditorSelection(async e => {
     if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
@@ -182,63 +64,18 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }
   });
-  vscode.workspace.onDidChangeTextDocument(handleTextDocumentChange);
+  vscode.workspace.onDidChangeTextDocument(VscHandlers.handleTextDocumentChange);
 
   // Event to update active configuration items when changed without restarting vscode
   vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
     Configuration.updateConfiguration();
   });
 
-  // tslint:disable-next-line:no-unused-variable
-  async function handleSimple(key: string) {
-    await nvim.input(key);
-  }
-
-  async function handleKeyEventNV(key: string) {
-    const prevMode = Vim.mode.mode;
-    const prevBlocking = Vim.mode.blocking;
-    async function input(k: string) {
-      await nvim.input(k === '<' ? '<lt>' : k);
-      await NvUtil.updateMode();
-      if (Vim.mode.mode === 'r') {
-        await nvim.input('<CR>');
-      }
-      // Optimization that makes movement very smooth. However, occasionally
-      // makes it more difficult to debug so it's turned off for now.
-      // const curTick = await Vim.nv.buffer.changedtick;
-      // if (curTick === Vim.prevState.bufferTick) {
-      //   await NvUtil.changeSelectionFromMode(Vim.mode.mode);
-      //   return;
-      // }
-      // Vim.prevState.bufferTick = curTick;
-
-      const curPos = await NvUtil.getCursorPos();
-      const startPos = await NvUtil.getSelectionStartPos();
-      const curWant = await NvUtil.getCurWant();
-      NvUtil.changeSelectionFromModeSync(Vim.mode.mode, curPos, startPos, curWant);
-      await NvUtil.copyTextFromNeovim();
-      NvUtil.changeSelectionFromModeSync(Vim.mode.mode, curPos, startPos, curWant);
-    }
-    if (prevMode !== 'i') {
-      await input(key);
-    } else {
-      if (key.length > 1) {
-        await input(key);
-      } else {
-        await vscode.commands.executeCommand('default:type', { text: key });
-      }
-    }
-
-    await vscode.commands.executeCommand('setContext', 'vim.mode', Vim.mode.mode);
-  }
-
   overrideCommand(context, 'type', async args => {
     Vim.taskQueue.queueMicroTask(() => {
-      handleKeyEventNV(args.text);
+      VscHandlers.handleKeyEventNV(args.text);
     });
   });
-
-  await vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
 
   const keysToBind = packagejson.contributes.keybindings;
   const ignoreKeys = Configuration.ignoreKeys;
@@ -250,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('setContext', `vim.use_${key.vimKey}`, true);
     registerCommand(context, key.command, () => {
       Vim.taskQueue.queueMicroTask(() => {
-        handleKeyEventNV(`${key.vimKey}`);
+        VscHandlers.handleKeyEventNV(`${key.vimKey}`);
       });
     });
   }
@@ -276,8 +113,10 @@ export async function activate(context: vscode.ExtensionContext) {
   let nvim: NeovimClient;
   if (fs.existsSync('/tmp/nvim') && fs.lstatSync('/tmp/nvim').isSocket()) {
     nvim = attach({ socket: '/tmp/nvim' });
+    Vim.DEBUG = true;
   } else {
     nvim = attach({ proc: proc });
+    Vim.DEBUG = false;
   }
   Vim.nv = nvim;
 
@@ -297,12 +136,15 @@ end
 
   await Vim.nv.lua(code, []);
   await nvim.command('autocmd!');
+
+  // todo(chilli): Draw this map just from RPCHandlers and a decorator.
   const autocmdMap: { [autocmd: string]: string } = {
     BufWriteCmd: 'writeBuf',
     QuitPre: 'closeBuf',
     BufEnter: 'enterBuf',
     TabNewEntered: 'newTabEntered',
   };
+
   for (const autocmd of Object.keys(autocmdMap)) {
     await nvim.command(
       `autocmd ${autocmd} * :call rpcrequest(${Vim.channelId}, "${autocmdMap[
@@ -312,7 +154,7 @@ end
   }
 
   // Overriding commands to handle them on the vscode side.
-  await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
+  // await nvim.command(`nnoremap gd :call rpcrequest(${Vim.channelId},"goToDefinition")<CR>`);
 
   await NvUtil.setSettings(['noswapfile', 'hidden']);
   nvim.on('notification', (y: any, x: any) => {
@@ -331,7 +173,7 @@ end
   });
 
   if (vscode.window.activeTextEditor) {
-    await handleActiveTextEditorChange();
+    await VscHandlers.handleActiveTextEditorChange();
   }
 }
 
@@ -341,11 +183,6 @@ function overrideCommand(
   callback: (...args: any[]) => any
 ) {
   let disposable = vscode.commands.registerCommand(command, async args => {
-    if (!Globals.active) {
-      await vscode.commands.executeCommand('default:' + command, args);
-      return;
-    }
-
     if (!vscode.window.activeTextEditor) {
       return;
     }
