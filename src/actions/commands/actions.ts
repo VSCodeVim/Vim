@@ -3227,7 +3227,6 @@ class ActionGoToInsertVisualBlockModeAppend extends BaseCommand {
           text: TextEditor.setIndentationLevel(line, end.character),
           start: new Position(end.line, 0),
           end: new Position(end.line, end.character),
-          position: new Position(end.line, 0),
         });
       }
       vimState.allCursors.push(new Range(end, end));
