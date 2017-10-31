@@ -67,7 +67,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidChangeTextDocument(VscHandlers.handleTextDocumentChange);
 
   // Event to update active configuration items when changed without restarting vscode
-  vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
+  vscode.workspace.onDidChangeConfiguration((e: void) => {
     Configuration.updateConfiguration();
   });
 
