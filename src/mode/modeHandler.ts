@@ -1052,7 +1052,7 @@ export class ModeHandler implements vscode.Disposable {
     if (vimState.currentMode === ModeName.Visual) {
       vimState.allCursors = vimState.allCursors.map(
         x =>
-          x.start.isEarlierThan(x.stop)
+          x.start.isBeforeOrEqual(x.stop)
             ? x.withNewStop(
                 x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
               )
