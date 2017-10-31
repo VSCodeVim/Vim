@@ -1652,7 +1652,7 @@ class CommandOpenFold extends CommandFold {
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand('editor.unfold', {
       levels: timesToRepeat,
-      direction: 'up',
+      direction: 'down',
     });
 
     return vimState;
