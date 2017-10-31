@@ -904,6 +904,8 @@ class CommandOverrideCopy extends BaseCommand {
       for (const { line } of Position.IterateLine(vimState)) {
         text += line + '\n';
       }
+      // Remove newline for last line
+      text = text.slice(0, text.length - 1);
     } else if (vimState.currentMode === ModeName.Insert) {
       text = vimState.editor.selections
         .map(selection => {
@@ -1224,14 +1226,17 @@ export class PutCommand extends BaseCommand {
     if (register.registerMode === RegisterMode.CharacterWise) {
       textToAdd = text;
       whereToAddText = dest;
-    } else if (
-      vimState.currentMode === ModeName.Visual &&
-      register.registerMode === RegisterMode.LineWise
-    ) {
+    } else if (vimState.currentMode === ModeName.Visual) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
       textToAdd = '\n' + text + '\n';
       whereToAddText = dest;
+      // } else if (vimState.currentMode === ModeName.VisualLine) {
+    } else if (register.registerMode === RegisterMode.LineWise) {
+      // Strip trailing newline if linewise
+      text = text.slice(0, text.length - 1);
+      textToAdd = '\n' + text;
+      whereToAddText = dest.getLineEnd();
     } else {
       if (adjustIndent) {
         // Adjust indent to current line
@@ -1462,18 +1467,16 @@ export class PutCommandVisual extends BaseCommand {
     // selection first than insert
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
+      const oldMode = vimState.currentMode;
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
         false
       );
-      // to ensure, that the put command nows this is
-      // an linewise register insertion in visual mode
-      let oldMode = deleteResult.currentMode;
-      deleteResult.currentMode = ModeName.Visual;
-      deleteResult = await new PutCommand().exec(start, deleteResult, true);
       deleteResult.currentMode = oldMode;
+      deleteResult = await new PutCommand().exec(start, deleteResult, true);
+      deleteResult.currentMode = ModeName.Normal;
       return deleteResult;
     }
 

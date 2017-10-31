@@ -27,12 +27,12 @@ export class RegisterCommand extends node.CommandBase {
       result = result.actionsRun.map(x => x.keysPressed.join('')).join('');
     }
 
+    result = result.replace(/\n/g, '\\n');
     return result;
   }
 
   async displayRegisterValue(register: string): Promise<void> {
     let result = await this.getRegisterDisplayValue(register);
-    result = result.replace(/\n/g, '\\n');
     vscode.window.showInformationMessage(`${register} ${result}`);
   }
 

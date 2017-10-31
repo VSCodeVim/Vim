@@ -261,14 +261,15 @@ export class YankOperator extends BaseOperator {
     }
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
-      end = end.getLineEnd();
+      end = end.getLineEndIncludingEOL().getRightThroughLineBreaks();
     }
 
     let text = TextEditor.getText(new vscode.Range(start, end));
 
     // If we selected the newline character, add it as well.
+    // If this is the last line and character, append newline as well
     if (
-      vimState.currentMode === ModeName.Visual &&
+      (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) &&
       end.character === TextEditor.getLineAt(end).text.length + 1
     ) {
       text = text + '\n';
@@ -593,6 +594,9 @@ export class YankVisualBlockMode extends BaseOperator {
     for (const { line } of Position.IterateLine(vimState)) {
       toCopy += line + '\n';
     }
+
+    // Remove newline for last line
+    toCopy = toCopy.slice(0, toCopy.length - 1);
 
     Register.put(toCopy, vimState, this.multicursorIndex);
 

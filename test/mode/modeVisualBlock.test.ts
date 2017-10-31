@@ -106,6 +106,13 @@ suite('Mode Visual Block', () => {
     end: ['t|e', 'te'],
   });
 
+  newTest({
+    title: 'Can handle simple one wordyank and paste',
+    start: ['|test'],
+    keysPressed: '<C-v>3lyp',
+    end: ['t|testest'],
+  });
+
   suite('Non-darwin <C-c> tests', () => {
     if (process.platform === 'darwin') {
       return;
