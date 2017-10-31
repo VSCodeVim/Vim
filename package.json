@@ -29,8 +29,6 @@
             ],
             "normal": [],
             "insert": [
-              "<c-c>",
-              "<c-a>",
               "<tab>",
               "<bs>",
               "<space>",

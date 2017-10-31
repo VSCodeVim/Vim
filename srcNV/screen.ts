@@ -190,12 +190,8 @@ export class Screen {
 
     // If nvim is connected to a TUI, then we can't get external ui for cmdline/wildmenu.
     if (Vim.DEBUG) {
-      if (Vim.mode.mode === 'c' || '-:'.indexOf(this.term[this.size - 1][0].v) !== -1) {
-        this.cmdline.text = this.term[this.size - 1].map(x => x.v).join('');
-        this.cmdline.show();
-      } else {
-        this.cmdline.text = '';
-      }
+      this.cmdline.text = this.term[this.size - 1].map(x => x.v).join('');
+      this.cmdline.show();
     }
     const wildmenuText = this.term[this.size - 2]
       .map(x => x.v)
