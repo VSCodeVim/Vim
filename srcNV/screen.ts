@@ -130,6 +130,7 @@ export class Screen {
   }
 
   async redraw(changes: Array<any>) {
+    let highlightsChanged = false;
     for (let change of changes) {
       change = change as Array<any>;
       const name = change[0];
@@ -142,6 +143,7 @@ export class Screen {
           this.term[this.y][this.x + i].v = ' ';
           this.term[this.y][this.x + i].highlight = {};
         }
+        highlightsChanged = true;
       } else if (name === 'put') {
         for (const cs of args) {
           for (const c of cs) {
@@ -150,6 +152,7 @@ export class Screen {
             this.x += 1;
           }
         }
+        highlightsChanged = true;
       } else if (name === 'highlight_set') {
         this.highlighter = args[args.length - 1][0];
       } else if (name === 'mode_change') {
@@ -218,7 +221,7 @@ export class Screen {
         this.wildmenu[i].hide();
       }
     }
-    if (!vscode.workspace.getConfiguration('vim').get('enableHighlights')) {
+    if (!vscode.workspace.getConfiguration('vim').get('enableHighlights') || !highlightsChanged) {
       return;
     }
     let curPos = await NvUtil.getCursorPos();
