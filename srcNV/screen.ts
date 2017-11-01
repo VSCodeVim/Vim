@@ -129,7 +129,7 @@ export class Screen {
     }
   }
 
-  redraw(changes: Array<any>) {
+  async redraw(changes: Array<any>) {
     for (let change of changes) {
       change = change as Array<any>;
       const name = change[0];
@@ -221,6 +221,9 @@ export class Screen {
     if (!vscode.workspace.getConfiguration('vim').get('enableHighlights')) {
       return;
     }
+    let curPos = await NvUtil.getCursorPos();
+    let yOffset = curPos.line - ((await Vim.nv.call('winline')) - 1);
+    let xOffset = curPos.character - ((await Vim.nv.call('wincol')) - 1);
     for (const hlGroup of Object.keys(this.highlightGroups)) {
       const group = this.highlightGroups[hlGroup];
       if (group.decorator === undefined) {
@@ -239,7 +242,10 @@ export class Screen {
           } else if (isRange && !(this.term[i][j].highlight.background === group.vimColor)) {
             isRange = false;
             decorations.push(
-              new vscode.Range(new vscode.Position(i, start), new vscode.Position(i, j))
+              new vscode.Range(
+                new vscode.Position(i + yOffset, start + xOffset),
+                new vscode.Position(i + yOffset, j + xOffset)
+              )
             );
           }
         }

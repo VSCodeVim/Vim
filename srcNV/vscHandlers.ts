@@ -114,6 +114,7 @@ export class VscHandlers {
     } else {
       // Should handle race conditions. If we have more than one Vim copy to
       // VSCode that we haven't processed, then we don't copy back to neovim.
+      // NVM. This doesn't actually work as is.
       Vim.numVimChangesToApply--;
       if (Vim.numVimChangesToApply !== 0) {
         return;
