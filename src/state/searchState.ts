@@ -15,6 +15,7 @@ export enum SearchDirection {
 export class SearchState {
   private static readonly MAX_SEARCH_RANGES = 1000;
   private static specialCharactersRegex: RegExp = /[\-\[\]{}()*+?.,\\\^$|#\s]/g;
+  private static caseOverrideRegex: RegExp = /\\[Cc]/g;
   public previousMode = ModeName.Normal;
 
   private _matchRanges: vscode.Range[] = [];
@@ -78,12 +79,20 @@ export class SearchState {
         ignorecase = false;
       }
 
+      let ignorecaseOverride = search.match(SearchState.caseOverrideRegex);
       let searchRE = search;
+
+      if (ignorecaseOverride) {
+        // Vim strips all \c's but uses the behavior of the first one.
+        searchRE = search.replace(SearchState.caseOverrideRegex, '');
+        ignorecase = ignorecaseOverride[0][1] === 'c';
+      }
+
       if (!this.isRegex) {
         searchRE = search.replace(SearchState.specialCharactersRegex, '\\$&');
       }
 
-      const regexFlags = ignorecase ? 'gi' : 'g';
+      const regexFlags = ignorecase ? 'gim' : 'gm';
 
       let regex: RegExp;
       try {
