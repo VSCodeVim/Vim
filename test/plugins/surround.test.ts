@@ -70,4 +70,18 @@ suite('surround plugin', () => {
     keysPressed: 'dst',
     end: ['first li|ne test'],
   });
+
+  newTest({
+    title: 'change surround brackets at end of line',
+    start: ['func() |{', '}'],
+    keysPressed: 'cs{]',
+    end: ['func() |[', ']'],
+  });
+
+  newTest({
+    title: 'changing brackets with surround works again',
+    start: ['func() {', '    |foo()', '}'],
+    keysPressed: 'cs{[',
+    end: ['func() [ ', '    |foo()', ' ]'],
+  });
 });

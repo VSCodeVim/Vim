@@ -835,4 +835,13 @@ suite('Mode Visual', () => {
       assertEqualLines(['oneone two three']);
     });
   });
+
+  suite('vi{ will go to end of second to last line', () => {
+    newTest({
+      title: 'select',
+      start: ['    func() {', '    |    hi;', '        alw;', '    }'],
+      keysPressed: 'vi{yGP',
+      end: ['    func() {', '        hi;', '        alw;', '|        hi;', '        alw;', '    }'],
+    });
+  });
 });
