@@ -862,6 +862,38 @@ class MoveDownByScreenLineVisualLine extends MoveByScreenLine {
 }
 
 @RegisterAction
+class MoveUpByScreenLineVisualBlock extends BaseMovement {
+  modes = [ModeName.VisualBlock];
+  keys = [['g', 'k'], ['g', '<up>']];
+  doesntChangeDesiredColumn = true;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    return position.getUp(vimState.desiredColumn);
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return position.getUp(position.getLineEnd().character);
+  }
+}
+
+@RegisterAction
+class MoveDownByScreenLineVisualBlock extends BaseMovement {
+  modes = [ModeName.VisualBlock];
+  keys = [['g', 'j'], ['g', '<down>']];
+  doesntChangeDesiredColumn = true;
+
+  public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
+    return position.getDown(vimState.desiredColumn);
+  }
+
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+    return position.getDown(position.getLineEnd().character);
+  }
+}
+
+@RegisterAction
 class MoveScreenToRight extends MoveByScreenLine {
   modes = [ModeName.Insert, ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ['z', 'h'];
