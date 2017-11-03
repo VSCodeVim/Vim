@@ -346,7 +346,11 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+  if (Configuration.startDisabled && Globals.active) {
+    vscode.commands.executeCommand('toggleVim');
+  } else {
+    vscode.commands.executeCommand('setContext', 'vim.active', Globals.active);
+  }
 
   // Clear boundKeyCombinations array incase there are any entries in it so
   // that we have a clean list of keys with no duplicates

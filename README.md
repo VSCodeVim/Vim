@@ -197,6 +197,9 @@ We have removed this option, due to it making VSCodeVim's performance suffer imm
         "replace": "block-outline"
     }
 ```
+#### `"vim.startDisabled"`
+* In new editors, VSCodeVim will start in "Disabled" mode.
+* Type: Boolean (Default: `false`)
 
 ### Neovim Integration
 
@@ -533,4 +536,4 @@ This project is maintained by a group of awesome [people](https://github.com/VSC
 * Thanks to @Metamist for implementing EasyMotion!
 * Thanks to @sectioneight for implementing text objects!
 * Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
-* Shoutout to @chillee aka Horace He for his contributions and hard work. 
+* Shoutout to @chillee aka Horace He for his contributions and hard work.

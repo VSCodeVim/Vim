@@ -307,6 +307,11 @@ class ConfigurationClass {
    */
   foldfix = false;
 
+  /**
+   * Determines whether toggleVim starts as disabled or enabled.
+   */
+  startDisabled = false;
+
   enableNeovim = true;
 
   neovimPath = 'nvim';
