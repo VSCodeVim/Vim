@@ -125,8 +125,7 @@ export class BaseAction {
     }
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length >
-        0
+      vimState.recordedState.numberOfKeysInCommandWithoutCountPrefix - keysPressed.length > 0
     ) {
       return false;
     }
@@ -146,8 +145,7 @@ export class BaseAction {
     }
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length >
-        0
+      vimState.recordedState.numberOfKeysInCommandWithoutCountPrefix - keysPressed.length > 0
     ) {
       return false;
     }

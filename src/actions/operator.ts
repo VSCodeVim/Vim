@@ -36,8 +36,7 @@ export class BaseOperator extends BaseAction {
     }
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length >
-        0
+      vimState.recordedState.numberOfKeysInCommandWithoutCountPrefix - keysPressed.length > 0
     ) {
       return false;
     }
@@ -57,8 +56,7 @@ export class BaseOperator extends BaseAction {
     }
     if (
       this.mustBeFirstKey &&
-      vimState.recordedState.getCurrentCommandWithoutCountPrefix().length - keysPressed.length
-        > 0
+      vimState.recordedState.numberOfKeysInCommandWithoutCountPrefix - keysPressed.length > 0
     ) {
       return false;
     }
