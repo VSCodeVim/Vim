@@ -83,6 +83,19 @@ export class Screen {
           backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
         }),
       },
+      EasyMotionTarget: {
+        vimColor: 5,
+        decorator: vscode.window.createTextEditorDecorationType({
+          backgroundColor: 'black',
+          textDecoration: 'none;color: red',
+        }),
+      },
+      EasyMotionShade: {
+        vimColor: 6,
+        decorator: vscode.window.createTextEditorDecorationType({
+          textDecoration: 'none;opacity: 0.3',
+        }),
+      },
     };
     for (const hlGroup of Object.keys(hlGroups)) {
       Vim.nv.command(`highlight ${hlGroup} guibg='#00000${hlGroups[hlGroup].vimColor}'`);
