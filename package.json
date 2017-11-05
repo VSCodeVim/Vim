@@ -528,9 +528,9 @@
           "description": "Does dragging with the mouse put you into visual mode",
           "default": true
         },
-        "vim.startDisabled": {
+        "vim.disableExtension": {
           "type": "boolean",
-          "description": "Start with VSCodeVim disabled (true) or enabled (false).",
+          "description": "Disables the VSCodeVim extension.",
           "default": false
         },
         "vim.enableNeovim": {

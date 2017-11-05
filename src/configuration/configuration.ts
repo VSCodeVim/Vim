@@ -308,9 +308,9 @@ class ConfigurationClass {
   foldfix = false;
 
   /**
-   * Determines whether toggleVim starts as disabled or enabled.
+   * Determines whether VSCodeVim is in Disabled mode or not.
    */
-  startDisabled = false;
+  disableExtension = false;
 
   enableNeovim = true;
 
