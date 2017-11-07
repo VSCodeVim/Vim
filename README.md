@@ -200,7 +200,7 @@ We have removed this option, due to it making VSCodeVim's performance suffer imm
 #### `"vim.disableExtension"`
 * VSCodeVim will be in "Disabled" mode
 * This can be changed at any time using the `toggleVim` command in the Command Palette
-* Note that this is not the same as disabling the VSCodeVim extension
+* Note that this is not the same as disabling the VSCodeVim extension through VS Code
 * Type: Boolean (Default: `false`)
 
 ### Neovim Integration

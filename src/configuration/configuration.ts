@@ -25,8 +25,8 @@ export interface IModeSpecificStrings {
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
  * 2. Named as `vim.{optionName}`, `optionName` is the name we use in Vim.
- * 3. Define a public property in `Configuration `with the same name and a default value.
- *    Or define a private propery and define customized Getter/Setter accessors for it.
+ * 3. Define a public property in `Configuration` with the same name and a default value.
+ *    Or define a private property and define customized Getter/Setter accessors for it.
  *    Always remember to decorate Getter accessor as @enumerable()
  * 4. If user doesn't set the option explicitly
  *    a. we don't have a similar setting in Code, initialize the option as default value.
@@ -35,9 +35,9 @@ export interface IModeSpecificStrings {
  * Vim option override sequence.
  * 1. `:set {option}` on the fly
  * 2. TODO .vimrc.
- * 2. `vim.{option}`
- * 3. VS Code configuration
- * 4. VSCodeVim flavored Vim option default values
+ * 3. `vim.{option}`
+ * 4. VS Code configuration
+ * 5. VSCodeVim flavored Vim option default values
  *
  */
 class ConfigurationClass {
@@ -84,7 +84,7 @@ class ConfigurationClass {
     }
 
     // Get configuration setting for handled keys, this allows user to disable
-    // certain key comboinations
+    // certain key combinations
     const handleKeys = vscode.workspace
       .getConfiguration('vim')
       .get<IHandleKeys[]>('handleKeys', []);
@@ -92,7 +92,7 @@ class ConfigurationClass {
     for (const bracketedKey of this.boundKeyCombinations) {
       // Set context for key that is not used
       // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
-      // Or if user usese vim.handleKeys configuration option to set certain combinations to false
+      // Or if user uses vim.handleKeys configuration option to set certain combinations to false
       // By default, all key combinations are used so start with true
       let useKey = true;
 
@@ -310,7 +310,23 @@ class ConfigurationClass {
   /**
    * Determines whether VSCodeVim is in Disabled mode or not.
    */
-  disableExtension = false;
+  private _disableExtension: boolean | undefined;
+
+  get disableExtension(): boolean | undefined {
+    if (this._disableExtension === undefined) {
+      this.disableExtension = vscode.workspace.getConfiguration('vim').get('disableExtension');
+    }
+    return this._disableExtension;
+  }
+  set disableExtension(isDisabled: boolean | undefined) {
+    this._disableExtension = isDisabled;
+    const config: vscode.WorkspaceConfiguration | undefined = vscode.workspace.getConfiguration(
+      'vim.disableExtension'
+    );
+    if (config) {
+      config.update('vim.disableExtension', isDisabled);
+    }
+  }
 
   enableNeovim = true;
 

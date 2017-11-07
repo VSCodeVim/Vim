@@ -310,8 +310,15 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  async function toggleDisabledMode() {
-    if (Configuration.disableExtension) {
+  /**
+   * Toggles the VSCodeVim extension between Enabled mode and Disabled mode. This
+   * function is activated by calling the 'toggleVim' command from the Command Palette.
+   *
+   * @param isDisabled if true, sets VSCodeVim to Disabled mode; else sets to enabled mode
+   */
+  async function toggleExtension(isDisabled: boolean | undefined) {
+    await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
+    if (isDisabled) {
       let cursorStyle = await vscode.workspace
         .getConfiguration('editor')
         .get('cursorStyle', 'line');
@@ -332,11 +339,9 @@ export async function activate(context: vscode.ExtensionContext) {
         }
         editor.options = options;
       });
-      await vscode.commands.executeCommand('setContext', 'vim.active', false);
       let mh = await getAndUpdateModeHandler();
       mh.setStatusBarText('-- VIM: DISABLED --');
     } else {
-      await vscode.commands.executeCommand('setContext', 'vim.active', true);
       compositionState = new CompositionState();
       modeHandlerToEditorIdentity = {};
       let mh = await getAndUpdateModeHandler();
@@ -346,7 +351,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerCommand(context, 'toggleVim', async () => {
     Configuration.disableExtension = !Configuration.disableExtension;
-    toggleDisabledMode();
+    toggleExtension(Configuration.disableExtension);
   });
 
   // Clear boundKeyCombinations array incase there are any entries in it so
@@ -387,7 +392,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // This is called last because getAndUpdateModeHandler() will change cursor
-  toggleDisabledMode();
+  toggleExtension(Configuration.disableExtension);
 }
 
 function overrideCommand(
