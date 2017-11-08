@@ -7,16 +7,11 @@
 // ${cwd}: the current working directory of the spawned process
 
 {
-  "version": "0.1.0",
-  "command": "gulp",
-  "isShellCommand": true,
-  "suppressTaskName": true,
+  "version": "2.0.0",
   "tasks": [
     {
-      "taskName": "build",
-      "args": [],
-      "isBuildCommand": true,
-      "isBackground": false,
+      "type": "gulp",
+      "task": "default",
       "problemMatcher": "$tsc-watch"
     }
   ]
