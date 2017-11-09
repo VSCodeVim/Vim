@@ -1541,6 +1541,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '/ matches ^ per line',
+    start: ['|  asdf', 'asasdf', 'asdf', 'asdf'],
+    keysPressed: crossPlatformIt('/^asdf\n'),
+    end: ['  asdf', 'asasdf', '|asdf', 'asdf'],
+  });
+
+  newTest({
+    title: '/ matches $ per line',
+    start: ['|asdfjkl', 'asdf  ', 'asdf', 'asdf'],
+    keysPressed: crossPlatformIt('/asdf$\n'),
+    end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
+  });
+
+  newTest({
+    title: '/\\c forces case insensitive search',
+    start: ['|__ASDF', 'asdf'],
+    keysPressed: crossPlatformIt('/\\casdf\n'),
+    end: ['__|ASDF', 'asdf'],
+  });
+
+  newTest({
+    title: '/\\C forces case sensitive search',
+    start: ['|__ASDF', 'asdf'],
+    keysPressed: crossPlatformIt('/\\Casdf\n'),
+    end: ['__ASDF', '|asdf'],
+  });
+
+  newTest({
     title: 'Can do C',
     start: ['export const options = {', '|', '};'],
     keysPressed: 'C',
