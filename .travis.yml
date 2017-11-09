@@ -9,7 +9,7 @@ os:
 language: node_js
 
 node_js:
-- 6.3.1
+- 8.9.1
 
 env:
   global:
