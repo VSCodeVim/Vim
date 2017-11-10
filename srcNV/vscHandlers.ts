@@ -110,7 +110,7 @@ export class VscHandlers {
         }
       }
       await Vim.nv.input('<BS>'.repeat(change.rangeLength));
-      await Vim.nv.input(change.text);
+      await Vim.nv.input(change.text.replace('<', '<lt>'));
     } else {
       // Should handle race conditions. If we have more than one Vim copy to
       // VSCode that we haven't processed, then we don't copy back to neovim.
