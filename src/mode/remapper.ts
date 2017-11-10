@@ -103,6 +103,9 @@ class Remapper {
     }
 
     if (remapping) {
+      // Record length of remapped command
+      vimState.recordedState.numberOfRemappedKeys += remapping.before.length;
+
       // If we remapped e.g. jj to esc, we have to revert the inserted "jj"
 
       if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {

@@ -321,6 +321,11 @@ export class RecordedState {
   public commandList: string[] = [];
 
   /**
+   * The number of keys the user has pressed that have been remapped.
+   */
+  public numberOfRemappedKeys: number = 0;
+
+  /**
    * String representation of the exact keys that the user entered. Used for
    * showcmd.
    */
@@ -356,6 +361,21 @@ export class RecordedState {
     }
 
     return result;
+  }
+
+  /**
+   * lenth of the current command with remappings and the prefixed count excluded.
+   */
+  public get numberOfKeysInCommandWithoutCountPrefix() {
+    return this.getCurrentCommandWithoutCountPrefix().length - this.numberOfRemappedKeys;
+  }
+
+  /**
+   * Reset the command list.
+   */
+  public resetCommandList() {
+    this.commandList = [];
+    this.numberOfRemappedKeys = 0;
   }
 
   /**
@@ -863,7 +883,7 @@ export class ModeHandler implements vscode.Disposable {
       if (!handled) {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
       } else {
-        this._vimState.recordedState.commandList = [];
+        this._vimState.recordedState.resetCommandList();
       }
     } catch (e) {
       console.log('error.stack');
@@ -901,8 +921,6 @@ export class ModeHandler implements vscode.Disposable {
 
     if (result === KeypressState.NoPossibleMatch && !isPotentialRemapping) {
       vimState.recordedState = new RecordedState();
-      vimState.recordedState.commandList = [];
-
       return vimState;
     } else if (result === KeypressState.WaitingOnKeys) {
       return vimState;
@@ -1071,7 +1089,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (ranAction && vimState.currentMode !== ModeName.Insert) {
-      vimState.recordedState.commandList = [];
+      vimState.recordedState.resetCommandList();
     }
 
     ranRepeatableAction =
