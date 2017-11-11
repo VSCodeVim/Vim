@@ -79,13 +79,10 @@ class ConfigurationClass {
     const cursorStyleString = vscode.workspace
       .getConfiguration()
       .get('editor.cursorStyle') as string;
-    this.userCursor = this.cursorStyleFromString(cursorStyleString);
-    if (this.userCursor === undefined) {
-      this.userCursor = this.cursorStyleFromString('line');
-    }
+    this.userCursor = this.cursorStyleFromString(cursorStyleString) || this.cursorStyleFromString('line');
 
-    // Get configuration setting for handled keys, this allows user to disable
-    // certain key combinations
+    // Get configuration setting for handled keys,
+    // this allows user to disable certain key combinations
     const handleKeys = vscode.workspace
       .getConfiguration('vim')
       .get<IHandleKeys[]>('handleKeys', []);
@@ -127,11 +124,7 @@ class ConfigurationClass {
       'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
     };
 
-    if (cursorType[cursorStyle] !== undefined) {
-      return cursorType[cursorStyle];
-    } else {
-      return undefined;
-    }
+    return cursorType[cursorStyle];
   }
 
   /**
