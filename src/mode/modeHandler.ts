@@ -3,7 +3,7 @@ import { SurroundInputMode } from './surroundInputMode';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { EditorIdentity } from './../../extension';
+import { EditorIdentity } from './../../src/editorIdentity';
 import {
   isTextTransformation,
   TextTransformations,

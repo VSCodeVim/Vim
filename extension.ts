@@ -7,6 +7,7 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 import { showCmdLine } from './src/cmd_line/main';
+import { EditorIdentity } from './src/editorIdentity';
 import { ModeHandler } from './src/mode/modeHandler';
 import { taskQueue } from './src/taskQueue';
 import { Position } from './src/common/motion/position';
@@ -36,35 +37,6 @@ const packagejson: {
   };
 } = require('../package.json'); // out/../package.json
 
-export class EditorIdentity {
-  private _fileName: string;
-  private _viewColumn: vscode.ViewColumn;
-
-  constructor(textEditor?: vscode.TextEditor) {
-    this._fileName = (textEditor && textEditor.document.fileName) || '';
-    this._viewColumn = (textEditor && textEditor.viewColumn) || vscode.ViewColumn.One;
-  }
-
-  get fileName() {
-    return this._fileName;
-  }
-
-  get viewColumn() {
-    return this._viewColumn;
-  }
-
-  public hasSameBuffer(identity: EditorIdentity): boolean {
-    return this.fileName === identity.fileName;
-  }
-
-  public isEqual(identity: EditorIdentity): boolean {
-    return this.fileName === identity.fileName && this.viewColumn === identity.viewColumn;
-  }
-
-  public toString() {
-    return this.fileName + this.viewColumn;
-  }
-}
 
 let extensionContext: vscode.ExtensionContext;
 
