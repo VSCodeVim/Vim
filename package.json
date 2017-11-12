@@ -567,7 +567,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
   },
   "dependencies": {
-    "clipboardy": "^1.1.4",
+    "clipboardy": "^1.2.1",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.17.4",
     "neovim-client": "^2.1.0",
@@ -575,7 +575,7 @@
     "untildify": "^3.0.2"
   },
   "devDependencies": {
-    "@types/mocha": "^2.2.43",
+    "@types/mocha": "^2.2.44",
     "@types/node": "^6.0.89",
     "gulp": "^3.9.1",
     "gulp-bump": "^2.8.0",
