@@ -100,7 +100,8 @@ class HistoryStep {
     cursorEnd?: Position[] | undefined;
     marks?: IMark[];
   }) {
-    this.changes = init.changes || [];
+    // This is a bug, but fixing it causes regressions. See PR #2081.
+    this.changes = init.changes = [];
     this.isFinished = init.isFinished || false;
     this.cursorStart = init.cursorStart || undefined;
     this.cursorEnd = init.cursorEnd || undefined;
@@ -607,11 +608,11 @@ export class HistoryTracker {
     }
 
     const newStep = new HistoryStep({
-      changes: changesToUndo,
       isFinished: true,
       cursorStart: [lastChange.start],
       cursorEnd: [lastChange.start],
     });
+    newStep.changes = changesToUndo;
 
     this.historySteps.push(newStep);
 
