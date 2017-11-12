@@ -173,7 +173,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
   vscode.workspace.onDidChangeTextDocument(event => {
-    if (Configuration.disableExtension) {
+    if (Configuration.disableExt) {
       return;
     }
 
@@ -316,12 +316,10 @@ export async function activate(context: vscode.ExtensionContext) {
    *
    * @param isDisabled if true, sets VSCodeVim to Disabled mode; else sets to enabled mode
    */
-  async function toggleExtension(isDisabled: boolean | undefined) {
+  async function toggleExtension(isDisabled: boolean) {
     await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
     if (isDisabled) {
-      let cursorStyle = await vscode.workspace
-        .getConfiguration('editor')
-        .get('cursorStyle', 'line');
+      let cursorStyle = await vscode.workspace.getConfiguration().get('editor.cursorStyle', 'line');
       vscode.window.visibleTextEditors.forEach(editor => {
         let options = editor.options;
         switch (cursorStyle) {
@@ -350,8 +348,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   registerCommand(context, 'toggleVim', async () => {
-    Configuration.disableExtension = !Configuration.disableExtension;
-    toggleExtension(Configuration.disableExtension);
+    Configuration.disableExt = !Configuration.disableExt;
+    toggleExtension(Configuration.disableExt);
   });
 
   // Clear boundKeyCombinations array incase there are any entries in it so
@@ -392,7 +390,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // This is called last because getAndUpdateModeHandler() will change cursor
-  toggleExtension(Configuration.disableExtension);
+  toggleExtension(Configuration.disableExt);
 }
 
 function overrideCommand(
@@ -401,7 +399,7 @@ function overrideCommand(
   callback: (...args: any[]) => any
 ) {
   let disposable = vscode.commands.registerCommand(command, async args => {
-    if (Configuration.disableExtension) {
+    if (Configuration.disableExt) {
       await vscode.commands.executeCommand('default:' + command, args);
       return;
     }
@@ -456,7 +454,7 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
 }
 
 async function handleActiveEditorChange(): Promise<void> {
-  if (Configuration.disableExtension) {
+  if (Configuration.disableExt) {
     return;
   }
 

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { taskQueue } from '../../src/taskQueue';
 import { Globals } from '../../src/globals';
+import { WorkspaceConfiguration, ConfigurationTarget } from 'vscode';
 
 export type OptionValue = number | string | boolean;
 export type ValueMapping = {
@@ -307,25 +308,16 @@ class ConfigurationClass {
    */
   foldfix = false;
 
-  /**
-   * Determines whether VSCodeVim is in Disabled mode or not.
-   */
-  private _disableExtension: boolean | undefined;
+  private disableExtension: boolean = false;
 
-  get disableExtension(): boolean | undefined {
-    if (this._disableExtension === undefined) {
-      this.disableExtension = vscode.workspace.getConfiguration('vim').get('disableExtension');
-    }
-    return this._disableExtension;
+  get disableExt(): boolean {
+    return this.disableExtension;
   }
-  set disableExtension(isDisabled: boolean | undefined) {
-    this._disableExtension = isDisabled;
-    const config: vscode.WorkspaceConfiguration | undefined = vscode.workspace.getConfiguration(
-      'vim.disableExtension'
-    );
-    if (config) {
-      config.update('vim.disableExtension', isDisabled);
-    }
+  set disableExt(isDisabled: boolean) {
+    this.disableExtension = isDisabled;
+    vscode.workspace
+      .getConfiguration('vim')
+      .update('disableExtension', isDisabled, ConfigurationTarget.Global);
   }
 
   enableNeovim = true;
