@@ -303,9 +303,7 @@ class ConfigurationClass {
   }
   set disableExt(isDisabled: boolean) {
     this.disableExtension = isDisabled;
-    vscode.workspace
-      .getConfiguration('vim')
-      .update('disableExtension', isDisabled, ConfigurationTarget.Global);
+    getConfiguration('vim').update('disableExtension', isDisabled, ConfigurationTarget.Global);
   }
 
   enableNeovim = true;
@@ -335,6 +333,15 @@ class ConfigurationClass {
   cmdLineInitialColon = false;
 }
 
+function getConfiguration(section: string): vscode.WorkspaceConfiguration {
+  let resource: vscode.Uri | undefined = undefined;
+  let activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor) {
+    resource = activeTextEditor.document.uri;
+  }
+  return vscode.workspace.getConfiguration(section, resource);
+}
+
 function overlapSetting(args: {
   codeName: string;
   default: OptionValue;
@@ -347,7 +354,7 @@ function overlapSetting(args: {
           return this['_' + propertyKey];
         }
 
-        let val = vscode.workspace.getConfiguration('editor').get(args.codeName, args.default);
+        let val = getConfiguration('editor').get(args.codeName, args.default);
         if (args.codeValueMapping && val !== undefined) {
           val = args.codeValueMapping[val as string];
         }
@@ -368,9 +375,11 @@ function overlapSetting(args: {
             codeValue = args.codeValueMapping[value];
           }
 
-          await vscode.workspace
-            .getConfiguration('editor')
-            .update(args.codeName, codeValue, vscode.ConfigurationTarget.Global);
+          await getConfiguration('editor').update(
+            args.codeName,
+            codeValue,
+            vscode.ConfigurationTarget.Global
+          );
         }, 'config');
       },
       enumerable: true,
