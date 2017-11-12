@@ -61,7 +61,7 @@ Just like real vim, your editor will now be in Normal mode, which is reported to
 
 ### Vim compatibility
 
-All common Vim commands are supported. For an in-depth look at what Vim features are supported, check out the [roadmap](ROADMAP.md). Vimscript isn't supported, so you aren't able to load your `.vimrc` or use `.vim` plugins. You have to replicated these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
+All common Vim commands are supported. For an in-depth look at what Vim features are supported, check out the [roadmap](ROADMAP.md). Vimscript isn't supported, so you aren't able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
 
 ### Mac setup
 
@@ -197,6 +197,11 @@ We have removed this option, due to it making VSCodeVim's performance suffer imm
         "replace": "block-outline"
     }
 ```
+#### `"vim.disableExtension"`
+* VSCodeVim will be in "Disabled" mode
+* This can be changed at any time using the `toggleVim` command in the Command Palette
+* Note that this is not the same as disabling the VSCodeVim extension through VS Code
+* Type: Boolean (Default: `false`)
 
 ### Neovim Integration
 
@@ -533,4 +538,4 @@ This project is maintained by a group of awesome [people](https://github.com/VSC
 * Thanks to @Metamist for implementing EasyMotion!
 * Thanks to @sectioneight for implementing text objects!
 * Special props to [Kevin Coleman](http://kevincoleman.io), who created our awesome logo!
-* Shoutout to @chillee aka Horace He for his contributions and hard work. 
+* Shoutout to @chillee aka Horace He for his contributions and hard work.
