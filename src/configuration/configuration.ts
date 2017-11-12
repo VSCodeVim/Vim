@@ -56,17 +56,17 @@ class ConfigurationClass {
     return ConfigurationClass._instance;
   }
 
-  updateConfiguration() {
+  public updateConfiguration() {
     /**
      * Load Vim options from User Settings.
      */
-    let vimOptions = vscode.workspace.getConfiguration('vim');
+    let vimConfigs = vscode.workspace.getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      const vimOptionValue = vimOptions[option] as any;
-      if (vimOptionValue !== null && vimOptionValue !== undefined) {
-        this[option] = vimOptionValue;
+      const val = vimConfigs[option] as any;
+      if (val !== null && val !== undefined) {
+        this[option] = val;
       }
     }
 
@@ -75,17 +75,9 @@ class ConfigurationClass {
       this.leader = ' ';
     }
 
-    // Get the cursor type from vscode
-    const cursorStyleString = vscode.workspace
-      .getConfiguration()
-      .get('editor.cursorStyle') as string;
-    this.userCursor = this.cursorStyleFromString(cursorStyleString) || this.cursorStyleFromString('line');
-
     // Get configuration setting for handled keys,
     // this allows user to disable certain key combinations
-    const handleKeys = vscode.workspace
-      .getConfiguration('vim')
-      .get<IHandleKeys[]>('handleKeys', []);
+    const handleKeys = vimConfigs.get<IHandleKeys[]>('handleKeys', []);
 
     for (const bracketedKey of this.boundKeyCombinations) {
       // Set context for key that is not used
@@ -95,10 +87,8 @@ class ConfigurationClass {
       let useKey = true;
 
       // Check for configuration setting disabling combo
-      if (handleKeys[bracketedKey] !== undefined) {
-        if (handleKeys[bracketedKey] === false) {
-          useKey = false;
-        }
+      if (handleKeys[bracketedKey] !== undefined && handleKeys[bracketedKey] === false) {
+        useKey = false;
       } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
         // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding.
         // However, we need to still capture <C-c> due to overrideCopy.
@@ -255,10 +245,15 @@ class ConfigurationClass {
   @overlapSetting({ codeName: 'tabSize', default: 8 })
   tabstop: number;
 
+  @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
+  userCursorString: string;
+
   /**
    * Type of cursor user is using native to vscode
    */
-  userCursor: number | undefined;
+  get userCursor(): number | undefined {
+    return this.cursorStyleFromString(this.userCursorString);
+  }
 
   /**
    * Use spaces when the user presses tab?
@@ -354,15 +349,12 @@ function overlapSetting(args: {
           return this['_' + propertyKey];
         }
 
-        if (args.codeValueMapping) {
-          let val = vscode.workspace.getConfiguration('editor').get(args.codeName);
-
-          if (val !== undefined) {
-            return args.codeValueMapping[val as string];
-          }
-        } else {
-          return vscode.workspace.getConfiguration('editor').get(args.codeName, args.default);
+        let val = vscode.workspace.getConfiguration('editor').get(args.codeName, args.default);
+        if (args.codeValueMapping && val !== undefined) {
+          val = args.codeValueMapping[val as string];
         }
+
+        return val;
       },
       set: function(value) {
         this['_' + propertyKey] = value;
@@ -378,7 +370,7 @@ function overlapSetting(args: {
             codeValue = args.codeValueMapping[value];
           }
 
-          await vscode.workspace.getConfiguration('editor').update(args.codeName, codeValue, true);
+          await vscode.workspace.getConfiguration('editor').update(args.codeName, codeValue, vscode.ConfigurationTarget.Global);
         }, 'config');
       },
       enumerable: true,

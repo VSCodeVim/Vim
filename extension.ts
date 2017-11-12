@@ -291,10 +291,9 @@ export async function activate(context: vscode.ExtensionContext) {
   async function toggleExtension(isDisabled: boolean) {
     await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
     if (isDisabled) {
-      let cursorStyle = await vscode.workspace.getConfiguration().get('editor.cursorStyle', 'line');
       vscode.window.visibleTextEditors.forEach(editor => {
         let options = editor.options;
-        switch (cursorStyle) {
+        switch (Configuration.userCursorString) {
           case 'line':
             options.cursorStyle = vscode.TextEditorCursorStyle.Line;
             break;
