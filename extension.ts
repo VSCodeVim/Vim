@@ -52,22 +52,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   let curHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
   if (!curHandler) {
-    if (!Configuration.disableAnnoyingNeovimMessage) {
-      vscode.window
-        .showInformationMessage(
-          'We have now added neovim integration for Ex-commands.\
-      Enable it with vim.enableNeovim in settings',
-          'Never show again'
-        )
-        .then(result => {
-          if (result !== 'Close') {
-            vscode.workspace
-              .getConfiguration('vim')
-              .update('disableAnnoyingNeovimMessage', true, true);
-            Configuration.disableAnnoyingNeovimMessage = true;
-          }
-        });
-    }
     const newModeHandler = await new ModeHandler();
     if (Configuration.enableNeovim) {
       await Neovim.initNvim(newModeHandler.vimState);
