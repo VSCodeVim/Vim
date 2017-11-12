@@ -543,11 +543,6 @@
           "description": "Path to run neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe",
           "default": "nvim"
         },
-        "vim.disableAnnoyingNeovimMessage": {
-          "type": "boolean",
-          "description": "Get rid of that annoying message that shows up everytime you make a new file",
-          "default": false
-        },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
           "description": "Automatically apply the global flag, /g, to substitute commands. When set to true, use /g to mean only first match should be replaced.",
@@ -576,7 +571,6 @@
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.17.4",
     "neovim-client": "^2.1.0",
-    "prettier": "^1.7.4",
     "promised-neovim-client": "^2.0.2",
     "untildify": "^3.0.2"
   },
@@ -593,6 +587,7 @@
     "gulp-typings": "^2.0.4",
     "merge-stream": "^1.0.1",
     "mocha": "^4.0.1",
+    "prettier": "^1.8.2",
     "tslint": "^5.7.0",
     "typescript": "^2.5.3",
     "vscode": "^1.1.6"
