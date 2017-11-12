@@ -37,7 +37,6 @@ const packagejson: {
   };
 } = require('../package.json'); // out/../package.json
 
-
 let extensionContext: vscode.ExtensionContext;
 
 /**

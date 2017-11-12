@@ -370,7 +370,9 @@ function overlapSetting(args: {
             codeValue = args.codeValueMapping[value];
           }
 
-          await vscode.workspace.getConfiguration('editor').update(args.codeName, codeValue, vscode.ConfigurationTarget.Global);
+          await vscode.workspace
+            .getConfiguration('editor')
+            .update(args.codeName, codeValue, vscode.ConfigurationTarget.Global);
         }, 'config');
       },
       enumerable: true,
