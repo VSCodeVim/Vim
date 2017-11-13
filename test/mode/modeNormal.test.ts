@@ -1267,6 +1267,55 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'U'",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>U',
+    end: ['|'],
+  });
+
+  newTest({
+    title: "Can handle 'U' for multiple changes",
+    start: ['|'],
+    keysPressed: 'idef<Esc>aghi<Esc>U',
+    end: ['|'],
+  });
+
+  newTest({
+    title: "Can handle 'U' for new line below",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>odef<Esc>U',
+    end: ['abc', '|'],
+  });
+
+  newTest({
+    title: "Can handle 'U' for new line above",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>Odef<Esc>U',
+    end: ['|', 'abc'],
+  });
+
+  newTest({
+    title: "Can handle 'U' for consecutive changes only",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>odef<Esc>kAghi<Esc>U',
+    end: ['ab|c', 'def'],
+  });
+
+  newTest({
+    title: "Can handle 'u' to undo 'U'",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>Uu',
+    end: ['|abc'],
+  });
+
+  newTest({
+    title: "Can handle 'U' to undo 'U'",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>UU',
+    end: ['|abc'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
