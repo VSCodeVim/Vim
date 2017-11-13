@@ -3,7 +3,6 @@
 
 [![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
 [![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
-<script async defer src="https://vscodevim-slackin.azurewebsites.net/slackin.js"></script>
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables:
 
