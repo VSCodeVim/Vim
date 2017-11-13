@@ -15,6 +15,10 @@ env:
   global:
     secure: "TBppwshoN5d6uhzTEgcx9KB01z9jUVG3TjlbNioTo7IygfJsjWHdTwQlt/mpfXMjwo5lQ9h0eLghKUtEhpJqiyH8Mtg7ZkYJiR0ZV1UTrmM1qZJLo2rhrO+7twWilZ84TUBFMYXcgTimXkwLwA9Jh56KHi4P32NNUneImYDnL18yNj6oSul7r4Z951o1ikbgt7lirXgybe7NmixkATE7j1Obf9DW+9s287Z/LVE3a9O7tQLvow+m3NuktWGbr+pQu4siMbD96WpA8tvYvJEHnS0g66d3u7FqzAabR4E1eZbzjKDx8SbZ45rfdFuhy6YyV0xNFa2jm/N8MKjttNezLZCvLEveHKaNl522zwx/niMDlkpvnNlFLmwuyqnw429NRT/SEWhuOdQOQdzOju1hUWAF/lIodAyhqeF9yGX8H+2QHHxaS7tgDllVslz03695sqXye5OAHJifkzfNX5Grr6K3cEPSD955ijGC0FB5ejB+pBK+KUzd1tlzys/1Q6KPwN9oRyoeude7fDDkvH2jY9ZyrfImqUBKUlGFFIa7gEBAl0JhJc+tGtvYySHMhs2KC5PSCf9OrPvaI02bJvhi4Xnjfk9OGn3bmVOCwUcGZieJMxU8chBxf+YQITv5b0SBjKPZZd2QuNUYlxKlFZbGvbjvOSQUcRumFKwCgbfV79E="
 
+addons:
+  apt:
+    packages:
+      - libsecret-1-dev
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "linux" ]; then
@@ -26,7 +30,6 @@ before_install:
 install:
 - npm install -g gulp;
 - npm install;
-- sudo apt-get install libsecret-1-dev
 
 script:
 - git ls-tree -r HEAD --name-only | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5
