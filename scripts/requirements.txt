@@ -1,0 +1,3 @@
+beautifulsoup4==4.6.0
+html5lib==0.999999999
+requests==2.18.4
