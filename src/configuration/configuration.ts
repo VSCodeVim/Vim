@@ -57,10 +57,7 @@ class ConfigurationClass {
   }
 
   public updateConfiguration() {
-    /**
-     * Load Vim options from User Settings.
-     */
-    let vimConfigs = vscode.workspace.getConfiguration('vim');
+    let vimConfigs = getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
@@ -75,23 +72,17 @@ class ConfigurationClass {
       this.leader = ' ';
     }
 
-    // Get configuration setting for handled keys,
-    // this allows user to disable certain key combinations
-    const handleKeys = vimConfigs.get<IHandleKeys[]>('handleKeys', []);
-
+    // Enable/Disable certain key combinations
     for (const bracketedKey of this.boundKeyCombinations) {
-      // Set context for key that is not used
-      // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
-      // Or if user uses vim.handleKeys configuration option to set certain combinations to false
-      // By default, all key combinations are used so start with true
+      // By default, all key combinations are used
       let useKey = true;
 
-      // Check for configuration setting disabling combo
-      if (handleKeys[bracketedKey] !== undefined && handleKeys[bracketedKey] === false) {
+      if (this.handleKeys[bracketedKey]) {
+        // disabled through `vim.handleKeys`
         useKey = false;
       } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
-        // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding.
-        // However, we need to still capture <C-c> due to overrideCopy.
+        // user has disabled CtrlKeys and the current key is a CtrlKey
+        // <C-c>, still needs to be captured to overrideCopy
         if (bracketedKey === '<C-c>' && this.overrideCopy) {
           useKey = true;
         } else {
@@ -99,7 +90,6 @@ class ConfigurationClass {
         }
       }
 
-      // Set the context of whether or not this key will be used based on criteria from above
       vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
     }
   }
@@ -116,6 +106,11 @@ class ConfigurationClass {
 
     return cursorType[cursorStyle];
   }
+
+  /**
+   * Delegate certain key combinations back to VSCode to be handled natively
+   */
+  handleKeys: IHandleKeys[] = [];
 
   /**
    * Use the system's clipboard when copying.
