@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { taskQueue } from '../../src/taskQueue';
 import { Globals } from '../../src/globals';
+import { WorkspaceConfiguration, ConfigurationTarget } from 'vscode';
 
 export type OptionValue = number | string | boolean;
 export type ValueMapping = {
@@ -25,8 +26,8 @@ export interface IModeSpecificStrings {
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
  * 2. Named as `vim.{optionName}`, `optionName` is the name we use in Vim.
- * 3. Define a public property in `Configuration `with the same name and a default value.
- *    Or define a private propery and define customized Getter/Setter accessors for it.
+ * 3. Define a public property in `Configuration` with the same name and a default value.
+ *    Or define a private property and define customized Getter/Setter accessors for it.
  *    Always remember to decorate Getter accessor as @enumerable()
  * 4. If user doesn't set the option explicitly
  *    a. we don't have a similar setting in Code, initialize the option as default value.
@@ -35,9 +36,9 @@ export interface IModeSpecificStrings {
  * Vim option override sequence.
  * 1. `:set {option}` on the fly
  * 2. TODO .vimrc.
- * 2. `vim.{option}`
- * 3. VS Code configuration
- * 4. VSCodeVim flavored Vim option default values
+ * 3. `vim.{option}`
+ * 4. VS Code configuration
+ * 5. VSCodeVim flavored Vim option default values
  *
  */
 class ConfigurationClass {
@@ -55,17 +56,14 @@ class ConfigurationClass {
     return ConfigurationClass._instance;
   }
 
-  updateConfiguration() {
-    /**
-     * Load Vim options from User Settings.
-     */
-    let vimOptions = vscode.workspace.getConfiguration('vim');
+  public updateConfiguration() {
+    let vimConfigs = getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      const vimOptionValue = vimOptions[option] as any;
-      if (vimOptionValue !== null && vimOptionValue !== undefined) {
-        this[option] = vimOptionValue;
+      const val = vimConfigs[option] as any;
+      if (val !== null && val !== undefined) {
+        this[option] = val;
       }
     }
 
@@ -74,36 +72,17 @@ class ConfigurationClass {
       this.leader = ' ';
     }
 
-    // Get the cursor type from vscode
-    const cursorStyleString = vscode.workspace
-      .getConfiguration()
-      .get('editor.cursorStyle') as string;
-    this.userCursor = this.cursorStyleFromString(cursorStyleString);
-    if (this.userCursor === undefined) {
-      this.userCursor = this.cursorStyleFromString('line');
-    }
-
-    // Get configuration setting for handled keys, this allows user to disable
-    // certain key comboinations
-    const handleKeys = vscode.workspace
-      .getConfiguration('vim')
-      .get<IHandleKeys[]>('handleKeys', []);
-
+    // Enable/Disable certain key combinations
     for (const bracketedKey of this.boundKeyCombinations) {
-      // Set context for key that is not used
-      // This either happens when user sets useCtrlKeys to false (ctrl keys are not used then)
-      // Or if user usese vim.handleKeys configuration option to set certain combinations to false
-      // By default, all key combinations are used so start with true
+      // By default, all key combinations are used
       let useKey = true;
 
-      // Check for configuration setting disabling combo
-      if (handleKeys[bracketedKey] !== undefined) {
-        if (handleKeys[bracketedKey] === false) {
-          useKey = false;
-        }
+      if (this.handleKeys[bracketedKey]) {
+        // disabled through `vim.handleKeys`
+        useKey = false;
       } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
-        // Check for useCtrlKeys and if it is a <C- ctrl> based keybinding.
-        // However, we need to still capture <C-c> due to overrideCopy.
+        // user has disabled CtrlKeys and the current key is a CtrlKey
+        // <C-c>, still needs to be captured to overrideCopy
         if (bracketedKey === '<C-c>' && this.overrideCopy) {
           useKey = true;
         } else {
@@ -111,7 +90,6 @@ class ConfigurationClass {
         }
       }
 
-      // Set the context of whether or not this key will be used based on criteria from above
       vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
     }
   }
@@ -126,12 +104,13 @@ class ConfigurationClass {
       'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
     };
 
-    if (cursorType[cursorStyle] !== undefined) {
-      return cursorType[cursorStyle];
-    } else {
-      return undefined;
-    }
+    return cursorType[cursorStyle];
   }
+
+  /**
+   * Delegate certain key combinations back to VSCode to be handled natively
+   */
+  handleKeys: IHandleKeys[] = [];
 
   /**
    * Use the system's clipboard when copying.
@@ -261,10 +240,15 @@ class ConfigurationClass {
   @overlapSetting({ codeName: 'tabSize', default: 8 })
   tabstop: number;
 
+  @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
+  userCursorString: string;
+
   /**
    * Type of cursor user is using native to vscode
    */
-  userCursor: number | undefined;
+  get userCursor(): number | undefined {
+    return this.cursorStyleFromString(this.userCursorString);
+  }
 
   /**
    * Use spaces when the user presses tab?
@@ -307,11 +291,19 @@ class ConfigurationClass {
    */
   foldfix = false;
 
+  private disableExtension: boolean = false;
+
+  get disableExt(): boolean {
+    return this.disableExtension;
+  }
+  set disableExt(isDisabled: boolean) {
+    this.disableExtension = isDisabled;
+    getConfiguration('vim').update('disableExtension', isDisabled, ConfigurationTarget.Global);
+  }
+
   enableNeovim = true;
 
   neovimPath = 'nvim';
-
-  disableAnnoyingNeovimMessage = false;
 
   /**
    * Automatically apply the /g flag to substitute commands.
@@ -336,6 +328,15 @@ class ConfigurationClass {
   cmdLineInitialColon = false;
 }
 
+function getConfiguration(section: string): vscode.WorkspaceConfiguration {
+  let resource: vscode.Uri | undefined = undefined;
+  let activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor) {
+    resource = activeTextEditor.document.uri;
+  }
+  return vscode.workspace.getConfiguration(section, resource);
+}
+
 function overlapSetting(args: {
   codeName: string;
   default: OptionValue;
@@ -348,15 +349,12 @@ function overlapSetting(args: {
           return this['_' + propertyKey];
         }
 
-        if (args.codeValueMapping) {
-          let val = vscode.workspace.getConfiguration('editor').get(args.codeName);
-
-          if (val !== undefined) {
-            return args.codeValueMapping[val as string];
-          }
-        } else {
-          return vscode.workspace.getConfiguration('editor').get(args.codeName, args.default);
+        let val = getConfiguration('editor').get(args.codeName, args.default);
+        if (args.codeValueMapping && val !== undefined) {
+          val = args.codeValueMapping[val as string];
         }
+
+        return val;
       },
       set: function(value) {
         this['_' + propertyKey] = value;
@@ -372,7 +370,11 @@ function overlapSetting(args: {
             codeValue = args.codeValueMapping[value];
           }
 
-          await vscode.workspace.getConfiguration('editor').update(args.codeName, codeValue, true);
+          await getConfiguration('editor').update(
+            args.codeName,
+            codeValue,
+            vscode.ConfigurationTarget.Global
+          );
         }, 'config');
       },
       enumerable: true,

@@ -100,6 +100,7 @@ class HistoryStep {
     cursorEnd?: Position[] | undefined;
     marks?: IMark[];
   }) {
+    // This is a bug, but fixing it causes regressions. See PR #2081.
     this.changes = init.changes = [];
     this.isFinished = init.isFinished || false;
     this.cursorStart = init.cursorStart || undefined;
@@ -501,10 +502,10 @@ export class HistoryTracker {
 
     if (this.currentHistoryStep.changes.length === 0) {
       this.currentHistoryStepIndex--;
-    }
 
-    if (this.currentHistoryStepIndex === 0) {
-      return undefined;
+      if (this.currentHistoryStepIndex === 0) {
+        return undefined;
+      }
     }
 
     step = this.currentHistoryStep;
@@ -516,6 +517,114 @@ export class HistoryTracker {
     this.currentHistoryStepIndex--;
 
     return step && step.cursorStart;
+  }
+
+  /**
+   * Logic for command U.
+   *
+   * Performs an undo action for all changes which occurred on
+   * the same line as the most recent change.
+   * Returns undefined if there's no more steps back to go.
+   * Only acts upon consecutive changes on the most-recently-changed line.
+   * U itself is a change, so all the changes are reversed and added back
+   * to the history.
+   *
+   * This method contains a significant amount of extra logic to account for
+   * the difficult scenario where a newline is embedded in a change (ex: '\nhello'), which
+   * is created by the 'o' command. Vim behavior for the 'U' command does
+   * not undo newlines, so the change text needs to be checked & trimmed.
+   * This worst-case scenario tends to offset line values and make it harder to
+   * determine the line of the change, so this behavior is also compensated.
+   */
+  async goBackHistoryStepsOnLine(): Promise<Position[] | undefined> {
+    let done: boolean = false;
+    let stepsToUndo: number = 0;
+    let changesToUndo: DocumentChange[] = [];
+
+    if (this.currentHistoryStepIndex === 0) {
+      return undefined;
+    }
+
+    if (this.currentHistoryStep.changes.length === 0) {
+      this.currentHistoryStepIndex--;
+
+      if (this.currentHistoryStepIndex === 0) {
+        return undefined;
+      }
+    }
+
+    let lastChange = this.currentHistoryStep.changes[0];
+    let currentLine = this.currentHistoryStep.changes[this.currentHistoryStep.changes.length - 1]
+      .start.line;
+
+    // Adjusting for the case where the most recent change is newline followed by text
+    const mostRecentText = this.currentHistoryStep.changes[0].text;
+    if (mostRecentText.includes('\n') && mostRecentText !== '\n' && mostRecentText !== '\r\n') {
+      currentLine++;
+    }
+
+    for (const step of this.historySteps.slice(1, this.currentHistoryStepIndex + 1).reverse()) {
+      for (let change of step.changes.reverse()) {
+        /*
+         * This conditional accounts for the behavior where the change is a newline
+         * followed by text to undo. Note the line offset behavior that must be compensated.
+         */
+        if (change.text.includes('\n') && change.start.line + 1 === currentLine) {
+          done = true;
+          // Modify & replace the change to avoid undoing the newline embedded in the change
+          change = new DocumentChange(
+            new Position(change.start.line + 1, 0),
+            change.text.replace('\n', '').replace('\r', ''),
+            change.isAdd
+          );
+          stepsToUndo++;
+        }
+
+        if (change.text.includes('\n') || change.start.line !== currentLine) {
+          done = true;
+          break;
+        }
+
+        changesToUndo.push(change);
+        lastChange = change;
+        if (done) {
+          break;
+        }
+      }
+      if (done) {
+        break;
+      }
+      stepsToUndo++;
+    }
+
+    // Note that reverse() is call-by-reference, so the changes are already in reverse order
+    for (const change of changesToUndo) {
+      await change!.undo();
+      change.isAdd = !change.isAdd;
+    }
+
+    for (let count = stepsToUndo; count > 0; count--) {
+      this.historySteps.pop();
+    }
+
+    const newStep = new HistoryStep({
+      isFinished: true,
+      cursorStart: [lastChange.start],
+      cursorEnd: [lastChange.start],
+    });
+    newStep.changes = changesToUndo;
+
+    this.historySteps.push(newStep);
+
+    this.currentHistoryStepIndex = this.currentHistoryStepIndex - stepsToUndo + 1;
+
+    /*
+    * Unlike the goBackHistoryStep() function, this function does not trust the
+    * HistoryStep.cursorStart property. This can lead to invalid cursor position errors.
+    * Since this function reverses change-by-change, rather than step-by-step,
+    * the cursor position is based on the start of the last change that is undone.
+    */
+    return lastChange && [lastChange.start];
   }
 
   /**

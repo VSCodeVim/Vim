@@ -38,7 +38,7 @@
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
-      "preLaunchTask": "build",
+      "preLaunchTask": "gulp: default",
       "internalConsoleOptions": "openOnSessionStart"
     }
   ]

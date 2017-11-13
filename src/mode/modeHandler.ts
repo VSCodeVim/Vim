@@ -3,7 +3,7 @@ import { SurroundInputMode } from './surroundInputMode';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { EditorIdentity } from './../../extension';
+import { EditorIdentity } from './../../src/editorIdentity';
 import {
   isTextTransformation,
   TextTransformations,
@@ -597,7 +597,7 @@ export class ModeHandler implements vscode.Disposable {
     // Handle scenarios where mouse used to change current position.
     const disposer = vscode.window.onDidChangeTextEditorSelection(
       (e: vscode.TextEditorSelectionChangeEvent) => {
-        if (!Globals.active) {
+        if (Configuration.disableExt) {
           return;
         }
 
@@ -2018,9 +2018,9 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private _renderStatusBar(): void {
-    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor
-      ? 'MULTI CURSOR'
-      : ''} --`;
+    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${
+      this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''
+    } --`;
     const macroText = this._vimState.isRecordingMacro
       ? 'Recording @' + this._vimState.recordedMacro.registerName
       : '';
