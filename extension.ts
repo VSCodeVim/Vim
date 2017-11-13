@@ -7,6 +7,7 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 import { showCmdLine } from './src/cmd_line/main';
+import { EditorIdentity } from './src/editorIdentity';
 import { ModeHandler } from './src/mode/modeHandler';
 import { taskQueue } from './src/taskQueue';
 import { Position } from './src/common/motion/position';
@@ -36,36 +37,6 @@ const packagejson: {
   };
 } = require('../package.json'); // out/../package.json
 
-export class EditorIdentity {
-  private _fileName: string;
-  private _viewColumn: vscode.ViewColumn;
-
-  constructor(textEditor?: vscode.TextEditor) {
-    this._fileName = (textEditor && textEditor.document.fileName) || '';
-    this._viewColumn = (textEditor && textEditor.viewColumn) || vscode.ViewColumn.One;
-  }
-
-  get fileName() {
-    return this._fileName;
-  }
-
-  get viewColumn() {
-    return this._viewColumn;
-  }
-
-  public hasSameBuffer(identity: EditorIdentity): boolean {
-    return this.fileName === identity.fileName;
-  }
-
-  public isEqual(identity: EditorIdentity): boolean {
-    return this.fileName === identity.fileName && this.viewColumn === identity.viewColumn;
-  }
-
-  public toString() {
-    return this.fileName + this.viewColumn;
-  }
-}
-
 let extensionContext: vscode.ExtensionContext;
 
 /**
@@ -81,22 +52,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   let curHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
   if (!curHandler) {
-    if (!Configuration.disableAnnoyingNeovimMessage) {
-      vscode.window
-        .showInformationMessage(
-          'We have now added neovim integration for Ex-commands.\
-      Enable it with vim.enableNeovim in settings',
-          'Never show again'
-        )
-        .then(result => {
-          if (result !== 'Close') {
-            vscode.workspace
-              .getConfiguration('vim')
-              .update('disableAnnoyingNeovimMessage', true, true);
-            Configuration.disableAnnoyingNeovimMessage = true;
-          }
-        });
-    }
     const newModeHandler = await new ModeHandler();
     if (Configuration.enableNeovim) {
       await Neovim.initNvim(newModeHandler.vimState);
@@ -319,10 +274,9 @@ export async function activate(context: vscode.ExtensionContext) {
   async function toggleExtension(isDisabled: boolean) {
     await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
     if (isDisabled) {
-      let cursorStyle = await vscode.workspace.getConfiguration().get('editor.cursorStyle', 'line');
       vscode.window.visibleTextEditors.forEach(editor => {
         let options = editor.options;
-        switch (cursorStyle) {
+        switch (Configuration.userCursorString) {
           case 'line':
             options.cursorStyle = vscode.TextEditorCursorStyle.Line;
             break;
