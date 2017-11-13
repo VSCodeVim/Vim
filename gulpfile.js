@@ -16,10 +16,10 @@ var paths = {
 
 function versionBump(semver) {
   return gulp
-    .src(['./package.json'])
+    .src(['./package.json', './package-lock.json'])
     .pipe(bump({ type: semver }))
     .pipe(gulp.dest('./'))
-    .pipe(git.commit('bump package version'))
+    .pipe(git.commit('rev package version'))
     .pipe(tag_version());
 }
 
