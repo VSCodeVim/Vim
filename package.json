@@ -33,6 +33,7 @@
   "activationEvents": [
     "*"
   ],
+  "qna": "https://vscodevim-slackin.azurewebsites.net/",
   "main": "./out/extension",
   "contributes": {
     "commands": [
