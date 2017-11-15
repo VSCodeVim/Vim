@@ -2018,9 +2018,9 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private _renderStatusBar(): void {
-    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor
-      ? 'MULTI CURSOR'
-      : ''} --`;
+    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${
+      this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''
+    } --`;
     const macroText = this._vimState.isRecordingMacro
       ? 'Recording @' + this._vimState.recordedMacro.registerName
       : '';

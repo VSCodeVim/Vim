@@ -65,7 +65,9 @@ function runPrettier(command) {
     for (const file of files) {
       if (file.endsWith('.ts') || file.endsWith('.js')) {
         exec(
-          `node ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5 ${file}`
+          `node ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5 ${
+            file
+          }`
         );
       }
     }
