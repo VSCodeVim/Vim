@@ -1780,21 +1780,15 @@ suite('Mode Normal', () => {
     end: ['test aaa test aaa test aaa test| '],
   });
 
-  /*
-Disabling test until upstream VSCode issue is resolved: https://github.com/Microsoft/vscode/issues/26274
-    newTest({
-      title: "Can 'D'elete the characters under multiple cursors until the end of the line",
-      start: [
-        'test aaa test aaa test aaa test |aaa test',
-        'test aaa test aaa test aaa test aaa test'
-      ],
-      keysPressed: '<C-alt+down>D<Esc>',
-      end: [
-        'test aaa test aaa test aaa tes|t ',
-        'test aaa test aaa test aaa test '
-      ]
-    });
-*/
+  newTest({
+    title: "Can 'D'elete the characters under multiple cursors until the end of the line",
+    start: [
+      'test aaa test aaa test aaa test |aaa test',
+      'test aaa test aaa test aaa test aaa test',
+    ],
+    keysPressed: '<C-alt+down>D<Esc>',
+    end: ['test aaa test aaa test aaa tes|t ', 'test aaa test aaa test aaa test '],
+  });
 
   newTest({
     title: 'cc on whitespace-only line clears line',
