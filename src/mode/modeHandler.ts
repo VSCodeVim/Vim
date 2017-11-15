@@ -2018,9 +2018,9 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private _renderStatusBar(): void {
-    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${
-      this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''
-    } --`;
+    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor
+      ? 'MULTI CURSOR'
+      : ''} --`;
     const macroText = this._vimState.isRecordingMacro
       ? 'Recording @' + this._vimState.recordedMacro.registerName
       : '';
@@ -2063,9 +2063,12 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   setStatusBarColor(color: string): void {
+    const currentColorCustomizations = vscode.workspace
+      .getConfiguration('workbench')
+      .get('colorCustomizations');
     vscode.workspace.getConfiguration('workbench').update(
       'colorCustomizations',
-      Object.assign({}, vscode.workspace.getConfiguration('workbench').get('colorCustomizations'), {
+      Object.assign({}, currentColorCustomizations, {
         'statusBar.background': `${color}`,
         'statusBar.noFolderBackground': `${color}`,
         'statusBar.debuggingBackground': `${color}`,

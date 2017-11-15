@@ -21,12 +21,10 @@ export function getTestingFunctions() {
       : 'no stack available :(';
 
     test(testObj.title, async () =>
-      testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
-        .catch((reason: Error) => {
-          reason.stack = niceStack;
-          throw reason;
-        })
+      testIt.bind(null, await getAndUpdateModeHandler())(testObj).catch((reason: Error) => {
+        reason.stack = niceStack;
+        throw reason;
+      })
     );
   };
 
@@ -41,12 +39,10 @@ export function getTestingFunctions() {
       : 'no stack available :(';
 
     test.only(testObj.title, async () =>
-      testIt
-        .bind(null, await getAndUpdateModeHandler())(testObj)
-        .catch((reason: Error) => {
-          reason.stack = niceStack;
-          throw reason;
-        })
+      testIt.bind(null, await getAndUpdateModeHandler())(testObj).catch((reason: Error) => {
+        reason.stack = niceStack;
+        throw reason;
+      })
     );
   };
 
