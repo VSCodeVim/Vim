@@ -77,7 +77,7 @@ class ConfigurationClass {
       // By default, all key combinations are used
       let useKey = true;
 
-      if (this.handleKeys[bracketedKey]) {
+      if (this.handleKeys[bracketedKey] === false) {
         // disabled through `vim.handleKeys`
         useKey = false;
       } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
