@@ -2062,13 +2062,28 @@ export class ModeHandler implements vscode.Disposable {
     ModeHandler._statusBarItem.show();
   }
 
-  setStatusBarColor(color: string): void {
+  setStatusBarColor(colorToSet: string[] | string): void {
+    const defaultForeground = '#9da5b4';
+
+    const color = (function() {
+      if (Array.isArray(colorToSet)) {
+        if (colorToSet.length === 1) {
+          colorToSet.push(defaultForeground);
+        }
+
+        return colorToSet;
+      }
+
+      return [colorToSet, defaultForeground];
+    })();
+
     vscode.workspace.getConfiguration('workbench').update(
       'colorCustomizations',
       {
-        'statusBar.background': `${color}`,
-        'statusBar.noFolderBackground': `${color}`,
-        'statusBar.debuggingBackground': `${color}`,
+        'statusBar.background': `${color[0]}`,
+        'statusBar.noFolderBackground': `${color[0]}`,
+        'statusBar.debuggingBackground': `${color[0]}`,
+        'statusBar.foreground': `${color[1]}`,
       },
       true
     );
