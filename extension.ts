@@ -122,9 +122,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   Vim.channelId = (await nvim.requestApi())[0] as number;
 
-  const SIZE = 50;
-  nvim.uiAttach(SIZE, SIZE, { ext_cmdline: true, ext_wildmenu: true });
-  Vim.screen = new Screen(SIZE);
+  const WIDTH = 50;
+  const HEIGHT = 50;
+  nvim.uiAttach(WIDTH, HEIGHT, { ext_cmdline: true, ext_wildmenu: true });
+  Vim.screen = new Screen({ width: WIDTH, height: HEIGHT });
 
   const code = `
 function _vscode_copy_text(text, line, char)

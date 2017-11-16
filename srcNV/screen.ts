@@ -12,6 +12,10 @@ export class Cell {
     this.highlight = {};
   }
 }
+interface ScreenSize {
+  width: number;
+  height: number;
+}
 
 export interface IgnoredKeys {
   all: string[];
@@ -26,9 +30,9 @@ export interface HighlightGroup {
 
 export class Screen {
   term: Array<Array<Cell>> = [];
-  x: number;
-  y: number;
-  size: number;
+  cursX: number;
+  cursY: number;
+  size: ScreenSize;
   highlighter: any;
   cmdline: vscode.StatusBarItem;
   wildmenu: vscode.StatusBarItem[];
@@ -37,17 +41,63 @@ export class Screen {
     IncSearch: HighlightGroup;
     Search: HighlightGroup;
   };
-
-  constructor(size: number) {
+  scrollRegion: {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+  };
+  resize(size: ScreenSize) {
     this.size = size;
-    for (let i = 0; i < this.size; i++) {
+    for (let i = 0; i < this.size.height; i++) {
       this.term[i] = [];
-      for (let j = 0; j < this.size; j++) {
+      for (let j = 0; j < this.size.width; j++) {
         this.term[i][j] = new Cell(' ');
       }
     }
-    this.x = 0;
-    this.y = 0;
+
+    this.scrollRegion = {
+      top: 0,
+      bottom: this.size.height,
+      left: 0,
+      right: this.size.width,
+    };
+  }
+
+  clear() {
+    this.resize(this.size);
+  }
+
+  scroll(deltaY: number) {
+    const { top, bottom, left, right } = this.scrollRegion;
+
+    const width = right - left;
+    const height = bottom - top;
+
+    let yi = [top, bottom];
+    if (deltaY < 0) {
+      yi = [bottom, top - 1];
+    }
+
+    for (let y = yi[0]; y !== yi[1]; y = y + Math.sign(deltaY)) {
+      if (top <= y + deltaY && y + deltaY < bottom) {
+        for (let x = left; x < right; x++) {
+          this.term[y][x] = this.term[y + deltaY][x];
+        }
+      } else {
+        for (let x = left; x < right; x++) {
+          this.term[y][x] = new Cell(' '); // (right - left);
+        }
+      }
+    }
+  }
+
+  constructor(size: { width: number; height: number }) {
+    this.size = size;
+    this.resize(this.size);
+
+    this.cursX = 0;
+    this.cursY = 0;
     this.highlighter = {};
     this.cmdline = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10001);
     this.wildmenu = [];
@@ -150,20 +200,20 @@ export class Screen {
       const name = change[0];
       const args = change.slice(1);
       if (name === 'cursor_goto') {
-        this.y = args[0][0];
-        this.x = args[0][1];
+        this.cursY = args[0][0];
+        this.cursX = args[0][1];
       } else if (name === 'eol_clear') {
-        for (let i = 0; i < this.size - this.x; i++) {
-          this.term[this.y][this.x + i].v = ' ';
-          this.term[this.y][this.x + i].highlight = {};
+        for (let i = 0; i < this.size.width - this.cursX; i++) {
+          this.term[this.cursY][this.cursX + i].v = ' ';
+          this.term[this.cursY][this.cursX + i].highlight = {};
         }
         highlightsChanged = true;
       } else if (name === 'put') {
         for (const cs of args) {
           for (const c of cs) {
-            this.term[this.y][this.x].v = c;
-            this.term[this.y][this.x].highlight = this.highlighter;
-            this.x += 1;
+            this.term[this.cursY][this.cursX].v = c;
+            this.term[this.cursY][this.cursX].highlight = this.highlighter;
+            this.cursX += 1;
           }
         }
         highlightsChanged = true;
@@ -171,6 +221,17 @@ export class Screen {
         this.highlighter = args[args.length - 1][0];
       } else if (name === 'mode_change') {
         this.handleModeChange(args[0]);
+      } else if (name === 'set_scroll_region') {
+        this.scrollRegion = {
+          top: args[0][0],
+          bottom: args[0][1],
+          left: args[0][2],
+          right: args[0][3],
+        };
+      } else if (name === 'resize') {
+        this.resize({ width: args[0][0], height: args[0][1] });
+      } else if (name === 'scroll') {
+        this.scroll(args[0][0]);
       } else if (name === 'cmdline_show') {
         let text = '';
         for (let hlText of args[0][0]) {
@@ -240,9 +301,9 @@ export class Screen {
 
     // If nvim is connected to a TUI, then we can't get external ui for cmdline/wildmenu.
     if (Vim.DEBUG) {
-      this.cmdline.text = this.term[this.size - 1].map(x => x.v).join('');
+      this.cmdline.text = this.term[this.size.height - 1].map(x => x.v).join('');
       this.cmdline.show();
-      const wildmenuText = this.term[this.size - 2]
+      const wildmenuText = this.term[this.size.height - 2]
         .map(x => x.v)
         .join('')
         .replace(/\s+$/, '');
@@ -253,7 +314,9 @@ export class Screen {
         for (let i = 0; i < wildmenu.length; i++) {
           this.wildmenu[i].text = wildmenu[i];
           this.wildmenu[i].show();
-          if (this.term[this.size - 2][wildmenuIdx[i]].highlight.hasOwnProperty('foreground')) {
+          if (
+            this.term[this.size.height - 2][wildmenuIdx[i]].highlight.hasOwnProperty('foreground')
+          ) {
             this.wildmenu[i].color = 'red';
           } else {
             this.wildmenu[i].color = 'white';
@@ -282,10 +345,10 @@ export class Screen {
       }
       let decorations: vscode.Range[] = [];
       let result = '';
-      for (let i = 0; i < this.size; i++) {
+      for (let i = 0; i < this.size.height; i++) {
         let isRange = false;
         let start = 0;
-        for (let j = 0; j < this.size; j++) {
+        for (let j = 0; j < this.size.width; j++) {
           result += this.term[i][j].v;
           if (!isRange && this.term[i][j].highlight.background === group.vimColor) {
             start = j;
