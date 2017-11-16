@@ -2063,12 +2063,12 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   setStatusBarColor(color: string): void {
-    const currentColorCustomizations = vscode.workspace
+    let currentColorCustomizations = vscode.workspace
       .getConfiguration('workbench')
       .get('colorCustomizations');
     vscode.workspace.getConfiguration('workbench').update(
       'colorCustomizations',
-      Object.assign({}, currentColorCustomizations, {
+      Object.assign(currentColorCustomizations, {
         'statusBar.background': `${color}`,
         'statusBar.noFolderBackground': `${color}`,
         'statusBar.debuggingBackground': `${color}`,
