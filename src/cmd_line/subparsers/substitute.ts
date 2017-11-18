@@ -33,6 +33,8 @@ function parsePattern(pattern: string, scanner: Scanner, delimiter: string): [st
               pattern += currentChar;
               break;
           }
+        } else {
+          pattern += currentChar;
         }
       }
 
