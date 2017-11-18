@@ -6,34 +6,27 @@ import { join } from 'path';
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 
-async function WaitForEditorOpen(): Promise<void> {
-  // cleanUpWorkspace - testUtils.ts
-  let poll = new Promise((c, e) => {
-    if (vscode.window.visibleTextEditors.length === 2) {
+/**
+ * Waits for the number of text editors in the current window to equal the
+ * given expected number of text editors.
+ *
+ * @param numEditors Expected number of editors in the window
+ */
+async function WaitForEditors(numEditors: number): Promise<void> {
+  let waitForEditorChange = new Promise((c, e) => {
+    if (vscode.window.visibleTextEditors.length === numEditors) {
       return c();
     }
 
-    let pollCount = 0;
-    // TODO: the visibleTextEditors variable doesn't seem to be
-    // up to date after a onDidChangeActiveTextEditor event, not
-    // even using a setTimeout 0... so we MUST poll :(
-    let interval = setInterval(() => {
-      // if visibleTextEditors is not updated after 1 sec
-      // we can expect that 'wq' failed
-      if (pollCount <= 100) {
-        pollCount++;
-        if (vscode.window.visibleTextEditors.length < 2) {
-          return;
-        }
+    let editorChange = vscode.window.onDidChangeVisibleTextEditors(() => {
+      if (vscode.window.visibleTextEditors.length === numEditors) {
+        c();
       }
-
-      clearInterval(interval);
-      c();
-    }, 10);
+    });
   });
 
   try {
-    await poll;
+    await waitForEditorChange;
   } catch (error) {
     assert.fail(null, null, error.toString(), '');
   }
@@ -42,23 +35,23 @@ async function WaitForEditorOpen(): Promise<void> {
 suite('Vertical split', () => {
   let modeHandler: ModeHandler;
 
-  suiteSetup(async () => {
+  setup(async () => {
     await setupWorkspace();
     modeHandler = await getAndUpdateModeHandler();
   });
 
-  suiteTeardown(cleanUpWorkspace);
+  teardown(cleanUpWorkspace);
 
   test('Run :vs', async () => {
     await runCmdLine('vs', modeHandler);
-    await WaitForEditorOpen();
+    await WaitForEditors(2);
 
     assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
   });
 
   test('Run :vsp', async () => {
     await runCmdLine('vsp', modeHandler);
-    await WaitForEditorOpen();
+    await WaitForEditors(2);
 
     assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
   });
