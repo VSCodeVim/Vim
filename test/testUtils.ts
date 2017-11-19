@@ -24,6 +24,32 @@ async function createRandomFile(contents: string, fileExtension: string): Promis
   }
 }
 
+/**
+ * Waits for the number of text editors in the current window to equal the
+ * given expected number of text editors.
+ *
+ * @param numExpectedEditors Expected number of editors in the window
+ */
+export async function WaitForEditors(numExpectedEditors: number): Promise<void> {
+  let waitForEditorChange = new Promise((c, e) => {
+    if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
+      return c();
+    }
+
+    let editorChange = vscode.window.onDidChangeVisibleTextEditors(() => {
+      if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
+        c();
+      }
+    });
+  });
+
+  try {
+    await waitForEditorChange;
+  } catch (error) {
+    assert.fail(null, null, error.toString(), '');
+  }
+}
+
 export function assertEqualLines(expectedLines: string[]) {
   for (let i = 0; i < expectedLines.length; i++) {
     let expected = expectedLines[i];
