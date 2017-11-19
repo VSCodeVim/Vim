@@ -512,15 +512,14 @@ export class ModeHandler implements vscode.Disposable {
   public identity: EditorIdentity;
 
   private _caretDecoration = vscode.window.createTextEditorDecorationType({
+    backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
+    borderColor: new vscode.ThemeColor('editorCursor.foreground'),
     dark: {
-      // used for dark colored themes
-      backgroundColor: 'rgba(224, 224, 224, 0.4)',
-      borderColor: 'rgba(0, 0, 0, 1.0)',
+      color: '#515052',
     },
     light: {
       // used for light colored themes
-      backgroundColor: 'rgba(32, 32, 32, 0.4)',
-      borderColor: 'rgba(0, 0, 0, 1.0)',
+      color: 'rgb(255, 255, 255)',
     },
     borderStyle: 'solid',
     borderWidth: '1px',
