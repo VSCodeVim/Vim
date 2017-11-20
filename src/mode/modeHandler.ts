@@ -515,7 +515,7 @@ export class ModeHandler implements vscode.Disposable {
     backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
     borderColor: new vscode.ThemeColor('editorCursor.foreground'),
     dark: {
-      color: '#515052',
+      color: 'rgb(81,80,82)',
     },
     light: {
       // used for light colored themes
