@@ -1,3 +1,7 @@
+# [v0.10.5 Rainy Reasons](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.5)  (Nov 21, 2017)
+* Maintain workbench settings when using status bar color configurations. Thanks <a class="user-mention" href="https://github.com/rodrigo-garcia-leon">@rodrigo-garcia-leon</a>
+* Escape delimiter substitutions. Thanks <a class="user-mention" href="https://github.com/westim">@westim</a>
+* Fix <code>:vsp</code> and <code>:vs</code>. Thanks <a class="user-mention" href="https://github.com/westim">@westim</a>
 # [v0.10.4 Unjust Umbrella](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.4)  (Nov 14, 2017)
 
 Patch release that fixes issue with <code>handleKeys</code> settings (<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="273862731" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2145" href="https://github.com/VSCodeVim/Vim/issues/2145">#2145</a>)
@@ -731,4 +735,4 @@ This was all <a class="user-mention" href="https://github.com/johnfn">@johnfn</a
 * Actually implement <code>shift+a</code> to insert end of line
 # [v0.0.1 First!](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.1)  (Nov 29, 2015)
 
-Initial release to the <a href="https://marketplace.visualstudio.com/items/vscodevim.vim">Visual Studio Marketplace</a>
+Initial release to the <a href="https://marketplace.visualstudio.com/items/vscodevim.vim" rel="nofollow">Visual Studio Marketplace</a>
