@@ -138,4 +138,18 @@ suite('Mode Visual Block', () => {
       assertEqualLines(['one', 'one', 'one', 'one two three', 'one two three', 'one two three']);
     });
   });
+
+  newTest({
+    title: 'Properly add to end of lines j then $',
+    start: ['|Dog', 'Angry', 'Dog', 'Angry', 'Dog'],
+    keysPressed: '<C-v>4j$Aaa',
+    end: ['Dogaa|', 'Angryaa', 'Dogaa', 'Angryaa', 'Dogaa'],
+  });
+
+  newTest({
+    title: 'Properly add to end of lines $ then j',
+    start: ['|Dog', 'Angry', 'Dog', 'Angry', 'Dog'],
+    keysPressed: '<C-v>$4jAaa<Esc>',
+    end: ['Doga|a', 'Angryaa', 'Dogaa', 'Angryaa', 'Dogaa'],
+  });
 });
