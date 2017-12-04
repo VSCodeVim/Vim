@@ -438,7 +438,9 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       let start = vimState.surround.range.start;
       let stop = vimState.surround.range.stop;
 
-      stop = stop.getRight();
+      if (TextEditor.getCharAt(stop) !== ' ') {
+        stop = stop.getRight();
+      }
 
       if (vimState.surround.isVisualLine) {
         startReplace = startReplace + '\n';

@@ -106,6 +106,13 @@ suite('Mode Visual Block', () => {
     end: ['t|e', 'te'],
   });
 
+  newTest({
+    title: "Can handle 'gj'",
+    start: ['t|est', 'test'],
+    keysPressed: '<C-v>gjI123',
+    end: ['t123|est', 't123est'],
+  });
+
   suite('Non-darwin <C-c> tests', () => {
     if (process.platform === 'darwin') {
       return;

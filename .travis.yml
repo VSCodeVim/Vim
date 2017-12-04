@@ -1,5 +1,13 @@
 notifications:
   email: false
+  webhooks:
+      urls:
+        - https://www.travisbuddy.com/
+      on_success: never
+      on_failure: always
+      on_start: never
+      on_cancel: never
+      on_error: never
 
 sudo: true
 
@@ -9,11 +17,16 @@ os:
 language: node_js
 
 node_js:
-- 6.3.1
+- 8.9.1
 
 env:
   global:
-    secure: "tzpL/lQ2L2mVDS0sPY0LnJ3idspKmiOAuKFFfBZbBk4vA6NtJYveXILiskNDWK4p3JIWux/JBxgU3auXU4t7BZy7bMfUpTm0PpsMQfvDV2/rsf3QUQgYvROZkVpeH6b73hxxyTy0wfDHrb0SIUjB9IChUiSDIBjwteVAb/HuIWNKRQ6mbmkZKiQ3xHisFOG9xTkrEO31BfA+nKxUOTtXiZtoHTOWK9+H67QKd19BTRn/vJrwhTUsYqyOBAoFQjDjpAbhRNgs4YxHJz2jn1rmeE8kotf3LsfBrws07Mu9O9CnEcJKsqgJW+ezbHCO/HjLfpul/v0HtF/UQM00v5J2mDFz/ii8OWQ41TjYgkAHhtXIkMDQiM6K1x+gsaq0wm4QDX+Akg3r4sFqzhKsIuSLr1QTAMh9nn9G2asQvVJNNgH1QFvuLMF3bX1xp4l79/xoCEAWqlxx1mScYcmGFtYtQd107U5qPcHrR66vTMV5VqiZ0XapJympE+D5xIiSb4CTFGpl9+PSBk69MjynMEbGsLsudYWp6HZA5CyosxoStXxR1fD+ypqsSyzynSpThZ6IpFJ7Pk95GR3Z78CPhkNZvBvJ62xW/6/hAykWcelRHZy0N5XT2+HP+xcx77Fpqj8ZEAI6ECHNnnZ1KQROodu5LI06oZ2hiM1P1gdBx6xrljg="
+    secure: "xxrknQgZj/Zdr/LePcWcq9rVX3JvAcMsn7wv5VNE2yn49yvLXDH6WQuoG+xE47JkVlL3dG5jTRLFmglg+VxkpqyT/ozjUT4XTJueSghJKhWJedjp1w9qHqnqyChY66KCmi9euEfp552ecu5ud9tCu+aMvtYz2Li5ZjE1BS/r2sRmnKzb5DK0zIaNi+lNW1VBjWLSEBeUswfJingoOkb1EwgRwAvrdq91n7B3wccbVLLLLkzghzr8GTREsxHww9VwYGmMtquSczp9fx5gFg8icLqhjgWOmlu4hmhxSsFZASQDHwWAiFae4VBYklXwdk+YBYtQkea8L+8WpJ3Q/cN6DpNzOvCo8leEnJJkb0m0DPBYN1cZBzTY7/QL2yKVKxwZbzEYSbrS44YgQX5Wcv8b07TDJlzXSFjimQshiJF0AIPVbsOezvF8WvSeACyAd+mpLUlgSXhRP6AEMZqzVYOPUoZ51BNo5LCYA/o4YCSXqudbHI3zoPMCHKSASFFx6924uO1w4AZn/wEe4n3/P6NMDLIywUb/xOkKMChgZ/IVz5zbkjjAc/Nwpbggj4SIpNx1fWD/G6hteNbB2981O45num4h5jIUUC7HN0uSViyZFQYoNshQsRgjQIAcRtIuHBPh5pngsZeKvby3Z+q6fNsqtLr4DuC++XbrpOjETi5hLpg="
+
+addons:
+  apt:
+    packages:
+      - libsecret-1-dev
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "linux" ]; then
@@ -25,11 +38,17 @@ before_install:
 install:
 - npm install -g gulp;
 - npm install;
-- sudo apt-get install libsecret-1-dev
 
 script:
 - git ls-tree -r HEAD --name-only | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5
-- if [[ $(git diff-index HEAD --) ]]; then { ./node_modules/prettier/bin/prettier.js -v; git diff; echo "Compile with gulp first (to format things properly with prettier) before pushing!"; sleep 1; exit 1; }; else echo "Prettier passed."; fi
+- if [[ $(git diff-index HEAD --) ]]; then
+    ./node_modules/prettier/bin/prettier.js -v;
+    git diff;
+    echo "Prettier Failed. Run `gulp` or `gulp forceprettier`";
+    exit 1;
+  else
+    echo "Prettier passed.";
+  fi
 - gulp
 - npm test --silent;
 
@@ -40,7 +59,7 @@ before_deploy:
 deploy:
 - provider: releases
   api_key:
-    secure: YQLI+5JqIZj4XNrVO6EUrahICsfQVZ64wWmu8mMOj2rOaEid3dIL1Q69YbzQWIbcLt3y4oBGeefrakWdr/k/xgrnrkoEj3XnzgIp2E+e7rJvwnH4tM6tV191iq4wXdTo6vf0Ha/Bo6LpibP/LgPOXOY64/qZ0HtS1zqAxQLz+9b1O2knGnAQnaE0sqf0xQwZBl5kd/ChRV/+IIJJb5p3Pok9idbTW54O9BRb2ue720cvOR3afyIau2njVB8INgvNU9b2cYqg6RLAUOj2RaenuaH7GLI2dIYj9a8wgJyxliNTMGNFRhz+KmXie3tUZDuRytqxIq2SD7FHl744+F4L2YQyMiMMs4bF0jLkeDVwHExQsrdXlQ1pW2GLR7YQQpcr202jBkq+CNC7DBNyQlXwe/21M5kxYMTEJMqTMdPDfPgmhshf6VWqTSDczLDxue72m+gWxwv6kseFSQxwvRXly8hW0ev2rddMt9nu73hAZ+Lkmu16qArQ8HxAQUrBASaDYa0RAqJ3bNj6RwKFsa9/HK27XRrUY5GViMSQSeaEv3EO9Nc0ibMbFFL8EEBB9wXDS75jmlAioQcl1B1rzcKbSW37wSOJH1WUJCpM0+xdQVo8Gngld0LAyugOikir+mcnnEkGCeo2ZdeMEy63iqhCKwz2au4+XbEttBgfhd/una4=
+    secure: PmBcza43E3Y5/OxmR2V3nLJSBW9LildJCHdNQrKC0AndO6b14K+FLq3lwUBNX36q08noRX1V/nrYiDIFbZf8AQNq7j+rsR6mJOTXmu/pThrz0ugBK12f5aVoJOAdPPD2XZ/Cu7nLNvqVbLgZIqACVwWzCukSD0/3JWFv1w3yjGj/t1QNBHJoT7Wy1K6a1d3IISnDC9XROBYWvG/4IZipTAiv8yD0TMncgVaWxjEng5lhtmDE+XhBQU7Z5Ywc9IJMgajos+Ix6j+bju7Evta26+tLvonwC3dK8eeUZbIqdanrGl1zW0yft15y2SYo1YYQE6qLFO1kDsR90iY1YaW94vGyDJ3TLDAEjyZ3RMYv1OFOKOc6fhV3l5piyacCmvc30gP+AKjlukxgckYRY1soDNW5xqjcMSluaOMumNPbXpVsx7Kup+ceYkktQBSoTHtZFxt1uQmo7KY9IcNIsZuRP2hLcxV0eI6HI78THa56vTffxXWBZ2NYkKJ6gBADghQlJaz6D40yX2Qj2XsXH09aaY6oQ2Y/x3TZTLxwbyiHA2DPVY5e06GDRaEeavIyDiM9p4wlgsYuS4vDXGbNkzoBZuijpKw3fG1tf39+rUqlVw2LBN1kroAiNfHjaalTwsWS3F9y1ispCALYUuMl4lIAsgGXYgOZbfPO5sof6Wjvg4Q=
   file_glob: true
   file: "*.vsix"
   skip_cleanup: true

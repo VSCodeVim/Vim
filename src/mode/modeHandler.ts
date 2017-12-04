@@ -3,7 +3,7 @@ import { SurroundInputMode } from './surroundInputMode';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 
-import { EditorIdentity } from './../../extension';
+import { EditorIdentity } from './../../src/editorIdentity';
 import {
   isTextTransformation,
   TextTransformations,
@@ -321,6 +321,11 @@ export class RecordedState {
   public commandList: string[] = [];
 
   /**
+   * The number of keys the user has pressed that have been remapped.
+   */
+  public numberOfRemappedKeys: number = 0;
+
+  /**
    * String representation of the exact keys that the user entered. Used for
    * showcmd.
    */
@@ -356,6 +361,21 @@ export class RecordedState {
     }
 
     return result;
+  }
+
+  /**
+   * lenth of the current command with remappings and the prefixed count excluded.
+   */
+  public get numberOfKeysInCommandWithoutCountPrefix() {
+    return this.getCurrentCommandWithoutCountPrefix().length - this.numberOfRemappedKeys;
+  }
+
+  /**
+   * Reset the command list.
+   */
+  public resetCommandList() {
+    this.commandList = [];
+    this.numberOfRemappedKeys = 0;
   }
 
   /**
@@ -492,15 +512,14 @@ export class ModeHandler implements vscode.Disposable {
   public identity: EditorIdentity;
 
   private _caretDecoration = vscode.window.createTextEditorDecorationType({
+    backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
+    borderColor: new vscode.ThemeColor('editorCursor.foreground'),
     dark: {
-      // used for dark colored themes
-      backgroundColor: 'rgba(224, 224, 224, 0.4)',
-      borderColor: 'rgba(0, 0, 0, 1.0)',
+      color: 'rgb(81,80,82)',
     },
     light: {
       // used for light colored themes
-      backgroundColor: 'rgba(32, 32, 32, 0.4)',
-      borderColor: 'rgba(0, 0, 0, 1.0)',
+      color: 'rgb(255, 255, 255)',
     },
     borderStyle: 'solid',
     borderWidth: '1px',
@@ -577,7 +596,7 @@ export class ModeHandler implements vscode.Disposable {
     // Handle scenarios where mouse used to change current position.
     const disposer = vscode.window.onDidChangeTextEditorSelection(
       (e: vscode.TextEditorSelectionChangeEvent) => {
-        if (!Globals.active) {
+        if (Configuration.disableExt) {
           return;
         }
 
@@ -863,7 +882,7 @@ export class ModeHandler implements vscode.Disposable {
       if (!handled) {
         this._vimState = await this.handleKeyEventHelper(key, this._vimState);
       } else {
-        this._vimState.recordedState.commandList = [];
+        this._vimState.recordedState.resetCommandList();
       }
     } catch (e) {
       console.log('error.stack');
@@ -901,8 +920,6 @@ export class ModeHandler implements vscode.Disposable {
 
     if (result === KeypressState.NoPossibleMatch && !isPotentialRemapping) {
       vimState.recordedState = new RecordedState();
-      vimState.recordedState.commandList = [];
-
       return vimState;
     } else if (result === KeypressState.WaitingOnKeys) {
       return vimState;
@@ -1071,7 +1088,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (ranAction && vimState.currentMode !== ModeName.Insert) {
-      vimState.recordedState.commandList = [];
+      vimState.recordedState.resetCommandList();
     }
 
     ranRepeatableAction =
@@ -2000,9 +2017,9 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private _renderStatusBar(): void {
-    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${this._vimState.isMultiCursor
-      ? 'MULTI CURSOR'
-      : ''} --`;
+    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${
+      this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''
+    } --`;
     const macroText = this._vimState.isRecordingMacro
       ? 'Recording @' + this._vimState.recordedMacro.registerName
       : '';
@@ -2045,13 +2062,16 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   setStatusBarColor(color: string): void {
+    let currentColorCustomizations = vscode.workspace
+      .getConfiguration('workbench')
+      .get('colorCustomizations');
     vscode.workspace.getConfiguration('workbench').update(
       'colorCustomizations',
-      {
+      Object.assign(currentColorCustomizations, {
         'statusBar.background': `${color}`,
         'statusBar.noFolderBackground': `${color}`,
         'statusBar.debuggingBackground': `${color}`,
-      },
+      }),
       true
     );
   }

@@ -16,10 +16,10 @@ var paths = {
 
 function versionBump(semver) {
   return gulp
-    .src(['./package.json'])
+    .src(['./package.json', './package-lock.json'])
     .pipe(bump({ type: semver }))
     .pipe(gulp.dest('./'))
-    .pipe(git.commit('bump package version'))
+    .pipe(git.commit('rev package version'))
     .pipe(tag_version());
 }
 
@@ -53,9 +53,9 @@ gulp.task('prettier', function() {
 });
 
 gulp.task('forceprettier', function() {
-  // Enumerate files managed by git
+  // files managed by git
   runPrettier('git ls-files');
-  // Enumerate untracked files
+  // untracked files
   runPrettier('git ls-files --others --exclude-standard');
 });
 
@@ -65,7 +65,9 @@ function runPrettier(command) {
     for (const file of files) {
       if (file.endsWith('.ts') || file.endsWith('.js')) {
         exec(
-          `node ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5 ${file}`
+          `node ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5 ${
+            file
+          }`
         );
       }
     }

@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.10.2",
+  "version": "0.10.5",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -33,6 +33,7 @@
   "activationEvents": [
     "*"
   ],
+  "qna": "https://vscodevim-slackin.azurewebsites.net/",
   "main": "./out/extension",
   "contributes": {
     "commands": [
@@ -528,6 +529,11 @@
           "description": "Does dragging with the mouse put you into visual mode",
           "default": true
         },
+        "vim.disableExtension": {
+          "type": "boolean",
+          "description": "Disables the VSCodeVim extension.",
+          "default": false
+        },
         "vim.enableNeovim": {
           "type": "boolean",
           "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect. NOTE: Neovim must be installed (v0.2.0) and neovimPath must be set the executable in order for this setting to work. Otherwise, vscodevim will crash.",
@@ -537,11 +543,6 @@
           "type": "string",
           "description": "Path to run neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe",
           "default": "nvim"
-        },
-        "vim.disableAnnoyingNeovimMessage": {
-          "type": "boolean",
-          "description": "Get rid of that annoying message that shows up everytime you make a new file",
-          "default": false
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
@@ -567,16 +568,15 @@
     "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
   },
   "dependencies": {
-    "clipboardy": "^1.1.4",
+    "clipboardy": "^1.2.1",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.17.4",
     "neovim-client": "^2.1.0",
-    "prettier": "^1.7.4",
     "promised-neovim-client": "^2.0.2",
     "untildify": "^3.0.2"
   },
   "devDependencies": {
-    "@types/mocha": "^2.2.43",
+    "@types/mocha": "^2.2.44",
     "@types/node": "^6.0.89",
     "gulp": "^3.9.1",
     "gulp-bump": "^2.8.0",
@@ -588,6 +588,7 @@
     "gulp-typings": "^2.0.4",
     "merge-stream": "^1.0.1",
     "mocha": "^4.0.1",
+    "prettier": "^1.8.2",
     "tslint": "^5.7.0",
     "typescript": "^2.5.3",
     "vscode": "^1.1.6"

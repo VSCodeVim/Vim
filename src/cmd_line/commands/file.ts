@@ -72,6 +72,10 @@ export class FileCommand extends node.CommandBase {
 
       return;
     } else if (this._arguments.name === '') {
+      if (this._arguments.position === FilePosition.NewWindow) {
+        await vscode.commands.executeCommand('workbench.action.splitEditor');
+        return;
+      }
       const fileList = await vscode.window.showOpenDialog({});
       if (fileList) {
         const doc = await vscode.workspace.openTextDocument(fileList[0]);

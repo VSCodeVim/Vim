@@ -205,5 +205,12 @@ suite('Basic substitute', () => {
 
       assertEqualLines(['dbc', 'dbc', 'abc']);
     });
+
+    test('Substitute with escaped delimiter', async () => {
+      await modeHandler.handleMultipleKeyEvents(['i', 'b', '/', '/', 'f', '<Esc>']);
+      await runCmdLine('s/\\/\\/f/z/g', modeHandler);
+
+      assertEqualLines(['bz']);
+    });
   });
 });

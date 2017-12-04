@@ -486,7 +486,7 @@ Status | Command | Description | Note
 ---|--------|-------|------------------------------
 :white_check_mark: | :1234: u | undo last N changes | Current implementation may not cover every case perfectly.
 :white_check_mark: | :1234: CTRL-R |	redo last N undone changes | As above.
-:arrow_down: | U | restore last changed line
+:white_check_mark: | U | restore last changed line
 
 ## External commands
 

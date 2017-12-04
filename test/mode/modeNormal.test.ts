@@ -1267,6 +1267,55 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'U'",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>U',
+    end: ['|'],
+  });
+
+  newTest({
+    title: "Can handle 'U' for multiple changes",
+    start: ['|'],
+    keysPressed: 'idef<Esc>aghi<Esc>U',
+    end: ['|'],
+  });
+
+  newTest({
+    title: "Can handle 'U' for new line below",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>odef<Esc>U',
+    end: ['abc', '|'],
+  });
+
+  newTest({
+    title: "Can handle 'U' for new line above",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>Odef<Esc>U',
+    end: ['|', 'abc'],
+  });
+
+  newTest({
+    title: "Can handle 'U' for consecutive changes only",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>odef<Esc>kAghi<Esc>U',
+    end: ['ab|c', 'def'],
+  });
+
+  newTest({
+    title: "Can handle 'u' to undo 'U'",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>Uu',
+    end: ['|abc'],
+  });
+
+  newTest({
+    title: "Can handle 'U' to undo 'U'",
+    start: ['|'],
+    keysPressed: 'iabc<Esc>UU',
+    end: ['|abc'],
+  });
+
+  newTest({
     title: 'Redo',
     start: ['|'],
     keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
@@ -1541,6 +1590,34 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '/ matches ^ per line',
+    start: ['|  asdf', 'asasdf', 'asdf', 'asdf'],
+    keysPressed: crossPlatformIt('/^asdf\n'),
+    end: ['  asdf', 'asasdf', '|asdf', 'asdf'],
+  });
+
+  newTest({
+    title: '/ matches $ per line',
+    start: ['|asdfjkl', 'asdf  ', 'asdf', 'asdf'],
+    keysPressed: crossPlatformIt('/asdf$\n'),
+    end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
+  });
+
+  newTest({
+    title: '/\\c forces case insensitive search',
+    start: ['|__ASDF', 'asdf'],
+    keysPressed: crossPlatformIt('/\\casdf\n'),
+    end: ['__|ASDF', 'asdf'],
+  });
+
+  newTest({
+    title: '/\\C forces case sensitive search',
+    start: ['|__ASDF', 'asdf'],
+    keysPressed: crossPlatformIt('/\\Casdf\n'),
+    end: ['__ASDF', '|asdf'],
+  });
+
+  newTest({
     title: 'Can do C',
     start: ['export const options = {', '|', '};'],
     keysPressed: 'C',
@@ -1703,21 +1780,15 @@ suite('Mode Normal', () => {
     end: ['test aaa test aaa test aaa test| '],
   });
 
-  /*
-Disabling test until upstream VSCode issue is resolved: https://github.com/Microsoft/vscode/issues/26274
-    newTest({
-      title: "Can 'D'elete the characters under multiple cursors until the end of the line",
-      start: [
-        'test aaa test aaa test aaa test |aaa test',
-        'test aaa test aaa test aaa test aaa test'
-      ],
-      keysPressed: '<C-alt+down>D<Esc>',
-      end: [
-        'test aaa test aaa test aaa tes|t ',
-        'test aaa test aaa test aaa test '
-      ]
-    });
-*/
+  newTest({
+    title: "Can 'D'elete the characters under multiple cursors until the end of the line",
+    start: [
+      'test aaa test aaa test aaa test |aaa test',
+      'test aaa test aaa test aaa test aaa test',
+    ],
+    keysPressed: '<C-alt+down>D<Esc>',
+    end: ['test aaa test aaa test aaa tes|t ', 'test aaa test aaa test aaa test '],
+  });
 
   newTest({
     title: 'cc on whitespace-only line clears line',

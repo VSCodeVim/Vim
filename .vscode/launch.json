@@ -1,6 +1,6 @@
 // A launch configuration that compiles the extension and then opens it inside a new window
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "configurations": [
     {
        "name": "Build, Run Extension",
@@ -11,7 +11,7 @@
        "stopOnEntry": false,
        "sourceMaps": true,
        "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
-       "preLaunchTask": "build",
+       "preLaunchTask": "gulp: default",
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
@@ -38,7 +38,7 @@
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [ "${workspaceRoot}/{out, node_modules}/**/*.js" ],
-      "preLaunchTask": "build",
+      "preLaunchTask": "gulp: default",
       "internalConsoleOptions": "openOnSessionStart"
     }
   ]
