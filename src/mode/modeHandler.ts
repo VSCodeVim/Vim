@@ -1845,26 +1845,24 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    let cursorRange: vscode.Range[] = [];
+    const cursorMap = new Map([
+      [VSCodeVimCursorType.Block, vscode.TextEditorCursorStyle.Block],
+      [VSCodeVimCursorType.Line, vscode.TextEditorCursorStyle.Line],
+      [VSCodeVimCursorType.LineThin, vscode.TextEditorCursorStyle.LineThin],
+      [VSCodeVimCursorType.Underline, vscode.TextEditorCursorStyle.Underline],
+      [VSCodeVimCursorType.TextDecoration, vscode.TextEditorCursorStyle.LineThin],
+      [VSCodeVimCursorType.Native, vscode.TextEditorCursorStyle.Block],
+    ]);
 
-    // Use native cursor if possible. Default to Block.
-    let cursorStyle = vscode.TextEditorCursorStyle.Block;
-    switch (this.currentMode.cursorType) {
-      case VSCodeVimCursorType.Line:
-        cursorStyle = vscode.TextEditorCursorStyle.Line;
-        break;
-      case VSCodeVimCursorType.TextDecoration:
-      case VSCodeVimCursorType.LineThin:
-        cursorStyle = vscode.TextEditorCursorStyle.LineThin;
-        break;
-      case VSCodeVimCursorType.Underline:
-        cursorStyle = vscode.TextEditorCursorStyle.Underline;
-        break;
-      case VSCodeVimCursorType.Native:
-        if (Configuration.userCursor !== undefined) {
-          cursorStyle = Configuration.userCursor;
-        }
-        break;
+    // Use native cursor if possible. Otherwise translate to vscode cursor style.
+    let cursorStyle: vscode.TextEditorCursorStyle;
+    if (
+      this.currentMode.cursorType === VSCodeVimCursorType.Native &&
+      Configuration.userCursor !== undefined
+    ) {
+      cursorStyle = Configuration.userCursor;
+    } else {
+      cursorStyle = cursorMap.get(this.currentMode.cursorType) as vscode.TextEditorCursorStyle;
     }
 
     const optionalCursorStyle =
@@ -1880,6 +1878,7 @@ export class ModeHandler implements vscode.Disposable {
     options.cursorStyle = cursorStyle;
     this._vimState.editor.options = options;
 
+    let cursorRange: vscode.Range[] = [];
     if (
       this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&
       this.currentMode.name !== ModeName.Insert
@@ -1969,14 +1968,21 @@ export class ModeHandler implements vscode.Disposable {
     }
     this._renderStatusBar();
 
-    vscode.commands.executeCommand('setContext', 'vim.useCtrlKeys', Configuration.useCtrlKeys);
-    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
-    vscode.commands.executeCommand(
+    await vscode.commands.executeCommand(
+      'setContext',
+      'vim.useCtrlKeys',
+      Configuration.useCtrlKeys
+    );
+    await vscode.commands.executeCommand(
+      'setContext',
+      'vim.overrideCopy',
+      Configuration.overrideCopy
+    );
+    await vscode.commands.executeCommand(
       'setContext',
       'vim.overrideCtrlC',
       Configuration.overrideCopy || Configuration.useCtrlKeys
     );
-    vscode.commands.executeCommand('setContext', 'vim.platform', process.platform);
   }
 
   private _createCurrentCommandText(): string {
