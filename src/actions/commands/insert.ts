@@ -29,8 +29,7 @@ class CommandEscInsertMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand) {
-      const diff = position.character - vimState.cursorPosition.character;
-      vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getRight(diff)));
+      vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getRight()));
     }
 
     // only remove leading spaces inserted by vscode.
