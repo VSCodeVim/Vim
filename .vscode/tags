@@ -1,0 +1,27 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+GITHUB_URL	../scripts/create_changelog.py	/^GITHUB_URL = "https:\/\/github.com"$/;"	kind:variable	line:5
+body	../scripts/create_changelog.py	/^    body = i.select_one("div.release-body.commit.open > div.markdown-body")$/;"	kind:variable	line:20
+bs	../scripts/create_changelog.py	/^  bs = bs4.BeautifulSoup(r.text, "html5lib")$/;"	kind:variable	line:10
+bs4	../scripts/create_changelog.py	/^import bs4$/;"	kind:namespace	line:2
+create_changelog.py	../scripts/create_changelog.py	1;"	kind:file	line:1
+date	../scripts/create_changelog.py	/^    date = date.text$/;"	kind:variable	line:19
+date	../scripts/create_changelog.py	/^    date = i.select_one("div.release-body.commit.open > div.release-header > p > relative-time")$/;"	kind:variable	line:18
+f	../scripts/create_changelog.py	/^f = open("..\/CHANGELOG.md", "w")$/;"	kind:variable	line:6
+link	../scripts/create_changelog.py	/^    link = i.select_one("div.release-body.commit.open > div.release-header > h1 > a")["href"]$/;"	kind:variable	line:16
+links	../scripts/create_changelog.py	/^      links = i.select('a')$/;"	kind:variable	line:29
+next_page	../scripts/create_changelog.py	/^  next_page = bs.select($/;"	kind:variable	line:38
+obj_text	../scripts/create_changelog.py	/^      obj_text = i.decode_contents()$/;"	kind:variable	line:28
+objects	../scripts/create_changelog.py	/^    objects = body.select("p,h2,li")$/;"	kind:variable	line:25
+objects	../scripts/create_changelog.py	/^    objects = sorted(objects, key=lambda a: str(body).index(str(a)))$/;"	kind:variable	line:26
+r	../scripts/create_changelog.py	/^  r = requests.get(next_page['href'])/;"	kind:variable	line:44
+r	../scripts/create_changelog.py	/^r = requests.get('https:\/\/github.com\/VSCodeVim\/Vim\/releases')$/;"	kind:variable	line:8
+re	../scripts/create_changelog.py	/^import re$/;"	kind:namespace	line:3
+requests	../scripts/create_changelog.py	/^import requests$/;"	kind:namespace	line:1
+results	../scripts/create_changelog.py	/^  results = bs.select($/;"	kind:variable	line:11
+tag	../scripts/create_changelog.py	/^    tag = i.select_one("div.release-meta > ul > li > a > span").text$/;"	kind:variable	line:17
+title	../scripts/create_changelog.py	/^    title = i.select_one("div.release-body.commit.open > div.release-header > h1 > a").text$/;"	kind:variable	line:15
