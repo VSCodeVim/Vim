@@ -1,12 +1,14 @@
+import * as vscode from 'vscode';
+
+import Globals from './globals';
+import { Position, PositionDiff } from './common/motion/position';
+import { Configuration } from './configuration/configuration';
 import { ReplaceTextTransformation } from './transformations/transformations';
 import { VimState } from './mode/modeHandler';
 
-import * as vscode from 'vscode';
-import { Position, PositionDiff } from './common/motion/position';
-import { Configuration } from './configuration/configuration';
-import { Globals } from './globals';
-
 export class TextEditor {
+  static readonly whitespaceRegExp = new RegExp('^ *$');
+
   // TODO: Refactor args
 
   /**
@@ -169,7 +171,7 @@ export class TextEditor {
     let end = position.getRight();
 
     const char = TextEditor.getText(new vscode.Range(start, end));
-    if (Globals.WhitespaceRegExp.test(char)) {
+    if (this.whitespaceRegExp.test(char)) {
       start = position.getWordRight();
     } else {
       start = position.getWordLeft(true);
@@ -178,7 +180,7 @@ export class TextEditor {
 
     const word = TextEditor.getText(new vscode.Range(start, end));
 
-    if (Globals.WhitespaceRegExp.test(word)) {
+    if (this.whitespaceRegExp.test(word)) {
       return undefined;
     }
 

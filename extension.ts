@@ -6,13 +6,13 @@
 
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
+import Globals from './src/globals';
+import EditorIdentity from './src/editorIdentity';
+import Notation from './src/notation';
 import { showCmdLine } from './src/cmd_line/main';
-import { EditorIdentity } from './src/editorIdentity';
 import { ModeHandler } from './src/mode/modeHandler';
 import { taskQueue } from './src/taskQueue';
 import { Position } from './src/common/motion/position';
-import { Globals } from './src/globals';
-import { AngleBracketNotation } from './src/notation';
 import { ModeName } from './src/mode/mode';
 import { Configuration } from './src/configuration/configuration';
 import { ICodeKeybinding } from './src/mode/remapper';
@@ -63,7 +63,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   }
 
   curHandler.vimState.editor = vscode.window.activeTextEditor!;
-  if (!prevHandler || curHandler.identity !== prevHandler.identity) {
+  if (!prevHandler || curHandler.vimState.identity !== prevHandler.vimState.identity) {
     setTimeout(() => {
       curHandler.syncCursors();
     }, 0);
@@ -155,7 +155,7 @@ export async function activate(context: vscode.ExtensionContext) {
     } else {
       _.filter(
         modeHandlerToEditorIdentity,
-        modeHandler => modeHandler.identity.fileName === event.document.fileName
+        modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName
       ).forEach(modeHandler => {
         contentChangeHandler(modeHandler);
       });
@@ -231,7 +231,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const mh = await getAndUpdateModeHandler();
       if (args.after) {
         for (const key of args.after) {
-          await mh.handleKeyEvent(AngleBracketNotation.Normalize(key));
+          await mh.handleKeyEvent(Notation.Normalize(key));
         }
         return;
       }
@@ -273,30 +273,15 @@ export async function activate(context: vscode.ExtensionContext) {
    */
   async function toggleExtension(isDisabled: boolean) {
     await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
+    let mh = await getAndUpdateModeHandler();
     if (isDisabled) {
-      vscode.window.visibleTextEditors.forEach(editor => {
-        let options = editor.options;
-        switch (Configuration.userCursorString) {
-          case 'line':
-            options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-            break;
-          case 'block':
-            options.cursorStyle = vscode.TextEditorCursorStyle.Block;
-            break;
-          case 'underline':
-            options.cursorStyle = vscode.TextEditorCursorStyle.Underline;
-            break;
-          default:
-            break;
-        }
-        editor.options = options;
+      vscode.window.visibleTextEditors.forEach(e => {
+        e.options.cursorStyle = Configuration.userCursor;
       });
-      let mh = await getAndUpdateModeHandler();
       mh.setStatusBarText('-- VIM: DISABLED --');
     } else {
       compositionState = new CompositionState();
       modeHandlerToEditorIdentity = {};
-      let mh = await getAndUpdateModeHandler();
       mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
     }
   }
@@ -326,7 +311,7 @@ export async function activate(context: vscode.ExtensionContext) {
       keyToBeBound = keybinding.key;
     }
 
-    const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
+    const bracketedKey = Notation.Normalize(keyToBeBound);
 
     // Store registered key bindings in bracket notation form
     Configuration.boundKeyCombinations.push(bracketedKey);
@@ -401,7 +386,7 @@ async function handleKeyEvent(key: string): Promise<void> {
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {
   _.filter(
     modeHandlerToEditorIdentity,
-    modeHandler => modeHandler.identity.fileName === document.fileName
+    modeHandler => modeHandler.vimState.identity.fileName === document.fileName
   ).forEach(modeHandler => {
     modeHandler.vimState.historyTracker.clear();
   });

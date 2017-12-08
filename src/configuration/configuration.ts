@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { taskQueue } from '../../src/taskQueue';
-import { Globals } from '../../src/globals';
+import Globals from '../globals';
+import { taskQueue } from '../taskQueue';
 import { WorkspaceConfiguration, ConfigurationTarget } from 'vscode';
 
 export type OptionValue = number | string | boolean;

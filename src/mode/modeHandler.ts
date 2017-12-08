@@ -2,8 +2,9 @@ import { SurroundInputMode } from './surroundInputMode';
 
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
+import Globals from '../globals';
+import EditorIdentity from './../editorIdentity';
 
-import { EditorIdentity } from './../../src/editorIdentity';
 import {
   isTextTransformation,
   TextTransformations,
@@ -39,7 +40,6 @@ import { RegisterMode, Register } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../../src/configuration/configuration';
 import { PairMatcher } from './../common/matching/matcher';
-import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';
 import { Nvim } from 'promised-neovim-client';
@@ -58,12 +58,6 @@ export class ViewChange {
  * indicate what they want to do.
  */
 export class VimState {
-  private _id = Math.floor(Math.random() * 10000) % 10000;
-
-  public get id(): number {
-    return this._id;
-  }
-
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
    * be the rightmost column.
@@ -285,6 +279,15 @@ export class VimState {
   public whatILastSetTheSelectionTo: vscode.Selection;
 
   public nvim: Nvim;
+
+  public constructor(editor: vscode.TextEditor, startInInsertMode: boolean) {
+    this.editor = editor;
+    this.identity = new EditorIdentity(editor);
+    this.historyTracker = new HistoryTracker(this);
+    this.easyMotion = new EasyMotion();
+
+    this.currentMode = startInInsertMode ? ModeName.Insert : ModeName.Normal;
+  }
 }
 
 /**
@@ -491,9 +494,7 @@ interface IViewState {
 }
 
 export class ModeHandler implements vscode.Disposable {
-  public static IsTesting = false;
-
-  private _toBeDisposed: vscode.Disposable[] = [];
+  private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private static _statusBarItem: vscode.StatusBarItem;
   private _vimState: VimState;
@@ -505,11 +506,6 @@ export class ModeHandler implements vscode.Disposable {
   public get vimState(): VimState {
     return this._vimState;
   }
-
-  /**
-   * Identity associated with this ModeHandler. Only used for debugging.
-   */
-  public identity: EditorIdentity;
 
   private _caretDecoration = vscode.window.createTextEditorDecorationType({
     backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
@@ -541,18 +537,12 @@ export class ModeHandler implements vscode.Disposable {
    * mouse events.
    */
   constructor() {
-    ModeHandler.IsTesting = Globals.isTesting;
+    this._vimState = new VimState(vscode.window.activeTextEditor!, Configuration.startInInsertMode);
 
-    this._vimState = new VimState();
-    this._vimState.editor = vscode.window.activeTextEditor!;
-
-    this.identity = new EditorIdentity(vscode.window.activeTextEditor);
-
-    this._vimState.identity = this.identity;
     this.createRemappers();
 
     this._modes = [
-      new NormalMode(this),
+      new NormalMode(),
       new InsertMode(),
       new VisualMode(),
       new VisualBlockMode(),
@@ -563,13 +553,6 @@ export class ModeHandler implements vscode.Disposable {
       new EasyMotionInputMode(),
       new SurroundInputMode(),
     ];
-    this.vimState.historyTracker = new HistoryTracker(this.vimState);
-    this.vimState.easyMotion = new EasyMotion();
-    if (Configuration.startInInsertMode) {
-      this._vimState.currentMode = ModeName.Insert;
-    } else {
-      this._vimState.currentMode = ModeName.Normal;
-    }
 
     this._searchHighlightDecoration = vscode.window.createTextEditorDecorationType({
       backgroundColor: Configuration.searchHighlightColor,
@@ -594,7 +577,7 @@ export class ModeHandler implements vscode.Disposable {
     }, 0);
 
     // Handle scenarios where mouse used to change current position.
-    const disposer = vscode.window.onDidChangeTextEditorSelection(
+    const disposable = vscode.window.onDidChangeTextEditorSelection(
       (e: vscode.TextEditorSelectionChangeEvent) => {
         if (Configuration.disableExt) {
           return;
@@ -612,7 +595,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     );
 
-    this._toBeDisposed.push(disposer);
+    this._disposables.push(disposable);
   }
 
   /**
@@ -643,7 +626,7 @@ export class ModeHandler implements vscode.Disposable {
   private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
     let selection = e.selections[0];
 
-    if (ModeHandler.IsTesting) {
+    if (Globals.isTesting) {
       return;
     }
 
@@ -653,7 +636,6 @@ export class ModeHandler implements vscode.Disposable {
 
     if (this._vimState.focusChanged) {
       this._vimState.focusChanged = false;
-
       return;
     }
 
@@ -866,17 +848,19 @@ export class ModeHandler implements vscode.Disposable {
        * 3) We are not in the middle of executing another command.
        */
 
-      if (!this._vimState.isCurrentlyPerformingRemapping && (withinTimeout || keys.length === 1)) {
+      if (
+        !this._vimState.isCurrentlyPerformingRemapping &&
+        (withinTimeout || keys.length === 1) &&
+        !Globals.isTesting
+      ) {
         // User remappings bork the tests. If the the remappings start getting tested
         // at some point, will probably need a new solution.
-        if (!ModeHandler.IsTesting) {
-          handled = handled || (await this._insertModeRemapper.sendKey(keys, this, this.vimState));
-          handled = handled || (await this._otherModesRemapper.sendKey(keys, this, this.vimState));
-          handled =
-            handled || (await this._insertModeNonRecursive.sendKey(keys, this, this.vimState));
-          handled =
-            handled || (await this._otherModesNonRecursive.sendKey(keys, this, this.vimState));
-        }
+        handled = handled || (await this._insertModeRemapper.sendKey(keys, this, this.vimState));
+        handled = handled || (await this._otherModesRemapper.sendKey(keys, this, this.vimState));
+        handled =
+          handled || (await this._insertModeNonRecursive.sendKey(keys, this, this.vimState));
+        handled =
+          handled || (await this._otherModesNonRecursive.sendKey(keys, this, this.vimState));
       }
 
       if (!handled) {
@@ -1845,24 +1829,12 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    const cursorMap = new Map([
-      [VSCodeVimCursorType.Block, vscode.TextEditorCursorStyle.Block],
-      [VSCodeVimCursorType.Line, vscode.TextEditorCursorStyle.Line],
-      [VSCodeVimCursorType.LineThin, vscode.TextEditorCursorStyle.LineThin],
-      [VSCodeVimCursorType.Underline, vscode.TextEditorCursorStyle.Underline],
-      [VSCodeVimCursorType.TextDecoration, vscode.TextEditorCursorStyle.LineThin],
-      [VSCodeVimCursorType.Native, vscode.TextEditorCursorStyle.Block],
-    ]);
-
-    // Use native cursor if possible. Otherwise translate to vscode cursor style.
-    let cursorStyle: vscode.TextEditorCursorStyle;
+    let cursorStyle = Mode.translateCursor(this.currentMode.cursorType);
     if (
       this.currentMode.cursorType === VSCodeVimCursorType.Native &&
       Configuration.userCursor !== undefined
     ) {
       cursorStyle = Configuration.userCursor;
-    } else {
-      cursorStyle = cursorMap.get(this.currentMode.cursorType) as vscode.TextEditorCursorStyle;
     }
 
     const optionalCursorStyle =
@@ -2113,9 +2085,7 @@ export class ModeHandler implements vscode.Disposable {
 
   dispose() {
     this._vimState.nvim.quit();
-    for (const disposable of this._toBeDisposed) {
-      disposable.dispose();
-    }
+    this._disposables.map(d => d.dispose());
   }
 
   // Syncs cursors between vscode representation and vim representation
