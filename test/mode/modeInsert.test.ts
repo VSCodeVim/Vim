@@ -237,7 +237,7 @@ suite('Mode Insert', () => {
     title: 'Can perform <ctrl+o> to exit and perform one command in normal',
     start: ['testtest|'],
     keysPressed: 'a123<C-o>b123',
-    end: ['testtest|123123'],
+    end: ['123|testtest123'],
   });
 
   newTest({
