@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
+import Notation from './../notation';
 import { ModeName } from './mode';
 import { ModeHandler, VimState } from './modeHandler';
-import { AngleBracketNotation } from './../notation';
-import { runCmdLine } from '../../src/cmd_line/main';
+import { runCmdLine } from '../cmd_line/main';
 
 export interface ICodeKeybinding {
   after?: string[];
@@ -41,11 +41,11 @@ class Remapper {
 
     for (let remapping of remappings) {
       let before: string[] = [];
-      remapping.before.forEach(item => before.push(AngleBracketNotation.Normalize(item)));
+      remapping.before.forEach(item => before.push(Notation.Normalize(item)));
 
       let after: string[] = [];
       if (remapping.after) {
-        remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
+        remapping.after.forEach(item => after.push(Notation.Normalize(item)));
       }
 
       this._remappings.push(<IKeybinding>{

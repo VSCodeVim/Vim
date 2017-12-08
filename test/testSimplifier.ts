@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import Globals from '../src/globals';
 import { ModeName } from '../src/mode/mode';
 import { HistoryTracker } from '../src/history/historyTracker';
 import { Position } from '../src/common/motion/position';
@@ -7,7 +8,6 @@ import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
-import { Globals } from '../src/globals';
 import { getAndUpdateModeHandler } from '../extension';
 
 export function getTestingFunctions() {
