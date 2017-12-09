@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { VimState } from '../mode/modeHandler';
+import { VimState } from './../state/vimState';
 import { Position } from './../common/motion/position';
 import { TextEditor } from '../textEditor';
 import { Configuration } from '../configuration/configuration';

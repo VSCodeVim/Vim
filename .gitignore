@@ -10,3 +10,4 @@ node_modules
 typings/*
 !typings/custom/
 testing
+scripts/*

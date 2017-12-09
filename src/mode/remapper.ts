@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import * as _ from 'lodash';
 import Notation from './../notation';
 import { ModeName } from './mode';
-import { ModeHandler, VimState } from './modeHandler';
+import { ModeHandler } from './modeHandler';
+import { VimState } from './../state/vimState';
 import { runCmdLine } from '../cmd_line/main';
 
 export interface ICodeKeybinding {

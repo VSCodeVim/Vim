@@ -4,7 +4,7 @@ import Globals from './globals';
 import { Position, PositionDiff } from './common/motion/position';
 import { Configuration } from './configuration/configuration';
 import { ReplaceTextTransformation } from './transformations/transformations';
-import { VimState } from './mode/modeHandler';
+import { VimState } from './state/vimState';
 
 export class TextEditor {
   static readonly whitespaceRegExp = new RegExp('^ *$');
