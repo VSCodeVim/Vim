@@ -15,7 +15,8 @@ import * as _ from 'lodash';
 
 import { Position } from './../common/motion/position';
 import { TextEditor } from './../textEditor';
-import { RecordedState, VimState } from './../mode/modeHandler';
+import { RecordedState } from './../state/recordedState';
+import { VimState } from './../state/vimState';
 
 import DiffMatchPatch = require('diff-match-patch');
 

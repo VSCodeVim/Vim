@@ -1,4 +1,4 @@
-import { VimState } from './../mode/modeHandler';
+import { VimState } from './../state/vimState';
 import { ModeName } from './../mode/mode';
 import { Configuration } from './../configuration/configuration';
 

@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import { TextEditor } from './../../textEditor';
-import { VimState } from './../../mode/modeHandler';
+import { VimState } from '../../state/vimState';
 import { VisualBlockMode } from './../../mode/modeVisualBlock';
 import { Configuration } from './../../configuration/configuration';
 import { betterEscapeRegex } from './../../util';

@@ -3,7 +3,7 @@ import { ModeName } from './../mode/mode';
 import { Position, PositionDiff } from './../common/motion/position';
 import { Configuration } from './../configuration/configuration';
 import { TextEditor, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
-import { VimState } from './../mode/modeHandler';
+import { VimState } from './../state/vimState';
 import { RegisterMode } from './../register/register';
 import { PairMatcher } from './../common/matching/matcher';
 import { ReplaceState } from './../state/replaceState';

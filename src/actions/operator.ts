@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { VimState } from './../mode/modeHandler';
+import { VimState } from './../state/vimState';
 import { Register, RegisterMode } from './../register/register';
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';

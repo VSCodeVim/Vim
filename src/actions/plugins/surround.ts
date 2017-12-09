@@ -2,7 +2,7 @@ import { ModeName } from './../../mode/mode';
 import { Position } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { TextEditor } from './../../textEditor';
-import { VimState } from './../../mode/modeHandler';
+import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
 import { Configuration } from './../../configuration/configuration';
 import { RegisterAction } from './../base';

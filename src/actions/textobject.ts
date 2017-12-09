@@ -3,7 +3,7 @@ import { Position } from './../common/motion/position';
 import { RegisterMode } from './../register/register';
 import { Range } from './../common/motion/range';
 import { TextEditor } from './../textEditor';
-import { VimState } from './../mode/modeHandler';
+import { VimState } from './../state/vimState';
 import { RegisterAction } from './base';
 import { ChangeOperator } from './operator';
 import {

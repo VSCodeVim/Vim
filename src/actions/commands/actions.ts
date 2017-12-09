@@ -1,6 +1,7 @@
-import { RecordedState, VimState } from './../../mode/modeHandler';
+import { RecordedState } from '../../state/recordedState';
+import { VimState } from '../../state/vimState';
 import { SearchState, SearchDirection } from './../../state/searchState';
-import { ReplaceState } from './../../state/replaceState';
+import { ReplaceState } from '../../state/replaceState';
 import { VisualBlockMode } from './../../mode/modeVisualBlock';
 import { ModeName } from './../../mode/mode';
 import { Range } from './../../common/motion/range';

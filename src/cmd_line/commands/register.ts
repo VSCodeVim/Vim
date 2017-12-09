@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as node from '../node';
-import { ModeHandler, RecordedState } from '../../mode/modeHandler';
+import { ModeHandler } from '../../mode/modeHandler';
+import { RecordedState } from '../../state/recordedState';
 import { Register } from '../../register/register';
 
 export interface IRegisterCommandArguments extends node.ICommandArgs {
