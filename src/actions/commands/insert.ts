@@ -28,7 +28,7 @@ class CommandEscInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft()));
-    if (vimState.returnToInsertAfterCommand) {
+    if (vimState.returnToInsertAfterCommand && position.character !== 0) {
       vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getRight()));
     }
 

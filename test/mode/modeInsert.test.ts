@@ -241,6 +241,14 @@ suite('Mode Insert', () => {
   });
 
   newTest({
+    title:
+      'Can perform <ctrl+o> to exit and perform one command in normal at the beginning of a row',
+    start: ['|testtest'],
+    keysPressed: 'i<C-o>l123',
+    end: ['t123|esttest'],
+  });
+
+  newTest({
     title: 'Can perform insert command prefixed with count',
     start: ['tes|t'],
     keysPressed: '2i_<Esc>',
