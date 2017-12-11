@@ -1,7 +1,7 @@
+import { BaseCommand, CommandRegister, CommandYankFullLine } from './../actions/commands/actions';
+import { BaseOperator, DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
-import { YankOperator, BaseOperator, DeleteOperator } from './../actions/operator';
-import { CommandYankFullLine, BaseCommand, CommandRegister } from './../actions/commands/actions';
 import * as util from './../util';
 
 /**

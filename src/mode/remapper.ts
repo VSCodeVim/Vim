@@ -1,10 +1,11 @@
-import * as vscode from 'vscode';
 import * as _ from 'lodash';
+import * as vscode from 'vscode';
+
+import { runCmdLine } from '../cmd_line/main';
 import Notation from './../notation';
+import { VimState } from './../state/vimState';
 import { ModeName } from './mode';
 import { ModeHandler } from './modeHandler';
-import { VimState } from './../state/vimState';
-import { runCmdLine } from '../cmd_line/main';
 
 export interface ICodeKeybinding {
   after?: string[];

@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
-import * as node from '../node';
-import * as token from '../token';
+
+import { ModeName } from '../../mode/mode';
 import { ModeHandler } from '../../mode/modeHandler';
 import { TextEditor } from '../../textEditor';
-import { ModeName } from '../../mode/mode';
+import * as node from '../node';
+import * as token from '../token';
 
 export interface ISortCommandArguments extends node.ICommandArgs {
   reverse: boolean;

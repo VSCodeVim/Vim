@@ -1,4 +1,4 @@
-import { ReadCommand, IReadCommandArguments } from '../commands/read';
+import { IReadCommandArguments, ReadCommand } from '../commands/read';
 import { Scanner } from '../scanner';
 
 export function parseReadCommandArgs(args: string): ReadCommand {

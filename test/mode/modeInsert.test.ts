@@ -1,9 +1,9 @@
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
-import { TextEditor } from '../../src/textEditor';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { getTestingFunctions } from '../testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
+import { ModeName } from '../../src/mode/mode';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { TextEditor } from '../../src/textEditor';
+import { getTestingFunctions } from '../testSimplifier';
+import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;

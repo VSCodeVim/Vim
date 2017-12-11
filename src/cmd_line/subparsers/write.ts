@@ -1,4 +1,4 @@
-import { WriteCommand, IWriteCommandArguments } from '../commands/write';
+import { IWriteCommandArguments, WriteCommand } from '../commands/write';
 import { Scanner } from '../scanner';
 
 export function parseWriteCommandArgs(args: string): WriteCommand {

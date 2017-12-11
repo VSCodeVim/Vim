@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
 
 import { Configuration } from '../configuration/configuration';
+import { ModeName } from '../mode/mode';
 import { BaseAction } from './../actions/base';
+import { BaseCommand } from './../actions/commands/actions';
+import { BaseOperator } from './../actions/operator';
 import { PositionDiff } from './../common/motion/position';
 import { Transformation } from './../transformations/transformations';
-import { BaseOperator } from './../actions/operator';
-import { BaseCommand } from './../actions/commands/actions';
-import { ModeName } from '../mode/mode';
 
 /**
  * The RecordedState class holds the current action that the user is

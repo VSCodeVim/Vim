@@ -1,20 +1,20 @@
-import { ModeName } from './../mode/mode';
 import { Position } from './../common/motion/position';
-import { RegisterMode } from './../register/register';
 import { Range } from './../common/motion/range';
-import { TextEditor } from './../textEditor';
+import { ModeName } from './../mode/mode';
+import { RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
+import { TextEditor } from './../textEditor';
 import { RegisterAction } from './base';
-import { ChangeOperator } from './operator';
 import {
   BaseMovement,
   IMovement,
-  MoveASingleQuotes,
-  MoveADoubleQuotes,
   MoveAClosingCurlyBrace,
+  MoveADoubleQuotes,
   MoveAParentheses,
+  MoveASingleQuotes,
   MoveASquareBracket,
 } from './motion';
+import { ChangeOperator } from './operator';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];

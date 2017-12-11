@@ -1,7 +1,8 @@
-import * as node from '../node';
-import { readFile } from 'fs';
 import { exec } from 'child_process';
+import { readFile } from 'fs';
+
 import { TextEditor } from '../../textEditor';
+import * as node from '../node';
 
 export interface IReadCommandArguments extends node.ICommandArgs {
   file?: string;

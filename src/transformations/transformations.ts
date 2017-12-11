@@ -1,6 +1,7 @@
+import * as vscode from 'vscode';
+
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
-import * as vscode from 'vscode';
 
 /**
  * This file contains definitions of objects that represent text

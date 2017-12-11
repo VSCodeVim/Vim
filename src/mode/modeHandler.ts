@@ -1,48 +1,41 @@
-import { SurroundInputMode } from './surroundInputMode';
-
 import * as vscode from 'vscode';
-import * as _ from 'lodash';
-import Globals from '../globals';
 
-import {
-  isTextTransformation,
-  TextTransformations,
-  areAnyTransformationsOverlapping,
-} from './../transformations/transformations';
-import { Mode, ModeName, VSCodeVimCursorType } from './mode';
-import { InsertModeRemapper, OtherModesRemapper } from './remapper';
-import { NormalMode } from './modeNormal';
-import { InsertMode } from './modeInsert';
-import { ReplaceMode } from './modeReplace';
-import { VisualBlockMode } from './modeVisualBlock';
-import { VisualMode } from './modeVisual';
-import { VisualLineMode } from './modeVisualLine';
-import { EasyMotionMode, EasyMotionInputMode } from './modeEasyMotion';
-import { SearchInProgressMode } from './modeSearchInProgress';
-import { taskQueue } from './../taskQueue';
-import { TextEditor } from './../textEditor';
-import { HistoryTracker } from './../history/historyTracker';
-import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
-import { Actions, KeypressState, BaseAction } from './../actions/base';
-import { BaseOperator } from './../actions/operator';
-import { BaseMovement, isIMovement } from './../actions/motion';
-import {
-  BaseCommand,
-  DocumentContentChangeAction,
-  CommandQuitRecordMacro,
-} from './../actions/commands/actions';
-import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
-import { Position, PositionDiff } from './../common/motion/position';
-import { Range } from './../common/motion/range';
-import { RegisterMode, Register } from './../register/register';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../configuration/configuration';
+import Globals from '../globals';
+import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
+import { Actions, BaseAction, KeypressState } from './../actions/base';
+import {
+  BaseCommand,
+  CommandQuitRecordMacro,
+  DocumentContentChangeAction,
+} from './../actions/commands/actions';
+import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
+import { BaseMovement, isIMovement } from './../actions/motion';
 import { PairMatcher } from './../common/matching/matcher';
-import { ReplaceState } from './../state/replaceState';
-import { GlobalState } from './../state/globalState';
+import { Position, PositionDiff } from './../common/motion/position';
+import { Range } from './../common/motion/range';
+import { Register, RegisterMode } from './../register/register';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
+import { taskQueue } from './../taskQueue';
+import { TextEditor } from './../textEditor';
+import {
+  areAnyTransformationsOverlapping,
+  isTextTransformation,
+  TextTransformations,
+} from './../transformations/transformations';
+import { Mode, ModeName, VSCodeVimCursorType } from './mode';
+import { EasyMotionInputMode, EasyMotionMode } from './modeEasyMotion';
+import { InsertMode } from './modeInsert';
+import { NormalMode } from './modeNormal';
+import { ReplaceMode } from './modeReplace';
+import { SearchInProgressMode } from './modeSearchInProgress';
+import { VisualMode } from './modeVisual';
+import { VisualBlockMode } from './modeVisualBlock';
+import { VisualLineMode } from './modeVisualLine';
+import { InsertModeRemapper, OtherModesRemapper } from './remapper';
+import { SurroundInputMode } from './surroundInputMode';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];

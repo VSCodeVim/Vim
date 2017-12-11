@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import { Position } from './../common/motion/position';
-import { TextEditor } from './../textEditor';
+
 import { Configuration } from '../../src/configuration/configuration';
+import { Position } from './../common/motion/position';
 import { ModeName } from './../mode/mode';
+import { TextEditor } from './../textEditor';
 
 export enum SearchDirection {
   Forward = 1,

@@ -1,7 +1,9 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
+import * as vscode from 'vscode';
+
 import * as node from '../node';
+
 const untildify = require('untildify');
 
 export enum FilePosition {

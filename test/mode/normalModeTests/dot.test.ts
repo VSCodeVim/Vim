@@ -1,15 +1,7 @@
-import * as vscode from 'vscode';
-import {
-  setupWorkspace,
-  cleanUpWorkspace,
-  setTextEditorOptions,
-  assertEqualLines,
-} from './../../testUtils';
-import { ModeHandler } from '../../../src/mode/modeHandler';
-import { waitForTabChange } from '../../../src/util';
-import * as assert from 'assert';
-import { getTestingFunctions } from '../../testSimplifier';
 import { getAndUpdateModeHandler } from '../../../extension';
+import { ModeHandler } from '../../../src/mode/modeHandler';
+import { getTestingFunctions } from '../../testSimplifier';
+import { cleanUpWorkspace, setTextEditorOptions, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
   let modeHandler: ModeHandler;

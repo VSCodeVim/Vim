@@ -1,4 +1,4 @@
-import { ModeName, Mode } from './mode';
+import { Mode, ModeName } from './mode';
 import { VSCodeVimCursorType } from './mode';
 
 export class VisualLineMode extends Mode {

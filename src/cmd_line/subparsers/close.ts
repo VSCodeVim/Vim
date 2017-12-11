@@ -1,6 +1,6 @@
+import { ErrorCode, VimError } from '../../error';
 import * as node from '../commands/close';
 import { Scanner } from '../scanner';
-import { VimError, ErrorCode } from '../../error';
 
 export function parseCloseCommandArgs(args: string): node.CloseCommand {
   if (!args) {

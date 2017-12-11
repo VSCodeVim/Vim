@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from '../testUtils';
-import { getTestingFunctions } from '../testSimplifier';
-import * as util from '../../src/util';
+
 import { getAndUpdateModeHandler } from '../../extension';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import * as util from '../../src/util';
+import { getTestingFunctions } from '../testSimplifier';
+import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('register', () => {
   let modeHandler: ModeHandler;

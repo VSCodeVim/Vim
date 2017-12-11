@@ -1,10 +1,11 @@
-import { TextEditor } from '../src/textEditor';
-import * as vscode from 'vscode';
 import * as assert from 'assert';
-import { join } from 'path';
-import * as os from 'os';
 import * as fs from 'fs';
+import * as os from 'os';
+import { join } from 'path';
+import * as vscode from 'vscode';
+
 import { Configuration } from '../src/configuration/configuration';
+import { TextEditor } from '../src/textEditor';
 
 function rndName() {
   return Math.random()

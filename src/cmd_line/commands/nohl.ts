@@ -1,5 +1,5 @@
-import * as node from '../node';
 import { ModeHandler } from '../../mode/modeHandler';
+import * as node from '../node';
 
 export class NohlCommand extends node.CommandBase {
   protected _arguments: {};

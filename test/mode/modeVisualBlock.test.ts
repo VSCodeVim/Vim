@@ -1,10 +1,10 @@
-import { setupWorkspace, cleanUpWorkspace, assertEqual, assertEqualLines } from './../testUtils';
+import * as vscode from 'vscode';
+
+import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
-
-import * as vscode from 'vscode';
-import { getAndUpdateModeHandler } from '../../extension';
+import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Block', () => {
   let modeHandler: ModeHandler;

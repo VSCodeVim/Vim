@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import * as token from './token';
+
 import { ModeHandler } from '../mode/modeHandler';
+import * as token from './token';
 
 export class LineRange {
   left: token.Token[];

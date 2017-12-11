@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
-import { Range } from './common/motion/range';
+
 import { Position } from './common/motion/position';
+import { Range } from './common/motion/range';
 
 export async function showInfo(message: string): Promise<{}> {
   return vscode.window.showInformationMessage('Vim: ' + message) as {};

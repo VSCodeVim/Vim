@@ -9,16 +9,14 @@
  *
  * Undo/Redo will advance forward or backwards through Steps.
  */
-
-import * as vscode from 'vscode';
+import DiffMatchPatch = require('diff-match-patch');
 import * as _ from 'lodash';
+import * as vscode from 'vscode';
 
 import { Position } from './../common/motion/position';
-import { TextEditor } from './../textEditor';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
-
-import DiffMatchPatch = require('diff-match-patch');
+import { TextEditor } from './../textEditor';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
