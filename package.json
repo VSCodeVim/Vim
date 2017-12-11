@@ -303,37 +303,37 @@
       {
         "key": "j",
         "command": "list.focusDown",
-        "when": "listFocus"
+        "when": "listFocus && !inputFocus"
       },
       {
         "key": "k",
         "command": "list.focusUp",
-        "when": "listFocus"
+        "when": "listFocus && !inputFocus"
       },
       {
         "key": "o",
         "command": "list.toggleExpand",
-        "when": "listFocus"
+        "when": "listFocus && !inputFocus"
       },
       {
         "key": "g g",
         "command": "list.focusFirst",
-        "when": "listFocus"
+        "when": "listFocus && !inputFocus"
       },
       {
         "key": "shift+G",
         "command": "list.focusLast",
-        "when": "listFocus"
+        "when": "listFocus && !inputFocus"
       },
       {
         "key": "ctrl+d",
         "command": "list.focusPageDown",
-        "when": "listFocus"
+        "when": "listFocus && !inputFocus"
       },
       {
         "key": "ctrl+u",
         "command": "list.focusPageUp",
-        "when": "listFocus"
+        "when": "listFocus && !inputFocus"
       }
     ],
     "configuration": {
