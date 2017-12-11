@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
 
-import Globals from './globals';
 import { Position, PositionDiff } from './common/motion/position';
 import { Configuration } from './configuration/configuration';
-import { ReplaceTextTransformation } from './transformations/transformations';
 import { VimState } from './state/vimState';
+import { ReplaceTextTransformation } from './transformations/transformations';
 
 export class TextEditor {
   static readonly whitespaceRegExp = new RegExp('^ *$');

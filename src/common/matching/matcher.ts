@@ -1,6 +1,7 @@
-import { Position, PositionDiff } from './../motion/position';
-import { TextEditor } from './../../textEditor';
 import * as vscode from 'vscode';
+
+import { TextEditor } from './../../textEditor';
+import { Position, PositionDiff } from './../motion/position';
 
 function escapeRegExpCharacters(value: string): string {
   return value.replace(/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, '\\$&');

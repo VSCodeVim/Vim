@@ -1,8 +1,9 @@
 import * as assert from 'assert';
-import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
+
+import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { getAndUpdateModeHandler } from '../../extension';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Handler', () => {
   let modeHandler: ModeHandler;

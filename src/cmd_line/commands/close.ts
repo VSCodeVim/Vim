@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import * as node from '../node';
+
 import * as error from '../../error';
+import * as node from '../node';
 
 export interface ICloseCommandArguments extends node.ICommandArgs {
   bang?: boolean;

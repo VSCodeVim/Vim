@@ -1,4 +1,4 @@
-import { WriteQuitCommand, IWriteQuitCommandArguments } from '../commands/writequit';
+import { IWriteQuitCommandArguments, WriteQuitCommand } from '../commands/writequit';
 import { Scanner } from '../scanner';
 
 export function parseWriteQuitCommandArgs(args: string): WriteQuitCommand {

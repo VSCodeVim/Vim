@@ -1,12 +1,13 @@
-import * as vscode from 'vscode';
-import { VimState } from './../state/vimState';
-import { Position } from './../common/motion/position';
-import { TextEditor } from '../textEditor';
-import { Configuration } from '../configuration/configuration';
 import { spawn } from 'child_process';
 import { attach } from 'promised-neovim-client';
-import { Register, RegisterMode } from '../register/register';
+import * as vscode from 'vscode';
+
+import { Configuration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
+import { Register, RegisterMode } from '../register/register';
+import { TextEditor } from '../textEditor';
+import { Position } from './../common/motion/position';
+import { VimState } from './../state/vimState';
 
 export class Neovim {
   static async initNvim(vimState: VimState) {

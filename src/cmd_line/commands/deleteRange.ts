@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
+
+import { Position } from '../../common/motion/position';
+import { ModeHandler } from '../../mode/modeHandler';
+import { Register, RegisterMode } from '../../register/register';
+import { TextEditor } from '../../textEditor';
 import * as node from '../node';
 import * as token from '../token';
-import { ModeHandler } from '../../mode/modeHandler';
-import { TextEditor } from '../../textEditor';
-import { Register, RegisterMode } from '../../register/register';
-import { Position } from '../../common/motion/position';
 
 export interface IDeleteRangeCommandArguments extends node.ICommandArgs {
   register?: string;

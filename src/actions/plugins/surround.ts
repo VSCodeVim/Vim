@@ -1,34 +1,34 @@
-import { ModeName } from './../../mode/mode';
-import { Position } from './../../common/motion/position';
-import { Range } from './../../common/motion/range';
-import { TextEditor } from './../../textEditor';
 import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
+import { Position } from './../../common/motion/position';
+import { Range } from './../../common/motion/range';
 import { Configuration } from './../../configuration/configuration';
+import { ModeName } from './../../mode/mode';
+import { TextEditor } from './../../textEditor';
 import { RegisterAction } from './../base';
-import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
 import { BaseCommand } from './../commands/actions';
 import { BaseMovement } from './../motion';
 import {
   IMovement,
-  MoveQuoteMatch,
-  MoveASingleQuotes,
-  MoveADoubleQuotes,
   MoveABacktick,
-  MoveInsideCharacter,
-  MoveACurlyBrace,
-  MoveInsideTag,
-  MoveAParentheses,
-  MoveASquareBracket,
   MoveACaret,
+  MoveACurlyBrace,
+  MoveADoubleQuotes,
+  MoveAParentheses,
   MoveAroundTag,
+  MoveASingleQuotes,
+  MoveASquareBracket,
+  MoveInsideCharacter,
+  MoveInsideTag,
+  MoveQuoteMatch,
 } from './../motion';
+import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
 import {
-  TextObjectMovement,
-  SelectInnerWord,
   SelectInnerBigWord,
-  SelectInnerSentence,
   SelectInnerParagraph,
+  SelectInnerSentence,
+  SelectInnerWord,
+  TextObjectMovement,
 } from './../textobject';
 
 @RegisterAction

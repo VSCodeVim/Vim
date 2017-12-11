@@ -3,25 +3,23 @@
  * events to their string names and passes them on to ModeHandler via
  * handleKeyEvent().
  */
-
-import * as vscode from 'vscode';
-import * as _ from 'lodash';
-import Globals from './src/globals';
-import EditorIdentity from './src/editorIdentity';
-import Notation from './src/notation';
-import { showCmdLine } from './src/cmd_line/main';
-import { ModeHandler } from './src/mode/modeHandler';
-import { taskQueue } from './src/taskQueue';
-import { Position } from './src/common/motion/position';
-import { ModeName } from './src/mode/mode';
-import { Configuration } from './src/configuration/configuration';
-import { ICodeKeybinding } from './src/mode/remapper';
-import { runCmdLine } from './src/cmd_line/main';
-
 import './src/actions/vim.all';
-import { attach } from 'promised-neovim-client';
-import { spawn } from 'child_process';
+
+import * as _ from 'lodash';
+import * as vscode from 'vscode';
+
+import { showCmdLine } from './src/cmd_line/main';
+import { runCmdLine } from './src/cmd_line/main';
+import { Position } from './src/common/motion/position';
+import { Configuration } from './src/configuration/configuration';
+import EditorIdentity from './src/editorIdentity';
+import Globals from './src/globals';
+import { ModeName } from './src/mode/mode';
+import { ModeHandler } from './src/mode/modeHandler';
+import { ICodeKeybinding } from './src/mode/remapper';
 import { Neovim } from './src/neovim/nvimUtil';
+import Notation from './src/notation';
+import { taskQueue } from './src/taskQueue';
 
 interface VSCodeKeybinding {
   key: string;
@@ -90,8 +88,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   // Temporary workaround for vscode bug not changing cursor style properly
   // https://github.com/Microsoft/vscode/issues/17472
   // https://github.com/Microsoft/vscode/issues/17513
-  const options = curHandler.vimState.editor.options;
-  const desiredStyle = options.cursorStyle;
+  const desiredStyle = curHandler.vimState.editor.options.cursorStyle;
 
   // Temporarily change to any other cursor style besides the desired type, then change back
   if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
@@ -300,9 +297,6 @@ export async function activate(context: vscode.ExtensionContext) {
       continue;
     }
     let keyToBeBound = '';
-    /**
-     * On OSX, handle mac keybindings if we specified one.
-     */
     if (process.platform === 'darwin') {
       keyToBeBound = keybinding.mac || keybinding.key;
     } else if (process.platform === 'linux') {
@@ -311,9 +305,8 @@ export async function activate(context: vscode.ExtensionContext) {
       keyToBeBound = keybinding.key;
     }
 
-    const bracketedKey = Notation.Normalize(keyToBeBound);
-
     // Store registered key bindings in bracket notation form
+    const bracketedKey = Notation.Normalize(keyToBeBound);
     Configuration.boundKeyCombinations.push(bracketedKey);
 
     registerCommand(context, keybinding.command, () => handleKeyEvent(`${bracketedKey}`));
@@ -337,7 +330,7 @@ function overrideCommand(
   command: string,
   callback: (...args: any[]) => any
 ) {
-  let disposable = vscode.commands.registerCommand(command, async args => {
+  const disposable = vscode.commands.registerCommand(command, async args => {
     if (Configuration.disableExt) {
       await vscode.commands.executeCommand('default:' + command, args);
       return;

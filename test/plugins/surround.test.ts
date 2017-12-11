@@ -1,8 +1,7 @@
-import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
+import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
-import { getAndUpdateModeHandler } from '../../extension';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('surround plugin', () => {
   let modeHandler: ModeHandler;

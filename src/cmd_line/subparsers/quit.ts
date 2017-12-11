@@ -1,6 +1,6 @@
+import { ErrorCode, VimError } from '../../error';
 import * as node from '../commands/quit';
 import { Scanner } from '../scanner';
-import { VimError, ErrorCode } from '../../error';
 
 export function parseQuitCommandArgs(args: string): node.QuitCommand {
   if (!args) {

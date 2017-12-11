@@ -1,8 +1,8 @@
-import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
+import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
-import { getAndUpdateModeHandler } from '../../extension';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('comment operator', () => {
   let modeHandler: ModeHandler;

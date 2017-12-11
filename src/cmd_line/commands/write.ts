@@ -1,11 +1,10 @@
-// XXX: use graceful-fs ??
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import * as node from '../node';
-import * as util from '../../util';
 import { ModeHandler } from '../../mode/modeHandler';
+import * as util from '../../util';
+import * as node from '../node';
 
 export interface IWriteCommandArguments extends node.ICommandArgs {
   opt?: string;

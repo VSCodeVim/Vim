@@ -1,5 +1,3 @@
-'use strict';
-
 import * as node from '../commands/only';
 
 export function parseOnlyCommandArgs(args: string): node.OnlyCommand {

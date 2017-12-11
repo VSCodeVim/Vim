@@ -1,6 +1,5 @@
-import { setupWorkspace, cleanUpWorkspace } from './testUtils';
-import { ModeHandler } from '../src/mode/modeHandler';
 import { getTestingFunctions } from './testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('Record and execute a macro', () => {
   let { newTest, newTestOnly } = getTestingFunctions();

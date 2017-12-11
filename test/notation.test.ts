@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+
 import Notation from '../src/notation';
 
 suite('Notation', () => {

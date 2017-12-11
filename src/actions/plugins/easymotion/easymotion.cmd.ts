@@ -1,14 +1,14 @@
-import { EasyMotion } from './easymotion';
-import { Position } from './../../../common/motion/position';
-import { ModeName } from './../../../mode/mode';
-import { Configuration } from './../../../configuration/configuration';
-import { BaseCommand } from './../../commands/actions';
-import { RegisterAction } from './../../base';
 import { VimState } from '../../../state/vimState';
+import { Position } from './../../../common/motion/position';
+import { Configuration } from './../../../configuration/configuration';
+import { ModeName } from './../../../mode/mode';
+import { RegisterAction } from './../../base';
+import { BaseCommand } from './../../commands/actions';
+import { EasyMotion } from './easymotion';
 import {
+  EasyMotionCharMoveOpions,
   EasyMotionMoveOptionsBase,
   EasyMotionWordMoveOpions,
-  EasyMotionCharMoveOpions,
 } from './types';
 
 export interface EasymotionTrigger {

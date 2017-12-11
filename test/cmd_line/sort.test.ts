@@ -1,7 +1,7 @@
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from './../testUtils';
-import { runCmdLine } from '../../src/cmd_line/main';
 import { getAndUpdateModeHandler } from '../../extension';
+import { runCmdLine } from '../../src/cmd_line/main';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Basic sort', () => {
   let modeHandler: ModeHandler;

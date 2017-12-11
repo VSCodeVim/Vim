@@ -1,6 +1,6 @@
-import * as node from '../node';
-import * as util from '../../util';
 import { Configuration } from '../../configuration/configuration';
+import * as util from '../../util';
+import * as node from '../node';
 
 export enum SetOptionOperator {
   /*

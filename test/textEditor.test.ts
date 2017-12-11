@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+
 import { TextEditor } from './../src/textEditor';
-import { setupWorkspace, cleanUpWorkspace } from './testUtils';
+import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
 suite('text editor', () => {
   suiteSetup(async () => {

@@ -1,21 +1,22 @@
 import * as vscode from 'vscode';
+
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
-import { Register, RegisterMode } from './../../register/register';
 import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
-import { ModeName } from './../../mode/mode';
 import { Configuration } from './../../configuration/configuration';
+import { ModeName } from './../../mode/mode';
+import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
 import { RegisterAction } from './../base';
 import { ArrowsInInsertMode } from './../motion';
 import {
   BaseCommand,
-  DocumentContentChangeAction,
-  CommandInsertAtCursor,
   CommandInsertAfterCursor,
-  CommandInsertAtLineEnd,
+  CommandInsertAtCursor,
   CommandInsertAtFirstCharacter,
+  CommandInsertAtLineEnd,
+  DocumentContentChangeAction,
 } from './actions';
 
 @RegisterAction

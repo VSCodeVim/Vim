@@ -1,7 +1,7 @@
-import * as node from '../node';
 import { ModeHandler } from '../../mode/modeHandler';
-import * as write from './write';
+import * as node from '../node';
 import * as quit from './quit';
+import * as write from './write';
 
 //
 // Implements :writequit

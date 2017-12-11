@@ -1,10 +1,10 @@
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
-import { runCmdLine } from '../../src/cmd_line/main';
-import * as vscode from 'vscode';
-import { join } from 'path';
 import * as assert from 'assert';
+import * as vscode from 'vscode';
+
 import { getAndUpdateModeHandler } from '../../extension';
+import { runCmdLine } from '../../src/cmd_line/main';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 async function WaitForVsCodeClose(): Promise<void> {
   // cleanUpWorkspace - testUtils.ts

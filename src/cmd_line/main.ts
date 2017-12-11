@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import * as parser from './parser';
+
+import { Configuration } from '../configuration/configuration';
 import { ModeHandler } from '../mode/modeHandler';
 import { Neovim } from '../neovim/nvimUtil';
-import { Configuration } from '../configuration/configuration';
+import * as parser from './parser';
 
 // Shows the vim command line.
 export async function showCmdLine(

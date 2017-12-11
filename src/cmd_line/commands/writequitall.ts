@@ -1,6 +1,6 @@
-import * as node from '../node';
 import { ModeHandler } from '../../mode/modeHandler';
 import * as wall from '../commands/wall';
+import * as node from '../node';
 import * as quit from './quit';
 
 //

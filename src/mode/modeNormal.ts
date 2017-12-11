@@ -1,5 +1,4 @@
-import { ModeName, Mode } from './mode';
-import { ModeHandler } from './modeHandler';
+import { Mode, ModeName } from './mode';
 import { VSCodeVimCursorType } from './mode';
 
 export class NormalMode extends Mode {

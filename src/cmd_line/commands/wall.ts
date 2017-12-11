@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+
 import * as node from '../node';
 
 export interface IWallCommandArguments extends node.ICommandArgs {

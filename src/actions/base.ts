@@ -1,6 +1,6 @@
-import { VimState } from './../state/vimState';
-import { ModeName } from './../mode/mode';
 import { Configuration } from './../configuration/configuration';
+import { ModeName } from './../mode/mode';
+import { VimState } from './../state/vimState';
 
 const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);

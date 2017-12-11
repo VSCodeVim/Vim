@@ -1,14 +1,15 @@
 import * as vscode from 'vscode';
-import { VimState } from './../state/vimState';
-import { Register, RegisterMode } from './../register/register';
+
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
-import { ModeName } from './../mode/mode';
-import { TextEditor } from './../textEditor';
 import { Configuration } from './../configuration/configuration';
-import { TextObjectMovement } from './textobject';
-import { BaseAction, RegisterAction, compareKeypressSequence } from './base';
+import { ModeName } from './../mode/mode';
+import { Register, RegisterMode } from './../register/register';
+import { VimState } from './../state/vimState';
+import { TextEditor } from './../textEditor';
+import { BaseAction, compareKeypressSequence, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
+import { TextObjectMovement } from './textobject';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {

@@ -1,14 +1,14 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+
+import { getAndUpdateModeHandler } from '../extension';
+import { Position } from '../src/common/motion/position';
 import Globals from '../src/globals';
 import { ModeName } from '../src/mode/mode';
-import { HistoryTracker } from '../src/history/historyTracker';
-import { Position } from '../src/common/motion/position';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
-import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
-import { getAndUpdateModeHandler } from '../extension';
+import { assertEqualLines } from './testUtils';
 
 export function getTestingFunctions() {
   const newTest = (testObj: ITestObject): void => {

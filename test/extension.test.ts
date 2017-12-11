@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import * as _ from 'lodash';
 
 suite('package.json', () => {
   test('all keys have handlers', async () => {

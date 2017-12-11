@@ -1,6 +1,6 @@
-import { EasyMotion } from './easymotion';
 import { Position } from './../../../common/motion/position';
 import { Configuration } from './../../../configuration/configuration';
+import { EasyMotion } from './easymotion';
 
 export class MarkerGenerator {
   private matchesCount: number;

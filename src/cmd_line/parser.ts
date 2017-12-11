@@ -1,7 +1,7 @@
-import * as token from './token';
-import * as node from './node';
 import * as lexer from './lexer';
+import * as node from './node';
 import { commandParsers } from './subparser';
+import * as token from './token';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;

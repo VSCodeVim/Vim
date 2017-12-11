@@ -1,19 +1,19 @@
+import { Nvim } from 'promised-neovim-client';
 import * as vscode from 'vscode';
-import EditorIdentity from './../editorIdentity';
 
-import { HistoryTracker } from './../history/historyTracker';
-import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
-import { BaseMovement } from './../actions/motion';
-import { Range } from './../common/motion/range';
-import { Position } from './../common/motion/position';
-import { GlobalState } from './../state/globalState';
-import { ReplaceState } from './../state/replaceState';
 import { Mode, ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
-import { RegisterMode } from './../register/register';
+import { BaseMovement } from './../actions/motion';
+import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
+import { Position } from './../common/motion/position';
+import { Range } from './../common/motion/range';
+import EditorIdentity from './../editorIdentity';
+import { HistoryTracker } from './../history/historyTracker';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
+import { RegisterMode } from './../register/register';
+import { GlobalState } from './../state/globalState';
+import { ReplaceState } from './../state/replaceState';
 import { RecordedState } from './recordedState';
-import { Nvim } from 'promised-neovim-client';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -38,9 +38,6 @@ export class VimState {
 
   public easyMotion: EasyMotion;
 
-  /**
-   * Just for debugging!!
-   */
   public identity: EditorIdentity;
 
   public editor: vscode.TextEditor;
@@ -55,9 +52,11 @@ export class VimState {
    */
   public isMultiCursor = false;
 
-  // Is the multicursor something like visual block "multicursor", where
-  // natively in vim there would only be one cursor whose changes were applied
-  // to all lines after edit.
+  /**
+   * Is the multicursor something like visual block "multicursor", where
+   * natively in vim there would only be one cursor whose changes were applied
+   * to all lines after edit.
+   */
   public isFakeMultiCursor = false;
 
   /**

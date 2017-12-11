@@ -1,16 +1,9 @@
-import { ModeHandler } from '../../src/mode/modeHandler';
-import {
-  setupWorkspace,
-  cleanUpWorkspace,
-  assertEqualLines,
-  assertEqual,
-  WaitForEditors,
-} from './../testUtils';
-import { runCmdLine } from '../../src/cmd_line/main';
 import * as vscode from 'vscode';
-import { join } from 'path';
-import * as assert from 'assert';
+
 import { getAndUpdateModeHandler } from '../../extension';
+import { runCmdLine } from '../../src/cmd_line/main';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { assertEqual, cleanUpWorkspace, setupWorkspace, WaitForEditors } from './../testUtils';
 
 suite('Vertical split', () => {
   let modeHandler: ModeHandler;

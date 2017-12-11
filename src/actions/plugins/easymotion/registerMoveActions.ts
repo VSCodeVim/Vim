@@ -1,10 +1,10 @@
 import { RegisterAction } from './../../base';
 import {
+  EasyMotionCharMoveCommandBase,
+  EasyMotionLineMoveCommandBase,
+  EasyMotionWordMoveCommandBase,
   SearchByCharCommand,
   SearchByNCharCommand,
-  EasyMotionCharMoveCommandBase,
-  EasyMotionWordMoveCommandBase,
-  EasyMotionLineMoveCommandBase,
 } from './easymotion.cmd';
 
 // EasyMotion n-char-move command

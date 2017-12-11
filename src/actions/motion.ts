@@ -1,17 +1,18 @@
 import * as vscode from 'vscode';
-import { ModeName } from './../mode/mode';
-import { Position, PositionDiff } from './../common/motion/position';
-import { Configuration } from './../configuration/configuration';
-import { TextEditor, CursorMovePosition, CursorMoveByUnit } from './../textEditor';
-import { VimState } from './../state/vimState';
-import { RegisterMode } from './../register/register';
+
 import { PairMatcher } from './../common/matching/matcher';
-import { ReplaceState } from './../state/replaceState';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { TagMatcher } from './../common/matching/tagMatcher';
+import { Position, PositionDiff } from './../common/motion/position';
+import { Configuration } from './../configuration/configuration';
+import { ModeName } from './../mode/mode';
+import { RegisterMode } from './../register/register';
+import { ReplaceState } from './../state/replaceState';
+import { VimState } from './../state/vimState';
+import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
+import { BaseAction } from './base';
 import { RegisterAction } from './base';
 import { ChangeOperator } from './operator';
-import { BaseAction } from './base';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
