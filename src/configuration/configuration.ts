@@ -43,18 +43,8 @@ export interface IModeSpecificStrings {
  *
  */
 class ConfigurationClass {
-  private static _instance: ConfigurationClass | null;
-
   constructor() {
     this.updateConfiguration();
-  }
-
-  public static getInstance(): ConfigurationClass {
-    if (ConfigurationClass._instance == null) {
-      ConfigurationClass._instance = new ConfigurationClass();
-    }
-
-    return ConfigurationClass._instance;
   }
 
   public updateConfiguration() {
@@ -365,15 +355,13 @@ function overlapSetting(args: {
             return;
           }
 
-          let codeValue = value;
-
           if (args.codeValueMapping) {
-            codeValue = args.codeValueMapping[value];
+            value = args.codeValueMapping[value];
           }
 
           await getConfiguration('editor').update(
             args.codeName,
-            codeValue,
+            value,
             vscode.ConfigurationTarget.Global
           );
         }, 'config');
@@ -384,4 +372,4 @@ function overlapSetting(args: {
   };
 }
 
-export const Configuration = ConfigurationClass.getInstance();
+export let Configuration = new ConfigurationClass();
