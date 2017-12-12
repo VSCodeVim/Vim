@@ -12,13 +12,13 @@ import { showCmdLine } from './src/cmd_line/main';
 import { runCmdLine } from './src/cmd_line/main';
 import { Position } from './src/common/motion/position';
 import { Configuration } from './src/configuration/configuration';
-import EditorIdentity from './src/editorIdentity';
-import Globals from './src/globals';
+import { EditorIdentity } from './src/editorIdentity';
+import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { ICodeKeybinding } from './src/mode/remapper';
 import { Neovim } from './src/neovim/nvimUtil';
-import Notation from './src/notation';
+import { AngleBracketNotation } from './src/notation';
 import { taskQueue } from './src/taskQueue';
 
 interface VSCodeKeybinding {
@@ -228,7 +228,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const mh = await getAndUpdateModeHandler();
       if (args.after) {
         for (const key of args.after) {
-          await mh.handleKeyEvent(Notation.Normalize(key));
+          await mh.handleKeyEvent(AngleBracketNotation.Normalize(key));
         }
         return;
       }
@@ -306,7 +306,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     // Store registered key bindings in bracket notation form
-    const bracketedKey = Notation.Normalize(keyToBeBound);
+    const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
     Configuration.boundKeyCombinations.push(bracketedKey);
 
     registerCommand(context, keybinding.command, () => handleKeyEvent(`${bracketedKey}`));

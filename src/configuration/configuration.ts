@@ -1,26 +1,32 @@
 import * as vscode from 'vscode';
 import { ConfigurationTarget, WorkspaceConfiguration } from 'vscode';
 
-import Globals from '../globals';
+import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
 
-export type OptionValue = number | string | boolean;
-export type ValueMapping = {
-  [key: number]: OptionValue;
-  [key: string]: OptionValue;
+type OptionValue = number | string | boolean;
+type ValueMapping = {
+  [key: number]: number | string | boolean;
+  [key: string]: number | string | boolean;
 };
 
-export interface IHandleKeys {
+interface IHandleKeys {
   [key: string]: boolean;
 }
 
-export interface IModeSpecificStrings {
+interface IModeSpecificStrings {
   normal: string | undefined;
   insert: string | undefined;
   visual: string | undefined;
   visualline: string | undefined;
   visualblock: string | undefined;
   replace: string | undefined;
+}
+
+export interface IKeybinding {
+  before: string[];
+  after?: string[];
+  commands?: { command: string; args: any[] }[];
 }
 
 /**
@@ -47,7 +53,7 @@ class ConfigurationClass {
     this.updateConfiguration();
   }
 
-  public updateConfiguration() {
+  updateConfiguration() {
     let vimConfigs = getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
@@ -85,7 +91,7 @@ class ConfigurationClass {
     }
   }
 
-  public cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
+  cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
     const cursorType = {
       line: vscode.TextEditorCursorStyle.Line,
       block: vscode.TextEditorCursorStyle.Block,
@@ -247,6 +253,9 @@ class ConfigurationClass {
   @overlapSetting({ codeName: 'insertSpaces', default: false })
   expandtab: boolean;
 
+  /**
+   * Show line numbers
+   */
   @overlapSetting({
     codeName: 'lineNumbers',
     default: true,
@@ -276,12 +285,19 @@ class ConfigurationClass {
    */
   visualstar = false;
 
+  /**
+   * Does dragging with the mouse put you into visual mode
+   */
   mouseSelectionGoesIntoVisualMode = true;
+
   /**
    * Uses a hack to fix moving around folds.
    */
   foldfix = false;
 
+  /**
+   * Disables extension
+   */
   private disableExtension: boolean = false;
 
   get disableExt(): boolean {
@@ -292,8 +308,10 @@ class ConfigurationClass {
     getConfiguration('vim').update('disableExtension', isDisabled, ConfigurationTarget.Global);
   }
 
+  /**
+   * Neovim
+   */
   enableNeovim = true;
-
   neovimPath = 'nvim';
 
   /**
@@ -317,6 +335,14 @@ class ConfigurationClass {
    * When typing a command show the initial colon ':' character
    */
   cmdLineInitialColon = false;
+
+  /**
+   * Keybindings
+   */
+  insertModeKeyBindings: IKeybinding[] = [];
+  insertModeKeyBindingsNonRecursive: IKeybinding[] = [];
+  otherModesKeyBindings: IKeybinding[] = [];
+  otherModesKeyBindingsNonRecursive: IKeybinding[] = [];
 }
 
 function getConfiguration(section: string): vscode.WorkspaceConfiguration {

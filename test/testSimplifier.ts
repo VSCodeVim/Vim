@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../extension';
 import { Position } from '../src/common/motion/position';
-import Globals from '../src/globals';
+import { Globals } from '../src/globals';
 import { ModeName } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';

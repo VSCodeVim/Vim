@@ -10,7 +10,7 @@
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 
-import Globals from '../src/globals';
+import { Globals } from '../src/globals';
 Globals.isTesting = true;
 
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info

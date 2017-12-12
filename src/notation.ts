@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 
 import { Configuration } from './configuration/configuration';
 
-export default class AngleBracketNotation {
+export class AngleBracketNotation {
   // Mapping from the nomalized string to regex strings that could match it.
   private static _notationMap: { [key: string]: string[] } = {
     'C-': ['ctrl\\+', 'c\\-'],
