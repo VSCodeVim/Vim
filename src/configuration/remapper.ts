@@ -115,7 +115,9 @@ class Remapper {
         );
       }
 
-      vimState.isCurrentlyPerformingRemapping = false;
+      if (!this._recursive) {
+        vimState.isCurrentlyPerformingRemapping = true;
+      }
 
       // We need to remove the keys that were remapped into different keys
       // from the state.
