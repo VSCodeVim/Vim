@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../configuration/configuration';
+import { InsertModeRemapper, OtherModesRemapper } from '../configuration/remapper';
 import { Globals } from '../globals';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
@@ -34,7 +35,6 @@ import { SearchInProgressMode } from './modeSearchInProgress';
 import { VisualMode } from './modeVisual';
 import { VisualBlockMode } from './modeVisualBlock';
 import { VisualLineMode } from './modeVisualLine';
-import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { SurroundInputMode } from './surroundInputMode';
 
 export class ModeHandler implements vscode.Disposable {
@@ -66,7 +66,6 @@ export class ModeHandler implements vscode.Disposable {
     borderStyle: 'solid',
     borderWidth: '1px',
   });
-
 
   private get currentModeName(): ModeName {
     return this.currentMode.name;

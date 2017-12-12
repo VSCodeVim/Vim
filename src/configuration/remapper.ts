@@ -5,8 +5,8 @@ import { runCmdLine } from '../cmd_line/main';
 import { Configuration, IKeybinding } from '../configuration/configuration';
 import { AngleBracketNotation } from './../notation';
 import { VimState } from './../state/vimState';
-import { ModeName } from './mode';
-import { ModeHandler } from './modeHandler';
+import { ModeName } from '../mode/mode';
+import { ModeHandler } from '../mode/modeHandler';
 
 export interface ICodeKeybinding {
   after?: string[];
@@ -26,7 +26,7 @@ class Remapper {
    * Have the keys pressed so far potentially be a remap
    */
   private _couldRemappingApply = false;
-  public get couldRemappingApply(): boolean {
+  get couldRemappingApply(): boolean {
     return this._couldRemappingApply;
   }
 
@@ -38,7 +38,9 @@ class Remapper {
 
     for (let remapping of remappings) {
       let before: string[] = [];
-      remapping.before.forEach(item => before.push(AngleBracketNotation.Normalize(item)));
+      if (remapping.before) {
+        remapping.before.forEach(item => before.push(AngleBracketNotation.Normalize(item)));
+      }
 
       let after: string[] = [];
       if (remapping.after) {
@@ -76,10 +78,9 @@ class Remapper {
 
     /**
      * Check to see if the keystrokes match any user-specified remapping.
-     *
-     * In non-Insert mode, we have to precisely match the entire keysequence,
-     * but in insert mode, we allow the users to precede the remapped command
-     * with extraneous keystrokes ("hello world jj")
+     * In insert mode, we allow the users to precede the remapped command
+     * with extraneous keystrokes (eg. "hello world jj").
+     * In other modes, we have to precisely match the entire keysequence.
      */
 
     if (this._remappedModes.indexOf(ModeName.Insert) === -1) {
@@ -93,7 +94,6 @@ class Remapper {
 
         if (result) {
           remapping = result;
-
           break;
         }
       }
@@ -104,17 +104,12 @@ class Remapper {
       vimState.recordedState.numberOfRemappedKeys += remapping.before.length;
 
       // If we remapped e.g. jj to esc, we have to revert the inserted "jj"
-
       if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
         // Revert every single inserted character. This is actually a bit of
         // a hack since we aren't guaranteed that each insertion inserted
         // only a single character.
 
         // We subtract 1 because we haven't actually applied the last key.
-
-        // TODO(johnfn) - study - actions need to be paired up with text
-        // changes... this is a complicated problem.
-
         await vimState.historyTracker.undoAndRemoveChanges(
           Math.max(0, (remapping.before.length - 1) * vimState.allCursors.length)
         );

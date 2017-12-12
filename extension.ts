@@ -16,7 +16,7 @@ import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
-import { ICodeKeybinding } from './src/mode/remapper';
+import { ICodeKeybinding } from './src/configuration/remapper';
 import { Neovim } from './src/neovim/nvimUtil';
 import { AngleBracketNotation } from './src/notation';
 import { taskQueue } from './src/taskQueue';
