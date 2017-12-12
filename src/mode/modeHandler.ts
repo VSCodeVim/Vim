@@ -38,10 +38,12 @@ import { InsertModeRemapper, OtherModesRemapper } from './remapper';
 import { SurroundInputMode } from './surroundInputMode';
 
 export class ModeHandler implements vscode.Disposable {
+  private static _statusBarItem: vscode.StatusBarItem;
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
-  private static _statusBarItem: vscode.StatusBarItem;
   private _vimState: VimState;
+  private _searchHighlightDecoration: vscode.TextEditorDecorationType;
+  private _easymotionHighlightDecoration: vscode.TextEditorDecorationType;
   private _insertModeRemapper: InsertModeRemapper;
   private _otherModesRemapper: OtherModesRemapper;
   private _otherModesNonRecursive: OtherModesRemapper;
@@ -65,8 +67,6 @@ export class ModeHandler implements vscode.Disposable {
     borderWidth: '1px',
   });
 
-  private _searchHighlightDecoration: vscode.TextEditorDecorationType;
-  private _easymotionHighlightDecoration: vscode.TextEditorDecorationType;
 
   private get currentModeName(): ModeName {
     return this.currentMode.name;
