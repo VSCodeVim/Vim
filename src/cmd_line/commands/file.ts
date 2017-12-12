@@ -59,6 +59,7 @@ export class FileCommand extends node.CommandBase {
   async execute(): Promise<void> {
     if (this._arguments.bang) {
       await vscode.commands.executeCommand('workbench.action.files.revert');
+      return;
     }
     if (this._arguments.name === undefined) {
       // Open an empty file
