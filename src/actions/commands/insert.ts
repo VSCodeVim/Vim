@@ -30,6 +30,9 @@ class CommandEscInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft()));
+    if (vimState.returnToInsertAfterCommand && position.character !== 0) {
+      vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getRight()));
+    }
 
     // only remove leading spaces inserted by vscode.
     // vscode only inserts them when user enter a new line,
@@ -349,10 +352,7 @@ export class CommandOneNormalCommandInInsertMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.returnToInsertAfterCommand = true;
-    return await new CommandEscInsertMode().exec(
-      position.character === 0 ? position : position.getRight(),
-      vimState
-    );
+    return await new CommandEscInsertMode().exec(position, vimState);
   }
 }
 @RegisterAction
