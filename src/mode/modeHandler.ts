@@ -43,7 +43,6 @@ import { Globals } from '../../src/globals';
 import { ReplaceState } from './../state/replaceState';
 import { GlobalState } from './../state/globalState';
 import { Nvim } from 'promised-neovim-client';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 
 export class ViewChange {
   public command: string;
@@ -1948,7 +1947,6 @@ export class ModeHandler implements vscode.Disposable {
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
-      vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
     }
 
     // If user wants to change status bar color based on mode
