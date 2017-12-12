@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import Notation from '../src/notation';
+import { AngleBracketNotation } from '../src/notation';
 
 suite('Notation', () => {
   test('Normalize', () => {
@@ -15,7 +15,7 @@ suite('Notation', () => {
       if (testCases.hasOwnProperty(test)) {
         let expected = testCases[test];
 
-        let actual = Notation.Normalize(test);
+        let actual = AngleBracketNotation.Normalize(test);
         assert.equal(actual, expected);
       }
     }

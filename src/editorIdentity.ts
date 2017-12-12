@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export default class EditorIdentity {
+export class EditorIdentity {
   private _fileName: string;
   private _viewColumn: vscode.ViewColumn;
 

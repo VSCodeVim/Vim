@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../configuration/configuration';
-import Globals from '../globals';
+import { Globals } from '../globals';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
 import {

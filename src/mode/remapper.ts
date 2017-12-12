@@ -2,18 +2,13 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { runCmdLine } from '../cmd_line/main';
-import Notation from './../notation';
+import { Configuration, IKeybinding } from '../configuration/configuration';
+import { AngleBracketNotation } from './../notation';
 import { VimState } from './../state/vimState';
 import { ModeName } from './mode';
 import { ModeHandler } from './modeHandler';
 
 export interface ICodeKeybinding {
-  after?: string[];
-  commands?: { command: string; args: any[] }[];
-}
-
-interface IKeybinding {
-  before: string[];
   after?: string[];
   commands?: { command: string; args: any[] }[];
 }
@@ -39,15 +34,15 @@ class Remapper {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
 
-    let remappings = vscode.workspace.getConfiguration('vim').get<IKeybinding[]>(configKey, []);
+    const remappings = Configuration[configKey] as IKeybinding[];
 
     for (let remapping of remappings) {
       let before: string[] = [];
-      remapping.before.forEach(item => before.push(Notation.Normalize(item)));
+      remapping.before.forEach(item => before.push(AngleBracketNotation.Normalize(item)));
 
       let after: string[] = [];
       if (remapping.after) {
-        remapping.after.forEach(item => after.push(Notation.Normalize(item)));
+        remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
       }
 
       this._remappings.push(<IKeybinding>{

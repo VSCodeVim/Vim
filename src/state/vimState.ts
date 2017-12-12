@@ -7,7 +7,7 @@ import { BaseMovement } from './../actions/motion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
-import EditorIdentity from './../editorIdentity';
+import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { VisualBlockMode } from './../mode/modeVisualBlock';
 import { RegisterMode } from './../register/register';
