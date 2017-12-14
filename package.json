@@ -568,7 +568,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
   },
   "dependencies": {
-    "clipboardy": "^1.2.1",
+    "clipboardy": "^1.2.2",
     "diff-match-patch": "^1.0.0",
     "lodash": "^4.17.4",
     "neovim-client": "^2.1.0",
@@ -577,7 +577,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^2.2.44",
-    "@types/node": "^6.0.89",
+    "@types/node": "^8.5.1",
     "gulp": "^3.9.1",
     "gulp-bump": "^2.8.0",
     "gulp-git": "^2.4.2",
@@ -588,9 +588,9 @@
     "gulp-typings": "^2.0.4",
     "merge-stream": "^1.0.1",
     "mocha": "^4.0.1",
-    "prettier": "^1.8.2",
-    "tslint": "^5.7.0",
-    "typescript": "^2.5.3",
-    "vscode": "^1.1.6"
+    "prettier": "^1.9.2",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.2",
+    "vscode": "^1.1.10"
   }
 }
