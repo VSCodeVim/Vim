@@ -3,8 +3,10 @@
 .vscode-test/**
 typings/**
 out/test/**
+scripts/**
 test/**
 **/*.ts
 **/*.map
 .gitignore
+*.yml
 tsconfig.json
