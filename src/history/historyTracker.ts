@@ -21,7 +21,7 @@ import { TextEditor } from './../textEditor';
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
 
-export class DocumentChange {
+class DocumentChange {
   start: Position;
   text: string;
   isAdd: boolean;
@@ -196,10 +196,6 @@ export class HistoryTracker {
     this._initialize();
   }
 
-  public getAllText(): string {
-    return this.vimState.editor.document.getText();
-  }
-
   public clear() {
     this.historySteps = [];
     this.currentHistoryStepIndex = 0;
@@ -212,7 +208,7 @@ export class HistoryTracker {
   private _initialize() {
     this.historySteps.push(
       new HistoryStep({
-        changes: [new DocumentChange(new Position(0, 0), this.getAllText(), true)],
+        changes: [new DocumentChange(new Position(0, 0), this._getDocumentText(), true)],
         isFinished: true,
         cursorStart: [new Position(0, 0)],
         cursorEnd: [new Position(0, 0)],
@@ -221,9 +217,13 @@ export class HistoryTracker {
 
     this.finishCurrentStep();
 
-    this.oldText = this.getAllText();
+    this.oldText = this._getDocumentText();
     this.currentContentChanges = [];
     this.lastContentChanges = [];
+  }
+
+  private _getDocumentText(): string {
+    return (this.vimState.editor.document && this.vimState.editor.document.getText()) || '';
   }
 
   private _addNewHistoryStep(): void {
@@ -375,7 +375,7 @@ export class HistoryTracker {
    * used to look like.
    */
   addChange(cursorPosition = [new Position(0, 0)]): void {
-    const newText = this.getAllText();
+    const newText = this._getDocumentText();
 
     if (newText === this.oldText) {
       return;
@@ -406,7 +406,7 @@ export class HistoryTracker {
 
     /*
     this.historySteps.push(new HistoryStep({
-      changes  : [new DocumentChange(new Position(0, 0), TextEditor.getAllText(), true)],
+      changes  : [new DocumentChange(new Position(0, 0), TextEditor._getDocumentText(), true)],
       isFinished : true,
       cursorStart: new Position(0, 0)
     }));
@@ -451,7 +451,6 @@ export class HistoryTracker {
   async undoAndRemoveChanges(n: number): Promise<void> {
     if (this.currentHistoryStep.changes.length < n) {
       console.log('Something bad happened in removeChange');
-
       return;
     }
 
@@ -468,7 +467,7 @@ export class HistoryTracker {
    * the HistoryTracker.
    */
   ignoreChange(): void {
-    this.oldText = this.getAllText();
+    this.oldText = this._getDocumentText();
   }
 
   /**
