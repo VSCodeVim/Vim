@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { Configuration } from '../configuration/configuration';
 import { ModeHandler } from '../mode/modeHandler';
+import { StatusBar } from '../statusBar';
 import { Neovim } from '../neovim/nvimUtil';
 import * as parser from './parser';
 
@@ -34,7 +35,7 @@ export async function showCmdLine(
     await runCmdLine(trimmedCmdString!, modeHandler);
     return;
   } catch (e) {
-    modeHandler.setStatusBarText(e.toString());
+    StatusBar.Text = e.toString();
     return;
   }
 }

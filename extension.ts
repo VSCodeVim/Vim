@@ -19,6 +19,7 @@ import { ModeHandler } from './src/mode/modeHandler';
 import { ICodeKeybinding } from './src/configuration/remapper';
 import { Neovim } from './src/neovim/nvimUtil';
 import { AngleBracketNotation } from './src/notation';
+import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 
 interface VSCodeKeybinding {
@@ -275,7 +276,7 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.window.visibleTextEditors.forEach(e => {
         e.options.cursorStyle = Configuration.userCursor;
       });
-      mh.setStatusBarText('-- VIM: DISABLED --');
+      StatusBar.Text = '-- VIM: DISABLED --';
     } else {
       compositionState = new CompositionState();
       modeHandlerToEditorIdentity = {};
