@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { ModeHandler } from '../../mode/modeHandler';
+import { StatusBar } from '../../statusBar';
 import * as util from '../../util';
 import * as node from '../node';
 
@@ -60,31 +61,27 @@ export class WriteCommand extends node.CommandBase {
       if (this.arguments.bang) {
         fs.chmod(modeHandler.vimState.editor.document.fileName, 666, e => {
           if (e) {
-            return modeHandler.setStatusBarText(e.message);
-          } else {
-            return this.save(modeHandler);
+            StatusBar.Text = e.message;
+            return;
           }
+          return this.save(modeHandler);
         });
       } else {
-        modeHandler.setStatusBarText(accessErr.message);
+        StatusBar.Text = accessErr.message;
       }
     }
   }
 
   private async save(modeHandler: ModeHandler): Promise<void> {
-    await modeHandler.vimState.editor.document.save().then(
-      ok => {
-        modeHandler.setStatusBarText(
-          '"' +
-            path.basename(modeHandler.vimState.editor.document.fileName) +
-            '" ' +
-            modeHandler.vimState.editor.document.lineCount +
-            'L ' +
-            modeHandler.vimState.editor.document.getText().length +
-            'C written'
-        );
-      },
-      e => modeHandler.setStatusBarText(e)
-    );
+    await modeHandler.vimState.editor.document.save().then(ok => {
+      StatusBar.Text =
+        '"' +
+        path.basename(modeHandler.vimState.editor.document.fileName) +
+        '" ' +
+        modeHandler.vimState.editor.document.lineCount +
+        'L ' +
+        modeHandler.vimState.editor.document.getText().length +
+        'C written';
+    }, e => (StatusBar.Text = e));
   }
 }

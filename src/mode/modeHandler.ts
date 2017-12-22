@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../configuration/configuration';
+import { StatusBar } from '../statusBar';
 import { InsertModeRemapper, OtherModesRemapper } from '../configuration/remapper';
 import { Globals } from '../globals';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
@@ -38,7 +39,6 @@ import { VisualLineMode } from './modeVisualLine';
 import { SurroundInputMode } from './surroundInputMode';
 
 export class ModeHandler implements vscode.Disposable {
-  private static _statusBarItem: vscode.StatusBarItem;
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _vimState: VimState;
@@ -1465,17 +1465,16 @@ export class ModeHandler implements vscode.Disposable {
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
       vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
     }
+    this.vimState.postponedCodeViewChanges = [];
 
     // If user wants to change status bar color based on mode
     if (Configuration.statusBarColorControl) {
       const colorToSet =
         Configuration.statusBarColors[this._vimState.currentModeName().toLowerCase()];
       if (colorToSet !== undefined) {
-        this.setStatusBarColor(colorToSet);
+        StatusBar.Color = colorToSet;
       }
     }
-
-    this.vimState.postponedCodeViewChanges = [];
 
     if (this.currentMode.name === ModeName.EasyMotionMode) {
       // Update all EasyMotion decorations
@@ -1538,17 +1537,12 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private _renderStatusBar(): void {
-    const modeText = `-- ${this.currentMode.text.toUpperCase()} ${
-      this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''
-    } --`;
-    const macroText = this._vimState.isRecordingMacro
-      ? 'Recording @' + this._vimState.recordedMacro.registerName
-      : '';
-
-    // Create status bar text
     let statusBarTextArray = [];
 
     if (Configuration.showmodename) {
+      const modeText = `-- ${this.currentMode.text.toUpperCase()} ${
+        this._vimState.isMultiCursor ? 'MULTI CURSOR' : ''
+      } --`;
       statusBarTextArray.push(modeText);
     }
 
@@ -1556,45 +1550,18 @@ export class ModeHandler implements vscode.Disposable {
       statusBarTextArray.push(this._createCurrentCommandText());
     }
 
-    statusBarTextArray.push(macroText);
+    if (this._vimState.isRecordingMacro) {
+      const macroText = 'Recording @' + this._vimState.recordedMacro.registerName;
+      statusBarTextArray.push(macroText);
+    }
 
-    const statusBarText = statusBarTextArray.join(' ');
-    this.setStatusBarText(statusBarText);
+    StatusBar.Text = statusBarTextArray.join(' ');
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
     for (const key of keys) {
       await this.handleKeyEvent(key!);
     }
-  }
-
-  /**
-   * Set the text in the status bar on the bottom of the screen.
-   */
-  setStatusBarText(text: string): void {
-    if (!ModeHandler._statusBarItem) {
-      ModeHandler._statusBarItem = vscode.window.createStatusBarItem(
-        vscode.StatusBarAlignment.Left
-      );
-    }
-
-    ModeHandler._statusBarItem.text = text || '';
-    ModeHandler._statusBarItem.show();
-  }
-
-  setStatusBarColor(color: string): void {
-    let currentColorCustomizations = vscode.workspace
-      .getConfiguration('workbench')
-      .get('colorCustomizations');
-    vscode.workspace.getConfiguration('workbench').update(
-      'colorCustomizations',
-      Object.assign(currentColorCustomizations, {
-        'statusBar.background': `${color}`,
-        'statusBar.noFolderBackground': `${color}`,
-        'statusBar.debuggingBackground': `${color}`,
-      }),
-      true
-    );
   }
 
   // Return true if a new undo point should be created based on brackets and parenthesis
