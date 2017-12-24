@@ -53,15 +53,6 @@ export class Register {
     '9': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
   };
 
-  public static isBlackHoleRegister(registerName: string): boolean {
-    return registerName === '_';
-  }
-
-  public static isClipboardRegister(registerName: string): boolean {
-    const register = Register.registers[registerName];
-    return register && register.isClipboardRegister;
-  }
-
   /**
    * ". readonly register: last content change.
    */
@@ -73,6 +64,15 @@ export class Register {
       Register.isValidLowercaseRegister(register) ||
       Register.isValidUppercaseRegister(register)
     );
+  }
+
+  private static isBlackHoleRegister(registerName: string): boolean {
+    return registerName === '_';
+  }
+
+  private static isClipboardRegister(registerName: string): boolean {
+    const register = Register.registers[registerName];
+    return register && register.isClipboardRegister;
   }
 
   public static isValidRegisterForMacro(register: string): boolean {
@@ -156,7 +156,7 @@ export class Register {
         util.clipboardCopy(clipboardText);
       }
 
-      Register.ProcessNumberedRegister(registerContent.text, vimState);
+      Register.processNumberedRegister(registerContent.text, vimState);
     }
   }
 
@@ -229,7 +229,7 @@ export class Register {
       isClipboardRegister: Register.isClipboardRegister(register),
     };
 
-    Register.ProcessNumberedRegister(content, vimState);
+    Register.processNumberedRegister(content, vimState);
   }
 
   /**
@@ -300,7 +300,7 @@ export class Register {
   /**
    * Handles special cases for Yank- and DeleteOperator.
    */
-  private static ProcessNumberedRegister(content: RegisterContent, vimState: VimState): void {
+  private static processNumberedRegister(content: RegisterContent, vimState: VimState): void {
     // Find the BaseOperator of the current actions
     const baseOperator = vimState.recordedState.actionsRun.find(value => {
       return value instanceof BaseOperator || value instanceof BaseCommand;
