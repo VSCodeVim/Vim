@@ -83,8 +83,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     prevHandler.vimState.focusChanged = true;
   }
 
-  vscode.commands.executeCommand('setContext', 'vim.mode', curHandler.vimState.currentModeName());
-
   // Temporary workaround for vscode bug not changing cursor style properly
   // https://github.com/Microsoft/vscode/issues/17472
   // https://github.com/Microsoft/vscode/issues/17513
