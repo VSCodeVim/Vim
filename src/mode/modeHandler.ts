@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../configuration/configuration';
 import { StatusBar } from '../statusBar';
-import { InsertModeRemapper, OtherModesRemapper } from '../configuration/remapper';
+import { Remappers } from '../configuration/remapper';
 import { Globals } from '../globals';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
@@ -44,10 +44,7 @@ export class ModeHandler implements vscode.Disposable {
   private _vimState: VimState;
   private _searchHighlightDecoration: vscode.TextEditorDecorationType;
   private _easymotionHighlightDecoration: vscode.TextEditorDecorationType;
-  private _insertModeRemapper: InsertModeRemapper;
-  private _otherModesRemapper: OtherModesRemapper;
-  private _otherModesNonRecursive: OtherModesRemapper;
-  private _insertModeNonRecursive: InsertModeRemapper;
+  private _remappers: Remappers;
 
   public get vimState(): VimState {
     return this._vimState;
@@ -145,10 +142,7 @@ export class ModeHandler implements vscode.Disposable {
    * create remappers after a configuration change
    */
   createRemappers() {
-    this._insertModeRemapper = new InsertModeRemapper(true);
-    this._otherModesRemapper = new OtherModesRemapper(true);
-    this._insertModeNonRecursive = new InsertModeRemapper(false);
-    this._otherModesNonRecursive = new OtherModesRemapper(false);
+    this._remappers = new Remappers();
   }
 
   /**
@@ -398,12 +392,7 @@ export class ModeHandler implements vscode.Disposable {
       ) {
         // User remappings bork the tests. If the the remappings start getting tested
         // at some point, will probably need a new solution.
-        handled = handled || (await this._insertModeRemapper.sendKey(keys, this, this.vimState));
-        handled = handled || (await this._otherModesRemapper.sendKey(keys, this, this.vimState));
-        handled =
-          handled || (await this._insertModeNonRecursive.sendKey(keys, this, this.vimState));
-        handled =
-          handled || (await this._otherModesNonRecursive.sendKey(keys, this, this.vimState));
+        handled = await this._remappers.sendKey(keys, this, this.vimState);
       }
 
       if (!handled) {
@@ -439,13 +428,9 @@ export class ModeHandler implements vscode.Disposable {
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
 
-    const isPotentialRemapping =
-      this._insertModeNonRecursive.couldRemappingApply ||
-      this._insertModeRemapper.couldRemappingApply ||
-      this._otherModesRemapper.couldRemappingApply ||
-      this._otherModesNonRecursive.couldRemappingApply;
+    const isPotentialRemap = this._remappers.isPotentialRemap;
 
-    if (result === KeypressState.NoPossibleMatch && !isPotentialRemapping) {
+    if (result === KeypressState.NoPossibleMatch && !isPotentialRemap) {
       vimState.recordedState = new RecordedState();
       return vimState;
     } else if (result === KeypressState.WaitingOnKeys) {

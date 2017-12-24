@@ -16,7 +16,6 @@ import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
-import { ICodeKeybinding } from './src/configuration/remapper';
 import { Neovim } from './src/neovim/nvimUtil';
 import { AngleBracketNotation } from './src/notation';
 import { StatusBar } from './src/statusBar';
@@ -223,6 +222,11 @@ export async function activate(context: vscode.ExtensionContext) {
       modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]
     );
   });
+
+  interface ICodeKeybinding {
+    after?: string[];
+    commands?: { command: string; args: any[] }[];
+  }
 
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
     taskQueue.enqueueTask(async () => {

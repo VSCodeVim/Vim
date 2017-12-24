@@ -8,26 +8,56 @@ import { VimState } from './../state/vimState';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 
-export interface ICodeKeybinding {
-  after?: string[];
-  commands?: { command: string; args: any[] }[];
+export class Remappers implements IRemapper {
+  private remappers: IRemapper[];
+
+  constructor() {
+    this.remappers = [
+      new InsertModeRemapper(true),
+      new OtherModesRemapper(true),
+      new InsertModeRemapper(false),
+      new OtherModesRemapper(false),
+    ];
+  }
+
+  get isPotentialRemap(): boolean {
+    for (let remapper of this.remappers) {
+      if (remapper.isPotentialRemap) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public async sendKey(
+    keys: string[],
+    modeHandler: ModeHandler,
+    vimState: VimState
+  ): Promise<boolean> {
+    let handled = false;
+    for (let remapper of this.remappers) {
+      handled = handled || (await remapper.sendKey(keys, modeHandler, vimState));
+    }
+    return handled;
+  }
 }
 
-class Remapper {
-  private _remappings: IKeybinding[] = [];
+interface IRemapper {
+  sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean>;
+  readonly isPotentialRemap: boolean;
+}
 
-  /**
-   * Modes that this Remapper is active for.
-   */
-  private _remappedModes: ModeName[];
-  private _recursive: boolean;
+class Remapper implements IRemapper {
+  private readonly _remappedModes: ModeName[];
+  private readonly _recursive: boolean;
+  private _remappings: IKeybinding[] = [];
 
   /**
    * Have the keys pressed so far potentially be a remap
    */
-  private _couldRemappingApply = false;
-  get couldRemappingApply(): boolean {
-    return this._couldRemappingApply;
+  private _isPotentialRemap = false;
+  get isPotentialRemap(): boolean {
+    return this._isPotentialRemap;
   }
 
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
@@ -55,14 +85,6 @@ class Remapper {
     }
   }
 
-  private _longestKeySequence(): number {
-    if (this._remappings.length > 0) {
-      return _.maxBy(this._remappings, map => map.before.length).before.length;
-    } else {
-      return 1;
-    }
-  }
-
   public async sendKey(
     keys: string[],
     modeHandler: ModeHandler,
@@ -73,7 +95,6 @@ class Remapper {
     }
 
     const longestKeySequence = this._longestKeySequence();
-
     let remapping: IKeybinding | undefined;
 
     /**
@@ -82,7 +103,6 @@ class Remapper {
      * with extraneous keystrokes (eg. "hello world jj").
      * In other modes, we have to precisely match the entire keysequence.
      */
-
     if (this._remappedModes.indexOf(ModeName.Insert) === -1) {
       remapping = _.find(this._remappings, map => {
         return map.before.join('') === keys.join('');
@@ -151,18 +171,26 @@ class Remapper {
     }
 
     // Check to see if a remapping could potentially be applied when more keys are received
-    this._couldRemappingApply = false;
+    this._isPotentialRemap = false;
     for (let remap of this._remappings) {
       if (keys.join('') === remap.before.slice(0, keys.length).join('')) {
-        this._couldRemappingApply = true;
+        this._isPotentialRemap = true;
         break;
       }
     }
     return false;
   }
+
+  private _longestKeySequence(): number {
+    if (this._remappings.length > 0) {
+      return _.maxBy(this._remappings, map => map.before.length).before.length;
+    } else {
+      return 1;
+    }
+  }
 }
 
-export class InsertModeRemapper extends Remapper {
+class InsertModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
       'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
@@ -172,7 +200,7 @@ export class InsertModeRemapper extends Remapper {
   }
 }
 
-export class OtherModesRemapper extends Remapper {
+class OtherModesRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
       'otherModesKeyBindings' + (recursive ? '' : 'NonRecursive'),
