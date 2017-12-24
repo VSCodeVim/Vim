@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { showCmdLine } from '../../src/cmd_line/main';
 import { Configuration } from '../configuration/configuration';
+import { Decoration } from '../configuration/decoration';
 import { StatusBar } from '../statusBar';
 import { Remappers } from '../configuration/remapper';
 import { Globals } from '../globals';
@@ -42,27 +43,11 @@ export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _vimState: VimState;
-  private _searchHighlightDecoration: vscode.TextEditorDecorationType;
-  private _easymotionHighlightDecoration: vscode.TextEditorDecorationType;
   private _remappers: Remappers;
 
   public get vimState(): VimState {
     return this._vimState;
   }
-
-  private readonly _caretDecoration = vscode.window.createTextEditorDecorationType({
-    backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
-    borderColor: new vscode.ThemeColor('editorCursor.foreground'),
-    dark: {
-      color: 'rgb(81,80,82)',
-    },
-    light: {
-      // used for light colored themes
-      color: 'rgb(255, 255, 255)',
-    },
-    borderStyle: 'solid',
-    borderWidth: '1px',
-  });
 
   private get currentModeName(): ModeName {
     return this.currentMode.name;
@@ -93,14 +78,6 @@ export class ModeHandler implements vscode.Disposable {
       new EasyMotionInputMode(),
       new SurroundInputMode(),
     ];
-
-    this._searchHighlightDecoration = vscode.window.createTextEditorDecorationType({
-      backgroundColor: Configuration.searchHighlightColor,
-    });
-
-    this._easymotionHighlightDecoration = vscode.window.createTextEditorDecorationType({
-      backgroundColor: Configuration.searchHighlightColor,
-    });
 
     this.setCurrentModeByName(this._vimState);
 
@@ -1400,7 +1377,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    this._vimState.editor.setDecorations(this._caretDecoration, cursorRange);
+    this._vimState.editor.setDecorations(Decoration.Default, cursorRange);
 
     // Draw marks
     // I should re-enable this with a config setting at some point
@@ -1414,15 +1391,13 @@ export class ModeHandler implements vscode.Disposable {
     */
 
     // Draw search highlight
-
-    let searchRanges: vscode.Range[] = [];
-
     if (
       (Configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
       (Configuration.hlsearch && vimState.globalState.hl && vimState.globalState.searchState)
     ) {
       const searchState = vimState.globalState.searchState!;
 
+      let searchRanges: vscode.Range[] = [];
       searchRanges.push.apply(searchRanges, searchState.matchRanges);
 
       const { pos, match } = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
@@ -1430,9 +1405,9 @@ export class ModeHandler implements vscode.Disposable {
       if (match) {
         searchRanges.push(new vscode.Range(pos, pos.getRight(searchState.searchString.length)));
       }
-    }
 
-    this._vimState.editor.setDecorations(this._searchHighlightDecoration, searchRanges);
+      this._vimState.editor.setDecorations(Decoration.SearchHighlight, searchRanges);
+    }
 
     const easyMotionHighlightRanges =
       this.currentMode.name === ModeName.EasyMotionInputMode
@@ -1440,10 +1415,7 @@ export class ModeHandler implements vscode.Disposable {
             .getMatches(vimState.cursorPosition, vimState)
             .map(x => x.toRange())
         : [];
-    this.vimState.editor.setDecorations(
-      this._easymotionHighlightDecoration,
-      easyMotionHighlightRanges
-    );
+    this.vimState.editor.setDecorations(Decoration.EasyMotion, easyMotionHighlightRanges);
 
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
