@@ -11,14 +11,18 @@ import { waitForCursorUpdatesToHappen } from '../src/util';
 import { assertEqualLines } from './testUtils';
 
 export function getTestingFunctions() {
+  const getNiceStack = (stack: string | undefined): string => {
+    return stack
+    ? stack
+        .split('\n')
+        .splice(2, 1)
+        .join('\n')
+    : 'no stack available :(';
+  };
+
   const newTest = (testObj: ITestObject): void => {
     const stack = new Error().stack;
-    let niceStack = stack
-      ? stack
-          .split('\n')
-          .splice(2, 1)
-          .join('\n')
-      : 'no stack available :(';
+    let niceStack = getNiceStack(stack);
 
     test(testObj.title, async () =>
       testIt
@@ -33,12 +37,7 @@ export function getTestingFunctions() {
   const newTestOnly = (testObj: ITestObject): void => {
     console.log('!!! Running single test !!!');
     const stack = new Error().stack;
-    let niceStack = stack
-      ? stack
-          .split('\n')
-          .splice(2, 1)
-          .join('\n')
-      : 'no stack available :(';
+    let niceStack = getNiceStack(stack);
 
     test.only(testObj.title, async () =>
       testIt
@@ -200,7 +199,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   let helper = new TestObjectHelper(testObj);
 
   // Don't try this at home, kids.
-  (modeHandler as any)._vimState.cursorPosition = new Position(0, 0);
+  (modeHandler as any).vimState.cursorPosition = new Position(0, 0);
 
   await modeHandler.handleKeyEvent('<Esc>');
 
