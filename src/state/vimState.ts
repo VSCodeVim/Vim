@@ -2,7 +2,6 @@ import { Nvim } from 'promised-neovim-client';
 import * as vscode from 'vscode';
 
 import { Mode, ModeName } from '../mode/mode';
-import { ModeHandler } from '../mode/modeHandler';
 import { BaseMovement } from './../actions/motion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { Position } from './../common/motion/position';
@@ -187,14 +186,6 @@ export class VimState {
     this._currentMode = value;
 
     vscode.commands.executeCommand('setContext', 'vim.mode', ModeName[value]);
-  }
-
-  public currentModeName(): string {
-    return ModeName[this._currentMode];
-  }
-
-  public getModeObject(modeHandler: ModeHandler): Mode {
-    return modeHandler.modeList.find(mode => mode.isActive)!;
   }
 
   public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;

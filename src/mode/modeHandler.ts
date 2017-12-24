@@ -49,12 +49,16 @@ export class ModeHandler implements vscode.Disposable {
     return this._vimState;
   }
 
+  get currentMode(): Mode {
+    return this._modes.find(mode => mode.isActive)!;
+  }
+
   private get currentModeName(): ModeName {
     return this.currentMode.name;
   }
 
-  public get modeList(): Mode[] {
-    return this._modes;
+  private get currentModeFriendlyName(): string {
+    return ModeName[this.currentMode.name];
   }
 
   /**
@@ -185,7 +189,7 @@ export class ModeHandler implements vscode.Disposable {
      */
     if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       if (selection) {
-        if (this._vimState.getModeObject(this).isVisualMode) {
+        if (this.currentMode.isVisualMode) {
           /**
            * In Visual Mode, our `cursorPosition` and `cursorStartPosition` can not refect `active`,
            * `start`, `end` and `anchor` information in a selection.
@@ -277,8 +281,8 @@ export class ModeHandler implements vscode.Disposable {
 
         if (
           Configuration.mouseSelectionGoesIntoVisualMode &&
-          !this._vimState.getModeObject(this).isVisualMode &&
-          this._vimState.getModeObject(this).name !== ModeName.Insert
+          !this.currentMode.isVisualMode &&
+          this.currentMode.name !== ModeName.Insert
         ) {
           this._vimState.currentMode = ModeName.Visual;
           this.setCurrentModeByName(this._vimState);
@@ -294,13 +298,6 @@ export class ModeHandler implements vscode.Disposable {
 
       await this.updateView(this._vimState, { drawSelection: toDraw, revealRange: true });
     }
-  }
-
-  /**
-   * The active mode.
-   */
-  get currentMode(): Mode {
-    return this._modes.find(mode => mode.isActive)!;
   }
 
   setCurrentModeByName(vimState: VimState): void {
@@ -678,7 +675,7 @@ export class ModeHandler implements vscode.Disposable {
 
     vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
 
-    if (vimState.getModeObject(this).isVisualMode) {
+    if (this.currentMode.isVisualMode) {
       // Store selection for commands like gv
       this._vimState.lastVisualMode = this._vimState.currentMode;
       this._vimState.lastVisualSelectionStart = this._vimState.cursorStartPosition;
@@ -746,7 +743,7 @@ export class ModeHandler implements vscode.Disposable {
       if (result instanceof Position) {
         vimState.allCursors[i] = vimState.allCursors[i].withNewStop(result);
 
-        if (!vimState.getModeObject(this).isVisualMode && !vimState.recordedState.operator) {
+        if (!this.currentMode.isVisualMode && !vimState.recordedState.operator) {
           vimState.allCursors[i] = vimState.allCursors[i].withNewStart(result);
         }
       } else if (isIMovement(result)) {
@@ -795,7 +792,7 @@ export class ModeHandler implements vscode.Disposable {
     let resultVimState = vimState;
 
     // TODO - if actions were more pure, this would be unnecessary.
-    const cachedMode = this._vimState.getModeObject(this);
+    const cachedMode = this.currentMode;
     const cachedRegister = vimState.currentRegisterMode;
 
     const resultingCursors: Range[] = [];
@@ -874,11 +871,11 @@ export class ModeHandler implements vscode.Disposable {
     return resultVimState;
   }
 
-  private async executeCommand(vimState: VimState): Promise<VimState> {
+  private async executeCommand(vimState: VimState) {
     const transformations = vimState.recordedState.transformations;
 
     if (transformations.length === 0) {
-      return vimState;
+      return;
     }
 
     const textTransformations: TextTransformations[] = transformations.filter(x =>
@@ -1034,7 +1031,7 @@ export class ModeHandler implements vscode.Disposable {
             // movement in last invoked macro failed then we should stop all following repeating macros.
             // Besides, we should reset `lastMovementFailed`.
             vimState.lastMovementFailed = false;
-            return vimState;
+            return;
           }
 
           break;
@@ -1147,8 +1144,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vimState.recordedState.transformations = [];
-
-    return vimState;
+    return;
   }
 
   async rerunRecordedState(vimState: VimState, recordedState: RecordedState): Promise<VimState> {
@@ -1343,7 +1339,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     const optionalCursorStyle =
-      Configuration.cursorStylePerMode[this._vimState.currentModeName().toLowerCase()];
+      Configuration.cursorStylePerMode[this.currentModeFriendlyName.toLowerCase()];
     if (optionalCursorStyle !== undefined) {
       const cursorStyleNum = Configuration.cursorStyleFromString(optionalCursorStyle);
       if (cursorStyleNum !== undefined) {
@@ -1426,8 +1422,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // If user wants to change status bar color based on mode
     if (Configuration.statusBarColorControl) {
-      const colorToSet =
-        Configuration.statusBarColors[this._vimState.currentModeName().toLowerCase()];
+      const colorToSet = Configuration.statusBarColors[this.currentModeFriendlyName.toLowerCase()];
       if (colorToSet !== undefined) {
         StatusBar.Color = colorToSet;
       }
