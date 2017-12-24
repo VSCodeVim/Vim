@@ -376,11 +376,11 @@ function overlapSetting(args: {
       set: function(value) {
         this['_' + propertyKey] = value;
 
-        taskQueue.enqueueTask(async () => {
-          if (value === undefined || Globals.isTesting) {
-            return;
-          }
+        if (value === undefined || Globals.isTesting) {
+          return;
+        }
 
+        taskQueue.enqueueTask(async () => {
           if (args.codeValueMapping) {
             value = args.codeValueMapping[value];
           }

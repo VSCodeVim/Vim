@@ -184,29 +184,28 @@ export class Actions {
     keysPressed: string[],
     vimState: VimState
   ): BaseAction | KeypressState {
-    let couldPotentiallyHaveMatch = false;
+    let isPotentialMatch = false;
 
     for (const thing of Actions.allActions) {
       const { type, action } = thing!;
 
-      // It's an action that can't be called directly.
       if (action.keys === undefined) {
+        // action that can't be called directly
         continue;
       }
+
       if (action.doesActionApply(vimState, keysPressed)) {
         const result = new type();
-
         result.keysPressed = vimState.recordedState.actionKeys.slice(0);
-
         return result;
       }
 
       if (action.couldActionApply(vimState, keysPressed)) {
-        couldPotentiallyHaveMatch = true;
+        isPotentialMatch = true;
       }
     }
 
-    return couldPotentiallyHaveMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
+    return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
   }
 }
 
