@@ -3,7 +3,6 @@
 .vscode-test/**
 typings/**
 out/test/**
-scripts/**
 test/**
 **/*.ts
 **/*.map
