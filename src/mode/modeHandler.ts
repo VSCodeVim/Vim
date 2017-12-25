@@ -1,18 +1,14 @@
 import * as vscode from 'vscode';
 
-import { showCmdLine } from '../../src/cmd_line/main';
+import { CommandLine } from '../cmd_line/commandLine';
 import { Configuration } from '../configuration/configuration';
 import { Decoration } from '../configuration/decoration';
-import { StatusBar } from '../statusBar';
 import { Remappers } from '../configuration/remapper';
 import { Globals } from '../globals';
+import { StatusBar } from '../statusBar';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
-import {
-  BaseCommand,
-  CommandQuitRecordMacro,
-  DocumentContentChangeAction,
-} from './../actions/commands/actions';
+import { BaseCommand, CommandQuitRecordMacro, DocumentContentChangeAction } from './../actions/commands/actions';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { BaseMovement, isIMovement } from './../actions/motion';
 import { PairMatcher } from './../common/matching/matcher';
@@ -976,7 +972,7 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'showCommandLine':
-          await showCmdLine(vimState.commandInitialText, this.vimState);
+          await CommandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
           break;
 
         case 'dot':
@@ -1406,7 +1402,7 @@ export class ModeHandler implements vscode.Disposable {
     if (Configuration.statusBarColorControl) {
       const colorToSet = Configuration.statusBarColors[this.currentModeFriendlyName.toLowerCase()];
       if (colorToSet !== undefined) {
-        StatusBar.Color = colorToSet;
+        StatusBar.SetColor(colorToSet);
       }
     }
 
@@ -1489,7 +1485,7 @@ export class ModeHandler implements vscode.Disposable {
       statusBarTextArray.push(macroText);
     }
 
-    StatusBar.Text = statusBarTextArray.join(' ');
+    StatusBar.SetText(statusBarTextArray.join(' '), this.currentModeName);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {

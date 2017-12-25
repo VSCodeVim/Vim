@@ -60,28 +60,32 @@ export class WriteCommand extends node.CommandBase {
     } catch (accessErr) {
       if (this.arguments.bang) {
         fs.chmod(vimState.editor.document.fileName, 666, e => {
-          if (e) {
-            StatusBar.Text = e.message;
-            return;
+          if (!e) {
+            return this.save(vimState);
           }
-          return this.save(vimState);
+          StatusBar.SetText(e.message, vimState.currentMode, true);
+          return;
         });
       } else {
-        StatusBar.Text = accessErr.message;
+        StatusBar.SetText(accessErr.message, vimState.currentMode, true);
       }
     }
   }
 
   private async save(vimState: VimState): Promise<void> {
-    await vimState.editor.document.save().then(ok => {
-      StatusBar.Text =
-        '"' +
-        path.basename(vimState.editor.document.fileName) +
-        '" ' +
-        vimState.editor.document.lineCount +
-        'L ' +
-        vimState.editor.document.getText().length +
-        'C written';
-    }, e => (StatusBar.Text = e));
+    await vimState.editor.document.save().then(
+      () => {
+        let text =
+          '"' +
+          path.basename(vimState.editor.document.fileName) +
+          '" ' +
+          vimState.editor.document.lineCount +
+          'L ' +
+          vimState.editor.document.getText().length +
+          'C written';
+        StatusBar.SetText(text, vimState.currentMode, true);
+      },
+      e => StatusBar.SetText(e, vimState.currentMode, true)
+    );
   }
 }
