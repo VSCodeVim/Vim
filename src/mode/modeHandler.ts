@@ -63,8 +63,6 @@ export class ModeHandler implements vscode.Disposable {
    * mouse events.
    */
   constructor() {
-    this.vimState = new VimState(vscode.window.activeTextEditor!, Configuration.startInInsertMode);
-
     this.createRemappers();
 
     this._modes = [
@@ -80,7 +78,8 @@ export class ModeHandler implements vscode.Disposable {
       new SurroundInputMode(),
     ];
 
-    this.setCurrentModeByName(this.vimState);
+    this.vimState = new VimState(vscode.window.activeTextEditor!, Configuration.startInInsertMode);
+    this.setCurrentModeByName(this.vimState.currentMode);
 
     // Sometimes, Visual Studio Code will start the cursor in a position which
     // is not (0, 0) - e.g., if you previously edited the file and left the
@@ -231,8 +230,7 @@ export class ModeHandler implements vscode.Disposable {
           );
 
           // Switch back to normal mode since it was a click not a selection
-          this.vimState.currentMode = ModeName.Normal;
-          this.setCurrentModeByName(this.vimState);
+          this.setCurrentModeByName(ModeName.Normal);
 
           toDraw = true;
         }
@@ -278,15 +276,13 @@ export class ModeHandler implements vscode.Disposable {
           !this.currentMode.isVisualMode &&
           this.currentMode.name !== ModeName.Insert
         ) {
-          this.vimState.currentMode = ModeName.Visual;
-          this.setCurrentModeByName(this.vimState);
+          this.setCurrentModeByName(ModeName.Visual);
 
           // double click mouse selection causes an extra character to be selected so take one less character
         }
       } else {
         if (this.vimState.currentMode !== ModeName.Insert) {
-          this.vimState.currentMode = ModeName.Normal;
-          this.setCurrentModeByName(this.vimState);
+          this.setCurrentModeByName(ModeName.Normal);
         }
       }
 
@@ -294,10 +290,10 @@ export class ModeHandler implements vscode.Disposable {
     }
   }
 
-  private setCurrentModeByName(vimState: VimState): void {
-    this.vimState.currentMode = vimState.currentMode;
+  private setCurrentModeByName(modeName: ModeName): void {
+    this.vimState.currentMode = modeName;
     for (let mode of this._modes) {
-      mode.isActive = mode.name === vimState.currentMode;
+      mode.isActive = mode.name === modeName;
     }
   }
 
@@ -520,7 +516,7 @@ export class ModeHandler implements vscode.Disposable {
     // then return and have the motion immediately applied to an operator).
     const prevState = this.currentModeName;
     if (vimState.currentMode !== this.currentModeName) {
-      this.setCurrentModeByName(vimState);
+      this.setCurrentModeByName(vimState.currentMode);
 
       // We don't want to mark any searches as a repeatable action
       if (vimState.currentMode === ModeName.Normal && prevState !== ModeName.SearchInProgressMode) {
@@ -550,7 +546,7 @@ export class ModeHandler implements vscode.Disposable {
     // have changed it as well. (TODO: do you even decomposition bro)
 
     if (vimState.currentMode !== this.currentModeName) {
-      this.setCurrentModeByName(vimState);
+      this.setCurrentModeByName(vimState.currentMode);
 
       if (vimState.currentMode === ModeName.Normal) {
         ranRepeatableAction = true;
@@ -597,10 +593,9 @@ export class ModeHandler implements vscode.Disposable {
       // Return to insert mode after 1 command in this case for <C-o>
       if (vimState.returnToInsertAfterCommand) {
         if (vimState.actionCount > 0) {
-          vimState.currentMode = ModeName.Insert;
           vimState.returnToInsertAfterCommand = false;
           vimState.actionCount = 0;
-          this.setCurrentModeByName(vimState);
+          this.setCurrentModeByName(ModeName.Insert);
         } else {
           vimState.actionCount++;
         }

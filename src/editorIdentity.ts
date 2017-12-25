@@ -5,7 +5,7 @@ export class EditorIdentity {
   private _viewColumn: vscode.ViewColumn;
 
   constructor(textEditor?: vscode.TextEditor) {
-    this._fileName = (textEditor && textEditor.document.fileName) || '';
+    this._fileName = (textEditor && textEditor.document && textEditor.document.fileName) || '';
     this._viewColumn = (textEditor && textEditor.viewColumn) || vscode.ViewColumn.One;
   }
 
@@ -21,8 +21,8 @@ export class EditorIdentity {
     return this.fileName === identity.fileName;
   }
 
-  public isEqual(identity: EditorIdentity): boolean {
-    return this.fileName === identity.fileName && this.viewColumn === identity.viewColumn;
+  public isEqual(other: EditorIdentity): boolean {
+    return this.fileName === other.fileName && this.viewColumn === other.viewColumn;
   }
 
   public toString() {
