@@ -215,10 +215,9 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'extension.showCmdLine', () => {
-    showCmdLine(
-      '',
-      modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()]
-    );
+    let modeHandler =
+      modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()];
+    showCmdLine('', modeHandler.vimState);
   });
 
   interface ICodeKeybinding {
@@ -240,7 +239,7 @@ export async function activate(context: vscode.ExtensionContext) {
         for (const command of args.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.slice(0, 1) === ':') {
-            await runCmdLine(command.command.slice(1, command.command.length), mh);
+            await runCmdLine(command.command.slice(1, command.command.length), mh.vimState);
             await mh.updateView(mh.vimState);
           } else {
             await vscode.commands.executeCommand(command.command, command.args);

@@ -52,7 +52,7 @@ suite('Basic write-quit', () => {
   test('Run write and quit', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
 
-    await runCmdLine('wq', modeHandler);
+    await runCmdLine('wq', modeHandler.vimState);
     await WaitForVsCodeClose();
 
     assertEqual(vscode.window.visibleTextEditors.length, 0, 'Window after 1sec still open');
