@@ -3,7 +3,7 @@
  * events to their string names and passes them on to ModeHandler via
  * handleKeyEvent().
  */
-import './src/actions/vim.all';
+import './src/actions/include-all';
 
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
