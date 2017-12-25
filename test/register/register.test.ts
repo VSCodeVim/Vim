@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import * as util from '../../src/util';
+import { Clipboard } from '../../src/util';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
@@ -27,7 +27,7 @@ suite('register', () => {
 
   suite('clipboard', () => {
     setup(async () => {
-      util.clipboardCopy('12345');
+      Clipboard.Copy('12345');
     });
 
     newTest({
@@ -61,8 +61,8 @@ suite('register', () => {
 
   test('System clipboard works with chinese characters', async () => {
     const testString = '你好';
-    util.clipboardCopy(testString);
-    assertEqual(testString, util.clipboardPaste());
+    Clipboard.Copy(testString);
+    assertEqual(testString, Clipboard.Paste());
 
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 

@@ -2,7 +2,7 @@ import { BaseCommand, CommandRegister, CommandYankFullLine } from './../actions/
 import { BaseOperator, DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
-import * as util from './../util';
+import { Clipboard } from './../util';
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -153,7 +153,7 @@ export class Register {
         }
         clipboardText = clipboardText.replace(/\n$/, '');
 
-        util.clipboardCopy(clipboardText);
+        Clipboard.Copy(clipboardText);
       }
 
       Register.processNumberedRegister(registerContent.text, vimState);
@@ -220,7 +220,7 @@ export class Register {
     vimState: VimState
   ): void {
     if (Register.isClipboardRegister(register)) {
-      util.clipboardCopy(content.toString());
+      Clipboard.Copy(content.toString());
     }
 
     Register.registers[register.toLowerCase()] = {
@@ -283,7 +283,7 @@ export class Register {
     }
 
     if (Register.isClipboardRegister(register)) {
-      util.clipboardCopy(content.toString());
+      Clipboard.Copy(content.toString());
     }
 
     if (Register.isBlackHoleRegister(register)) {
@@ -361,7 +361,7 @@ export class Register {
 
     /* Read from system clipboard */
     if (Register.isClipboardRegister(register)) {
-      let text = util.clipboardPaste();
+      let text = Clipboard.Paste();
 
       // Harmonize newline character
       text = text.replace(/\r\n/g, '\n');

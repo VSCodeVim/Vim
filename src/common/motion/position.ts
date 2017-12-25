@@ -5,7 +5,6 @@ import { VimState } from '../../state/vimState';
 import { Configuration } from './../../configuration/configuration';
 import { VisualBlockMode } from './../../mode/modeVisualBlock';
 import { TextEditor } from './../../textEditor';
-import { betterEscapeRegex } from './../../util';
 
 /**
  * Represents a difference between two positions. Add it to a position
@@ -808,7 +807,7 @@ export class Position extends vscode.Position {
   }
 
   private makeWordRegex(characterSet: string): RegExp {
-    let escaped = characterSet && betterEscapeRegex(characterSet);
+    let escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     let segments: string[] = [];
 
     segments.push(`([^\\s${escaped}]+)`);

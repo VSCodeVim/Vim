@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { RecordedState } from '../../state/recordedState';
 import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../../util';
+import { allowVSCodeToPropagateCursorUpdatesAndReturnThem, Clipboard } from '../../util';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
@@ -18,7 +18,6 @@ import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
 import { isTextTransformation } from './../../transformations/transformations';
-import * as util from './../../util';
 import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
 import * as operator from './../operator';
@@ -835,7 +834,7 @@ class CommandCtrlVInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = vimState.globalState.searchState!;
-    const textFromClipboard = util.clipboardPaste();
+    const textFromClipboard = Clipboard.Paste();
 
     searchState.searchString += textFromClipboard;
     return vimState;
@@ -852,7 +851,7 @@ class CommandCmdVInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = vimState.globalState.searchState!;
-    const textFromClipboard = util.clipboardPaste();
+    const textFromClipboard = Clipboard.Paste();
 
     searchState.searchString += textFromClipboard;
     return vimState;
@@ -914,7 +913,7 @@ class CommandOverrideCopy extends BaseCommand {
         .join('\n');
     }
 
-    util.clipboardCopy(text);
+    Clipboard.Copy(text);
     // all vim yank operations return to normal mode.
     vimState.currentMode = ModeName.Normal;
 
