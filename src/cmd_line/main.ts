@@ -1,16 +1,13 @@
 import * as vscode from 'vscode';
 
 import { Configuration } from '../configuration/configuration';
-import { ModeHandler } from '../mode/modeHandler';
+import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { Neovim } from '../neovim/nvimUtil';
 import * as parser from './parser';
 
 // Shows the vim command line.
-export async function showCmdLine(
-  initialText: string,
-  modeHandler: ModeHandler
-): Promise<undefined> {
+export async function showCmdLine(initialText: string, vimState: VimState): Promise<undefined> {
   if (!vscode.window.activeTextEditor) {
     console.log('No active document.');
     return;
@@ -32,7 +29,7 @@ export async function showCmdLine(
       cmdString && Configuration.cmdLineInitialColon && cmdString[0] === ':'
         ? cmdString.slice(1)
         : cmdString;
-    await runCmdLine(trimmedCmdString!, modeHandler);
+    await runCmdLine(trimmedCmdString!, vimState);
     return;
   } catch (e) {
     StatusBar.Text = e.toString();
@@ -40,7 +37,7 @@ export async function showCmdLine(
   }
 }
 
-export async function runCmdLine(command: string, modeHandler: ModeHandler): Promise<undefined> {
+export async function runCmdLine(command: string, vimState: VimState): Promise<undefined> {
   if (!command || command.length === 0) {
     return;
   }
@@ -51,18 +48,18 @@ export async function runCmdLine(command: string, modeHandler: ModeHandler): Pro
       Configuration.enableNeovim &&
       (!cmd.command || (cmd.command && cmd.command.neovimCapable))
     ) {
-      await Neovim.command(modeHandler.vimState, command)
+      await Neovim.command(vimState, command)
         .then(() => {
           console.log('Substituted for neovim command');
         })
         .catch(err => console.log(err));
     } else {
-      await cmd.execute(modeHandler.vimState.editor, modeHandler);
+      await cmd.execute(vimState.editor, vimState);
     }
     return;
   } catch (e) {
     if (Configuration.enableNeovim) {
-      await Neovim.command(modeHandler.vimState, command)
+      await Neovim.command(vimState, command)
         .then(() => {
           console.log('SUCCESS');
         })

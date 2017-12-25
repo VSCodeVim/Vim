@@ -158,7 +158,10 @@ class Remapper implements IRemapper {
         for (const command of remapping.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.slice(0, 1) === ':') {
-            await runCmdLine(command.command.slice(1, command.command.length), modeHandler);
+            await runCmdLine(
+              command.command.slice(1, command.command.length),
+              modeHandler.vimState
+            );
             await modeHandler.updateView(modeHandler.vimState);
           } else {
             await vscode.commands.executeCommand(command.command, command.args);

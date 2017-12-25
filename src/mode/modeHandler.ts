@@ -976,7 +976,7 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'showCommandLine':
-          await showCmdLine(vimState.commandInitialText, this);
+          await showCmdLine(vimState.commandInitialText, this.vimState);
           break;
 
         case 'dot':

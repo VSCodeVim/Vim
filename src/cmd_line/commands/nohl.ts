@@ -1,4 +1,4 @@
-import { ModeHandler } from '../../mode/modeHandler';
+import { VimState } from '../../state/vimState';
 import * as node from '../node';
 
 export class NohlCommand extends node.CommandBase {
@@ -15,7 +15,7 @@ export class NohlCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(modeHandler: ModeHandler): Promise<void> {
-    modeHandler.vimState.globalState.hl = false;
+  async execute(vimState: VimState): Promise<void> {
+    vimState.globalState.hl = false;
   }
 }

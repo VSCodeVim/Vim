@@ -16,14 +16,14 @@ suite('Vertical split', () => {
   teardown(cleanUpWorkspace);
 
   test('Run :vs', async () => {
-    await runCmdLine('vs', modeHandler);
+    await runCmdLine('vs', modeHandler.vimState);
     await WaitForEditors(2);
 
     assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
   });
 
   test('Run :vsp', async () => {
-    await runCmdLine('vsp', modeHandler);
+    await runCmdLine('vsp', modeHandler.vimState);
     await WaitForEditors(2);
 
     assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');

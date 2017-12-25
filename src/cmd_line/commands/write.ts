@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ModeHandler } from '../../mode/modeHandler';
+import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import * as util from '../../util';
 import * as node from '../node';
@@ -34,7 +34,7 @@ export class WriteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(modeHandler: ModeHandler): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     if (this.arguments.opt) {
       util.showError('Not implemented.');
       return;
@@ -49,22 +49,22 @@ export class WriteCommand extends node.CommandBase {
       return;
     }
 
-    if (modeHandler.vimState.editor.document.isUntitled) {
+    if (vimState.editor.document.isUntitled) {
       await vscode.commands.executeCommand('workbench.action.files.save');
       return;
     }
 
     try {
-      fs.accessSync(modeHandler.vimState.editor.document.fileName, fs.constants.W_OK);
-      return this.save(modeHandler);
+      fs.accessSync(vimState.editor.document.fileName, fs.constants.W_OK);
+      return this.save(vimState);
     } catch (accessErr) {
       if (this.arguments.bang) {
-        fs.chmod(modeHandler.vimState.editor.document.fileName, 666, e => {
+        fs.chmod(vimState.editor.document.fileName, 666, e => {
           if (e) {
             StatusBar.Text = e.message;
             return;
           }
-          return this.save(modeHandler);
+          return this.save(vimState);
         });
       } else {
         StatusBar.Text = accessErr.message;
@@ -72,15 +72,15 @@ export class WriteCommand extends node.CommandBase {
     }
   }
 
-  private async save(modeHandler: ModeHandler): Promise<void> {
-    await modeHandler.vimState.editor.document.save().then(ok => {
+  private async save(vimState: VimState): Promise<void> {
+    await vimState.editor.document.save().then(ok => {
       StatusBar.Text =
         '"' +
-        path.basename(modeHandler.vimState.editor.document.fileName) +
+        path.basename(vimState.editor.document.fileName) +
         '" ' +
-        modeHandler.vimState.editor.document.lineCount +
+        vimState.editor.document.lineCount +
         'L ' +
-        modeHandler.vimState.editor.document.getText().length +
+        vimState.editor.document.getText().length +
         'C written';
     }, e => (StatusBar.Text = e));
   }
