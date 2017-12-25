@@ -8,8 +8,7 @@ import './src/actions/vim.all';
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { showCmdLine } from './src/cmd_line/main';
-import { runCmdLine } from './src/cmd_line/main';
+import { CommandLine } from './src/cmd_line/commandLine';
 import { Position } from './src/common/motion/position';
 import { Configuration } from './src/configuration/configuration';
 import { EditorIdentity } from './src/editorIdentity';
@@ -217,7 +216,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerCommand(context, 'extension.showCmdLine', () => {
     let modeHandler =
       modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()];
-    showCmdLine('', modeHandler.vimState);
+    CommandLine.PromptAndRun('', modeHandler.vimState);
   });
 
   interface ICodeKeybinding {
@@ -239,7 +238,7 @@ export async function activate(context: vscode.ExtensionContext) {
         for (const command of args.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.slice(0, 1) === ':') {
-            await runCmdLine(command.command.slice(1, command.command.length), mh.vimState);
+            await CommandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
             await mh.updateView(mh.vimState);
           } else {
             await vscode.commands.executeCommand(command.command, command.args);
@@ -277,7 +276,7 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.window.visibleTextEditors.forEach(e => {
         e.options.cursorStyle = Configuration.userCursor;
       });
-      StatusBar.Text = '-- VIM: DISABLED --';
+      StatusBar.SetText('-- VIM: DISABLED --', mh.currentMode.name, true);
     } else {
       compositionState = new CompositionState();
       modeHandlerToEditorIdentity = {};

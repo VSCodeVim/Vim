@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { runCmdLine } from '../cmd_line/main';
+import { CommandLine } from '../cmd_line/commandLine';
 import { Configuration, IKeybinding } from '../configuration/configuration';
-import { AngleBracketNotation } from './../notation';
-import { VimState } from './../state/vimState';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
+import { AngleBracketNotation } from './../notation';
+import { VimState } from './../state/vimState';
 
 export class Remappers implements IRemapper {
   private remappers: IRemapper[];
@@ -158,7 +158,7 @@ class Remapper implements IRemapper {
         for (const command of remapping.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.slice(0, 1) === ':') {
-            await runCmdLine(
+            await CommandLine.Run(
               command.command.slice(1, command.command.length),
               modeHandler.vimState
             );

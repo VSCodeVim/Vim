@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+
 import { Configuration } from '../configuration/configuration';
 
 export class Decoration {
