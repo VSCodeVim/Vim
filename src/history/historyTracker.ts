@@ -192,7 +192,6 @@ export class HistoryTracker {
 
   constructor(vimState: VimState) {
     this.vimState = vimState;
-
     this._initialize();
   }
 
@@ -223,7 +222,7 @@ export class HistoryTracker {
   }
 
   private _getDocumentText(): string {
-    return (this.vimState.editor.document && this.vimState.editor.document.getText()) || '';
+    return (this.vimState.editor && this.vimState.editor.document && this.vimState.editor.document.getText()) || '';
   }
 
   private _addNewHistoryStep(): void {
