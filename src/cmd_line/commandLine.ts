@@ -7,7 +7,6 @@ import { StatusBar } from '../statusBar';
 import * as parser from './parser';
 
 export class CommandLine {
-
   public static async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
       console.log('CommandLine: No active document.');
@@ -15,8 +14,9 @@ export class CommandLine {
     }
 
     try {
-      let cmdString = await vscode.window.showInputBox(this.getInputBoxOptions(initialText)) || '';
-      if (cmdString && cmdString[0] === ":" && Configuration.cmdLineInitialColon) {
+      let cmdString =
+        (await vscode.window.showInputBox(this.getInputBoxOptions(initialText))) || '';
+      if (cmdString && cmdString[0] === ':' && Configuration.cmdLineInitialColon) {
         cmdString = cmdString.slice(1);
       }
 
