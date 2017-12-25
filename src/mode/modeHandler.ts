@@ -1398,14 +1398,6 @@ export class ModeHandler implements vscode.Disposable {
     }
     this.vimState.postponedCodeViewChanges = [];
 
-    // If user wants to change status bar color based on mode
-    if (Configuration.statusBarColorControl) {
-      const colorToSet = Configuration.statusBarColors[this.currentModeFriendlyName.toLowerCase()];
-      if (colorToSet !== undefined) {
-        StatusBar.SetColor(colorToSet);
-      }
-    }
-
     if (this.currentMode.name === ModeName.EasyMotionMode) {
       // Update all EasyMotion decorations
       this.vimState.easyMotion.updateDecorations();
@@ -1467,25 +1459,35 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private _renderStatusBar(): void {
-    let statusBarTextArray = [];
+    // change status bar color based on mode
+    if (Configuration.statusBarColorControl) {
+      const colorToSet = Configuration.statusBarColors[this.currentModeFriendlyName.toLowerCase()];
+      if (colorToSet !== undefined) {
+        StatusBar.SetColor(colorToSet);
+      }
+    }
+
+    let text = [];
 
     if (Configuration.showmodename) {
-      const modeText = `-- ${this.currentMode.text.toUpperCase()} ${
-        this.vimState.isMultiCursor ? 'MULTI CURSOR' : ''
-      } --`;
-      statusBarTextArray.push(modeText);
+      text.push('--');
+      text.push(this.currentMode.text.toUpperCase());
+      if (this.vimState.isMultiCursor) {
+        text.push('MULTI CURSOR');
+      }
+      text.push('--');
     }
 
     if (Configuration.showcmd) {
-      statusBarTextArray.push(this._createCurrentCommandText());
+      text.push(this._createCurrentCommandText());
     }
 
     if (this.vimState.isRecordingMacro) {
       const macroText = 'Recording @' + this.vimState.recordedMacro.registerName;
-      statusBarTextArray.push(macroText);
+      text.push(macroText);
     }
 
-    StatusBar.SetText(statusBarTextArray.join(' '), this.currentModeName);
+    StatusBar.SetText(text.join(' '), this.currentModeName);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
