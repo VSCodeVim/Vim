@@ -1,6 +1,3 @@
-/**
- * Make sure they are all loaded.
- */
 import './base';
 import './operator';
 import './motion';
@@ -8,13 +5,9 @@ import './textobject';
 
 // commands
 import './commands/insert';
+import './commands/actions';
 
-/**
- * Plugins
- */
-
-// easymotion
+// plugin
 import './plugins/easymotion/easymotion.cmd';
 import './plugins/easymotion/registerMoveActions';
-// surround
 import './plugins/surround';
