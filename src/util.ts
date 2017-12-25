@@ -14,12 +14,14 @@ export async function showError(message: string): Promise<{}> {
 
 const clipboardy = require('clipboardy');
 
-export function clipboardCopy(text: string) {
-  clipboardy.writeSync(text);
-}
+export class Clipboard {
+  public static Copy(text: string) {
+    clipboardy.writeSync(text);
+  }
 
-export function clipboardPaste(): string {
-  return clipboardy.readSync();
+  public static Paste(): string {
+    return clipboardy.readSync();
+  }
 }
 
 /**
@@ -62,16 +64,4 @@ export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(): Promis
   return vscode.window.activeTextEditor!.selections.map(
     x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
   );
-}
-
-export async function wait(time: number): Promise<void> {
-  await new Promise((resolve, reject) => {
-    setTimeout(resolve, time);
-  });
-}
-
-export function betterEscapeRegex(str: string): string {
-  let result = _.escapeRegExp(str);
-
-  return result.replace(/-/g, '\\-');
 }
