@@ -222,7 +222,12 @@ export class HistoryTracker {
   }
 
   private _getDocumentText(): string {
-    return (this.vimState.editor && this.vimState.editor.document && this.vimState.editor.document.getText()) || '';
+    return (
+      (this.vimState.editor &&
+        this.vimState.editor.document &&
+        this.vimState.editor.document.getText()) ||
+      ''
+    );
   }
 
   private _addNewHistoryStep(): void {

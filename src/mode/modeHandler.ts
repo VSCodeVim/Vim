@@ -8,7 +8,11 @@ import { Globals } from '../globals';
 import { StatusBar } from '../statusBar';
 import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
-import { BaseCommand, CommandQuitRecordMacro, DocumentContentChangeAction } from './../actions/commands/actions';
+import {
+  BaseCommand,
+  CommandQuitRecordMacro,
+  DocumentContentChangeAction,
+} from './../actions/commands/actions';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { BaseMovement, isIMovement } from './../actions/motion';
 import { PairMatcher } from './../common/matching/matcher';

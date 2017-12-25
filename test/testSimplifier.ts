@@ -13,11 +13,11 @@ import { assertEqualLines } from './testUtils';
 export function getTestingFunctions() {
   const getNiceStack = (stack: string | undefined): string => {
     return stack
-    ? stack
-        .split('\n')
-        .splice(2, 1)
-        .join('\n')
-    : 'no stack available :(';
+      ? stack
+          .split('\n')
+          .splice(2, 1)
+          .join('\n')
+      : 'no stack available :(';
   };
 
   const newTest = (testObj: ITestObject): void => {
