@@ -1,11 +1,19 @@
 <!--
-Yay! We love PRs! 🎊
+Yay! Thanks for sending us a PR! 🎊
 
-Please include a description of your change and ensure:
+Please ensure your PR adheres to:
 
-- [ ] Commit message has a short title & issue references
+- [ ] Commit messages has a short & issue references when necessary
 - [ ] Each commit does a logical chunk of work.
 - [ ] It builds and tests pass (e.g `gulp`)
-
-More info can be found on our [contribution guide](https://github.com/VSCodeVim/Vim/blob/master/.github/CONTRIBUTING.md).
 -->
+
+**What this PR does / why we need it**:
+
+**Which issue(s) this PR fixes**
+
+<!--
+Commits in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close the issue(s) when PR gets merged)
+-->
+
+**Special notes for your reviewer**:

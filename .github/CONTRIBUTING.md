@@ -28,7 +28,7 @@ When submitting a PR, ensure:
 
 1. Install prerequisites:
    * latest [Visual Studio Code](https://code.visualstudio.com/)
-   * [Node.js](https://nodejs.org/) v4.0.0 or higher
+   * [Node.js](https://nodejs.org/) v8.0.0 or higher
 2. Fork and clone the repository
 3. `cd Vim`
 4. Install the dependencies:
