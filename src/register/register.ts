@@ -11,7 +11,7 @@ import { Clipboard } from './../util';
  * yy).
  */
 export enum RegisterMode {
-  FigureItOutFromCurrentMode,
+  AscertainFromCurrentMode,
   CharacterWise,
   LineWise,
   BlockWise,
@@ -131,7 +131,7 @@ export class Register {
     if (multicursorIndex === 0) {
       Register.registers[register.toLowerCase()] = {
         text: [],
-        registerMode: vimState.effectiveRegisterMode(),
+        registerMode: vimState.effectiveRegisterMode,
         isClipboardRegister: Register.isClipboardRegister(register),
       };
     }
@@ -189,7 +189,7 @@ export class Register {
       if (createEmptyRegister) {
         Register.registers[register.toLowerCase()] = {
           text: Array<string>(vimState.allCursors.length).fill(''),
-          registerMode: vimState.effectiveRegisterMode(),
+          registerMode: vimState.effectiveRegisterMode,
           isClipboardRegister: Register.isClipboardRegister(register),
         };
 
@@ -197,7 +197,7 @@ export class Register {
       }
     }
 
-    let currentRegisterMode = vimState.effectiveRegisterMode();
+    let currentRegisterMode = vimState.effectiveRegisterMode;
     if (
       appendToRegister.registerMode === RegisterMode.CharacterWise &&
       currentRegisterMode === RegisterMode.CharacterWise
@@ -225,7 +225,7 @@ export class Register {
 
     Register.registers[register.toLowerCase()] = {
       text: content,
-      registerMode: vimState.effectiveRegisterMode(),
+      registerMode: vimState.effectiveRegisterMode,
       isClipboardRegister: Register.isClipboardRegister(register),
     };
 
@@ -243,7 +243,7 @@ export class Register {
     vimState: VimState
   ): void {
     let appendToRegister = Register.registers[register.toLowerCase()];
-    let currentRegisterMode = vimState.effectiveRegisterMode();
+    let currentRegisterMode = vimState.effectiveRegisterMode;
 
     // Check if appending to a multicursor register or normal
     if (appendToRegister.text instanceof Array) {
@@ -276,7 +276,7 @@ export class Register {
   public static putByKey(
     content: RegisterContent,
     register = '"',
-    registerMode = RegisterMode.FigureItOutFromCurrentMode
+    registerMode = RegisterMode.AscertainFromCurrentMode
   ): void {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
@@ -292,7 +292,7 @@ export class Register {
 
     Register.registers[register] = {
       text: content,
-      registerMode: registerMode || RegisterMode.FigureItOutFromCurrentMode,
+      registerMode: registerMode || RegisterMode.AscertainFromCurrentMode,
       isClipboardRegister: Register.isClipboardRegister(register),
     };
   }
@@ -314,7 +314,7 @@ export class Register {
 
       if (!registerCommand) {
         Register.registers['0'].text = content;
-        Register.registers['0'].registerMode = vimState.effectiveRegisterMode();
+        Register.registers['0'].registerMode = vimState.effectiveRegisterMode;
       }
     } else if (
       baseOperator instanceof DeleteOperator &&
@@ -329,7 +329,7 @@ export class Register {
 
       // Paste last delete into register '1'
       Register.registers['1'].text = content;
-      Register.registers['1'].registerMode = vimState.effectiveRegisterMode();
+      Register.registers['1'].registerMode = vimState.effectiveRegisterMode;
     }
   }
 
