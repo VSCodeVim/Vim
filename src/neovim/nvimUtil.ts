@@ -49,27 +49,13 @@ export class Neovim {
       ]);
     }
 
-    const effectiveRegisterMode = (register: RegisterMode) => {
-      if (register === RegisterMode.FigureItOutFromCurrentMode) {
-        if (vimState.currentMode === ModeName.VisualLine) {
-          return RegisterMode.LineWise;
-        } else if (vimState.currentMode === ModeName.VisualBlock) {
-          return RegisterMode.BlockWise;
-        } else {
-          return RegisterMode.CharacterWise;
-        }
-      } else {
-        return register;
-      }
-    };
-
     // We only copy over " register for now, due to our weird handling of macros.
     let reg = await Register.get(vimState);
     let vsRegTovimReg = [undefined, 'c', 'l', 'b'];
     await nvim.callFunction('setreg', [
       '"',
       reg.text as string,
-      vsRegTovimReg[effectiveRegisterMode(reg.registerMode)] as string,
+      vsRegTovimReg[vimState.effectiveRegisterMode] as string,
     ]);
   }
 

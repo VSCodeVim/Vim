@@ -1216,7 +1216,7 @@ class MoveParagraphEnd extends BaseMovement {
     let paragraphEnd = position.getCurrentParagraphEnd();
     vimState.currentRegisterMode = isLineWise
       ? RegisterMode.LineWise
-      : RegisterMode.FigureItOutFromCurrentMode;
+      : RegisterMode.AscertainFromCurrentMode;
     return isLineWise ? paragraphEnd.getLeftThroughLineBreaks(true) : paragraphEnd;
   }
 }

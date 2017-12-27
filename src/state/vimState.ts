@@ -188,34 +188,20 @@ export class VimState {
     vscode.commands.executeCommand('setContext', 'vim.mode', ModeName[value]);
   }
 
-  public currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+  public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
-  public effectiveRegisterMode(): RegisterMode {
-    if (this.currentRegisterMode === RegisterMode.FigureItOutFromCurrentMode) {
-      if (this.currentMode === ModeName.VisualLine) {
-        return RegisterMode.LineWise;
-      } else if (this.currentMode === ModeName.VisualBlock) {
-        return RegisterMode.BlockWise;
-      } else {
-        return RegisterMode.CharacterWise;
-      }
-    } else {
+  public get effectiveRegisterMode(): RegisterMode {
+    if (this.currentRegisterMode !== RegisterMode.AscertainFromCurrentMode) {
       return this.currentRegisterMode;
     }
-  }
-
-  /**
-   * The top left of a selected block of text. Useful for Visual Block mode.
-   */
-  public get topLeft(): Position {
-    return VisualBlockMode.getTopLeftPosition(this.cursorStartPosition, this.cursorPosition);
-  }
-
-  /**
-   * The bottom right of a selected block of text. Useful for Visual Block mode.
-   */
-  public get bottomRight(): Position {
-    return VisualBlockMode.getBottomRightPosition(this.cursorStartPosition, this.cursorPosition);
+    switch (this.currentMode) {
+      case ModeName.VisualLine:
+        return RegisterMode.LineWise;
+      case ModeName.VisualBlock:
+        return RegisterMode.BlockWise;
+      default:
+        return RegisterMode.CharacterWise;
+    }
   }
 
   public registerName = '"';

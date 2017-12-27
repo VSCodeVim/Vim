@@ -611,7 +611,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     recordedState.actionKeys = [];
-    vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+    vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
     if (this.currentModeName === ModeName.Normal) {
       vimState.cursorStartPosition = vimState.cursorPosition;

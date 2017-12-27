@@ -1346,7 +1346,7 @@ export class PutCommand extends BaseCommand {
       await TextEditor.insertAt(line, insertPos);
     }
 
-    vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+    vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
     return vimState;
   }
 
@@ -1354,7 +1354,7 @@ export class PutCommand extends BaseCommand {
     const result = await super.execCount(position, vimState);
 
     if (
-      vimState.effectiveRegisterMode() === RegisterMode.LineWise &&
+      vimState.effectiveRegisterMode === RegisterMode.LineWise &&
       vimState.recordedState.count > 0
     ) {
       const numNewlines =
@@ -1407,7 +1407,7 @@ export class GPutCommand extends BaseCommand {
 
     const result = await super.execCount(position, vimState);
 
-    if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       const line = TextEditor.getLineAt(position).text;
       const addAnotherLine = line.length > 0 && addedLinesCount > 1;
 
@@ -1490,7 +1490,7 @@ export class PutCommandVisual extends BaseCommand {
       end.getLeftIfEOL(),
       false
     );
-    putResult.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+    putResult.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
     return putResult;
   }
 
@@ -1539,7 +1539,7 @@ export class GPutBeforeCommand extends BaseCommand {
       addedLinesCount = register.text.split('\n').length;
     }
 
-    if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       const line = TextEditor.getLineAt(position).text;
       const addAnotherLine = line.length > 0 && addedLinesCount > 1;
 
@@ -1562,7 +1562,7 @@ export class PutBeforeWithIndentCommand extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const result = await new PutCommand().exec(position, vimState, true, true);
 
-    if (vimState.effectiveRegisterMode() === RegisterMode.LineWise) {
+    if (vimState.effectiveRegisterMode === RegisterMode.LineWise) {
       result.cursorPosition = result.cursorPosition
         .getPreviousLineBegin()
         .getFirstLineNonBlankChar();

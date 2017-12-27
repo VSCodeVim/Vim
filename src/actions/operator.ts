@@ -204,7 +204,7 @@ export class DeleteOperator extends BaseOperator {
       start,
       end,
       vimState.currentMode,
-      vimState.effectiveRegisterMode(),
+      vimState.effectiveRegisterMode,
       vimState,
       yank
     );
@@ -547,7 +547,7 @@ export class ChangeOperator extends BaseOperator {
         vimState = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
       }
     }
-    vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+    vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
     vimState.currentMode = ModeName.Insert;
 
