@@ -64,7 +64,7 @@ export function parseOption(args: string): node.IOptionArgs {
       optionArgs.operator = node.SetOptionOperator.Reset;
       break;
     default:
-      throw new Error('Unknown option');
+      throw new Error(`Unsupported operator (${operator}).`);
   }
 
   return optionArgs;

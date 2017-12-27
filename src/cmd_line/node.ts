@@ -92,7 +92,7 @@ export class LineRange {
       case token.TokenType.Mark:
         return vimState.historyTracker.getMark(first.content).position;
       default:
-        throw new Error('not implemented');
+        throw new Error('Not Implemented');
     }
   }
 }
