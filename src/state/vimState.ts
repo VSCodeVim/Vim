@@ -231,7 +231,7 @@ export class VimState {
    * function. We use this variable to determine if the update function was triggered
    * by us or by a mouse action.
    */
-  public whatILastSetTheSelectionTo: vscode.Selection;
+  public prevSelection: vscode.Selection;
 
   public nvim: Nvim;
 
