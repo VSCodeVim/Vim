@@ -1174,9 +1174,7 @@ export class PutCommand extends BaseCommand {
 
     if (vimState.isMultiCursor) {
       if (multicursorIndex === undefined) {
-        console.log('ERROR: no multi cursor index when calling PutCommand#getText');
-
-        throw new Error('Bad!');
+        throw new Error('No multi-cursor index when calling PutCommand#getText');
       }
 
       if (vimState.isMultiCursor && typeof register.text === 'object') {

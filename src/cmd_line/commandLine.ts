@@ -5,6 +5,7 @@ import { Neovim } from '../neovim/nvimUtil';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import * as parser from './parser';
+import * as util from '../util';
 
 export class CommandLine {
   public static async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
@@ -42,7 +43,7 @@ export class CommandLine {
       }
     } catch (e) {
       console.error(e);
-      throw e;
+      await util.showError(`${e.message}`);
     }
   }
 

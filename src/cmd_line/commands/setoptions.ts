@@ -62,7 +62,11 @@ export class SetOptionsCommand extends node.CommandBase {
 
   async execute(): Promise<void> {
     if (!this._arguments.name) {
-      throw new Error('Unknown option');
+      throw new Error('Missing argument.');
+    }
+
+    if (Configuration[this._arguments.name] == null) {
+      throw new Error('Unsupported option. ' + this._arguments.name);
     }
 
     switch (this._arguments.operator) {

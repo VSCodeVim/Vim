@@ -52,7 +52,7 @@ export function parseWriteCommandArgs(args: string): WriteCommand {
         scannedArgs.optValue = value;
         continue;
       default:
-        throw new Error('Not implemented');
+        throw new Error('Not implemented.');
     }
   }
   // TODO: actually parse arguments.

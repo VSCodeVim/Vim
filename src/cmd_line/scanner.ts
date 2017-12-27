@@ -142,7 +142,7 @@ export class Scanner {
     let match = values.filter(s => this.input.substr(this.pos).startsWith(s));
     if (match.length !== 1) {
       if (match.length > 1) {
-        throw new Error('too many maches');
+        throw new Error('Too many matches.');
       }
       throw new Error('Unexpected character.');
     }
