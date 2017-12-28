@@ -14,17 +14,12 @@ export class CommandLine {
       return;
     }
 
-    try {
-      let cmdString =
-        (await vscode.window.showInputBox(this.getInputBoxOptions(initialText))) || '';
-      if (cmdString && cmdString[0] === ':' && Configuration.cmdLineInitialColon) {
-        cmdString = cmdString.slice(1);
-      }
-
-      await CommandLine.Run(cmdString, vimState);
-    } catch (e) {
-      StatusBar.SetText(e.toString(), vimState.currentMode, true);
+    let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
+    if (cmd && cmd[0] === ':' && Configuration.cmdLineInitialColon) {
+      cmd = cmd.slice(1);
     }
+
+    await CommandLine.Run(cmd!, vimState);
   }
 
   public static async Run(command: string, vimState: VimState): Promise<void> {
