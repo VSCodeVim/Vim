@@ -344,9 +344,8 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      console.log('error.stack');
-      console.log(e);
-      console.log(e.stack);
+      console.error(e);
+      throw e;
     }
 
     this.vimState.lastKeyPressedTimestamp = now;
@@ -370,14 +369,15 @@ export class ModeHandler implements vscode.Disposable {
     vimState.keyHistory.push(key);
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
-
-    const isPotentialRemap = this._remappers.isPotentialRemap;
-
-    if (result === KeypressState.NoPossibleMatch && !isPotentialRemap) {
-      vimState.recordedState = new RecordedState();
-      return vimState;
-    } else if (result === KeypressState.WaitingOnKeys) {
-      return vimState;
+    switch (result) {
+      case KeypressState.NoPossibleMatch:
+        if (!this._remappers.isPotentialRemap) {
+          vimState.recordedState = new RecordedState();
+          return vimState;
+        }
+        break;
+      case KeypressState.WaitingOnKeys:
+        return vimState;
     }
 
     let action = result as BaseAction;
@@ -873,13 +873,11 @@ export class ModeHandler implements vscode.Disposable {
               case 'replaceText':
                 edit.replace(new vscode.Selection(command.end, command.start), command.text);
                 break;
-
               case 'deleteText':
                 edit.delete(
                   new vscode.Range(command.position, command.position.getLeftThroughLineBreaks())
                 );
                 break;
-
               case 'deleteRange':
                 edit.delete(new vscode.Selection(command.range.start, command.range.stop));
                 break;
