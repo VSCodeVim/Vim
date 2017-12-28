@@ -19,8 +19,10 @@ function versionBump(semver) {
     .src(['./package.json', './package-lock.json'])
     .pipe(bump({ type: semver }))
     .pipe(gulp.dest('./'))
-    .pipe(git.commit('rev package version'))
-    .pipe(tag_version());
+    .pipe(git.commit(semver))
+    .on('end', function() {
+      tag_version();
+    });
 }
 
 gulp.task('typings', function() {
