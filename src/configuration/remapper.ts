@@ -21,12 +21,7 @@ export class Remappers implements IRemapper {
   }
 
   get isPotentialRemap(): boolean {
-    for (let remapper of this.remappers) {
-      if (remapper.isPotentialRemap) {
-        return true;
-      }
-    }
-    return false;
+    return _.some(this.remappers, r => r.isPotentialRemap);
   }
 
   public async sendKey(
@@ -90,12 +85,14 @@ class Remapper implements IRemapper {
     modeHandler: ModeHandler,
     vimState: VimState
   ): Promise<boolean> {
+    this._isPotentialRemap = false;
+
     if (this._remappedModes.indexOf(vimState.currentMode) === -1) {
       return false;
     }
 
-    const longestKeySequence = this._longestKeySequence();
     let remapping: IKeybinding | undefined;
+    const longestKeySequence = this._longestKeySequence();
 
     /**
      * Check to see if the keystrokes match any user-specified remapping.
@@ -120,23 +117,21 @@ class Remapper implements IRemapper {
     }
 
     if (remapping) {
+      if (!this._recursive) {
+        vimState.isCurrentlyPerformingRemapping = true;
+      }
+
       // Record length of remapped command
       vimState.recordedState.numberOfRemappedKeys += remapping.before.length;
 
-      // If we remapped e.g. jj to esc, we have to revert the inserted "jj"
+      // Revert previously inserted characters
+      // (e.g. jj remapped to esc, we have to revert the inserted "jj")
       if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
-        // Revert every single inserted character. This is actually a bit of
-        // a hack since we aren't guaranteed that each insertion inserted
-        // only a single character.
-
+        // Revert every single inserted character.
         // We subtract 1 because we haven't actually applied the last key.
         await vimState.historyTracker.undoAndRemoveChanges(
           Math.max(0, (remapping.before.length - 1) * vimState.allCursors.length)
         );
-      }
-
-      if (!this._recursive) {
-        vimState.isCurrentlyPerformingRemapping = true;
       }
 
       // We need to remove the keys that were remapped into different keys
@@ -174,13 +169,13 @@ class Remapper implements IRemapper {
     }
 
     // Check to see if a remapping could potentially be applied when more keys are received
-    this._isPotentialRemap = false;
     for (let remap of this._remappings) {
       if (keys.join('') === remap.before.slice(0, keys.length).join('')) {
         this._isPotentialRemap = true;
         break;
       }
     }
+
     return false;
   }
 
