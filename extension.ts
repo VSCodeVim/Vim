@@ -19,6 +19,7 @@ import { Neovim } from './src/neovim/nvimUtil';
 import { AngleBracketNotation } from './src/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
+import { InsertMode } from './src/mode/modeInsert';
 
 interface VSCodeKeybinding {
   key: string;
@@ -217,6 +218,12 @@ export async function activate(context: vscode.ExtensionContext) {
     let modeHandler =
       modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()];
     CommandLine.PromptAndRun('', modeHandler.vimState);
+  });
+
+  registerCommand(context, 'vim.insertMode', async () => {
+    let modeHandler =
+      modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()];
+    if (modeHandler.currentMode.name == ModeName.Normal) await modeHandler.handleKeyEvent('i');
   });
 
   interface ICodeKeybinding {
