@@ -50,14 +50,6 @@ export class ModeHandler implements vscode.Disposable {
     return this._modes.find(mode => mode.isActive)!;
   }
 
-  private get currentModeName(): ModeName {
-    return this.currentMode.name;
-  }
-
-  private get currentModeFriendlyName(): string {
-    return ModeName[this.currentMode.name];
-  }
-
   constructor() {
     this.createRemappers();
 
@@ -107,6 +99,7 @@ export class ModeHandler implements vscode.Disposable {
     });
 
     this._disposables.push(disposable);
+    this._disposables.push(this.vimState);
   }
 
   /**
@@ -145,7 +138,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (this.currentModeName === ModeName.EasyMotionMode) {
+    if (this.currentMode.name === ModeName.EasyMotionMode) {
       return;
     }
 
@@ -503,8 +496,8 @@ export class ModeHandler implements vscode.Disposable {
 
     // Update mode (note the ordering allows you to go into search mode,
     // then return and have the motion immediately applied to an operator).
-    const prevState = this.currentModeName;
-    if (vimState.currentMode !== this.currentModeName) {
+    const prevState = this.currentMode.name;
+    if (vimState.currentMode !== this.currentMode.name) {
       this.setCurrentMode(vimState.currentMode);
 
       // We don't want to mark any searches as a repeatable action
@@ -534,7 +527,7 @@ export class ModeHandler implements vscode.Disposable {
     // And then we have to do it again because an operator could
     // have changed it as well. (TODO: do you even decomposition bro)
 
-    if (vimState.currentMode !== this.currentModeName) {
+    if (vimState.currentMode !== this.currentMode.name) {
       this.setCurrentMode(vimState.currentMode);
 
       if (vimState.currentMode === ModeName.Normal) {
@@ -613,7 +606,7 @@ export class ModeHandler implements vscode.Disposable {
     recordedState.actionKeys = [];
     vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
-    if (this.currentModeName === ModeName.Normal) {
+    if (this.currentMode.name === ModeName.Normal) {
       vimState.cursorStartPosition = vimState.cursorPosition;
     }
 
@@ -778,7 +771,7 @@ export class ModeHandler implements vscode.Disposable {
         stop = stop.getLeftThroughLineBreaks(true);
       }
 
-      if (this.currentModeName === ModeName.VisualLine) {
+      if (this.currentMode.name === ModeName.VisualLine) {
         start = start.getLineBegin();
         stop = stop.getLineEnd();
 
@@ -853,6 +846,44 @@ export class ModeHandler implements vscode.Disposable {
 
     let accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
+    const doTextEditorEdit = (command: TextTransformations, edit: vscode.TextEditorEdit) => {
+      switch (command.type) {
+        case 'insertText':
+          edit.insert(command.position, command.text);
+          break;
+        case 'replaceText':
+          edit.replace(new vscode.Selection(command.end, command.start), command.text);
+          break;
+        case 'deleteText':
+          let matchRange = PairMatcher.immediateMatchingBracket(command.position);
+          if (matchRange) {
+            edit.delete(matchRange);
+          }
+          edit.delete(
+            new vscode.Range(command.position, command.position.getLeftThroughLineBreaks())
+          );
+          break;
+        case 'deleteRange':
+          edit.delete(new vscode.Selection(command.range.start, command.range.stop));
+          break;
+        default:
+          console.warn(`Unhandled text transformation type: ${command.type}.`);
+          break;
+      }
+
+      if (command.cursorIndex === undefined) {
+        throw new Error('No cursor index - this should never ever happen!');
+      }
+
+      if (command.diff) {
+        if (!accumulatedPositionDifferences[command.cursorIndex]) {
+          accumulatedPositionDifferences[command.cursorIndex] = [];
+        }
+
+        accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+      }
+    };
+
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
         console.log(
@@ -863,38 +894,8 @@ export class ModeHandler implements vscode.Disposable {
 
         // TODO: Select one transformation for every cursor and run them all
         // in parallel. Repeat till there are no more transformations.
-
         for (const command of textTransformations) {
-          await this.vimState.editor.edit(edit => {
-            switch (command.type) {
-              case 'insertText':
-                edit.insert(command.position, command.text);
-                break;
-              case 'replaceText':
-                edit.replace(new vscode.Selection(command.end, command.start), command.text);
-                break;
-              case 'deleteText':
-                edit.delete(
-                  new vscode.Range(command.position, command.position.getLeftThroughLineBreaks())
-                );
-                break;
-              case 'deleteRange':
-                edit.delete(new vscode.Selection(command.range.start, command.range.stop));
-                break;
-            }
-
-            if (command.cursorIndex === undefined) {
-              throw new Error('No cursor index - this should never ever happen!');
-            }
-
-            if (command.diff) {
-              if (!accumulatedPositionDifferences[command.cursorIndex]) {
-                accumulatedPositionDifferences[command.cursorIndex] = [];
-              }
-
-              accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
-            }
-          });
+          await this.vimState.editor.edit(edit => doTextEditorEdit(command, edit));
         }
       } else {
         // This is the common case!
@@ -906,41 +907,7 @@ export class ModeHandler implements vscode.Disposable {
          */
         await this.vimState.editor.edit(edit => {
           for (const command of textTransformations) {
-            switch (command.type) {
-              case 'insertText':
-                edit.insert(command.position, command.text);
-                break;
-
-              case 'replaceText':
-                edit.replace(new vscode.Selection(command.end, command.start), command.text);
-                break;
-
-              case 'deleteText':
-                let matchRange = PairMatcher.immediateMatchingBracket(command.position);
-                if (matchRange) {
-                  edit.delete(matchRange);
-                }
-                edit.delete(
-                  new vscode.Range(command.position, command.position.getLeftThroughLineBreaks())
-                );
-                break;
-
-              case 'deleteRange':
-                edit.delete(new vscode.Selection(command.range.start, command.range.stop));
-                break;
-            }
-
-            if (command.cursorIndex === undefined) {
-              throw new Error('No cursor index - this should never ever happen!');
-            }
-
-            if (command.diff) {
-              if (!accumulatedPositionDifferences[command.cursorIndex]) {
-                accumulatedPositionDifferences[command.cursorIndex] = [];
-              }
-
-              accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
-            }
+            doTextEditorEdit(command, edit);
           }
         });
       }
@@ -1022,7 +989,9 @@ export class ModeHandler implements vscode.Disposable {
 
             accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
           }
-
+          break;
+        default:
+          console.warn(`Unhandled text transformation type: ${command.type}.`);
           break;
       }
     }
@@ -1306,7 +1275,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     const optionalCursorStyle =
-      Configuration.cursorStylePerMode[this.currentModeFriendlyName.toLowerCase()];
+      Configuration.cursorStylePerMode[this.currentMode.friendlyName.toLowerCase()];
     if (optionalCursorStyle !== undefined) {
       const cursorStyleNum = Configuration.cursorStyleFromString(optionalCursorStyle);
       if (cursorStyleNum !== undefined) {
@@ -1325,7 +1294,7 @@ export class ModeHandler implements vscode.Disposable {
     ) {
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
       // in the middle of a selection natively, which is what we need for Visual Mode.
-      if (this.currentModeName === ModeName.Visual) {
+      if (this.currentMode.name === ModeName.Visual) {
         for (const { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
           if (cursorStart.isEarlierThan(cursorStop)) {
             cursorRange.push(new vscode.Range(cursorStop.getLeft(), cursorStop));
@@ -1354,13 +1323,13 @@ export class ModeHandler implements vscode.Disposable {
     */
 
     // Draw search highlight
+    let searchRanges: vscode.Range[] = [];
     if (
       (Configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
       (Configuration.hlsearch && vimState.globalState.hl && vimState.globalState.searchState)
     ) {
       const searchState = vimState.globalState.searchState!;
 
-      let searchRanges: vscode.Range[] = [];
       searchRanges.push.apply(searchRanges, searchState.matchRanges);
 
       const { pos, match } = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
@@ -1368,9 +1337,8 @@ export class ModeHandler implements vscode.Disposable {
       if (match) {
         searchRanges.push(new vscode.Range(pos, pos.getRight(searchState.searchString.length)));
       }
-
-      this.vimState.editor.setDecorations(Decoration.SearchHighlight, searchRanges);
     }
+    this.vimState.editor.setDecorations(Decoration.SearchHighlight, searchRanges);
 
     const easyMotionHighlightRanges =
       this.currentMode.name === ModeName.EasyMotionInputMode
@@ -1442,7 +1410,7 @@ export class ModeHandler implements vscode.Disposable {
   private _renderStatusBar(): void {
     // change status bar color based on mode
     if (Configuration.statusBarColorControl) {
-      const colorToSet = Configuration.statusBarColors[this.currentModeFriendlyName.toLowerCase()];
+      const colorToSet = Configuration.statusBarColors[this.currentMode.friendlyName.toLowerCase()];
       if (colorToSet !== undefined) {
         StatusBar.SetColor(colorToSet);
       }
@@ -1468,7 +1436,7 @@ export class ModeHandler implements vscode.Disposable {
       text.push(macroText);
     }
 
-    StatusBar.SetText(text.join(' '), this.currentModeName);
+    StatusBar.SetText(text.join(' '), this.currentMode.name);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
@@ -1507,7 +1475,6 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   dispose() {
-    this.vimState.nvim.quit();
     this._disposables.map(d => d.dispose());
   }
 
