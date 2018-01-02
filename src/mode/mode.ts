@@ -48,6 +48,10 @@ export abstract class Mode {
     return this._name;
   }
 
+  get friendlyName(): string {
+    return ModeName[this._name];
+  }
+
   get isActive(): boolean {
     return this._isActive;
   }
