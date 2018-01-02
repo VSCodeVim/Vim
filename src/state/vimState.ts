@@ -21,7 +21,7 @@ import { RecordedState } from './recordedState';
  * Actions defined in actions.ts are only allowed to mutate a VimState in order to
  * indicate what they want to do.
  */
-export class VimState {
+export class VimState implements vscode.Disposable {
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
    * be the rightmost column.
@@ -226,8 +226,13 @@ export class VimState {
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-
     this.currentMode = startInInsertMode ? ModeName.Insert : ModeName.Normal;
+  }
+
+  dispose() {
+    if (this.nvim) {
+      this.nvim.quit();
+    }
   }
 }
 
