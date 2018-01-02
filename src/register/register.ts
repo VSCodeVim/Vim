@@ -66,25 +66,8 @@ export class Register {
     );
   }
 
-  private static isBlackHoleRegister(registerName: string): boolean {
-    return registerName === '_';
-  }
-
-  private static isClipboardRegister(registerName: string): boolean {
-    const register = Register.registers[registerName];
-    return register && register.isClipboardRegister;
-  }
-
   public static isValidRegisterForMacro(register: string): boolean {
     return /^[a-zA-Z0-9]+$/.test(register);
-  }
-
-  private static isValidLowercaseRegister(register: string): boolean {
-    return /^[a-z]+$/.test(register);
-  }
-
-  private static isValidUppercaseRegister(register: string): boolean {
-    return /^[A-Z]+$/.test(register);
   }
 
   /**
@@ -115,6 +98,23 @@ export class Register {
         Register.putNormalRegister(content, register, vimState);
       }
     }
+  }
+
+  private static isBlackHoleRegister(registerName: string): boolean {
+    return registerName === '_';
+  }
+
+  private static isClipboardRegister(registerName: string): boolean {
+    const register = Register.registers[registerName];
+    return register && register.isClipboardRegister;
+  }
+
+  private static isValidLowercaseRegister(register: string): boolean {
+    return /^[a-z]+$/.test(register);
+  }
+
+  private static isValidUppercaseRegister(register: string): boolean {
+    return /^[A-Z]+$/.test(register);
   }
 
   /**
