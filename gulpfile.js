@@ -6,6 +6,7 @@ var gulp = require('gulp'),
   tag_version = require('gulp-tag-version'),
   tslint = require('gulp-tslint'),
   typings = require('gulp-typings'),
+  filter = require('gulp-filter'),
   shell = require('gulp-shell'),
   exec = require('child_process').exec;
 
@@ -20,9 +21,8 @@ function versionBump(semver) {
     .pipe(bump({ type: semver }))
     .pipe(gulp.dest('./'))
     .pipe(git.commit(semver))
-    .on('end', function() {
-      tag_version();
-    });
+    .pipe(filter('package.json'))
+    .pipe(tag_version());
 }
 
 gulp.task('typings', function() {
