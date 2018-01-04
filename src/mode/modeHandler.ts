@@ -1436,7 +1436,7 @@ export class ModeHandler implements vscode.Disposable {
       text.push(macroText);
     }
 
-    StatusBar.SetText(text.join(' '), this.currentMode.name);
+    StatusBar.SetText(text.join(' '), this.currentMode.name, true);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {
