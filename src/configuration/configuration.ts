@@ -74,9 +74,10 @@ class ConfigurationClass {
       // By default, all key combinations are used
       let useKey = true;
 
-      if (this.handleKeys[bracketedKey] === false) {
-        // disabled through `vim.handleKeys`
-        useKey = false;
+      let handleKey = this.handleKeys[bracketedKey];
+      if (handleKey !== undefined) {
+        // enabled/disabled through `vim.handleKeys`
+        useKey = handleKey;
       } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
         // user has disabled CtrlKeys and the current key is a CtrlKey
         // <C-c>, still needs to be captured to overrideCopy
@@ -87,7 +88,7 @@ class ConfigurationClass {
         }
       }
 
-      vscode.commands.executeCommand('setContext', 'vim.use' + bracketedKey, useKey);
+      vscode.commands.executeCommand('setContext', `vim.use${bracketedKey}`, useKey);
     }
   }
 
