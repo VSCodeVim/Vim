@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import { Configuration } from './configuration/configuration';
+import { Configuration } from './configuration';
 
 export class AngleBracketNotation {
   // Mapping from the nomalized string to regex strings that could match it.

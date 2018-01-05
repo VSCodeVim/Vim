@@ -3,7 +3,7 @@ import { ConfigurationTarget, WorkspaceConfiguration } from 'vscode';
 
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
-import { AngleBracketNotation } from '../notation';
+import { AngleBracketNotation } from './notation';
 
 type OptionValue = number | string | boolean;
 type ValueMapping = {
