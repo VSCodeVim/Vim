@@ -5,11 +5,25 @@ import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
 import { AngleBracketNotation } from './notation';
 
+const packagejson: {
+  contributes: {
+    keybindings: VSCodeKeybinding[];
+  };
+} = require('../../../package.json');
+
 type OptionValue = number | string | boolean;
 type ValueMapping = {
   [key: number]: number | string | boolean;
   [key: string]: number | string | boolean;
 };
+
+interface VSCodeKeybinding {
+  key: string;
+  mac?: string;
+  linux?: string;
+  command: string;
+  when: string;
+}
 
 interface IHandleKeys {
   [key: string]: boolean;
@@ -24,7 +38,12 @@ interface IModeSpecificStrings {
   replace: string | undefined;
 }
 
-export interface IKeybinding {
+interface IKeyBinding {
+  key: string;
+  command: string;
+}
+
+export interface IKeyRemapping {
   before: string[];
   after?: string[];
   commands?: { command: string; args: any[] }[];
@@ -55,6 +74,7 @@ class ConfigurationClass {
   }
 
   reload() {
+    // read configurations
     let vimConfigs = getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
@@ -70,8 +90,8 @@ class ConfigurationClass {
       this.leader = ' ';
     }
 
-    // Normalize Keys
-    const keybindingList: IKeybinding[][] = [
+    // normalize keys
+    const keybindingList: IKeyRemapping[][] = [
       this.insertModeKeyBindings,
       this.insertModeKeyBindingsNonRecursive,
       this.otherModesKeyBindings,
@@ -93,26 +113,46 @@ class ConfigurationClass {
       }
     }
 
-    // Enable/Disable certain key combinations
-    for (const bracketedKey of this.boundKeyCombinations) {
+    // read package.json for bound keys
+    this.boundKeyCombinations = [];
+    for (let keybinding of packagejson.contributes.keybindings) {
+      if (keybinding.when.indexOf('listFocus') !== -1) {
+        continue;
+      }
+
+      let key = keybinding.key;
+      if (process.platform === 'darwin') {
+        key = keybinding.mac || key;
+      } else if (process.platform === 'linux') {
+        key = keybinding.linux || key;
+      }
+
+      this.boundKeyCombinations.push({
+        key: AngleBracketNotation.Normalize(key),
+        command: keybinding.command,
+      });
+    }
+
+    // enable/disable certain key combinations
+    for (const boundKey of this.boundKeyCombinations) {
       // By default, all key combinations are used
       let useKey = true;
 
-      let handleKey = this.handleKeys[bracketedKey];
+      let handleKey = this.handleKeys[boundKey.key];
       if (handleKey !== undefined) {
         // enabled/disabled through `vim.handleKeys`
         useKey = handleKey;
-      } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
+      } else if (!this.useCtrlKeys && boundKey.key.slice(1, 3) === 'C-') {
         // user has disabled CtrlKeys and the current key is a CtrlKey
         // <C-c>, still needs to be captured to overrideCopy
-        if (bracketedKey === '<C-c>' && this.overrideCopy) {
+        if (boundKey.key === '<C-c>' && this.overrideCopy) {
           useKey = true;
         } else {
           useKey = false;
         }
       }
 
-      vscode.commands.executeCommand('setContext', `vim.use${bracketedKey}`, useKey);
+      vscode.commands.executeCommand('setContext', `vim.use${boundKey.key}`, useKey);
     }
   }
 
@@ -301,9 +341,9 @@ class ConfigurationClass {
   iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
 
   /**
-   * Array of all key combinations that were registered in angle bracket notation
+   * Array of all bound key combinations in angle bracket notation
    */
-  boundKeyCombinations: string[] = [];
+  boundKeyCombinations: IKeyBinding[] = [];
 
   /**
    * In visual mode, start a search with * or # using the current selection
@@ -364,10 +404,10 @@ class ConfigurationClass {
   /**
    * Keybindings
    */
-  insertModeKeyBindings: IKeybinding[] = [];
-  insertModeKeyBindingsNonRecursive: IKeybinding[] = [];
-  otherModesKeyBindings: IKeybinding[] = [];
-  otherModesKeyBindingsNonRecursive: IKeybinding[] = [];
+  insertModeKeyBindings: IKeyRemapping[] = [];
+  insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  otherModesKeyBindings: IKeyRemapping[] = [];
+  otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
 
 function getConfiguration(section: string): vscode.WorkspaceConfiguration {
