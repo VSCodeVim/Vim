@@ -217,6 +217,7 @@ export async function activate(context: vscode.ExtensionContext) {
     let modeHandler =
       modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()];
     CommandLine.PromptAndRun('', modeHandler.vimState);
+    modeHandler.updateView(modeHandler.vimState);
   });
 
   interface ICodeKeybinding {
