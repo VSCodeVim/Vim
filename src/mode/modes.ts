@@ -17,7 +17,7 @@ export enum VisualBlockInsertionType {
 
 export class EasyMotionMode extends Mode {
   constructor() {
-    super(ModeName.EasyMotionMode, '-- EasyMotion Mode --', VSCodeVimCursorType.Block);
+    super(ModeName.EasyMotionMode, '-- EasyMotion --', VSCodeVimCursorType.Block);
   }
 
   getStatusBarCommandText(vimState: VimState): string {
@@ -46,7 +46,7 @@ export class EasyMotionInputMode extends Mode {
 
 export class InsertMode extends Mode {
   constructor() {
-    super(ModeName.Insert, '-- Insert Mode --', VSCodeVimCursorType.Native);
+    super(ModeName.Insert, '-- Insert --', VSCodeVimCursorType.Native);
   }
 
   getStatusBarCommandText(vimState: VimState): string {
@@ -56,7 +56,7 @@ export class InsertMode extends Mode {
 
 export class NormalMode extends Mode {
   constructor() {
-    super(ModeName.Normal, '-- Normal Mode --', VSCodeVimCursorType.Block);
+    super(ModeName.Normal, '-- Normal --', VSCodeVimCursorType.Block);
   }
 }
 
@@ -82,18 +82,13 @@ export class SearchInProgressMode extends Mode {
 
 export class VisualMode extends Mode {
   constructor() {
-    super(ModeName.Visual, '-- Visual Mode --', VSCodeVimCursorType.TextDecoration, true);
+    super(ModeName.Visual, '-- Visual --', VSCodeVimCursorType.TextDecoration, true);
   }
 }
 
 export class VisualBlockMode extends Mode {
   constructor() {
-    super(
-      ModeName.VisualBlock,
-      '-- Visual Block Mode --',
-      VSCodeVimCursorType.TextDecoration,
-      true
-    );
+    super(ModeName.VisualBlock, '-- Visual Block --', VSCodeVimCursorType.TextDecoration, true);
   }
 
   public static getTopLeftPosition(start: Position, stop: Position): Position {
@@ -107,13 +102,13 @@ export class VisualBlockMode extends Mode {
 
 export class VisualLineMode extends Mode {
   constructor() {
-    super(ModeName.VisualLine, '-- Visual Line Mode --', VSCodeVimCursorType.Block, true);
+    super(ModeName.VisualLine, '-- Visual Line --', VSCodeVimCursorType.Block, true);
   }
 }
 
 export class SurroundInputMode extends Mode {
   constructor() {
-    super(ModeName.SurroundInputMode, '-- Surround Input Mode --', VSCodeVimCursorType.Block);
+    super(ModeName.SurroundInputMode, '-- Surround Input --', VSCodeVimCursorType.Block);
   }
 
   getStatusBarCommandText(vimState: VimState): string {
