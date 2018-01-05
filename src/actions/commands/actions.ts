@@ -13,7 +13,7 @@ import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { Configuration } from './../../configuration/configuration';
 import { ModeName } from './../../mode/mode';
-import { VisualBlockMode } from './../../mode/modeVisualBlock';
+import { VisualBlockMode } from './../../mode/modes';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
