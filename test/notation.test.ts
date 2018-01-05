@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { AngleBracketNotation } from '../src/notation';
+import { AngleBracketNotation } from '../src/configuration/notation';
 
 suite('Notation', () => {
   test('Normalize', () => {

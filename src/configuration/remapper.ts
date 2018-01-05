@@ -5,7 +5,6 @@ import { CommandLine } from '../cmd_line/commandLine';
 import { Configuration, IKeybinding } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
-import { AngleBracketNotation } from './../notation';
 import { VimState } from './../state/vimState';
 
 export class Remappers implements IRemapper {

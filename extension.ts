@@ -16,7 +16,7 @@ import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { Neovim } from './src/neovim/nvimUtil';
-import { AngleBracketNotation } from './src/notation';
+import { AngleBracketNotation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 
