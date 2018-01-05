@@ -20,20 +20,6 @@ import { AngleBracketNotation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 
-interface VSCodeKeybinding {
-  key: string;
-  mac?: string;
-  linux?: string;
-  command: string;
-  when: string;
-}
-
-const packagejson: {
-  contributes: {
-    keybindings: VSCodeKeybinding[];
-  };
-} = require('../package.json'); // out/../package.json
-
 let extensionContext: vscode.ExtensionContext;
 
 /**
@@ -284,32 +270,9 @@ export async function activate(context: vscode.ExtensionContext) {
     toggleExtension(Configuration.disableExt);
   });
 
-  // Clear boundKeyCombinations array incase there are any entries in it so
-  // that we have a clean list of keys with no duplicates
-  Configuration.boundKeyCombinations = [];
-
-  for (let keybinding of packagejson.contributes.keybindings) {
-    if (keybinding.when.indexOf('listFocus') !== -1) {
-      continue;
-    }
-    let keyToBeBound = '';
-    if (process.platform === 'darwin') {
-      keyToBeBound = keybinding.mac || keybinding.key;
-    } else if (process.platform === 'linux') {
-      keyToBeBound = keybinding.linux || keybinding.key;
-    } else {
-      keyToBeBound = keybinding.key;
-    }
-
-    // Store registered key bindings in bracket notation form
-    const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
-    Configuration.boundKeyCombinations.push(bracketedKey);
-
-    registerCommand(context, keybinding.command, () => handleKeyEvent(`${bracketedKey}`));
+  for (const boundKey of Configuration.boundKeyCombinations) {
+    registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
   }
-
-  // Update configuration now that bound keys array is populated
-  Configuration.reload();
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {

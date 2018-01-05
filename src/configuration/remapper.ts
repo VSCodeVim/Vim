@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { CommandLine } from '../cmd_line/commandLine';
-import { Configuration, IKeybinding } from '../configuration/configuration';
+import { Configuration, IKeyRemapping } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { VimState } from './../state/vimState';
@@ -44,7 +44,7 @@ interface IRemapper {
 class Remapper implements IRemapper {
   private readonly _remappedModes: ModeName[];
   private readonly _recursive: boolean;
-  private readonly _remappings: IKeybinding[] = [];
+  private readonly _remappings: IKeyRemapping[] = [];
 
   /**
    * Have the keys pressed so far potentially be a remap
@@ -57,7 +57,7 @@ class Remapper implements IRemapper {
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
-    this._remappings = Configuration[configKey] as IKeybinding[];
+    this._remappings = Configuration[configKey] as IKeyRemapping[];
   }
 
   public async sendKey(
@@ -71,7 +71,7 @@ class Remapper implements IRemapper {
       return false;
     }
 
-    let remapping: IKeybinding | undefined;
+    let remapping: IKeyRemapping | undefined;
     const longestKeySequence = this._longestKeySequence();
 
     /**
