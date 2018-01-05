@@ -20,7 +20,7 @@ function versionBump(semver) {
     .src(['./package.json', './package-lock.json'])
     .pipe(bump({ type: semver }))
     .pipe(gulp.dest('./'))
-    .pipe(git.commit(semver))
+    .pipe(git.commit('bump version'))
     .pipe(filter('package.json'))
     .pipe(tag_version());
 }
