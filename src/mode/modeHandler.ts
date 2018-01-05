@@ -43,8 +43,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   constructor() {
-    this.createRemappers();
-
+    this._remappers = new Remappers();
     this._modes = [
       new modes.NormalMode(),
       new modes.InsertMode(),
@@ -92,13 +91,6 @@ export class ModeHandler implements vscode.Disposable {
 
     this._disposables.push(disposable);
     this._disposables.push(this.vimState);
-  }
-
-  /**
-   * create remappers after a configuration change
-   */
-  createRemappers() {
-    this._remappers = new Remappers();
   }
 
   /**

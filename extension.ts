@@ -110,13 +110,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Event to update active configuration items when changed without restarting vscode
   vscode.workspace.onDidChangeConfiguration((e: void) => {
-    Configuration.updateConfiguration();
-
-    /* tslint:disable:forin */
-    // Update the remappers foreach modehandler
-    for (let mh in modeHandlerToEditorIdentity) {
-      modeHandlerToEditorIdentity[mh].createRemappers();
-    }
+    Configuration.reload();
   });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
@@ -315,7 +309,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // Update configuration now that bound keys array is populated
-  Configuration.updateConfiguration();
+  Configuration.reload();
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
