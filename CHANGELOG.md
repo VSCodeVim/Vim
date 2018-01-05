@@ -1,7 +1,14 @@
 # Change Log
 
-## [v0.10.7](https://github.com/vscodevim/vim/tree/v0.10.7) (2018-01-03)
+## [v0.10.8](https://github.com/vscodevim/vim/tree/v0.10.8) (2018-01-05)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.7...v0.10.8)
 
+- fix\(2162\): handleKeys was previously only handling negation [\#2267](https://github.com/VSCodeVim/Vim/pull/2267) ([jpoon](https://github.com/jpoon))
+- fix\(2264\): go-to-line [\#2266](https://github.com/VSCodeVim/Vim/pull/2266) ([jpoon](https://github.com/jpoon))
+- fix\(2261\): change status bar text for search-in-progress to be more l… [\#2263](https://github.com/VSCodeVim/Vim/pull/2263) ([jpoon](https://github.com/jpoon))
+- fix\(2261\): fix regression. show search string in status bar [\#2262](https://github.com/VSCodeVim/Vim/pull/2262) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.7](https://github.com/vscodevim/vim/tree/v0.10.7) (2018-01-04)
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.6...v0.10.7)
 
 - Stop Silently Failing [\#2250](https://github.com/VSCodeVim/Vim/pull/2250) ([jpoon](https://github.com/jpoon))
@@ -330,13 +337,13 @@
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.9...v0.6.10)
 
 ## [v0.6.9](https://github.com/vscodevim/vim/tree/v0.6.9) (2017-03-18)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.7...v0.6.9)
-
-## [v0.6.7](https://github.com/vscodevim/vim/tree/v0.6.7) (2017-03-18)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.8...v0.6.7)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.8...v0.6.9)
 
 ## [v0.6.8](https://github.com/vscodevim/vim/tree/v0.6.8) (2017-03-18)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.6...v0.6.8)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.7...v0.6.8)
+
+## [v0.6.7](https://github.com/vscodevim/vim/tree/v0.6.7) (2017-03-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.6...v0.6.7)
 
 - fix bracket motion behavior for use with % and a count, or \[\( and a c… [\#1406](https://github.com/VSCodeVim/Vim/pull/1406) ([xconverge](https://github.com/xconverge))
 - fix for cursor not changing correctly, workaround for vscode issue [\#1402](https://github.com/VSCodeVim/Vim/pull/1402) ([xconverge](https://github.com/xconverge))
