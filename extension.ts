@@ -16,7 +16,7 @@ import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { Neovim } from './src/neovim/nvimUtil';
-import { AngleBracketNotation } from './src/configuration/notation';
+import { Notation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 
@@ -210,7 +210,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const mh = await getAndUpdateModeHandler();
       if (args.after) {
         for (const key of args.after) {
-          await mh.handleKeyEvent(AngleBracketNotation.Normalize(key));
+          await mh.handleKeyEvent(Notation.NormalizeKey(key));
         }
         return;
       }

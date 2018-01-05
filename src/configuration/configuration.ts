@@ -3,7 +3,7 @@ import { ConfigurationTarget, WorkspaceConfiguration } from 'vscode';
 
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
-import { AngleBracketNotation } from './notation';
+import { Notation } from './notation';
 
 const packagejson: {
   contributes: {
@@ -85,10 +85,11 @@ class ConfigurationClass {
       }
     }
 
-    // <space> is special, change it to " " internally
-    if (this.leader.toLowerCase() === '<space>') {
-      this.leader = ' ';
-    }
+    // resolve and normalize leader key
+    this.leader =
+      this.leader.toLocaleLowerCase() === '<leader>'
+        ? this.leaderDefault
+        : Notation.NormalizeKey(this.leader);
 
     // normalize keys
     const keybindingList: IKeyRemapping[][] = [
@@ -101,13 +102,13 @@ class ConfigurationClass {
       for (let remapping of keybindings) {
         if (remapping.before) {
           remapping.before.forEach(
-            (key, idx) => (remapping.before[idx] = AngleBracketNotation.Normalize(key))
+            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key))
           );
         }
 
         if (remapping.after) {
           remapping.after.forEach(
-            (key, idx) => (remapping.after![idx] = AngleBracketNotation.Normalize(key))
+            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key))
           );
         }
       }
@@ -128,7 +129,7 @@ class ConfigurationClass {
       }
 
       this.boundKeyCombinations.push({
-        key: AngleBracketNotation.Normalize(key),
+        key: Notation.NormalizeKey(key),
         command: keybinding.command,
       });
     }
@@ -257,7 +258,8 @@ class ConfigurationClass {
   /**
    * What key should <leader> map to in key remappings?
    */
-  leader = '\\';
+  private leaderDefault = '\\';
+  leader = this.leaderDefault;
 
   /**
    * How much search or command history should be remembered
