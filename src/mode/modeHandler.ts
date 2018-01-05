@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as modes from './modes';
 
 import { CommandLine } from '../cmd_line/commandLine';
 import { Configuration } from '../configuration/configuration';
@@ -29,15 +30,6 @@ import {
   TextTransformations,
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
-import { EasyMotionInputMode, EasyMotionMode } from './modeEasyMotion';
-import { InsertMode } from './modeInsert';
-import { NormalMode } from './modeNormal';
-import { ReplaceMode } from './modeReplace';
-import { SearchInProgressMode } from './modeSearchInProgress';
-import { VisualMode } from './modeVisual';
-import { VisualBlockMode } from './modeVisualBlock';
-import { VisualLineMode } from './modeVisualLine';
-import { SurroundInputMode } from './surroundInputMode';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -54,16 +46,16 @@ export class ModeHandler implements vscode.Disposable {
     this.createRemappers();
 
     this._modes = [
-      new NormalMode(),
-      new InsertMode(),
-      new VisualMode(),
-      new VisualBlockMode(),
-      new VisualLineMode(),
-      new SearchInProgressMode(),
-      new ReplaceMode(),
-      new EasyMotionMode(),
-      new EasyMotionInputMode(),
-      new SurroundInputMode(),
+      new modes.NormalMode(),
+      new modes.InsertMode(),
+      new modes.VisualMode(),
+      new modes.VisualBlockMode(),
+      new modes.VisualLineMode(),
+      new modes.SearchInProgressMode(),
+      new modes.ReplaceMode(),
+      new modes.EasyMotionMode(),
+      new modes.EasyMotionInputMode(),
+      new modes.SurroundInputMode(),
     ];
 
     this.vimState = new VimState(vscode.window.activeTextEditor!, Configuration.startInInsertMode);
@@ -1378,35 +1370,6 @@ export class ModeHandler implements vscode.Disposable {
     );
   }
 
-  private _createCurrentCommandText(currentMode: ModeName): string {
-    switch (currentMode) {
-      case ModeName.Insert:
-        return '';
-      case ModeName.SearchInProgressMode:
-        return `Searching for: ${this.vimState.globalState.searchState!.searchString}`;
-      case ModeName.EasyMotionInputMode:
-        const state = this.vimState.easyMotion;
-        if (state) {
-          const searchCharCount = state.searchAction.searchCharCount;
-          const message =
-            searchCharCount > 0
-              ? `Search for ${searchCharCount} character(s): `
-              : 'Search for characters: ';
-          return message + state.searchAction.getSearchString();
-        }
-        break;
-      case ModeName.EasyMotionMode:
-        return `Target key: ${this.vimState.easyMotion.accumulation}`;
-      case ModeName.SurroundInputMode:
-        if (this.vimState.surround && this.vimState.surround.replacement) {
-          return this.vimState.surround.replacement;
-        }
-        break;
-    }
-
-    return `${this.vimState.recordedState.commandString}`;
-  }
-
   private _renderStatusBar(): void {
     // change status bar color based on mode
     if (Configuration.statusBarColorControl) {
@@ -1419,16 +1382,14 @@ export class ModeHandler implements vscode.Disposable {
     let text = [];
 
     if (Configuration.showmodename) {
-      text.push('--');
-      text.push(this.currentMode.text.toUpperCase());
+      text.push(this.currentMode.getStatusBarText(this.vimState));
       if (this.vimState.isMultiCursor) {
-        text.push('MULTI CURSOR');
+        text.push(' MULTI CURSOR ');
       }
-      text.push('--');
     }
 
     if (Configuration.showcmd) {
-      text.push(this._createCurrentCommandText(this.vimState.currentMode));
+      text.push(this.currentMode.getStatusBarCommandText(this.vimState));
     }
 
     if (this.vimState.isRecordingMacro) {
