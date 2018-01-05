@@ -45,7 +45,7 @@ interface IRemapper {
 class Remapper implements IRemapper {
   private readonly _remappedModes: ModeName[];
   private readonly _recursive: boolean;
-  private _remappings: IKeybinding[] = [];
+  private readonly _remappings: IKeybinding[] = [];
 
   /**
    * Have the keys pressed so far potentially be a remap
@@ -58,26 +58,7 @@ class Remapper implements IRemapper {
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
-
-    const remappings = Configuration[configKey] as IKeybinding[];
-
-    for (let remapping of remappings) {
-      let before: string[] = [];
-      if (remapping.before) {
-        remapping.before.forEach(item => before.push(AngleBracketNotation.Normalize(item)));
-      }
-
-      let after: string[] = [];
-      if (remapping.after) {
-        remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
-      }
-
-      this._remappings.push(<IKeybinding>{
-        before: before,
-        after: after,
-        commands: remapping.commands,
-      });
-    }
+    this._remappings = Configuration[configKey] as IKeybinding[];
   }
 
   public async sendKey(

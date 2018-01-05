@@ -3,6 +3,7 @@ import { ConfigurationTarget, WorkspaceConfiguration } from 'vscode';
 
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
+import { AngleBracketNotation } from '../notation';
 
 type OptionValue = number | string | boolean;
 type ValueMapping = {
@@ -50,10 +51,10 @@ export interface IKeybinding {
  */
 class ConfigurationClass {
   constructor() {
-    this.updateConfiguration();
+    this.reload();
   }
 
-  updateConfiguration() {
+  reload() {
     let vimConfigs = getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
@@ -64,9 +65,32 @@ class ConfigurationClass {
       }
     }
 
-    // <space> is special, change it to " " internally if it is used as leader
+    // <space> is special, change it to " " internally
     if (this.leader.toLowerCase() === '<space>') {
       this.leader = ' ';
+    }
+
+    // Normalize Keys
+    const keybindingList: IKeybinding[][] = [
+      this.insertModeKeyBindings,
+      this.insertModeKeyBindingsNonRecursive,
+      this.otherModesKeyBindings,
+      this.otherModesKeyBindingsNonRecursive,
+    ];
+    for (const keybindings of keybindingList) {
+      for (let remapping of keybindings) {
+        if (remapping.before) {
+          remapping.before.forEach(
+            (key, idx) => (remapping.before[idx] = AngleBracketNotation.Normalize(key))
+          );
+        }
+
+        if (remapping.after) {
+          remapping.after.forEach(
+            (key, idx) => (remapping.after![idx] = AngleBracketNotation.Normalize(key))
+          );
+        }
+      }
     }
 
     // Enable/Disable certain key combinations
@@ -238,12 +262,12 @@ class ConfigurationClass {
   @overlapSetting({ codeName: 'tabSize', default: 8 })
   tabstop: number;
 
-  @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
-  userCursorString: string;
-
   /**
    * Type of cursor user is using native to vscode
    */
+  @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
+  private userCursorString: string;
+
   get userCursor(): number | undefined {
     return this.cursorStyleFromString(this.userCursorString);
   }
