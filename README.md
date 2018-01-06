@@ -37,7 +37,6 @@ Please report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim
 * [VSCodeVim tricks](#vscodevim-tricks)
 * [F.A.Q / Troubleshooting](#faq)
 * [Contributing](#contributing)
-* [Release notes](https://github.com/VSCodeVim/Vim/releases)
 
 ## Getting started
 
