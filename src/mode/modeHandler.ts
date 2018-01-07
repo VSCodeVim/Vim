@@ -286,9 +286,21 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
     }
-    if (key === '<C-d>' && !Configuration.useCtrlKeys) {
-      key = '<D-d>';
+
+    // #2162 fixed by 5cc821e except <C-d> key due to this remapping
+    // Now keep the remapping but check if <C-d> is explicitly defined
+    // within the handleKeys scope firstly
+    if (key === '<C-d>') {
+      const useKeyCtrlD = Configuration.handleKeys['<C-d>'];
+      if (useKeyCtrlD !== undefined) {
+        if (!useKeyCtrlD) {
+          key = '<D-d>';
+        }
+      } else if (!Configuration.useCtrlKeys) {
+        key = '<D-d>';
+      }
     }
+
     this.vimState.cursorPositionJustBeforeAnythingHappened = this.vimState.allCursors.map(
       x => x.stop
     );
