@@ -266,15 +266,15 @@ export class ModeHandler implements vscode.Disposable {
   async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
-    // Rewrite commands.
-    // The conditions when you trigger a "copy" rather than a ctrl-c are
-    // too sophisticated to be covered by the "when" condition in package.json
+    // Rewrite commands
     if (Configuration.overrideCopy) {
+      // The conditions when you trigger a "copy" rather than a ctrl-c are
+      // too sophisticated to be covered by the "when" condition in package.json
       if (key === '<D-c>') {
         key = '<copy>';
       }
 
-      if (process.platform !== 'darwin' && key === '<C-c>') {
+      if (key === '<C-c>' && process.platform !== 'darwin') {
         if (
           !Configuration.useCtrlKeys ||
           this.vimState.currentMode === ModeName.Visual ||
@@ -1344,6 +1344,7 @@ export class ModeHandler implements vscode.Disposable {
       // Update all EasyMotion decorations
       this.vimState.easyMotion.updateDecorations();
     }
+
     this._renderStatusBar();
 
     await vscode.commands.executeCommand(
@@ -1385,7 +1386,8 @@ export class ModeHandler implements vscode.Disposable {
       text.push(macroText);
     }
 
-    StatusBar.SetText(text.join(' '), this.currentMode.name, true);
+    let forceUpdate = this.currentMode.name === ModeName.SearchInProgressMode;
+    StatusBar.SetText(text.join(' '), this.currentMode.name, forceUpdate);
   }
 
   async handleMultipleKeyEvents(keys: string[]): Promise<void> {

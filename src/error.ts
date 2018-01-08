@@ -1,5 +1,3 @@
-import * as util from './util';
-
 interface IErrorMessage {
   [index: number]: string;
 }
@@ -11,6 +9,7 @@ export enum ErrorCode {
   E348 = 348,
   E444 = 444,
   E488 = 488,
+  E492 = 492,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -19,6 +18,7 @@ export const ErrorMessage: IErrorMessage = {
   208: 'Error writing to file',
   348: 'No string under cursor',
   444: 'Cannot close last window',
+  492: 'Not an editor command',
   488: 'Trailing characters',
 };
 
@@ -46,10 +46,6 @@ export class VimError extends Error {
 
   get message(): string {
     return this._message;
-  }
-
-  display(): void {
-    util.showError(this.toString());
   }
 
   toString(): string {
