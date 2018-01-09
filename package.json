@@ -316,6 +316,16 @@
         "when": "listFocus && !inputFocus"
       },
       {
+        "key": "l",
+        "command": "list.select",
+        "when": "listFocus && !inputFocus"
+      },
+      {
+        "key": "h",
+        "command": "list.collapse",
+        "when": "listFocus && !inputFocus"
+      },
+      {
         "key": "g g",
         "command": "list.focusFirst",
         "when": "listFocus && !inputFocus"
