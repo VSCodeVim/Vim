@@ -85,11 +85,7 @@ class ConfigurationClass {
       }
     }
 
-    // resolve and normalize leader key
-    this.leader =
-      this.leader.toLocaleLowerCase() === '<leader>'
-        ? this.leaderDefault
-        : Notation.NormalizeKey(this.leader);
+    this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
     // normalize keys
     const keybindingList: IKeyRemapping[][] = [
@@ -102,13 +98,13 @@ class ConfigurationClass {
       for (let remapping of keybindings) {
         if (remapping.before) {
           remapping.before.forEach(
-            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key))
+            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, this.leader))
           );
         }
 
         if (remapping.after) {
           remapping.after.forEach(
-            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key))
+            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, this.leader))
           );
         }
       }
@@ -129,7 +125,7 @@ class ConfigurationClass {
       }
 
       this.boundKeyCombinations.push({
-        key: Notation.NormalizeKey(key),
+        key: Notation.NormalizeKey(key, this.leader),
         command: keybinding.command,
       });
     }

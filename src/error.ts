@@ -18,8 +18,8 @@ export const ErrorMessage: IErrorMessage = {
   208: 'Error writing to file',
   348: 'No string under cursor',
   444: 'Cannot close last window',
-  492: 'Not an editor command',
   488: 'Trailing characters',
+  492: 'Not an editor command',
 };
 
 export class VimError extends Error {
