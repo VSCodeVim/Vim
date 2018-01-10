@@ -210,7 +210,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const mh = await getAndUpdateModeHandler();
       if (args.after) {
         for (const key of args.after) {
-          await mh.handleKeyEvent(Notation.NormalizeKey(key));
+          await mh.handleKeyEvent(Notation.NormalizeKey(key, Configuration.leader));
         }
         return;
       }
