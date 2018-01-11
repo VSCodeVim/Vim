@@ -287,7 +287,6 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // #2162 fixed by 5cc821e except <C-d> key due to this remapping
     // Now keep the remapping but check if <C-d> is explicitly defined
     // within the handleKeys scope firstly
     if (key === '<C-d>') {
