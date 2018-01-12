@@ -15,64 +15,15 @@ export enum VisualBlockInsertionType {
   Append,
 }
 
-export class EasyMotionMode extends Mode {
-  constructor() {
-    super(ModeName.EasyMotionMode, '-- EasyMotion --', VSCodeVimCursorType.Block);
-  }
-
-  getStatusBarCommandText(vimState: VimState): string {
-    return `Target key: ${vimState.easyMotion.accumulation}`;
-  }
-}
-
-export class EasyMotionInputMode extends Mode {
-  constructor() {
-    super(ModeName.EasyMotionInputMode, '-- EasyMotion Input --', VSCodeVimCursorType.Block);
-  }
-
-  getStatusBarCommandText(vimState: VimState): string {
-    if (!vimState.easyMotion) {
-      return '';
-    }
-
-    const searchCharCount = vimState.easyMotion.searchAction.searchCharCount;
-    const message =
-      searchCharCount > 0
-        ? `Search for ${searchCharCount} character(s): `
-        : 'Search for characters: ';
-    return message + vimState.easyMotion.searchAction.getSearchString();
-  }
-}
-
-export class InsertMode extends Mode {
-  constructor() {
-    super(ModeName.Insert, '-- Insert --', VSCodeVimCursorType.Native);
-  }
-
-  getStatusBarCommandText(vimState: VimState): string {
-    return '';
-  }
-}
-
 export class NormalMode extends Mode {
   constructor() {
     super(ModeName.Normal, '-- Normal --', VSCodeVimCursorType.Block);
   }
 }
 
-export class ReplaceMode extends Mode {
+export class InsertMode extends Mode {
   constructor() {
-    super(ModeName.Replace, '-- Replace --', VSCodeVimCursorType.Underline);
-  }
-}
-
-export class SearchInProgressMode extends Mode {
-  constructor() {
-    super(ModeName.SearchInProgressMode, '', VSCodeVimCursorType.Block);
-  }
-
-  getStatusBarText(vimState: VimState): string {
-    return `/${vimState.globalState.searchState!.searchString}`;
+    super(ModeName.Insert, '-- Insert --', VSCodeVimCursorType.Native);
   }
 
   getStatusBarCommandText(vimState: VimState): string {
@@ -106,6 +57,55 @@ export class VisualLineMode extends Mode {
   }
 }
 
+export class SearchInProgressMode extends Mode {
+  constructor() {
+    super(ModeName.SearchInProgressMode, '', VSCodeVimCursorType.Block);
+  }
+
+  getStatusBarText(vimState: VimState): string {
+    return `/${vimState.globalState.searchState!.searchString}`;
+  }
+
+  getStatusBarCommandText(vimState: VimState): string {
+    return '';
+  }
+}
+
+export class ReplaceMode extends Mode {
+  constructor() {
+    super(ModeName.Replace, '-- Replace --', VSCodeVimCursorType.Underline);
+  }
+}
+
+export class EasyMotionMode extends Mode {
+  constructor() {
+    super(ModeName.EasyMotionMode, '-- EasyMotion --', VSCodeVimCursorType.Block);
+  }
+
+  getStatusBarCommandText(vimState: VimState): string {
+    return `Target key: ${vimState.easyMotion.accumulation}`;
+  }
+}
+
+export class EasyMotionInputMode extends Mode {
+  constructor() {
+    super(ModeName.EasyMotionInputMode, '-- EasyMotion Input --', VSCodeVimCursorType.Block);
+  }
+
+  getStatusBarCommandText(vimState: VimState): string {
+    if (!vimState.easyMotion) {
+      return '';
+    }
+
+    const searchCharCount = vimState.easyMotion.searchAction.searchCharCount;
+    const message =
+      searchCharCount > 0
+        ? `Search for ${searchCharCount} character(s): `
+        : 'Search for characters: ';
+    return message + vimState.easyMotion.searchAction.getSearchString();
+  }
+}
+
 export class SurroundInputMode extends Mode {
   constructor() {
     super(ModeName.SurroundInputMode, '-- Surround Input --', VSCodeVimCursorType.Block);
@@ -113,5 +113,11 @@ export class SurroundInputMode extends Mode {
 
   getStatusBarCommandText(vimState: VimState): string {
     return vimState.surround && vimState.surround.replacement ? vimState.surround.replacement : '';
+  }
+}
+
+export class DisabledMode extends Mode {
+  constructor() {
+    super(ModeName.Disabled, '-- VIM: Disabled --', VSCodeVimCursorType.Line);
   }
 }

@@ -252,14 +252,11 @@ export async function activate(context: vscode.ExtensionContext) {
     await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
     let mh = await getAndUpdateModeHandler();
     if (isDisabled) {
-      vscode.window.visibleTextEditors.forEach(e => {
-        e.options.cursorStyle = Configuration.userCursor;
-      });
-      StatusBar.SetText('-- VIM: DISABLED --', mh.currentMode.name, true);
-    } else {
+      await mh.handleKeyEvent('<ExtensionDisable>');
       compositionState = new CompositionState();
       modeHandlerToEditorIdentity = {};
-      mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    } else {
+      await mh.handleKeyEvent('<ExtensionEnable>');
     }
   }
 

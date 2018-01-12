@@ -55,6 +55,7 @@ export class ModeHandler implements vscode.Disposable {
       new modes.EasyMotionMode(),
       new modes.EasyMotionInputMode(),
       new modes.SurroundInputMode(),
+      new modes.DisabledMode(),
     ];
 
     this.vimState = new VimState(vscode.window.activeTextEditor!, Configuration.startInInsertMode);

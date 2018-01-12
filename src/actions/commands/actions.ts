@@ -240,6 +240,39 @@ export abstract class BaseCommand extends BaseAction {
 // begin actions
 
 @RegisterAction
+class DisableExtension extends BaseCommand {
+  modes = [
+    ModeName.Normal,
+    ModeName.Insert,
+    ModeName.Visual,
+    ModeName.VisualBlock,
+    ModeName.VisualLine,
+    ModeName.SearchInProgressMode,
+    ModeName.Replace,
+    ModeName.EasyMotionMode,
+    ModeName.EasyMotionInputMode,
+    ModeName.SurroundInputMode,
+  ];
+  keys = ['<ExtensionDisable>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Disabled;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class EnableExtension extends BaseCommand {
+  modes = [ModeName.Disabled];
+  keys = ['<ExtensionEnable>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Normal;
+    return vimState;
+  }
+}
+
+@RegisterAction
 export class CommandNumber extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['<number>'];
