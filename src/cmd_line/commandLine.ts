@@ -40,7 +40,7 @@ export class CommandLine {
     } catch (e) {
       console.log(e);
       if (e instanceof VimError) {
-        StatusBar.SetText(`${e.toString()}: ${command}`, vimState.currentMode, true);
+        StatusBar.SetText(`${e.toString()}. ${command}`, vimState.currentMode, true);
       } else {
         util.showError(e.toString());
       }
