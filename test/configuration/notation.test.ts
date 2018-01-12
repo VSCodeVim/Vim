@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { Notation } from '../src/configuration/notation';
+import { Notation } from '../../src/configuration/notation';
 
 suite('Notation', () => {
   test('Normalize', () => {
