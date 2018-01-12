@@ -287,17 +287,10 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    // Now keep the remapping but check if <C-d> is explicitly defined
-    // within the handleKeys scope firstly
-    if (key === '<C-d>') {
-      const useKeyCtrlD = Configuration.handleKeys['<C-d>'];
-      if (useKeyCtrlD !== undefined) {
-        if (!useKeyCtrlD) {
-          key = '<D-d>';
-        }
-      } else if (!Configuration.useCtrlKeys) {
-        key = '<D-d>';
-      }
+    // <C-d> triggers "add selection to next find match" by default,
+    // unless users explicity make <C-d>: true
+    if (key === '<C-d>' && !(Configuration.handleKeys['<C-d>'] === true)) {
+      key = '<D-d>';
     }
 
     this.vimState.cursorPositionJustBeforeAnythingHappened = this.vimState.allCursors.map(
