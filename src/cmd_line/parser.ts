@@ -2,6 +2,7 @@ import * as lexer from './lexer';
 import * as node from './node';
 import { commandParsers } from './subparser';
 import * as token from './token';
+import { VimError, ErrorCode } from '../error';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;
@@ -52,7 +53,7 @@ function parseCommand(state: ParserState, commandLine: node.CommandLine): IParse
       case token.TokenType.CommandName:
         var commandParser = (commandParsers as any)[tok.content];
         if (!commandParser) {
-          throw new Error('Not implemented or not a valid command');
+          throw VimError.fromCode(ErrorCode.E492);
         }
         // TODO: Pass the args, but keep in mind there could be multiple
         // commands, not just one.

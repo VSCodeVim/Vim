@@ -72,7 +72,6 @@ export class FileCommand extends node.CommandBase {
         await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
         await vscode.commands.executeCommand('workbench.action.closeOtherEditors');
       }
-
       return;
     } else if (this._arguments.name === '') {
       if (this._arguments.position === FilePosition.NewWindow) {

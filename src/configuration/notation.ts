@@ -1,7 +1,5 @@
 import * as _ from 'lodash';
 
-import { Configuration } from './configuration';
-
 export class Notation {
   // Mapping from the nomalized string to regex strings that could match it.
   private static _notationMap: { [key: string]: string[] } = {
@@ -17,7 +15,7 @@ export class Notation {
    * (e.g. <ctrl+x>, Ctrl+x, <c-x> normalized to <C-x>)
    * and resolves special cases such as '<leader>'
    */
-  public static NormalizeKey(key: string): string {
+  public static NormalizeKey(key: string, leaderKey: string): string {
     if (!this.isSurroundedByAngleBrackets(key) && key.length > 1) {
       key = `<${key.toLocaleLowerCase()}>`;
     }
@@ -32,7 +30,7 @@ export class Notation {
     }
 
     if (key.toLocaleLowerCase() === '<leader>') {
-      return Configuration.leader;
+      return leaderKey;
     }
 
     if (_.includes(['<up>', '<down>', '<left>', '<right>'], key.toLocaleLowerCase())) {

@@ -6,6 +6,7 @@ import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import * as parser from './parser';
 import * as util from '../util';
+import { VimError, ErrorCode } from '../error';
 
 export class CommandLine {
   public static async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
@@ -37,8 +38,12 @@ export class CommandLine {
         await cmd.execute(vimState.editor, vimState);
       }
     } catch (e) {
-      console.error(e);
-      await util.showError(`${e.message}`);
+      console.log(e);
+      if (e instanceof VimError) {
+        StatusBar.SetText(`${e.toString()}. ${command}`, vimState.currentMode, true);
+      } else {
+        util.showError(e.toString());
+      }
     }
   }
 

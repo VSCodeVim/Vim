@@ -71,14 +71,12 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   // Temporary workaround for vscode bug not changing cursor style properly
   // https://github.com/Microsoft/vscode/issues/17472
   // https://github.com/Microsoft/vscode/issues/17513
-  const desiredStyle = curHandler.vimState.editor.options.cursorStyle;
+  if (curHandler.vimState.editor) {
+    const desiredStyle = curHandler.vimState.editor.options.cursorStyle;
 
-  // Temporarily change to any other cursor style besides the desired type, then change back
-  if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
-    curHandler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-    curHandler.vimState.editor.options.cursorStyle = desiredStyle;
-  } else {
-    curHandler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+    // Temporarily change to any other cursor style besides the desired type, then change back
+    let tempStyle = (desiredStyle || vscode.TextEditorCursorStyle.Line) % 6 + 1;
+    curHandler.vimState.editor.options.cursorStyle = tempStyle;
     curHandler.vimState.editor.options.cursorStyle = desiredStyle;
   }
 
@@ -210,7 +208,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const mh = await getAndUpdateModeHandler();
       if (args.after) {
         for (const key of args.after) {
-          await mh.handleKeyEvent(Notation.NormalizeKey(key));
+          await mh.handleKeyEvent(Notation.NormalizeKey(key, Configuration.leader));
         }
         return;
       }
@@ -254,14 +252,11 @@ export async function activate(context: vscode.ExtensionContext) {
     await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
     let mh = await getAndUpdateModeHandler();
     if (isDisabled) {
-      vscode.window.visibleTextEditors.forEach(e => {
-        e.options.cursorStyle = Configuration.userCursor;
-      });
-      StatusBar.SetText('-- VIM: DISABLED --', mh.currentMode.name, true);
-    } else {
+      await mh.handleKeyEvent('<ExtensionDisable>');
       compositionState = new CompositionState();
       modeHandlerToEditorIdentity = {};
-      mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    } else {
+      await mh.handleKeyEvent('<ExtensionEnable>');
     }
   }
 
