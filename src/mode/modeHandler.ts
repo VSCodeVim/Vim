@@ -850,6 +850,8 @@ export class ModeHandler implements vscode.Disposable {
         case 'deleteRange':
           edit.delete(new vscode.Selection(command.range.start, command.range.stop));
           break;
+        case 'moveCursor':
+          break;
         default:
           console.warn(`Unhandled text transformation type: ${command.type}.`);
           break;

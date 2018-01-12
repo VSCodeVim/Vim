@@ -75,7 +75,7 @@ class ConfigurationClass {
 
   reload() {
     // read configurations
-    let vimConfigs = getConfiguration('vim');
+    let vimConfigs = this.getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
@@ -151,6 +151,15 @@ class ConfigurationClass {
 
       vscode.commands.executeCommand('setContext', `vim.use${boundKey.key}`, useKey);
     }
+  }
+
+  getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
+    let resource: vscode.Uri | undefined = undefined;
+    let activeTextEditor = vscode.window.activeTextEditor;
+    if (activeTextEditor) {
+      resource = activeTextEditor.document.uri;
+    }
+    return vscode.workspace.getConfiguration(section, resource);
   }
 
   cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
@@ -368,7 +377,7 @@ class ConfigurationClass {
   }
   set disableExt(isDisabled: boolean) {
     this.disableExtension = isDisabled;
-    getConfiguration('vim').update('disableExtension', isDisabled, ConfigurationTarget.Global);
+    this.getConfiguration('vim').update('disableExtension', isDisabled, ConfigurationTarget.Global);
   }
 
   /**
@@ -408,15 +417,6 @@ class ConfigurationClass {
   otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
 
-function getConfiguration(section: string): vscode.WorkspaceConfiguration {
-  let resource: vscode.Uri | undefined = undefined;
-  let activeTextEditor = vscode.window.activeTextEditor;
-  if (activeTextEditor) {
-    resource = activeTextEditor.document.uri;
-  }
-  return vscode.workspace.getConfiguration(section, resource);
-}
-
 function overlapSetting(args: {
   codeName: string;
   default: OptionValue;
@@ -429,7 +429,7 @@ function overlapSetting(args: {
           return this['_' + propertyKey];
         }
 
-        let val = getConfiguration('editor').get(args.codeName, args.default);
+        let val = this.getConfiguration('editor').get(args.codeName, args.default);
         if (args.codeValueMapping && val !== undefined) {
           val = args.codeValueMapping[val as string];
         }
@@ -448,7 +448,7 @@ function overlapSetting(args: {
             value = args.codeValueMapping[value];
           }
 
-          await getConfiguration('editor').update(
+          await this.getConfiguration('editor').update(
             args.codeName,
             value,
             vscode.ConfigurationTarget.Global
