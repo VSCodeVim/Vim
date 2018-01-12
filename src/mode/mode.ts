@@ -12,6 +12,7 @@ export enum ModeName {
   EasyMotionMode,
   EasyMotionInputMode,
   SurroundInputMode,
+  Disabled,
 }
 
 export enum VSCodeVimCursorType {
