@@ -140,9 +140,13 @@ export class BaseAction {
     if (this.modes.indexOf(vimState.currentMode) === -1) {
       return false;
     }
-    if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
+
+    const keys2D = is2DArray(this.keys) ? this.keys : [this.keys];
+    const keysSlice = keys2D.map(x => x.slice(0, keysPressed.length));
+    if (!compareKeypressSequence(keysSlice, keysPressed)) {
       return false;
     }
+
     if (
       this.mustBeFirstKey &&
       vimState.recordedState.numberOfKeysInCommandWithoutCountPrefix - keysPressed.length > 0
