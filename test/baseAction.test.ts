@@ -29,58 +29,42 @@ suite('base action', () => {
   suiteTeardown(cleanUpWorkspace);
 
   test('couldActionApply 1D keys positive', () => {
-    assert.strictEqual(
-      action1D.couldActionApply(vimState, ['a']),
-      true
-    );
+    const result = action1D.couldActionApply(vimState, ['a']);
+    assert.strictEqual(result, true);
   });
 
   test('couldActionApply 1D keys negative', () => {
-    assert.strictEqual(
-      action1D.couldActionApply(vimState, ['b']),
-      false
-    );
+    const result = action1D.couldActionApply(vimState, ['b']);
+    assert.strictEqual(result, false);
   });
 
   test('couldActionApply 2D keys positive', () => {
-    assert.strictEqual(
-      action2D.couldActionApply(vimState, ['c']),
-      true
-    );
+    const result = action2D.couldActionApply(vimState, ['c']);
+    assert.strictEqual(result, true);
   });
 
   test('couldActionApply 2D keys negative', () => {
-    assert.strictEqual(
-      action2D.couldActionApply(vimState, ['b']),
-      false
-    );
+    const result = action2D.couldActionApply(vimState, ['b']);
+    assert.strictEqual(result, false);
   });
 
   test('doesActionApply 1D keys positive', () => {
-    assert.strictEqual(
-      action1D.doesActionApply(vimState, ['a', 'b']),
-      true
-    );
+    const result = action1D.doesActionApply(vimState, ['a', 'b']);
+    assert.strictEqual(result, true);
   });
 
   test('doesActionApply 1D keys negative', () => {
-    assert.strictEqual(
-      action1D.doesActionApply(vimState, ['a', 'a']),
-      false
-    );
+    const result = action1D.doesActionApply(vimState, ['a', 'a']);
+    assert.strictEqual(result, false);
   });
 
   test('doesActionApply 2D keys positive', () => {
-    assert.strictEqual(
-      action2D.doesActionApply(vimState, ['c', 'd']),
-      true
-    );
+    const result = action2D.doesActionApply(vimState, ['c', 'd']);
+    assert.strictEqual(result, true);
   });
 
   test('doesActionApply 2D keys negative', () => {
-    assert.strictEqual(
-      action2D.doesActionApply(vimState, ['a', 'a']),
-      false
-    );
+    const result = action2D.doesActionApply(vimState, ['a', 'a']);
+    assert.strictEqual(result, false);
   });
 });
