@@ -1,8 +1,20 @@
 # Change Log
 
+## [v0.10.10](https://github.com/vscodevim/vim/tree/v0.10.10)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.9...v0.10.10)
+
+- fix: add tests for compareKeyPressSequence [\#2289](https://github.com/VSCodeVim/Vim/pull/2289) ([jpoon](https://github.com/jpoon))
+- Fix BaseAction.couldActionApply to work with two-dimensional keys array [\#2288](https://github.com/VSCodeVim/Vim/pull/2288) ([jpotterm](https://github.com/jpotterm))
+- refactor: move modehandlermap to own class [\#2285](https://github.com/VSCodeVim/Vim/pull/2285) ([jpoon](https://github.com/jpoon))
+- fix: status bar not updating following toggle [\#2283](https://github.com/VSCodeVim/Vim/pull/2283) ([jpoon](https://github.com/jpoon))
+- Fix: Warnings when retrieving configurations w/o resource [\#2282](https://github.com/VSCodeVim/Vim/pull/2282) ([jpoon](https://github.com/jpoon))
+- fix: \<C-d\> remapping disabled by default. functionality controlled by "handleKeys" [\#2269](https://github.com/VSCodeVim/Vim/pull/2269) ([Arxzin](https://github.com/Arxzin))
+
 ## [v0.10.9](https://github.com/vscodevim/vim/tree/v0.10.9) (2018-01-11)
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.8...v0.10.9)
 
+- feature: "h", "l" keybindings for sidebar [\#2290](https://github.com/VSCodeVim/Vim/pull/2290) ([Nodman](https://github.com/Nodman))
 - fix: no need to change cursor if there is no active editor. closes \#2273 [\#2278](https://github.com/VSCodeVim/Vim/pull/2278) ([jpoon](https://github.com/jpoon))
 - fix: fixes circular dependency between notation and configuration [\#2277](https://github.com/VSCodeVim/Vim/pull/2277) ([jpoon](https://github.com/jpoon))
 - fix: show cmd-line errors in status bar. add new E492 error [\#2272](https://github.com/VSCodeVim/Vim/pull/2272) ([jpoon](https://github.com/jpoon))
