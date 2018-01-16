@@ -1,606 +1,609 @@
 {
-  "name": "vim",
-  "displayName": "Vim",
-  "description": "Vim emulation for Visual Studio Code",
-  "icon": "images/icon.png",
-  "version": "0.10.10",
-  "publisher": "vscodevim",
-  "galleryBanner": {
-    "color": "#e3f4ff",
-    "theme": "light"
-  },
-  "license": "MIT",
-  "keywords": [
-    "vim",
-    "vi",
-    "vscodevim"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/VSCodeVim/Vim.git"
-  },
-  "homepage": "https://github.com/VSCodeVim/Vim",
-  "bugs": {
-    "url": "https://github.com/VSCodeVim/Vim/issues"
-  },
-  "engines": {
-    "vscode": "^1.17.0"
-  },
-  "categories": [
-    "Other",
-    "Keymaps"
-  ],
-  "activationEvents": [
-    "*"
-  ],
-  "qna": "https://vscodevim-slackin.azurewebsites.net/",
-  "main": "./out/extension",
-  "contributes": {
-    "commands": [
-      {
-        "command": "extension.showCmdLine",
-        "title": "Vim: Show Command Line"
-      },
-      {
-        "command": "vim.remap",
-        "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
-      },
-      {
-        "command": "toggleVim",
-        "title": "Vim: Toggle Vim Mode"
-      }
+    "name": "vim",
+    "displayName": "Vim",
+    "description": "Vim emulation for Visual Studio Code",
+    "icon": "images/icon.png",
+    "version": "0.10.10",
+    "publisher": "vscodevim",
+    "galleryBanner": {
+        "color": "#e3f4ff",
+        "theme": "light"
+    },
+    "license": "MIT",
+    "keywords": [
+        "vim",
+        "vi",
+        "vscodevim"
     ],
-    "keybindings": [
-      {
-        "key": "Escape",
-        "command": "extension.vim_escape",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "Home",
-        "command": "extension.vim_home",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
-      },
-      {
-        "key": "End",
-        "command": "extension.vim_end",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
-      },
-      {
-        "key": "cmd+left",
-        "command": "extension.vim_cmd+left",
-        "when": "editorTextFocus && vim.active && vim.use<D-left> && !inDebugRepl && vim.mode != 'Insert'"
-      },
-      {
-        "key": "cmd+right",
-        "command": "extension.vim_cmd+right",
-        "when": "editorTextFocus && vim.active && vim.use<D-right> &&  !inDebugRepl && vim.mode != 'Insert'"
-      },
-      {
-        "key": "cmd+d",
-        "command": "extension.vim_cmd+d",
-        "when": "editorTextFocus && vim.active && vim.use<D-d> && !inDebugRepl"
-      },
-      {
-        "key": "cmd+a",
-        "command": "extension.vim_cmd+a",
-        "when": "editorTextFocus && vim.active && vim.use<D-a> && !inDebugRepl && vim.mode != 'Insert'"
-      },
-      {
-        "key": "ctrl+d",
-        "command": "extension.vim_ctrl+d",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+alt+down",
-        "linux": "shift+alt+down",
-        "mac": "cmd+alt+down",
-        "command": "extension.vim_cmd+alt+down",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+alt+up",
-        "linux": "shift+alt+up",
-        "mac": "cmd+alt+up",
-        "command": "extension.vim_cmd+alt+up",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "Backspace",
-        "command": "extension.vim_backspace",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "shift+backspace",
-        "command": "extension.vim_shift+backspace",
-        "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
-      },
-      {
-        "key": "Delete",
-        "command": "extension.vim_delete",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "tab",
-        "command": "extension.vim_tab",
-        "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+r",
-        "command": "extension.vim_ctrl+r",
-        "when": "editorTextFocus && vim.active && vim.use<C-r> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+f",
-        "command": "extension.vim_ctrl+f",
-        "when": "editorTextFocus && vim.active && vim.use<C-f> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+b",
-        "command": "extension.vim_ctrl+b",
-        "when": "editorTextFocus && vim.active && vim.use<C-b> && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+j",
-        "command": "extension.vim_ctrl+j",
-        "when": "editorTextFocus && vim.active && vim.use<C-j> && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+k",
-        "command": "extension.vim_ctrl+k",
-        "when": "editorTextFocus && vim.active && vim.use<C-k> && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+h",
-        "command": "extension.vim_ctrl+h",
-        "when": "editorTextFocus && vim.active && vim.use<C-h> && vim.mode == 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+e",
-        "command": "extension.vim_ctrl+e",
-        "when": "editorTextFocus && vim.active && vim.use<C-e> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+y",
-        "command": "extension.vim_ctrl+y",
-        "when": "editorTextFocus && vim.active && vim.use<C-y> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+u",
-        "command": "extension.vim_ctrl+u",
-        "when": "editorTextFocus && vim.active && vim.use<C-u> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+o",
-        "command": "extension.vim_ctrl+o",
-        "when": "editorTextFocus && vim.active && vim.use<C-o> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+i",
-        "command": "extension.vim_ctrl+i",
-        "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+v",
-        "command": "extension.vim_ctrl+v",
-        "when": "editorTextFocus && vim.active && vim.use<C-v> && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "cmd+v",
-        "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+[",
-        "command": "extension.vim_ctrl+[",
-        "when": "editorTextFocus && vim.active && vim.use<C-[> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+]",
-        "command": "extension.vim_ctrl+]",
-        "when": "editorTextFocus && vim.active && vim.use<C-]> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+w h",
-        "command": "extension.vim_navigateLeft",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
-      },
-      {
-        "key": "ctrl+w l",
-        "command": "extension.vim_navigateRight",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
-      },
-      {
-        "key": "ctrl+w ctrl+w",
-        "command": "extension.vim_navigateGroups",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
-      },
-      {
-        "key": "ctrl+w j",
-        "command": "extension.vim_navigateDown",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
-      },
-      {
-        "key": "ctrl+w k",
-        "command": "extension.vim_navigateUp",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
-      },
-      {
-        "key": "ctrl+w",
-        "command": "extension.vim_ctrl+w",
-        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+c",
-        "command": "extension.vim_ctrl+c",
-        "when": "editorTextFocus && vim.active && vim.use<C-c> && !inDebugRepl && vim.overrideCtrlC"
-      },
-      {
-        "key": "cmd+c",
-        "command": "extension.vim_cmd+c",
-        "when": "editorTextFocus && vim.active && vim.use<D-c> && vim.overrideCopy && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+a",
-        "command": "extension.vim_ctrl+a",
-        "when": "editorTextFocus && vim.active && vim.use<C-a> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+n",
-        "command": "extension.vim_ctrl+n",
-        "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+p",
-        "command": "extension.vim_ctrl+p",
-        "when": "suggestWidgetVisible && vim.active && vim.use<C-p>"
-      },
-      {
-        "key": "ctrl+x",
-        "command": "extension.vim_ctrl+x",
-        "when": "editorTextFocus && vim.active && vim.use<C-x> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+shift+2",
-        "command": "extension.vim_ctrl+shift+2",
-        "when": "editorTextFocus && vim.active && vim.use<C-shift+2>"
-      },
-      {
-        "key": "ctrl+t",
-        "command": "extension.vim_ctrl+t",
-        "when": "editorTextFocus && vim.active && vim.use<C-t> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+pagedown",
-        "command": "extension.vim_ctrl+pagedown",
-        "when": "editorTextFocus && vim.active && vim.use<C-pagedown> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+pageup",
-        "command": "extension.vim_ctrl+pageup",
-        "when": "editorTextFocus && vim.active && vim.use<C-pageup> && !inDebugRepl"
-      },
-      {
-        "key": "left",
-        "command": "extension.vim_left",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "right",
-        "command": "extension.vim_right",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "up",
-        "command": "extension.vim_up",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
-      },
-      {
-        "key": "down",
-        "command": "extension.vim_down",
-        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
-      },
-      {
-        "key": "j",
-        "command": "list.focusDown",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "k",
-        "command": "list.focusUp",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "o",
-        "command": "list.toggleExpand",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "l",
-        "command": "list.select",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "h",
-        "command": "list.collapse",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "g g",
-        "command": "list.focusFirst",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "shift+G",
-        "command": "list.focusLast",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "ctrl+d",
-        "command": "list.focusPageDown",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "ctrl+u",
-        "command": "list.focusPageUp",
-        "when": "listFocus && !inputFocus"
-      }
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/VSCodeVim/Vim.git"
+    },
+    "homepage": "https://github.com/VSCodeVim/Vim",
+    "bugs": {
+        "url": "https://github.com/VSCodeVim/Vim/issues"
+    },
+    "engines": {
+        "vscode": "^1.17.0"
+    },
+    "categories": [
+        "Other",
+        "Keymaps"
     ],
-    "configuration": {
-      "title": "Vim Configuration",
-      "type": "object",
-      "properties": {
-        "vim.otherModesKeyBindings": {
-          "type": "array",
-          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
-        },
-        "vim.otherModesKeyBindingsNonRecursive": {
-          "type": "array",
-          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
-        },
-        "vim.useCtrlKeys": {
-          "type": "boolean",
-          "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c",
-          "default": true
-        },
-        "vim.leader": {
-          "type": "string",
-          "description": "What key should <leader> map to in remappings?",
-          "default": "\\"
-        },
-        "vim.searchHighlightColor": {
-          "type": "string",
-          "description": "Color of the search highlight.",
-          "default": "rgba(150, 150, 255, 0.3)"
-        },
-        "vim.useSystemClipboard": {
-          "type": "boolean",
-          "description": "Use system clipboard for unnamed register.",
-          "default": false
-        },
-        "vim.overrideCopy": {
-          "type": "boolean",
-          "description": "Override VSCode's copy command with our own copy command, which works better with VSCodeVim. Turn this off if copying is not working.",
-          "default": true
-        },
-        "vim.insertModeKeyBindings": {
-          "type": "array",
-          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for more."
-        },
-        "vim.insertModeKeyBindingsNonRecursive": {
-          "type": "array",
-          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for more."
-        },
-        "vim.textwidth": {
-          "type": "number",
-          "description": "Width to word-wrap to when using gq.",
-          "default": 80
-        },
-        "vim.timeout": {
-          "type": "number",
-          "description": "Timeout in milliseconds for remapped commands",
-          "default": 1000
-        },
-        "vim.scroll": {
-          "type": "number",
-          "description": "Number of lines to scroll with CTRL-U and CTRL-D commands.",
-          "default": 20
-        },
-        "vim.showcmd": {
-          "type": "boolean",
-          "description": "Show the text of any command you are in the middle of writing.",
-          "default": true
-        },
-        "vim.showmodename": {
-          "type": "boolean",
-          "description": "Show the name of the current mode in the statusbar.",
-          "default": true
-        },
-        "vim.iskeyword": {
-          "type": "string",
-          "description": "keywords contain alphanumeric characters and '_'",
-          "default": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-"
-        },
-        "vim.ignorecase": {
-          "type": "boolean",
-          "description": "Ignore case in search patterns.",
-          "default": true
-        },
-        "vim.smartcase": {
-          "type": "boolean",
-          "description": "Override the 'ignorecase' option if the search pattern contains upper case characters.",
-          "default": true
-        },
-        "vim.easymotion": {
-          "type": "boolean",
-          "description": "Enable the EasyMotion plugin for Vim.",
-          "default": false
-        },
-        "vim.easymotionMarkerBackgroundColor": {
-          "type": "string",
-          "description": "Set a custom background color for EasyMotion markers."
-        },
-        "vim.easymotionMarkerForegroundColorOneChar": {
-          "type": "string",
-          "description": "Set a custom color for the text on one character long markers."
-        },
-        "vim.easymotionMarkerForegroundColorTwoChar": {
-          "type": "string",
-          "description": "Set a custom color for the text on two character long markers."
-        },
-        "vim.easymotionMarkerWidthPerChar": {
-          "type": "number",
-          "description": "Set the width (in pixels) allocated to each character in the match.",
-          "default": 8
-        },
-        "vim.easymotionMarkerHeight": {
-          "type": "number",
-          "description": "Set the height of the marker.",
-          "default": 14
-        },
-        "vim.easymotionMarkerFontFamily": {
-          "type": "string",
-          "description": "Set the font family of the marker text.",
-          "default": "Consolas"
-        },
-        "vim.easymotionMarkerFontSize": {
-          "type": "string",
-          "description": "Set the font size of the marker text.",
-          "default": "14"
-        },
-        "vim.easymotionMarkerFontWeight": {
-          "type": "string",
-          "description": "Set the font weight of the marker text.",
-          "default": "normal"
-        },
-        "vim.easymotionMarkerYOffset": {
-          "type": "number",
-          "description": "Set the Y offset of the marker text (the distance from the top).",
-          "default": 0
-        },
-        "vim.easymotionKeys": {
-          "type": "string",
-          "description": "Set the characters used for jump marker name",
-          "default": "hklyuiopnm,qwertzxcvbasdgjf;"
-        },
-        "vim.surround": {
-          "type": "boolean",
-          "description": "Enable the Surround plugin for Vim.",
-          "default": true
-        },
-        "vim.hlsearch": {
-          "type": "boolean",
-          "description": "Show all matches of the most recent search pattern",
-          "default": false
-        },
-        "vim.incsearch": {
-          "type": "boolean",
-          "description": "Show where a / search matches as you type it.",
-          "default": true
-        },
-        "vim.history": {
-          "type": "number",
-          "description": "How much search or command history should be remembered",
-          "default": 50
-        },
-        "vim.autoindent": {
-          "type": "boolean",
-          "description": "Indent code automatically.",
-          "default": true
-        },
-        "vim.startInInsertMode": {
-          "type": "boolean",
-          "description": "Start in Insert Mode."
-        },
-        "vim.handleKeys": {
-          "type": "object",
-          "description": "Option to delegate certain key combinations back to VSCode to be handled natively"
-        },
-        "vim.statusBarColorControl": {
-          "type": "boolean",
-          "description": "Allow VSCodeVim to change status bar color based on mode"
-        },
-        "vim.statusBarColors": {
-          "type": "object",
-          "description": "Customize colors per mode when VSCodeVim controls status bar colors"
-        },
-        "vim.visualstar": {
-          "type": "boolean",
-          "description": "In visual mode, start a search with * or # using the current selection",
-          "default": false
-        },
-        "vim.foldfix": {
-          "type": "boolean",
-          "description": "Uses a hack to move around folds properly",
-          "default": false
-        },
-        "vim.mouseSelectionGoesIntoVisualMode": {
-          "type": "boolean",
-          "description": "Does dragging with the mouse put you into visual mode",
-          "default": true
-        },
-        "vim.disableExtension": {
-          "type": "boolean",
-          "description": "Disables the VSCodeVim extension.",
-          "default": false
-        },
-        "vim.enableNeovim": {
-          "type": "boolean",
-          "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect. NOTE: Neovim must be installed (v0.2.0) and neovimPath must be set the executable in order for this setting to work. Otherwise, vscodevim will crash.",
-          "default": false
-        },
-        "vim.neovimPath": {
-          "type": "string",
-          "description": "Path to run neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe",
-          "default": "nvim"
-        },
-        "vim.substituteGlobalFlag": {
-          "type": "boolean",
-          "description": "Automatically apply the global flag, /g, to substitute commands. When set to true, use /g to mean only first match should be replaced.",
-          "default": false
-        },
-        "vim.cursorStylePerMode": {
-          "type": "object",
-          "description": "Customize cursor style per mode"
-        },
-        "vim.cmdLineInitialColon": {
-          "type": "boolean",
-          "description": "When typing a command show the initial colon ':' character",
-          "default": false
+    "activationEvents": [
+        "*"
+    ],
+    "qna": "https://vscodevim-slackin.azurewebsites.net/",
+    "main": "./out/extension",
+    "contributes": {
+        "commands": [{
+                "command": "extension.showCmdLine",
+                "title": "Vim: Show Command Line"
+            },
+            {
+                "command": "vim.remap",
+                "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
+            },
+            {
+                "command": "toggleVim",
+                "title": "Vim: Toggle Vim Mode"
+            }
+        ],
+        "keybindings": [{
+                "key": "Escape",
+                "command": "extension.vim_escape",
+                "when": "editorTextFocus && vim.active && !inDebugRepl"
+            },
+            {
+                "key": "Home",
+                "command": "extension.vim_home",
+                "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+            },
+            {
+                "key": "End",
+                "command": "extension.vim_end",
+                "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+            },
+            {
+                "key": "Insert",
+                "command": "extension.vim_insert",
+                "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode != 'Insert'"
+            },
+            {
+                "key": "cmd+left",
+                "command": "extension.vim_cmd+left",
+                "when": "editorTextFocus && vim.active && vim.use<D-left> && !inDebugRepl && vim.mode != 'Insert'"
+            },
+            {
+                "key": "cmd+right",
+                "command": "extension.vim_cmd+right",
+                "when": "editorTextFocus && vim.active && vim.use<D-right> &&  !inDebugRepl && vim.mode != 'Insert'"
+            },
+            {
+                "key": "cmd+d",
+                "command": "extension.vim_cmd+d",
+                "when": "editorTextFocus && vim.active && vim.use<D-d> && !inDebugRepl"
+            },
+            {
+                "key": "cmd+a",
+                "command": "extension.vim_cmd+a",
+                "when": "editorTextFocus && vim.active && vim.use<D-a> && !inDebugRepl && vim.mode != 'Insert'"
+            },
+            {
+                "key": "ctrl+d",
+                "command": "extension.vim_ctrl+d",
+                "when": "editorTextFocus && vim.active && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+alt+down",
+                "linux": "shift+alt+down",
+                "mac": "cmd+alt+down",
+                "command": "extension.vim_cmd+alt+down",
+                "when": "editorTextFocus && vim.active && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+alt+up",
+                "linux": "shift+alt+up",
+                "mac": "cmd+alt+up",
+                "command": "extension.vim_cmd+alt+up",
+                "when": "editorTextFocus && vim.active && !inDebugRepl"
+            },
+            {
+                "key": "Backspace",
+                "command": "extension.vim_backspace",
+                "when": "editorTextFocus && vim.active && !inDebugRepl"
+            },
+            {
+                "key": "shift+backspace",
+                "command": "extension.vim_shift+backspace",
+                "when": "editorTextFocus && vim.active && vim.use<shift+BS> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+            },
+            {
+                "key": "Delete",
+                "command": "extension.vim_delete",
+                "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+            },
+            {
+                "key": "tab",
+                "command": "extension.vim_tab",
+                "when": "editorFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+r",
+                "command": "extension.vim_ctrl+r",
+                "when": "editorTextFocus && vim.active && vim.use<C-r> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+f",
+                "command": "extension.vim_ctrl+f",
+                "when": "editorTextFocus && vim.active && vim.use<C-f> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+b",
+                "command": "extension.vim_ctrl+b",
+                "when": "editorTextFocus && vim.active && vim.use<C-b> && vim.mode != 'Insert' && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+j",
+                "command": "extension.vim_ctrl+j",
+                "when": "editorTextFocus && vim.active && vim.use<C-j> && vim.mode != 'Insert' && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+k",
+                "command": "extension.vim_ctrl+k",
+                "when": "editorTextFocus && vim.active && vim.use<C-k> && vim.mode != 'Insert' && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+h",
+                "command": "extension.vim_ctrl+h",
+                "when": "editorTextFocus && vim.active && vim.use<C-h> && vim.mode == 'Insert' && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+e",
+                "command": "extension.vim_ctrl+e",
+                "when": "editorTextFocus && vim.active && vim.use<C-e> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+y",
+                "command": "extension.vim_ctrl+y",
+                "when": "editorTextFocus && vim.active && vim.use<C-y> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+u",
+                "command": "extension.vim_ctrl+u",
+                "when": "editorTextFocus && vim.active && vim.use<C-u> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+o",
+                "command": "extension.vim_ctrl+o",
+                "when": "editorTextFocus && vim.active && vim.use<C-o> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+i",
+                "command": "extension.vim_ctrl+i",
+                "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+v",
+                "command": "extension.vim_ctrl+v",
+                "when": "editorTextFocus && vim.active && vim.use<C-v> && vim.mode != 'Insert' && !inDebugRepl"
+            },
+            {
+                "key": "cmd+v",
+                "command": "extension.vim_cmd+v",
+                "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+[",
+                "command": "extension.vim_ctrl+[",
+                "when": "editorTextFocus && vim.active && vim.use<C-[> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+]",
+                "command": "extension.vim_ctrl+]",
+                "when": "editorTextFocus && vim.active && vim.use<C-]> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+w h",
+                "command": "extension.vim_navigateLeft",
+                "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+            },
+            {
+                "key": "ctrl+w l",
+                "command": "extension.vim_navigateRight",
+                "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+            },
+            {
+                "key": "ctrl+w ctrl+w",
+                "command": "extension.vim_navigateGroups",
+                "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+            },
+            {
+                "key": "ctrl+w j",
+                "command": "extension.vim_navigateDown",
+                "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+            },
+            {
+                "key": "ctrl+w k",
+                "command": "extension.vim_navigateUp",
+                "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+            },
+            {
+                "key": "ctrl+w",
+                "command": "extension.vim_ctrl+w",
+                "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+c",
+                "command": "extension.vim_ctrl+c",
+                "when": "editorTextFocus && vim.active && vim.use<C-c> && !inDebugRepl && vim.overrideCtrlC"
+            },
+            {
+                "key": "cmd+c",
+                "command": "extension.vim_cmd+c",
+                "when": "editorTextFocus && vim.active && vim.use<D-c> && vim.overrideCopy && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+a",
+                "command": "extension.vim_ctrl+a",
+                "when": "editorTextFocus && vim.active && vim.use<C-a> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+n",
+                "command": "extension.vim_ctrl+n",
+                "when": "editorTextFocus && vim.active && vim.use<C-n> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+p",
+                "command": "extension.vim_ctrl+p",
+                "when": "suggestWidgetVisible && vim.active && vim.use<C-p>"
+            },
+            {
+                "key": "ctrl+x",
+                "command": "extension.vim_ctrl+x",
+                "when": "editorTextFocus && vim.active && vim.use<C-x> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+shift+2",
+                "command": "extension.vim_ctrl+shift+2",
+                "when": "editorTextFocus && vim.active && vim.use<C-shift+2>"
+            },
+            {
+                "key": "ctrl+t",
+                "command": "extension.vim_ctrl+t",
+                "when": "editorTextFocus && vim.active && vim.use<C-t> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+pagedown",
+                "command": "extension.vim_ctrl+pagedown",
+                "when": "editorTextFocus && vim.active && vim.use<C-pagedown> && !inDebugRepl"
+            },
+            {
+                "key": "ctrl+pageup",
+                "command": "extension.vim_ctrl+pageup",
+                "when": "editorTextFocus && vim.active && vim.use<C-pageup> && !inDebugRepl"
+            },
+            {
+                "key": "left",
+                "command": "extension.vim_left",
+                "when": "editorTextFocus && vim.active && !inDebugRepl"
+            },
+            {
+                "key": "right",
+                "command": "extension.vim_right",
+                "when": "editorTextFocus && vim.active && !inDebugRepl"
+            },
+            {
+                "key": "up",
+                "command": "extension.vim_up",
+                "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
+            },
+            {
+                "key": "down",
+                "command": "extension.vim_down",
+                "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
+            },
+            {
+                "key": "j",
+                "command": "list.focusDown",
+                "when": "listFocus && !inputFocus"
+            },
+            {
+                "key": "k",
+                "command": "list.focusUp",
+                "when": "listFocus && !inputFocus"
+            },
+            {
+                "key": "o",
+                "command": "list.toggleExpand",
+                "when": "listFocus && !inputFocus"
+            },
+            {
+                "key": "l",
+                "command": "list.select",
+                "when": "listFocus && !inputFocus"
+            },
+            {
+                "key": "h",
+                "command": "list.collapse",
+                "when": "listFocus && !inputFocus"
+            },
+            {
+                "key": "g g",
+                "command": "list.focusFirst",
+                "when": "listFocus && !inputFocus"
+            },
+            {
+                "key": "shift+G",
+                "command": "list.focusLast",
+                "when": "listFocus && !inputFocus"
+            },
+            {
+                "key": "ctrl+d",
+                "command": "list.focusPageDown",
+                "when": "listFocus && !inputFocus"
+            },
+            {
+                "key": "ctrl+u",
+                "command": "list.focusPageUp",
+                "when": "listFocus && !inputFocus"
+            }
+        ],
+        "configuration": {
+            "title": "Vim Configuration",
+            "type": "object",
+            "properties": {
+                "vim.otherModesKeyBindings": {
+                    "type": "array",
+                    "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
+                },
+                "vim.otherModesKeyBindingsNonRecursive": {
+                    "type": "array",
+                    "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
+                },
+                "vim.useCtrlKeys": {
+                    "type": "boolean",
+                    "description": "Enable some vim ctrl key commands that override otherwise common operations, like ctrl+c",
+                    "default": true
+                },
+                "vim.leader": {
+                    "type": "string",
+                    "description": "What key should <leader> map to in remappings?",
+                    "default": "\\"
+                },
+                "vim.searchHighlightColor": {
+                    "type": "string",
+                    "description": "Color of the search highlight.",
+                    "default": "rgba(150, 150, 255, 0.3)"
+                },
+                "vim.useSystemClipboard": {
+                    "type": "boolean",
+                    "description": "Use system clipboard for unnamed register.",
+                    "default": false
+                },
+                "vim.overrideCopy": {
+                    "type": "boolean",
+                    "description": "Override VSCode's copy command with our own copy command, which works better with VSCodeVim. Turn this off if copying is not working.",
+                    "default": true
+                },
+                "vim.insertModeKeyBindings": {
+                    "type": "array",
+                    "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+                },
+                "vim.insertModeKeyBindingsNonRecursive": {
+                    "type": "array",
+                    "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+                },
+                "vim.textwidth": {
+                    "type": "number",
+                    "description": "Width to word-wrap to when using gq.",
+                    "default": 80
+                },
+                "vim.timeout": {
+                    "type": "number",
+                    "description": "Timeout in milliseconds for remapped commands",
+                    "default": 1000
+                },
+                "vim.scroll": {
+                    "type": "number",
+                    "description": "Number of lines to scroll with CTRL-U and CTRL-D commands.",
+                    "default": 20
+                },
+                "vim.showcmd": {
+                    "type": "boolean",
+                    "description": "Show the text of any command you are in the middle of writing.",
+                    "default": true
+                },
+                "vim.showmodename": {
+                    "type": "boolean",
+                    "description": "Show the name of the current mode in the statusbar.",
+                    "default": true
+                },
+                "vim.iskeyword": {
+                    "type": "string",
+                    "description": "keywords contain alphanumeric characters and '_'",
+                    "default": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-"
+                },
+                "vim.ignorecase": {
+                    "type": "boolean",
+                    "description": "Ignore case in search patterns.",
+                    "default": true
+                },
+                "vim.smartcase": {
+                    "type": "boolean",
+                    "description": "Override the 'ignorecase' option if the search pattern contains upper case characters.",
+                    "default": true
+                },
+                "vim.easymotion": {
+                    "type": "boolean",
+                    "description": "Enable the EasyMotion plugin for Vim.",
+                    "default": false
+                },
+                "vim.easymotionMarkerBackgroundColor": {
+                    "type": "string",
+                    "description": "Set a custom background color for EasyMotion markers."
+                },
+                "vim.easymotionMarkerForegroundColorOneChar": {
+                    "type": "string",
+                    "description": "Set a custom color for the text on one character long markers."
+                },
+                "vim.easymotionMarkerForegroundColorTwoChar": {
+                    "type": "string",
+                    "description": "Set a custom color for the text on two character long markers."
+                },
+                "vim.easymotionMarkerWidthPerChar": {
+                    "type": "number",
+                    "description": "Set the width (in pixels) allocated to each character in the match.",
+                    "default": 8
+                },
+                "vim.easymotionMarkerHeight": {
+                    "type": "number",
+                    "description": "Set the height of the marker.",
+                    "default": 14
+                },
+                "vim.easymotionMarkerFontFamily": {
+                    "type": "string",
+                    "description": "Set the font family of the marker text.",
+                    "default": "Consolas"
+                },
+                "vim.easymotionMarkerFontSize": {
+                    "type": "string",
+                    "description": "Set the font size of the marker text.",
+                    "default": "14"
+                },
+                "vim.easymotionMarkerFontWeight": {
+                    "type": "string",
+                    "description": "Set the font weight of the marker text.",
+                    "default": "normal"
+                },
+                "vim.easymotionMarkerYOffset": {
+                    "type": "number",
+                    "description": "Set the Y offset of the marker text (the distance from the top).",
+                    "default": 0
+                },
+                "vim.easymotionKeys": {
+                    "type": "string",
+                    "description": "Set the characters used for jump marker name",
+                    "default": "hklyuiopnm,qwertzxcvbasdgjf;"
+                },
+                "vim.surround": {
+                    "type": "boolean",
+                    "description": "Enable the Surround plugin for Vim.",
+                    "default": true
+                },
+                "vim.hlsearch": {
+                    "type": "boolean",
+                    "description": "Show all matches of the most recent search pattern",
+                    "default": false
+                },
+                "vim.incsearch": {
+                    "type": "boolean",
+                    "description": "Show where a / search matches as you type it.",
+                    "default": true
+                },
+                "vim.history": {
+                    "type": "number",
+                    "description": "How much search or command history should be remembered",
+                    "default": 50
+                },
+                "vim.autoindent": {
+                    "type": "boolean",
+                    "description": "Indent code automatically.",
+                    "default": true
+                },
+                "vim.startInInsertMode": {
+                    "type": "boolean",
+                    "description": "Start in Insert Mode."
+                },
+                "vim.handleKeys": {
+                    "type": "object",
+                    "description": "Option to delegate certain key combinations back to VSCode to be handled natively"
+                },
+                "vim.statusBarColorControl": {
+                    "type": "boolean",
+                    "description": "Allow VSCodeVim to change status bar color based on mode"
+                },
+                "vim.statusBarColors": {
+                    "type": "object",
+                    "description": "Customize colors per mode when VSCodeVim controls status bar colors"
+                },
+                "vim.visualstar": {
+                    "type": "boolean",
+                    "description": "In visual mode, start a search with * or # using the current selection",
+                    "default": false
+                },
+                "vim.foldfix": {
+                    "type": "boolean",
+                    "description": "Uses a hack to move around folds properly",
+                    "default": false
+                },
+                "vim.mouseSelectionGoesIntoVisualMode": {
+                    "type": "boolean",
+                    "description": "Does dragging with the mouse put you into visual mode",
+                    "default": true
+                },
+                "vim.disableExtension": {
+                    "type": "boolean",
+                    "description": "Disables the VSCodeVim extension.",
+                    "default": false
+                },
+                "vim.enableNeovim": {
+                    "type": "boolean",
+                    "description": "Use neovim on backend. (only works for Ex commands right now). You should restart VScode after enable/disabling this for the changes to take effect. NOTE: Neovim must be installed (v0.2.0) and neovimPath must be set the executable in order for this setting to work. Otherwise, vscodevim will crash.",
+                    "default": false
+                },
+                "vim.neovimPath": {
+                    "type": "string",
+                    "description": "Path to run neovim executable. For example, /usr/bin/nvim, or  C:\\Program Files\\Neovim\\bin\\nvim.exe",
+                    "default": "nvim"
+                },
+                "vim.substituteGlobalFlag": {
+                    "type": "boolean",
+                    "description": "Automatically apply the global flag, /g, to substitute commands. When set to true, use /g to mean only first match should be replaced.",
+                    "default": false
+                },
+                "vim.cursorStylePerMode": {
+                    "type": "object",
+                    "description": "Customize cursor style per mode"
+                },
+                "vim.cmdLineInitialColon": {
+                    "type": "boolean",
+                    "description": "When typing a command show the initial colon ':' character",
+                    "default": false
+                }
+            }
         }
-      }
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "test": "node ./node_modules/vscode/bin/test",
+        "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
+    },
+    "dependencies": {
+        "clipboardy": "^1.2.2",
+        "diff-match-patch": "^1.0.0",
+        "lodash": "^4.17.4",
+        "neovim-client": "^2.1.0",
+        "promised-neovim-client": "^2.0.2",
+        "untildify": "^3.0.2"
+    },
+    "devDependencies": {
+        "@types/mocha": "^2.2.45",
+        "@types/node": "^8.5.2",
+        "gulp": "^3.9.1",
+        "gulp-bump": "^3.0.0",
+        "gulp-git": "^2.5.0",
+        "gulp-inject-string": "^1.1.0",
+        "gulp-shell": "^0.6.3",
+        "gulp-tag-version": "^1.3.1",
+        "gulp-tslint": "^8.1.2",
+        "gulp-typings": "^2.0.4",
+        "merge-stream": "^1.0.1",
+        "mocha": "^4.0.1",
+        "prettier": "^1.9.2",
+        "tslint": "^5.8.0",
+        "typescript": "^2.6.2",
+        "vscode": "^1.1.10"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "tsc -p ./",
-    "compile": "tsc -watch -p ./",
-    "test": "node ./node_modules/vscode/bin/test",
-    "postinstall": "node ./node_modules/vscode/bin/install && gulp init"
-  },
-  "dependencies": {
-    "clipboardy": "^1.2.2",
-    "diff-match-patch": "^1.0.0",
-    "lodash": "^4.17.4",
-    "neovim-client": "^2.1.0",
-    "promised-neovim-client": "^2.0.2",
-    "untildify": "^3.0.2"
-  },
-  "devDependencies": {
-    "@types/mocha": "^2.2.45",
-    "@types/node": "^8.5.2",
-    "gulp": "^3.9.1",
-    "gulp-bump": "^3.0.0",
-    "gulp-git": "^2.5.0",
-    "gulp-inject-string": "^1.1.0",
-    "gulp-shell": "^0.6.3",
-    "gulp-tag-version": "^1.3.1",
-    "gulp-tslint": "^8.1.2",
-    "gulp-typings": "^2.0.4",
-    "merge-stream": "^1.0.1",
-    "mocha": "^4.0.1",
-    "prettier": "^1.9.2",
-    "tslint": "^5.8.0",
-    "typescript": "^2.6.2",
-    "vscode": "^1.1.10"
-  }
 }
