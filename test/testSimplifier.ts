@@ -171,11 +171,23 @@ function tokenizeKeySequence(sequence: string): string[] {
   let key = '';
   let result: string[] = [];
 
+  // no close bracket, probably trying to do a left shift, take literal
+  // char sequence
+  function rawTokenize(): void {
+    for (const char of key) {
+      result.push(char);
+    }
+  }
+
   for (const char of sequence) {
     key += char;
 
     if (char === '<') {
-      isBracketedKey = true;
+      if (isBracketedKey) {
+        rawTokenize();
+      } else {
+        isBracketedKey = true;
+      }
     }
 
     if (char === '>') {
@@ -188,6 +200,10 @@ function tokenizeKeySequence(sequence: string): string[] {
 
     result.push(key);
     key = '';
+  }
+
+  if (isBracketedKey) {
+    rawTokenize();
   }
 
   return result;
