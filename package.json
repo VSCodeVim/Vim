@@ -36,7 +36,8 @@
     "qna": "https://vscodevim-slackin.azurewebsites.net/",
     "main": "./out/extension",
     "contributes": {
-        "commands": [{
+        "commands": [
+            {
                 "command": "extension.showCmdLine",
                 "title": "Vim: Show Command Line"
             },
@@ -49,7 +50,8 @@
                 "title": "Vim: Toggle Vim Mode"
             }
         ],
-        "keybindings": [{
+        "keybindings": [
+            {
                 "key": "Escape",
                 "command": "extension.vim_escape",
                 "when": "editorTextFocus && vim.active && !inDebugRepl"
