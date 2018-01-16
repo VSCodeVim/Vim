@@ -491,7 +491,7 @@ class OutdentOperator extends BaseOperator {
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    vimState.editor.selection = new vscode.Selection(start, end);
+    vimState.editor.selection = new vscode.Selection(start, end.getLineEnd());
 
     await vscode.commands.executeCommand('editor.action.outdentLines');
     vimState.currentMode = ModeName.Normal;
