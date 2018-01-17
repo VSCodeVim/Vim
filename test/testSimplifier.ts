@@ -177,7 +177,6 @@ function tokenizeKeySequence(sequence: string): string[] {
     for (const char of characters) {
       result.push(char);
     }
-    key = '<';
   }
 
   for (const char of sequence) {
@@ -186,6 +185,7 @@ function tokenizeKeySequence(sequence: string): string[] {
     if (char === '<') {
       if (isBracketedKey) {
         rawTokenize(key.slice(0, key.length - 1));
+        key = '<';
       } else {
         isBracketedKey = true;
       }
