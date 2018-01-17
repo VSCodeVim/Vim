@@ -1650,8 +1650,7 @@ abstract class CommandFold extends BaseCommand {
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
     return (
-      super.doesActionApply(vimState, keysPressed) &&
-      vimState.recordedState.operator === undefined
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
     );
   }
 
@@ -1992,11 +1991,11 @@ class CommandClearLine extends BaseCommand {
 
   // Don't clash with sneak
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return !Configuration.sneak;
+    return super.doesActionApply(vimState, keysPressed) && !Configuration.sneak;
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return !Configuration.sneak;
+    return super.couldActionApply(vimState, keysPressed) && !Configuration.sneak;
   }
 }
 
@@ -3352,16 +3351,16 @@ class ActionChangeChar extends BaseCommand {
   // Don't clash with surround or sneak modes!
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return (
-      !Configuration.sneak &&
       super.doesActionApply(vimState, keysPressed) &&
+      !Configuration.sneak &&
       !vimState.recordedState.operator
     );
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return (
-      !Configuration.sneak &&
       super.doesActionApply(vimState, keysPressed) &&
+      !Configuration.sneak &&
       !vimState.recordedState.operator
     );
   }
