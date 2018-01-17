@@ -1614,6 +1614,14 @@ abstract class CommandFold extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   commandName: string;
 
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) &&
+      vimState.recordedState.operator === undefined
+    );
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand(this.commandName);
     vimState.currentMode = ModeName.Normal;
@@ -1947,6 +1955,15 @@ class CommandClearLine extends BaseCommand {
       position.getLineBeginRespectingIndent(),
       end
     );
+  }
+
+  // Don't clash with sneak
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return !Configuration.sneak;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return !Configuration.sneak;
   }
 }
 
@@ -3299,13 +3316,21 @@ class ActionChangeChar extends BaseCommand {
     return state;
   }
 
-  // Don't clash with surround mode!
+  // Don't clash with surround or sneak modes!
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && !vimState.recordedState.operator;
+    return (
+      !Configuration.sneak &&
+      super.doesActionApply(vimState, keysPressed) &&
+      !vimState.recordedState.operator
+    );
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && !vimState.recordedState.operator;
+    return (
+      !Configuration.sneak &&
+      super.doesActionApply(vimState, keysPressed) &&
+      !vimState.recordedState.operator
+    );
   }
 }
 

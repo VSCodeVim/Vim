@@ -157,6 +157,11 @@ class ConfigurationClass {
   easymotion = false;
 
   /**
+   * Use sneak plugin?
+   */
+  sneak = false;
+
+  /**
    * Use surround plugin?
    */
   surround = true;

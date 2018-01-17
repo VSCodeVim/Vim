@@ -473,6 +473,11 @@
           "description": "Set the characters used for jump marker name",
           "default": "hklyuiopnm,qwertzxcvbasdgjf;"
         },
+        "vim.sneak": {
+          "type": "boolean",
+          "description": "Enable the Sneak plugin for Vim.",
+          "default": false
+        },
         "vim.surround": {
           "type": "boolean",
           "description": "Enable the Surround plugin for Vim.",
