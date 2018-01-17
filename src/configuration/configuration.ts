@@ -3,12 +3,27 @@ import { ConfigurationTarget, WorkspaceConfiguration } from 'vscode';
 
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
+import { Notation } from './notation';
+
+const packagejson: {
+  contributes: {
+    keybindings: VSCodeKeybinding[];
+  };
+} = require('../../../package.json');
 
 type OptionValue = number | string | boolean;
 type ValueMapping = {
   [key: number]: number | string | boolean;
   [key: string]: number | string | boolean;
 };
+
+interface VSCodeKeybinding {
+  key: string;
+  mac?: string;
+  linux?: string;
+  command: string;
+  when: string;
+}
 
 interface IHandleKeys {
   [key: string]: boolean;
@@ -23,7 +38,12 @@ interface IModeSpecificStrings {
   replace: string | undefined;
 }
 
-export interface IKeybinding {
+interface IKeyBinding {
+  key: string;
+  command: string;
+}
+
+export interface IKeyRemapping {
   before: string[];
   after?: string[];
   commands?: { command: string; args: any[] }[];
@@ -50,11 +70,12 @@ export interface IKeybinding {
  */
 class ConfigurationClass {
   constructor() {
-    this.updateConfiguration();
+    this.reload();
   }
 
-  updateConfiguration() {
-    let vimConfigs = getConfiguration('vim');
+  reload() {
+    // read configurations
+    let vimConfigs = this.getConfiguration('vim');
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
@@ -64,32 +85,81 @@ class ConfigurationClass {
       }
     }
 
-    // <space> is special, change it to " " internally if it is used as leader
-    if (this.leader.toLowerCase() === '<space>') {
-      this.leader = ' ';
+    this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
+
+    // normalize keys
+    const keybindingList: IKeyRemapping[][] = [
+      this.insertModeKeyBindings,
+      this.insertModeKeyBindingsNonRecursive,
+      this.otherModesKeyBindings,
+      this.otherModesKeyBindingsNonRecursive,
+    ];
+    for (const keybindings of keybindingList) {
+      for (let remapping of keybindings) {
+        if (remapping.before) {
+          remapping.before.forEach(
+            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, this.leader))
+          );
+        }
+
+        if (remapping.after) {
+          remapping.after.forEach(
+            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, this.leader))
+          );
+        }
+      }
     }
 
-    // Enable/Disable certain key combinations
-    for (const bracketedKey of this.boundKeyCombinations) {
+    // read package.json for bound keys
+    this.boundKeyCombinations = [];
+    for (let keybinding of packagejson.contributes.keybindings) {
+      if (keybinding.when.indexOf('listFocus') !== -1) {
+        continue;
+      }
+
+      let key = keybinding.key;
+      if (process.platform === 'darwin') {
+        key = keybinding.mac || key;
+      } else if (process.platform === 'linux') {
+        key = keybinding.linux || key;
+      }
+
+      this.boundKeyCombinations.push({
+        key: Notation.NormalizeKey(key, this.leader),
+        command: keybinding.command,
+      });
+    }
+
+    // enable/disable certain key combinations
+    for (const boundKey of this.boundKeyCombinations) {
       // By default, all key combinations are used
       let useKey = true;
 
-      let handleKey = this.handleKeys[bracketedKey];
+      let handleKey = this.handleKeys[boundKey.key];
       if (handleKey !== undefined) {
         // enabled/disabled through `vim.handleKeys`
         useKey = handleKey;
-      } else if (!this.useCtrlKeys && bracketedKey.slice(1, 3) === 'C-') {
+      } else if (!this.useCtrlKeys && boundKey.key.slice(1, 3) === 'C-') {
         // user has disabled CtrlKeys and the current key is a CtrlKey
         // <C-c>, still needs to be captured to overrideCopy
-        if (bracketedKey === '<C-c>' && this.overrideCopy) {
+        if (boundKey.key === '<C-c>' && this.overrideCopy) {
           useKey = true;
         } else {
           useKey = false;
         }
       }
 
-      vscode.commands.executeCommand('setContext', `vim.use${bracketedKey}`, useKey);
+      vscode.commands.executeCommand('setContext', `vim.use${boundKey.key}`, useKey);
     }
+  }
+
+  getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
+    let resource: vscode.Uri | undefined = undefined;
+    let activeTextEditor = vscode.window.activeTextEditor;
+    if (activeTextEditor) {
+      resource = activeTextEditor.document.uri;
+    }
+    return vscode.workspace.getConfiguration(section, resource);
   }
 
   cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
@@ -198,7 +268,8 @@ class ConfigurationClass {
   /**
    * What key should <leader> map to in key remappings?
    */
-  leader = '\\';
+  private leaderDefault = '\\';
+  leader = this.leaderDefault;
 
   /**
    * How much search or command history should be remembered
@@ -243,12 +314,12 @@ class ConfigurationClass {
   @overlapSetting({ codeName: 'tabSize', default: 8 })
   tabstop: number;
 
-  @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
-  userCursorString: string;
-
   /**
    * Type of cursor user is using native to vscode
    */
+  @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
+  private userCursorString: string;
+
   get userCursor(): number | undefined {
     return this.cursorStyleFromString(this.userCursorString);
   }
@@ -282,9 +353,9 @@ class ConfigurationClass {
   iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
 
   /**
-   * Array of all key combinations that were registered in angle bracket notation
+   * Array of all bound key combinations in angle bracket notation
    */
-  boundKeyCombinations: string[] = [];
+  boundKeyCombinations: IKeyBinding[] = [];
 
   /**
    * In visual mode, start a search with * or # using the current selection
@@ -311,7 +382,7 @@ class ConfigurationClass {
   }
   set disableExt(isDisabled: boolean) {
     this.disableExtension = isDisabled;
-    getConfiguration('vim').update('disableExtension', isDisabled, ConfigurationTarget.Global);
+    this.getConfiguration('vim').update('disableExtension', isDisabled, ConfigurationTarget.Global);
   }
 
   /**
@@ -345,19 +416,10 @@ class ConfigurationClass {
   /**
    * Keybindings
    */
-  insertModeKeyBindings: IKeybinding[] = [];
-  insertModeKeyBindingsNonRecursive: IKeybinding[] = [];
-  otherModesKeyBindings: IKeybinding[] = [];
-  otherModesKeyBindingsNonRecursive: IKeybinding[] = [];
-}
-
-function getConfiguration(section: string): vscode.WorkspaceConfiguration {
-  let resource: vscode.Uri | undefined = undefined;
-  let activeTextEditor = vscode.window.activeTextEditor;
-  if (activeTextEditor) {
-    resource = activeTextEditor.document.uri;
-  }
-  return vscode.workspace.getConfiguration(section, resource);
+  insertModeKeyBindings: IKeyRemapping[] = [];
+  insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  otherModesKeyBindings: IKeyRemapping[] = [];
+  otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
 
 function overlapSetting(args: {
@@ -372,7 +434,7 @@ function overlapSetting(args: {
           return this['_' + propertyKey];
         }
 
-        let val = getConfiguration('editor').get(args.codeName, args.default);
+        let val = this.getConfiguration('editor').get(args.codeName, args.default);
         if (args.codeValueMapping && val !== undefined) {
           val = args.codeValueMapping[val as string];
         }
@@ -391,7 +453,7 @@ function overlapSetting(args: {
             value = args.codeValueMapping[value];
           }
 
-          await getConfiguration('editor').update(
+          await this.getConfiguration('editor').update(
             args.codeName,
             value,
             vscode.ConfigurationTarget.Global

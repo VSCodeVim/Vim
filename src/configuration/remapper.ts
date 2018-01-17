@@ -2,10 +2,9 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { CommandLine } from '../cmd_line/commandLine';
-import { Configuration, IKeybinding } from '../configuration/configuration';
+import { Configuration, IKeyRemapping } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
-import { AngleBracketNotation } from './../notation';
 import { VimState } from './../state/vimState';
 
 export class Remappers implements IRemapper {
@@ -45,7 +44,7 @@ interface IRemapper {
 class Remapper implements IRemapper {
   private readonly _remappedModes: ModeName[];
   private readonly _recursive: boolean;
-  private _remappings: IKeybinding[] = [];
+  private readonly _remappings: IKeyRemapping[] = [];
 
   /**
    * Have the keys pressed so far potentially be a remap
@@ -58,26 +57,7 @@ class Remapper implements IRemapper {
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
-
-    const remappings = Configuration[configKey] as IKeybinding[];
-
-    for (let remapping of remappings) {
-      let before: string[] = [];
-      if (remapping.before) {
-        remapping.before.forEach(item => before.push(AngleBracketNotation.Normalize(item)));
-      }
-
-      let after: string[] = [];
-      if (remapping.after) {
-        remapping.after.forEach(item => after.push(AngleBracketNotation.Normalize(item)));
-      }
-
-      this._remappings.push(<IKeybinding>{
-        before: before,
-        after: after,
-        commands: remapping.commands,
-      });
-    }
+    this._remappings = Configuration[configKey] as IKeyRemapping[];
   }
 
   public async sendKey(
@@ -91,7 +71,7 @@ class Remapper implements IRemapper {
       return false;
     }
 
-    let remapping: IKeybinding | undefined;
+    let remapping: IKeyRemapping | undefined;
     const longestKeySequence = this._longestKeySequence();
 
     /**

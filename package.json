@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.10.7",
+  "version": "0.10.10",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -313,6 +313,16 @@
       {
         "key": "o",
         "command": "list.toggleExpand",
+        "when": "listFocus && !inputFocus"
+      },
+      {
+        "key": "l",
+        "command": "list.select",
+        "when": "listFocus && !inputFocus"
+      },
+      {
+        "key": "h",
+        "command": "list.collapse",
         "when": "listFocus && !inputFocus"
       },
       {

@@ -13,7 +13,7 @@ import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
 import { Configuration } from './../../configuration/configuration';
 import { ModeName } from './../../mode/mode';
-import { VisualBlockMode } from './../../mode/modeVisualBlock';
+import { VisualBlockMode } from './../../mode/modes';
 import { Register, RegisterMode } from './../../register/register';
 import { SearchDirection, SearchState } from './../../state/searchState';
 import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../textEditor';
@@ -238,6 +238,39 @@ export abstract class BaseCommand extends BaseAction {
 }
 
 // begin actions
+
+@RegisterAction
+class DisableExtension extends BaseCommand {
+  modes = [
+    ModeName.Normal,
+    ModeName.Insert,
+    ModeName.Visual,
+    ModeName.VisualBlock,
+    ModeName.VisualLine,
+    ModeName.SearchInProgressMode,
+    ModeName.Replace,
+    ModeName.EasyMotionMode,
+    ModeName.EasyMotionInputMode,
+    ModeName.SurroundInputMode,
+  ];
+  keys = ['<ExtensionDisable>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Disabled;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class EnableExtension extends BaseCommand {
+  modes = [ModeName.Disabled];
+  keys = ['<ExtensionEnable>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Normal;
+    return vimState;
+  }
+}
 
 @RegisterAction
 export class CommandNumber extends BaseCommand {

@@ -8,7 +8,7 @@ import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
-import { VisualBlockMode } from './../mode/modeVisualBlock';
+import { VisualBlockMode } from './../mode/modes';
 import { RegisterMode } from './../register/register';
 import { GlobalState } from './../state/globalState';
 import { ReplaceState } from './../state/replaceState';

@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
 import { Configuration } from './../../configuration/configuration';
-import { VisualBlockMode } from './../../mode/modeVisualBlock';
+import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
 
 /**

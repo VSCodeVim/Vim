@@ -16,23 +16,10 @@ import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { Neovim } from './src/neovim/nvimUtil';
-import { AngleBracketNotation } from './src/notation';
+import { Notation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
-
-interface VSCodeKeybinding {
-  key: string;
-  mac?: string;
-  linux?: string;
-  command: string;
-  when: string;
-}
-
-const packagejson: {
-  contributes: {
-    keybindings: VSCodeKeybinding[];
-  };
-} = require('../package.json'); // out/../package.json
+import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 
 let extensionContext: vscode.ExtensionContext;
 
@@ -40,23 +27,18 @@ let extensionContext: vscode.ExtensionContext;
  * Note: We can't initialize modeHandler here, or even inside activate(), because some people
  * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
  */
-let modeHandlerToEditorIdentity: { [key: string]: ModeHandler } = {};
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-  const prevHandler = modeHandlerToEditorIdentity[previousActiveEditorId.toString()];
+  const [prevHandler] = await ModeHandlerMap.getOrCreate(previousActiveEditorId.toString());
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
-  let curHandler = modeHandlerToEditorIdentity[activeEditorId.toString()];
-  if (!curHandler) {
-    const newModeHandler = await new ModeHandler();
+  let [curHandler, isNewModeHandler] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
+  if (isNewModeHandler) {
     if (Configuration.enableNeovim) {
-      await Neovim.initNvim(newModeHandler.vimState);
+      await Neovim.initNvim(curHandler.vimState);
     }
-    modeHandlerToEditorIdentity[activeEditorId.toString()] = newModeHandler;
-    extensionContext.subscriptions.push(newModeHandler);
-
-    curHandler = newModeHandler;
+    extensionContext.subscriptions.push(curHandler);
   }
 
   curHandler.vimState.editor = vscode.window.activeTextEditor!;
@@ -85,14 +67,12 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   // Temporary workaround for vscode bug not changing cursor style properly
   // https://github.com/Microsoft/vscode/issues/17472
   // https://github.com/Microsoft/vscode/issues/17513
-  const desiredStyle = curHandler.vimState.editor.options.cursorStyle;
+  if (curHandler.vimState.editor) {
+    const desiredStyle = curHandler.vimState.editor.options.cursorStyle;
 
-  // Temporarily change to any other cursor style besides the desired type, then change back
-  if (desiredStyle === vscode.TextEditorCursorStyle.Block) {
-    curHandler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Line;
-    curHandler.vimState.editor.options.cursorStyle = desiredStyle;
-  } else {
-    curHandler.vimState.editor.options.cursorStyle = vscode.TextEditorCursorStyle.Block;
+    // Temporarily change to any other cursor style besides the desired type, then change back
+    let tempStyle = (desiredStyle || vscode.TextEditorCursorStyle.Line) % 6 + 1;
+    curHandler.vimState.editor.options.cursorStyle = tempStyle;
     curHandler.vimState.editor.options.cursorStyle = desiredStyle;
   }
 
@@ -110,13 +90,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Event to update active configuration items when changed without restarting vscode
   vscode.workspace.onDidChangeConfiguration((e: void) => {
-    Configuration.updateConfiguration();
-
-    /* tslint:disable:forin */
-    // Update the remappers foreach modehandler
-    for (let mh in modeHandlerToEditorIdentity) {
-      modeHandlerToEditorIdentity[mh].createRemappers();
-    }
+    Configuration.reload();
   });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
@@ -148,7 +122,7 @@ export async function activate(context: vscode.ExtensionContext) {
       contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
     } else {
       _.filter(
-        modeHandlerToEditorIdentity,
+        ModeHandlerMap.getAll(),
         modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName
       ).forEach(modeHandler => {
         contentChangeHandler(modeHandler);
@@ -213,9 +187,10 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  registerCommand(context, 'extension.showCmdLine', () => {
-    let modeHandler =
-      modeHandlerToEditorIdentity[new EditorIdentity(vscode.window.activeTextEditor).toString()];
+  registerCommand(context, 'extension.showCmdLine', async () => {
+    let [modeHandler] = await ModeHandlerMap.getOrCreate(
+      new EditorIdentity(vscode.window.activeTextEditor).toString()
+    );
     CommandLine.PromptAndRun('', modeHandler.vimState);
     modeHandler.updateView(modeHandler.vimState);
   });
@@ -230,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const mh = await getAndUpdateModeHandler();
       if (args.after) {
         for (const key of args.after) {
-          await mh.handleKeyEvent(AngleBracketNotation.Normalize(key));
+          await mh.handleKeyEvent(Notation.NormalizeKey(key, Configuration.leader));
         }
         return;
       }
@@ -249,17 +224,18 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  vscode.workspace.onDidCloseTextDocument(event => {
+  vscode.workspace.onDidCloseTextDocument(async event => {
     const documents = vscode.workspace.textDocuments;
 
     // Delete modehandler if vscode knows NOTHING about this document. This does
     // not handle the case of the same file open twice. This only handles the
     // case of deleting a modehandler once all tabs of this document have been
     // closed
-    for (let mh in modeHandlerToEditorIdentity) {
-      const editor = modeHandlerToEditorIdentity[mh].vimState.editor.document;
+    for (let editorIdentity of ModeHandlerMap.getKeys()) {
+      let [modeHandler] = await ModeHandlerMap.getOrCreate(editorIdentity);
+      const editor = modeHandler.vimState.editor.document;
       if (documents.indexOf(editor) === -1) {
-        delete modeHandlerToEditorIdentity[mh];
+        ModeHandlerMap.delete(editorIdentity);
       }
     }
   });
@@ -274,14 +250,11 @@ export async function activate(context: vscode.ExtensionContext) {
     await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
     let mh = await getAndUpdateModeHandler();
     if (isDisabled) {
-      vscode.window.visibleTextEditors.forEach(e => {
-        e.options.cursorStyle = Configuration.userCursor;
-      });
-      StatusBar.SetText('-- VIM: DISABLED --', mh.currentMode.name, true);
-    } else {
+      await mh.handleKeyEvent('<ExtensionDisable>');
       compositionState = new CompositionState();
-      modeHandlerToEditorIdentity = {};
-      mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+      ModeHandlerMap.clear();
+    } else {
+      await mh.handleKeyEvent('<ExtensionEnable>');
     }
   }
 
@@ -290,32 +263,9 @@ export async function activate(context: vscode.ExtensionContext) {
     toggleExtension(Configuration.disableExt);
   });
 
-  // Clear boundKeyCombinations array incase there are any entries in it so
-  // that we have a clean list of keys with no duplicates
-  Configuration.boundKeyCombinations = [];
-
-  for (let keybinding of packagejson.contributes.keybindings) {
-    if (keybinding.when.indexOf('listFocus') !== -1) {
-      continue;
-    }
-    let keyToBeBound = '';
-    if (process.platform === 'darwin') {
-      keyToBeBound = keybinding.mac || keybinding.key;
-    } else if (process.platform === 'linux') {
-      keyToBeBound = keybinding.linux || keybinding.key;
-    } else {
-      keyToBeBound = keybinding.key;
-    }
-
-    // Store registered key bindings in bracket notation form
-    const bracketedKey = AngleBracketNotation.Normalize(keyToBeBound);
-    Configuration.boundKeyCombinations.push(bracketedKey);
-
-    registerCommand(context, keybinding.command, () => handleKeyEvent(`${bracketedKey}`));
+  for (const boundKey of Configuration.boundKeyCombinations) {
+    registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
   }
-
-  // Update configuration now that bound keys array is populated
-  Configuration.updateConfiguration();
 
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
@@ -380,7 +330,7 @@ async function handleKeyEvent(key: string): Promise<void> {
 
 function handleContentChangedFromDisk(document: vscode.TextDocument): void {
   _.filter(
-    modeHandlerToEditorIdentity,
+    ModeHandlerMap.getAll(),
     modeHandler => modeHandler.vimState.identity.fileName === document.fileName
   ).forEach(modeHandler => {
     modeHandler.vimState.historyTracker.clear();
