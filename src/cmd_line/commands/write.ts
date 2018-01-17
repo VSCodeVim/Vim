@@ -63,11 +63,11 @@ export class WriteCommand extends node.CommandBase {
           if (!e) {
             return this.save(vimState);
           }
-          StatusBar.SetText(e.message, vimState.currentMode, true);
+          StatusBar.SetText(e.message, vimState.currentMode, vimState.isRecordingMacro, true);
           return;
         });
       } else {
-        StatusBar.SetText(accessErr.message, vimState.currentMode, true);
+        StatusBar.SetText(accessErr.message, vimState.currentMode, vimState.isRecordingMacro, true);
       }
     }
   }
@@ -83,9 +83,9 @@ export class WriteCommand extends node.CommandBase {
           'L ' +
           vimState.editor.document.getText().length +
           'C written';
-        StatusBar.SetText(text, vimState.currentMode, true);
+        StatusBar.SetText(text, vimState.currentMode, vimState.isRecordingMacro, true);
       },
-      e => StatusBar.SetText(e, vimState.currentMode, true)
+      e => StatusBar.SetText(e, vimState.currentMode, vimState.isRecordingMacro, true)
     );
   }
 }
