@@ -15,7 +15,11 @@ class SneakForward extends BaseMovement {
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 's' : 'z';
 
-    return super.couldActionApply(vimState, keysPressed) && keysPressed[0] === startingLetter;
+    return (
+      super.couldActionApply(vimState, keysPressed) &&
+      Configuration.sneak &&
+      keysPressed[0] === startingLetter
+    );
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
@@ -60,7 +64,11 @@ class SneakBackward extends BaseMovement {
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 'S' : 'Z';
 
-    return super.couldActionApply(vimState, keysPressed) && keysPressed[0] === startingLetter;
+    return (
+      super.couldActionApply(vimState, keysPressed) &&
+      Configuration.sneak &&
+      keysPressed[0] === startingLetter
+    );
   }
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
