@@ -5,15 +5,27 @@ import { ModeName } from './mode/mode';
 class StatusBarClass implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
   private _prevModeName: ModeName | undefined;
+  private _isRecordingMacro: boolean;
 
   constructor() {
     this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     this._prevModeName = undefined;
+    this._isRecordingMacro = false;
   }
 
-  public SetText(text: string, mode: ModeName, forceShow: boolean = false) {
-    if (mode !== this._prevModeName || forceShow) {
-      this._prevModeName = mode;
+  public SetText(
+    text: string,
+    mode: ModeName,
+    isRecordingMacro: boolean,
+    forceShow: boolean = false
+  ) {
+    let updateStatusBar =
+      this._prevModeName !== mode || this._isRecordingMacro !== isRecordingMacro || forceShow;
+
+    this._prevModeName = mode;
+    this._isRecordingMacro = isRecordingMacro;
+
+    if (updateStatusBar) {
       this._statusBarItem.text = text || '';
       this._statusBarItem.show();
     }
