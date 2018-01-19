@@ -1,7 +1,27 @@
 # Change Log
 
-## [v0.10.10](https://github.com/vscodevim/vim/tree/v0.10.10)
+## [v0.10.11](https://github.com/vscodevim/vim/tree/v0.10.10) (2018-01-17)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.10...v0.10.11)
 
+- BREAKING CHANGE: with v0.10.10 (prior release), the default behaviour of `<C-d>` has changed. This particular key can map to 3 different behaviours: (1) move page half down, (2) remap to `<D-d>` for multi-cursor, or (3) VSCode default behaviour. Depending on what you want, set the `handleKeys` configuration appropriately (note that the `useCtrlKeys` configuration is entirely ignored for this particular key):
+
+  | handleKeys           | Behaviour                     |
+  |--------------------- | ------------------------------|
+  | true                 | VSCodeVim move page half down |
+  | false                | remap to ```<D-d>```          |
+  | undefined            | VS Code default behavior      |
+
+  with `handleKeys` being configured like so:
+
+  ```
+  "vim.handleKeys": {
+      "<C-d>": true,
+  },
+  ```
+
+- fix: status bar not updating properly when recording macros. fixes \#2296.  [\#2304](https://github.com/VSCodeVim/Vim/pull/2304) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.10](https://github.com/vscodevim/vim/tree/v0.10.10) (2018-01-16)
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.9...v0.10.10)
 
 - fix: add tests for compareKeyPressSequence [\#2289](https://github.com/VSCodeVim/Vim/pull/2289) ([jpoon](https://github.com/jpoon))
@@ -357,13 +377,13 @@
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.9...v0.6.10)
 
 ## [v0.6.9](https://github.com/vscodevim/vim/tree/v0.6.9) (2017-03-18)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.7...v0.6.9)
-
-## [v0.6.7](https://github.com/vscodevim/vim/tree/v0.6.7) (2017-03-18)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.8...v0.6.7)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.8...v0.6.9)
 
 ## [v0.6.8](https://github.com/vscodevim/vim/tree/v0.6.8) (2017-03-18)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.6...v0.6.8)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.7...v0.6.8)
+
+## [v0.6.7](https://github.com/vscodevim/vim/tree/v0.6.7) (2017-03-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.6...v0.6.7)
 
 - fix bracket motion behavior for use with % and a count, or \[\( and a c… [\#1406](https://github.com/VSCodeVim/Vim/pull/1406) ([xconverge](https://github.com/xconverge))
 - fix for cursor not changing correctly, workaround for vscode issue [\#1402](https://github.com/VSCodeVim/Vim/pull/1402) ([xconverge](https://github.com/xconverge))
