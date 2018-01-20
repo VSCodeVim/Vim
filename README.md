@@ -51,6 +51,7 @@ All common Vim commands are supported. For a detailed list of supported features
 If key repeating isn't working for you, execute this in your Terminal.
 
 ```sh
+defaults delete -g ApplePressAndHoldEnabled                                      # Reset global default
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
 ```
