@@ -514,7 +514,10 @@
         },
         "vim.handleKeys": {
           "type": "object",
-          "description": "Option to delegate certain key combinations back to VSCode to be handled natively"
+          "description": "Option to delegate certain key combinations back to VSCode to be handled natively",
+          "default": {
+            "<C-d>": true
+          }
         },
         "vim.statusBarColorControl": {
           "type": "boolean",
