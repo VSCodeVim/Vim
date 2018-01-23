@@ -1,23 +1,16 @@
 # Change Log
 
-## [v0.10.11](https://github.com/vscodevim/vim/tree/v0.10.10) (2018-01-17)
+## [v0.10.12](https://github.com/vscodevim/vim/tree/v0.10.12)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.11...v0.10.12)
+
+- fix: closes \#730. setcontext when switching active text editors [\#2320](https://github.com/VSCodeVim/Vim/pull/2320) ([jpoon](https://github.com/jpoon))
+- Update README for Mac key repeat [\#2316](https://github.com/VSCodeVim/Vim/pull/2316) ([puradox](https://github.com/puradox))
+- Default to vim behaviour for Ctrl+D [\#2314](https://github.com/VSCodeVim/Vim/pull/2314) ([Graham42](https://github.com/Graham42))
+- Left shift fix 2299 [\#2300](https://github.com/VSCodeVim/Vim/pull/2300) ([jessewmc](https://github.com/jessewmc))
+
+## [v0.10.11](https://github.com/vscodevim/vim/tree/v0.10.11) (2018-01-18)
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.10...v0.10.11)
-
-- BREAKING CHANGE: with v0.10.10 (prior release), the default behaviour of `<C-d>` has changed. This particular key can map to 3 different behaviours: (1) move page half down, (2) remap to `<D-d>` for multi-cursor, or (3) VSCode default behaviour. Depending on what you want, set the `handleKeys` configuration appropriately (note that the `useCtrlKeys` configuration is entirely ignored for this particular key):
-
-  | handleKeys           | Behaviour                     |
-  |--------------------- | ------------------------------|
-  | true                 | VSCodeVim move page half down |
-  | false                | remap to ```<D-d>```          |
-  | undefined            | VS Code default behavior      |
-
-  with `handleKeys` being configured like so:
-
-  ```
-  "vim.handleKeys": {
-      "<C-d>": true,
-  },
-  ```
 
 - fix: status bar not updating properly when recording macros. fixes \#2296.  [\#2304](https://github.com/VSCodeVim/Vim/pull/2304) ([jpoon](https://github.com/jpoon))
 
