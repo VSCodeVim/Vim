@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { ConfigurationTarget, WorkspaceConfiguration } from 'vscode';
 
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
@@ -152,11 +151,11 @@ class ConfigurationClass {
       vscode.commands.executeCommand('setContext', `vim.use${boundKey.key}`, useKey);
     }
 
-    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
+    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', this.overrideCopy);
     vscode.commands.executeCommand(
       'setContext',
       'vim.overrideCtrlC',
-      Configuration.overrideCopy || Configuration.useCtrlKeys
+      this.overrideCopy || this.useCtrlKeys
     );
   }
 
@@ -384,7 +383,11 @@ class ConfigurationClass {
   }
   set disableExt(isDisabled: boolean) {
     this.disableExtension = isDisabled;
-    this.getConfiguration('vim').update('disableExtension', isDisabled, ConfigurationTarget.Global);
+    this.getConfiguration('vim').update(
+      'disableExtension',
+      isDisabled,
+      vscode.ConfigurationTarget.Global
+    );
   }
 
   /**
