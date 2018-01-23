@@ -1,7 +1,12 @@
 # Change Log
 
-## [v0.10.12](https://github.com/vscodevim/vim/tree/v0.10.12)
+## [v0.10.13](https://github.com/vscodevim/vim/tree/v0.10.13) (2018-01-23)
 
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.12...v0.10.13)
+
+- fix: bad jason. fix bad release.  [\#2324](https://github.com/VSCodeVim/Vim/pull/2324) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.12](https://github.com/vscodevim/vim/tree/v0.10.12) (2018-01-23)
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.11...v0.10.12)
 
 - fix: closes \#730. setcontext when switching active text editors [\#2320](https://github.com/VSCodeVim/Vim/pull/2320) ([jpoon](https://github.com/jpoon))
@@ -431,7 +436,7 @@
 - More surround fixes [\#1289](https://github.com/VSCodeVim/Vim/pull/1289) ([xconverge](https://github.com/xconverge))
 
 ## [v0.5.3](https://github.com/vscodevim/vim/tree/v0.5.3) (2017-02-12)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.5.1...v0.5.3)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.5.0...v0.5.3)
 
 - fixes \#1258 [\#1286](https://github.com/VSCodeVim/Vim/pull/1286) ([xconverge](https://github.com/xconverge))
 - avoid using user remapping in test mode [\#1278](https://github.com/VSCodeVim/Vim/pull/1278) ([rufusroflpunch](https://github.com/rufusroflpunch))
@@ -445,11 +450,11 @@
 - Fix autoindent when opening a line above [\#1249](https://github.com/VSCodeVim/Vim/pull/1249) ([inejge](https://github.com/inejge))
 - Fixes README spelling mistake [\#1246](https://github.com/VSCodeVim/Vim/pull/1246) ([eastwood](https://github.com/eastwood))
 
-## [v0.5.1](https://github.com/vscodevim/vim/tree/v0.5.1) (2017-01-23)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.5.0...v0.5.1)
-
 ## [v0.5.0](https://github.com/vscodevim/vim/tree/v0.5.0) (2017-01-23)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.10...v0.5.0)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.5.1...v0.5.0)
+
+## [v0.5.1](https://github.com/vscodevim/vim/tree/v0.5.1) (2017-01-23)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.10...v0.5.1)
 
 - Surround [\#1238](https://github.com/VSCodeVim/Vim/pull/1238) ([johnfn](https://github.com/johnfn))
 - Support "gf" in es6 import statements by adding the file extension [\#1227](https://github.com/VSCodeVim/Vim/pull/1227) ([aminroosta](https://github.com/aminroosta))
