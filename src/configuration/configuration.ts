@@ -151,6 +151,13 @@ class ConfigurationClass {
 
       vscode.commands.executeCommand('setContext', `vim.use${boundKey.key}`, useKey);
     }
+
+    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', Configuration.overrideCopy);
+    vscode.commands.executeCommand(
+      'setContext',
+      'vim.overrideCtrlC',
+      Configuration.overrideCopy || Configuration.useCtrlKeys
+    );
   }
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {

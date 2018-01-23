@@ -1356,13 +1356,8 @@ export class ModeHandler implements vscode.Disposable {
 
     await vscode.commands.executeCommand(
       'setContext',
-      'vim.overrideCopy',
-      Configuration.overrideCopy
-    );
-    await vscode.commands.executeCommand(
-      'setContext',
-      'vim.overrideCtrlC',
-      Configuration.overrideCopy || Configuration.useCtrlKeys
+      'vim.mode',
+      ModeName[this.vimState.currentMode]
     );
   }
 
