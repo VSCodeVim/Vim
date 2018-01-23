@@ -55,7 +55,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     }
   } else {
     previousActiveEditorId = activeEditorId;
-
     await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
 
@@ -80,8 +79,13 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 }
 
 class CompositionState {
-  public isInComposition: boolean = false;
-  public composingText: string = '';
+  isInComposition: boolean = false;
+  composingText: string = '';
+
+  reset() {
+    this.isInComposition = false;
+    this.composingText = '';
+  }
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -89,7 +93,7 @@ export async function activate(context: vscode.ExtensionContext) {
   let compositionState = new CompositionState();
 
   // Event to update active configuration items when changed without restarting vscode
-  vscode.workspace.onDidChangeConfiguration((e: void) => {
+  vscode.workspace.onDidChangeConfiguration(() => {
     Configuration.reload();
   });
 
@@ -182,7 +186,7 @@ export async function activate(context: vscode.ExtensionContext) {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       let text = compositionState.composingText;
-      compositionState = new CompositionState();
+      compositionState.reset();
       await mh.handleMultipleKeyEvents(text.split(''));
     });
   });
@@ -251,7 +255,7 @@ export async function activate(context: vscode.ExtensionContext) {
     let mh = await getAndUpdateModeHandler();
     if (isDisabled) {
       await mh.handleKeyEvent('<ExtensionDisable>');
-      compositionState = new CompositionState();
+      compositionState.reset();
       ModeHandlerMap.clear();
     } else {
       await mh.handleKeyEvent('<ExtensionEnable>');

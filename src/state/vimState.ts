@@ -184,8 +184,6 @@ export class VimState implements vscode.Disposable {
 
   public set currentMode(value: number) {
     this._currentMode = value;
-
-    vscode.commands.executeCommand('setContext', 'vim.mode', ModeName[value]);
   }
 
   public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
