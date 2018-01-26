@@ -1,6 +1,6 @@
 import { VimState } from '../../../state/vimState';
 import { Position } from './../../../common/motion/position';
-import { Configuration } from './../../../configuration/configuration';
+import { getConfiguration } from './../../../configuration/configuration';
 import { ModeName } from './../../../mode/mode';
 import { RegisterAction } from './../../base';
 import { BaseCommand } from './../../commands/actions';
@@ -70,8 +70,9 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let configuration = getConfiguration();
     // Only execute the action if the configuration is set
-    if (!Configuration.easymotion) {
+    if (!configuration.easymotion) {
       return vimState;
     } else {
       // Search all occurences of the character pressed
@@ -109,6 +110,7 @@ function getMatchesForString(
   searchString: string,
   options?: EasyMotion.SearchOptions
 ): EasyMotion.Match[] {
+  let configuration = getConfiguration();
   switch (searchString) {
     case '':
       return [];
@@ -118,7 +120,7 @@ function getMatchesForString(
     default:
       // Search all occurences of the character pressed
       const ignorecase =
-        Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchString));
+        configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
       const regexFlags = ignorecase ? 'gi' : 'g';
       return vimState.easyMotion.sortedSearch(
         position,
@@ -257,8 +259,8 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // Only execute the action if easymotion is enabled
-    if (!Configuration.easymotion) {
+    let configuration = getConfiguration();
+    if (!configuration.easymotion) {
       return vimState;
     } else {
       vimState.easyMotion = new EasyMotion();

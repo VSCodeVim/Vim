@@ -3,7 +3,7 @@ import {
   buildTriggerKeys,
   EasymotionTrigger,
 } from '../../src/actions/plugins/easymotion/easymotion.cmd';
-import { Configuration } from '../../src/configuration/configuration';
+import { Configuration } from '../testConfiguration';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';

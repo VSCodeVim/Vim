@@ -1,14 +1,12 @@
-import { Configuration } from './configuration/configuration';
-import { IConfiguration } from './configuration/iconfiguration';
+import { ConfigurationBase } from './configuration/configurationBase';
+import { ModeHandler } from './mode/modeHandler';
 
 /**
  * Global variables shared throughout extension
  */
 
 export class Globals {
-  public static isTesting = false;
-
-  public static modeHandlerForTesting: any = undefined;
-
-  public static testConfiguration: IConfiguration;
+  public static isTesting: boolean = false;
+  public static testModeHandler: ModeHandler;
+  public static testConfiguration: ConfigurationBase;
 }

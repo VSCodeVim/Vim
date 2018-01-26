@@ -11,7 +11,7 @@ import { Tab, TabCommand } from './../../cmd_line/commands/tab';
 import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
 import { NumericString } from './../../common/number/numericString';
-import { Configuration } from './../../configuration/configuration';
+import { getConfiguration } from './../../configuration/configuration';
 import { ModeName } from './../../mode/mode';
 import { VisualBlockMode } from './../../mode/modes';
 import { Register, RegisterMode } from './../../register/register';
@@ -764,6 +764,7 @@ class CommandInsertInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let configuration = getConfiguration();
     const key = this.keysPressed[0];
     const searchState = vimState.globalState.searchState!;
     const prevSearchList = vimState.globalState.searchStatePrevious!;
@@ -795,7 +796,7 @@ class CommandInsertInSearchMode extends BaseCommand {
       }
 
       // Make sure search history does not exceed configuration option
-      if (vimState.globalState.searchStatePrevious.length > Configuration.history) {
+      if (vimState.globalState.searchStatePrevious.length > configuration.history) {
         vimState.globalState.searchStatePrevious.splice(0, 1);
       }
 
@@ -1483,6 +1484,7 @@ export class PutCommandVisual extends BaseCommand {
     vimState: VimState,
     after: boolean = false
   ): Promise<VimState> {
+    let configuration = getConfiguration();
     let start = vimState.cursorStartPosition;
     let end = vimState.cursorPosition;
     const isLineWise = vimState.currentMode === ModeName.VisualLine;
@@ -1514,7 +1516,7 @@ export class PutCommandVisual extends BaseCommand {
     // linewise but not necessarily delete linewise.
     let putResult = await new PutCommand(this.multicursorIndex).exec(start, vimState, true);
     putResult.currentRegisterMode = isLineWise ? RegisterMode.LineWise : RegisterMode.CharacterWise;
-    putResult.recordedState.registerName = Configuration.useSystemClipboard ? '*' : '"';
+    putResult.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
     putResult = await new operator.YankOperator(this.multicursorIndex).run(putResult, start, end);
     putResult.currentRegisterMode = RegisterMode.CharacterWise;
     putResult = await new operator.DeleteOperator(this.multicursorIndex).run(

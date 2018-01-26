@@ -7,7 +7,7 @@ import { Clipboard } from '../../src/util';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { VimState } from '../../src/state/vimState';
-import { Register } from '../../src/register/register';
+import { Register, IRegisterContent } from '../../src/register/register';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -199,16 +199,17 @@ suite('register', () => {
   });
 
   test('Can put and get to register', async () => {
-    // arrange
-    const expected = 'register-content-123';
+    const expected = 'text-to-put-on-register';
     let vimState = new VimState(vscode.window.activeTextEditor!, false);
-    vimState.recordedState.registerName = 'a';
+    vimState.recordedState.registerName = '0';
+    let actual: IRegisterContent;
 
-    // act
-    Register.put(expected, vimState);
-    let actual = await Register.get(vimState);
-
-    // assert
-    assert.equal(actual, expected);
+    try {
+      Register.put(expected, vimState);
+      actual = await Register.get(vimState);
+      assert.equal(actual.text, expected);
+    } catch (err) {
+      assert.fail(err);
+    }
   });
 });

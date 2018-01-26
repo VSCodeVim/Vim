@@ -1,6 +1,6 @@
 import { getAndUpdateModeHandler } from '../../../extension';
 import { CommandLine } from '../../../src/cmd_line/commandLine';
-import { Configuration } from '../../../src/configuration/configuration';
+import { Configuration } from '../../testConfiguration';
 import { ModeHandler } from '../../../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../../testUtils';
 
@@ -105,7 +105,7 @@ suite('command line - substitute', () => {
   });
 
   suite('Effects of substituteGlobalFlag=true', () => {
-    let originalGlobalFlag = false;
+    let originalGlobalFlag: boolean;
 
     setup(async () => {
       originalGlobalFlag = Configuration.substituteGlobalFlag;

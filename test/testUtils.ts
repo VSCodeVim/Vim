@@ -4,7 +4,7 @@ import * as os from 'os';
 import { join } from 'path';
 import * as vscode from 'vscode';
 
-import { Configuration } from '../src/configuration/configuration';
+import { Configuration } from './testConfiguration';
 import { TextEditor } from '../src/textEditor';
 
 function rndName() {
@@ -118,7 +118,6 @@ export async function cleanUpWorkspace(): Promise<any> {
 }
 
 export function setTextEditorOptions(tabSize: number, insertSpaces: boolean): void {
-  Configuration.enableNeovim = false;
   Configuration.tabstop = tabSize;
   Configuration.expandtab = insertSpaces;
   let options = vscode.window.activeTextEditor!.options;

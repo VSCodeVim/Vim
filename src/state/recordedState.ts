@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import { Configuration } from '../configuration/configuration';
+import { getConfiguration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { BaseAction } from './../actions/base';
 import { BaseCommand } from './../actions/commands/actions';
@@ -32,7 +32,7 @@ import { Transformation } from './../transformations/transformations';
  */
 export class RecordedState {
   constructor() {
-    this.registerName = Configuration.useSystemClipboard ? '*' : '"';
+    this.registerName = getConfiguration().useSystemClipboard ? '*' : '"';
   }
 
   /**
@@ -52,9 +52,10 @@ export class RecordedState {
    */
   public get commandString(): string {
     let result = '';
+    let configuration = getConfiguration();
 
     for (const key of this.commandList) {
-      if (key === Configuration.leader) {
+      if (key === configuration.leader) {
         result += '<leader>';
       } else {
         result += key;

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { Configuration } from '../../src/configuration/configuration';
+import { Configuration } from '../testConfiguration';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';

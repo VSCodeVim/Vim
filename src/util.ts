@@ -35,6 +35,7 @@ export async function waitForCursorUpdatesToHappen(): Promise<void> {
 
     const disposer = vscode.window.onDidChangeTextEditorSelection(x => {
       disposer.dispose();
+
       resolve();
     });
   });

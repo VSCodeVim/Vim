@@ -2,8 +2,8 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { CommandLine } from '../cmd_line/commandLine';
-import { IConfiguration, IKeyRemapping } from '../configuration/iconfiguration';
-import { Configuration } from '../configuration/configuration';
+import { ConfigurationBase, IKeyRemapping } from '../configuration/configurationBase';
+import { getConfiguration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { VimState } from './../state/vimState';
@@ -56,9 +56,10 @@ class Remapper implements IRemapper {
   }
 
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
+    let configuration = getConfiguration();
     this._recursive = recursive;
     this._remappedModes = remappedModes;
-    this._remappings = Configuration[configKey] as IKeyRemapping[];
+    this._remappings = configuration[configKey] as IKeyRemapping[];
   }
 
   public async sendKey(

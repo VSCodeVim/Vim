@@ -4,12 +4,12 @@ import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
 import { Notation } from './notation';
 import {
-  IConfiguration,
+  ConfigurationBase,
   IKeyRemapping,
   IHandleKeys,
   IModeSpecificStrings,
   IKeyBinding,
-} from './iconfiguration';
+} from './configurationBase';
 
 const packagejson: {
   contributes: {
@@ -50,8 +50,11 @@ interface VSCodeKeybinding {
  * 5. VSCodeVim flavored Vim option default values
  *
  */
-export class ConfigurationImpl implements IConfiguration {
+class Configuration extends ConfigurationBase {
+  private leaderDefault = '\\';
+
   constructor() {
+    super();
     this.reload();
   }
 
@@ -142,96 +145,17 @@ export class ConfigurationImpl implements IConfiguration {
     );
   }
 
-  getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    let resource: vscode.Uri | undefined = undefined;
-    let activeTextEditor = vscode.window.activeTextEditor;
-    if (activeTextEditor) {
-      resource = activeTextEditor.document.uri;
-    }
-    return vscode.workspace.getConfiguration(section, resource);
-  }
-
-  private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
-    const cursorType = {
-      line: vscode.TextEditorCursorStyle.Line,
-      block: vscode.TextEditorCursorStyle.Block,
-      underline: vscode.TextEditorCursorStyle.Underline,
-      'line-thin': vscode.TextEditorCursorStyle.LineThin,
-      'block-outline': vscode.TextEditorCursorStyle.BlockOutline,
-      'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
-    };
-
-    return cursorType[cursorStyle];
-  }
-
-  handleKeys: IHandleKeys[] = [];
-
-  useSystemClipboard = false;
-
-  useCtrlKeys = false;
-
-  overrideCopy = true;
-
-  textwidth = 80;
-
-  hlsearch = false;
-
-  ignorecase = true;
-
-  smartcase = true;
-
-  autoindent = true;
-
-  surround = true;
-
-  easymotion = false;
-  easymotionMarkerBackgroundColor = '';
-  easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500';
-  easymotionMarkerWidthPerChar = 8;
-  easymotionMarkerHeight = 14;
-  easymotionMarkerFontFamily = 'Consolas';
-  easymotionMarkerFontSize = '14';
-  easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerYOffset = 0;
-  easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
-
-  timeout = 1000;
-
-  showcmd = true;
-
-  showmodename = true;
-
-  private leaderDefault = '\\';
-  leader = this.leaderDefault;
-
-  history = 50;
-
-  incsearch = true;
-
-  startInInsertMode = false;
-
-  statusBarColorControl = false;
-
-  statusBarColors: IModeSpecificStrings = {
-    normal: '#005f5f',
-    insert: '#5f0000',
-    visual: '#5f00af',
-    visualline: '#005f87',
-    visualblock: '#86592d',
-    replace: '#000000',
-  };
-
-  searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
-
   @overlapSetting({ codeName: 'tabSize', default: 8 })
   tabstop: number;
 
   @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
-  private userCursorString: string;
+  userCursorStyle: string;
 
-  get userCursor(): number | undefined {
-    return this.cursorStyleFromString(this.userCursorString);
+  get userCursor(): vscode.TextEditorCursorStyle {
+    return this.stringToCursorTypeMap[this.userCursorStyle];
+  }
+  set userCursor(val: vscode.TextEditorCursorStyle) {
+    // nop
   }
 
   @overlapSetting({ codeName: 'insertSpaces', default: false })
@@ -251,17 +175,6 @@ export class ConfigurationImpl implements IConfiguration {
   })
   relativenumber: boolean;
 
-  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
-
-  boundKeyCombinations: IKeyBinding[] = [];
-
-  visualstar = false;
-
-  mouseSelectionGoesIntoVisualMode = true;
-
-  foldfix = false;
-
-  private disableExtension: boolean = false;
   get disableExt(): boolean {
     return this.disableExtension;
   }
@@ -273,31 +186,6 @@ export class ConfigurationImpl implements IConfiguration {
       vscode.ConfigurationTarget.Global
     );
   }
-
-  enableNeovim = true;
-  neovimPath = 'nvim';
-
-  substituteGlobalFlag = false;
-
-  cursorStylePerMode: IModeSpecificStrings = {
-    normal: undefined,
-    insert: undefined,
-    visual: undefined,
-    visualline: undefined,
-    visualblock: undefined,
-    replace: undefined,
-  };
-
-  getCursorStyleForMode(mode: string): vscode.TextEditorCursorStyle | undefined {
-    return this.cursorStyleFromString(this.cursorStylePerMode[mode]);
-  }
-
-  cmdLineInitialColon = false;
-
-  insertModeKeyBindings: IKeyRemapping[] = [];
-  insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
-  otherModesKeyBindings: IKeyRemapping[] = [];
-  otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
 
 function overlapSetting(args: {
@@ -322,7 +210,7 @@ function overlapSetting(args: {
       set: function(value) {
         this['_' + propertyKey] = value;
 
-        if (value === undefined || Globals.isTesting) {
+        if (value === undefined) {
           return;
         }
 
@@ -344,4 +232,15 @@ function overlapSetting(args: {
   };
 }
 
-export let Configuration = Globals.isTesting ? Globals.testConfiguration : new ConfigurationImpl();
+let configuration: ConfigurationBase;
+export function getConfiguration(): ConfigurationBase {
+  if (Globals.isTesting) {
+    return Globals.testConfiguration;
+  }
+
+  if (configuration === undefined) {
+    configuration = new Configuration();
+  }
+
+  return configuration;
+}
