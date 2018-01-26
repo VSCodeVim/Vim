@@ -1,10 +1,10 @@
-import { getAndUpdateModeHandler } from '../../extension';
-import { CommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { VimState } from '../../src/state/vimState';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { getAndUpdateModeHandler } from '../../../extension';
+import { CommandLine } from '../../../src/cmd_line/commandLine';
+import { ModeHandler } from '../../../src/mode/modeHandler';
+import { VimState } from '../../../src/state/vimState';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../../testUtils';
 
-suite('Basic sort', () => {
+suite('command line - sort', () => {
   let modeHandler: ModeHandler;
   let vimState: VimState;
 

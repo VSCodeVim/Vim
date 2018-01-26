@@ -19,11 +19,4 @@ suite('Mode Handler', () => {
     assert.equal(modeHandler.currentMode.name, ModeName.Normal);
     assert.equal(modeHandler.currentMode.isActive, true);
   });
-
-  test('can set current mode', async () => {
-    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
-
-    await modeHandler.handleKeyEvent('i');
-    assert.equal(modeHandler.currentMode.name, ModeName.Insert);
-  });
 });

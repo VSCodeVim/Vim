@@ -16,28 +16,28 @@ suite('Motions in Normal Mode', () => {
   teardown(cleanUpWorkspace);
 
   newTest({
-    title: 'Can handle %',
+    title: 'Can handle % at line start',
     start: ['|((( )))'],
     keysPressed: '%',
     end: ['((( ))|)'],
   });
 
   newTest({
-    title: 'Can handle %',
+    title: 'Can handle % at line end',
     start: ['((( ))|)'],
     keysPressed: '%',
     end: ['|((( )))'],
   });
 
   newTest({
-    title: 'Can handle %',
+    title: 'Can handle % at line start with [',
     start: ['|[(( ))]'],
     keysPressed: '%',
     end: ['[(( ))|]'],
   });
 
   newTest({
-    title: 'Can handle %',
+    title: 'Can handle % at line end with ]',
     start: ['|[(( }}} ))]'],
     keysPressed: '%',
     end: ['[(( }}} ))|]'],

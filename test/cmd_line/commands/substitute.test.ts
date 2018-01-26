@@ -1,10 +1,10 @@
-import { getAndUpdateModeHandler } from '../../extension';
-import { CommandLine } from '../../src/cmd_line/commandLine';
-import { Configuration } from '../../src/configuration/configuration';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { getAndUpdateModeHandler } from '../../../extension';
+import { CommandLine } from '../../../src/cmd_line/commandLine';
+import { Configuration } from '../../../src/configuration/configuration';
+import { ModeHandler } from '../../../src/mode/modeHandler';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../../testUtils';
 
-suite('Basic substitute', () => {
+suite('command line - substitute', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {

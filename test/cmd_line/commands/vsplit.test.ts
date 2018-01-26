@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { CommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqual, cleanUpWorkspace, setupWorkspace, WaitForEditors } from './../testUtils';
+import { getAndUpdateModeHandler } from '../../../extension';
+import { CommandLine } from '../../../src/cmd_line/commandLine';
+import { ModeHandler } from '../../../src/mode/modeHandler';
+import { assertEqual, cleanUpWorkspace, setupWorkspace, WaitForEditors } from '../../testUtils';
 
-suite('Vertical split', () => {
+suite('command line - vertical split', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {

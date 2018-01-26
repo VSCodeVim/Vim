@@ -2,7 +2,8 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { CommandLine } from '../cmd_line/commandLine';
-import { Configuration, IKeyRemapping } from '../configuration/configuration';
+import { IConfiguration, IKeyRemapping } from '../configuration/iconfiguration';
+import { Configuration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { VimState } from './../state/vimState';

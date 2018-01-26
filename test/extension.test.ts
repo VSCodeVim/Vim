@@ -8,7 +8,7 @@ suite('package.json', () => {
 
     let registeredCommands = await vscode.commands.getCommands();
     let keybindings = pkg.contributes.keybindings;
-    assert.ok(pkg);
+    assert.notEqual(keybindings.length, 0);
 
     for (let i = 0; i < keybindings.length; i++) {
       let keybinding = keybindings[i];

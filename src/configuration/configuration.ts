@@ -3,6 +3,13 @@ import * as vscode from 'vscode';
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
 import { Notation } from './notation';
+import {
+  IConfiguration,
+  IKeyRemapping,
+  IHandleKeys,
+  IModeSpecificStrings,
+  IKeyBinding,
+} from './iconfiguration';
 
 const packagejson: {
   contributes: {
@@ -24,30 +31,6 @@ interface VSCodeKeybinding {
   when: string;
 }
 
-interface IHandleKeys {
-  [key: string]: boolean;
-}
-
-interface IModeSpecificStrings {
-  normal: string | undefined;
-  insert: string | undefined;
-  visual: string | undefined;
-  visualline: string | undefined;
-  visualblock: string | undefined;
-  replace: string | undefined;
-}
-
-interface IKeyBinding {
-  key: string;
-  command: string;
-}
-
-export interface IKeyRemapping {
-  before: string[];
-  after?: string[];
-  commands?: { command: string; args: any[] }[];
-}
-
 /**
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
@@ -67,7 +50,7 @@ export interface IKeyRemapping {
  * 5. VSCodeVim flavored Vim option default values
  *
  */
-class ConfigurationClass {
+export class ConfigurationImpl implements IConfiguration {
   constructor() {
     this.reload();
   }
@@ -168,7 +151,7 @@ class ConfigurationClass {
     return vscode.workspace.getConfiguration(section, resource);
   }
 
-  cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
+  private cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
     const cursorType = {
       line: vscode.TextEditorCursorStyle.Line,
       block: vscode.TextEditorCursorStyle.Block,
@@ -181,65 +164,27 @@ class ConfigurationClass {
     return cursorType[cursorStyle];
   }
 
-  /**
-   * Delegate certain key combinations back to VSCode to be handled natively
-   */
   handleKeys: IHandleKeys[] = [];
 
-  /**
-   * Use the system's clipboard when copying.
-   */
   useSystemClipboard = false;
 
-  /**
-   * Enable ctrl- actions that would override existing VSCode actions.
-   */
   useCtrlKeys = false;
 
-  /**
-   * Override default VSCode copy behavior.
-   */
   overrideCopy = true;
 
-  /**
-   * Width in characters to word-wrap to.
-   */
   textwidth = 80;
 
-  /**
-   * Should we highlight incremental search matches?
-   */
   hlsearch = false;
 
-  /**
-   * Ignore case when searching with / or ?.
-   */
   ignorecase = true;
 
-  /**
-   * In / or ?, default to ignorecase=true unless the user types a capital
-   * letter.
-   */
   smartcase = true;
 
-  /**
-   * Indent automatically?
-   */
   autoindent = true;
 
-  /**
-   * Use EasyMotion plugin?
-   */
-  easymotion = false;
-
-  /**
-   * Use surround plugin?
-   */
   surround = true;
 
-  /**
-   * Easymotion marker appearance settings
-   */
+  easymotion = false;
   easymotionMarkerBackgroundColor = '';
   easymotionMarkerForegroundColorOneChar = '#ff0000';
   easymotionMarkerForegroundColorTwoChar = '#ffa500';
@@ -251,50 +196,23 @@ class ConfigurationClass {
   easymotionMarkerYOffset = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
 
-  /**
-   * Timeout in milliseconds for remapped commands.
-   */
   timeout = 1000;
 
-  /**
-   * Display partial commands on status bar?
-   */
   showcmd = true;
 
-  /**
-   * Display mode name text on status bar?
-   */
   showmodename = true;
 
-  /**
-   * What key should <leader> map to in key remappings?
-   */
   private leaderDefault = '\\';
   leader = this.leaderDefault;
 
-  /**
-   * How much search or command history should be remembered
-   */
   history = 50;
 
-  /**
-   * Show results of / or ? search as user is typing?
-   */
   incsearch = true;
 
-  /**
-   * Start in insert mode?
-   */
   startInInsertMode = false;
 
-  /**
-   * Enable changing of the status bar color based on mode
-   */
   statusBarColorControl = false;
 
-  /**
-   * Status bar colors to change to based on mode
-   */
   statusBarColors: IModeSpecificStrings = {
     normal: '#005f5f',
     insert: '#5f0000',
@@ -304,20 +222,11 @@ class ConfigurationClass {
     replace: '#000000',
   };
 
-  /**
-   * Color of search highlights.
-   */
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
 
-  /**
-   * Size of a tab character.
-   */
   @overlapSetting({ codeName: 'tabSize', default: 8 })
   tabstop: number;
 
-  /**
-   * Type of cursor user is using native to vscode
-   */
   @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
   private userCursorString: string;
 
@@ -325,15 +234,9 @@ class ConfigurationClass {
     return this.cursorStyleFromString(this.userCursorString);
   }
 
-  /**
-   * Use spaces when the user presses tab?
-   */
   @overlapSetting({ codeName: 'insertSpaces', default: false })
   expandtab: boolean;
 
-  /**
-   * Show line numbers
-   */
   @overlapSetting({
     codeName: 'lineNumbers',
     default: true,
@@ -341,9 +244,6 @@ class ConfigurationClass {
   })
   number: boolean;
 
-  /**
-   * Show relative line numbers?
-   */
   @overlapSetting({
     codeName: 'lineNumbers',
     default: false,
@@ -353,31 +253,15 @@ class ConfigurationClass {
 
   iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
 
-  /**
-   * Array of all bound key combinations in angle bracket notation
-   */
   boundKeyCombinations: IKeyBinding[] = [];
 
-  /**
-   * In visual mode, start a search with * or # using the current selection
-   */
   visualstar = false;
 
-  /**
-   * Does dragging with the mouse put you into visual mode
-   */
   mouseSelectionGoesIntoVisualMode = true;
 
-  /**
-   * Uses a hack to fix moving around folds.
-   */
   foldfix = false;
 
-  /**
-   * Disables extension
-   */
   private disableExtension: boolean = false;
-
   get disableExt(): boolean {
     return this.disableExtension;
   }
@@ -390,20 +274,11 @@ class ConfigurationClass {
     );
   }
 
-  /**
-   * Neovim
-   */
   enableNeovim = true;
   neovimPath = 'nvim';
 
-  /**
-   * Automatically apply the /g flag to substitute commands.
-   */
   substituteGlobalFlag = false;
 
-  /**
-   * Cursor style to set based on mode
-   */
   cursorStylePerMode: IModeSpecificStrings = {
     normal: undefined,
     insert: undefined,
@@ -413,14 +288,12 @@ class ConfigurationClass {
     replace: undefined,
   };
 
-  /**
-   * When typing a command show the initial colon ':' character
-   */
+  getCursorStyleForMode(mode: string): vscode.TextEditorCursorStyle | undefined {
+    return this.cursorStyleFromString(this.cursorStylePerMode[mode]);
+  }
+
   cmdLineInitialColon = false;
 
-  /**
-   * Keybindings
-   */
   insertModeKeyBindings: IKeyRemapping[] = [];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   otherModesKeyBindings: IKeyRemapping[] = [];
@@ -471,4 +344,4 @@ function overlapSetting(args: {
   };
 }
 
-export let Configuration = new ConfigurationClass();
+export let Configuration = Globals.isTesting ? Globals.testConfiguration : new ConfigurationImpl();

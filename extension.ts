@@ -1,8 +1,3 @@
-/**
- * Extension.ts is a lightweight wrapper around ModeHandler. It converts key
- * events to their string names and passes them on to ModeHandler via
- * handleKeyEvent().
- */
 import './src/actions/include-all';
 
 import * as _ from 'lodash';
@@ -104,34 +99,32 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
 
+    let modeHandlers: ModeHandler[];
+    if (Globals.isTesting) {
+      modeHandlers = [Globals.modeHandlerForTesting as ModeHandler];
+    } else {
+      modeHandlers = _.filter(
+        ModeHandlerMap.getAll(),
+        modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName
+      );
+    }
+
+    modeHandlers.forEach(modeHandler => {
+      if (modeHandler.vimState.currentMode === ModeName.Insert) {
+        let currentContentChanges = modeHandler.vimState.historyTracker.currentContentChanges;
+        if (currentContentChanges === undefined) {
+          currentContentChanges = [];
+        }
+
+        currentContentChanges = currentContentChanges.concat(event.contentChanges);
+      }
+    });
+
     /**
      * Change from vscode editor should set document.isDirty to true but they initially don't!
      * There is a timing issue in vscode codebase between when the isDirty flag is set and
      * when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
      */
-
-    let contentChangeHandler = (modeHandler: ModeHandler) => {
-      if (modeHandler.vimState.currentMode === ModeName.Insert) {
-        if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
-          modeHandler.vimState.historyTracker.currentContentChanges = [];
-        }
-
-        modeHandler.vimState.historyTracker.currentContentChanges = modeHandler.vimState.historyTracker.currentContentChanges.concat(
-          event.contentChanges
-        );
-      }
-    };
-
-    if (Globals.isTesting) {
-      contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
-    } else {
-      _.filter(
-        ModeHandlerMap.getAll(),
-        modeHandler => modeHandler.vimState.identity.fileName === event.document.fileName
-      ).forEach(modeHandler => {
-        contentChangeHandler(modeHandler);
-      });
-    }
     setTimeout(() => {
       if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
         handleContentChangedFromDisk(event.document);
@@ -176,7 +169,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  overrideCommand(context, 'compositionStart', async args => {
+  overrideCommand(context, 'compositionStart', args => {
     taskQueue.enqueueTask(async () => {
       compositionState.isInComposition = true;
     });
