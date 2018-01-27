@@ -1,12 +1,13 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { configuration } from '../../src/configuration/configuration';
+import { Configuration } from '../testConfiguration';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
+import { Globals } from '../../src/globals';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
@@ -685,15 +686,9 @@ suite('Mode Visual', () => {
   });
 
   suite('visualstar', () => {
-    let originalVisualstarValue = false;
-
     setup(() => {
-      originalVisualstarValue = configuration.visualstar;
-      configuration.visualstar = true;
-    });
-
-    teardown(() => {
-      configuration.visualstar = originalVisualstarValue;
+      Globals.mockConfiguration.visualstar = true;
+      reloadConfiguration();
     });
 
     newTest({

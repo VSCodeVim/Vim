@@ -239,7 +239,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   await waitForCursorUpdatesToHappen();
 
-  Globals.modeHandlerForTesting = modeHandler;
+  Globals.mockModeHandler = modeHandler;
 
   // assumes key presses are single characters for now
   await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));

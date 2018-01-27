@@ -2,10 +2,11 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { CommandLine } from '../cmd_line/commandLine';
-import { configuration, IKeyRemapping } from '../configuration/configuration';
+import { configuration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { VimState } from './../state/vimState';
+import { IKeyRemapping } from './iconfiguration';
 
 export class Remappers implements IRemapper {
   private remappers: IRemapper[];

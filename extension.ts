@@ -123,7 +123,7 @@ export async function activate(context: vscode.ExtensionContext) {
     };
 
     if (Globals.isTesting) {
-      contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
+      contentChangeHandler(Globals.mockModeHandler as ModeHandler);
     } else {
       _.filter(
         ModeHandlerMap.getAll(),
@@ -237,8 +237,8 @@ export async function activate(context: vscode.ExtensionContext) {
     // closed
     for (let editorIdentity of ModeHandlerMap.getKeys()) {
       let [modeHandler] = await ModeHandlerMap.getOrCreate(editorIdentity);
-      const editor = modeHandler.vimState.editor.document;
-      if (documents.indexOf(editor) === -1) {
+      const editor = modeHandler.vimState.editor;
+      if (editor === undefined || documents.indexOf(editor.document) === -1) {
         ModeHandlerMap.delete(editorIdentity);
       }
     }

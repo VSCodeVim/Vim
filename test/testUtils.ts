@@ -4,8 +4,10 @@ import * as os from 'os';
 import { join } from 'path';
 import * as vscode from 'vscode';
 
-import { configuration } from '../src/configuration/configuration';
 import { TextEditor } from '../src/textEditor';
+import { IConfiguration } from '../src/configuration/iconfiguration';
+import { Globals } from '../src/globals';
+import { Configuration } from './testConfiguration';
 
 function rndName() {
   return Math.random()
@@ -75,18 +77,23 @@ export function assertEqual<T>(one: T, two: T, message: string = ''): void {
   assert.equal(one, two, message);
 }
 
-export async function setupWorkspace(fileExtension: string = ''): Promise<any> {
+export async function setupWorkspace(config: IConfiguration = new Configuration(), fileExtension: string = ''): Promise<any> {
   const file = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(file);
 
   await vscode.window.showTextDocument(doc);
-  setTextEditorOptions(2, true);
 
-  assert.ok(vscode.window.activeTextEditor);
+  Globals.mockConfiguration = config;
+  reloadConfiguration();
+
+  let activeTextEditor = vscode.window.activeTextEditor;
+  assert.ok(activeTextEditor);
+
+  activeTextEditor!.options.tabSize = config.tabstop;
+  activeTextEditor!.options.insertSpaces = config.expandtab;
 }
 
 export async function cleanUpWorkspace(): Promise<any> {
-  // https://github.com/Microsoft/vscode/blob/master/extensions/vscode-api-tests/src/utils.ts
   return new Promise((c, e) => {
     if (vscode.window.visibleTextEditors.length === 0) {
       return c();
@@ -112,19 +119,13 @@ export async function cleanUpWorkspace(): Promise<any> {
       }
     );
   }).then(() => {
-    assert.equal(vscode.window.visibleTextEditors.length, 0);
-    assert(!vscode.window.activeTextEditor);
+    assert.equal(vscode.window.visibleTextEditors.length, 0, "Expected all editors closed.");
+    assert(!vscode.window.activeTextEditor, "Expected no active text editor.");
   });
 }
 
-export function setTextEditorOptions(tabSize: number, insertSpaces: boolean): void {
-  configuration.enableNeovim = false;
-  configuration.tabstop = tabSize;
-  configuration.expandtab = insertSpaces;
-  let options = vscode.window.activeTextEditor!.options;
-  options.tabSize = tabSize;
-  options.insertSpaces = insertSpaces;
-  vscode.window.activeTextEditor!.options = options;
+export function reloadConfiguration() {
+  require('../src/configuration/configuration').configuration.reload();
 }
 
 export function crossPlatformIt(text: string): string {
