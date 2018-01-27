@@ -1,14 +1,9 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { getTestingFunctions } from '../testSimplifier';
-import {
-  assertEqual,
-  cleanUpWorkspace,
-  crossPlatformIt,
-  setupWorkspace,
-} from './../testUtils';
 import { Configuration } from '../testConfiguration';
+import { getTestingFunctions } from '../testSimplifier';
+import { assertEqual, cleanUpWorkspace, crossPlatformIt, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;

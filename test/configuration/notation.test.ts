@@ -14,6 +14,7 @@ suite('Notation', () => {
       eScapE: '<Esc>',
       '<LeAder>': '//',
       LEaDer: '//',
+      '<uP>': '<up>',
     };
 
     for (const test in testCases) {

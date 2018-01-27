@@ -82,7 +82,7 @@ class Configuration implements IConfiguration {
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
-    // normalize keys
+    // normalize remapped keys
     const keybindingList: IKeyRemapping[][] = [
       this.insertModeKeyBindings,
       this.insertModeKeyBindingsNonRecursive,

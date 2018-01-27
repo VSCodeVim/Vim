@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { IConfiguration, IModeSpecificStrings } from "../src/configuration/iconfiguration";
+
+import { IConfiguration, IKeyRemapping } from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
   useSystemClipboard = false;
@@ -61,9 +62,9 @@ export class Configuration implements IConfiguration {
     replace: vscode.TextEditorCursorStyle.Line,
   };
   cmdLineInitialColon = false;
-  insertModeKeyBindings = [];
-  insertModeKeyBindingsNonRecursive = [];
-  otherModesKeyBindings = [];
-  otherModesKeyBindingsNonRecursive = [];
+  insertModeKeyBindings: IKeyRemapping[] = [];
+  insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  otherModesKeyBindings: IKeyRemapping[] = [];
+  otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
 

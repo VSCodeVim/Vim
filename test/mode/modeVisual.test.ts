@@ -1,13 +1,12 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { Configuration } from '../testConfiguration';
+import { Globals } from '../../src/globals';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
-import { Globals } from '../../src/globals';
+import { assertEqual, assertEqualLines, cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
