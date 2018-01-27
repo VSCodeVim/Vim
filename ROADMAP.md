@@ -477,7 +477,7 @@ Status | Command | Default Value | Description
 :white_check_mark:| smartcase (scs) | true | Override the 'ignorecase' option if the search pattern contains upper case characters.
 :white_check_mark:| iskeyword (isk) | `@,48-57,_,128-167,224-235` | keywords contain alphanumeric characters and '_'. If there is no user setting for `iskeyword`, we use `editor.wordSeparators` properties.
 :white_check_mark:| scroll (scr) | 20 | Number of lines to scroll with CTRL-U and CTRL-D commands.
-:white_check_mark:| expandtab (et) | True. we use Code's default value `inserSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted
+:white_check_mark:| expandtab (et) | True. we use Code's default value `insertSpaces` instead of Vim | use spaces when &lt;Tab&gt; is inserted
 :white_check_mark:| autoindent | true | Keep indentation when doing `cc` or `S` in normal mode to replace a line.
 
 ## Undo/Redo commands
