@@ -1266,14 +1266,7 @@ export class ModeHandler implements vscode.Disposable {
       cursorStyle = Configuration.userCursor;
     }
 
-    const optionalCursorStyle =
-      Configuration.cursorStylePerMode[this.currentMode.friendlyName.toLowerCase()];
-    if (optionalCursorStyle !== undefined) {
-      const cursorStyleNum = Configuration.cursorStyleFromString(optionalCursorStyle);
-      if (cursorStyleNum !== undefined) {
-        cursorStyle = cursorStyleNum;
-      }
-    }
+    cursorStyle = Configuration.modeToCursorStyleMap[this.currentMode.friendlyName.toLowerCase()] || cursorStyle;
 
     let options = this.vimState.editor.options;
     options.cursorStyle = cursorStyle;

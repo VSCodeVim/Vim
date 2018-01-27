@@ -28,13 +28,13 @@ interface IHandleKeys {
   [key: string]: boolean;
 }
 
-interface IModeSpecificStrings {
-  normal: string | undefined;
-  insert: string | undefined;
-  visual: string | undefined;
-  visualline: string | undefined;
-  visualblock: string | undefined;
-  replace: string | undefined;
+interface IModeSpecificStrings<T> {
+  normal: T | undefined;
+  insert: T | undefined;
+  visual: T | undefined;
+  visualline: T | undefined;
+  visualblock: T | undefined;
+  replace: T | undefined;
 }
 
 interface IKeyBinding {
@@ -68,6 +68,16 @@ export interface IKeyRemapping {
  *
  */
 class ConfigurationClass {
+  private readonly leaderDefault = '\\';
+  private readonly cursorTypeMap = {
+    line: vscode.TextEditorCursorStyle.Line,
+    block: vscode.TextEditorCursorStyle.Block,
+    underline: vscode.TextEditorCursorStyle.Underline,
+    'line-thin': vscode.TextEditorCursorStyle.LineThin,
+    'block-outline': vscode.TextEditorCursorStyle.BlockOutline,
+    'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
+  };
+
   constructor() {
     this.reload();
   }
@@ -169,16 +179,7 @@ class ConfigurationClass {
   }
 
   cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
-    const cursorType = {
-      line: vscode.TextEditorCursorStyle.Line,
-      block: vscode.TextEditorCursorStyle.Block,
-      underline: vscode.TextEditorCursorStyle.Underline,
-      'line-thin': vscode.TextEditorCursorStyle.LineThin,
-      'block-outline': vscode.TextEditorCursorStyle.BlockOutline,
-      'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
-    };
-
-    return cursorType[cursorStyle];
+    return this.cursorTypeMap[cursorStyle];
   }
 
   /**
@@ -269,7 +270,6 @@ class ConfigurationClass {
   /**
    * What key should <leader> map to in key remappings?
    */
-  private leaderDefault = '\\';
   leader = this.leaderDefault;
 
   /**
@@ -295,7 +295,7 @@ class ConfigurationClass {
   /**
    * Status bar colors to change to based on mode
    */
-  statusBarColors: IModeSpecificStrings = {
+  statusBarColors: IModeSpecificStrings<string> = {
     normal: '#005f5f',
     insert: '#5f0000',
     visual: '#5f00af',
@@ -321,7 +321,7 @@ class ConfigurationClass {
   @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
   private userCursorString: string;
 
-  get userCursor(): number | undefined {
+  get userCursor(): vscode.TextEditorCursorStyle | undefined {
     return this.cursorStyleFromString(this.userCursorString);
   }
 
@@ -403,8 +403,9 @@ class ConfigurationClass {
 
   /**
    * Cursor style to set based on mode
+   * Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin
    */
-  cursorStylePerMode: IModeSpecificStrings = {
+  private cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,
     insert: undefined,
     visual: undefined,
@@ -412,6 +413,18 @@ class ConfigurationClass {
     visualblock: undefined,
     replace: undefined,
   };
+
+  get modeToCursorStyleMap() : IModeSpecificStrings<vscode.TextEditorCursorStyle> {
+    let map = <IModeSpecificStrings<vscode.TextEditorCursorStyle>>{};
+
+    Object.keys(this.cursorStylePerMode).forEach(k => {
+      let cursor = this.cursorStylePerMode[k];
+      let cursorStyle = this.cursorStyleFromString(cursor);
+      map[k] = cursorStyle;
+    });
+
+    return map;
+  }
 
   /**
    * When typing a command show the initial colon ':' character
