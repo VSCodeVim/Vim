@@ -9,7 +9,7 @@ suite('comment operator', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace('.js');
+    await setupWorkspace(undefined, '.js');
     modeHandler = await getAndUpdateModeHandler();
   });
 

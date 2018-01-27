@@ -6,17 +6,20 @@ import {
   assertEqual,
   cleanUpWorkspace,
   crossPlatformIt,
-  setTextEditorOptions,
   setupWorkspace,
 } from './../testUtils';
+import { Configuration } from '../testConfiguration';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
-    setTextEditorOptions(4, false);
+    let configuration = new Configuration();
+    configuration.tabstop = 4;
+    configuration.expandtab = false;
+
+    await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
   });
 

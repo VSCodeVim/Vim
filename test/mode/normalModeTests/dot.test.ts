@@ -1,7 +1,8 @@
 import { getAndUpdateModeHandler } from '../../../extension';
 import { ModeHandler } from '../../../src/mode/modeHandler';
 import { getTestingFunctions } from '../../testSimplifier';
-import { cleanUpWorkspace, setTextEditorOptions, setupWorkspace } from './../../testUtils';
+import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
+import { Configuration } from '../../testConfiguration';
 
 suite('Dot Operator', () => {
   let modeHandler: ModeHandler;
@@ -9,8 +10,11 @@ suite('Dot Operator', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
-    setTextEditorOptions(4, false);
+    let configuration = new Configuration();
+    configuration.tabstop = 4;
+    configuration.expandtab = false;
+
+    await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
   });
 
@@ -102,8 +106,11 @@ suite('Repeat content change', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
-    setTextEditorOptions(4, false);
+    let configuration = new Configuration();
+    configuration.tabstop = 4;
+    configuration.expandtab = false;
+
+    await setupWorkspace(configuration);
   });
 
   teardown(cleanUpWorkspace);

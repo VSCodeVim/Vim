@@ -3,10 +3,11 @@ import {
   buildTriggerKeys,
   EasymotionTrigger,
 } from '../../src/actions/plugins/easymotion/easymotion.cmd';
-import { configuration } from '../../src/configuration/configuration';
+import { Configuration } from '../testConfiguration';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
+import { Globals } from '../../src/globals';
 
 function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpKey: string) {
   return [...buildTriggerKeys(trigger), searchWord, jumpKey].join('');
@@ -17,15 +18,14 @@ suite('easymotion plugin', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
+    let configuration = new Configuration();
     configuration.easymotion = true;
+
+    await setupWorkspace(configuration);
+    modeHandler = await getAndUpdateModeHandler();
   });
 
-  teardown(async () => {
-    configuration.easymotion = false;
-    await cleanUpWorkspace();
-  });
+  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can handle s move',
