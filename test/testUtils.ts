@@ -18,13 +18,8 @@ function rndName() {
 
 async function createRandomFile(contents: string, fileExtension: string): Promise<vscode.Uri> {
   const tmpFile = join(os.tmpdir(), rndName() + fileExtension);
-
-  try {
-    fs.writeFileSync(tmpFile, contents);
-    return vscode.Uri.file(tmpFile);
-  } catch (error) {
-    throw error;
-  }
+  fs.writeFileSync(tmpFile, contents);
+  return vscode.Uri.file(tmpFile);
 }
 
 /**

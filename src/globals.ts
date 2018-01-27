@@ -1,5 +1,5 @@
-import { ModeHandler } from "./mode/modeHandler";
-import { IConfiguration } from "./configuration/iconfiguration";
+import { IConfiguration } from './configuration/iconfiguration';
+import { ModeHandler } from './mode/modeHandler';
 
 /**
  * Global variables shared throughout extension
