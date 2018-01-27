@@ -41,14 +41,11 @@ install:
 - npm install;
 
 script:
-- git ls-tree -r HEAD --name-only | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5
+- gulp forceprettier
 - if [[ $(git diff-index HEAD --) ]]; then
-    ./node_modules/prettier/bin/prettier.js -v;
     git diff;
     echo "Prettier Failed. Run `gulp` or `gulp forceprettier`";
     exit 1;
-  else
-    echo "Prettier passed.";
   fi
 - gulp
 - npm test --silent;
