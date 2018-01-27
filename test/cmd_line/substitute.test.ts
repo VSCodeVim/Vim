@@ -1,6 +1,6 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { CommandLine } from '../../src/cmd_line/commandLine';
-import { Configuration } from '../../src/configuration/configuration';
+import { configuration } from '../../src/configuration/configuration';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
@@ -108,12 +108,12 @@ suite('Basic substitute', () => {
     let originalGlobalFlag = false;
 
     setup(async () => {
-      originalGlobalFlag = Configuration.substituteGlobalFlag;
-      Configuration.substituteGlobalFlag = true;
+      originalGlobalFlag = configuration.substituteGlobalFlag;
+      configuration.substituteGlobalFlag = true;
     });
 
     teardown(async () => {
-      Configuration.substituteGlobalFlag = originalGlobalFlag;
+      configuration.substituteGlobalFlag = originalGlobalFlag;
     });
 
     test('Replace all matches in the line', async () => {

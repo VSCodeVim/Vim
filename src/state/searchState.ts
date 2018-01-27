@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Configuration } from '../../src/configuration/configuration';
+import { configuration } from '../../src/configuration/configuration';
 import { Position } from './../common/motion/position';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
@@ -74,9 +74,9 @@ export class SearchState {
        * If ignorecase is true, the search should be case insensitive.
        * If both ignorecase and smartcase are true, the search is case sensitive only when the search string contains UpperCase character.
        */
-      let ignorecase = Configuration.ignorecase;
+      let ignorecase = configuration.ignorecase;
 
-      if (ignorecase && Configuration.smartcase && /[A-Z]/.test(search)) {
+      if (ignorecase && configuration.smartcase && /[A-Z]/.test(search)) {
         ignorecase = false;
       }
 

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { Configuration } from '../../src/configuration/configuration';
+import { configuration } from '../../src/configuration/configuration';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
@@ -688,12 +688,12 @@ suite('Mode Visual', () => {
     let originalVisualstarValue = false;
 
     setup(() => {
-      originalVisualstarValue = Configuration.visualstar;
-      Configuration.visualstar = true;
+      originalVisualstarValue = configuration.visualstar;
+      configuration.visualstar = true;
     });
 
     teardown(() => {
-      Configuration.visualstar = originalVisualstarValue;
+      configuration.visualstar = originalVisualstarValue;
     });
 
     newTest({

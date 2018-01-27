@@ -2,7 +2,7 @@ import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
 import { Position } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
-import { Configuration } from './../../configuration/configuration';
+import { configuration } from './../../configuration/configuration';
 import { ModeName } from './../../mode/mode';
 import { TextEditor } from './../../textEditor';
 import { RegisterAction } from './../base';
@@ -138,7 +138,7 @@ class CommandSurroundModeStart extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Only execute the action if the configuration is set
-    if (!Configuration.surround) {
+    if (!configuration.surround) {
       return vimState;
     }
 
@@ -204,7 +204,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Only execute the action if the configuration is set
-    if (!Configuration.surround) {
+    if (!configuration.surround) {
       return vimState;
     }
 

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { Position } from './../../../common/motion/position';
-import { Configuration } from './../../../configuration/configuration';
+import { configuration } from './../../../configuration/configuration';
 import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction } from './easymotion.cmd';
 import { MarkerGenerator } from './markerGenerator';
@@ -209,7 +209,7 @@ export class EasyMotion {
 
   private getEasymotionMarkerBackgroundColor() {
     return this.getMarkerColor(
-      Configuration.easymotionMarkerBackgroundColor,
+      configuration.easymotionMarkerBackgroundColor,
       '#000',
       'activityBarBadge.background'
     );
@@ -217,7 +217,7 @@ export class EasyMotion {
 
   private getEasymotionMarkerForegroundColorOneChar() {
     return this.getMarkerColor(
-      Configuration.easymotionMarkerForegroundColorOneChar,
+      configuration.easymotionMarkerForegroundColorOneChar,
       '#f00',
       'activityBarBadge.foreground'
     );
@@ -225,7 +225,7 @@ export class EasyMotion {
 
   private getEasymotionMarkerForegroundColorTwoChar() {
     return this.getMarkerColor(
-      Configuration.easymotionMarkerForegroundColorTwoChar,
+      configuration.easymotionMarkerForegroundColorTwoChar,
       '#ffa500',
       'activityBarBadge.foreground'
     );
@@ -256,16 +256,16 @@ export class EasyMotion {
         after: {
           contentText: keystroke,
           backgroundColor: this.getEasymotionMarkerBackgroundColor(),
-          height: `${Configuration.easymotionMarkerHeight}px`,
-          width: `${keystroke.length * Configuration.easymotionMarkerWidthPerChar}px`,
+          height: `${configuration.easymotionMarkerHeight}px`,
+          width: `${keystroke.length * configuration.easymotionMarkerWidthPerChar}px`,
           color: fontColor,
           textDecoration: `none;
-          font-family: ${Configuration.easymotionMarkerFontFamily};
-          font-size: ${Configuration.easymotionMarkerFontSize}px;
-          font-weight: ${Configuration.easymotionMarkerFontWeight};
+          font-family: ${configuration.easymotionMarkerFontFamily};
+          font-size: ${configuration.easymotionMarkerFontSize}px;
+          font-weight: ${configuration.easymotionMarkerFontWeight};
           position: absolute;
           z-index: 99;
-          bottom: ${Configuration.easymotionMarkerYOffset}px`,
+          bottom: ${configuration.easymotionMarkerYOffset}px`,
         },
       };
       // Position should be offsetted by the length of the keystroke to prevent hiding behind the gutter

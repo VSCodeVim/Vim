@@ -3,7 +3,7 @@ import {
   buildTriggerKeys,
   EasymotionTrigger,
 } from '../../src/actions/plugins/easymotion/easymotion.cmd';
-import { Configuration } from '../../src/configuration/configuration';
+import { configuration } from '../../src/configuration/configuration';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -19,11 +19,11 @@ suite('easymotion plugin', () => {
   setup(async () => {
     await setupWorkspace();
     modeHandler = await getAndUpdateModeHandler();
-    Configuration.easymotion = true;
+    configuration.easymotion = true;
   });
 
   teardown(async () => {
-    Configuration.easymotion = false;
+    configuration.easymotion = false;
     await cleanUpWorkspace();
   });
 

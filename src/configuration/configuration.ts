@@ -67,7 +67,7 @@ export interface IKeyRemapping {
  * 5. VSCodeVim flavored Vim option default values
  *
  */
-class ConfigurationClass {
+export class Configuration {
   private readonly leaderDefault = '\\';
   private readonly cursorTypeMap = {
     line: vscode.TextEditorCursorStyle.Line,
@@ -484,4 +484,4 @@ function overlapSetting(args: {
   };
 }
 
-export let Configuration = new ConfigurationClass();
+export let configuration = new Configuration();
