@@ -78,7 +78,6 @@ export function assertEqual<T>(one: T, two: T, message: string = ''): void {
 export async function setupWorkspace(fileExtension: string = ''): Promise<any> {
   const file = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(file);
-
   await vscode.window.showTextDocument(doc);
   setTextEditorOptions(2, true);
 

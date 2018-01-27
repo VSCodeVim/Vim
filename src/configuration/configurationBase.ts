@@ -51,6 +51,7 @@ export abstract class ConfigurationBase {
   }
 
   abstract reload(): void;
+
   /**
    * Delegate certain key combinations back to VSCode to be handled natively
    */
@@ -181,7 +182,7 @@ export abstract class ConfigurationBase {
   /**
    * Size of a tab character.
    */
-  tabstop= 8;
+  tabstop = 4;
 
   /**
    * Type of cursor user is using native to vscode
@@ -193,18 +194,17 @@ export abstract class ConfigurationBase {
   /**
    * Show line numbers
    */
-  number= true;
+  number = true;
 
   /**
    * Show relative line numbers?
    */
-  relativenumber= false;
+  relativenumber = false;
 
   /**
    * Disable/Enable Extension
    */
   protected disableExtension = false;
-
 
   iskeyword = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
 

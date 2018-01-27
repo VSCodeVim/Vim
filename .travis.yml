@@ -4,7 +4,7 @@ notifications:
     urls:
       - https://www.travisbuddy.com/
     on_success: never
-    on_failure: always
+    on_failure: never
     on_start: never
     on_cancel: never
     on_error: never
@@ -29,7 +29,6 @@ addons:
       - libsecret-1-dev
 
 before_install:
-- unset npm_config_prefix;
 - if [ $TRAVIS_OS_NAME == "linux" ]; then
     export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
     sh -e /etc/init.d/xvfb start;

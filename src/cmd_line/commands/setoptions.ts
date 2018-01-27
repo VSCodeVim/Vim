@@ -84,7 +84,7 @@ export class SetOptionsCommand extends node.CommandBase {
         configuration[this._arguments.name] = !configuration[this._arguments.name];
         break;
       case SetOptionOperator.Append:
-      configuration[this._arguments.name] += this._arguments.value!;
+        configuration[this._arguments.name] += this._arguments.value!;
         break;
       case SetOptionOperator.Subtract:
         if (typeof this._arguments.value! === 'number') {
