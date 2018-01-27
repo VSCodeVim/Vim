@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Configuration } from '../configuration/configuration';
+import { getConfiguration } from '../configuration/configuration';
 import { Neovim } from '../neovim/nvimUtil';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
@@ -15,8 +15,9 @@ export class CommandLine {
       return;
     }
 
+    let configuration = getConfiguration();
     let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
-    if (cmd && cmd[0] === ':' && Configuration.cmdLineInitialColon) {
+    if (cmd && cmd[0] === ':' && configuration.cmdLineInitialColon) {
       cmd = cmd.slice(1);
     }
 
@@ -29,8 +30,9 @@ export class CommandLine {
     }
 
     try {
+      let configuration = getConfiguration();
       const cmd = parser.parse(command);
-      const useNeovim = Configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
+      const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
 
       if (useNeovim) {
         await Neovim.command(vimState, command);
@@ -53,13 +55,14 @@ export class CommandLine {
   }
 
   private static getInputBoxOptions(text: string): vscode.InputBoxOptions {
+    let configuration = getConfiguration();
     return {
       prompt: 'Vim command line',
-      value: Configuration.cmdLineInitialColon ? ':' + text : text,
+      value: configuration.cmdLineInitialColon ? ':' + text : text,
       ignoreFocusOut: false,
       valueSelection: [
-        Configuration.cmdLineInitialColon ? text.length + 1 : text.length,
-        Configuration.cmdLineInitialColon ? text.length + 1 : text.length,
+        configuration.cmdLineInitialColon ? text.length + 1 : text.length,
+        configuration.cmdLineInitialColon ? text.length + 1 : text.length,
       ],
     };
   }

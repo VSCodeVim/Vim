@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as modes from './modes';
 
 import { CommandLine } from '../cmd_line/commandLine';
-import { Configuration } from '../configuration/configuration';
+import { getConfiguration } from '../configuration/configuration';
 import { Decoration } from '../configuration/decoration';
 import { Remappers } from '../configuration/remapper';
 import { Globals } from '../globals';
@@ -58,7 +58,8 @@ export class ModeHandler implements vscode.Disposable {
       new modes.DisabledMode(),
     ];
 
-    this.vimState = new VimState(vscode.window.activeTextEditor!, Configuration.startInInsertMode);
+    let configuration = getConfiguration();
+    this.vimState = new VimState(vscode.window.activeTextEditor!, configuration.startInInsertMode);
     this.setCurrentMode(this.vimState.currentMode);
 
     // Sometimes, Visual Studio Code will start the cursor in a position which
@@ -75,7 +76,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // Handle scenarios where mouse used to change current position.
     const disposable = vscode.window.onDidChangeTextEditorSelection(e => {
-      if (Configuration.disableExt) {
+      if (configuration.disableExt) {
         return;
       }
 
@@ -127,6 +128,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
+    let configuration = getConfiguration();
     let selection = e.selections[0];
     if (
       (e.selections.length !== this.vimState.allCursors.length || this.vimState.isMultiCursor) &&
@@ -239,7 +241,7 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         if (
-          Configuration.mouseSelectionGoesIntoVisualMode &&
+          configuration.mouseSelectionGoesIntoVisualMode &&
           !this.currentMode.isVisualMode &&
           this.currentMode.name !== ModeName.Insert
         ) {
@@ -266,9 +268,10 @@ export class ModeHandler implements vscode.Disposable {
 
   async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
+    let configuration = getConfiguration();
 
     // Rewrite commands
-    if (Configuration.overrideCopy) {
+    if (configuration.overrideCopy) {
       // The conditions when you trigger a "copy" rather than a ctrl-c are
       // too sophisticated to be covered by the "when" condition in package.json
       if (key === '<D-c>') {
@@ -277,7 +280,7 @@ export class ModeHandler implements vscode.Disposable {
 
       if (key === '<C-c>' && process.platform !== 'darwin') {
         if (
-          !Configuration.useCtrlKeys ||
+          !configuration.useCtrlKeys ||
           this.vimState.currentMode === ModeName.Visual ||
           this.vimState.currentMode === ModeName.VisualBlock ||
           this.vimState.currentMode === ModeName.VisualLine
@@ -289,7 +292,7 @@ export class ModeHandler implements vscode.Disposable {
 
     // <C-d> triggers "add selection to next find match" by default,
     // unless users explicity make <C-d>: true
-    if (key === '<C-d>' && !(Configuration.handleKeys['<C-d>'] === true)) {
+    if (key === '<C-d>' && !(configuration.handleKeys['<C-d>'] === true)) {
       key = '<D-d>';
     }
 
@@ -301,7 +304,7 @@ export class ModeHandler implements vscode.Disposable {
     try {
       // Take the count prefix out to perform the correct remapping.
       const keys = this.vimState.recordedState.getCurrentCommandWithoutCountPrefix();
-      const withinTimeout = now - this.vimState.lastKeyPressedTimestamp < Configuration.timeout;
+      const withinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
 
       let handled = false;
 
@@ -1258,21 +1261,20 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
+    let configuration = getConfiguration();
     let cursorStyle = Mode.translateCursor(this.currentMode.cursorType);
     if (
       this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-      Configuration.userCursor !== undefined
+      configuration.userCursor !== undefined
     ) {
-      cursorStyle = Configuration.userCursor;
+      cursorStyle = configuration.userCursor;
     }
 
-    const optionalCursorStyle =
-      Configuration.cursorStylePerMode[this.currentMode.friendlyName.toLowerCase()];
+    const optionalCursorStyle = configuration.getCursorStyleForMode(
+      this.currentMode.friendlyName.toLowerCase()
+    );
     if (optionalCursorStyle !== undefined) {
-      const cursorStyleNum = Configuration.cursorStyleFromString(optionalCursorStyle);
-      if (cursorStyleNum !== undefined) {
-        cursorStyle = cursorStyleNum;
-      }
+      cursorStyle = optionalCursorStyle;
     }
 
     let options = this.vimState.editor.options;
@@ -1317,8 +1319,8 @@ export class ModeHandler implements vscode.Disposable {
     // Draw search highlight
     let searchRanges: vscode.Range[] = [];
     if (
-      (Configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
-      (Configuration.hlsearch && vimState.globalState.hl && vimState.globalState.searchState)
+      (configuration.incsearch && this.currentMode.name === ModeName.SearchInProgressMode) ||
+      (configuration.hlsearch && vimState.globalState.hl && vimState.globalState.searchState)
     ) {
       const searchState = vimState.globalState.searchState!;
 
@@ -1362,9 +1364,11 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private _renderStatusBar(): void {
+    let configuration = getConfiguration();
+
     // change status bar color based on mode
-    if (Configuration.statusBarColorControl) {
-      const colorToSet = Configuration.statusBarColors[this.currentMode.friendlyName.toLowerCase()];
+    if (configuration.statusBarColorControl) {
+      const colorToSet = configuration.statusBarColors[this.currentMode.friendlyName.toLowerCase()];
       if (colorToSet !== undefined) {
         StatusBar.SetColor(colorToSet);
       }
@@ -1372,14 +1376,14 @@ export class ModeHandler implements vscode.Disposable {
 
     let text = [];
 
-    if (Configuration.showmodename) {
+    if (configuration.showmodename) {
       text.push(this.currentMode.getStatusBarText(this.vimState));
       if (this.vimState.isMultiCursor) {
         text.push(' MULTI CURSOR ');
       }
     }
 
-    if (Configuration.showcmd) {
+    if (configuration.showcmd) {
       text.push(this.currentMode.getStatusBarCommandText(this.vimState));
     }
 

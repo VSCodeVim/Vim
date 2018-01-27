@@ -11,14 +11,18 @@
 // a possible error to the callback or null if none.
 
 import { Globals } from '../src/globals';
+import { Configuration } from './testConfiguration';
+
 Globals.isTesting = true;
+Globals.testConfiguration = Configuration;
 
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
 var testRunner = require('vscode/lib/testrunner');
 testRunner.configure({
   ui: 'tdd',
   useColors: true,
-  timeout: 10000,
+  reporter: 'spec',
+  timeout: 6000,
 });
 
 module.exports = testRunner;

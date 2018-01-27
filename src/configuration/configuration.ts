@@ -3,6 +3,13 @@ import * as vscode from 'vscode';
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
 import { Notation } from './notation';
+import {
+  ConfigurationBase,
+  IKeyRemapping,
+  IHandleKeys,
+  IModeSpecificStrings,
+  IKeyBinding,
+} from './configurationBase';
 
 const packagejson: {
   contributes: {
@@ -24,30 +31,6 @@ interface VSCodeKeybinding {
   when: string;
 }
 
-interface IHandleKeys {
-  [key: string]: boolean;
-}
-
-interface IModeSpecificStrings {
-  normal: string | undefined;
-  insert: string | undefined;
-  visual: string | undefined;
-  visualline: string | undefined;
-  visualblock: string | undefined;
-  replace: string | undefined;
-}
-
-interface IKeyBinding {
-  key: string;
-  command: string;
-}
-
-export interface IKeyRemapping {
-  before: string[];
-  after?: string[];
-  commands?: { command: string; args: any[] }[];
-}
-
 /**
  * Every Vim option we support should
  * 1. Be added to contribution section of `package.json`.
@@ -67,8 +50,11 @@ export interface IKeyRemapping {
  * 5. VSCodeVim flavored Vim option default values
  *
  */
-class ConfigurationClass {
+class Configuration extends ConfigurationBase {
+  private leaderDefault = '\\';
+
   constructor() {
+    super();
     this.reload();
   }
 
@@ -159,181 +145,22 @@ class ConfigurationClass {
     );
   }
 
-  getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    let resource: vscode.Uri | undefined = undefined;
-    let activeTextEditor = vscode.window.activeTextEditor;
-    if (activeTextEditor) {
-      resource = activeTextEditor.document.uri;
-    }
-    return vscode.workspace.getConfiguration(section, resource);
-  }
-
-  cursorStyleFromString(cursorStyle: string): vscode.TextEditorCursorStyle | undefined {
-    const cursorType = {
-      line: vscode.TextEditorCursorStyle.Line,
-      block: vscode.TextEditorCursorStyle.Block,
-      underline: vscode.TextEditorCursorStyle.Underline,
-      'line-thin': vscode.TextEditorCursorStyle.LineThin,
-      'block-outline': vscode.TextEditorCursorStyle.BlockOutline,
-      'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
-    };
-
-    return cursorType[cursorStyle];
-  }
-
-  /**
-   * Delegate certain key combinations back to VSCode to be handled natively
-   */
-  handleKeys: IHandleKeys[] = [];
-
-  /**
-   * Use the system's clipboard when copying.
-   */
-  useSystemClipboard = false;
-
-  /**
-   * Enable ctrl- actions that would override existing VSCode actions.
-   */
-  useCtrlKeys = false;
-
-  /**
-   * Override default VSCode copy behavior.
-   */
-  overrideCopy = true;
-
-  /**
-   * Width in characters to word-wrap to.
-   */
-  textwidth = 80;
-
-  /**
-   * Should we highlight incremental search matches?
-   */
-  hlsearch = false;
-
-  /**
-   * Ignore case when searching with / or ?.
-   */
-  ignorecase = true;
-
-  /**
-   * In / or ?, default to ignorecase=true unless the user types a capital
-   * letter.
-   */
-  smartcase = true;
-
-  /**
-   * Indent automatically?
-   */
-  autoindent = true;
-
-  /**
-   * Use EasyMotion plugin?
-   */
-  easymotion = false;
-
-  /**
-   * Use surround plugin?
-   */
-  surround = true;
-
-  /**
-   * Easymotion marker appearance settings
-   */
-  easymotionMarkerBackgroundColor = '';
-  easymotionMarkerForegroundColorOneChar = '#ff0000';
-  easymotionMarkerForegroundColorTwoChar = '#ffa500';
-  easymotionMarkerWidthPerChar = 8;
-  easymotionMarkerHeight = 14;
-  easymotionMarkerFontFamily = 'Consolas';
-  easymotionMarkerFontSize = '14';
-  easymotionMarkerFontWeight = 'normal';
-  easymotionMarkerYOffset = 0;
-  easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
-
-  /**
-   * Timeout in milliseconds for remapped commands.
-   */
-  timeout = 1000;
-
-  /**
-   * Display partial commands on status bar?
-   */
-  showcmd = true;
-
-  /**
-   * Display mode name text on status bar?
-   */
-  showmodename = true;
-
-  /**
-   * What key should <leader> map to in key remappings?
-   */
-  private leaderDefault = '\\';
-  leader = this.leaderDefault;
-
-  /**
-   * How much search or command history should be remembered
-   */
-  history = 50;
-
-  /**
-   * Show results of / or ? search as user is typing?
-   */
-  incsearch = true;
-
-  /**
-   * Start in insert mode?
-   */
-  startInInsertMode = false;
-
-  /**
-   * Enable changing of the status bar color based on mode
-   */
-  statusBarColorControl = false;
-
-  /**
-   * Status bar colors to change to based on mode
-   */
-  statusBarColors: IModeSpecificStrings = {
-    normal: '#005f5f',
-    insert: '#5f0000',
-    visual: '#5f00af',
-    visualline: '#005f87',
-    visualblock: '#86592d',
-    replace: '#000000',
-  };
-
-  /**
-   * Color of search highlights.
-   */
-  searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
-
-  /**
-   * Size of a tab character.
-   */
   @overlapSetting({ codeName: 'tabSize', default: 8 })
   tabstop: number;
 
-  /**
-   * Type of cursor user is using native to vscode
-   */
   @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
-  private userCursorString: string;
+  userCursorStyle: string;
 
-  get userCursor(): number | undefined {
-    return this.cursorStyleFromString(this.userCursorString);
+  get userCursor(): vscode.TextEditorCursorStyle {
+    return this.stringToCursorTypeMap[this.userCursorStyle];
+  }
+  set userCursor(val: vscode.TextEditorCursorStyle) {
+    // nop
   }
 
-  /**
-   * Use spaces when the user presses tab?
-   */
   @overlapSetting({ codeName: 'insertSpaces', default: false })
   expandtab: boolean;
 
-  /**
-   * Show line numbers
-   */
   @overlapSetting({
     codeName: 'lineNumbers',
     default: true,
@@ -341,42 +168,12 @@ class ConfigurationClass {
   })
   number: boolean;
 
-  /**
-   * Show relative line numbers?
-   */
   @overlapSetting({
     codeName: 'lineNumbers',
     default: false,
     codeValueMapping: { true: 'relative', false: 'off' },
   })
   relativenumber: boolean;
-
-  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
-
-  /**
-   * Array of all bound key combinations in angle bracket notation
-   */
-  boundKeyCombinations: IKeyBinding[] = [];
-
-  /**
-   * In visual mode, start a search with * or # using the current selection
-   */
-  visualstar = false;
-
-  /**
-   * Does dragging with the mouse put you into visual mode
-   */
-  mouseSelectionGoesIntoVisualMode = true;
-
-  /**
-   * Uses a hack to fix moving around folds.
-   */
-  foldfix = false;
-
-  /**
-   * Disables extension
-   */
-  private disableExtension: boolean = false;
 
   get disableExt(): boolean {
     return this.disableExtension;
@@ -389,42 +186,6 @@ class ConfigurationClass {
       vscode.ConfigurationTarget.Global
     );
   }
-
-  /**
-   * Neovim
-   */
-  enableNeovim = true;
-  neovimPath = 'nvim';
-
-  /**
-   * Automatically apply the /g flag to substitute commands.
-   */
-  substituteGlobalFlag = false;
-
-  /**
-   * Cursor style to set based on mode
-   */
-  cursorStylePerMode: IModeSpecificStrings = {
-    normal: undefined,
-    insert: undefined,
-    visual: undefined,
-    visualline: undefined,
-    visualblock: undefined,
-    replace: undefined,
-  };
-
-  /**
-   * When typing a command show the initial colon ':' character
-   */
-  cmdLineInitialColon = false;
-
-  /**
-   * Keybindings
-   */
-  insertModeKeyBindings: IKeyRemapping[] = [];
-  insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
-  otherModesKeyBindings: IKeyRemapping[] = [];
-  otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
 
 function overlapSetting(args: {
@@ -449,7 +210,7 @@ function overlapSetting(args: {
       set: function(value) {
         this['_' + propertyKey] = value;
 
-        if (value === undefined || Globals.isTesting) {
+        if (value === undefined) {
           return;
         }
 
@@ -471,4 +232,15 @@ function overlapSetting(args: {
   };
 }
 
-export let Configuration = new ConfigurationClass();
+let configuration: ConfigurationBase;
+export function getConfiguration(): ConfigurationBase {
+  if (Globals.isTesting) {
+    return Globals.testConfiguration;
+  }
+
+  if (configuration === undefined) {
+    configuration = new Configuration();
+  }
+
+  return configuration;
+}

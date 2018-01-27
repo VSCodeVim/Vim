@@ -4,7 +4,7 @@ import * as node from '../../src/cmd_line/node';
 import * as parser from '../../src/cmd_line/parser';
 import * as token from '../../src/cmd_line/token';
 
-suite('command-line parser', () => {
+suite('command line parser', () => {
   test('can parse empty string', () => {
     var cmd = parser.parse('');
     assert.ok(cmd.isEmpty);

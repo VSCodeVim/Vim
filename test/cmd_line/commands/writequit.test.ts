@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { CommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { getAndUpdateModeHandler } from '../../../extension';
+import { CommandLine } from '../../../src/cmd_line/commandLine';
+import { ModeHandler } from '../../../src/mode/modeHandler';
+import { assertEqual, cleanUpWorkspace, setupWorkspace } from '../../testUtils';
 
 async function WaitForVsCodeClose(): Promise<void> {
   // cleanUpWorkspace - testUtils.ts
@@ -39,7 +39,7 @@ async function WaitForVsCodeClose(): Promise<void> {
   }
 }
 
-suite('Basic write-quit', () => {
+suite('command line - write-quit', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {

@@ -4,12 +4,12 @@ notifications:
     urls:
       - https://www.travisbuddy.com/
     on_success: never
-    on_failure: always
+    on_failure: never
     on_start: never
     on_cancel: never
     on_error: never
 
-sudo: true
+sudo: false
 
 os:
 - linux
@@ -17,7 +17,7 @@ os:
 language: node_js
 
 node_js:
-- 8.9.1
+- 8
 
 env:
   global:
@@ -40,14 +40,11 @@ install:
 - npm install;
 
 script:
-- git ls-tree -r HEAD --name-only | grep ".*.[t|j]s$" | xargs ./node_modules/prettier/bin/prettier.js --write --print-width 100 --single-quote --trailing-comma es5
+- gulp forceprettier
 - if [[ $(git diff-index HEAD --) ]]; then
-    ./node_modules/prettier/bin/prettier.js -v;
     git diff;
     echo "Prettier Failed. Run `gulp` or `gulp forceprettier`";
     exit 1;
-  else
-    echo "Prettier passed.";
   fi
 - gulp
 - npm test --silent;
