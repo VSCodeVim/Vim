@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
+import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Clipboard } from '../../src/util';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { VimState } from '../../src/state/vimState';
+import { Register, IRegisterContent } from '../../src/register/register';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -17,13 +20,6 @@ suite('register', () => {
   });
 
   teardown(cleanUpWorkspace);
-
-  newTest({
-    title: 'Can copy to a register',
-    start: ['|one', 'two'],
-    keysPressed: '"add"ap',
-    end: ['two', '|one'],
-  });
 
   suite('clipboard', () => {
     setup(async () => {
@@ -43,6 +39,13 @@ suite('register', () => {
       keysPressed: '"+P',
       end: ['1234|5one'],
     });
+  });
+
+  newTest({
+    title: 'Can copy to a register',
+    start: ['|one', 'two'],
+    keysPressed: '"add"ap',
+    end: ['two', '|one'],
   });
 
   newTest({
@@ -193,5 +196,20 @@ suite('register', () => {
     ]);
 
     assertEqualLines(['test1', 'test2', 'test1test2']);
+  });
+
+  test('Can put and get to register', async () => {
+    const expected = 'text-to-put-on-register';
+    let vimState = new VimState(vscode.window.activeTextEditor!, false);
+    vimState.recordedState.registerName = '0';
+    let actual: IRegisterContent;
+
+    try {
+      Register.put(expected, vimState);
+      actual = await Register.get(vimState);
+      assert.equal(actual.text, expected);
+    } catch (err) {
+      assert.fail(err);
+    }
   });
 });
