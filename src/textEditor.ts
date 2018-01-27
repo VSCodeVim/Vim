@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { Position, PositionDiff } from './common/motion/position';
-import { Configuration } from './configuration/configuration';
+import { configuration } from './configuration/configuration';
 import { VimState } from './state/vimState';
 import { ReplaceTextTransformation } from './transformations/transformations';
 
@@ -195,7 +195,7 @@ export class TextEditor {
   }
 
   static getIndentationLevel(line: string): number {
-    let tabSize = Configuration.tabstop;
+    let tabSize = configuration.tabstop;
 
     let firstNonWhiteSpace = 0;
     let checkLine = line.match(/^\s*/);
@@ -226,8 +226,8 @@ export class TextEditor {
   }
 
   static setIndentationLevel(line: string, screenCharacters: number): string {
-    let tabSize = Configuration.tabstop;
-    let insertTabAsSpaces = Configuration.expandtab;
+    let tabSize = configuration.tabstop;
+    let insertTabAsSpaces = configuration.expandtab;
 
     if (screenCharacters < 0) {
       screenCharacters = 0;

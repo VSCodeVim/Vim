@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
-import { Configuration } from './../configuration/configuration';
+import { configuration } from './../configuration/configuration';
 import { ModeName } from './../mode/mode';
 import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
@@ -746,7 +746,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
   }
 
   public reflowParagraph(s: string, indentLevel: number): string {
-    const maximumLineLength = Configuration.textwidth - indentLevel - 2;
+    const maximumLineLength = configuration.textwidth - indentLevel - 2;
     const indent = Array(indentLevel + 1).join(' ');
 
     // Chunk the lines by commenting style.

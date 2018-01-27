@@ -1,4 +1,4 @@
-import { Configuration } from './../configuration/configuration';
+import { configuration } from './../configuration/configuration';
 import { ModeName } from './../mode/mode';
 import { VimState } from './../state/vimState';
 
@@ -63,17 +63,17 @@ export let compareKeypressSequence = function(one: string[] | string[][], two: s
       continue;
     }
 
-    if (left === '<leader>' && right === Configuration.leader) {
+    if (left === '<leader>' && right === configuration.leader) {
       continue;
     }
-    if (right === '<leader>' && left === Configuration.leader) {
+    if (right === '<leader>' && left === configuration.leader) {
       continue;
     }
 
-    if (left === Configuration.leader) {
+    if (left === configuration.leader) {
       return false;
     }
-    if (right === Configuration.leader) {
+    if (right === configuration.leader) {
       return false;
     }
 
