@@ -1,13 +1,13 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { IRegisterContent, Register } from '../../src/register/register';
+import { VimState } from '../../src/state/vimState';
 import { Clipboard } from '../../src/util';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
-import { VimState } from '../../src/state/vimState';
-import { Register, IRegisterContent } from '../../src/register/register';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
