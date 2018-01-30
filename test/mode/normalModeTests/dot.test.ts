@@ -1,8 +1,8 @@
 import { getAndUpdateModeHandler } from '../../../extension';
 import { ModeHandler } from '../../../src/mode/modeHandler';
+import { Configuration } from '../../testConfiguration';
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
-import { Configuration } from '../../testConfiguration';
 
 suite('Dot Operator', () => {
   let modeHandler: ModeHandler;

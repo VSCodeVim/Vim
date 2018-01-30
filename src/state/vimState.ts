@@ -1,14 +1,13 @@
 import { Nvim } from 'promised-neovim-client';
 import * as vscode from 'vscode';
 
-import { Mode, ModeName } from '../mode/mode';
+import { ModeName } from '../mode/mode';
 import { BaseMovement } from './../actions/motion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
-import { VisualBlockMode } from './../mode/modes';
 import { RegisterMode } from './../register/register';
 import { GlobalState } from './../state/globalState';
 import { ReplaceState } from './../state/replaceState';

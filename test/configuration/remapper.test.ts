@@ -10,11 +10,12 @@ import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
 suite('Remapper', () => {
   let modeHandler: ModeHandler;
-  let insertModeKeyBindings = [{
+  const leaderKey = '\\';
+  const insertModeKeyBindings = [{
     "before": ["j", "j"],
     "after": ["<Esc>"]
   }];
-  let otherModeKeysRebindings = [{
+  const otherModeKeysRebindings = [{
     "before": ["leader", "w"],
     "after": [],
     "commands": [
@@ -27,9 +28,10 @@ suite('Remapper', () => {
 
   setup(async () => {
     let configuration = new Configuration();
-    configuration.leader = "\\";
+    configuration.leader = leaderKey;
     configuration.insertModeKeyBindings = insertModeKeyBindings;
     configuration.otherModesKeyBindings = otherModeKeysRebindings;
+
     await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
   });
@@ -63,7 +65,7 @@ suite('Remapper', () => {
     // act
     let actual = false;
     try {
-      actual = await remapper.sendKey(["\\", "w"], modeHandler, modeHandler.vimState);
+      actual = await remapper.sendKey([leaderKey, "w"], modeHandler, modeHandler.vimState);
     } catch (e) {
       assert.fail(e);
     }

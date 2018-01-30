@@ -1,4 +1,3 @@
-// The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
 
 import * as lexer from '../../src/cmd_line/lexer';

@@ -1,13 +1,9 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import {
-  buildTriggerKeys,
-  EasymotionTrigger,
-} from '../../src/actions/plugins/easymotion/easymotion.cmd';
-import { Configuration } from '../testConfiguration';
+import { buildTriggerKeys, EasymotionTrigger } from '../../src/actions/plugins/easymotion/easymotion.cmd';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
-import { Globals } from '../../src/globals';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpKey: string) {
   return [...buildTriggerKeys(trigger), searchWord, jumpKey].join('');

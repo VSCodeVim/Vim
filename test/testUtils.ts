@@ -4,9 +4,9 @@ import * as os from 'os';
 import { join } from 'path';
 import * as vscode from 'vscode';
 
-import { TextEditor } from '../src/textEditor';
 import { IConfiguration } from '../src/configuration/iconfiguration';
 import { Globals } from '../src/globals';
+import { TextEditor } from '../src/textEditor';
 import { Configuration } from './testConfiguration';
 
 function rndName() {
@@ -28,13 +28,13 @@ async function createRandomFile(contents: string, fileExtension: string): Promis
  *
  * @param numExpectedEditors Expected number of editors in the window
  */
-export async function WaitForEditors(numExpectedEditors: number): Promise<void> {
-  let waitForEditorChange = new Promise((c, e) => {
+export async function WaitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
+  let waitForTextEditorsToClose = new Promise((c, e) => {
     if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
       return c();
     }
 
-    let editorChange = vscode.window.onDidChangeVisibleTextEditors(() => {
+    vscode.window.onDidChangeVisibleTextEditors(() => {
       if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
         c();
       }
@@ -42,7 +42,7 @@ export async function WaitForEditors(numExpectedEditors: number): Promise<void> 
   });
 
   try {
-    await waitForEditorChange;
+    await waitForTextEditorsToClose;
   } catch (error) {
     assert.fail(null, null, error.toString(), '');
   }
