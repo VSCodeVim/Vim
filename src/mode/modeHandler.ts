@@ -1357,7 +1357,16 @@ export class ModeHandler implements vscode.Disposable {
     if (configuration.statusBarColorControl) {
       const colorToSet = configuration.statusBarColors[this.currentMode.friendlyName.toLowerCase()];
       if (colorToSet !== undefined) {
-        StatusBar.SetColor(colorToSet);
+        let foreground;
+        let background;
+
+        if (typeof colorToSet === 'string') {
+          background = colorToSet;
+        } else {
+          [background, foreground] = colorToSet;
+        }
+
+        StatusBar.SetColor(background, foreground);
       }
     }
 
