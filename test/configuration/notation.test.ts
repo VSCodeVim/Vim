@@ -14,6 +14,7 @@ suite('Notation', () => {
       eScapE: '<Esc>',
       '<LeAder>': '//',
       LEaDer: '//',
+      '<space>': ' ',
       '<uP>': '<up>',
     };
 
