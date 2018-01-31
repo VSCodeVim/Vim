@@ -41,11 +41,11 @@ export class Configuration implements IConfiguration {
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   tabstop = 2;
-  userCursor= vscode.TextEditorCursorStyle.Line;
-  expandtab= true;
-  number= true;
-  relativenumber= false;
-  iskeyword= '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+  userCursor = vscode.TextEditorCursorStyle.Line;
+  expandtab = true;
+  number = true;
+  relativenumber = false;
+  iskeyword = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
   foldfix = false;
