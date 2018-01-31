@@ -312,17 +312,17 @@ Almost like vim-airline in VSCode!
 * Control status bar color based on current mode
 * Type: Boolean (Default: `false`)
 
-Once enabled, configure `"vim.statusBarColors"`.
+Once enabled, configure `"vim.statusBarColors"`. Colors can be defined for each mode either as `string` (background only), or `string[]` (background, foreground).
 
 ```json
     "vim.statusBarColorControl": true,
-    "vim.statusBarColors" : {
-        "normal": "#005f5f",
-        "insert": "#5f0000",
-        "visual": "#5f00af",
-        "visualline": "#005f87",
-        "visualblock": "#86592d",
-        "replace": "#000000"
+    "vim.statusBarColors": {
+        "normal": ["#8FBCBB", "#434C5E"],
+        "insert": "#BF616A",
+        "visual": "#B48EAD",
+        "visualline": "#B48EAD",
+        "visualblock": "#A3BE8C",
+        "replace": "#D08770"
     }
 ```
 
