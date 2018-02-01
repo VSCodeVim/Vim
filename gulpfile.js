@@ -4,8 +4,8 @@ var gulp = require('gulp'),
   inject = require('gulp-inject-string'),
   merge = require('merge-stream'),
   tag_version = require('gulp-tag-version'),
+  ts = require('gulp-typescript'),
   tslint = require('gulp-tslint'),
-  typings = require('gulp-typings'),
   filter = require('gulp-filter'),
   shell = require('gulp-shell'),
   exec = require('child_process').exec;
@@ -25,13 +25,9 @@ function versionBump(semver) {
     .pipe(tag_version());
 }
 
-gulp.task('typings', function() {
-  return gulp.src('./typings.json').pipe(typings());
-});
-
-gulp.task('typings-vscode-definitions', ['typings'], function() {
-  // add vscode definitions
-  return gulp.src('./typings/index.d.ts').pipe(gulp.dest('./typings'));
+gulp.task('compile', function(){
+  var tsProject = ts.createProject('./tsconfig.json');
+  return tsProject.src().pipe(tsProject()).js.pipe(gulp.dest('out'));
 });
 
 gulp.task('tslint', function() {
@@ -75,10 +71,6 @@ function runPrettier(command) {
 }
 
 gulp.task('default', ['prettier', 'tslint', 'compile']);
-
-gulp.task('compile', shell.task(['npm run vscode:prepublish']));
-gulp.task('watch', shell.task(['npm run compile']));
-gulp.task('init', ['typings', 'typings-vscode-definitions']);
 
 gulp.task('patch', ['default'], function() {
   return versionBump('patch');

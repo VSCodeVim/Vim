@@ -13,10 +13,10 @@
     "sourceMap": true,
     "strictNullChecks": true,
     "experimentalDecorators": true,
-    "alwaysStrict": true
+    "alwaysStrict": true,
   },
   "exclude": [
     "node_modules",
-    ".vscode-test"
+    "!node_modules/@types"
   ]
 }
