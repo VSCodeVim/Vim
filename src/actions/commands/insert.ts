@@ -4,7 +4,7 @@ import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { Position, PositionDiff } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
-import { Configuration } from './../../configuration/configuration';
+import { configuration } from './../../configuration/configuration';
 import { ModeName } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
@@ -194,7 +194,7 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalText = TextEditor.getLineAt(position).text;
     const indentationWidth = TextEditor.getIndentationLevel(originalText);
-    const tabSize = Configuration.tabstop || Number(vimState.editor.options.tabSize);
+    const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
     const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
 
     TextEditor.replaceText(
@@ -246,7 +246,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
           range: new Range(selection.start as Position, selection.end as Position),
         });
       } else {
-        if (line.length > 0 && line.match(/^ +$/) && Configuration.expandtab) {
+        if (line.length > 0 && line.match(/^ +$/) && configuration.expandtab) {
           // If the line is empty except whitespace, backspace should return to
           // the next lowest level of indentation.
 
@@ -391,7 +391,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
       return vimState;
     }
 
-    const tabSize = Configuration.tabstop;
+    const tabSize = configuration.tabstop;
     const newIndentationWidth = (indentationWidth / tabSize - 1) * tabSize;
 
     await TextEditor.replace(

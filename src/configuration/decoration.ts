@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Configuration } from '../configuration/configuration';
+import { configuration } from '../configuration/configuration';
 
 export class Decoration {
   static readonly Default = vscode.window.createTextEditorDecorationType({
@@ -18,10 +18,10 @@ export class Decoration {
   });
 
   static readonly SearchHighlight = vscode.window.createTextEditorDecorationType({
-    backgroundColor: Configuration.searchHighlightColor,
+    backgroundColor: configuration.searchHighlightColor,
   });
 
   static readonly EasyMotion = vscode.window.createTextEditorDecorationType({
-    backgroundColor: Configuration.searchHighlightColor,
+    backgroundColor: configuration.searchHighlightColor,
   });
 }

@@ -4,7 +4,7 @@ import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
 import { TagMatcher } from './../common/matching/tagMatcher';
 import { Position, PositionDiff } from './../common/motion/position';
-import { Configuration } from './../configuration/configuration';
+import { configuration } from './../configuration/configuration';
 import { ModeName } from './../mode/mode';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
@@ -279,7 +279,7 @@ class MoveDown extends BaseMovement {
   doesntChangeDesiredColumn = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    if (Configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
+    if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
       return new MoveDownFoldFix().execAction(position, vimState);
     }
     return position.getDown(vimState.desiredColumn);
@@ -308,7 +308,7 @@ class MoveUp extends BaseMovement {
   doesntChangeDesiredColumn = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
-    if (Configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
+    if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
       return new MoveUpFoldFix().execAction(position, vimState);
     }
     return position.getUp(vimState.desiredColumn);

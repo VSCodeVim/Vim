@@ -1,8 +1,8 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { CommandLine } from '../../src/cmd_line/commandLine';
-import { Configuration } from '../../src/configuration/configuration';
+import { Globals } from '../../src/globals';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqualLines, cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
 
 suite('Basic substitute', () => {
   let modeHandler: ModeHandler;
@@ -12,7 +12,7 @@ suite('Basic substitute', () => {
     modeHandler = await getAndUpdateModeHandler();
   });
 
-  teardown(cleanUpWorkspace);
+  suiteTeardown(cleanUpWorkspace);
 
   test('Replace single word once', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
@@ -105,15 +105,9 @@ suite('Basic substitute', () => {
   });
 
   suite('Effects of substituteGlobalFlag=true', () => {
-    let originalGlobalFlag = false;
-
-    setup(async () => {
-      originalGlobalFlag = Configuration.substituteGlobalFlag;
-      Configuration.substituteGlobalFlag = true;
-    });
-
-    teardown(async () => {
-      Configuration.substituteGlobalFlag = originalGlobalFlag;
+    setup(() => {
+      Globals.mockConfiguration.substituteGlobalFlag = true;
+      reloadConfiguration();
     });
 
     test('Replace all matches in the line', async () => {
