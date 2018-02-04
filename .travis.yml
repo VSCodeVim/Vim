@@ -35,9 +35,6 @@ before_install:
     sleep 3;
   fi
 
-install:
-- npm install -g gulp;
-- npm install;
 
 script:
 - gulp forceprettier
@@ -46,7 +43,7 @@ script:
     echo "Prettier Failed. Run `gulp` or `gulp forceprettier`";
     exit 1;
   fi
-- gulp
+- npm run build
 - npm test --silent;
 
 before_deploy:

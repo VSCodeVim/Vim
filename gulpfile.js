@@ -20,7 +20,7 @@ gulp.task('tslint', function() {
       '!node_modules/**',
       '!typings/**',
     ])
-    .pipe(tslint({ formatter: 'verbose' }))
+    .pipe(tslint({ formatter: 'prose' }))
     .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
