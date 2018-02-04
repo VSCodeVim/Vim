@@ -576,6 +576,7 @@
   },
   "scripts": {
     "vscode:prepublish": "gulp compile",
+    "build": "gulp",
     "test": "node ./node_modules/vscode/bin/test",
     "postinstall": "node ./node_modules/vscode/bin/install"
   },

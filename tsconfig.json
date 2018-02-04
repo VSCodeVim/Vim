@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "allowUnusedLabels": false,
     "module": "commonjs",
     "target": "es6",
     "outDir": "out",
     "noImplicitAny": true,
     "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
     "lib": [
       "es6"
