@@ -69,7 +69,9 @@ class Configuration implements IConfiguration {
   }
 
   reload() {
-    let vimConfigs: any = Globals.isTesting ? Globals.mockConfiguration : this.getConfiguration('vim');
+    let vimConfigs: any = Globals.isTesting
+      ? Globals.mockConfiguration
+      : this.getConfiguration('vim');
 
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
@@ -295,7 +297,7 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  get modeToCursorStyleMap() : IModeSpecificStrings<vscode.TextEditorCursorStyle> {
+  get modeToCursorStyleMap(): IModeSpecificStrings<vscode.TextEditorCursorStyle> {
     let map = <IModeSpecificStrings<vscode.TextEditorCursorStyle>>{};
 
     Object.keys(this.cursorStylePerMode).forEach(k => {

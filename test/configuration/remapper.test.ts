@@ -11,20 +11,24 @@ import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 suite('Remapper', () => {
   let modeHandler: ModeHandler;
   const leaderKey = '\\';
-  const insertModeKeyBindings = [{
-    "before": ["j", "j"],
-    "after": ["<Esc>"]
-  }];
-  const otherModeKeysRebindings = [{
-    "before": ["leader", "w"],
-    "after": [],
-    "commands": [
-      {
-          "command": "workbench.action.closeActiveEditor",
-          "args": []
-      },
-    ]
-   }];
+  const insertModeKeyBindings = [
+    {
+      before: ['j', 'j'],
+      after: ['<Esc>'],
+    },
+  ];
+  const otherModeKeysRebindings = [
+    {
+      before: ['leader', 'w'],
+      after: [],
+      commands: [
+        {
+          command: 'workbench.action.closeActiveEditor',
+          args: [],
+        },
+      ],
+    },
+  ];
 
   setup(async () => {
     let configuration = new Configuration();
@@ -47,7 +51,7 @@ suite('Remapper', () => {
     // act
     let actual = false;
     try {
-      actual = await remapper.sendKey(["j", "j"], modeHandler, modeHandler.vimState);
+      actual = await remapper.sendKey(['j', 'j'], modeHandler, modeHandler.vimState);
     } catch (e) {
       assert.fail(e);
     }
@@ -65,7 +69,7 @@ suite('Remapper', () => {
     // act
     let actual = false;
     try {
-      actual = await remapper.sendKey([leaderKey, "w"], modeHandler, modeHandler.vimState);
+      actual = await remapper.sendKey([leaderKey, 'w'], modeHandler, modeHandler.vimState);
     } catch (e) {
       assert.fail(e);
     }

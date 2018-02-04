@@ -31,19 +31,26 @@ function runPrettier(command, cb) {
   var exec = require('child_process').exec;
   exec(command, function(err, stdout, stderr) {
     if (err) {
-      cb(err);
-      return;
+      return cb(err);
     }
 
-    const files = stdout.split('\n');
-    for (const file of files) {
-      if (file.endsWith('.ts') || file.endsWith('.js')) {
-        exec(
-          `node ./node_modules/.bin/prettier --write --print-width 100 --single-quote --trailing-comma es5 ${file}`,
-          cb
-        );
-      }
+    if (!stdout) {
+      return cb();
     }
+
+    var files = stdout
+      .split('\n')
+      .filter(f => {
+        return f.endsWith('.ts') || f.endsWith('.js');
+      })
+      .join(' ');
+
+    exec(
+      `node ./node_modules/.bin/prettier --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
+      function(err, stdout, stderr) {
+        cb(err);
+      }
+    );
   });
 }
 
