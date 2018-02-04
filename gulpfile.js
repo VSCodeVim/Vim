@@ -2,6 +2,7 @@ var gulp = require('gulp'),
   bump = require('gulp-bump'),
   filter = require('gulp-filter'),
   git = require('gulp-git'),
+  sourcemaps = require('gulp-sourcemaps'),
   tag_version = require('gulp-tag-version'),
   tslint = require('gulp-tslint'),
   ts = require('gulp-typescript');
@@ -9,7 +10,11 @@ var gulp = require('gulp'),
 // compile
 gulp.task('compile', function(){
   var tsProject = ts.createProject('./tsconfig.json');
-  return tsProject.src().pipe(tsProject()).js.pipe(gulp.dest('out'));
+  return tsProject.src()
+    .pipe(sourcemaps.init())
+    .pipe(tsProject())
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('out'));
 });
 
 // tslint
