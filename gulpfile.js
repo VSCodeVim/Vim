@@ -26,7 +26,7 @@ gulp.task('tslint', function() {
 
 // prettier
 function runPrettier(command) {
-  let exec = require('child_process').exec;
+  var exec = require('child_process').exec;
   exec(command, function(err, stdout, stderr) {
     const files = stdout.split('\n');
     for (const file of files) {
@@ -53,12 +53,11 @@ gulp.task('forceprettier', function() {
 
 // test
 gulp.task('test', function(cb) {
-  let spawn = require('child_process').spawn;
-
+  var spawn = require('child_process').spawn;
   const dockerTag = 'vscodevim'
 
   console.log("Building container...")
-  let dockerBuildCmd = spawn('docker', ['build', '-f', './build/Dockerfile', '.', '-t', dockerTag], {
+  var dockerBuildCmd = spawn('docker', ['build', '-f', './build/Dockerfile', '.', '-t', dockerTag], {
     cwd : process.cwd(),
     stdio: 'inherit',
   });
@@ -71,7 +70,7 @@ gulp.task('test', function(cb) {
 
     console.log("Running tests inside container...")
     console.log("To break, run `docker kill` in a separate terminal.")
-    let dockerRunCmd = spawn('docker', ['run', '-v', process.cwd() + ':/app', dockerTag], {
+    var dockerRunCmd = spawn('docker', ['run', '-v', process.cwd() + ':/app', dockerTag], {
       cwd : process.cwd(),
       stdio: 'inherit',
     });
