@@ -73,18 +73,18 @@ export interface IConfiguration {
   easymotionMarkerBackgroundColor: string;
   easymotionMarkerForegroundColorOneChar: string;
   easymotionMarkerForegroundColorTwoChar: string;
-  easymotionMarkerWidthPerChar : number;
-  easymotionMarkerHeight : number;
+  easymotionMarkerWidthPerChar: number;
+  easymotionMarkerHeight: number;
   easymotionMarkerFontFamily: string;
   easymotionMarkerFontSize: string;
   easymotionMarkerFontWeight: string;
-  easymotionMarkerYOffset : number;
+  easymotionMarkerYOffset: number;
   easymotionKeys: string;
 
   /**
    * Timeout in milliseconds for remapped commands.
    */
-  timeout : number;
+  timeout: number;
 
   /**
    * Display partial commands on status bar?
@@ -99,12 +99,12 @@ export interface IConfiguration {
   /**
    * What key should <leader> map to in key remappings?
    */
-  leader : string;
+  leader: string;
 
   /**
    * How much search or command history should be remembered
    */
-  history : number;
+  history: number;
 
   /**
    * Show results of / or ? search as user is typing?
