@@ -70,11 +70,10 @@ gulp.task('test', function(cb) {
     }
 
     console.log("Running tests inside container...")
-    let dockerRunCmd = spawn('docker', ['run', '-v', '$PWD:/app', dockerTag], {
+    console.log("To break, run `docker kill` in a separate terminal.")
+    let dockerRunCmd = spawn('docker', ['run', '-v', process.cwd() + ':/app', dockerTag], {
       cwd : process.cwd(),
       stdio: 'inherit',
-      env: process.env,
-      shell: true,
     });
 
     dockerRunCmd.on('exit', function (code) {

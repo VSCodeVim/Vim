@@ -583,7 +583,7 @@
   "dependencies": {
     "clipboardy": "^1.2.2",
     "diff-match-patch": "^1.0.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.5",
     "neovim-client": "^2.1.0",
     "promised-neovim-client": "^2.0.2",
     "untildify": "^3.0.2"
@@ -592,8 +592,8 @@
     "@types/copy-paste": "^1.1.30",
     "@types/diff": "^3.2.2",
     "@types/diff-match-patch": "^1.0.32",
-    "@types/lodash": "^4.14.99",
-    "@types/mocha": "^2.2.47",
+    "@types/lodash": "^4.14.100",
+    "@types/mocha": "^2.2.48",
     "@types/node": "^9.4.0",
     "gulp": "^3.9.1",
     "gulp-bump": "^3.0.0",
