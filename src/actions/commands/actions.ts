@@ -653,7 +653,7 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
 @RegisterAction
 export class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ['i'];
+  keys = ['i', '<insert>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
