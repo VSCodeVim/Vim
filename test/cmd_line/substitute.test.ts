@@ -2,7 +2,12 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { CommandLine } from '../../src/cmd_line/commandLine';
 import { Globals } from '../../src/globals';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
+import {
+  assertEqualLines,
+  cleanUpWorkspace,
+  reloadConfiguration,
+  setupWorkspace,
+} from './../testUtils';
 
 suite('Basic substitute', () => {
   let modeHandler: ModeHandler;

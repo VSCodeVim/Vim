@@ -1,5 +1,8 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import { buildTriggerKeys, EasymotionTrigger } from '../../src/actions/plugins/easymotion/easymotion.cmd';
+import {
+  buildTriggerKeys,
+  EasymotionTrigger,
+} from '../../src/actions/plugins/easymotion/easymotion.cmd';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';

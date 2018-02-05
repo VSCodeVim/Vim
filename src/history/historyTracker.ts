@@ -365,7 +365,7 @@ export class HistoryTracker {
    * Retrieves a mark.
    */
   getMark(markName: string): IMark {
-    return _.find(this.currentHistoryStep.marks, mark => mark.name === markName);
+    return <IMark>_.find(this.currentHistoryStep.marks, mark => mark.name === markName);
   }
 
   getMarks(): IMark[] {

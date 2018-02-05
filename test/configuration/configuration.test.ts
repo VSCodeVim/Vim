@@ -8,12 +8,13 @@ import { reloadConfiguration } from '../testUtils';
 suite('Configuration', () => {
   suiteSetup(() => {
     let configuration = new testConfiguration.Configuration();
-    configuration.leader = "<space>";
+    configuration.leader = '<space>';
     configuration.otherModesKeyBindingsNonRecursive = [
       {
-        "before": ["leader", "o"],
-        "after": ["o", "eSc", "k"]
-      }];
+        before: ['leader', 'o'],
+        after: ['o', 'eSc', 'k'],
+      },
+    ];
 
     Globals.mockConfiguration = configuration;
     reloadConfiguration();
@@ -24,7 +25,7 @@ suite('Configuration', () => {
     let keybindings = configuration.otherModesKeyBindingsNonRecursive;
 
     assert.equal(keybindings.length, 1);
-    assert.deepEqual(keybindings[0].before, [" ", "o"]);
-    assert.deepEqual(keybindings[0].after, ["o", "<Esc>", "k"]);
+    assert.deepEqual(keybindings[0].before, [' ', 'o']);
+    assert.deepEqual(keybindings[0].after, ['o', '<Esc>', 'k']);
   });
 });

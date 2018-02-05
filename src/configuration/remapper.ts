@@ -162,7 +162,7 @@ class Remapper implements IRemapper {
 
   private _longestKeySequence(): number {
     if (this._remappings.length > 0) {
-      return _.maxBy(this._remappings, map => map.before.length).before.length;
+      return _.maxBy(this._remappings, map => map.before.length)!.before.length;
     } else {
       return 1;
     }
