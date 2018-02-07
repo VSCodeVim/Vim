@@ -1383,11 +1383,16 @@ export class ModeHandler implements vscode.Disposable {
       text.push(macroText);
     }
 
+    let forceUpdate =
+      this.currentMode.name === ModeName.SearchInProgressMode ||
+      this.vimState.isRecordingMacro ||
+      configuration.showcmd;
+
     StatusBar.SetText(
       text.join(' '),
       this.currentMode.name,
       this.vimState.isRecordingMacro,
-      this.currentMode.name === ModeName.SearchInProgressMode || this.vimState.isRecordingMacro
+      forceUpdate
     );
   }
 
