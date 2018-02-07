@@ -173,11 +173,6 @@ export class VimState implements vscode.Disposable {
   public lastVisualSelectionEnd: Position;
 
   /**
-   * Was the previous mouse click past EOL
-   */
-  public lastClickWasPastEol: boolean = false;
-
-  /**
    * The mode Vim will be in once this action finishes.
    */
   private _currentMode: ModeName;
