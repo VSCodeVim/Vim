@@ -590,7 +590,6 @@ class MoveToColumn extends BaseMovement {
 @RegisterAction
 class MoveFindForward extends BaseMovement {
   keys = ['f', '<character>'];
-  isRepeat = false;
 
   public async execActionWithCount(
     position: Position,
@@ -624,7 +623,6 @@ class MoveFindForward extends BaseMovement {
 @RegisterAction
 class MoveFindBackward extends BaseMovement {
   keys = ['F', '<character>'];
-  isRepeat = false;
 
   public async execActionWithCount(
     position: Position,
@@ -654,7 +652,6 @@ class MoveFindBackward extends BaseMovement {
 @RegisterAction
 class MoveTilForward extends BaseMovement {
   keys = ['t', '<character>'];
-  isRepeat = false;
 
   public async execActionWithCount(
     position: Position,
@@ -693,7 +690,6 @@ class MoveTilForward extends BaseMovement {
 @RegisterAction
 class MoveTilBackward extends BaseMovement {
   keys = ['T', '<character>'];
-  isRepeat = false;
 
   public async execActionWithCount(
     position: Position,

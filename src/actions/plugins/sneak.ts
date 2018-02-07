@@ -10,7 +10,6 @@ import { IMovement, BaseMovement } from '../motion';
 @RegisterAction
 class SneakForward extends BaseMovement {
   keys = [['s', '<character>', '<character>'], ['z', '<character>', '<character>']];
-  isRepeat = false;
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 's' : 'z';
@@ -53,7 +52,6 @@ class SneakForward extends BaseMovement {
 @RegisterAction
 class SneakBackward extends BaseMovement {
   keys = [['S', '<character>', '<character>'], ['Z', '<character>', '<character>']];
-  isRepeat = false;
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     const startingLetter = vimState.recordedState.operator === undefined ? 'S' : 'Z';
