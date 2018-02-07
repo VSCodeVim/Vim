@@ -939,6 +939,13 @@ class MoveScreenToRight extends MoveByScreenLine {
   movementType: CursorMovePosition = 'right';
   by: CursorMoveByUnit = 'character';
   value = 1;
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
 }
 
 @RegisterAction
@@ -948,6 +955,13 @@ class MoveScreenToLeft extends MoveByScreenLine {
   movementType: CursorMovePosition = 'left';
   by: CursorMoveByUnit = 'character';
   value = 1;
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
 }
 
 @RegisterAction
@@ -957,6 +971,13 @@ class MoveScreenToRightHalf extends MoveByScreenLine {
   movementType: CursorMovePosition = 'right';
   by: CursorMoveByUnit = 'halfLine';
   value = 1;
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
 }
 
 @RegisterAction
@@ -966,6 +987,13 @@ class MoveScreenToLeftHalf extends MoveByScreenLine {
   movementType: CursorMovePosition = 'left';
   by: CursorMoveByUnit = 'halfLine';
   value = 1;
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
 }
 
 @RegisterAction

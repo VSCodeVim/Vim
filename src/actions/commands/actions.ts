@@ -1723,6 +1723,13 @@ class CommandCenterScroll extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['z', 'z'];
 
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // In these modes you want to center on the cursor position
     vimState.editor.revealRange(
@@ -1738,6 +1745,13 @@ class CommandCenterScroll extends BaseCommand {
 class CommandCenterScrollFirstChar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['z', '.'];
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // In these modes you want to center on the cursor position
@@ -1759,6 +1773,13 @@ class CommandTopScroll extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['z', 't'];
 
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
       command: 'revealLine',
@@ -1775,6 +1796,13 @@ class CommandTopScroll extends BaseCommand {
 class CommandTopScrollFirstChar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['z', '\n'];
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // In these modes you want to center on the cursor position
@@ -1799,6 +1827,13 @@ class CommandBottomScroll extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['z', 'b'];
 
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
       command: 'revealLine',
@@ -1815,6 +1850,13 @@ class CommandBottomScroll extends BaseCommand {
 class CommandBottomScrollFirstChar extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['z', '-'];
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // In these modes you want to center on the cursor position
@@ -1991,11 +2033,11 @@ class CommandClearLine extends BaseCommand {
 
   // Don't clash with sneak
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.doesActionApply(vimState, keysPressed) && !Configuration.sneak;
+    return super.doesActionApply(vimState, keysPressed) && !configuration.sneak;
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    return super.couldActionApply(vimState, keysPressed) && !Configuration.sneak;
+    return super.couldActionApply(vimState, keysPressed) && !configuration.sneak;
   }
 }
 
@@ -3352,7 +3394,7 @@ class ActionChangeChar extends BaseCommand {
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return (
       super.doesActionApply(vimState, keysPressed) &&
-      !Configuration.sneak &&
+      !configuration.sneak &&
       !vimState.recordedState.operator
     );
   }
@@ -3360,7 +3402,7 @@ class ActionChangeChar extends BaseCommand {
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return (
       super.doesActionApply(vimState, keysPressed) &&
-      !Configuration.sneak &&
+      !configuration.sneak &&
       !vimState.recordedState.operator
     );
   }

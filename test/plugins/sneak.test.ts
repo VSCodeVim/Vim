@@ -1,8 +1,8 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import { Configuration } from '../../src/configuration/configuration';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { Globals } from '../../src/globals';
 import { getTestingFunctions } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
 
 suite('sneak plugin', () => {
   let modeHandler: ModeHandler;
@@ -11,13 +11,11 @@ suite('sneak plugin', () => {
   setup(async () => {
     await setupWorkspace();
     modeHandler = await getAndUpdateModeHandler();
-    Configuration.sneak = true;
+    Globals.mockConfiguration.sneak = true;
+    reloadConfiguration();
   });
 
-  teardown(async () => {
-    Configuration.sneak = false;
-    await cleanUpWorkspace();
-  });
+  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can handle s motion',

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
-import { Configuration } from './../../configuration/configuration';
+import { configuration } from './../../configuration/configuration';
 import { ModeName } from './../../mode/mode';
 import { RegisterAction } from './../base';
 import { BaseCommand } from './../commands/actions';
@@ -16,8 +16,8 @@ class SneakForward extends BaseMovement {
     const startingLetter = vimState.recordedState.operator === undefined ? 's' : 'z';
 
     return (
+      configuration.sneak &&
       super.couldActionApply(vimState, keysPressed) &&
-      Configuration.sneak &&
       keysPressed[0] === startingLetter
     );
   }
@@ -65,8 +65,8 @@ class SneakBackward extends BaseMovement {
     const startingLetter = vimState.recordedState.operator === undefined ? 'S' : 'Z';
 
     return (
+      configuration.sneak &&
       super.couldActionApply(vimState, keysPressed) &&
-      Configuration.sneak &&
       keysPressed[0] === startingLetter
     );
   }

@@ -325,6 +325,11 @@ export class ChangeOperatorSVisual extends BaseOperator {
   public keys = ['s'];
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
+  // Don't clash with Sneak plugin
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && !configuration.sneak;
+  }
+
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     return await new ChangeOperator().run(vimState, start, end);
   }
