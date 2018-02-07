@@ -5,7 +5,7 @@ import { ModeName } from './../../mode/mode';
 import { RegisterAction } from './../base';
 import { BaseCommand } from './../commands/actions';
 import { Position } from '../../common/motion/position';
-import { IMovement, BaseMovement, createRepeatMovement } from '../motion';
+import { IMovement, BaseMovement } from '../motion';
 
 @RegisterAction
 class SneakForward extends BaseMovement {
@@ -24,14 +24,8 @@ class SneakForward extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (!this.isRepeat) {
-      VimState.lastSemicolonRepeatableMovement = createRepeatMovement(
-        new SneakForward(),
-        this.keysPressed
-      );
-      VimState.lastCommaRepeatableMovement = createRepeatMovement(
-        new SneakBackward(),
-        this.keysPressed
-      );
+      VimState.lastSemicolonRepeatableMovement = new SneakForward(this.keysPressed, true);
+      VimState.lastCommaRepeatableMovement = new SneakBackward(this.keysPressed, true);
     }
 
     const editor = vscode.window.activeTextEditor!;
@@ -73,14 +67,8 @@ class SneakBackward extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (!this.isRepeat) {
-      VimState.lastSemicolonRepeatableMovement = createRepeatMovement(
-        new SneakBackward(),
-        this.keysPressed
-      );
-      VimState.lastCommaRepeatableMovement = createRepeatMovement(
-        new SneakForward(),
-        this.keysPressed
-      );
+      VimState.lastSemicolonRepeatableMovement = new SneakBackward(this.keysPressed, true);
+      VimState.lastCommaRepeatableMovement = new SneakForward(this.keysPressed, true);
     }
 
     const editor = vscode.window.activeTextEditor!;

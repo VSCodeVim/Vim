@@ -49,6 +49,12 @@ export abstract class BaseMovement extends BaseAction {
   canBePrefixedWithCount = false;
 
   /**
+   * If movement can be repeated with semicolon or comma this will be true when
+   * running the repetition.
+   */
+  isRepeat = false;
+
+  /**
    * Whether we should change desiredColumn in VimState.
    */
   public doesntChangeDesiredColumn = false;
@@ -58,6 +64,18 @@ export abstract class BaseMovement extends BaseAction {
    * the end of even the longest line.
    */
   public setsDesiredColumnToEOL = false;
+
+  constructor(keysPressed?: string[], isRepeat?: boolean) {
+    super();
+
+    if (keysPressed) {
+      this.keysPressed = keysPressed;
+    }
+
+    if (isRepeat) {
+      this.isRepeat = isRepeat;
+    }
+  }
 
   /**
    * Run the movement a single time.
@@ -569,19 +587,6 @@ class MoveToColumn extends BaseMovement {
   }
 }
 
-interface RepeatableMovement extends BaseMovement {
-  isRepeat: boolean;
-}
-
-export function createRepeatMovement(
-  movement: RepeatableMovement,
-  keysPressed: string[]
-): RepeatableMovement {
-  movement.keysPressed = keysPressed;
-  movement.isRepeat = true;
-  return movement;
-}
-
 @RegisterAction
 class MoveFindForward extends BaseMovement {
   keys = ['f', '<character>'];
@@ -608,14 +613,8 @@ class MoveFindForward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = createRepeatMovement(
-        new MoveFindForward(),
-        this.keysPressed
-      );
-      VimState.lastCommaRepeatableMovement = createRepeatMovement(
-        new MoveFindBackward(),
-        this.keysPressed
-      );
+      VimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+      VimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
     }
 
     return result;
@@ -644,14 +643,8 @@ class MoveFindBackward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = createRepeatMovement(
-        new MoveFindBackward(),
-        this.keysPressed
-      );
-      VimState.lastCommaRepeatableMovement = createRepeatMovement(
-        new MoveFindForward(),
-        this.keysPressed
-      );
+      VimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+      VimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
     }
 
     return result;
@@ -689,14 +682,8 @@ class MoveTilForward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = createRepeatMovement(
-        new MoveTilForward(),
-        this.keysPressed
-      );
-      VimState.lastCommaRepeatableMovement = createRepeatMovement(
-        new MoveTilBackward(),
-        this.keysPressed
-      );
+      VimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+      VimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
     }
 
     return result;
@@ -730,14 +717,8 @@ class MoveTilBackward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = createRepeatMovement(
-        new MoveTilBackward(),
-        this.keysPressed
-      );
-      VimState.lastCommaRepeatableMovement = createRepeatMovement(
-        new MoveTilForward(),
-        this.keysPressed
-      );
+      VimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
+      VimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
     }
 
     return result;
