@@ -105,22 +105,22 @@ class Remapper implements IRemapper {
       // Record length of remapped command
       vimState.recordedState.numberOfRemappedKeys += remapping.before.length;
 
+      const numToRemove = remapping.before.length - 1;
       // Revert previously inserted characters
       // (e.g. jj remapped to esc, we have to revert the inserted "jj")
       if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
         // Revert every single inserted character.
         // We subtract 1 because we haven't actually applied the last key.
         await vimState.historyTracker.undoAndRemoveChanges(
-          Math.max(0, (remapping.before.length - 1) * vimState.allCursors.length)
+          Math.max(0, numToRemove * vimState.allCursors.length)
         );
+        vimState.cursorPosition = vimState.cursorPosition.getLeft(numToRemove);
       }
 
       // We need to remove the keys that were remapped into different keys
       // from the state.
-      const numToRemove = remapping.before.length - 1;
       vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(0, -numToRemove);
       vimState.keyHistory = vimState.keyHistory.slice(0, -numToRemove);
-      vimState.cursorPosition = vimState.cursorPosition.getLeft(numToRemove);
 
       if (remapping.after) {
         const count = vimState.recordedState.count || 1;
