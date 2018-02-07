@@ -376,9 +376,9 @@ export class Position extends vscode.Position {
    * Gets the position one to the left of this position. Does not go up line
    * breaks.
    */
-  public getLeft(): Position {
+  public getLeft(count: number = 1): Position {
     if (!this.isLineBeginning()) {
-      return new Position(this.line, this.character - 1);
+      return new Position(this.line, this.character - count);
     }
 
     return this;

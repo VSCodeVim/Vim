@@ -120,6 +120,7 @@ class Remapper implements IRemapper {
       const numToRemove = remapping.before.length - 1;
       vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(0, -numToRemove);
       vimState.keyHistory = vimState.keyHistory.slice(0, -numToRemove);
+      vimState.cursorPosition = vimState.cursorPosition.getLeft(numToRemove);
 
       if (remapping.after) {
         const count = vimState.recordedState.count || 1;
