@@ -2,10 +2,11 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { CommandLine } from '../cmd_line/commandLine';
-import { Configuration, IKeyRemapping } from '../configuration/configuration';
+import { configuration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { VimState } from './../state/vimState';
+import { IKeyRemapping } from './iconfiguration';
 
 export class Remappers implements IRemapper {
   private remappers: IRemapper[];
@@ -57,7 +58,7 @@ class Remapper implements IRemapper {
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
-    this._remappings = Configuration[configKey] as IKeyRemapping[];
+    this._remappings = configuration[configKey] as IKeyRemapping[];
   }
 
   public async sendKey(
@@ -161,7 +162,7 @@ class Remapper implements IRemapper {
 
   private _longestKeySequence(): number {
     if (this._remappings.length > 0) {
-      return _.maxBy(this._remappings, map => map.before.length).before.length;
+      return _.maxBy(this._remappings, map => map.before.length)!.before.length;
     } else {
       return 1;
     }

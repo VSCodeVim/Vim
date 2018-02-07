@@ -5,7 +5,7 @@ import * as node from '../node';
 import * as token from '../token';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
-import { Configuration } from '../../configuration/configuration';
+import { configuration } from '../../configuration/configuration';
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
   pattern: string;
@@ -63,7 +63,7 @@ export class SubstituteCommand extends node.CommandBase {
   getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
     let jsRegexFlags = '';
 
-    if (Configuration.substituteGlobalFlag === true) {
+    if (configuration.substituteGlobalFlag === true) {
       // the gdefault flag is on, then /g if on by default and /g negates that
       if (!(args.flags & SubstituteFlags.ReplaceAll)) {
         jsRegexFlags += 'g';

@@ -3,8 +3,8 @@ import {
   buildTriggerKeys,
   EasymotionTrigger,
 } from '../../src/actions/plugins/easymotion/easymotion.cmd';
-import { Configuration } from '../../src/configuration/configuration';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
@@ -17,15 +17,14 @@ suite('easymotion plugin', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
+    let configuration = new Configuration();
+    configuration.easymotion = true;
+
+    await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
-    Configuration.easymotion = true;
   });
 
-  teardown(async () => {
-    Configuration.easymotion = false;
-    await cleanUpWorkspace();
-  });
+  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can handle s move',

@@ -1,5 +1,5 @@
 import { Position } from './../../../common/motion/position';
-import { Configuration } from './../../../configuration/configuration';
+import { configuration } from './../../../configuration/configuration';
 import { EasyMotion } from './easymotion';
 
 export class MarkerGenerator {
@@ -46,8 +46,8 @@ export class MarkerGenerator {
    * The key sequence for marker name generation
    */
   private getKeyTable(): string[] {
-    if (Configuration.easymotionKeys) {
-      return Configuration.easymotionKeys.split('');
+    if (configuration.easymotionKeys) {
+      return configuration.easymotionKeys.split('');
     } else {
       return 'hklyuiopnm,qwertzxcvbasdgjf;'.split('');
     }

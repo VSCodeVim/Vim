@@ -9,9 +9,11 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-
 import { Globals } from '../src/globals';
+import { Configuration } from './testConfiguration';
+
 Globals.isTesting = true;
+Globals.mockConfiguration = new Configuration();
 
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
 var testRunner = require('vscode/lib/testrunner');

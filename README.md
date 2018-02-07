@@ -54,6 +54,8 @@ If key repeating isn't working for you, execute this in your Terminal.
 ```sh
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
+defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
+
 ```
 
 We also recommend going into *System Preferences -> Keyboard* and increasing the Key Repeat and Delay Until Repeat settings to improve your speed.
@@ -501,7 +503,7 @@ Motion Command | Description
 
 ## VSCodeVim tricks!
 
-Vim has a lot of nifty tricks and we try to perserve some of them:
+Vim has a lot of nifty tricks and we try to preserve some of them:
 
 * `gd` - jump to definition.
 * `gq` - on a visual selection reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.

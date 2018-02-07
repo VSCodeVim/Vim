@@ -1,22 +1,20 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
-import {
-  assertEqual,
-  cleanUpWorkspace,
-  crossPlatformIt,
-  setTextEditorOptions,
-  setupWorkspace,
-} from './../testUtils';
+import { assertEqual, cleanUpWorkspace, crossPlatformIt, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
-    setTextEditorOptions(4, false);
+    let configuration = new Configuration();
+    configuration.tabstop = 4;
+    configuration.expandtab = false;
+
+    await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
   });
 

@@ -13,6 +13,9 @@ suite('Notation', () => {
       '<CmD+a>': '<D-a>',
       eScapE: '<Esc>',
       '<LeAder>': '//',
+      LEaDer: '//',
+      '<space>': ' ',
+      '<uP>': '<up>',
     };
 
     for (const test in testCases) {

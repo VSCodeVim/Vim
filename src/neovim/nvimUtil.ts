@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import { attach } from 'promised-neovim-client';
 import * as vscode from 'vscode';
 
-import { Configuration } from '../configuration/configuration';
+import { configuration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
@@ -11,13 +11,13 @@ import { VimState } from './../state/vimState';
 
 export class Neovim {
   static async initNvim(vimState: VimState) {
-    const proc = spawn(Configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
+    const proc = spawn(configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
       cwd: __dirname,
     });
     proc.on('error', function(err) {
       console.log(err);
       vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
-      Configuration.enableNeovim = false;
+      configuration.enableNeovim = false;
     });
     vimState.nvim = await attach(proc.stdin, proc.stdout);
   }
@@ -26,11 +26,11 @@ export class Neovim {
   static async syncVSToVim(vimState: VimState) {
     const nvim = vimState.nvim;
     const buf = await nvim.getCurrentBuf();
-    if (Configuration.expandtab) {
+    if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToTabs');
     }
 
-    await nvim.setOption('gdefault', Configuration.substituteGlobalFlag === true);
+    await nvim.setOption('gdefault', configuration.substituteGlobalFlag === true);
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
     const [rangeStart, rangeEnd] = [
       Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
@@ -91,7 +91,7 @@ export class Neovim {
       new Position(row - 1, character)
     );
 
-    if (Configuration.expandtab) {
+    if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToSpaces');
     }
     // We're only syncing back the default register for now, due to the way we could

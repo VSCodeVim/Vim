@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
-import { Configuration } from './../../configuration/configuration';
+import { configuration } from './../../configuration/configuration';
 import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
 
@@ -95,7 +95,7 @@ export class PositionDiff {
 }
 
 export class Position extends vscode.Position {
-  private static NonWordCharacters = Configuration.iskeyword!;
+  private static NonWordCharacters = configuration.iskeyword!;
   private static NonBigWordCharacters = '';
   private static NonFileCharacters = '"\'`;<>{}[]()';
 
@@ -655,7 +655,7 @@ export class Position extends vscode.Position {
    * is disabled.
    */
   public getLineBeginRespectingIndent(): Position {
-    if (!Configuration.autoindent) {
+    if (!configuration.autoindent) {
       return this.getLineBegin();
     }
     return this.getFirstLineNonBlankChar();

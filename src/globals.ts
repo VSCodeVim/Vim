@@ -1,9 +1,13 @@
+import { IConfiguration } from './configuration/iconfiguration';
+import { ModeHandler } from './mode/modeHandler';
+
 /**
  * Global variables shared throughout extension
  */
-
 export class Globals {
-  public static isTesting = false;
+  static isTesting = false;
 
-  public static modeHandlerForTesting: any = undefined;
+  static mockModeHandler: ModeHandler;
+
+  static mockConfiguration: IConfiguration;
 }

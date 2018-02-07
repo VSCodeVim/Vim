@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { CommandLine } from './src/cmd_line/commandLine';
 import { Position } from './src/common/motion/position';
-import { Configuration } from './src/configuration/configuration';
+import { configuration } from './src/configuration/configuration';
 import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
@@ -35,7 +35,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   let [curHandler, isNewModeHandler] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
   if (isNewModeHandler) {
-    if (Configuration.enableNeovim) {
+    if (configuration.enableNeovim) {
       await Neovim.initNvim(curHandler.vimState);
     }
     extensionContext.subscriptions.push(curHandler);
@@ -55,7 +55,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     }
   } else {
     previousActiveEditorId = activeEditorId;
-
     await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
 
@@ -80,8 +79,13 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 }
 
 class CompositionState {
-  public isInComposition: boolean = false;
-  public composingText: string = '';
+  isInComposition: boolean = false;
+  composingText: string = '';
+
+  reset() {
+    this.isInComposition = false;
+    this.composingText = '';
+  }
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -89,14 +93,14 @@ export async function activate(context: vscode.ExtensionContext) {
   let compositionState = new CompositionState();
 
   // Event to update active configuration items when changed without restarting vscode
-  vscode.workspace.onDidChangeConfiguration((e: void) => {
-    Configuration.reload();
+  vscode.workspace.onDidChangeConfiguration(() => {
+    configuration.reload();
   });
 
   vscode.window.onDidChangeActiveTextEditor(handleActiveEditorChange, this);
 
   vscode.workspace.onDidChangeTextDocument(event => {
-    if (Configuration.disableExt) {
+    if (configuration.disableExt) {
       return;
     }
 
@@ -119,7 +123,7 @@ export async function activate(context: vscode.ExtensionContext) {
     };
 
     if (Globals.isTesting) {
-      contentChangeHandler(Globals.modeHandlerForTesting as ModeHandler);
+      contentChangeHandler(Globals.mockModeHandler as ModeHandler);
     } else {
       _.filter(
         ModeHandlerMap.getAll(),
@@ -182,7 +186,7 @@ export async function activate(context: vscode.ExtensionContext) {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       let text = compositionState.composingText;
-      compositionState = new CompositionState();
+      compositionState.reset();
       await mh.handleMultipleKeyEvents(text.split(''));
     });
   });
@@ -205,7 +209,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const mh = await getAndUpdateModeHandler();
       if (args.after) {
         for (const key of args.after) {
-          await mh.handleKeyEvent(Notation.NormalizeKey(key, Configuration.leader));
+          await mh.handleKeyEvent(Notation.NormalizeKey(key, configuration.leader));
         }
         return;
       }
@@ -233,8 +237,8 @@ export async function activate(context: vscode.ExtensionContext) {
     // closed
     for (let editorIdentity of ModeHandlerMap.getKeys()) {
       let [modeHandler] = await ModeHandlerMap.getOrCreate(editorIdentity);
-      const editor = modeHandler.vimState.editor.document;
-      if (documents.indexOf(editor) === -1) {
+      const editor = modeHandler.vimState.editor;
+      if (editor === undefined || documents.indexOf(editor.document) === -1) {
         ModeHandlerMap.delete(editorIdentity);
       }
     }
@@ -251,7 +255,7 @@ export async function activate(context: vscode.ExtensionContext) {
     let mh = await getAndUpdateModeHandler();
     if (isDisabled) {
       await mh.handleKeyEvent('<ExtensionDisable>');
-      compositionState = new CompositionState();
+      compositionState.reset();
       ModeHandlerMap.clear();
     } else {
       await mh.handleKeyEvent('<ExtensionEnable>');
@@ -259,11 +263,11 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   registerCommand(context, 'toggleVim', async () => {
-    Configuration.disableExt = !Configuration.disableExt;
-    toggleExtension(Configuration.disableExt);
+    configuration.disableExt = !configuration.disableExt;
+    toggleExtension(configuration.disableExt);
   });
 
-  for (const boundKey of Configuration.boundKeyCombinations) {
+  for (const boundKey of configuration.boundKeyCombinations) {
     registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
   }
 
@@ -274,7 +278,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // This is called last because getAndUpdateModeHandler() will change cursor
-  toggleExtension(Configuration.disableExt);
+  toggleExtension(configuration.disableExt);
 }
 
 function overrideCommand(
@@ -283,7 +287,7 @@ function overrideCommand(
   callback: (...args: any[]) => any
 ) {
   const disposable = vscode.commands.registerCommand(command, async args => {
-    if (Configuration.disableExt) {
+    if (configuration.disableExt) {
       await vscode.commands.executeCommand('default:' + command, args);
       return;
     }
@@ -338,7 +342,7 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
 }
 
 async function handleActiveEditorChange(): Promise<void> {
-  if (Configuration.disableExt) {
+  if (configuration.disableExt) {
     return;
   }
 
