@@ -58,9 +58,14 @@ export class VimState implements vscode.Disposable {
   public isFakeMultiCursor = false;
 
   /**
-   * Tracks movements that can be repeated with ; and , (namely t, T, f, and F).
+   * Tracks movements that can be repeated with ; (e.g. t, T, f, and F).
    */
-  public static lastRepeatableMovement: BaseMovement | undefined = undefined;
+  public static lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
+
+  /**
+   * Tracks movements that can be repeated with , (e.g. t, T, f, and F).
+   */
+  public static lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
 
   public lastMovementFailed: boolean = false;
 
