@@ -39,7 +39,7 @@ export class CommandLine {
       }
     } catch (e) {
       if (e instanceof VimError) {
-        if (e.code === ErrorCode.E492 && Configuration.enableNeovim) {
+        if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
           await Neovim.command(vimState, command);
         } else {
           StatusBar.SetText(
