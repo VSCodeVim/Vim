@@ -63,6 +63,11 @@ export interface IConfiguration {
   easymotion: boolean;
 
   /**
+   * Use sneak plugin?
+   */
+  sneak: boolean;
+
+  /**
    * Use surround plugin?
    */
   surround: boolean;
