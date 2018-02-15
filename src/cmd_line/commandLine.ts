@@ -38,14 +38,17 @@ export class CommandLine {
         await cmd.execute(vimState.editor, vimState);
       }
     } catch (e) {
-      console.log(e);
       if (e instanceof VimError) {
-        StatusBar.SetText(
-          `${e.toString()}. ${command}`,
-          vimState.currentMode,
-          vimState.isRecordingMacro,
-          true
-        );
+        if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
+          await Neovim.command(vimState, command);
+        } else {
+          StatusBar.SetText(
+            `${e.toString()}. ${command}`,
+            vimState.currentMode,
+            vimState.isRecordingMacro,
+            true
+          );
+        }
       } else {
         util.showError(e.toString());
       }
