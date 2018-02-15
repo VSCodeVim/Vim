@@ -188,6 +188,8 @@ class Configuration implements IConfiguration {
 
   autoindent = true;
 
+  sneak = false;
+
   surround = true;
 
   easymotion = false;

@@ -11,6 +11,7 @@ export class Configuration implements IConfiguration {
   ignorecase = true;
   smartcase = true;
   autoindent = true;
+  sneak = false;
   surround = true;
   easymotion = false;
   easymotionMarkerBackgroundColor = '';

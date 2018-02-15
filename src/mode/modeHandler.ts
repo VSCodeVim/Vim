@@ -708,10 +708,6 @@ export class ModeHandler implements vscode.Disposable {
           vimState.currentRegisterMode = result.registerMode;
         }
       }
-
-      if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
-        VimState.lastRepeatableMovement = movement;
-      }
     }
 
     vimState.recordedState.count = 0;
