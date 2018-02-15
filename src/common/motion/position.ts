@@ -373,7 +373,7 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Gets the position one to the left of this position. Does not go up line
+   * Gets the position one or more to the left of this position. Does not go up line
    * breaks.
    */
   public getLeft(count: number = 1): Position {
