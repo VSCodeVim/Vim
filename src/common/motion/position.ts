@@ -377,8 +377,9 @@ export class Position extends vscode.Position {
    * breaks.
    */
   public getLeft(count: number = 1): Position {
-    if (!this.isLineBeginning()) {
-      return new Position(this.line, this.character - count);
+    let newCharacter = Math.max(this.character - count, 0);
+    if (newCharacter !== this.character) {
+      return new Position(this.line, newCharacter);
     }
 
     return this;
