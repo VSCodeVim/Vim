@@ -31,18 +31,25 @@ class StatusBarImpl implements vscode.Disposable {
     }
   }
 
-  public SetColor(color: string) {
+  public SetColor(background: string, foreground?: string) {
     const currentColorCustomizations = vscode.workspace
       .getConfiguration('workbench')
       .get('colorCustomizations');
-    const mergedColorCustomizations = Object.assign(currentColorCustomizations, {
-      'statusBar.background': `${color}`,
-      'statusBar.noFolderBackground': `${color}`,
-      'statusBar.debuggingBackground': `${color}`,
+
+    const colorCustomizations = Object.assign(currentColorCustomizations || {}, {
+      'statusBar.background': `${background}`,
+      'statusBar.noFolderBackground': `${background}`,
+      'statusBar.debuggingBackground': `${background}`,
+      'statusBar.foreground': `${foreground}`,
     });
+
+    if (foreground === undefined) {
+      delete colorCustomizations['statusBar.foreground'];
+    }
+
     vscode.workspace
       .getConfiguration('workbench')
-      .update('colorCustomizations', mergedColorCustomizations, true);
+      .update('colorCustomizations', colorCustomizations, true);
   }
 
   dispose() {
