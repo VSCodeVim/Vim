@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { EditorIdentity } from '../editorIdentity';
 import { ModeHandler } from './modeHandler';
 
-class ModeHandlerMapClass {
+class ModeHandlerMapImpl {
   modeHandlerMap: { [key: string]: ModeHandler } = {};
 
   async getOrCreate(key: string): Promise<[ModeHandler, boolean]> {
@@ -33,4 +33,4 @@ class ModeHandlerMapClass {
   }
 }
 
-export let ModeHandlerMap = new ModeHandlerMapClass();
+export let ModeHandlerMap = new ModeHandlerMapImpl();
