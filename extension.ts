@@ -15,7 +15,7 @@ import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
-import { Neovim } from './src/neovim/nvimUtil';
+import { Neovim } from './src/neovim/neovim';
 import { Notation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
@@ -36,7 +36,10 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   let [curHandler, isNewModeHandler] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
   if (isNewModeHandler) {
     if (configuration.enableNeovim) {
-      await Neovim.initNvim(curHandler.vimState);
+      let neovim = new Neovim();
+      await neovim.initialize();
+
+      curHandler.vimState.nvim = neovim;
     }
     extensionContext.subscriptions.push(curHandler);
   }
