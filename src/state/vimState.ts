@@ -175,7 +175,7 @@ export class VimState implements vscode.Disposable {
   /**
    * The mode Vim will be in once this action finishes.
    */
-  private _currentMode: ModeName;
+  private _currentMode: ModeName = ModeName.Normal;
 
   public get currentMode(): number {
     return this._currentMode;
@@ -218,12 +218,11 @@ export class VimState implements vscode.Disposable {
 
   public nvim: Nvim;
 
-  public constructor(editor: vscode.TextEditor, startInInsertMode: boolean) {
+  public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-    this.currentMode = startInInsertMode ? ModeName.Insert : ModeName.Normal;
   }
 
   dispose() {

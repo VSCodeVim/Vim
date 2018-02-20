@@ -58,8 +58,8 @@ export class ModeHandler implements vscode.Disposable {
       new modes.DisabledMode(),
     ];
 
-    this.vimState = new VimState(vscode.window.activeTextEditor!, configuration.startInInsertMode);
-    this.setCurrentMode(this.vimState.currentMode);
+    this.vimState = new VimState(vscode.window.activeTextEditor!);
+    this.setCurrentMode(configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal);
 
     // Sometimes, Visual Studio Code will start the cursor in a position which
     // is not (0, 0) - e.g., if you previously edited the file and left the
