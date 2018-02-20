@@ -3,7 +3,7 @@ import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, cleanUpWorkspace, crossPlatformIt, setupWorkspace } from './../testUtils';
+import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
@@ -1576,42 +1576,42 @@ suite('Mode Normal', () => {
   newTest({
     title: '/ can search with newline',
     start: ['|asdf', '__asdf', 'asdf'],
-    keysPressed: crossPlatformIt('/\\nasdf\n'),
+    keysPressed: '/\\nasdf\n',
     end: ['asdf', '__asd|f', 'asdf'],
   });
 
   newTest({
     title: '/ can search through multiple newlines',
     start: ['|asdf', '__asdf', 'asdf', 'abc', '   abc'],
-    keysPressed: crossPlatformIt('/asdf\\nasdf\\nabc\n'),
+    keysPressed: '/asdf\\nasdf\\nabc\n',
     end: ['asdf', '__|asdf', 'asdf', 'abc', '   abc'],
   });
 
   newTest({
     title: '/ matches ^ per line',
     start: ['|  asdf', 'asasdf', 'asdf', 'asdf'],
-    keysPressed: crossPlatformIt('/^asdf\n'),
+    keysPressed: '/^asdf\n',
     end: ['  asdf', 'asasdf', '|asdf', 'asdf'],
   });
 
   newTest({
     title: '/ matches $ per line',
     start: ['|asdfjkl', 'asdf  ', 'asdf', 'asdf'],
-    keysPressed: crossPlatformIt('/asdf$\n'),
+    keysPressed: '/asdf$\n',
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
   newTest({
     title: '/\\c forces case insensitive search',
     start: ['|__ASDF', 'asdf'],
-    keysPressed: crossPlatformIt('/\\casdf\n'),
+    keysPressed: '/\\casdf\n',
     end: ['__|ASDF', 'asdf'],
   });
 
   newTest({
     title: '/\\C forces case sensitive search',
     start: ['|__ASDF', 'asdf'],
-    keysPressed: crossPlatformIt('/\\Casdf\n'),
+    keysPressed: '/\\Casdf\n',
     end: ['__ASDF', '|asdf'],
   });
 

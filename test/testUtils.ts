@@ -125,10 +125,3 @@ export async function cleanUpWorkspace(): Promise<any> {
 export function reloadConfiguration() {
   require('../src/configuration/configuration').configuration.reload();
 }
-
-export function crossPlatformIt(text: string): string {
-  if (process.platform === 'win32') {
-    return text.replace(/\\n/g, '\\r\\n');
-  }
-  return text;
-}
