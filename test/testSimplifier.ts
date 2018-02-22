@@ -241,8 +241,13 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   Globals.mockModeHandler = modeHandler;
 
-  // assumes key presses are single characters for now
-  await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
+  let keysPressed = testObj.keysPressed;
+  if (process.platform === 'win32') {
+    keysPressed = keysPressed.replace(/\\n/g, '\\r\\n');
+  }
+
+  // assumes key presses are single characters for nowkA
+  await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
 
   // Check valid test object input
   assert(helper.isValid, "Missing '|' in test object.");
