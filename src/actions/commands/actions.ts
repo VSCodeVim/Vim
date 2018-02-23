@@ -558,7 +558,7 @@ class CommandEsc extends BaseCommand {
 @RegisterAction
 class CommandEscReplaceMode extends BaseCommand {
   modes = [ModeName.Replace];
-  keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
+  keys = [['<Esc>'], ['<C-c>'], ['<C-[>'], ['<insert>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const timesToRepeat = vimState.replaceState!.timesToRepeat;
@@ -679,10 +679,24 @@ export class CommandInsertAtCursor extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReplaceAtCursor extends BaseCommand {
+class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['R'];
-  runsOnceForEachCountPrefix = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = vimState.recordedState.count || 1;
+
+    vimState.currentMode = ModeName.Replace;
+    vimState.replaceState = new ReplaceState(position, timesToRepeat);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ['<insert>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
@@ -750,7 +764,6 @@ class CommandReplaceInReplaceMode extends BaseCommand {
       replaceState.newChars.push(char);
     }
 
-    vimState.currentMode = ModeName.Replace;
     return vimState;
   }
 }
