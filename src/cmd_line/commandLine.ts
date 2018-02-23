@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
-import { Neovim } from '../neovim/nvimUtil';
+import { Neovim } from '../neovim/neovim';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import * as parser from './parser';
@@ -33,19 +33,22 @@ export class CommandLine {
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
 
       if (useNeovim) {
-        await Neovim.command(vimState, command);
+        await vimState.nvim.run(vimState, command);
       } else {
         await cmd.execute(vimState.editor, vimState);
       }
     } catch (e) {
-      console.log(e);
       if (e instanceof VimError) {
-        StatusBar.SetText(
-          `${e.toString()}. ${command}`,
-          vimState.currentMode,
-          vimState.isRecordingMacro,
-          true
-        );
+        if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
+          await vimState.nvim.run(vimState, command);
+        } else {
+          StatusBar.SetText(
+            `${e.toString()}. ${command}`,
+            vimState.currentMode,
+            vimState.isRecordingMacro,
+            true
+          );
+        }
       } else {
         util.showError(e.toString());
       }

@@ -72,7 +72,10 @@ export function assertEqual<T>(one: T, two: T, message: string = ''): void {
   assert.equal(one, two, message);
 }
 
-export async function setupWorkspace(config: IConfiguration = new Configuration(), fileExtension: string = ''): Promise<any> {
+export async function setupWorkspace(
+  config: IConfiguration = new Configuration(),
+  fileExtension: string = ''
+): Promise<any> {
   const file = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(file);
 
@@ -114,18 +117,11 @@ export async function cleanUpWorkspace(): Promise<any> {
       }
     );
   }).then(() => {
-    assert.equal(vscode.window.visibleTextEditors.length, 0, "Expected all editors closed.");
-    assert(!vscode.window.activeTextEditor, "Expected no active text editor.");
+    assert.equal(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
+    assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
   });
 }
 
 export function reloadConfiguration() {
   require('../src/configuration/configuration').configuration.reload();
-}
-
-export function crossPlatformIt(text: string): string {
-  if (process.platform === 'win32') {
-    return text.replace(/\\n/g, '\\r\\n');
-  }
-  return text;
 }

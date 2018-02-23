@@ -6,7 +6,13 @@ import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
-import { assertEqual, assertEqualLines, cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
+import {
+  assertEqual,
+  assertEqualLines,
+  cleanUpWorkspace,
+  reloadConfiguration,
+  setupWorkspace,
+} from './../testUtils';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;

@@ -58,8 +58,8 @@ export class ModeHandler implements vscode.Disposable {
       new modes.DisabledMode(),
     ];
 
-    this.vimState = new VimState(vscode.window.activeTextEditor!, configuration.startInInsertMode);
-    this.setCurrentMode(this.vimState.currentMode);
+    this.vimState = new VimState(vscode.window.activeTextEditor!);
+    this.setCurrentMode(configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal);
 
     // Sometimes, Visual Studio Code will start the cursor in a position which
     // is not (0, 0) - e.g., if you previously edited the file and left the
@@ -181,6 +181,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     let toDraw = false;
+    let isLastClickPastEol = false;
 
     if (selection) {
       let newPosition = new Position(selection.active.line, selection.active.character);
@@ -188,7 +189,7 @@ export class ModeHandler implements vscode.Disposable {
       // Only check on a click, not a full selection (to prevent clicking past EOL)
       if (newPosition.character >= newPosition.getLineEnd().character && selection.isEmpty) {
         if (this.vimState.currentMode !== ModeName.Insert) {
-          this.vimState.lastClickWasPastEol = true;
+          isLastClickPastEol = true;
 
           // This prevents you from mouse clicking past the EOL
           newPosition = new Position(
@@ -201,8 +202,6 @@ export class ModeHandler implements vscode.Disposable {
 
           toDraw = true;
         }
-      } else if (selection.isEmpty) {
-        this.vimState.lastClickWasPastEol = false;
       }
 
       this.vimState.cursorPosition = newPosition;
@@ -210,7 +209,6 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.desiredColumn = newPosition.character;
 
       // start visual mode?
-
       if (
         selection.anchor.line === selection.active.line &&
         selection.anchor.character >= newPosition.getLineEnd().character - 1 &&
@@ -231,11 +229,10 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         // If we prevented from clicking past eol but it is part of this selection, include the last char
-        if (this.vimState.lastClickWasPastEol) {
+        if (isLastClickPastEol) {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
           this.vimState.editor.selection = new vscode.Selection(newStart, selection.end);
           this.vimState.cursorStartPosition = selectionStart;
-          this.vimState.lastClickWasPastEol = false;
         }
 
         if (
@@ -707,10 +704,6 @@ export class ModeHandler implements vscode.Disposable {
         if (result.registerMode) {
           vimState.currentRegisterMode = result.registerMode;
         }
-      }
-
-      if (movement.canBeRepeatedWithSemicolon(vimState, result)) {
-        VimState.lastRepeatableMovement = movement;
       }
     }
 
@@ -1266,7 +1259,9 @@ export class ModeHandler implements vscode.Disposable {
       cursorStyle = configuration.userCursor;
     }
 
-    cursorStyle = configuration.modeToCursorStyleMap[this.currentMode.friendlyName.toLowerCase()] || cursorStyle;
+    cursorStyle =
+      configuration.modeToCursorStyleMap[this.currentMode.friendlyName.toLowerCase()] ||
+      cursorStyle;
 
     let options = this.vimState.editor.options;
     options.cursorStyle = cursorStyle;
@@ -1359,7 +1354,16 @@ export class ModeHandler implements vscode.Disposable {
     if (configuration.statusBarColorControl) {
       const colorToSet = configuration.statusBarColors[this.currentMode.friendlyName.toLowerCase()];
       if (colorToSet !== undefined) {
-        StatusBar.SetColor(colorToSet);
+        let foreground;
+        let background;
+
+        if (typeof colorToSet === 'string') {
+          background = colorToSet;
+        } else {
+          [background, foreground] = colorToSet;
+        }
+
+        StatusBar.SetColor(background, foreground);
       }
     }
 
@@ -1381,11 +1385,16 @@ export class ModeHandler implements vscode.Disposable {
       text.push(macroText);
     }
 
+    let forceUpdate =
+      this.currentMode.name === ModeName.SearchInProgressMode ||
+      this.vimState.isRecordingMacro ||
+      configuration.showcmd;
+
     StatusBar.SetText(
       text.join(' '),
       this.currentMode.name,
       this.vimState.isRecordingMacro,
-      this.currentMode.name === ModeName.SearchInProgressMode || this.vimState.isRecordingMacro
+      forceUpdate
     );
   }
 

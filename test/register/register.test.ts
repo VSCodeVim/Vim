@@ -200,7 +200,7 @@ suite('register', () => {
 
   test('Can put and get to register', async () => {
     const expected = 'text-to-put-on-register';
-    let vimState = new VimState(vscode.window.activeTextEditor!, false);
+    let vimState = new VimState(vscode.window.activeTextEditor!);
     vimState.recordedState.registerName = '0';
     let actual: IRegisterContent;
 

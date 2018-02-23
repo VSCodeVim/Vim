@@ -3,7 +3,12 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { CommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqual, cleanUpWorkspace, setupWorkspace, WaitForEditorsToClose } from './../testUtils';
+import {
+  assertEqual,
+  cleanUpWorkspace,
+  setupWorkspace,
+  WaitForEditorsToClose,
+} from './../testUtils';
 
 suite('Vertical split', () => {
   let modeHandler: ModeHandler;

@@ -38,12 +38,16 @@ suite('package.json', () => {
 
     // configuration
     let handlers = Object.keys(srcConfiguration.configuration);
-    let unhandled = _.filter(keys, k => { return handlers.indexOf(k) >= 0; });
-    assert.equal(unhandled, 0, 'Missing src handlers for ' + unhandled.join(","));
+    let unhandled = _.filter(keys, k => {
+      return handlers.indexOf(k) >= 0;
+    });
+    assert.equal(unhandled, 0, 'Missing src handlers for ' + unhandled.join(','));
 
     // test configuration
     handlers = Object.keys(new testConfiguration.Configuration());
-    unhandled = _.filter(keys, k => { return handlers.indexOf(k) >= 0; });
-    assert.equal(unhandled, 0, 'Missing test handlers for ' + unhandled.join(","));
+    unhandled = _.filter(keys, k => {
+      return handlers.indexOf(k) >= 0;
+    });
+    assert.equal(unhandled, 0, 'Missing test handlers for ' + unhandled.join(','));
   });
 });

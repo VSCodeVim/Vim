@@ -12,6 +12,7 @@ import { RegisterMode } from './../register/register';
 import { GlobalState } from './../state/globalState';
 import { ReplaceState } from './../state/replaceState';
 import { RecordedState } from './recordedState';
+import { Neovim } from '../neovim/neovim';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -58,9 +59,14 @@ export class VimState implements vscode.Disposable {
   public isFakeMultiCursor = false;
 
   /**
-   * Tracks movements that can be repeated with ; and , (namely t, T, f, and F).
+   * Tracks movements that can be repeated with ; (e.g. t, T, f, and F).
    */
-  public static lastRepeatableMovement: BaseMovement | undefined = undefined;
+  public static lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
+
+  /**
+   * Tracks movements that can be repeated with , (e.g. t, T, f, and F).
+   */
+  public static lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
 
   public lastMovementFailed: boolean = false;
 
@@ -168,14 +174,9 @@ export class VimState implements vscode.Disposable {
   public lastVisualSelectionEnd: Position;
 
   /**
-   * Was the previous mouse click past EOL
-   */
-  public lastClickWasPastEol: boolean = false;
-
-  /**
    * The mode Vim will be in once this action finishes.
    */
-  private _currentMode: ModeName;
+  private _currentMode: ModeName = ModeName.Normal;
 
   public get currentMode(): number {
     return this._currentMode;
@@ -216,19 +217,18 @@ export class VimState implements vscode.Disposable {
    */
   public prevSelection: vscode.Selection;
 
-  public nvim: Nvim;
+  public nvim: Neovim;
 
-  public constructor(editor: vscode.TextEditor, startInInsertMode: boolean) {
+  public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-    this.currentMode = startInInsertMode ? ModeName.Insert : ModeName.Normal;
   }
 
   dispose() {
     if (this.nvim) {
-      this.nvim.quit();
+      this.nvim.dispose();
     }
   }
 }

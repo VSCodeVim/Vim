@@ -34,6 +34,7 @@ Please report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim
     * [vim-surround](#vim-surround)
     * [vim-commentary](#vim-commentary)
     * [vim-indent-object](#vim-indent-object)
+    * [vim-sneak](#vim-sneak)
 * [VSCodeVim tricks](#vscodevim-tricks)
 * [F.A.Q / Troubleshooting](#faq)
 * [Contributing](#contributing)
@@ -72,6 +73,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 ```json
 {
     "vim.easymotion": true,
+    "vim.sneak": true,
     "vim.incsearch": true,
     "vim.useSystemClipboard": true,
     "vim.useCtrlKeys": true,
@@ -312,17 +314,17 @@ Almost like vim-airline in VSCode!
 * Control status bar color based on current mode
 * Type: Boolean (Default: `false`)
 
-Once enabled, configure `"vim.statusBarColors"`.
+Once enabled, configure `"vim.statusBarColors"`. Colors can be defined for each mode either as `string` (background only), or `string[]` (background, foreground).
 
 ```json
     "vim.statusBarColorControl": true,
-    "vim.statusBarColors" : {
-        "normal": "#005f5f",
-        "insert": "#5f0000",
-        "visual": "#5f00af",
-        "visualline": "#005f87",
-        "visualblock": "#86592d",
-        "replace": "#000000"
+    "vim.statusBarColors": {
+        "normal": ["#8FBCBB", "#434C5E"],
+        "insert": "#BF616A",
+        "visual": "#B48EAD",
+        "visualline": "#B48EAD",
+        "visualblock": "#A3BE8C",
+        "replace": "#D08770"
     }
 ```
 
@@ -483,6 +485,21 @@ Command | Description
 `<operator>ii`|This indentation level
 `<operator>ai`|This indentation level and the line above (think `if` statements in Python)
 `<operator>aI`|This indentation level, the line above, and the line after (think `if` statements in C/C++/Java/etc)
+
+
+### vim-sneak
+
+Based on [vim-sneak](https://github.com/justinmk/vim-sneak). To activate sneak, you need to make sure that `sneak` is set to `true` in settings.json (default is `false`).
+
+Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
+
+Motion Command | Description
+---|--------
+`s<char><char>`|Move forward to the first occurence of `<char><char>`
+`S<char><char>`|Move backward to the first occurence of `<char><char>`
+`<operator>z<char><char>`|Perform `<operator>` forward to the first occurence of `<char><char>`
+`<operator>Z<char><char>`|Perform `<operator>` backward to the first occurence of `<char><char>`
+
 
 ## VSCodeVim tricks!
 

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { ModeName } from './mode/mode';
 
-class StatusBarClass implements vscode.Disposable {
+class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
   private _prevModeName: ModeName | undefined;
   private _isRecordingMacro: boolean;
@@ -17,10 +17,10 @@ class StatusBarClass implements vscode.Disposable {
     text: string,
     mode: ModeName,
     isRecordingMacro: boolean,
-    forceShow: boolean = false
+    forceUpdate: boolean = false
   ) {
     let updateStatusBar =
-      this._prevModeName !== mode || this._isRecordingMacro !== isRecordingMacro || forceShow;
+      this._prevModeName !== mode || this._isRecordingMacro !== isRecordingMacro || forceUpdate;
 
     this._prevModeName = mode;
     this._isRecordingMacro = isRecordingMacro;
@@ -31,18 +31,25 @@ class StatusBarClass implements vscode.Disposable {
     }
   }
 
-  public SetColor(color: string) {
+  public SetColor(background: string, foreground?: string) {
     const currentColorCustomizations = vscode.workspace
       .getConfiguration('workbench')
       .get('colorCustomizations');
-    const mergedColorCustomizations = Object.assign(currentColorCustomizations, {
-      'statusBar.background': `${color}`,
-      'statusBar.noFolderBackground': `${color}`,
-      'statusBar.debuggingBackground': `${color}`,
+
+    const colorCustomizations = Object.assign(currentColorCustomizations || {}, {
+      'statusBar.background': `${background}`,
+      'statusBar.noFolderBackground': `${background}`,
+      'statusBar.debuggingBackground': `${background}`,
+      'statusBar.foreground': `${foreground}`,
     });
+
+    if (foreground === undefined) {
+      delete colorCustomizations['statusBar.foreground'];
+    }
+
     vscode.workspace
       .getConfiguration('workbench')
-      .update('colorCustomizations', mergedColorCustomizations, true);
+      .update('colorCustomizations', colorCustomizations, true);
   }
 
   dispose() {
@@ -50,4 +57,4 @@ class StatusBarClass implements vscode.Disposable {
   }
 }
 
-export let StatusBar = new StatusBarClass();
+export let StatusBar = new StatusBarImpl();
