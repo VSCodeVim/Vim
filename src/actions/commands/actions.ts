@@ -558,7 +558,7 @@ class CommandEsc extends BaseCommand {
 @RegisterAction
 class CommandEscReplaceMode extends BaseCommand {
   modes = [ModeName.Replace];
-  keys = [['<Esc>'], ['<C-c>'], ['<C-[>'], ['<insert>']];
+  keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const timesToRepeat = vimState.replaceState!.timesToRepeat;
@@ -577,6 +577,17 @@ class CommandEscReplaceMode extends BaseCommand {
 
     vimState.currentMode = ModeName.Normal;
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandInsertReplaceMode extends BaseCommand {
+  modes = [ModeName.Replace];
+  keys = ['<insert>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Insert;
     return vimState;
   }
 }
@@ -653,7 +664,7 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
 @RegisterAction
 export class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ['i', '<insert>'];
+  keys = [['i'], ['<insert>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
