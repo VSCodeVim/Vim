@@ -7,11 +7,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { CommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
-import {
-  createRandomFile,
-  setupWorkspace,
-  cleanUpWorkspace,
-} from '../testUtils';
+import { createRandomFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
 suite('cmd_line tab', () => {
   let modeHandler: ModeHandler;
@@ -51,7 +47,6 @@ suite('cmd_line tab', () => {
     }
   });
 
-
   test('tabe with current file path does nothing', async () => {
     const file = await createRandomFile('', '');
     await CommandLine.Run(`tabe ${file.path}`, modeHandler.vimState);
@@ -60,6 +55,10 @@ suite('cmd_line tab', () => {
     await CommandLine.Run(`tabe ${file.path}`, modeHandler.vimState);
     const afterEditor = vscode.window.activeTextEditor;
 
-    assert.equal(beforeEditor, afterEditor, 'Active editor changed even though :tabe opened the same file');
+    assert.equal(
+      beforeEditor,
+      afterEditor,
+      'Active editor changed even though :tabe opened the same file'
+    );
   });
 });
