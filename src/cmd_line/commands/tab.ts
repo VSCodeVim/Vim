@@ -37,23 +37,24 @@ export class TabCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  private executeCommandWithCount(count: number, command: string) {
+  private async executeCommandWithCount(count: number, command: string): Promise<void> {
     for (let i = 0; i < count; i++) {
-      vscode.commands.executeCommand(command);
+      await vscode.commands.executeCommand(command);
     }
   }
 
-  execute(): void {
+  async execute(): Promise<void> {
     switch (this._arguments.tab) {
       case Tab.Next:
         if (this._arguments.count /** not undefined or 0 */) {
+          // do not await workbench.action.openEditorAtIndex1 because it will never resolve
           vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
-          this.executeCommandWithCount(
+          await this.executeCommandWithCount(
             this._arguments.count! - 1,
             'workbench.action.nextEditorInGroup'
           );
         } else {
-          this.executeCommandWithCount(1, 'workbench.action.nextEditorInGroup');
+          await vscode.commands.executeCommand('workbench.action.nextEditorInGroup');
         }
         break;
       case Tab.Previous:
@@ -61,36 +62,49 @@ export class TabCommand extends node.CommandBase {
           break;
         }
 
-        this.executeCommandWithCount(
+        await this.executeCommandWithCount(
           this._arguments.count || 1,
           'workbench.action.previousEditorInGroup'
         );
         break;
       case Tab.First:
-        this.executeCommandWithCount(1, 'workbench.action.openEditorAtIndex1');
+        // do not await workbench.action.openEditorAtIndex1 because it will never resolve
+        vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
         break;
       case Tab.Last:
-        this.executeCommandWithCount(1, 'workbench.action.openLastEditorInGroup');
+        await vscode.commands.executeCommand('workbench.action.openLastEditorInGroup');
         break;
-      case Tab.New:
-        if (this.arguments.file) {
-          let currentFilePath = vscode.window.activeTextEditor!.document.uri.path;
-          let newFilePath = path.isAbsolute(this._arguments.file!)
-            ? this._arguments.file!
-            : path.join(path.dirname(currentFilePath), this._arguments.file!);
+      case Tab.New: {
+        const hasFile = !(this.arguments.file === undefined || this.arguments.file === '');
+        if (hasFile) {
+          const isAbsolute = path.isAbsolute(this.arguments.file!);
+          const isInWorkspace =
+            vscode.workspace.workspaceFolders !== undefined &&
+            vscode.workspace.workspaceFolders.length > 0;
+          const currentFilePath = vscode.window.activeTextEditor!.document.uri.path;
 
-          if (newFilePath !== currentFilePath) {
-            let folder = vscode.Uri.file(newFilePath);
-            vscode.commands.executeCommand('vscode.open', folder);
+          let toOpenPath: string;
+          if (isAbsolute) {
+            toOpenPath = this.arguments.file!;
+          } else if (isInWorkspace) {
+            const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
+            toOpenPath = path.join(workspacePath, this.arguments.file!);
+          } else {
+            toOpenPath = path.join(path.dirname(currentFilePath), this.arguments.file!);
+          }
+
+          if (toOpenPath !== currentFilePath) {
+            await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(toOpenPath));
           }
         } else {
-          this.executeCommandWithCount(1, 'workbench.action.files.newUntitledFile');
+          await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
         }
         break;
+      }
       case Tab.Close:
         // Navigate the correct position
         if (this._arguments.count === undefined) {
-          vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+          await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
           break;
         }
 
@@ -102,7 +116,7 @@ export class TabCommand extends node.CommandBase {
         // TODO: Close Page {count}. Page count is one-based.
         break;
       case Tab.Only:
-        this.executeCommandWithCount(1, 'workbench.action.closeOtherEditors');
+        await vscode.commands.executeCommand('workbench.action.closeOtherEditors');
         break;
       case Tab.Move:
         if (this._arguments.count !== undefined) {
