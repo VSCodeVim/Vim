@@ -86,23 +86,28 @@ export class FileCommand extends node.CommandBase {
       return;
     }
 
-    let currentFilePath = vscode.window.activeTextEditor!.document.uri.path;
+    let editorFilePath = vscode.window.activeTextEditor!.document.uri.path;
     this._arguments.name = <string>untildify(this._arguments.name);
-    let newFilePath = path.isAbsolute(this._arguments.name)
+    let filePath = path.isAbsolute(this._arguments.name)
       ? this._arguments.name
-      : path.join(path.dirname(currentFilePath), this._arguments.name);
+      : path.join(path.dirname(editorFilePath), this._arguments.name);
 
-    if (newFilePath !== currentFilePath) {
-      const newFileDoesntExist = !await this.fileExists(newFilePath);
-      const newFileHasNoExtname = path.extname(newFilePath) === '';
-      if (newFileDoesntExist && newFileHasNoExtname) {
-        const pathWithExtname = newFilePath + path.extname(currentFilePath);
-        if (await this.fileExists(pathWithExtname)) {
-          newFilePath = pathWithExtname;
+    if (filePath !== editorFilePath) {
+      if (!fs.existsSync(filePath)) {
+        // if file does not exist and does not have an extension
+        // try to find it with the same extension
+        if (path.extname(filePath) === '') {
+          const pathWithExt = filePath + path.extname(editorFilePath);
+          if (fs.existsSync(pathWithExt)) {
+            filePath = pathWithExt;
+          }
         }
+
+        // create file
+        fs.closeSync(fs.openSync(filePath, 'w'));
       }
 
-      let folder = vscode.Uri.file(newFilePath);
+      let folder = vscode.Uri.file(filePath);
       await vscode.commands.executeCommand(
         'vscode.open',
         folder,
@@ -120,13 +125,5 @@ export class FileCommand extends node.CommandBase {
         );
       }
     }
-  }
-
-  protected fileExists(filePath: string) {
-    return new Promise<boolean>((resolve, reject) => {
-      fs.stat(filePath, async (error, stat) => {
-        resolve(!error);
-      });
-    });
   }
 }

@@ -1,5 +1,5 @@
-import { spawn } from 'child_process';
-import { attach } from 'promised-neovim-client';
+import { spawn, ChildProcess } from 'child_process';
+import { attach, Nvim } from 'promised-neovim-client';
 import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
@@ -9,41 +9,71 @@ import { TextEditor } from '../textEditor';
 import { Position } from './../common/motion/position';
 import { VimState } from './../state/vimState';
 
-export class Neovim {
-  static async initNvim(vimState: VimState) {
-    const proc = spawn(configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
+export class Neovim implements vscode.Disposable {
+  private process: ChildProcess;
+  private nvim: Nvim;
+
+  async initialize() {
+    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
       cwd: __dirname,
     });
-    proc.on('error', function(err) {
+    this.process.on('error', err => {
       console.log(err);
       vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
       configuration.enableNeovim = false;
     });
-    vimState.nvim = await attach(proc.stdin, proc.stdout);
+    this.nvim = await attach(this.process.stdin, this.process.stdout);
+  }
+
+  async run(vimState: VimState, command: string) {
+    await this.syncVSToVim(vimState);
+    command = ':' + command + '\n';
+    command = command.replace('<', '<lt>');
+
+    await this.nvim.input(command);
+    if ((await this.nvim.getMode()).blocking) {
+      await this.nvim.input('<esc>');
+    }
+    await this.syncVimToVs(vimState);
+
+    return;
+  }
+
+  async input(vimState: VimState, keys: string) {
+    await this.syncVSToVim(vimState);
+    await this.nvim.input(keys);
+    await this.syncVimToVs(vimState);
+
+    return;
   }
 
   // Data flows from VS to Vim
-  static async syncVSToVim(vimState: VimState) {
-    const nvim = vimState.nvim;
-    const buf = await nvim.getCurrentBuf();
+  private async syncVSToVim(vimState: VimState) {
+    const buf = await this.nvim.getCurrentBuf();
     if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToTabs');
     }
 
-    await nvim.setOption('gdefault', configuration.substituteGlobalFlag === true);
+    await this.nvim.setOption('gdefault', configuration.substituteGlobalFlag === true);
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
     const [rangeStart, rangeEnd] = [
       Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
       Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition),
     ];
-    await nvim.callFunction('setpos', [
+    await this.nvim.callFunction('setpos', [
       '.',
       [0, vimState.cursorPosition.line + 1, vimState.cursorPosition.character, false],
     ]);
-    await nvim.callFunction('setpos', ["'<", [0, rangeStart.line + 1, rangeEnd.character, false]]);
-    await nvim.callFunction('setpos', ["'>", [0, rangeEnd.line + 1, rangeEnd.character, false]]);
+    await this.nvim.callFunction('setpos', [
+      "'<",
+      [0, rangeStart.line + 1, rangeEnd.character, false],
+    ]);
+    await this.nvim.callFunction('setpos', [
+      "'>",
+      [0, rangeEnd.line + 1, rangeEnd.character, false],
+    ]);
     for (const mark of vimState.historyTracker.getMarks()) {
-      await nvim.callFunction('setpos', [
+      await this.nvim.callFunction('setpos', [
         `'${mark.name}`,
         [0, mark.position.line + 1, mark.position.character, false],
       ]);
@@ -52,7 +82,7 @@ export class Neovim {
     // We only copy over " register for now, due to our weird handling of macros.
     let reg = await Register.get(vimState);
     let vsRegTovimReg = [undefined, 'c', 'l', 'b'];
-    await nvim.callFunction('setreg', [
+    await this.nvim.callFunction('setreg', [
       '"',
       reg.text as string,
       vsRegTovimReg[vimState.effectiveRegisterMode] as string,
@@ -60,9 +90,8 @@ export class Neovim {
   }
 
   // Data flows from Vim to VS
-  static async syncVimToVs(vimState: VimState) {
-    const nvim = vimState.nvim;
-    const buf = await nvim.getCurrentBuf();
+  private async syncVimToVs(vimState: VimState) {
+    const buf = await this.nvim.getCurrentBuf();
     const lines = await buf.getLines(0, -1, false);
 
     // one Windows, lines that went to nvim and back have a '\r' at the end,
@@ -82,7 +111,7 @@ export class Neovim {
 
     console.log(`${lines.length} lines in nvime but ${TextEditor.getLineCount()} in editor.`);
 
-    let [row, character] = ((await nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
+    let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
       1,
       3
     );
@@ -102,31 +131,17 @@ export class Neovim {
       '\x16': RegisterMode.BlockWise,
     };
     vimState.currentRegisterMode =
-      vimRegToVsReg[(await nvim.callFunction('getregtype', ['"'])) as string];
-    Register.put((await nvim.callFunction('getreg', ['"'])) as string, vimState);
+      vimRegToVsReg[(await this.nvim.callFunction('getregtype', ['"'])) as string];
+    Register.put((await this.nvim.callFunction('getreg', ['"'])) as string, vimState);
   }
 
-  static async command(vimState: VimState, command: string) {
-    const nvim = vimState.nvim;
-    await this.syncVSToVim(vimState);
-    command = ':' + command + '\n';
-    command = command.replace('<', '<lt>');
-
-    await nvim.input(command);
-    if ((await nvim.getMode()).blocking) {
-      await nvim.input('<esc>');
+  dispose() {
+    if (this.nvim) {
+      this.nvim.quit();
     }
-    await this.syncVimToVs(vimState);
 
-    return;
-  }
-
-  static async input(vimState: VimState, keys: string) {
-    const nvim = vimState.nvim;
-    await this.syncVSToVim(vimState);
-    await nvim.input(keys);
-    await this.syncVimToVs(vimState);
-
-    return;
+    if (this.process) {
+      this.process.kill();
+    }
   }
 }

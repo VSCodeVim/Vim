@@ -12,6 +12,7 @@ import { RegisterMode } from './../register/register';
 import { GlobalState } from './../state/globalState';
 import { ReplaceState } from './../state/replaceState';
 import { RecordedState } from './recordedState';
+import { Neovim } from '../neovim/neovim';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -216,7 +217,7 @@ export class VimState implements vscode.Disposable {
    */
   public prevSelection: vscode.Selection;
 
-  public nvim: Nvim;
+  public nvim: Neovim;
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
@@ -227,7 +228,7 @@ export class VimState implements vscode.Disposable {
 
   dispose() {
     if (this.nvim) {
-      this.nvim.quit();
+      this.nvim.dispose();
     }
   }
 }
