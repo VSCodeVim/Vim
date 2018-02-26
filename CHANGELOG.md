@@ -1,7 +1,25 @@
 # Change Log
 
-## [v0.10.13](https://github.com/vscodevim/vim/tree/v0.10.13) (2018-01-23)
+## [v0.11.0](https://github.com/vscodevim/vim/tree/HEAD)
 
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.13...HEAD)
+
+- Fix :tabe {file} only relative to current file \(\#1162\) [\#2400](https://github.com/VSCodeVim/Vim/pull/2400) ([arussellk](https://github.com/arussellk))
+- fix: clean-up neovim processes. closes \#2038 [\#2395](https://github.com/VSCodeVim/Vim/pull/2395) ([jpoon](https://github.com/jpoon))
+- refactor: no need to set current mode twice [\#2394](https://github.com/VSCodeVim/Vim/pull/2394) ([jpoon](https://github.com/jpoon))
+- feat: create file if file does not exist. closes \#2274 [\#2392](https://github.com/VSCodeVim/Vim/pull/2392) ([jpoon](https://github.com/jpoon))
+- Fix \#2365 [\#2386](https://github.com/VSCodeVim/Vim/pull/2386) ([jpoon](https://github.com/jpoon))
+- `jj` cursor position fix for \#1418 [\#2366](https://github.com/VSCodeVim/Vim/pull/2366) ([prog666](https://github.com/prog666))
+- fix: actually run prettier [\#2359](https://github.com/VSCodeVim/Vim/pull/2359) ([jpoon](https://github.com/jpoon))
+- feat: implements usage of `insert` to toggle between modes \(as per \#1787\) [\#2356](https://github.com/VSCodeVim/Vim/pull/2356) ([jpoon](https://github.com/jpoon))
+- Build Improvements [\#2351](https://github.com/VSCodeVim/Vim/pull/2351) ([jpoon](https://github.com/jpoon))
+- Possibility to set statusBar foreground color [\#2350](https://github.com/VSCodeVim/Vim/pull/2350) ([mgor](https://github.com/mgor))
+- Fixes \#2346 [\#2347](https://github.com/VSCodeVim/Vim/pull/2347) ([Chillee](https://github.com/Chillee))
+- Improve Test Infrastructure [\#2335](https://github.com/VSCodeVim/Vim/pull/2335) ([jpoon](https://github.com/jpoon))
+- fix typo in README [\#2327](https://github.com/VSCodeVim/Vim/pull/2327) ([hayley](https://github.com/hayley))
+- Sneak plugin [\#2307](https://github.com/VSCodeVim/Vim/pull/2307) ([jpotterm](https://github.com/jpotterm))
+
+## [v0.10.13](https://github.com/vscodevim/vim/tree/v0.10.13) (2018-01-23)
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.12...v0.10.13)
 
 - fix: bad jason. fix bad release.  [\#2324](https://github.com/VSCodeVim/Vim/pull/2324) ([jpoon](https://github.com/jpoon))
