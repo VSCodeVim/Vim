@@ -4,7 +4,7 @@ import { Position } from './../src/common/motion/position';
 import { TextEditor } from './../src/textEditor';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 
-suite('old motion tests', () => {
+suite('basic motion', () => {
   let text: string[] = ['mary had', 'a', 'little lamb', ' whose fleece was '];
 
   suiteSetup(async () => {

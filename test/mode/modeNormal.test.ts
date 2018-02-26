@@ -20,7 +20,7 @@ suite('Mode Normal', () => {
 
   teardown(cleanUpWorkspace);
 
-  test('can be activated', async () => {
+  test('Can be activated', async () => {
     let activationKeys = ['<Esc>', '<C-[>'];
 
     for (let key of activationKeys) {

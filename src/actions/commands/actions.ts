@@ -581,6 +581,17 @@ class CommandEscReplaceMode extends BaseCommand {
   }
 }
 
+@RegisterAction
+class CommandInsertReplaceMode extends BaseCommand {
+  modes = [ModeName.Replace];
+  keys = ['<insert>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Insert;
+    return vimState;
+  }
+}
+
 abstract class CommandEditorScroll extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   runsOnceForEachCountPrefix = false;
@@ -653,7 +664,7 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
 @RegisterAction
 export class CommandInsertAtCursor extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ['i'];
+  keys = [['i'], ['<insert>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Insert;
@@ -679,10 +690,24 @@ export class CommandInsertAtCursor extends BaseCommand {
 }
 
 @RegisterAction
-class CommandReplaceAtCursor extends BaseCommand {
+class CommandReplaceAtCursorFromNormalMode extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['R'];
-  runsOnceForEachCountPrefix = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let timesToRepeat = vimState.recordedState.count || 1;
+
+    vimState.currentMode = ModeName.Replace;
+    vimState.replaceState = new ReplaceState(position, timesToRepeat);
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandReplaceAtCursorFromInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ['<insert>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
@@ -750,7 +775,6 @@ class CommandReplaceInReplaceMode extends BaseCommand {
       replaceState.newChars.push(char);
     }
 
-    vimState.currentMode = ModeName.Replace;
     return vimState;
   }
 }

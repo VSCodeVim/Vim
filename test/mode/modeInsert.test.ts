@@ -18,13 +18,14 @@ suite('Mode Insert', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A'];
+    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<insert>'];
 
     for (let key of activationKeys) {
+      await modeHandler.handleKeyEvent('<Esc>');
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+
       await modeHandler.handleKeyEvent(key);
       assertEqual(modeHandler.currentMode.name, ModeName.Insert);
-
-      await modeHandler.handleKeyEvent('<Esc>');
     }
   });
 
