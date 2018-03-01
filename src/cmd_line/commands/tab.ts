@@ -119,7 +119,6 @@ export class TabCommand extends node.CommandBase {
         await vscode.commands.executeCommand('workbench.action.closeOtherEditors');
         break;
       case Tab.Move:
-        // Documentation: https://github.com/Microsoft/vscode/issues/8234#issuecomment-234573410
         if (this.arguments.count === 0) {
           await vscode.commands.executeCommand('moveActiveEditor', { to: 'first' });
         } else if (this.arguments.count === undefined) {
