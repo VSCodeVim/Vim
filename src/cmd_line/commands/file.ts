@@ -100,11 +100,11 @@ export class FileCommand extends node.CommandBase {
           const pathWithExt = filePath + path.extname(editorFilePath);
           if (fs.existsSync(pathWithExt)) {
             filePath = pathWithExt;
+          } else {
+            // create file
+            fs.closeSync(fs.openSync(filePath, 'w'));
           }
         }
-
-        // create file
-        fs.closeSync(fs.openSync(filePath, 'w'));
       }
 
       let folder = vscode.Uri.file(filePath);
