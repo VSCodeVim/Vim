@@ -1140,12 +1140,16 @@ export class ModeHandler implements vscode.Disposable {
 
     if (args.drawSelection) {
       let selections: vscode.Selection[];
+      const selectionMode: ModeName =
+        vimState.currentMode === ModeName.SearchInProgressMode
+          ? vimState.globalState.searchState!.previousMode
+          : vimState.currentMode;
 
       if (!vimState.isMultiCursor) {
         let start = vimState.cursorStartPosition;
         let stop = vimState.cursorPosition;
 
-        if (vimState.currentMode === ModeName.Visual) {
+        if (selectionMode === ModeName.Visual) {
           /**
            * Always select the letter that we started visual mode on, no matter
            * if we are in front or behind it. Imagine that we started visual mode
@@ -1163,7 +1167,7 @@ export class ModeHandler implements vscode.Disposable {
           }
 
           selections = [new vscode.Selection(start, stop)];
-        } else if (vimState.currentMode === ModeName.VisualLine) {
+        } else if (selectionMode === ModeName.VisualLine) {
           selections = [
             new vscode.Selection(
               Position.EarlierOf(start, stop).getLineBegin(),
@@ -1188,7 +1192,7 @@ export class ModeHandler implements vscode.Disposable {
           ) {
             selections = [new vscode.Selection(selections[0].end, selections[0].start)];
           }
-        } else if (vimState.currentMode === ModeName.VisualBlock) {
+        } else if (selectionMode === ModeName.VisualBlock) {
           selections = [];
 
           for (const { start: lineStart, end } of Position.IterateLine(vimState)) {
@@ -1200,7 +1204,7 @@ export class ModeHandler implements vscode.Disposable {
       } else {
         // MultiCursor mode is active.
 
-        if (vimState.currentMode === ModeName.Visual) {
+        if (selectionMode === ModeName.Visual) {
           selections = [];
 
           for (let { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
@@ -1210,11 +1214,7 @@ export class ModeHandler implements vscode.Disposable {
 
             selections.push(new vscode.Selection(cursorStart, cursorStop));
           }
-        } else if (
-          vimState.currentMode === ModeName.Normal ||
-          vimState.currentMode === ModeName.Insert ||
-          vimState.currentMode === ModeName.SearchInProgressMode
-        ) {
+        } else if (selectionMode === ModeName.Normal || selectionMode === ModeName.Insert) {
           selections = [];
 
           for (const { stop: cursorStop } of vimState.allCursors) {
