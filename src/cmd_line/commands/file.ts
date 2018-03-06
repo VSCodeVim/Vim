@@ -86,7 +86,7 @@ export class FileCommand extends node.CommandBase {
       return;
     }
 
-    let editorFilePath = vscode.window.activeTextEditor!.document.uri.path;
+    let editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
     this._arguments.name = <string>untildify(this._arguments.name);
     let filePath = path.isAbsolute(this._arguments.name)
       ? this._arguments.name
