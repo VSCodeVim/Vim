@@ -751,6 +751,19 @@ suite('Mode Visual', () => {
       keysPressed: 'v?foo\nx',
       end: ['|z'],
     });
+
+    test('Selects correct range', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo bar fun baz'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'w', '/']);
+
+      const selection = TextEditor.getSelection();
+
+      // ensuring selection range starts from the beginning
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 4);
+      assertEqual(selection.end.line, 0);
+    });
   });
 
   suite('X will delete linewise', () => {
