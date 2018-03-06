@@ -81,7 +81,7 @@ export class TabCommand extends node.CommandBase {
           const isInWorkspace =
             vscode.workspace.workspaceFolders !== undefined &&
             vscode.workspace.workspaceFolders.length > 0;
-          const currentFilePath = vscode.window.activeTextEditor!.document.uri.path;
+          const currentFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
 
           let toOpenPath: string;
           if (isAbsolute) {
