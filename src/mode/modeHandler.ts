@@ -1331,7 +1331,7 @@ export class ModeHandler implements vscode.Disposable {
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
-      vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+      vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
     }
     this.vimState.postponedCodeViewChanges = [];
 
