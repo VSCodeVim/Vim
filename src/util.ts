@@ -29,9 +29,9 @@ export class Clipboard {
  * is that writing editor.selection = new Position() won't immediately
  * update the position of the cursor. So we have to wait!
  */
-export async function waitForCursorUpdatesToHappen(): Promise<void> {
+export async function waitForCursorUpdatesToHappen(timeout: number): Promise<void> {
   await new Promise((resolve, reject) => {
-    setTimeout(resolve, 100);
+    setTimeout(resolve, timeout);
 
     const disposer = vscode.window.onDidChangeTextEditorSelection(x => {
       disposer.dispose();
@@ -58,8 +58,10 @@ export async function waitForTabChange(): Promise<void> {
     });
   });
 }
-export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(): Promise<Range[]> {
-  await waitForCursorUpdatesToHappen();
+export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(
+  timeout: number
+): Promise<Range[]> {
+  await waitForCursorUpdatesToHappen(timeout);
 
   return vscode.window.activeTextEditor!.selections.map(
     x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
