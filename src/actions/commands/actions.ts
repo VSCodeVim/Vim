@@ -1694,7 +1694,7 @@ class CommandCloseFold extends CommandFold {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand('editor.fold', { levels: timesToRepeat, direction: 'up' });
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
     return vimState;
   }
 }
@@ -2370,7 +2370,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
 
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
     for (let i = 0; i < count; i++) {
       const newPos = new Position(
         vimState.allCursors[0].start.line + i,
@@ -2400,7 +2400,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineAfter');
     }
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
     for (let i = 1; i < count; i++) {
       const newPos = new Position(
         vimState.allCursors[0].start.line - i,
@@ -3578,7 +3578,7 @@ class ActionOverrideCmdD extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
 
     // If this is the first cursor, select 1 character less
     // so that only the word is selected, no extra character
@@ -3631,7 +3631,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       }
     );
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
     return vimState;
   }
 }
@@ -3650,7 +3650,7 @@ class ActionOverrideCmdAltDown extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorBelow');
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
 
     return vimState;
   }
@@ -3670,7 +3670,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorAbove');
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem();
+    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
 
     return vimState;
   }
