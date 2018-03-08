@@ -3,6 +3,7 @@
 
 [![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
 [![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
+[![Open Source Helpers](https://www.codetriage.com/vscodevim/vim/badges/users.svg)](https://www.codetriage.com/vscodevim/vim)
 
 VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables:
 
