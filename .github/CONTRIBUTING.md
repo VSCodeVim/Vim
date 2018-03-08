@@ -87,8 +87,14 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 
 To push a release:
 
+1. Update changelog and commit changes.
+
+    1. We use `github-change-log-generator`. The instructions to install are [here](https://github.com/skywinder/github-changelog-generator#installation).
+    1. `github_changelog_generator vscodevim/vim --token=[TOKEN] --simple-list --no-issues --unreleased-label [LABEL]`
+    1. `git commit -am 'update changelog'`
+
 1. Bump the version number and create a git tag: `gulp patch|minor|major`
-2. Push the changes: `git push origin --tags`
+1. Push the changes: `git push origin --tags`
 
 In addition to building and testing the extension, when a tag is applied to the commit, the CI server will also create a GitHub release and publish the new version to the Visual Studio marketplace.
 
