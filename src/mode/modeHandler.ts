@@ -234,6 +234,7 @@ export class ModeHandler implements vscode.Disposable {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
           this.vimState.editor.selection = new vscode.Selection(newStart, selection.end);
           this.vimState.cursorStartPosition = selectionStart;
+          this.vimState.lastClickWasPastEol = false;
         }
 
         if (
