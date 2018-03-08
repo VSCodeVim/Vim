@@ -1,14 +1,22 @@
 # Change Log
 
-## [v0.11.0](https://github.com/vscodevim/vim/tree/HEAD)
+## [v0.11.1](https://github.com/vscodevim/vim/tree/HEAD)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.13...HEAD)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.0...HEAD)
+
+- Set the timeout to 0 for waitforcursorupdatestopropagate [\#2428](https://github.com/VSCodeVim/Vim/pull/2428) ([Chillee](https://github.com/Chillee))
+- fix: use 'fsPath'. closes \#2422 [\#2426](https://github.com/VSCodeVim/Vim/pull/2426) ([jpoon](https://github.com/jpoon))
+- fix: don't overwrite file if file exists. fixes \#2408 [\#2409](https://github.com/VSCodeVim/Vim/pull/2409) ([jpoon](https://github.com/jpoon))
+- Fix :tabm to use moveActiveEditor command [\#2405](https://github.com/VSCodeVim/Vim/pull/2405) ([arussellk](https://github.com/arussellk))
+
+## [v0.11.0](https://github.com/vscodevim/vim/tree/v0.11.0) (2018-02-26)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.13...v0.11.0)
 
 - Fix :tabe {file} only relative to current file \(\#1162\) [\#2400](https://github.com/VSCodeVim/Vim/pull/2400) ([arussellk](https://github.com/arussellk))
 - fix: clean-up neovim processes. closes \#2038 [\#2395](https://github.com/VSCodeVim/Vim/pull/2395) ([jpoon](https://github.com/jpoon))
 - refactor: no need to set current mode twice [\#2394](https://github.com/VSCodeVim/Vim/pull/2394) ([jpoon](https://github.com/jpoon))
 - feat: create file if file does not exist. closes \#2274 [\#2392](https://github.com/VSCodeVim/Vim/pull/2392) ([jpoon](https://github.com/jpoon))
-- Fix \#2365 [\#2386](https://github.com/VSCodeVim/Vim/pull/2386) ([jpoon](https://github.com/jpoon))
+- fix: status bar when configuration.showcmd is set \(fixes \#2365\) [\#2386](https://github.com/VSCodeVim/Vim/pull/2386) ([jpoon](https://github.com/jpoon))
 - `jj` cursor position fix for \#1418 [\#2366](https://github.com/VSCodeVim/Vim/pull/2366) ([prog666](https://github.com/prog666))
 - fix: actually run prettier [\#2359](https://github.com/VSCodeVim/Vim/pull/2359) ([jpoon](https://github.com/jpoon))
 - feat: implements usage of `insert` to toggle between modes \(as per \#1787\) [\#2356](https://github.com/VSCodeVim/Vim/pull/2356) ([jpoon](https://github.com/jpoon))
