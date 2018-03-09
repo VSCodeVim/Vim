@@ -1,8 +1,14 @@
 # Change Log
 
-## [v0.11.1](https://github.com/vscodevim/vim/tree/HEAD)
+## [v0.11.2](https://github.com/vscodevim/vim/tree/HEAD)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.0...HEAD)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.1...HEAD)
+
+- Readds vimState.lastClickWasPastEOL. Fixes \#2404 [\#2433](https://github.com/VSCodeVim/Vim/pull/2433) ([Chillee](https://github.com/Chillee))
+- fix: selection in search in visual mode \#2406 [\#2418](https://github.com/VSCodeVim/Vim/pull/2418) ([shortheron](https://github.com/shortheron))
+
+## [v0.11.1](https://github.com/vscodevim/vim/tree/v0.11.1) (2018-03-08)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.0...v0.11.1)
 
 - Set the timeout to 0 for waitforcursorupdatestopropagate [\#2428](https://github.com/VSCodeVim/Vim/pull/2428) ([Chillee](https://github.com/Chillee))
 - fix: use 'fsPath'. closes \#2422 [\#2426](https://github.com/VSCodeVim/Vim/pull/2426) ([jpoon](https://github.com/jpoon))
