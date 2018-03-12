@@ -47,8 +47,7 @@ export class TabCommand extends node.CommandBase {
     switch (this._arguments.tab) {
       case Tab.Next:
         if (this._arguments.count /** not undefined or 0 */) {
-          // do not await workbench.action.openEditorAtIndex1 because it will never resolve
-          vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
+          await vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
           await this.executeCommandWithCount(
             this._arguments.count! - 1,
             'workbench.action.nextEditorInGroup'
@@ -68,8 +67,7 @@ export class TabCommand extends node.CommandBase {
         );
         break;
       case Tab.First:
-        // do not await workbench.action.openEditorAtIndex1 because it will never resolve
-        vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
+        await vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
         break;
       case Tab.Last:
         await vscode.commands.executeCommand('workbench.action.openLastEditorInGroup');
