@@ -300,7 +300,10 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
     options?: EasyMotion.SearchOptions
   ): EasyMotion.Match[] {
     // Search for the beginning of all words after the cursor
-    return vimState.easyMotion.sortedSearch(position, new RegExp('\\w{1,}', 'g'), options);
+    const regex = this._options.jumptoanywhere
+      ? /\b[A-Za-z0-9]|[A-Za-z0-9]\b|_.|\#.|[a-z][A-Z]/g // By default, match beginning & ending of word, camelCase, after _ and after #
+      : new RegExp('\\w{1,}', 'g');
+    return vimState.easyMotion.sortedSearch(position, regex, options);
   }
 }
 
