@@ -109,7 +109,7 @@ export class Neovim implements vscode.Disposable {
       fixedLines.join('\n')
     );
 
-    console.log(`${lines.length} lines in nvime but ${TextEditor.getLineCount()} in editor.`);
+    console.log(`${lines.length} lines in nvim but ${TextEditor.getLineCount()} in editor.`);
 
     let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
       1,
