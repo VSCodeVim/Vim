@@ -422,6 +422,7 @@ Motion Command | Description
 `<leader><leader><leader> bdw`|Start of word
 `<leader><leader><leader> bde`|End of word
 `<leader><leader><leader> bdjk`|Start of line
+`<leader><leader><leader> j`|Jumptoanywhere motion; default behavior matches beginning & ending of word, camelCase, after _ and after #
 
 `<leader><leader> (2s|2f|2F|2t|2T) <char><char>` and `<leader><leader><leader> bd2t <char>char>` are also available.
 The difference is character count required for search.
@@ -442,6 +443,7 @@ Setting | Description
 `vim.easymotionMarkerFontWeight`|The font weight used for the marker text.
 `vim.easymotionMarkerYOffset`|The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
 `vim.easymotionKeys`|The characters used for jump marker name
+`vim.easymotionJumptoanywhereRegex`|Custom regex to match for jumptoanywhere motion (analogous to `Easymotion_re_anywhere`)
 
 ### vim-surround
 
