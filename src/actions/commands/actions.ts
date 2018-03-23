@@ -1108,7 +1108,11 @@ class CommandSearchVisualForward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return searchCurrentSelection(vimState, SearchDirection.Forward);
+    if (configuration.visualstar) {
+      return searchCurrentSelection(vimState, SearchDirection.Forward);
+    } else {
+      return searchCurrentWord(position, vimState, SearchDirection.Forward, true);
+    }
   }
 }
 
@@ -1144,7 +1148,11 @@ class CommandSearchVisualBackward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return searchCurrentSelection(vimState, SearchDirection.Backward);
+    if (configuration.visualstar) {
+      return searchCurrentSelection(vimState, SearchDirection.Backward);
+    } else {
+      return searchCurrentWord(position, vimState, SearchDirection.Backward, true);
+    }
   }
 }
 
