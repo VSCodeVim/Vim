@@ -142,12 +142,12 @@ class EasyMotionStartOfWordBidirectionalCommand extends EasyMotionWordMoveComman
   }
 }
 
-// easymotion jumptoanywhere motion
+// easymotion "jumptoanywhere" motion
 
 @RegisterAction
 class EasyMotionJumpToAnywhereCommand extends EasyMotionWordMoveCommandBase {
   constructor() {
-    super({ key: 'j', leaderCount: 3 }, { jumptoanywhere: true, labelPosition: 'after' });
+    super({ key: 'j', leaderCount: 3 }, { jumpToAnywhere: true, labelPosition: 'after' });
   }
 }
 

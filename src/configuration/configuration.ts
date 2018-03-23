@@ -203,7 +203,7 @@ class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'normal';
   easymotionMarkerYOffset = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
-  easymotionJumptoanywhereRegex = '';
+  easymotionJumpToAnywhereRegex = '';
 
   timeout = 1000;
 
