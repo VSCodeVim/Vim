@@ -64,6 +64,14 @@ We also recommend going into *System Preferences -> Keyboard* and increasing the
 
 VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
 
+### Linux setup
+
+If you have configured `vim.useSystemClipboard: "true"`, we rely on [clipboardy](https://github.com/sindresorhus/clipboardy) for cross-platform copy/paste operations. This library is dependent on `xsel`:
+
+```
+apt install xsel
+```
+
 ## Settings
 
 ### Quick example settings
