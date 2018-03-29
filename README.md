@@ -422,7 +422,7 @@ Motion Command | Description
 `<leader><leader><leader> bdw`|Start of word
 `<leader><leader><leader> bde`|End of word
 `<leader><leader><leader> bdjk`|Start of line
-`<leader><leader><leader> j`|Jumptoanywhere motion; default behavior matches beginning & ending of word, camelCase, after _ and after #
+`<leader><leader><leader> j`|JumpToAnywhere motion; default behavior matches beginning & ending of word, camelCase, after _ and after #
 
 `<leader><leader> (2s|2f|2F|2t|2T) <char><char>` and `<leader><leader><leader> bd2t <char>char>` are also available.
 The difference is character count required for search.
@@ -443,7 +443,7 @@ Setting | Description
 `vim.easymotionMarkerFontWeight`|The font weight used for the marker text.
 `vim.easymotionMarkerYOffset`|The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
 `vim.easymotionKeys`|The characters used for jump marker name
-`vim.easymotionJumpToAnywhereRegex`| Custom regex to match for jumptoanywhere motion (analogous to `Easymotion_re_anywhere`). Example setting (which also matches start & end of line, as well as Javascript comments in addition to the regular behavior (note the double escaping required): "^\\s*.|\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|\\#.|[a-z][A-Z]|//"
+`vim.easymotionJumpToAnywhereRegex`| Custom regex to match for JumpToAnywhere motion (analogous to `Easymotion_re_anywhere`). Example setting (which also matches start & end of line, as well as Javascript comments in addition to the regular behavior (note the double escaping required): ^\\s*.|\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|\\#.|[a-z][A-Z]|//|.$"
 
 ### vim-surround
 

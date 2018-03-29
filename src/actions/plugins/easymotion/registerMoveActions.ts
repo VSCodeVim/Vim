@@ -142,7 +142,7 @@ class EasyMotionStartOfWordBidirectionalCommand extends EasyMotionWordMoveComman
   }
 }
 
-// easymotion "jumptoanywhere" motion
+// easymotion "JumpToAnywhere" motion
 
 @RegisterAction
 class EasyMotionJumpToAnywhereCommand extends EasyMotionWordMoveCommandBase {
