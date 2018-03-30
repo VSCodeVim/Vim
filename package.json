@@ -602,7 +602,7 @@
     "@types/copy-paste": "1.1.30",
     "@types/diff": "3.2.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.100",
+    "@types/lodash": "4.14.106",
     "@types/mocha": "2.2.48",
     "@types/node": "9.4.0",
     "gulp": "3.9.1",
