@@ -1,5 +1,5 @@
 export type LabelPosition = 'after' | 'before';
-export type jumpToAnywhere = true | false;
+export type JumpToAnywhere = true | false;
 
 export interface EasyMotionMoveOptionsBase {
   searchOptions?: 'min' | 'max';
@@ -12,5 +12,5 @@ export interface EasyMotionCharMoveOpions extends EasyMotionMoveOptionsBase {
 
 export interface EasyMotionWordMoveOpions extends EasyMotionMoveOptionsBase {
   labelPosition?: LabelPosition;
-  jumpToAnywhere?: jumpToAnywhere;
+  jumpToAnywhere?: JumpToAnywhere;
 }
