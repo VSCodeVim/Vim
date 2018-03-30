@@ -617,6 +617,6 @@
     "prettier": "1.10.2",
     "tslint": "5.9.1",
     "typescript": "2.7.1",
-    "vscode": "1.1.10"
+    "vscode": "1.1.14"
   }
 }
