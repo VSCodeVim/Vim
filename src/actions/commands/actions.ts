@@ -1108,7 +1108,11 @@ class CommandSearchVisualForward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return searchCurrentSelection(vimState, SearchDirection.Forward);
+    if (configuration.visualstar) {
+      return searchCurrentSelection(vimState, SearchDirection.Forward);
+    } else {
+      return searchCurrentWord(position, vimState, SearchDirection.Forward, true);
+    }
   }
 }
 
@@ -1144,7 +1148,11 @@ class CommandSearchVisualBackward extends BaseCommand {
   runsOnceForEachCountPrefix = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return searchCurrentSelection(vimState, SearchDirection.Backward);
+    if (configuration.visualstar) {
+      return searchCurrentSelection(vimState, SearchDirection.Backward);
+    } else {
+      return searchCurrentWord(position, vimState, SearchDirection.Backward, true);
+    }
   }
 }
 
@@ -2622,6 +2630,21 @@ class VerticalSplit extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
       command: 'workbench.action.splitEditor',
+      args: {},
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class EvenPaneWidths extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = ['<C-w>', '='];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.evenEditorWidths',
       args: {},
     });
 
