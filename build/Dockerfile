@@ -1,4 +1,4 @@
-FROM node:8.9
+FROM node:8.9@sha256:5afc7736a71bcf24281d9dbff878c771106e0791d56949b1a4e8d27c50424283
 
 RUN apt-get update && \
     apt-get install -y xorg xvfb libxss-dev libgtk2.0-0 gconf2 libnss3 libasound2
