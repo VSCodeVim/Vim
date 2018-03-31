@@ -1,4 +1,4 @@
-FROM node:8.9
+FROM node:8.11
 
 RUN apt-get update && \
     apt-get install -y xorg xvfb libxss-dev libgtk2.0-0 gconf2 libnss3 libasound2
