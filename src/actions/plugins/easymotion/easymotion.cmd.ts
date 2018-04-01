@@ -299,8 +299,10 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
     vimState: VimState,
     options?: EasyMotion.SearchOptions
   ): EasyMotion.Match[] {
-    // Search for the beginning of all words after the cursor
-    return vimState.easyMotion.sortedSearch(position, new RegExp('\\w{1,}', 'g'), options);
+    const regex = this._options.jumpToAnywhere
+      ? new RegExp(configuration.easymotionJumpToAnywhereRegex, 'g')
+      : new RegExp('\\w{1,}', 'g');
+    return vimState.easyMotion.sortedSearch(position, regex, options);
   }
 }
 

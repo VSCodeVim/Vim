@@ -488,6 +488,11 @@
           "description": "Set the characters used for jump marker name",
           "default": "hklyuiopnm,qwertzxcvbasdgjf;"
         },
+        "vim.easymotionJumpToAnywhereRegex": {
+          "type": "string",
+          "description": "Regex matches for JumpToAnywhere motion",
+          "default": "\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]"
+        },
         "vim.sneak": {
           "type": "boolean",
           "description": "Enable the Sneak plugin for Vim.",
