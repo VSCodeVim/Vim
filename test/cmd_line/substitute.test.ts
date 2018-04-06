@@ -212,4 +212,132 @@ suite('Basic substitute', () => {
       assertEqualLines(['bz']);
     });
   });
+  suite('Substitute with empty search string should use previous search', () => {
+    test('Substitute with previous search using *', async () => {
+      await modeHandler.handleMultipleKeyEvents([
+        'i',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        'o',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        'g',
+        'g', // back to the first line
+        '*', // search for foo
+      ]);
+      await CommandLine.Run('%s//fighters', modeHandler.vimState);
+
+      assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
+    });
+    test('Substitute with previous search using #', async () => {
+      await modeHandler.handleMultipleKeyEvents([
+        'i',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        'o',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        '#', // search for bar
+      ]);
+      await CommandLine.Run('%s//fighters', modeHandler.vimState);
+
+      assertEqualLines(['foo', 'fighters', 'foo', 'fighters']);
+    });
+    test('Substitute with previous search using /', async () => {
+      await modeHandler.handleMultipleKeyEvents([
+        'i',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        'o',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        '/',
+        'f',
+        'o',
+        'o', // search for foo
+        '\n',
+      ]);
+      await CommandLine.Run('%s//fighters', modeHandler.vimState);
+
+      assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
+    });
+    test('Substitute with empty search string should use last searched pattern', async () => {
+      await modeHandler.handleMultipleKeyEvents([
+        'i',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        'o',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        '/',
+        'f',
+        'o',
+        'o', // search for foo
+        '\n',
+        '2', // go to the second line
+        'g',
+        'g',
+        '*', // now search for bar
+      ]);
+      await CommandLine.Run('%s//fighters', modeHandler.vimState);
+
+      assertEqualLines(['foo', 'fighters', 'foo', 'fighters']);
+    });
+  });
 });
