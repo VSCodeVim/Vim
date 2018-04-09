@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as node from '../node';
 import * as token from '../token';
 import { VimState } from '../../state/vimState';
+import { VimError, ErrorCode } from '../../error';
 import { TextEditor } from '../../textEditor';
 import { configuration } from '../../configuration/configuration';
 
@@ -83,8 +84,8 @@ export class SubstituteCommand extends node.CommandBase {
     if (args.pattern === '') {
       const prevSearchState = vimState.globalState.searchState;
       if (prevSearchState === undefined || prevSearchState.searchString === '') {
-        // Should we use VimError (in src/error.ts) ?
-        throw new Error('Empty search string!');
+        throw VimError.fromCode(ErrorCode.E35);
+        // throw new Error('Empty search string!');
       } else {
         args.pattern = prevSearchState.searchString;
       }
