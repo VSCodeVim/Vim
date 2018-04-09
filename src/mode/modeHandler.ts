@@ -181,7 +181,6 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     let toDraw = false;
-    let isLastClickPastEol = false;
 
     if (selection) {
       let newPosition = new Position(selection.active.line, selection.active.character);
@@ -189,7 +188,7 @@ export class ModeHandler implements vscode.Disposable {
       // Only check on a click, not a full selection (to prevent clicking past EOL)
       if (newPosition.character >= newPosition.getLineEnd().character && selection.isEmpty) {
         if (this.vimState.currentMode !== ModeName.Insert) {
-          isLastClickPastEol = true;
+          this.vimState.lastClickWasPastEol = true;
 
           // This prevents you from mouse clicking past the EOL
           newPosition = new Position(
@@ -202,6 +201,8 @@ export class ModeHandler implements vscode.Disposable {
 
           toDraw = true;
         }
+      } else if (selection.isEmpty) {
+        this.vimState.lastClickWasPastEol = false;
       }
 
       this.vimState.cursorPosition = newPosition;
@@ -229,10 +230,11 @@ export class ModeHandler implements vscode.Disposable {
         }
 
         // If we prevented from clicking past eol but it is part of this selection, include the last char
-        if (isLastClickPastEol) {
+        if (this.vimState.lastClickWasPastEol) {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
           this.vimState.editor.selection = new vscode.Selection(newStart, selection.end);
           this.vimState.cursorStartPosition = selectionStart;
+          this.vimState.lastClickWasPastEol = false;
         }
 
         if (
