@@ -85,7 +85,6 @@ export class SubstituteCommand extends node.CommandBase {
       const prevSearchState = vimState.globalState.searchState;
       if (prevSearchState === undefined || prevSearchState.searchString === '') {
         throw VimError.fromCode(ErrorCode.E35);
-        // throw new Error('Empty search string!');
       } else {
         args.pattern = prevSearchState.searchString;
       }
