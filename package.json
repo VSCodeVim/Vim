@@ -605,7 +605,7 @@
   },
   "devDependencies": {
     "@types/copy-paste": "1.1.30",
-    "@types/diff": "3.2.2",
+    "@types/diff": "3.5.0",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.106",
     "@types/mocha": "5.0.0",
