@@ -49,7 +49,7 @@ All common Vim commands are supported. For a detailed list of supported features
 
 ### Mac setup
 
-If key repeating isn't working for you, execute this in your Terminal.
+If key repeating isn't working for you, execute this in your Terminal, then restart VS Code.
 
 ```sh
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
