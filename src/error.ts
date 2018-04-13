@@ -4,6 +4,7 @@ interface IErrorMessage {
 
 export enum ErrorCode {
   E32 = 32,
+  E35 = 35,
   E37 = 37,
   E208 = 208,
   E348 = 348,
@@ -14,6 +15,7 @@ export enum ErrorCode {
 
 export const ErrorMessage: IErrorMessage = {
   32: 'No file name',
+  35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',
   208: 'Error writing to file',
   348: 'No string under cursor',

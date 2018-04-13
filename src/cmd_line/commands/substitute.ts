@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as node from '../node';
 import * as token from '../token';
 import { VimState } from '../../state/vimState';
+import { VimError, ErrorCode } from '../../error';
 import { TextEditor } from '../../textEditor';
 import { configuration } from '../../configuration/configuration';
 
@@ -79,15 +80,15 @@ export class SubstituteCommand extends node.CommandBase {
       jsRegexFlags += 'i';
     }
 
-    // If no pattern is entered, use previous search state
+    // If no pattern is entered, use previous search state (including search with * and #)
     if (args.pattern === '') {
-      const prevSearchState = vimState.globalState.searchStatePrevious;
-      if (prevSearchState) {
-        const prevSearchString = prevSearchState[prevSearchState.length - 1].searchString;
-        args.pattern = prevSearchString;
+      const prevSearchState = vimState.globalState.searchState;
+      if (prevSearchState === undefined || prevSearchState.searchString === '') {
+        throw VimError.fromCode(ErrorCode.E35);
+      } else {
+        args.pattern = prevSearchState.searchString;
       }
     }
-
     return new RegExp(args.pattern, jsRegexFlags);
   }
 
