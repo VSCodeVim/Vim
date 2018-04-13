@@ -15,7 +15,7 @@ export class Neovim implements vscode.Disposable {
   private nvim: Nvim;
 
   async initialize() {
-    const dir = dirname(vscode.window.activeTextEditor!.document.uri.fspath);
+    const dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
     this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
       cwd: dir,
     });
