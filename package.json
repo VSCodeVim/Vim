@@ -609,7 +609,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.106",
     "@types/mocha": "5.0.0",
-    "@types/node": "9.6.4",
+    "@types/node": "9.6.5",
     "gulp": "3.9.1",
     "gulp-bump": "3.0.0",
     "gulp-filter": "5.1.0",
