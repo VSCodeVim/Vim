@@ -159,7 +159,9 @@ export class DeleteOperator extends BaseOperator {
       // slice final newline in linewise mode - linewise put will add it back.
       text = text.endsWith('\r\n')
         ? text.slice(0, -2)
-        : text.endsWith('\n') ? text.slice(0, -1) : text;
+        : text.endsWith('\n')
+          ? text.slice(0, -1)
+          : text;
     }
 
     if (yank) {
