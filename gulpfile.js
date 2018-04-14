@@ -45,6 +45,10 @@ function runPrettier(command, cb) {
       })
       .join(' ');
 
+    if (!files) {
+      return cb();
+    }
+
     exec(
       `node ./node_modules/.bin/prettier --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
       function(err, stdout, stderr) {
