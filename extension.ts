@@ -363,6 +363,6 @@ async function handleActiveEditorChange(): Promise<void> {
   });
 }
 
-process.on('unhandledRejection', function (reason: any, p: any) {
+process.on('unhandledRejection', function(reason: any, p: any) {
   console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
 });
