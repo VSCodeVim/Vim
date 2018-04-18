@@ -16,6 +16,11 @@ class ModeHandlerMapImpl {
     return [modeHandler, isNew];
   }
 
+  async get(key: string): Promise<ModeHandler | null> {
+    let modeHandler = this.modeHandlerMap[key];
+    return modeHandler;
+  }
+
   getKeys(): string[] {
     return Object.keys(this.modeHandlerMap);
   }

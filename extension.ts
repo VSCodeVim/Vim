@@ -30,7 +30,7 @@ let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-  const [prevHandler] = await ModeHandlerMap.getOrCreate(previousActiveEditorId.toString());
+  const prevHandler = await ModeHandlerMap.get(previousActiveEditorId.toString());
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
   let [curHandler, isNewModeHandler] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
@@ -45,7 +45,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   }
 
   curHandler.vimState.editor = vscode.window.activeTextEditor!;
-  if (!prevHandler || curHandler.vimState.identity !== prevHandler.vimState.identity) {
+  if (!prevHandler || curHandler.vimState.identity !== prevHandler!.vimState.identity) {
     setTimeout(() => {
       curHandler.syncCursors();
     }, 0);
@@ -63,7 +63,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   if (prevHandler && curHandler.vimState.focusChanged) {
     curHandler.vimState.focusChanged = false;
-    prevHandler.vimState.focusChanged = true;
+    prevHandler!.vimState.focusChanged = true;
   }
 
   // Temporary workaround for vscode bug not changing cursor style properly
@@ -363,6 +363,6 @@ async function handleActiveEditorChange(): Promise<void> {
   });
 }
 
-process.on('unhandledRejection', function(reason: any, p: any) {
+process.on('unhandledRejection', function (reason: any, p: any) {
   console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
 });

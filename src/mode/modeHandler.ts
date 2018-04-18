@@ -35,6 +35,7 @@ export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _remappers: Remappers;
+  public debugId: number; // Used solely for debugging purposes
 
   public vimState: VimState;
 
@@ -43,6 +44,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   constructor() {
+    this.debugId = Math.floor(Math.random() * 1000);
     this._remappers = new Remappers();
     this._modes = [
       new modes.NormalMode(),
@@ -507,8 +509,8 @@ export class ModeHandler implements vscode.Disposable {
         x =>
           x.start.isEarlierThan(x.stop)
             ? x.withNewStop(
-                x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
-              )
+              x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
+            )
             : x
       );
     }
@@ -770,7 +772,7 @@ export class ModeHandler implements vscode.Disposable {
       if (
         recordedState.operators.length > 1 &&
         recordedState.operators.reverse()[0].constructor ===
-          recordedState.operators.reverse()[1].constructor
+        recordedState.operators.reverse()[1].constructor
       ) {
         resultVimState = await recordedState.operator.runRepeat(
           resultVimState,
@@ -1325,8 +1327,8 @@ export class ModeHandler implements vscode.Disposable {
     const easyMotionHighlightRanges =
       this.currentMode.name === ModeName.EasyMotionInputMode
         ? vimState.easyMotion.searchAction
-            .getMatches(vimState.cursorPosition, vimState)
-            .map(x => x.toRange())
+          .getMatches(vimState.cursorPosition, vimState)
+          .map(x => x.toRange())
         : [];
     this.vimState.editor.setDecorations(Decoration.EasyMotion, easyMotionHighlightRanges);
 
