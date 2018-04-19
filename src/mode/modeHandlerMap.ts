@@ -17,8 +17,7 @@ class ModeHandlerMapImpl {
   }
 
   async get(key: string): Promise<ModeHandler | null> {
-    let modeHandler = this.modeHandlerMap[key];
-    return modeHandler;
+    return this.modeHandlerMap[key];
   }
 
   getKeys(): string[] {
