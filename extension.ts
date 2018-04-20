@@ -30,7 +30,7 @@ let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
-  const prevHandler = await ModeHandlerMap.get(previousActiveEditorId.toString());
+  const prevHandler = ModeHandlerMap.get(previousActiveEditorId.toString());
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
   let [curHandler, isNewModeHandler] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());

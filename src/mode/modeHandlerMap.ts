@@ -16,7 +16,7 @@ class ModeHandlerMapImpl {
     return [modeHandler, isNew];
   }
 
-  async get(key: string): Promise<ModeHandler | null> {
+  get(key: string): ModeHandler | null {
     return this.modeHandlerMap[key];
   }
 
