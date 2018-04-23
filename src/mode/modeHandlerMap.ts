@@ -16,6 +16,10 @@ class ModeHandlerMapImpl {
     return [modeHandler, isNew];
   }
 
+  get(key: string): ModeHandler | null {
+    return this.modeHandlerMap[key];
+  }
+
   getKeys(): string[] {
     return Object.keys(this.modeHandlerMap);
   }

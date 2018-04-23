@@ -35,6 +35,7 @@ export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _remappers: Remappers;
+  public debugId: number; // Used solely for debugging purposes
 
   public vimState: VimState;
 
@@ -43,6 +44,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   constructor() {
+    this.debugId = Math.floor(Math.random() * 1000);
     this._remappers = new Remappers();
     this._modes = [
       new modes.NormalMode(),
