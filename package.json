@@ -611,7 +611,7 @@
     "@types/mocha": "5.2.0",
     "@types/node": "9.6.6",
     "gulp": "3.9.1",
-    "gulp-bump": "3.1.0",
+    "gulp-bump": "3.1.1",
     "gulp-filter": "5.1.0",
     "gulp-git": "2.5.2",
     "gulp-sourcemaps": "2.6.4",
@@ -621,7 +621,7 @@
     "mocha": "5.1.1",
     "prettier": "1.12.1",
     "tslint": "5.9.1",
-    "typescript": "2.8.1",
+    "typescript": "2.8.3",
     "vscode": "1.1.14"
   }
 }
