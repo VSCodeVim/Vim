@@ -1,8 +1,20 @@
 # Change Log
 
-## [v0.11.4](https://github.com/vscodevim/vim/tree/HEAD)
+## [v0.11.5](https://github.com/vscodevim/vim/tree/HEAD)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.3...HEAD)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.4...HEAD)
+
+- chore\(deps\): update dependency gulp-bump to v3.1.1 [\#2556](https://github.com/VSCodeVim/Vim/pull/2556) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency typescript to v2.8.3 [\#2553](https://github.com/VSCodeVim/Vim/pull/2553) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/node to v9.6.6 [\#2551](https://github.com/VSCodeVim/Vim/pull/2551) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/mocha to v5.2.0 [\#2550](https://github.com/VSCodeVim/Vim/pull/2550) ([renovate-bot](https://github.com/renovate-bot))
+- Fixed undo issue given in \#2545 [\#2547](https://github.com/VSCodeVim/Vim/pull/2547) ([Chillee](https://github.com/Chillee))
+- chore\(deps\): update dependency mocha to v5.1.1 [\#2546](https://github.com/VSCodeVim/Vim/pull/2546) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency prettier to v1.12.1 [\#2543](https://github.com/VSCodeVim/Vim/pull/2543) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/lodash to v4.14.107 [\#2540](https://github.com/VSCodeVim/Vim/pull/2540) ([renovate-bot](https://github.com/renovate-bot))
+
+## [v0.11.4](https://github.com/vscodevim/vim/tree/v0.11.4) (2018-04-14)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.3...v0.11.4)
 
 - fix: don't call prettier when no files updated [\#2539](https://github.com/VSCodeVim/Vim/pull/2539) ([jpoon](https://github.com/jpoon))
 - chore\(dep\): upgrade gulp-bump, gulp-git, gulp-typescript, prettier, typescript, vscode [\#2538](https://github.com/VSCodeVim/Vim/pull/2538) ([jpoon](https://github.com/jpoon))
