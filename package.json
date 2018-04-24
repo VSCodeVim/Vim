@@ -607,7 +607,7 @@
     "@types/copy-paste": "1.1.30",
     "@types/diff": "3.5.1",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.107",
+    "@types/lodash": "4.14.108",
     "@types/mocha": "5.2.0",
     "@types/node": "9.6.6",
     "gulp": "3.9.1",
