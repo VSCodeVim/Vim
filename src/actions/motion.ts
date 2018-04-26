@@ -1433,18 +1433,14 @@ export abstract class MoveInsideCharacter extends BaseMovement {
       }
     } else {
       startPos = startPlusOne;
+
+      // If the closing character is the first on the line, don't swallow it.
+      if (endPos.isInLeadingWhitespace()) {
+        endPos = endPos.getLineBegin();
+      }
+
       if (vimState.currentMode === ModeName.Visual) {
         endPos = endPos.getLeftThroughLineBreaks();
-      }
-    }
-
-    // If the closing character is the first on the line, don't swallow it.
-    if (!this.includeSurrounding) {
-      if (endPos.getLeft().isInLeadingWhitespace()) {
-        endPos = endPos.getLineBegin();
-        if (vimState.currentMode === ModeName.Visual) {
-          endPos = endPos.getLeftThroughLineBreaks();
-        }
       }
     }
 

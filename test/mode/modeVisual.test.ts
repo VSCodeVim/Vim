@@ -564,6 +564,22 @@ suite('Mode Visual', () => {
     endMode: ModeName.Normal,
   });
 
+  newTest({
+    title: 'Can do vi{ on outer pair of nested braces',
+    start: ['{', '  te|st', '  {', '    test', '  }', '}'],
+    keysPressed: 'vi{d',
+    end: ['{', '|}'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Can do vi{ on braces indented by 1 and preserve indent',
+    start: ['{', '  t|est', ' }'],
+    keysPressed: 'vi{d',
+    end: ['{', '| }'],
+    endMode: ModeName.Normal,
+  });
+
   suite('handles replace in visual mode', () => {
     newTest({
       title: 'Can do a single line replace',
