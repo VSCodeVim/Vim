@@ -1,5 +1,6 @@
 import { spawn, ChildProcess } from 'child_process';
 import { dirname } from 'path';
+import { existsSync } from 'fs';
 import { attach, Nvim } from 'promised-neovim-client';
 import * as vscode from 'vscode';
 
@@ -15,7 +16,10 @@ export class Neovim implements vscode.Disposable {
   private nvim: Nvim;
 
   async initialize() {
-    const dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
+    let dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
+    if (!existsSync(dir)) {
+      dir = __dirname;
+    }
     this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
       cwd: dir,
     });
