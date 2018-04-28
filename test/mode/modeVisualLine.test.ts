@@ -315,4 +315,13 @@ suite('Mode Visual Line', () => {
       assertEqualLines(['one two threeone two three', 'one two three']);
     });
   });
+
+  suite('replace text in linewise visual-mode with linewise register content', () => {
+    newTest({
+      title: 'yyVp does not change the content but changes cursor position',
+      start: ['fo|o', 'bar', 'fun', 'baz'],
+      keysPressed: 'yyVp',
+      end: ['|foo', 'bar', 'fun', 'baz'],
+    });
+  });
 });
