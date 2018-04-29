@@ -2075,7 +2075,7 @@ class CommandClearLine extends BaseCommand {
 
 @RegisterAction
 class CommandExitVisualMode extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Visual];
   keys = ['v'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -2087,7 +2087,7 @@ class CommandExitVisualMode extends BaseCommand {
 
 @RegisterAction
 class CommandVisualMode extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['v'];
   isCompleteAction = false;
 
@@ -2122,15 +2122,23 @@ class CommandReselectVisual extends BaseCommand {
 
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ['<C-v>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    if (vimState.currentMode === ModeName.VisualBlock) {
-      vimState.currentMode = ModeName.Normal;
-    } else {
-      vimState.currentMode = ModeName.VisualBlock;
-    }
+    vimState.currentMode = ModeName.VisualBlock;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandExitVisualBlockMode extends BaseCommand {
+  modes = [ModeName.VisualBlock];
+  keys = ['<C-v>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Normal;
 
     return vimState;
   }
@@ -2138,7 +2146,7 @@ class CommandVisualBlockMode extends BaseCommand {
 
 @RegisterAction
 class CommandVisualLineMode extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   keys = ['V'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
