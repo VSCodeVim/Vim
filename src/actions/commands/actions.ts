@@ -2141,16 +2141,19 @@ class CommandSelectSearchWord extends BaseCommand {
       vimState.currentMode
     );
 
-    const { start, end, match } = newSearchState.getNextSearchMatchRange(
-      vimState.cursorStartPosition
-    );
-    if (!match) {
-      return vimState;
+    // Find the match of current word
+    let result = newSearchState.getSearchMatchRangeOf(vimState.cursorStartPosition);
+    if (!result.match) {
+      // Or try to search for the next word
+      result = newSearchState.getNextSearchMatchRange(vimState.cursorStartPosition, 1);
+      if (!result.match) {
+        return vimState;
+      }
     }
 
     vimState.currentMode = ModeName.Visual;
-    vimState.cursorStartPosition = start;
-    vimState.cursorPosition = end.getLeft();  // end is exclusive
+    vimState.cursorStartPosition = result.start;
+    vimState.cursorPosition = result.end.getLeftThroughLineBreaks();  // end is exclusive
 
     return vimState;
   }

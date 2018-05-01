@@ -263,6 +263,30 @@ export class SearchState {
     }
   }
 
+  public getSearchMatchRangeOf(
+    pos: Position
+  ): { start: Position; end: Position; match: boolean } {
+    this._recalculateSearchRanges();
+
+    if (this._matchRanges.length === 0) {
+      // TODO(bell)
+      return { start: pos, end: pos, match: false };
+    }
+
+    for (let matchRange of this._matchRanges) {
+      if (matchRange.start.compareTo(pos) <= 0 && matchRange.end.compareTo(pos) > 0) {
+        return {
+          start: Position.FromVSCodePosition(matchRange.start),
+          end: Position.FromVSCodePosition(matchRange.end),
+          match: true,
+        };
+      }
+    }
+
+    // TODO(bell)
+    return { start: pos, end: pos, match: false };
+  }
+
   constructor(
     direction: SearchDirection,
     startPosition: Position,
