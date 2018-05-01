@@ -2123,6 +2123,40 @@ class CommandReselectVisual extends BaseCommand {
 }
 
 @RegisterAction
+class CommandSelectSearchWord extends BaseCommand {
+  modes = [ModeName.Normal];
+  keys = ['g', 'n'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const searchState = vimState.globalState.searchState;
+    if (!searchState || searchState.searchString === '') {
+      return vimState;
+    }
+
+    const newSearchState = new SearchState(
+      SearchDirection.Forward,
+      vimState.cursorPosition,
+      searchState!.searchString,
+      { isRegex: true },
+      vimState.currentMode
+    );
+
+    const { start, end, match } = newSearchState.getNextSearchMatchRange(
+      vimState.cursorStartPosition
+    );
+    if (!match) {
+      return vimState;
+    }
+
+    vimState.currentMode = ModeName.Visual;
+    vimState.cursorStartPosition = start;
+    vimState.cursorPosition = end.getLeft();  // end is exclusive
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ['<C-v>'];

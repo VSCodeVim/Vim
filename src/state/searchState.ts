@@ -212,7 +212,7 @@ export class SearchState {
    */
   public getNextSearchMatchRange(
     startPosition: Position,
-    direction = 1
+    direction: number,
   ): { start: Position; end: Position; match: boolean } {
     this._recalculateSearchRanges();
 
