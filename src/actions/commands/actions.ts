@@ -1289,12 +1289,12 @@ export class PutCommand extends BaseCommand {
       textToAdd = text;
       whereToAddText = dest;
     } else if (
-      vimState.currentMode === ModeName.Visual &&
+      (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) &&
       register.registerMode === RegisterMode.LineWise
     ) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
-      textToAdd = '\n' + text + '\n';
+      textToAdd = (vimState.currentMode === ModeName.Visual ? '\n' : '') + text + '\n';
       whereToAddText = dest;
     } else {
       if (adjustIndent) {
@@ -1524,6 +1524,7 @@ export class PutCommandVisual extends BaseCommand {
 
     // If the to be inserted text is linewise we have a seperate logic delete the
     // selection first than insert
+    let oldMode = vimState.currentMode;
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
@@ -1533,11 +1534,12 @@ export class PutCommandVisual extends BaseCommand {
         false
       );
       // to ensure, that the put command nows this is
-      // an linewise register insertion in visual mode
-      let oldMode = deleteResult.currentMode;
-      deleteResult.currentMode = ModeName.Visual;
-      deleteResult = await new PutCommand().exec(start, deleteResult, true);
+      // an linewise register insertion in visual mode of
+      // characterwise, linewise
+      let resultMode = deleteResult.currentMode;
       deleteResult.currentMode = oldMode;
+      deleteResult = await new PutCommand().exec(start, deleteResult, true);
+      deleteResult.currentMode = resultMode;
       return deleteResult;
     }
 
