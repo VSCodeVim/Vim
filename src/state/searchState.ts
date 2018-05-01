@@ -212,7 +212,7 @@ export class SearchState {
    */
   public getNextSearchMatchRange(
     startPosition: Position,
-    direction: number,
+    direction: number
   ): { start: Position; end: Position; match: boolean } {
     this._recalculateSearchRanges();
 
@@ -263,9 +263,7 @@ export class SearchState {
     }
   }
 
-  public getSearchMatchRangeOf(
-    pos: Position
-  ): { start: Position; end: Position; match: boolean } {
+  public getSearchMatchRangeOf(pos: Position): { start: Position; end: Position; match: boolean } {
     this._recalculateSearchRanges();
 
     if (this._matchRanges.length === 0) {

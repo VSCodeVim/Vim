@@ -1847,7 +1847,7 @@ suite('Mode Normal', () => {
   suite('can handle gn', () => {
     test('gn selects the next match text', async () => {
       await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
       await modeHandler.handleMultipleKeyEvents('gg'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
@@ -1863,7 +1863,7 @@ suite('Mode Normal', () => {
 
     const gnSelectsCurrentWord = async (jumpCmd: string) => {
       await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
@@ -1895,7 +1895,7 @@ suite('Mode Normal', () => {
 
     test('gn selects the next word at hello|', async () => {
       await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
       await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 

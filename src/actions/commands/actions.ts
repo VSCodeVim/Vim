@@ -2151,8 +2151,10 @@ class CommandSelectSearchWord extends BaseCommand {
     // Try to search for the next word if not matched or
     // if the cursor is at the end of a match string in visual-mode.
     result = newSearchState.getSearchMatchRangeOf(vimState.cursorPosition);
-    if (vimState.currentMode === ModeName.Visual &&
-      vimState.cursorPosition.compareTo(result.end.getLeftThroughLineBreaks()) === 0) {
+    if (
+      vimState.currentMode === ModeName.Visual &&
+      vimState.cursorPosition.compareTo(result.end.getLeftThroughLineBreaks()) === 0
+    ) {
       result.match = false;
     }
 
@@ -2160,12 +2162,13 @@ class CommandSelectSearchWord extends BaseCommand {
       // Try to search for the next word
       result = newSearchState.getNextSearchMatchRange(vimState.cursorPosition, 1);
       if (!result.match) {
-        return vimState;  // no match...
+        return vimState; // no match...
       }
     }
 
-    vimState.cursorStartPosition = vimState.currentMode === ModeName.Normal ? result.start : vimState.cursorPosition;
-    vimState.cursorPosition = result.end.getLeftThroughLineBreaks();  // end is exclusive
+    vimState.cursorStartPosition =
+      vimState.currentMode === ModeName.Normal ? result.start : vimState.cursorPosition;
+    vimState.cursorPosition = result.end.getLeftThroughLineBreaks(); // end is exclusive
     vimState.currentMode = ModeName.Visual;
 
     return vimState;
