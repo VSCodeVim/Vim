@@ -105,8 +105,18 @@ export class SelectABigWord extends TextObjectMovement {
       stop = position.getCurrentBigWordEnd();
     } else {
       // Check 'aw' code for much of the reasoning behind this logic.
-      let nextWord = position.getBigWordRight();
+      const nextWord = position.getBigWordRight();
       if (
+        (nextWord.line > position.line || nextWord.isAtDocumentEnd()) &&
+        vimState.recordedState.count === 0
+      ) {
+        if (position.getLastBigWordEnd().isLineBeginning()) {
+          start = position.getLastBigWordEnd();
+        } else {
+          start = position.getLastBigWordEnd().getRight();
+        }
+        stop = position.getLineEnd();
+      } else if (
         (nextWord.isEqual(nextWord.getFirstLineNonBlankChar()) || nextWord.isLineEnd()) &&
         vimState.recordedState.count === 0
       ) {
