@@ -939,4 +939,102 @@ suite('Mode Visual', () => {
       assertEqual(modeHandler.currentMode.name, ModeName.Normal);
     });
   });
+
+  suite('can handle gn', () => {
+    test('gn selects the next match text', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('ggv'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 1);
+    });
+
+    test('gn selects the current word at |hello', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('2ggv'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 5);
+      assertEqual(selection.end.line, 1);
+    });
+
+    test('gn selects the current word at h|ello', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('2gglv'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 1);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 5);
+      assertEqual(selection.end.line, 1);
+    });
+
+    test('gn selects the current word at hel|lo', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('2ggehv'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 3);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 5);
+      assertEqual(selection.end.line, 1);
+    });
+
+    test('gn selects the next word at hell|o', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('2ggev'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 4);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 5);
+      assertEqual(selection.end.line, 2);
+    });
+
+    test('gn selects the next word at hello|', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('2ggelv'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 5);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 5);
+      assertEqual(selection.end.line, 2);
+    });
+  });
 });

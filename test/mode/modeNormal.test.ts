@@ -1,6 +1,7 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -1841,5 +1842,71 @@ suite('Mode Normal', () => {
     keysPressed: 'daI',
     end: ['|'],
     endMode: ModeName.Normal,
+  });
+
+  suite('can handle gn', () => {
+    test('gn selects the next match text', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('gg'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 1);
+    });
+
+    const gnSelectsCurrentWord = async (jumpCmd: string) => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 1);
+    };
+
+    test('gn selects the current word at |hello', async () => {
+      await gnSelectsCurrentWord('2gg');
+    });
+
+    test('gn selects the current word at h|ello', async () => {
+      await gnSelectsCurrentWord('2ggl');
+    });
+
+    test('gn selects the current word at hel|lo', async () => {
+      await gnSelectsCurrentWord('2ggeh');
+    });
+
+    test('gn selects the current word at hell|o', async () => {
+      await gnSelectsCurrentWord('2gge');
+    });
+
+    test('gn selects the next word at hello|', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ... '/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 2);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 2);
+    });
   });
 });
