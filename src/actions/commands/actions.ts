@@ -1325,6 +1325,26 @@ export class PutCommand extends BaseCommand {
       }
     }
 
+    // After using "p" or "P" in Visual mode the text that was put will be
+    // selected (from Vim's ":help gv").
+    if (
+      vimState.currentMode === ModeName.Visual ||
+      vimState.currentMode === ModeName.VisualLine ||
+      vimState.currentMode === ModeName.VisualBlock
+    ) {
+      vimState.lastVisualMode = vimState.currentMode;
+      vimState.lastVisualSelectionStart = whereToAddText;
+      let textToEnd = textToAdd;
+      if (
+        vimState.currentMode === ModeName.VisualLine &&
+        textToAdd[textToAdd.length - 1] === '\n'
+      ) {
+        // don't go next line
+        textToEnd = textToAdd.substring(0, textToAdd.length - 1);
+      }
+      vimState.lastVisualSelectionEnd = whereToAddText.advancePositionByText(textToEnd);
+    }
+
     // More vim weirdness: If the thing you're pasting has a newline, the cursor
     // stays in the same place. Otherwise, it moves to the end of what you pasted.
 
