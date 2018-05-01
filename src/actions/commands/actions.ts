@@ -2124,7 +2124,7 @@ class CommandReselectVisual extends BaseCommand {
 
 @RegisterAction
 class CommandSelectSearchWord extends BaseCommand {
-  modes = [ModeName.Normal];
+  modes = [ModeName.Normal, ModeName.Visual];
   keys = ['g', 'n'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -2141,19 +2141,32 @@ class CommandSelectSearchWord extends BaseCommand {
       vimState.currentMode
     );
 
-    // Find the match of current word
-    let result = newSearchState.getSearchMatchRangeOf(vimState.cursorStartPosition);
+    let result = {
+      start: vimState.cursorPosition,
+      end: vimState.cursorPosition,
+      match: false,
+    };
+
+    // At first, try to search for current word, and stop searching if matched.
+    // Try to search for the next word if not matched or
+    // if the cursor is at the end of a match string in visual-mode.
+    result = newSearchState.getSearchMatchRangeOf(vimState.cursorPosition);
+    if (vimState.currentMode === ModeName.Visual &&
+      vimState.cursorPosition.compareTo(result.end.getLeftThroughLineBreaks()) === 0) {
+      result.match = false;
+    }
+
     if (!result.match) {
-      // Or try to search for the next word
-      result = newSearchState.getNextSearchMatchRange(vimState.cursorStartPosition, 1);
+      // Try to search for the next word
+      result = newSearchState.getNextSearchMatchRange(vimState.cursorPosition, 1);
       if (!result.match) {
-        return vimState;
+        return vimState;  // no match...
       }
     }
 
-    vimState.currentMode = ModeName.Visual;
-    vimState.cursorStartPosition = result.start;
+    vimState.cursorStartPosition = vimState.currentMode === ModeName.Normal ? result.start : vimState.cursorPosition;
     vimState.cursorPosition = result.end.getLeftThroughLineBreaks();  // end is exclusive
+    vimState.currentMode = ModeName.Visual;
 
     return vimState;
   }
