@@ -189,7 +189,8 @@ export class SearchState {
   }
 
   /**
-   * The position of the next search, or undefined if there is no match.
+   * The position of the next search.
+   * match == false if there is no match.
    *
    * Pass in -1 as direction to reverse the direction we search.
    */
@@ -197,11 +198,27 @@ export class SearchState {
     startPosition: Position,
     direction = 1
   ): { pos: Position; match: boolean } {
+    const { start, match } = this.getNextSearchMatchRange(startPosition, direction);
+    return { pos: start, match };
+  }
+
+  /**
+   * The position of the next search.
+   * match == false if there is no match.
+   *
+   * Pass in -1 as direction to reverse the direction we search.
+   *
+   * end is exclusive; which means the index is start + matchedString.length
+   */
+  public getNextSearchMatchRange(
+    startPosition: Position,
+    direction = 1
+  ): { start: Position; end: Position; match: boolean } {
     this._recalculateSearchRanges();
 
     if (this._matchRanges.length === 0) {
       // TODO(bell)
-      return { pos: startPosition, match: false };
+      return { start: startPosition, end: startPosition, match: false };
     }
 
     const effectiveDirection = direction * this._searchDirection;
@@ -209,23 +226,38 @@ export class SearchState {
     if (effectiveDirection === SearchDirection.Forward) {
       for (let matchRange of this._matchRanges) {
         if (matchRange.start.compareTo(startPosition) > 0) {
-          return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
+          return {
+            start: Position.FromVSCodePosition(matchRange.start),
+            end: Position.FromVSCodePosition(matchRange.end),
+            match: true,
+          };
         }
       }
 
       // Wrap around
       // TODO(bell)
-      return { pos: Position.FromVSCodePosition(this._matchRanges[0].start), match: true };
+      const range = this._matchRanges[0];
+      return {
+        start: Position.FromVSCodePosition(range.start),
+        end: Position.FromVSCodePosition(range.end),
+        match: true,
+      };
     } else {
       for (let matchRange of this._matchRanges.slice(0).reverse()) {
         if (matchRange.start.compareTo(startPosition) < 0) {
-          return { pos: Position.FromVSCodePosition(matchRange.start), match: true };
+          return {
+            start: Position.FromVSCodePosition(matchRange.start),
+            end: Position.FromVSCodePosition(matchRange.end),
+            match: true,
+          };
         }
       }
 
       // TODO(bell)
+      const range = this._matchRanges[this._matchRanges.length - 1];
       return {
-        pos: Position.FromVSCodePosition(this._matchRanges[this._matchRanges.length - 1].start),
+        start: Position.FromVSCodePosition(range.start),
+        end: Position.FromVSCodePosition(range.end),
         match: true,
       };
     }
