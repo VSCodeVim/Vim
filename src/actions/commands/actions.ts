@@ -2153,7 +2153,7 @@ class CommandSelectSearchWord extends BaseCommand {
     result = newSearchState.getSearchMatchRangeOf(vimState.cursorPosition);
     if (
       vimState.currentMode === ModeName.Visual &&
-      vimState.cursorPosition.compareTo(result.end.getLeftThroughLineBreaks()) === 0
+      vimState.cursorPosition.isEqual(result.end.getLeftThroughLineBreaks())
     ) {
       result.match = false;
     }
