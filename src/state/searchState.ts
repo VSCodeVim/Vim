@@ -155,7 +155,7 @@ export class SearchState {
           break;
         }
 
-        this.matchRanges.push(
+        this._matchRanges.push(
           new vscode.Range(
             absPosToPosition(result.index, 0, sumLineLengths.length, sumLineLengths),
             absPosToPosition(
