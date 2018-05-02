@@ -1616,6 +1616,30 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '<BS> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<BS>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: '<S-BS> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<shift+BS>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: '<C-h> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<C-h>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
     title: 'Can do C',
     start: ['export const options = {', '|', '};'],
     keysPressed: 'C',
