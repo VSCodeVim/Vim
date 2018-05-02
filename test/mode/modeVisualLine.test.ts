@@ -316,6 +316,13 @@ suite('Mode Visual Line', () => {
     });
   });
 
+  newTest({
+    title: 'Vp updates register content',
+    start: ['|hello', 'world'],
+    keysPressed: 'ddVpP',
+    end: ['|world', 'hello', ''],
+  });
+
   suite('replace text in linewise visual-mode with linewise register content', () => {
     newTest({
       title: 'yyVp does not change the content but changes cursor position',
