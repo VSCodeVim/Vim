@@ -874,4 +874,69 @@ suite('Mode Visual', () => {
       end: ['    func() {', '        hi;', '        alw;', '|        hi;', '        alw;', '    }'],
     });
   });
+
+  suite('Transition between visual mode', () => {
+    test('vv will back to normal mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    });
+
+    test('vV will transit to visual line mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+    });
+
+    test('v<C-v> will transit to visual block mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+    });
+
+    test('Vv will transit to visual (char) mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    });
+
+    test('VV will back to normal mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    });
+
+    test('V<C-v> will transit to visual block mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+    });
+
+    test('<C-v>v will transit to visual (char) mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    });
+
+    test('<C-v>V will back to visual line mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+    });
+
+    test('<C-v><C-v> will back to normal mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    });
+  });
 });
