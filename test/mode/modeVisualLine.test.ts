@@ -323,5 +323,12 @@ suite('Mode Visual Line', () => {
       keysPressed: 'yyVp',
       end: ['|foo', 'bar', 'fun', 'baz'],
     });
+
+    newTest({
+      title: 'linewise visual put works also in the end of document',
+      start: ['foo', 'bar', 'fun', '|baz'],
+      keysPressed: 'yyVp',
+      end: ['foo', 'bar', 'fun', '|baz'],
+    });
   });
 });

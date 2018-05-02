@@ -1289,7 +1289,9 @@ export class PutCommand extends BaseCommand {
       textToAdd = text;
       whereToAddText = dest;
     } else if (
-      (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) &&
+      (vimState.currentMode === ModeName.Visual ||
+        (vimState.currentMode === ModeName.VisualLine &&
+          !vimState.cursorPosition.isAtDocumentEnd())) &&
       register.registerMode === RegisterMode.LineWise
     ) {
       // in the specific case of linewise register data during visual mode,
@@ -1314,6 +1316,12 @@ export class PutCommand extends BaseCommand {
           .join('\n');
       }
 
+      if (
+        vimState.currentMode === ModeName.VisualLine &&
+        vimState.cursorPosition.isAtDocumentEnd()
+      ) {
+        after = false;
+      }
       if (after) {
         // P insert before current line
         textToAdd = text + '\n';
