@@ -2531,7 +2531,7 @@ class CommandNavigateLastBOL extends BaseCommand {
 @RegisterAction
 class CommandQuit extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ['<C-w>', 'q'];
+  keys = [['<C-w>', 'q'], ['<C-w>', '<C-q>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new QuitCommand({}).execute();
@@ -2635,7 +2635,7 @@ class BaseTabCommand extends BaseCommand {
 @RegisterAction
 class VerticalSplit extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ['<C-w>', 'v'];
+  keys = [['<C-w>', 'v'], ['<C-w>', '<C-v>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
