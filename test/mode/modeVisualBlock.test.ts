@@ -152,4 +152,11 @@ suite('Mode Visual Block', () => {
     keysPressed: '<C-v>$4jAaa<Esc>',
     end: ['Doga|a', 'Angryaa', 'Dogaa', 'Angryaa', 'Dogaa'],
   });
+
+  newTest({
+    title: 'o works in visual block mode',
+    start: ['|foo', 'bar', 'baz'],
+    keysPressed: '<C-v>jjllold',
+    end: ['|f', 'b', 'b'],
+  });
 });

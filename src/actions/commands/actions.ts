@@ -1932,7 +1932,7 @@ class CommandBottomScrollFirstChar extends BaseCommand {
 
 @RegisterAction
 class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['o'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
