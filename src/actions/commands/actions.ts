@@ -2531,7 +2531,7 @@ class CommandNavigateLastBOL extends BaseCommand {
 @RegisterAction
 class CommandQuit extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = [['<C-w>', 'q'], ['<C-w>', '<C-q>']];
+  keys = [['<C-w>', 'q'], ['<C-w>', '<C-q>'], ['<C-w>', 'c'], ['<C-w>', '<C-c>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new QuitCommand({}).execute();
