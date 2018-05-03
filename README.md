@@ -421,8 +421,8 @@ Motion Command | Description
 `<leader><leader> T <char>`|Til character backwards
 `<leader><leader> w`|Start of word forwards
 `<leader><leader> b`|Start of word backwards
-`<leader><leader> h`|matches beginning & ending of word, camelCase, after _ and after # backwards
 `<leader><leader> l`|matches beginning & ending of word, camelCase, after _ and after # forwards
+`<leader><leader> h`|matches beginning & ending of word, camelCase, after _ and after # backwards
 `<leader><leader> e`|End of word forwards
 `<leader><leader> ge`|End of word backwards
 `<leader><leader> j`|Start of line forwards
