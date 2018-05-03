@@ -9,7 +9,7 @@ var gulp = require('gulp'),
 
 // compile
 gulp.task('compile', function() {
-  var tsProject = ts.createProject('tsconfig.json');
+  var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
   return tsProject
     .src()
     .pipe(sourcemaps.init())
