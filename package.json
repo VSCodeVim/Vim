@@ -158,7 +158,7 @@
       {
         "key": "ctrl+h",
         "command": "extension.vim_ctrl+h",
-        "when": "editorTextFocus && vim.active && vim.use<C-h> && vim.mode == 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-h> && !inDebugRepl"
       },
       {
         "key": "ctrl+e",

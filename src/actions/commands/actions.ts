@@ -782,7 +782,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<character>'], ['<up>'], ['<down>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -793,7 +793,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const prevSearchList = vimState.globalState.searchStatePrevious!;
 
     // handle special keys first
-    if (key === '<BS>' || key === '<shift+BS>') {
+    if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === '\n') {
       vimState.currentMode = vimState.globalState.searchState!.previousMode;
