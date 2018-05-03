@@ -34,10 +34,10 @@ before_install:
     sh -e /etc/init.d/xvfb start;
     sleep 3;
   fi
--
+
 script:
 - npm run forceprettier
-- if [[ $(git diff-index HEAD --) ]]; then
+- if [[ $(git diff-index HEAD -- *.js *.ts) ]]; then
     git diff;
     echo "Prettier Failed. Run `gulp` or `gulp forceprettier`";
     exit 1;
