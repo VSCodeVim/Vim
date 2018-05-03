@@ -782,7 +782,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<character>'], ['<up>'], ['<down>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -793,7 +793,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const prevSearchList = vimState.globalState.searchStatePrevious!;
 
     // handle special keys first
-    if (key === '<BS>' || key === '<shift+BS>') {
+    if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === '\n') {
       vimState.currentMode = vimState.globalState.searchState!.previousMode;
@@ -1323,6 +1323,26 @@ export class PutCommand extends BaseCommand {
         textToAdd = '\n' + text;
         whereToAddText = dest.getLineEnd();
       }
+    }
+
+    // After using "p" or "P" in Visual mode the text that was put will be
+    // selected (from Vim's ":help gv").
+    if (
+      vimState.currentMode === ModeName.Visual ||
+      vimState.currentMode === ModeName.VisualLine ||
+      vimState.currentMode === ModeName.VisualBlock
+    ) {
+      vimState.lastVisualMode = vimState.currentMode;
+      vimState.lastVisualSelectionStart = whereToAddText;
+      let textToEnd = textToAdd;
+      if (
+        vimState.currentMode === ModeName.VisualLine &&
+        textToAdd[textToAdd.length - 1] === '\n'
+      ) {
+        // don't go next line
+        textToEnd = textToAdd.substring(0, textToAdd.length - 1);
+      }
+      vimState.lastVisualSelectionEnd = whereToAddText.advancePositionByText(textToEnd);
     }
 
     // More vim weirdness: If the thing you're pasting has a newline, the cursor
