@@ -45,8 +45,6 @@ function runPrettier(command, cb) {
       })
       .join(' ');
 
-    console.log(files);
-
     if (!files) {
       return cb();
     }
