@@ -597,12 +597,12 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
-    "clipboardy": "^1.2.2",
-    "diff-match-patch": "^1.0.0",
-    "lodash": "^4.17.5",
-    "neovim-client": "^2.1.0",
-    "promised-neovim-client": "^2.0.2",
-    "untildify": "^3.0.2"
+    "clipboardy": "1.2.2",
+    "diff-match-patch": "1.0.0",
+    "lodash": "4.17.5",
+    "neovim-client": "2.1.0",
+    "promised-neovim-client": "2.0.2",
+    "untildify": "3.0.2"
   },
   "devDependencies": {
     "@types/copy-paste": "1.1.30",
