@@ -39,11 +39,13 @@ function runPrettier(command, cb) {
     }
 
     var files = stdout
-      .split('\n')
+      .split(/\r?\n/)
       .filter(f => {
         return f.endsWith('.ts') || f.endsWith('.js');
       })
       .join(' ');
+
+    console.log(files);
 
     if (!files) {
       return cb();
