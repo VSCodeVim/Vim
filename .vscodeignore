@@ -1,10 +1,10 @@
 .github/**
 .vscode/**
 .vscode-test/**
-typings/**
 out/test/**
 test/**
+typings/**
 **/*.ts
 **/*.map
 .gitignore
-tsconfig.json
+*.yml

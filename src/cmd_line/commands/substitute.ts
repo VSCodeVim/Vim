@@ -3,9 +3,10 @@
 import * as vscode from 'vscode';
 import * as node from '../node';
 import * as token from '../token';
-import { ModeHandler } from '../../mode/modeHandler';
+import { VimState } from '../../state/vimState';
+import { VimError, ErrorCode } from '../../error';
 import { TextEditor } from '../../textEditor';
-import { Configuration } from '../../configuration/configuration';
+import { configuration } from '../../configuration/configuration';
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
   pattern: string;
@@ -60,10 +61,10 @@ export class SubstituteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  getRegex(args: ISubstituteCommandArguments, modeHandler: ModeHandler) {
+  getRegex(args: ISubstituteCommandArguments, vimState: VimState) {
     let jsRegexFlags = '';
 
-    if (Configuration.substituteGlobalFlag === true) {
+    if (configuration.substituteGlobalFlag === true) {
       // the gdefault flag is on, then /g if on by default and /g negates that
       if (!(args.flags & SubstituteFlags.ReplaceAll)) {
         jsRegexFlags += 'g';
@@ -79,15 +80,15 @@ export class SubstituteCommand extends node.CommandBase {
       jsRegexFlags += 'i';
     }
 
-    // If no pattern is entered, use previous search state
+    // If no pattern is entered, use previous search state (including search with * and #)
     if (args.pattern === '') {
-      const prevSearchState = modeHandler.vimState.globalState.searchStatePrevious;
-      if (prevSearchState) {
-        const prevSearchString = prevSearchState[prevSearchState.length - 1].searchString;
-        args.pattern = prevSearchString;
+      const prevSearchState = vimState.globalState.searchState;
+      if (prevSearchState === undefined || prevSearchState.searchString === '') {
+        throw VimError.fromCode(ErrorCode.E35);
+      } else {
+        args.pattern = prevSearchState.searchString;
       }
     }
-
     return new RegExp(args.pattern, jsRegexFlags);
   }
 
@@ -100,9 +101,9 @@ export class SubstituteCommand extends node.CommandBase {
     }
   }
 
-  async execute(modeHandler: ModeHandler): Promise<void> {
-    const regex = this.getRegex(this._arguments, modeHandler);
-    const selection = modeHandler.vimState.editor.selection;
+  async execute(vimState: VimState): Promise<void> {
+    const regex = this.getRegex(this._arguments, vimState);
+    const selection = vimState.editor.selection;
     const line = selection.start.isBefore(selection.end)
       ? selection.start.line
       : selection.end.line;
@@ -110,7 +111,7 @@ export class SubstituteCommand extends node.CommandBase {
     await this.replaceTextAtLine(line, regex);
   }
 
-  async executeWithRange(modeHandler: ModeHandler, range: node.LineRange) {
+  async executeWithRange(vimState: VimState, range: node.LineRange) {
     let startLine: vscode.Position;
     let endLine: vscode.Position;
 
@@ -118,8 +119,8 @@ export class SubstituteCommand extends node.CommandBase {
       startLine = new vscode.Position(0, 0);
       endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
     } else {
-      startLine = range.lineRefToPosition(modeHandler.vimState.editor, range.left, modeHandler);
-      endLine = range.lineRefToPosition(modeHandler.vimState.editor, range.right, modeHandler);
+      startLine = range.lineRefToPosition(vimState.editor, range.left, vimState);
+      endLine = range.lineRefToPosition(vimState.editor, range.right, vimState);
     }
 
     if (this._arguments.count && this._arguments.count >= 0) {
@@ -130,7 +131,7 @@ export class SubstituteCommand extends node.CommandBase {
     // TODO: Global Setting.
     // TODO: There are differencies between Vim Regex and JS Regex.
 
-    let regex = this.getRegex(this._arguments, modeHandler);
+    let regex = this.getRegex(this._arguments, vimState);
     for (
       let currentLine = startLine.line;
       currentLine <= endLine.line && currentLine < TextEditor.getLineCount();

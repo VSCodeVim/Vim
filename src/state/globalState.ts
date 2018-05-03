@@ -1,5 +1,5 @@
+import { RecordedState } from './../state/recordedState';
 import { SearchState } from './searchState';
-import { RecordedState } from '../mode/modeHandler';
 
 /**
  * State which stores global state (across editors)

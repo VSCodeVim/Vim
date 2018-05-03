@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "allowUnusedLabels": false,
     "module": "commonjs",
     "target": "es6",
     "outDir": "out",
     "noImplicitAny": true,
     "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
     "lib": [
       "es6"
@@ -13,10 +14,10 @@
     "sourceMap": true,
     "strictNullChecks": true,
     "experimentalDecorators": true,
-    "alwaysStrict": true
+    "alwaysStrict": true,
   },
   "exclude": [
     "node_modules",
-    ".vscode-test"
+    "!node_modules/@types"
   ]
 }

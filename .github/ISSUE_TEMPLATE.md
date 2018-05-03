@@ -1,46 +1,29 @@
 <!--
-For questions, ask us on [Slack](https://vscodevim-slackin.azurewebsites.net/) 👫. 
-DONT CHANGE ANYTHING UNTIL THE -----. Thanks!
+Do you have a question? Ask us on Slack: https://vscodevim-slackin.azurewebsites.net/.
+
+Fill in as much of the template below as you can.
+If you leave out information, we're not going to be able to help you either.
 -->
-
-* Click *thumbs-up* 👍 on this issue if you want it!
-* Click *confused* 😕 on this issue if not having it makes VSCodeVim unusable. 
-
-The VSCodeVim team prioritizes issues based on reaction count. 
-
---------
 
 **Is this a BUG REPORT or FEATURE REQUEST?** (choose one):
 
+**What happened**:
+
+**What did you expect to happen**:
+
+**How to reproduce it (as minimally and precisely as possible)**:
+
 <!--
-If this is a BUG REPORT, please:
-  - Fill in as much of the template below as you can.  If you leave out
-    information, we can't help you as well.
-
-If this is a FEATURE REQUEST, please:
-  - Describe *in detail* the feature/behavior/change you'd like to see.
-
-If we can't reproduce a bug or think a feature already exists, we
-might close your issue.  If we're wrong, PLEASE feel free to reopen it and
-explain why.
+For instance, include exact keys you pressed and/or your user configurations if relevant.
 -->
 
 **Environment**:
 
 <!--
 Please ensure you are on the latest VSCode + VSCodeVim
+You can use "Report Issue" by running "Developers: Show Running Extensions" from the Command Pallette to prefill these.
 -->
 
-- **VSCode Version**:
-- **VsCodeVim Version**: 
-- **OS**: 
-
-**What happened**:
-
-<!--
-Exact keys you pressed.
--->
-
-**What did you expect to happen**: 
-
-**How to reproduce it**:
+- Extension (VsCodeVim) version:
+- VSCode version:
+- OS version:

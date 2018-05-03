@@ -1,6 +1,8 @@
-import { Position, PositionDiff } from './../motion/position';
-import { TextEditor } from './../../textEditor';
 import * as vscode from 'vscode';
+
+import { TextEditor } from './../../textEditor';
+import { Position, PositionDiff } from './../motion/position';
+import { configuration } from '../../configuration/configuration';
 
 function escapeRegExpCharacters(value: string): string {
   return value.replace(/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, '\\$&');
@@ -179,7 +181,7 @@ export class PairMatcher {
    */
   static immediateMatchingBracket(currentPosition: Position): vscode.Range | undefined {
     // Don't delete bracket unless autoClosingBrackets is set
-    if (!vscode.workspace.getConfiguration().get('editor.autoClosingBrackets')) {
+    if (!configuration.getConfiguration().get('editor.autoClosingBrackets')) {
       return undefined;
     }
 

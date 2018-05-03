@@ -1,7 +1,7 @@
+import { VimState } from '../../state/vimState';
 import * as node from '../node';
-import { ModeHandler } from '../../mode/modeHandler';
-import * as write from './write';
 import * as quit from './quit';
+import * as write from './write';
 
 //
 // Implements :writequit
@@ -35,7 +35,7 @@ export class WriteQuitCommand extends node.CommandBase {
   }
 
   // Writing command. Taken as a basis from the "write.ts" file.
-  async execute(modeHandler: ModeHandler): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     let writeArgs: write.IWriteCommandArguments = {
       opt: this.arguments.opt,
       optValue: this.arguments.optValue,
@@ -45,7 +45,7 @@ export class WriteQuitCommand extends node.CommandBase {
     };
 
     let writeCmd = new write.WriteCommand(writeArgs);
-    await writeCmd.execute(modeHandler);
+    await writeCmd.execute(vimState);
     let quitArgs: quit.IQuitCommandArguments = {
       // wq! fails when no file name is provided
       bang: false,

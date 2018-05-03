@@ -1,6 +1,6 @@
-import * as node from '../node';
-import { ModeHandler } from '../../mode/modeHandler';
+import { VimState } from '../../state/vimState';
 import * as wall from '../commands/wall';
+import * as node from '../node';
 import * as quit from './quit';
 
 //
@@ -30,7 +30,7 @@ export class WriteQuitAllCommand extends node.CommandBase {
   }
 
   // Writing command. Taken as a basis from the "write.ts" file.
-  async execute(modeHandler: ModeHandler): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     let writeArgs: wall.IWallCommandArguments = {
       bang: this.arguments.bang,
     };

@@ -1,9 +1,9 @@
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
-import { TextEditor } from '../../src/textEditor';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { getTestingFunctions } from '../testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
+import { ModeName } from '../../src/mode/mode';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { TextEditor } from '../../src/textEditor';
+import { getTestingFunctions } from '../testSimplifier';
+import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
@@ -18,13 +18,14 @@ suite('Mode Insert', () => {
   teardown(cleanUpWorkspace);
 
   test('can be activated', async () => {
-    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A'];
+    let activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<insert>'];
 
     for (let key of activationKeys) {
+      await modeHandler.handleKeyEvent('<Esc>');
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+
       await modeHandler.handleKeyEvent(key);
       assertEqual(modeHandler.currentMode.name, ModeName.Insert);
-
-      await modeHandler.handleKeyEvent('<Esc>');
     }
   });
 

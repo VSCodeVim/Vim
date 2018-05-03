@@ -1,15 +1,8 @@
-import * as vscode from 'vscode';
-import {
-  setupWorkspace,
-  cleanUpWorkspace,
-  setTextEditorOptions,
-  assertEqualLines,
-} from './../../testUtils';
-import { ModeHandler } from '../../../src/mode/modeHandler';
-import { waitForTabChange } from '../../../src/util';
-import * as assert from 'assert';
-import { getTestingFunctions } from '../../testSimplifier';
 import { getAndUpdateModeHandler } from '../../../extension';
+import { ModeHandler } from '../../../src/mode/modeHandler';
+import { Configuration } from '../../testConfiguration';
+import { getTestingFunctions } from '../../testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
   let modeHandler: ModeHandler;
@@ -17,8 +10,11 @@ suite('Dot Operator', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
-    setTextEditorOptions(4, false);
+    let configuration = new Configuration();
+    configuration.tabstop = 4;
+    configuration.expandtab = false;
+
+    await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
   });
 
@@ -110,8 +106,11 @@ suite('Repeat content change', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
-    setTextEditorOptions(4, false);
+    let configuration = new Configuration();
+    configuration.tabstop = 4;
+    configuration.expandtab = false;
+
+    await setupWorkspace(configuration);
   });
 
   teardown(cleanUpWorkspace);

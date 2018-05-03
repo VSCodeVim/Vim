@@ -1,7 +1,6 @@
-import { Configuration } from './configuration/configuration';
 import * as _ from 'lodash';
 
-export class AngleBracketNotation {
+export class Notation {
   // Mapping from the nomalized string to regex strings that could match it.
   private static _notationMap: { [key: string]: string[] } = {
     'C-': ['ctrl\\+', 'c\\-'],
@@ -13,24 +12,25 @@ export class AngleBracketNotation {
 
   /**
    * Normalizes key to AngleBracketNotation
-   * For instance, <ctrl+x>, Ctrl+x, <c-x> normalized to <C-x>
+   * (e.g. <ctrl+x>, Ctrl+x, <c-x> normalized to <C-x>)
+   * and resolves special cases such as '<leader>'
    */
-  public static Normalize(key: string): string {
+  public static NormalizeKey(key: string, leaderKey: string): string {
     if (!this.isSurroundedByAngleBrackets(key) && key.length > 1) {
       key = `<${key.toLocaleLowerCase()}>`;
     }
 
     // Special cases that we handle incorrectly (internally)
-    if (key.toLowerCase() === '<space>') {
+    if (key.toLocaleLowerCase() === '<space>') {
       return ' ';
     }
 
-    if (key.toLowerCase() === '<cr>') {
+    if (key.toLocaleLowerCase() === '<cr>') {
       return '\n';
     }
 
-    if (key.toLowerCase() === '<leader>') {
-      return Configuration.leader;
+    if (key.toLocaleLowerCase() === '<leader>') {
+      return leaderKey;
     }
 
     if (_.includes(['<up>', '<down>', '<left>', '<right>'], key.toLocaleLowerCase())) {

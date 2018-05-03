@@ -34,10 +34,10 @@ Please report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim
     * [vim-surround](#vim-surround)
     * [vim-commentary](#vim-commentary)
     * [vim-indent-object](#vim-indent-object)
+    * [vim-sneak](#vim-sneak)
 * [VSCodeVim tricks](#vscodevim-tricks)
 * [F.A.Q / Troubleshooting](#faq)
 * [Contributing](#contributing)
-* [Release notes](https://github.com/VSCodeVim/Vim/releases)
 
 ## Getting started
 
@@ -49,11 +49,13 @@ All common Vim commands are supported. For a detailed list of supported features
 
 ### Mac setup
 
-If key repeating isn't working for you, execute this in your Terminal.
+If key repeating isn't working for you, execute this in your Terminal, then restart VS Code.
 
 ```sh
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
+defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
+
 ```
 
 We also recommend going into *System Preferences -> Keyboard* and increasing the Key Repeat and Delay Until Repeat settings to improve your speed.
@@ -61,6 +63,14 @@ We also recommend going into *System Preferences -> Keyboard* and increasing the
 ### Windows setup
 
 VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
+
+### Linux setup
+
+If you have configured `vim.useSystemClipboard: "true"`, we rely on [clipboardy](https://github.com/sindresorhus/clipboardy) for cross-platform copy/paste operations. This library is dependent on `xsel`:
+
+```
+apt install xsel
+```
 
 ## Settings
 
@@ -71,6 +81,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 ```json
 {
     "vim.easymotion": true,
+    "vim.sneak": true,
     "vim.incsearch": true,
     "vim.useSystemClipboard": true,
     "vim.useCtrlKeys": true,
@@ -311,17 +322,17 @@ Almost like vim-airline in VSCode!
 * Control status bar color based on current mode
 * Type: Boolean (Default: `false`)
 
-Once enabled, configure `"vim.statusBarColors"`.
+Once enabled, configure `"vim.statusBarColors"`. Colors can be defined for each mode either as `string` (background only), or `string[]` (background, foreground).
 
 ```json
     "vim.statusBarColorControl": true,
-    "vim.statusBarColors" : {
-        "normal": "#005f5f",
-        "insert": "#5f0000",
-        "visual": "#5f00af",
-        "visualline": "#005f87",
-        "visualblock": "#86592d",
-        "replace": "#000000"
+    "vim.statusBarColors": {
+        "normal": ["#8FBCBB", "#434C5E"],
+        "insert": "#BF616A",
+        "visual": "#B48EAD",
+        "visualline": "#B48EAD",
+        "visualblock": "#A3BE8C",
+        "replace": "#D08770"
     }
 ```
 
@@ -419,6 +430,7 @@ Motion Command | Description
 `<leader><leader><leader> bdw`|Start of word
 `<leader><leader><leader> bde`|End of word
 `<leader><leader><leader> bdjk`|Start of line
+`<leader><leader><leader> j`|JumpToAnywhere motion; default behavior matches beginning & ending of word, camelCase, after _ and after #
 
 `<leader><leader> (2s|2f|2F|2t|2T) <char><char>` and `<leader><leader><leader> bd2t <char>char>` are also available.
 The difference is character count required for search.
@@ -439,6 +451,7 @@ Setting | Description
 `vim.easymotionMarkerFontWeight`|The font weight used for the marker text.
 `vim.easymotionMarkerYOffset`|The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).
 `vim.easymotionKeys`|The characters used for jump marker name
+`vim.easymotionJumpToAnywhereRegex`| Custom regex to match for JumpToAnywhere motion (analogous to `Easymotion_re_anywhere`). Example setting (which also matches start & end of line, as well as Javascript comments in addition to the regular behavior (note the double escaping required): ^\\s*.|\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|\\#.|[a-z][A-Z]|//|.$"
 
 ### vim-surround
 
@@ -483,9 +496,24 @@ Command | Description
 `<operator>ai`|This indentation level and the line above (think `if` statements in Python)
 `<operator>aI`|This indentation level, the line above, and the line after (think `if` statements in C/C++/Java/etc)
 
+
+### vim-sneak
+
+Based on [vim-sneak](https://github.com/justinmk/vim-sneak). To activate sneak, you need to make sure that `sneak` is set to `true` in settings.json (default is `false`).
+
+Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
+
+Motion Command | Description
+---|--------
+`s<char><char>`|Move forward to the first occurence of `<char><char>`
+`S<char><char>`|Move backward to the first occurence of `<char><char>`
+`<operator>z<char><char>`|Perform `<operator>` forward to the first occurence of `<char><char>`
+`<operator>Z<char><char>`|Perform `<operator>` backward to the first occurence of `<char><char>`
+
+
 ## VSCodeVim tricks!
 
-Vim has a lot of nifty tricks and we try to perserve some of them:
+Vim has a lot of nifty tricks and we try to preserve some of them:
 
 * `gd` - jump to definition.
 * `gq` - on a visual selection reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.

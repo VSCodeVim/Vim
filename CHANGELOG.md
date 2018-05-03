@@ -1,738 +1,1202 @@
-# [v0.10.5 Rainy Reasons](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.5)  (Nov 21, 2017)
-* Maintain workbench settings when using status bar color configurations. Thanks <a class="user-mention" href="https://github.com/rodrigo-garcia-leon">@rodrigo-garcia-leon</a>
-* Escape delimiter substitutions. Thanks <a class="user-mention" href="https://github.com/westim">@westim</a>
-* Fix <code>:vsp</code> and <code>:vs</code>. Thanks <a class="user-mention" href="https://github.com/westim">@westim</a>
-# [v0.10.4 Unjust Umbrella](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.4)  (Nov 14, 2017)
-
-Patch release that fixes issue with <code>handleKeys</code> settings (<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="273862731" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2145" href="https://github.com/VSCodeVim/Vim/issues/2145">#2145</a>)
-# [v0.10.3 Quirky Quorum](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.3)  (Nov 13, 2017)
-
-Collection of features and bug fixes mainly from the community! Thanks <a class="user-mention" href="https://github.com/westim">@westim</a>, <a class="user-mention" href="https://github.com/strafos">@Strafos</a>, <a class="user-mention" href="https://github.com/daneestar">@DanEEStar</a>, <a class="user-mention" href="https://github.com/oliver-newman">@oliver-newman</a>, <a class="user-mention" href="https://github.com/parkovski">@parkovski</a>, <a class="user-mention" href="https://github.com/ohjames">@ohjames</a>, <a class="user-mention" href="https://github.com/westim">@westim</a>.
-* Implementation of U command (Thanks <a class="user-mention" href="https://github.com/westim">@westim</a>)
-* Fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="236737059" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1852" href="https://github.com/VSCodeVim/Vim/issues/1852">#1852</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="264592194" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2063" href="https://github.com/VSCodeVim/Vim/issues/2063">#2063</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="266658890" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2080" href="https://github.com/VSCodeVim/Vim/issues/2080">#2080</a> (Thanks <a class="user-mention" href="https://github.com/strafos">@Strafos</a> )
-* Fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="238988658" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1877" href="https://github.com/VSCodeVim/Vim/issues/1877">#1877</a> (Thanks <a class="user-mention" href="https://github.com/daneestar">@DanEEStar</a>)
-* Fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="231841700" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1772" href="https://github.com/VSCodeVim/Vim/issues/1772">#1772</a> - gj/gk in Visual Mode (Thanks <a class="user-mention" href="https://github.com/oliver-newman">@oliver-newman</a> )
-* Fix multiline search and case sensitivity override <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="267777671" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2086" href="https://github.com/VSCodeVim/Vim/issues/2086">#2086</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="269266372" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2101" href="https://github.com/VSCodeVim/Vim/issues/2101">#2101</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="269202916" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2100" href="https://github.com/VSCodeVim/Vim/issues/2100">#2100</a> - (Thanks <a class="user-mention" href="https://github.com/parkovski">@parkovski</a>)
-* Fix remappings of u, C, gl <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="271211276" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2116" href="https://github.com/VSCodeVim/Vim/issues/2116">#2116</a> (Thanks <a class="user-mention" href="https://github.com/ohjames">@ohjames</a> )
-* Add ability to toggle vim mode in extension <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="270984061" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2113" href="https://github.com/VSCodeVim/Vim/issues/2113">#2113</a> (Thanks <a class="user-mention" href="https://github.com/westim">@westim</a>)
-* Fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224659577" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1586" href="https://github.com/VSCodeVim/Vim/issues/1586">#1586</a>. Code-cleanup and optimizations with retrieving configurations (<a class="user-mention" href="https://github.com/jpoon">@jpoon</a>)
-# [v0.10.2 Pesky Penguin](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.2)  (Oct 14, 2017)
-* g; and g, index fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="235039316" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1824" href="https://github.com/VSCodeVim/Vim/issues/1824">#1824</a> <a class="user-mention" href="https://github.com/westim">@westim</a>
-* visual selection fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="237705862" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1860" href="https://github.com/VSCodeVim/Vim/issues/1860">#1860</a> <a class="user-mention" href="https://github.com/westim">@westim</a>
-* gi `. and '. commands added <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="203110910" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1248" href="https://github.com/VSCodeVim/Vim/issues/1248">#1248</a> <a class="user-mention" href="https://github.com/westim">@westim</a>
-* Configurable cursor style for specific modes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="262657399" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2050" href="https://github.com/VSCodeVim/Vim/issues/2050">#2050</a>
-* Fixes text selection in insert mode <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="248015183" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1951" href="https://github.com/VSCodeVim/Vim/issues/1951">#1951</a> <a class="user-mention" href="https://github.com/daneestar">@DanEEStar</a>
-* Add configuration option to have preceding : for commands <a class="user-mention" href="https://github.com/gadkadosh">@gadkadosh</a>
-* Add configuration option to disable mode string in status bar <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224309300" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1576" href="https://github.com/VSCodeVim/Vim/issues/1576">#1576</a> <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* Minor internal cleanup <a class="user-mention" href="https://github.com/jpoon">@jpoon</a> <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-
-Thanks <a class="user-mention" href="https://github.com/joonro">@joonro</a> <a class="user-mention" href="https://github.com/westim">@westim</a> <a class="user-mention" href="https://github.com/daneestar">@DanEEStar</a> and <a class="user-mention" href="https://github.com/gadkadosh">@gadkadosh</a> for your contributions!
-# [v0.10.1 Easy Éclair](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.1)  (Sep 16, 2017)
-
-Much credit goes to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a> and <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> for much of the work this patch!
-* Made it possible to specify custom characters for Easymotion keys as in <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="252976039" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1981" href="https://github.com/VSCodeVim/Vim/issues/1981">#1981</a>. Use <code>vim.easymotionKeys</code> for this new functionality!
-* Fix a bug with easymotion not appearing on some matches.
-* Fixed a bug with easymotion appearing under code. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="255866543" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2009" href="https://github.com/VSCodeVim/Vim/issues/2009">#2009</a>
-* Started using the vscode theme color for markers instead of red and black as the default. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="257361659" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/2017" href="https://github.com/VSCodeVim/Vim/pull/2017#issuecomment-329809317">#2017 (comment)</a>
-* Support for bidirectional easymotion commands.
-
-Big thanks to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a> for all of these improvements!
-* Fix an occasional dereference of undefined that occurred occasionally on startup.  Thanks <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> !
-* Implemented <code>&lt;C-]&gt;</code> and <code>&lt;C-t&gt;</code>. Thanks <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> !
-* Fixed some pesky bugs with the paragraph objects. Thanks <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> !
-* Implemented <code>''</code> and <code>``</code> properly. This involved implementing a command on the VSCode side, so thanks <a class="user-mention" href="https://github.com/brandonbloom">@brandonbloom</a> !
-* Corrected an incorrect behavior of the new setting <code>mouseSelectionGoesIntoVisualMode</code>. Thanks <a class="user-mention" href="https://github.com/nguymin4">@nguymin4</a> !
-# [v0.10.0 Waiting Walnut](https://github.com/VSCodeVim/Vim/releases/tag/v0.10.0)  (Aug 30, 2017)
-
-This release has been long overdue.
-* Rewrite of Easymotion (with new features!)
-<ul>
-<li>n-character move with <code>&lt;leader&gt;&lt;leader&gt;/&lt;character&gt;...</code></li>
-<li>2-character move with <code>&lt;leader&gt;&lt;leader&gt;2s&lt;character&gt;&lt;character&gt;</code></li>
-<li>Jump immediately if there's only one candidate to jump to.</li>
-<li>Added tests for Easymotion code!<br/>
-Thanks to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a>. Awesome job!</li>
-</ul>
-
-* n-character move with <code>&lt;leader&gt;&lt;leader&gt;/&lt;character&gt;...</code>
-* 2-character move with <code>&lt;leader&gt;&lt;leader&gt;2s&lt;character&gt;&lt;character&gt;</code>
-* Jump immediately if there's only one candidate to jump to.
-* Added tests for Easymotion code!<br/>
-Thanks to <a class="user-mention" href="https://github.com/maxfieldwalker">@MaxfieldWalker</a>. Awesome job!
-* Added <code>:only</code> Ex command. Thanks <a class="user-mention" href="https://github.com/leonb">@LeonB</a>
-* Added support for <code>&lt;count&gt;$</code>. Thanks <a class="user-mention" href="https://github.com/tagniam">@tagniam</a>
-* Fixed action repetition with <code>&lt;C-]&gt;</code>. Thanks <a class="user-mention" href="https://github.com/tagniam">@tagniam</a>.
-* Made all tests pass on Windows. Thanks <a class="user-mention" href="https://github.com/philipmat">@philipmat</a>
-* Added support for <code>gdefault</code> with <code>:s//</code> replacement. Thanks <a class="user-mention" href="https://github.com/philipmat">@philipmat</a>
-* Fixed <code>zO</code>. Thanks <a class="user-mention" href="https://github.com/vincentbel">@VincentBel</a>
-* Added new setting for whether double clicking in insert mode will go into visual mode. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixed <code>.</code> repeat in certain cases. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-
-One more thing. I apologize for less work being done on the main repo. Much of my effort recently has gone into the neovim version of this extension (still in development).
-# [v0.9.0 Hundredth Hazelnut](https://github.com/VSCodeVim/Vim/releases/tag/v0.9.0)  (Jun 24, 2017)
-
-VSCodeVim's 100th release! We've come a long way :')
-
-Not many changes in this one, but the changes we do have are some of the most requested changes we've ever had.
-* Fixing our off by one error in visual mode. Due to the way that selections work, we used to select one less character in visual mode and implicitly have the cursor on the last character for visual mode. However, this caused a lot of mismatches with native VSCode behavior, namely <code>Add next occurrence</code> and copy pasting.
-
-Before:<br/>
-<a href="https://camo.githubusercontent.com/10bb2e33532d6bafe1ebcbed2a51e1f6065acb61/687474703a2f2f692e696d6775722e636f6d2f59504b6b5663362e6a7067" target="_blank"><img alt="" data-canonical-src="http://i.imgur.com/YPKkVc6.jpg" src="https://camo.githubusercontent.com/10bb2e33532d6bafe1ebcbed2a51e1f6065acb61/687474703a2f2f692e696d6775722e636f6d2f59504b6b5663362e6a7067" style="max-width:100%;"/></a><br/>
-After:<br/>
-<a href="https://camo.githubusercontent.com/0435b5b16806d0aa31343d0ac0c10caaa67a9186/687474703a2f2f692e696d6775722e636f6d2f4f6c6d395344732e6a7067" target="_blank"><img alt="" data-canonical-src="http://i.imgur.com/Olm9SDs.jpg" src="https://camo.githubusercontent.com/0435b5b16806d0aa31343d0ac0c10caaa67a9186/687474703a2f2f692e696d6775722e636f6d2f4f6c6d395344732e6a7067" style="max-width:100%;"/></a>
-
-Wow!
-
-Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="229113129" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1705" href="https://github.com/VSCodeVim/Vim/issues/1705">#1705</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="195800713" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1160" href="https://github.com/VSCodeVim/Vim/issues/1160">#1160</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="218413380" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1455" href="https://github.com/VSCodeVim/Vim/issues/1455">#1455</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224888553" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1590" href="https://github.com/VSCodeVim/Vim/issues/1590">#1590</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="229856852" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1719" href="https://github.com/VSCodeVim/Vim/issues/1719">#1719</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="231503801" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1755" href="https://github.com/VSCodeVim/Vim/issues/1755">#1755</a>. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-
-PS: Note that this does introduce a bug related to add next occurrence. As we're simulating a cursor with a decoration and you can't stack decorations, if you have <code>"editor.selectionHighlight": true</code>, you will see this visual glitch when you first add the multiple cursors.<br/>
-<a href="https://camo.githubusercontent.com/443430867a91729d9edafb934b7d93407d200d09/687474703a2f2f692e696d6775722e636f6d2f344f4443636b7a2e6a7067" target="_blank"><img alt="" data-canonical-src="http://i.imgur.com/4ODCckz.jpg" src="https://camo.githubusercontent.com/443430867a91729d9edafb934b7d93407d200d09/687474703a2f2f692e696d6775722e636f6d2f344f4443636b7a2e6a7067" style="max-width:100%;"/></a><br/>
-Fear not, since after you make any action (or if you set <code>editor.selectionHighlight</code> to false), it'll go back to normal.<br/>
-<a href="https://camo.githubusercontent.com/cd52d4c93c54df6f5a7127688dfcc64405dc6532/687474703a2f2f692e696d6775722e636f6d2f6c775446705a6a2e6a7067" target="_blank"><img alt="" data-canonical-src="http://i.imgur.com/lwTFpZj.jpg" src="https://camo.githubusercontent.com/cd52d4c93c54df6f5a7127688dfcc64405dc6532/687474703a2f2f692e696d6775722e636f6d2f6c775446705a6a2e6a7067" style="max-width:100%;"/></a>
-* Allow <code>&lt;c-d&gt;</code>/<code>&lt;c-u&gt;</code> to expand selection. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="182591039" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/907" href="https://github.com/VSCodeVim/Vim/issues/907">#907</a> <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixed a bug with not escaping newlines properly <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="237717892" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1861" href="https://github.com/VSCodeVim/Vim/issues/1861">#1861</a> <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-# [v0.8.7 File Fromage](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.7)  (Jun 23, 2017)
-
-We fixed the highest thumbed up issue in VSCodeVim history this time!
-* Added e! to revert files <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixed P not adding an undo stop <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="237432183" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1857" href="https://github.com/VSCodeVim/Vim/issues/1857">#1857</a>
-* Added q! to close files without saving them <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Added [count] A/I for adding repeated text at beginning/end of lines <a class="user-mention" href="https://github.com/xconverge">@xconverge</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="236135176" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1843" href="https://github.com/VSCodeVim/Vim/issues/1843">#1843</a>
-* Fixed README errors. Thanks <a class="user-mention" href="https://github.com/bluedrink9">@BlueDrink9</a>
-* And the big issue this time: Keybindings for navigating the explorer list! Here are the list of the current keybindings.
-<ul>
-<li><code>gg</code> navigates you to the top of the explorer list</li>
-<li><code>G</code> navigates you to the bottom</li>
-<li><code>o</code> opens and closes folders</li>
-<li><code>&lt;ctrl+d&gt;</code> navigates down half a page</li>
-<li><code>&lt;ctrl+u&gt;</code> navigates up half a page</li>
-<li>And then of course, <code>j</code> and <code>k</code> for navigating up and down.</li>
-</ul>
-
-* <code>gg</code> navigates you to the top of the explorer list
-* <code>G</code> navigates you to the bottom
-* <code>o</code> opens and closes folders
-* <code>&lt;ctrl+d&gt;</code> navigates down half a page
-* <code>&lt;ctrl+u&gt;</code> navigates up half a page
-* And then of course, <code>j</code> and <code>k</code> for navigating up and down.
-
-Please give feedback if you feel there's other keybindings we're missing.
-# [v0.8.6 Automatic Acorns](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.6)  (Jun 15, 2017)
-* Fixed jumping to line in command-mode without Neovim not working. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="235096650" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1826" href="https://github.com/VSCodeVim/Vim/issues/1826">#1826</a> <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixed undo not restoring all changes occasionally. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="232714287" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1794" href="https://github.com/VSCodeVim/Vim/issues/1794">#1794</a> <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixed <code>yiw</code> not moving the cursor to the beginning of the selection. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="234887190" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1817" href="https://github.com/VSCodeVim/Vim/issues/1817">#1817</a> <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* Fixed autocompletion not working on files with folds/wrapped lines. The autocomplete popup would popup every other character, which was extremely annoying. This was a regression caused by the 1.13 VSCode update. Check <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="235336213" data-permission-text="Issue title is private" data-url="https://github.com/Microsoft/vscode/issues/28559" href="https://github.com/Microsoft/vscode/issues/28559#issuecomment-308294379">Microsoft/vscode#28559 (comment)</a> for more information. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="235292501" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1827" href="https://github.com/VSCodeVim/Vim/issues/1827">#1827</a> <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Removed solid block cursor. If you had this enabled, it would cause VSCodeVim to slow down dramatically. Use <code>editor.cursorBlinking: solid</code> to achieve almost the same effect.
-# [v0.8.5 Bojack Beef](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.5)  (Jun 11, 2017)
-* Fixes regression caused by the recent VSCode update: Undo history would disappear after save. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Adds expansion of tildes in :e when opening new files. <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Added <code>&lt;C-w&gt; v</code> to split vertically. Thanks <a class="user-mention" href="https://github.com/beefsack">@beefsack</a>!
-* Added U and u in visual block mode. <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* Added relative line ranges for Ex-mode (neovim only). <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixed zc not being able to close folds if the cursor started in the middle of the fold <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-# [v0.8.4 Deleted Durian](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.4)  (May 29, 2017)
-* Fixed commands like <code>d2d</code> not working
-* Fixed gq bug with deleting spaces
-* Fixed bug with backspace deleting more than one tab stop
-* Includes attempt at fixing Chinese input bug
-* Fixes named registers being overwritten if you paste over something in visual mode.
-# [v0.8.3 Earnest Emmet](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.3)  (May 26, 2017)
-* Fixes Emmet integration being broken
-* Fixes <code>}</code> not handling visual ranges correctly
-* Fixes line move not working correctly without neovim support.
-# [v0.8.2 Keylime Kombucha](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.2)  (May 26, 2017)
-* Added several patches for functionality broken by new release.
-* Stopped VSCodeVim from completely crashing when it can't connect to Neovim.
-* Added gq functionality for JSDoc comments <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="231444998" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1750" href="https://github.com/VSCodeVim/Vim/issues/1750">#1750</a>
-# [v0.8.1 Tabbed Turtle](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.1)  (May 26, 2017)
-
-Fixed autocomplete issues with previous release.
-# [v0.8.0 Neovim Nutty](https://github.com/VSCodeVim/Vim/releases/tag/v0.8.0)  (May 25, 2017)
-
-Lots of work has gone into this release, and lots of cool features to talk about this time.
-## Neovim Integration (for Ex commands)
-
-One of the most highly <g-emoji alias="+1" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f44d.png" ios-version="6.0">👍</g-emoji>'ed issues in VsCodeVim's history is now officially underway. The first thing we've done is enable you to offload all Ex-commands to neovim.
-
-Enable this by setting <code>vim.enableNeovim</code> to true, and setting <code>vim.neovimPath</code>. This feature is still somewhat experimental, so report any issues you find!
-
-Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="175862365" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/737" href="https://github.com/VSCodeVim/Vim/issues/737">#737</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="180815000" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/828" href="https://github.com/VSCodeVim/Vim/issues/828">#828</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="185409828" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/991" href="https://github.com/VSCodeVim/Vim/issues/991">#991</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="187191451" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1032" href="https://github.com/VSCodeVim/Vim/issues/1032">#1032</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="202401866" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1237" href="https://github.com/VSCodeVim/Vim/issues/1237">#1237</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="215015238" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1401" href="https://github.com/VSCodeVim/Vim/issues/1401">#1401</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="215304269" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1412" href="https://github.com/VSCodeVim/Vim/issues/1412">#1412</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="221999680" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1517" href="https://github.com/VSCodeVim/Vim/issues/1517">#1517</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222320973" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1524" href="https://github.com/VSCodeVim/Vim/issues/1524">#1524</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222461133" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1525" href="https://github.com/VSCodeVim/Vim/issues/1525">#1525</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224822063" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1589" href="https://github.com/VSCodeVim/Vim/issues/1589">#1589</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="225295330" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1611" href="https://github.com/VSCodeVim/Vim/issues/1611">#1611</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="228565183" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1698" href="https://github.com/VSCodeVim/Vim/issues/1698">#1698</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="229913432" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1723" href="https://github.com/VSCodeVim/Vim/issues/1723">#1723</a>, and <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="230213090" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1732" href="https://github.com/VSCodeVim/Vim/issues/1732">#1732</a>.
-
-<a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-## Foldfix
-
-The most highly <g-emoji alias="+1" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f44d.png" ios-version="6.0">👍</g-emoji>'ed issue in VsCodeVim history now has a (hopefully temporary) fix. Enable <code>vim.foldfix</code>, and move over folds freely!
-
-Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="185771093" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1004" href="https://github.com/VSCodeVim/Vim/issues/1004">#1004</a>, kinda.
-## Other features
-* Selecting range before Ex-commands no longer highlights the initial text <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="178287912" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/792" href="https://github.com/VSCodeVim/Vim/issues/792">#792</a>
-* Adds <code>&lt;del&gt;</code> functionality <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="203850404" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1256" href="https://github.com/VSCodeVim/Vim/issues/1256">#1256</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="163790338" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/394" href="https://github.com/VSCodeVim/Vim/issues/394">#394</a>
-* Adds support for complex tags in surround <a class="user-mention" href="https://github.com/admosity">@admosity</a>
-* Adds <code>[range]o/O</code> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222819989" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1531" href="https://github.com/VSCodeVim/Vim/issues/1531">#1531</a>
-* Adds support for gf with line numbers <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="226565103" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1655" href="https://github.com/VSCodeVim/Vim/issues/1655">#1655</a>
-* Adds support for search in the visual modes <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222600744" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1529" href="https://github.com/VSCodeVim/Vim/pull/1529">#1529</a>
-* Adds support for pasting with multiple cursors <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="229781606" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1715" href="https://github.com/VSCodeVim/Vim/issues/1715">#1715</a>
-* Made <code>&lt;esc&gt;</code> close find all references pop up even if it's empty <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="217277678" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1436" href="https://github.com/VSCodeVim/Vim/issues/1436">#1436</a>
-* Refactored repeating operators (like <code>dd</code> or <code>yy</code>), adding support for <code>gqq</code>, <code>yss</code> (surround), and fixed <code>gcc</code> <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222958680" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1534" href="https://github.com/VSCodeVim/Vim/issues/1534">#1534</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222010316" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1518" href="https://github.com/VSCodeVim/Vim/issues/1518">#1518</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="229793884" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1716" href="https://github.com/VSCodeVim/Vim/issues/1716">#1716</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="225372763" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1618" href="https://github.com/VSCodeVim/Vim/issues/1618">#1618</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="218248771" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1450" href="https://github.com/VSCodeVim/Vim/issues/1450">#1450</a><br/>
-One thing to note: This fix actually introduces a breaking change. <code>gb</code> is now <code>Add next occurence</code>, and <code>gc</code> is now the comment operator. If you want to switch them back, paste
-
-into your settings.json. The reason we decided to make this change was that <code>gbb</code> was a fundamentally unsound action. There's 2 ways it can always be interpreted, as <code>gbb</code> the repeated comment operator, or as <code>gb b</code>, the comment operator applied over the movement <code>b</code>.
-* Made the README even better!!! <a class="user-mention" href="https://github.com/cobbweb">@cobbweb</a>
-* Added an automatic changelog generating script. Check it out <a href="https://github.com/VSCodeVim/Vim/blob/master/scripts/CHANGELOG.md">here!</a> <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-## Bug Fixes
-* Fixes visual block mode respect keybindings <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="229392844" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1709" href="https://github.com/VSCodeVim/Vim/pull/1709">#1709</a>
-* Fixes gq spacing issues once and for all (hopefully) <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="227776317" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1684" href="https://github.com/VSCodeVim/Vim/issues/1684">#1684</a>
-* Fixes <code>&lt;c-a/z&gt;</code> not working properly on words with more than 1 number <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="212972154" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1376" href="https://github.com/VSCodeVim/Vim/issues/1376">#1376</a>
-* Fixes <code>X</code>, <code>C</code>, <code>R</code>, and <code>p</code> in visual mode <a class="user-mention" href="https://github.com/xlaech">@xlaech</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207917383" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1304" href="https://github.com/VSCodeVim/Vim/issues/1304">#1304</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207918108" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1305" href="https://github.com/VSCodeVim/Vim/issues/1305">#1305</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207921173" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1307" href="https://github.com/VSCodeVim/Vim/issues/1307">#1307</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207923515" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1308" href="https://github.com/VSCodeVim/Vim/issues/1308">#1308</a>
-* Fixes self closing tags not being properly handled <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="226929786" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1668" href="https://github.com/VSCodeVim/Vim/issues/1668">#1668</a>
-* Fixes issues relating to whitespace not being performed correctly in macros/visual block while refactoring visual block mode. <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="214945690" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1400" href="https://github.com/VSCodeVim/Vim/issues/1400">#1400</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="171214240" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/612" href="https://github.com/VSCodeVim/Vim/issues/612">#612</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="218754587" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1458" href="https://github.com/VSCodeVim/Vim/issues/1458">#1458</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="225886083" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1634" href="https://github.com/VSCodeVim/Vim/issues/1634">#1634</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="177321187" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/776" href="https://github.com/VSCodeVim/Vim/issues/776">#776</a>
-* Fixes <code>d}</code> and <code>y}</code> issues with how much it deleted <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="197757927" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1196" href="https://github.com/VSCodeVim/Vim/issues/1196">#1196</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="197759830" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1197" href="https://github.com/VSCodeVim/Vim/issues/1197">#1197</a>
-* Removed UTF-8 clipboard hack for system clipboard <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* Fixes off by one cursor issue when dot repeating with characters that auto close <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="227108363" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1674" href="https://github.com/VSCodeVim/Vim/issues/1674">#1674</a>
-* Fixes <code>&lt;D-d&gt;/gb</code> not adding cursors properly when the word to be matched is a substring <a class="user-mention" href="https://github.com/chillee">@Chillee</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="231250631" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1749" href="https://github.com/VSCodeVim/Vim/issues/1749">#1749</a>
-# [v0.7.1 Quizzing Quotient](https://github.com/VSCodeVim/Vim/releases/tag/v0.7.1)  (May 10, 2017)
-* <a class="user-mention" href="https://github.com/mspaulding06">@mspaulding06</a>: Add :close support based on :quit
-* <a class="user-mention" href="https://github.com/chillee">@Chillee</a>: Added <code>&lt;C-w&gt; j</code> and <code>&lt;C-w&gt; k</code>
-* <a class="user-mention" href="https://github.com/rebornix">@rebornix</a> Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="226610555" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1657" href="https://github.com/VSCodeVim/Vim/issues/1657">#1657</a>
-* <a class="user-mention" href="https://github.com/chillee">@Chillee</a> Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="205896923" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1280" href="https://github.com/VSCodeVim/Vim/issues/1280">#1280</a>
-* <a class="user-mention" href="https://github.com/chillee">@Chillee</a> Fixes  keybindings
-* <a class="user-mention" href="https://github.com/vinicio">@vinicio</a> Changes tabs to navigate inside the same split
-* <a class="user-mention" href="https://github.com/chillee">@Chillee</a> Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222962716" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1535" href="https://github.com/VSCodeVim/Vim/issues/1535">#1535</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="219287670" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1467" href="https://github.com/VSCodeVim/Vim/issues/1467">#1467</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="208663798" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1311" href="https://github.com/VSCodeVim/Vim/issues/1311">#1311</a>: D-d doesn't work in insert mode
-# [v0.7.0 Procrastinating Potato](https://github.com/VSCodeVim/Vim/releases/tag/v0.7.0)  (May 5, 2017)
-
-A major release! Wow! Lots of new features and bug fixes this iteration.
-
-Huge props especially to <a class="user-mention" href="https://github.com/chillee">@Chillee</a> this time, who fixed a huge number of outstanding issues and bugs. He also wrote these entire release notes - except this line praising him, because that would have been awkward (that was me, <a class="user-mention" href="https://github.com/johnfn">@johnfn</a>).
-## New Features:
-* Tag matching across multiple lines. Thanks <a class="user-mention" href="https://github.com/jrenton">@jrenton</a> for implementing it and <a class="user-mention" href="https://github.com/chillee">@Chillee</a> for fixing the remaining bugs. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="184674529" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/971" href="https://github.com/VSCodeVim/Vim/issues/971">#971</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="193353918" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1108" href="https://github.com/VSCodeVim/Vim/issues/1108">#1108</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="201772243" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1232" href="https://github.com/VSCodeVim/Vim/issues/1232">#1232</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207684650" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1300" href="https://github.com/VSCodeVim/Vim/issues/1300">#1300</a>
-* Toggle Vim on and off.
-* <a href="https://github.com/bronson/vim-visual-star-search">VisualStar</a> plugin implemented. Thanks <a class="user-mention" href="https://github.com/mikew">@mikew</a>!
-* <a href="https://github.com/michaeljsmith/vim-indent-object">Indent-Object</a> plugins implemented. Thanks <a class="user-mention" href="https://github.com/mikew">@mikew</a>!
-* Added support for multiline searching.  <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224207479" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1575" href="https://github.com/VSCodeVim/Vim/issues/1575">#1575</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Navigate between different VSCode panes with ctrl+w h/j/k/l. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="212964705" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1375" href="https://github.com/VSCodeVim/Vim/issues/1375">#1375</a> Thanks <a class="user-mention" href="https://github.com/lyup">@lyup</a>!
-* z- and z keybindings added. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="226062439" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1637" href="https://github.com/VSCodeVim/Vim/issues/1637">#1637</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="226062866" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1638" href="https://github.com/VSCodeVim/Vim/issues/1638">#1638</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Added new remapping options to remap any key. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="223231025" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1543" href="https://github.com/VSCodeVim/Vim/issues/1543">#1543</a> As an example, this functionality can cover <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="221470964" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1505" href="https://github.com/VSCodeVim/Vim/issues/1505">#1505</a> and <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="218334608" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1452" href="https://github.com/VSCodeVim/Vim/issues/1452">#1452</a>.
-## Bugfixes/enhancements
-* Fixed history being dropped when switching tabs. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="221456093" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1503" href="https://github.com/VSCodeVim/Vim/issues/1503">#1503</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Fixed lots of wonky gj/gk visual behavior. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="182359278" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/890" href="https://github.com/VSCodeVim/Vim/issues/890">#890</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213368644" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1377" href="https://github.com/VSCodeVim/Vim/issues/1377">#1377</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Fixed Ctrl-c dropping a character when selecting from right to left in insert mode. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="217469633" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1441" href="https://github.com/VSCodeVim/Vim/issues/1441">#1441</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="211657261" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1355" href="https://github.com/VSCodeVim/Vim/issues/1355">#1355</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Fixed Ctrl-w in insert mode deleting through whitespace at the beginning of the line. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="194141316" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1137" href="https://github.com/VSCodeVim/Vim/issues/1137">#1137</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Fixed Ctrl-a breaking in certain circumstances. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224721925" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1588" href="https://github.com/VSCodeVim/Vim/issues/1588">#1588</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Fixed gd not setting the desired column properly. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222836014" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1532" href="https://github.com/VSCodeVim/Vim/issues/1532">#1532</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Fixed gq adding an extra space to beginning of selection. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="203602695" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1251" href="https://github.com/VSCodeVim/Vim/issues/1251">#1251</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Fixed dot command not working in macros. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224961832" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1595" href="https://github.com/VSCodeVim/Vim/pull/1595">#1595</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Fixed Ctrl-c dropping top and bottom lines when selecting in visual line from the bottom up. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224958235" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1594" href="https://github.com/VSCodeVim/Vim/issues/1594">#1594</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-* Updated workbench theming for new release of VSCode. Thanks <a class="user-mention" href="https://github.com/zelphir">@zelphir</a>!
-* Enabled Easymotion to work for larger files. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="225699826" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1627" href="https://github.com/VSCodeVim/Vim/issues/1627">#1627</a>
-* Made <code>statusBarColors</code> modify user <code>settings.json</code> instead of workspace. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="223975304" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1565" href="https://github.com/VSCodeVim/Vim/issues/1565">#1565</a>
-* Enabled ranges for :sort. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224943340" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1592" href="https://github.com/VSCodeVim/Vim/issues/1592">#1592</a>
-* Made the command line persistent when switching windows. Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>!
-
-...and we finally split up actions.ts into separate files! Get at us, contributors! <g-emoji alias="heart" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764.png" ios-version="6.0">❤️</g-emoji>
-# [v0.6.20 Careful Carrot](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.20)  (Apr 26, 2017)
-* Fix issue with gq reflow cursor position from previous release
-# [v0.6.19 Blushing Beet](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.19)  (Apr 26, 2017)
-* Fixes insert mode backspace at first character causing no op <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224065305" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1573" href="https://github.com/VSCodeVim/Vim/issues/1573">#1573</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixes gq incorrectly handles triple-slash doc-comments <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="218248499" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1449" href="https://github.com/VSCodeVim/Vim/issues/1449">#1449</a> Thanks <a class="user-mention" href="https://github.com/azngeoffdog">@azngeoffdog</a>!
-* Surround doing weird things <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="224030517" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1570" href="https://github.com/VSCodeVim/Vim/issues/1570">#1570</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="223862659" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1562" href="https://github.com/VSCodeVim/Vim/issues/1562">#1562</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="223862659" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1562" href="https://github.com/VSCodeVim/Vim/issues/1562">#1562</a>
-* Fixes Va{ not working <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="202096140" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1235" href="https://github.com/VSCodeVim/Vim/issues/1235">#1235</a>
-* Reformatting long lines with "gq" now resets horizontal scroll <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="203649923" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1252" href="https://github.com/VSCodeVim/Vim/issues/1252">#1252</a>
-* :x (write and close), :xa, :wqa implemented <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="220416757" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1486" href="https://github.com/VSCodeVim/Vim/issues/1486">#1486</a>
-* Added support for _ register (blackhole) <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="211839473" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1357" href="https://github.com/VSCodeVim/Vim/issues/1357">#1357</a>
-# [v0.6.18 Chillen Chives](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.18)  (Apr 24, 2017)
-* Fixes to "reg" command <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="223003597" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1539" href="https://github.com/VSCodeVim/Vim/issues/1539">#1539</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixes to <code>aw</code> and <code>aW</code> motions <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="211480213" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1350" href="https://github.com/VSCodeVim/Vim/issues/1350">#1350</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="197471209" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1193" href="https://github.com/VSCodeVim/Vim/issues/1193">#1193</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="223650498" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1553" href="https://github.com/VSCodeVim/Vim/issues/1553">#1553</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="223666315" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1554" href="https://github.com/VSCodeVim/Vim/issues/1554">#1554</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* Fixes to ctrl+c <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222879228" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1533" href="https://github.com/VSCodeVim/Vim/issues/1533">#1533</a> Thanks <a class="user-mention" href="https://github.com/chillee">@Chillee</a>
-* <a class="user-mention" href="https://github.com/cobbweb">@cobbweb</a> Refactored the entire README! Thanks!
-* Updated clipboard library for UTF-8 windows fixes. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="206172223" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1284" href="https://github.com/VSCodeVim/Vim/issues/1284">#1284</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207550289" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1299" href="https://github.com/VSCodeVim/Vim/issues/1299">#1299</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="193724617" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1125" href="https://github.com/VSCodeVim/Vim/issues/1125">#1125</a>
-# [v0.6.17 Color Consortium](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.17)  (Apr 20, 2017)
-* Fix repeated insert <code>5i=</code> impacting <code>5s</code> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="222258306" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1519" href="https://github.com/VSCodeVim/Vim/issues/1519">#1519</a>
-* Change <a href="https://github.com/VSCodeVim/Vim/blob/master/README.md#statusbarcolorcontrol">status bar color based on mode</a> similar to lightline plugin <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="188922632" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1056" href="https://github.com/VSCodeVim/Vim/issues/1056">#1056</a>
-* Fix UTF-8 character copy/paste for macOS and Linux <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213577613" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1392" href="https://github.com/VSCodeVim/Vim/issues/1392">#1392</a>
-* Make surround repeatable with dot <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="202866037" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1244" href="https://github.com/VSCodeVim/Vim/issues/1244">#1244</a>
-# [v0.6.16 Rugged Raspberries](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.16)  (Apr 16, 2017)
-* <a href="https://github.com/VSCodeVim/Vim#how-to-use-commentary">Commentary plugin functionality</a> (Thanks <a class="user-mention" href="https://github.com/fiedler">@fiedler</a>)
-* Customize <a href="https://github.com/VSCodeVim/Vim#how-to-use-easymotion">easymotion</a> decorations (Thanks <a class="user-mention" href="https://github.com/edasaki">@edasaki</a>)
-* Repeat insert char eg. 5i= <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="193640833" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1122" href="https://github.com/VSCodeVim/Vim/issues/1122">#1122</a>
-* Easymotion j/k motions fixed <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="218202603" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1448" href="https://github.com/VSCodeVim/Vim/issues/1448">#1448</a>
-* Allow user to remap : commands like :nohl <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="195942892" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1166" href="https://github.com/VSCodeVim/Vim/issues/1166">#1166</a>
-* Fix case sensitivity in remapping arrow keys <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="221709335" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1507" href="https://github.com/VSCodeVim/Vim/issues/1507">#1507</a>
-* Added <code>z.</code> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="219791649" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1475" href="https://github.com/VSCodeVim/Vim/issues/1475">#1475</a>
-* Fixes double clicking word with mouse not displaying correct selection
-# [0.6.15 0.6.15 Multi Madness](https://github.com/VSCodeVim/Vim/releases/tag/0.6.15)  (May 24, 2017)
-
-Fix for gc and Cmd-D multicursor not working correctly
-# [0.6.14 Bingo Blocky](https://github.com/VSCodeVim/Vim/releases/tag/0.6.14)  (Apr 8, 2017)
-* Fix for visual block mode
-* Fix type suggestion for handleKeys object <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="219235769" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1465" href="https://github.com/VSCodeVim/Vim/pull/1465">#1465</a> (thanks <a class="user-mention" href="https://github.com/abhiranjankumar00">@abhiranjankumar00</a>)
-# [0.6.12 Rabid Rhinoceros](https://github.com/VSCodeVim/Vim/releases/tag/0.6.12)  (Apr 4, 2017)
-* Multicursor improvements, alt click to add cursor, etc
-* "vim.easymotionChangeBackgroundColor": true uses searchHighlightColor for easymotion decorations
-* guu and GUU added
-* Allow users to specify their own cursor style ("editor.cursorStyle") so that underline, line-thin, etc can be used
-* Added setting to delegate ctrl keys back to vscode natively<br/>
-<a href="https://github.com/VSCodeVim/Vim#handlekeys">https://github.com/VSCodeVim/Vim#handlekeys</a>
-* <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="217026370" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1432" href="https://github.com/VSCodeVim/Vim/issues/1432">#1432</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="208665986" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1312" href="https://github.com/VSCodeVim/Vim/issues/1312">#1312</a>, <code>&lt;space&gt;</code> as leader, multiple other bugs fixed
-# [v0.6.13 Fixy Fish](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.13)  (Apr 4, 2017)
-
-The previous release had a bug with <code>.</code>.
-# [v0.6.11 Fixy Frankfurter](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.11)  (Mar 19, 2017)
-
-Fixes a number of issues with remappings: <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="215140612" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1405" href="https://github.com/VSCodeVim/Vim/issues/1405">#1405</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="215229819" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1410" href="https://github.com/VSCodeVim/Vim/issues/1410">#1410</a> <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213917068" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1397" href="https://github.com/VSCodeVim/Vim/issues/1397">#1397</a>
-
-Makes remappings work with counts.
-# [v0.6.10 Jumpy Jalapeño](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.10)  (Mar 18, 2017)
-
-Add Ctrl-o and Ctrl-i to go forward and back between the places you've changed.
-# [v0.6.9 Linear Lime](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.9)  (Mar 18, 2017)
-
-Extends the previous <code>af</code> command to work in Visual Line mode.
-
-Reminder what <code>af</code> is:
-
-Press af in Visual Mode to select ever-increasing blocks of text.
-
-e.g. if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed az again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
-# [v0.6.8 Blocky Banana](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.8)  (Mar 18, 2017)
-
-Adds a custom keymapping that I (<a class="user-mention" href="https://github.com/johnfn">@johnfn</a>) have always wanted. Press <code>af</code> in Visual Mode to select ever-increasing blocks of text.
-
-e.g. if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed az again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
-# [v0.6.7 Fixy Frosted Flakes](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.7)  (Mar 18, 2017)
-
-Fixes a bug with the previous bug fix.
-
-This bugfix I removed was actually a bug fix to fix a bug in VSCode. That bug had been removed in VSCode Insiders, hence why I didn't notice it while testing! I've now reverted to using VSCode all the time. :)
-# [v0.6.6 Peeky Pumpkin](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.6)  (Mar 17, 2017)
-
-Fixes a bug with the peek definition functionality of vscode (which, by the way, is monumentally useful and everyone should use it).
-# [v0.6.5 Fixy Flank Steak](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.5)  (Mar 12, 2017)
-
-The last release had a little bug. This fixes that bug.
-# [v0.6.4 Macroeconomic Mushrooms](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.4)  (Mar 12, 2017)
-
-I admit it. I sneaked this release out just because I wanted to use less buggy macros.
-
-Macro stuff:
-* 
-<p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213499873" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1382" href="https://github.com/VSCodeVim/Vim/issues/1382">#1382</a> - macros made too many history steps - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a></p>
-
-
-<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213499873" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1382" href="https://github.com/VSCodeVim/Vim/issues/1382">#1382</a> - macros made too many history steps - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* 
-<p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213575205" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1388" href="https://github.com/VSCodeVim/Vim/issues/1388">#1388</a> - macros wouldn't play back indentation removal in some cases</p>
-
-
-<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213575205" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1388" href="https://github.com/VSCodeVim/Vim/issues/1388">#1388</a> - macros wouldn't play back indentation removal in some cases
-* 
-<p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213576111" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1389" href="https://github.com/VSCodeVim/Vim/issues/1389">#1389</a> - macros weren't adjusting character position correctly in some cases</p>
-
-
-<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213576111" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1389" href="https://github.com/VSCodeVim/Vim/issues/1389">#1389</a> - macros weren't adjusting character position correctly in some cases
-* 
-<p><a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213514740" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1385" href="https://github.com/VSCodeVim/Vim/issues/1385">#1385</a> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a></p>
-
-
-<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="213514740" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1385" href="https://github.com/VSCodeVim/Vim/issues/1385">#1385</a> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-# [v0.6.3 Hot Hotcakes](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.3)  (Mar 11, 2017)
-* Hot config reloading! Now you don't have to reload VSCode in order to see the vim-related changes you made to your settings. Thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!
-* Lots of fixes to macros. They are much more usable now! This was a tri-effort by <a class="user-mention" href="https://github.com/johnfn">@johnfn</a>, <a class="user-mention" href="https://github.com/rebornix">@rebornix</a> and <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!
-
-Bug fixes:
-* <a class="user-mention" href="https://github.com/xconverge">@xconverge</a> fixed lots of stuff, like normal.
-# [v0.6.0 Cupcake Copier](https://github.com/VSCodeVim/Vim/releases/tag/v0.6.0)  (Mar 3, 2017)
-
-Lots of stuff in this release. Most notably:
-* <code>gd</code> is now totally stable and the cursor won't jump. <em>EVER</em>
-* Copying works correctly and does not elide the final character.
-* Improve performance when editing inside quotes or brackets.
-* The cursor doesn't jump when editing two files with the same name. <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="189261580" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1057" href="https://github.com/VSCodeVim/Vim/issues/1057">#1057</a>
-
-Also a bunch of other bug fixes:
-* Fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207736577" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1302" href="https://github.com/VSCodeVim/Vim/issues/1302">#1302</a> - thanks <a class="user-mention" href="https://github.com/xlaech">@xlaech</a>
-* Fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207434444" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1298" href="https://github.com/VSCodeVim/Vim/issues/1298">#1298</a> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* Fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207402202" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1296" href="https://github.com/VSCodeVim/Vim/pull/1296">#1296</a> - thanks <a class="user-mention" href="https://github.com/xlaech">@xlaech</a>
-* Fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="207104159" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1291" href="https://github.com/VSCodeVim/Vim/pull/1291">#1291</a> - thanks <a class="user-mention" href="https://github.com/xlaech">@xlaech</a>
-* Fix a bunch of surround.vim issues - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* Make gg go to first character rather than (0, 0) - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a> (<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="209284371" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1320" href="https://github.com/VSCodeVim/Vim/issues/1320">#1320</a>)
-* Fix <code>r&lt;tab&gt;</code>
-# [v0.5.3 Communal Cheesecake](https://github.com/VSCodeVim/Vim/releases/tag/v0.5.3)  (Feb 12, 2017)
-
-This version was entirely done by the community while I've been traveling.
-
-Shout outs to:
-* <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* <a class="user-mention" href="https://github.com/rufusroflpunch">@rufusroflpunch</a>
-* <a class="user-mention" href="https://github.com/inejge">@inejge</a>
-* <a class="user-mention" href="https://github.com/rhys-vdw">@rhys-vdw</a>
-
-<g-emoji alias="heart" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764.png" ios-version="6.0">❤️</g-emoji>
-# [v0.5.1 Fixy French Toast](https://github.com/VSCodeVim/Vim/releases/tag/v0.5.1)  (Jan 24, 2017)
-
-Fix a bug introduced by surround.vim: <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="202582997" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1239" href="https://github.com/VSCodeVim/Vim/issues/1239">#1239</a>
-# [v0.5.0 Surroundy Squash](https://github.com/VSCodeVim/Vim/releases/tag/v0.5.0)  (Jan 24, 2017)
-
-Add surround.vim!
-# [v0.4.8 Jittery Jalapeño](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.8)  (Dec 5, 2016)
-
-Bug fixes:
-* Fix a bug where holding down hjkl would be jittery. Been tracking this one for ages.
-* Fix a recent regression with command remapping.
-* Fix a very old (but minor) bug where VSCodeVim would ignore the first character you pressed.
-# [v0.4.7 Dangerous Doughnut](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.7)  (Dec 5, 2016)
-
-I went on a bug killing spree.
-
-Bug Fixes:
-* Use native block cursor for solid cursor setting
-* Fix command remapping incorrectly being triggered in the middle of commands
-* Fix some leader bugs (thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!)
-* Add <code>nohl</code> aliases and untrigger it in some locations (thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!)
-* Fix a bug with remapping long commands.
-* Fix backspacing indents
-* Fix <code>dit</code> for empty tags.
-* Fix deleting to marks.
-* Fix a bug with <code>&lt;C-a&gt;</code> and <code>&lt;C-x&gt;</code> incrementing/decrementing the wrong number.
-* Fix <code>#&lt;k</code> in some situations.
-
-Features:
-* Add <code>:nohl</code>
-* Allow search highlight color to be customized
-* Add <code>&lt;CR&gt;</code> as a synonym for <code>\n</code>.
-* Add showcmd configuration setting, defaulting to on.
-* Recognize and use <code>&lt;leader&gt;</code>
-* Allow remapping directly to VSCode commands.
-* Add <code>&lt;space&gt;</code> as a synonym for <code></code>.
-# [0.4.5 0.4.5](https://github.com/VSCodeVim/Vim/releases/tag/0.4.5)  (Dec 4, 2016)
-
-Pretend you don't see this.
-# [v0.4.6 v0.4.6](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.6)  (Dec 4, 2016)
-
-Features:
-* Add <code>gq</code> - word wrap a visual chunk of text, formatting comments correctly.
-* Add <code>gf</code> - go to file - thanks <a class="user-mention" href="https://github.com/jamirvin">@jamirvin</a>!
-* Add home key and cmd-left support - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!
-* Add startInInsertMode configuration setting.
-
-Bug Fixes:
-* Fix a really obscure bug with word boundaries.
-* Fix an annoying bug where the view would jump to the top of the file when searching with /.
-# [v0.4.4 v0.4.4](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.4)  (Nov 29, 2016)
-
-Features:
-* Add <code>&lt;C-n&gt;</code> and <code>&lt;C-p&gt;</code> for navigating autocompletetion popups.
-* Add <code>&lt;C-o&gt;</code> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!
-* Add <code>g &lt;up&gt;</code> and <code>g &lt;down&gt;</code> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!
-
-Bugs fixed:
-* Fix <code>&lt;D-d&gt;</code> for multi-cursor support.
-* Fix visual incremental search.
-* Fix <code>J</code>
-* Fix <code>va{</code> - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!
-* Fix <code>vsp</code> to open current document in new panel by default - thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!
-# [v0.4.2 Jolly James](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.2)  (Nov 17, 2016)
-* <a href="https://github.com/easymotion/vim-easymotion">EasyMotion</a> bindings. Thanks <a class="user-mention" href="https://github.com/metamist">@Metamist</a>
-* A variety of bug fixes by <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>
-* Fixes for <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="185769774" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1003" href="https://github.com/VSCodeVim/Vim/issues/1003">#1003</a> and <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="187666004" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/1043" href="https://github.com/VSCodeVim/Vim/issues/1043">#1043</a> by <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-# [v0.4.0 Handsome Hen](https://github.com/VSCodeVim/Vim/releases/tag/v0.4.0)  (Oct 24, 2016)
-
-<a class="commit-link" href="https://github.com/VSCodeVim/Vim/compare/v0.3.8...v0.4.0"><tt>v0.3.8...v0.4.0</tt></a>
-# [v0.3.8 Gorging Grouse](https://github.com/VSCodeVim/Vim/releases/tag/v0.3.8)  (Oct 18, 2016)
-* Improved Performance (Thanks <a class="user-mention" href="https://github.com/johnfn">@johnfn</a>)
-* Display register contents on <code>:reg</code> command (Thanks <a class="user-mention" href="https://github.com/platzer">@Platzer</a>)
-* Draw multicursor correctly in Visual Mode (Thanks <a class="user-mention" href="https://github.com/platzer">@Platzer</a>)
-* Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="173267479" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/652" href="https://github.com/VSCodeVim/Vim/issues/652">#652</a> and <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="182543360" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/905" href="https://github.com/VSCodeVim/Vim/issues/905">#905</a> (Thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>)
-* An assortment of fixes with the cursor (Thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>)
-* Fixed auto-build/test/release pipeline
-# [0.3.7 Fixy French Fries](https://github.com/VSCodeVim/Vim/releases/tag/0.3.7)  (Oct 12, 2016)
-
-This includes the one-line fix <a class="commit-link" href="https://github.com/VSCodeVim/Vim/commit/c845e04b7319cb5b235f726783a0d127cdb16ae4"><tt>c845e04</tt></a>, which fix an astounding number of bugs, including:
-* <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="182140368" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/872" href="https://github.com/VSCodeVim/Vim/issues/872">#872</a>
-* <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="182380179" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/892" href="https://github.com/VSCodeVim/Vim/issues/892">#892</a>
-* <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="182418926" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/896" href="https://github.com/VSCodeVim/Vim/issues/896">#896</a>
-* <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="181686503" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/856" href="https://github.com/VSCodeVim/Vim/issues/856">#856</a>
-* <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="182431935" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/901" href="https://github.com/VSCodeVim/Vim/issues/901">#901</a>
-* <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="182418786" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/895" href="https://github.com/VSCodeVim/Vim/issues/895">#895</a>
-
-Yes, it really fixed that many issues. It probably even fixed more that we haven't found yet!
-# [0.3.6 Fixy Fondue ](https://github.com/VSCodeVim/Vim/releases/tag/0.3.6)  (Oct 12, 2016)
-
-More bug fixes. The 0.3.x series is just going to be a bunch of bug fixes that stabilize the refactors introduced in 0.3.0 and 0.3.1.
-
-Bugs fixed:
-* Search scrolling was incorrect.
-* Code snippets were broken.
-* <code>d</code> and <code>x</code> were not working in Visual Block Mode. (Thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!)
-* <code>C-c</code> and <code>C-[</code> were not working in Insert Mode.
-* Don't require double <code>&lt;esc&gt;</code> to get to normal mode when the autocomplete window is open in insert mode.
-* We were incorrectly reporting the users were in normal mode when they weren't in some cases.
-* Editing in split editors was broken in some cases.
-# [0.3.5 Buggier Brocolli](https://github.com/VSCodeVim/Vim/releases/tag/0.3.5)  (Oct 11, 2016)
-
-Backspace was broken in insert mode.
-
-(Generally I wouldn't release so often, but I wanted to have the extension in relatively good shape for the burst of traffic for 1.6.0)
-# [0.3.4 Buggy Brocolli](https://github.com/VSCodeVim/Vim/releases/tag/0.3.4)  (Oct 10, 2016)
-
-Fixes a large number of bugs that all stemmed from the same issue.
-# [0.3.3 Speedy Salmon](https://github.com/VSCodeVim/Vim/releases/tag/0.3.3)  (Oct 8, 2016)
-
-Hotfix for a bug introduced in 0.3.1 (and 0.3.2) that made it impossible to enter insert mode in some cases.
-# [0.3.2 Dumb Dumbo](https://github.com/VSCodeVim/Vim/releases/tag/0.3.2)  (Oct 8, 2016)
-
-Let's not talk about this one...
-# [v0.3.1 Gaudy Gengar](https://github.com/VSCodeVim/Vim/releases/tag/v0.3.1)  (Oct 8, 2016)
-
-Features
-* Multi-Cursor support can now run multiple deletes/changes/etc on a single line.
-* Multi-Cursor support now works better with Windows.
-
-Bug bash!
-* <a class="user-mention" href="https://github.com/johnfn">@johnfn</a> squashed a crap ton of bugs. Too many to list so I won't try.
-* <a class="user-mention" href="https://github.com/xconverge">@xconverge</a> Thanks for helping fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="180971395" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/832" href="https://github.com/VSCodeVim/Vim/issues/832">#832</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="181081813" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/841" href="https://github.com/VSCodeVim/Vim/issues/841">#841</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="177730398" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/784" href="https://github.com/VSCodeVim/Vim/issues/784">#784</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="181308717" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/846" href="https://github.com/VSCodeVim/Vim/issues/846">#846</a>, and a couple of other fixes that weren't tracked by GH issues.
-* Thanks <a class="user-mention" href="https://github.com/kevincoleman">@kevincoleman</a>. We have a new logo and it looks purrrty.
-# [v0.3.0 Furious Feline](https://github.com/VSCodeVim/Vim/releases/tag/v0.3.0)  (Oct 4, 2016)
-
-Multi-cursor support by <a class="user-mention" href="https://github.com/johnfn">@johnfn</a>! If you have any feedback on this, please share it on <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="180737052" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/824" href="https://github.com/VSCodeVim/Vim/issues/824">#824</a>
-
-Special thanks to:
-* <a class="user-mention" href="https://github.com/bdchauvette">@bdchauvette</a> for adding support for the system clipboard register a la <code>"+</code> (<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="177625002" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/780" href="https://github.com/VSCodeVim/Vim/issues/780">#780</a>)
-* <a class="user-mention" href="https://github.com/srenatus">@srenatus</a> for helping update some of our documentation
-* <a class="user-mention" href="https://github.com/xconverge">@xconverge</a> fixing a galore of issues including <code>cw</code> (<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="175901051" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/739" href="https://github.com/VSCodeVim/Vim/issues/739">#739</a>) and other bugs like <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="180492221" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/817" href="https://github.com/VSCodeVim/Vim/issues/817">#817</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="170982644" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/603" href="https://github.com/VSCodeVim/Vim/issues/603">#603</a> , <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="179840039" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/809" href="https://github.com/VSCodeVim/Vim/issues/809">#809</a> , <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="180797785" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/827" href="https://github.com/VSCodeVim/Vim/pull/827">#827</a>
-* <a class="user-mention" href="https://github.com/rebornix">@rebornix</a> also fixing a series of issues <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="178697474" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/795" href="https://github.com/VSCodeVim/Vim/issues/795">#795</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="179346573" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/804" href="https://github.com/VSCodeVim/Vim/issues/804">#804</a>
-# [v0.2.0 Eccentric Ewok](https://github.com/VSCodeVim/Vim/releases/tag/v0.2.0)  (Sep 21, 2016)
-* Add <code>vim.autoindent</code> setting (Thanks <a class="user-mention" href="https://github.com/octref">@octref</a>)
-* Support <code>:wa[ll]</code> (Thanks <a class="user-mention" href="https://github.com/mleech">@mleech</a>)
-* Support <code>&lt;C-r&gt;</code>, <code>&lt;C-e&gt;</code>, <code>&lt;C-d&gt;</code>, <code>&lt;C-y&gt;</code>, <code>&lt;C-h&gt;</code>, <code>&lt;C-u&gt;</code> (Thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>)
-* Support <code>:r</code> (Thanks <a class="user-mention" href="https://github.com/dominic31">@dominic31</a>)
-* Support substitution marks (Thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>)
-* A variety of bug fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="176173549" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/750" href="https://github.com/VSCodeVim/Vim/issues/750">#750</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="176532342" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/759" href="https://github.com/VSCodeVim/Vim/issues/759">#759</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="175901226" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/740" href="https://github.com/VSCodeVim/Vim/issues/740">#740</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="176037315" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/743" href="https://github.com/VSCodeVim/Vim/issues/743">#743</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="174013625" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/677" href="https://github.com/VSCodeVim/Vim/issues/677">#677</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="177021544" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/772" href="https://github.com/VSCodeVim/Vim/issues/772">#772</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="177148917" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/773" href="https://github.com/VSCodeVim/Vim/issues/773">#773</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="176840649" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/769" href="https://github.com/VSCodeVim/Vim/issues/769">#769</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="176210016" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/753" href="https://github.com/VSCodeVim/Vim/issues/753">#753</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="177743200" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/785" href="https://github.com/VSCodeVim/Vim/issues/785">#785</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="170058738" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/581" href="https://github.com/VSCodeVim/Vim/issues/581">#581</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="176163854" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/747" href="https://github.com/VSCodeVim/Vim/issues/747">#747</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="176705129" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/762" href="https://github.com/VSCodeVim/Vim/issues/762">#762</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="174834807" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/701" href="https://github.com/VSCodeVim/Vim/issues/701">#701</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="176136951" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/746" href="https://github.com/VSCodeVim/Vim/issues/746">#746</a>  (Thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>, <a class="user-mention" href="https://github.com/jgoz">@jgoz</a>, <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>)
-# [v0.1.10 Dithering Dork](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.10)  (Sep 6, 2016)
-
-Bug fixes (thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>):
-* <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="174438740" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/690" href="https://github.com/VSCodeVim/Vim/issues/690">#690</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="174665714" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/696" href="https://github.com/VSCodeVim/Vim/issues/696">#696</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="175156445" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/718" href="https://github.com/VSCodeVim/Vim/issues/718">#718</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="175151096" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/716" href="https://github.com/VSCodeVim/Vim/issues/716">#716</a>
-# [v0.1.9 Compunctious Canary](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.9)  (Sep 5, 2016)
-* Hotfix for <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="174942877" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/706" href="https://github.com/VSCodeVim/Vim/issues/706">#706</a>
-# [v0.1.8 Buggy Baloney ](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.8)  (Sep 4, 2016)
-
-Fixes TONS of bugs. I can't even list them all. There are so many!
-
-Thanks to
-* <a class="user-mention" href="https://github.com/sectioneight">@sectioneight</a>
-* <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>
-* <a class="user-mention" href="https://github.com/antonaderum">@AntonAderum</a>
-* <a class="user-mention" href="https://github.com/platzer">@Platzer</a>
-* <a class="user-mention" href="https://github.com/aminroosta">@aminroosta</a>
-* <a class="user-mention" href="https://github.com/octref">@octref</a>
-
-For their open-source contributions!
-# [v0.1.7 Settings Sandwich](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.7)  (Aug 14, 2016)
-
-This release includes <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>'s excellent work on Vim Settings. Now instead of janky keys that I put in to settings.json at random, we actually mirror Vim's strategy to turn settings on and off!
-## Features
-* Settings
-* <code>smartcase</code> search
-* Add Y in visual mode (thanks <a class="user-mention" href="https://github.com/shotaakasaka">@shotaAkasaka</a>!)
-## Bug Fixes
-* Fix crashes when making large (100+ line) changes. This has been a gnarly one, glad to finally fix it!
-* Fix cc and C on empty lines (thanks <a class="user-mention" href="https://github.com/shotaakasaka">@shotaAkasaka</a>!)
-* Default to not having Visual Block Mode active.
-* Fix jj leaving behind a stray j.
-# [0.1.5 Replacement Raisin](https://github.com/VSCodeVim/Vim/releases/tag/0.1.5)  (Aug 9, 2016)
-
-Another awesome release!
-## New features
-* Replace mode! This is a big one (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* <code>s/foo/bar</code> with an optional visual mode range (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* <code>gd</code> (thanks <a class="user-mention" href="https://github.com/jordanlewis">@jordanlewis</a>!)
-* S (thanks <a class="user-mention" href="https://github.com/glibsm">@glibsm</a>!)
-* Add * register (thanks <a class="user-mention" href="https://github.com/aminroosta">@aminroosta</a>!)
-* Add correct fold behavior (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Add motions by screen lines (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Add o in visual mode (thanks <a class="user-mention" href="https://github.com/platzer">@Platzer</a>!)
-* Add section motions ]], [[, ][ and [](thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Add ^e and ^y
-* Make  repeatable in normal mode (thanks <a class="user-mention" href="https://github.com/octref">@octref</a>!)
-## Bug-fixes
-* Fix an off-by-one error with T and F (thanks <a class="user-mention" href="https://github.com/xconverge">@xconverge</a>!)
-* Improve key-repeat suggestion in README (thanks <a class="user-mention" href="https://github.com/jimray">@jimray</a>!)
-* Fix ctrl key issues (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Fix gt and gT (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Fix the cursor location in some cases when deleting a line break in insert mode (thanks <a class="user-mention" href="https://github.com/thomasboyt">@thomasboyt</a>!)
-* Fix remapping in modes that don't want remapping to happen
-* Fix a bug making marks inconsistent
-* Fix V in visual mode
-# [v0.1.6 Blocky Banana](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.6)  (Aug 9, 2016)
-
-This was intended to be a hot-fix for <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="170147798" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/583" href="https://github.com/VSCodeVim/Vim/issues/583">#583</a>; as an apology, it also includes Visual Block mode, one of our most requested features. (And also because I just happened to finish it right after I released 0.1.5) <g-emoji alias="wink" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f609.png" ios-version="6.0">😉</g-emoji>
-# [v0.1.4 Awesome Applepie](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.4)  (Jul 28, 2016)
-
-I'm especially excited about this version of VSCodeVim! There were a large number of contributions that really improved the quality of the extension. As usual, thanks to all contributors!
-
-New features:
-* Implement quoted text objects - thanks <a class="user-mention" href="https://github.com/sectioneight">@sectioneight</a>
-* Finish off aw and iw - thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>
-* Add gt and gT - thanks <a class="user-mention" href="https://github.com/arussellk">@arussellk</a>
-* Add ctrl-a and ctrl-x - thanks <a class="user-mention" href="https://github.com/sectioneight">@sectioneight</a>
-
-Bug fixes and improvements:
-* Improve performance of / and ? - thanks <a class="user-mention" href="https://github.com/roblourens">@roblourens</a>
-* Improve performance of u and c-r - thanks <a class="user-mention" href="https://github.com/infogulch">@infogulch</a>
-* Fix CJK completely - thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>
-* Fix scrolling behavior when you have two panes of the same file open - thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>
-# [v0.1.3 Inner Icepop ](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.3)  (Jul 19, 2016)
-* Add indentation-related <code>p</code> commands (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Add <code>ctrl-c</code> (with <code>useCtrlKeys</code>)
-* Make <code>ctrl-f</code> use default search behavior, by popular demand, even though <code>/</code> is objectively better and you should never use <code>ctrl-f</code> <g-emoji alias="wink" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f609.png" ios-version="6.0">😉</g-emoji>
-* Add <code>ctrl-f</code> in insert mode (thanks <a class="user-mention" href="https://github.com/sectioneight">@sectioneight</a>!)
-* Add every inner-object and a-object command, e.g. <code>a[</code> <code>i(</code>, etc. (thanks <a class="user-mention" href="https://github.com/sectioneight">@sectioneight</a>! this is a big one!)
-# [v0.1.2 Communal Crossaint](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.2)  (Jul 13, 2016)
-
-So named because I think the community did more work than me this time. VSCodeVim has legs! <g-emoji alias="wink" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f609.png" ios-version="6.0">😉</g-emoji>
-
-Changes:
-* Fix db (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Fix ctrl+f, ctrl+b
-* Display search in statusbar
-* Fix <code>dw</code> on end of line (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Add <code>s</code> in visual/visual line mode.
-* Add <code>p</code> and <code>P</code> in visual/visual line mode.
-* Fix an issue with backspace and .
-# [v0.1.1 Suggestive Sandwich](https://github.com/VSCodeVim/Vim/releases/tag/v0.1.1)  (Jul 8, 2016)
-* Fix a bug with auto-complete (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-# [v0.1 Massive Marshmallow](https://github.com/VSCodeVim/Vim/releases/tag/v0.1)  (Jul 8, 2016)
-
-Lots of stuff in this release!
-* Command remapping
-* Correct Undo/Redo history
-* Marks
-* :wq (thanks <a class="user-mention" href="https://github.com/srepollock">@srepollock</a>!)
-* Incremental search now wraps document and shows all results
-* Add space
-* Add configuration option for nonblinking block cursor
-* Sentence motions (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Numeric prefix to C (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* :tabnext, :tabprevious, :tabfirst, :tablast (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-* Arrow keys (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>!)
-# [v0.0.28 Incremental Icecream](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.28)  (Jun 24, 2016)
-
-Lots of features this time! Barely any bugfixes because there aren't any bugs left. <g-emoji alias="wink" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f609.png" ios-version="6.0">😉</g-emoji>
-* Implement <code>gJ</code>
-* Allow numeric prefixes for <code>J</code>
-* Implement <code>gI</code>
-* Implement <code>&lt;count&gt;dd</code>
-* Implement <code>&lt;count&gt;yy</code> (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>)
-* Implement <code>=</code> (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>)
-* Implement <code>U</code> (thanks <a class="user-mention" href="https://github.com/rebornix">@rebornix</a>)
-* Implement <code>+</code>
-* Implement <code>-</code>
-* Implement <code>_</code>
-* Fix <code>I</code>
-# [v0.0.27 Danish Documentary](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.27)  (Jun 23, 2016)
-
-I'd watch a documentary about danishes - wouldn't you?
-
-Anyways, this was a rather small release because I spent my night working on documentation (as the title implies). I did fix 2 important bugs, though:
-* J was broken in some cases
-* Backspace didn't work over newlines.
-# [0.0.26 Savory Starfruit](https://github.com/VSCodeVim/Vim/releases/tag/0.0.26)  (Jun 22, 2016)
-* Add * and #
-* Add ~ and enter in Normal Mode - thanks <a class="user-mention" href="https://github.com/markrendle">@markrendle</a>
-* Fix a wide assortment of bugs and edge cases.
-# [0.0.25 Repetitive Radish](https://github.com/VSCodeVim/Vim/releases/tag/0.0.25)  (Jun 20, 2016)
-
-Adds number repeats for movements.<br/>
-Fixes a bad bug with the cursor.
-# [0.0.24 Foolish Felafel](https://github.com/VSCodeVim/Vim/releases/tag/0.0.24)  (Jun 19, 2016)
-* Fixes a bug that completely broke search. Sorry about that!
-# [0.0.23 Jealous Jellyroll](https://github.com/VSCodeVim/Vim/releases/tag/0.0.23)  (Jun 19, 2016)
-* Adds %
-* Fixes a number of small bugs
-* Adds a new testing style
-# [v0.0.22 v0.0.22](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.22)  (Jun 18, 2016)
-
-Hopefully fix <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="160724486" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/306" href="https://github.com/VSCodeVim/Vim/issues/306">#306</a>.
-# [v0.0.20 v0.0.20](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.20)  (Jun 13, 2016)
-
-<a class="user-mention" href="https://github.com/johnfn">@johnfn</a> is a freaking code machine. <a class="commit-link" href="https://github.com/VSCodeVim/Vim/compare/v0.0.19...v0.0.20"><tt>v0.0.19...v0.0.20</tt></a>
-# [v0.0.19 v0.0.19](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.19)  (Jun 7, 2016)
-
-This was all <a class="user-mention" href="https://github.com/johnfn">@johnfn</a>:
-* Implemented f, F, t, T, cc, yy, dd, s
-* Visual Line mode
-# [v0.0.18 v0.0.18](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.18)  (May 19, 2016)
-* Update to vscode extension api v0.10.12
-* Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="135377995" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/157" href="https://github.com/VSCodeVim/Vim/issues/157">#157</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="125256001" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/126" href="https://github.com/VSCodeVim/Vim/issues/126">#126</a>, <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="141428064" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/188" href="https://github.com/VSCodeVim/Vim/issues/188">#188</a>
-# [v0.0.17 v0.0.17](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.17)  (May 17, 2016)
-* Add folding commands
-* bug fixes
-# [v0.0.16 v0.0.16](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.16)  (May 4, 2016)
-* copy-paste
-* bug fixes
-# [v0.0.15 v0.0.15](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.15)  (Mar 22, 2016)
-* Fixes <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="125297272" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/127" href="https://github.com/VSCodeVim/Vim/issues/127">#127</a>
-* Fix highlighting of cursor block when changing position via cursor
-# [v0.0.14 v0.0.14](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.14)  (Mar 21, 2016)
-* Implement <code>/</code> =&gt; Search
-* Bug fixes around delete
-# [v0.0.13 v0.0.13](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.13)  (Mar 18, 2016)
-* support d{motion}, c, ge commands
-* bug fixes
-# [v0.0.12 v0.0.12](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.12)  (Mar 4, 2016)
-* Add Visual Mode
-* Add <code>E</code>, <code>e</code>
-* Various bug fixes
-# [v0.0.11 v0.0.11](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.11)  (Feb 18, 2016)
-* Add Ctrl+C, Add support for ctrl+f/ctrl+b
-* Implement X in normal mode, W/B WORD movements
-* Fixes: word, back-word motions, x motion at EOL
-# [v0.0.10 v0.0.10](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.10)  (Feb 1, 2016)
-* Add Swedish Keyboard (compliments of <a class="user-mention" href="https://github.com/antonaderum">@AntonAderum</a>)
-* Add Paragraph motion (compliments of <a class="user-mention" href="https://github.com/johnfn">@johnfn</a>)
-# [v0.0.9 v0.0.9](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.9)  (Feb 1, 2016)
-* Support Danish da-DK keyboard (compliments of <a class="user-mention" href="https://github.com/kedde">@kedde</a>)
-* Implement x command.
-# [v0.0.8 v0.0.8](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.8)  (Jan 3, 2016)
-* Bug Fix:
-<ul>
-<li>Better handling when position changed via mouse click</li>
-</ul>
-
-* Better handling when position changed via mouse click
-# [v0.0.7 v0.0.7](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.7)  (Jan 3, 2016)
-* Block Cursor in Normal Mode (Thank you <a class="user-mention" href="https://github.com/andersenj">@AndersenJ</a> and <a class="user-mention" href="https://github.com/markrendle">@markrendle</a>).
-* Bug Fixes
-# [v0.0.6 v0.0.6](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.6)  (Dec 30, 2015)
-* Implement motions: 0, e
-* Various motion bug fixes
-# [v0.0.5 v0.0.5](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.5)  (Dec 9, 2015)
-* Fixes bad release of v0.0.3 namely issue <a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="120505159" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/93" href="https://github.com/VSCodeVim/Vim/issues/93">#93</a>
-# [v0.0.3 v0.0.3](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.3)  (Dec 4, 2015)
-
-<g-emoji alias="warning" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/26a0.png" ios-version="6.0">⚠️</g-emoji> Bad Release (<a class="issue-link js-issue-link" data-error-text="Failed to load issue title" data-id="120505159" data-permission-text="Issue title is private" data-url="https://github.com/VSCodeVim/Vim/issues/93" href="https://github.com/VSCodeVim/Vim/issues/93">#93</a>). Immediately re-published v0.0.2 as v0.0.4 into the VS Code Marketplace.
-* Features:
-<ul>
-<li>Support <code>w</code>, <code>b</code>, <code>db</code>, <code>$</code>, <code>^</code></li>
-</ul>
-
-* Support <code>w</code>, <code>b</code>, <code>db</code>, <code>$</code>, <code>^</code>
-* Bug Fixes:
-<ul>
-<li>Trigger suggest following every insert</li>
-<li>Differentiate cursor (insert mode) and caret (normal mode) behaviour</li>
-</ul>
-
-* Trigger suggest following every insert
-* Differentiate cursor (insert mode) and caret (normal mode) behaviour
-# [v0.0.2 v0.0.2](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.2)  (Dec 1, 2015)
-* Bug Fixes:
-<ul>
-<li>Fix cursor position entering command mode</li>
-<li>Actually implement <code>shift+a</code> to insert end of line</li>
-</ul>
-
-* Fix cursor position entering command mode
-* Actually implement <code>shift+a</code> to insert end of line
-# [v0.0.1 First!](https://github.com/VSCodeVim/Vim/releases/tag/v0.0.1)  (Nov 29, 2015)
-
-Initial release to the <a href="https://marketplace.visualstudio.com/items/vscodevim.vim" rel="nofollow">Visual Studio Marketplace</a>
+# Change Log
+
+## [v0.11.5](https://github.com/vscodevim/vim/tree/HEAD)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.4...HEAD)
+
+- chore\(deps\): update dependency gulp-bump to v3.1.1 [\#2556](https://github.com/VSCodeVim/Vim/pull/2556) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency typescript to v2.8.3 [\#2553](https://github.com/VSCodeVim/Vim/pull/2553) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/node to v9.6.6 [\#2551](https://github.com/VSCodeVim/Vim/pull/2551) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/mocha to v5.2.0 [\#2550](https://github.com/VSCodeVim/Vim/pull/2550) ([renovate-bot](https://github.com/renovate-bot))
+- Fixed undo issue given in \#2545 [\#2547](https://github.com/VSCodeVim/Vim/pull/2547) ([Chillee](https://github.com/Chillee))
+- chore\(deps\): update dependency mocha to v5.1.1 [\#2546](https://github.com/VSCodeVim/Vim/pull/2546) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency prettier to v1.12.1 [\#2543](https://github.com/VSCodeVim/Vim/pull/2543) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/lodash to v4.14.107 [\#2540](https://github.com/VSCodeVim/Vim/pull/2540) ([renovate-bot](https://github.com/renovate-bot))
+
+## [v0.11.4](https://github.com/vscodevim/vim/tree/v0.11.4) (2018-04-14)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.3...v0.11.4)
+
+- fix: don't call prettier when no files updated [\#2539](https://github.com/VSCodeVim/Vim/pull/2539) ([jpoon](https://github.com/jpoon))
+- chore\(dep\): upgrade gulp-bump, gulp-git, gulp-typescript, prettier, typescript, vscode [\#2538](https://github.com/VSCodeVim/Vim/pull/2538) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/node to v9.6.5 [\#2535](https://github.com/VSCodeVim/Vim/pull/2535) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency mocha to v5.1.0 [\#2534](https://github.com/VSCodeVim/Vim/pull/2534) ([renovate-bot](https://github.com/renovate-bot))
+- docs: update readme to indicate restart of vscode needed [\#2530](https://github.com/VSCodeVim/Vim/pull/2530) ([jdhines](https://github.com/jdhines))
+- chore\(deps\): update dependency @types/node to v9.6.4 [\#2528](https://github.com/VSCodeVim/Vim/pull/2528) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/diff to v3.5.1 [\#2527](https://github.com/VSCodeVim/Vim/pull/2527) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/diff to v3.5.0 [\#2523](https://github.com/VSCodeVim/Vim/pull/2523) ([renovate-bot](https://github.com/renovate-bot))
+- bug: Neovim not spawned in appropriate directory \(fixes \#2482\) [\#2522](https://github.com/VSCodeVim/Vim/pull/2522) ([Chillee](https://github.com/Chillee))
+- bug: fixes behaviour of search when using \* and \# \(fixes \#2517\) [\#2518](https://github.com/VSCodeVim/Vim/pull/2518) ([clamb](https://github.com/clamb))
+- chore\(deps\): update dependency @types/node to v9.6.2 [\#2509](https://github.com/VSCodeVim/Vim/pull/2509) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update node docker tag to v8.11 [\#2496](https://github.com/VSCodeVim/Vim/pull/2496) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency mocha to v5.0.5 [\#2490](https://github.com/VSCodeVim/Vim/pull/2490) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency gulp-tslint to v8.1.3 [\#2489](https://github.com/VSCodeVim/Vim/pull/2489) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/lodash to v4.14.106 [\#2485](https://github.com/VSCodeVim/Vim/pull/2485) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): pin dependencies [\#2483](https://github.com/VSCodeVim/Vim/pull/2483) ([renovate[bot]](https://github.com/apps/renovate))
+- Configure Renovate [\#2480](https://github.com/VSCodeVim/Vim/pull/2480) ([renovate[bot]](https://github.com/apps/renovate))
+- Add jumptoanywhere command for easymotion [\#2454](https://github.com/VSCodeVim/Vim/pull/2454) ([jsonMartin](https://github.com/jsonMartin))
+
+## [v0.11.3](https://github.com/vscodevim/vim/tree/v0.11.3) (2018-03-29)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.2...v0.11.3)
+
+- docs: add documentation for installing xsel. fixes \#2071 [\#2476](https://github.com/VSCodeVim/Vim/pull/2476) ([jpoon](https://github.com/jpoon))
+- Respect vim.visualstar configuration \(fixes \#2469\) [\#2470](https://github.com/VSCodeVim/Vim/pull/2470) ([ytang](https://github.com/ytang))
+- feat: Added \<C-w\>= keybind [\#2453](https://github.com/VSCodeVim/Vim/pull/2453) ([844196](https://github.com/844196))
+- neovim.ts: typo in log [\#2451](https://github.com/VSCodeVim/Vim/pull/2451) ([prakashdanish](https://github.com/prakashdanish))
+- await openEditorAtIndex1 command [\#2442](https://github.com/VSCodeVim/Vim/pull/2442) ([arussellk](https://github.com/arussellk))
+
+## [v0.11.2](https://github.com/vscodevim/vim/tree/v0.11.2) (2018-03-09)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.1...v0.11.2)
+
+- Readds vimState.lastClickWasPastEOL. Fixes \#2404 [\#2433](https://github.com/VSCodeVim/Vim/pull/2433) ([Chillee](https://github.com/Chillee))
+- fix: selection in search in visual mode \#2406 [\#2418](https://github.com/VSCodeVim/Vim/pull/2418) ([shortheron](https://github.com/shortheron))
+
+## [v0.11.1](https://github.com/vscodevim/vim/tree/v0.11.1) (2018-03-08)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.0...v0.11.1)
+
+- Set the timeout to 0 for waitforcursorupdatestopropagate [\#2428](https://github.com/VSCodeVim/Vim/pull/2428) ([Chillee](https://github.com/Chillee))
+- fix: use 'fsPath'. closes \#2422 [\#2426](https://github.com/VSCodeVim/Vim/pull/2426) ([jpoon](https://github.com/jpoon))
+- fix: don't overwrite file if file exists. fixes \#2408 [\#2409](https://github.com/VSCodeVim/Vim/pull/2409) ([jpoon](https://github.com/jpoon))
+- Fix :tabm to use moveActiveEditor command [\#2405](https://github.com/VSCodeVim/Vim/pull/2405) ([arussellk](https://github.com/arussellk))
+
+## [v0.11.0](https://github.com/vscodevim/vim/tree/v0.11.0) (2018-02-26)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.13...v0.11.0)
+
+- Fix :tabe {file} only relative to current file \(\#1162\) [\#2400](https://github.com/VSCodeVim/Vim/pull/2400) ([arussellk](https://github.com/arussellk))
+- fix: clean-up neovim processes. closes \#2038 [\#2395](https://github.com/VSCodeVim/Vim/pull/2395) ([jpoon](https://github.com/jpoon))
+- refactor: no need to set current mode twice [\#2394](https://github.com/VSCodeVim/Vim/pull/2394) ([jpoon](https://github.com/jpoon))
+- feat: create file if file does not exist. closes \#2274 [\#2392](https://github.com/VSCodeVim/Vim/pull/2392) ([jpoon](https://github.com/jpoon))
+- fix: status bar when configuration.showcmd is set \(fixes \#2365\) [\#2386](https://github.com/VSCodeVim/Vim/pull/2386) ([jpoon](https://github.com/jpoon))
+- `jj` cursor position fix for \#1418 [\#2366](https://github.com/VSCodeVim/Vim/pull/2366) ([prog666](https://github.com/prog666))
+- fix: actually run prettier [\#2359](https://github.com/VSCodeVim/Vim/pull/2359) ([jpoon](https://github.com/jpoon))
+- feat: implements usage of `insert` to toggle between modes \(as per \#1787\) [\#2356](https://github.com/VSCodeVim/Vim/pull/2356) ([jpoon](https://github.com/jpoon))
+- Build Improvements [\#2351](https://github.com/VSCodeVim/Vim/pull/2351) ([jpoon](https://github.com/jpoon))
+- Possibility to set statusBar foreground color [\#2350](https://github.com/VSCodeVim/Vim/pull/2350) ([mgor](https://github.com/mgor))
+- Fixes \#2346 [\#2347](https://github.com/VSCodeVim/Vim/pull/2347) ([Chillee](https://github.com/Chillee))
+- Improve Test Infrastructure [\#2335](https://github.com/VSCodeVim/Vim/pull/2335) ([jpoon](https://github.com/jpoon))
+- fix typo in README [\#2327](https://github.com/VSCodeVim/Vim/pull/2327) ([hayley](https://github.com/hayley))
+- Sneak plugin [\#2307](https://github.com/VSCodeVim/Vim/pull/2307) ([jpotterm](https://github.com/jpotterm))
+
+## [v0.10.13](https://github.com/vscodevim/vim/tree/v0.10.13) (2018-01-23)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.12...v0.10.13)
+
+- fix: bad jason. fix bad release.  [\#2324](https://github.com/VSCodeVim/Vim/pull/2324) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.12](https://github.com/vscodevim/vim/tree/v0.10.12) (2018-01-23)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.11...v0.10.12)
+
+- fix: closes \#730. setcontext when switching active text editors [\#2320](https://github.com/VSCodeVim/Vim/pull/2320) ([jpoon](https://github.com/jpoon))
+- Update README for Mac key repeat [\#2316](https://github.com/VSCodeVim/Vim/pull/2316) ([puradox](https://github.com/puradox))
+- Default to vim behaviour for Ctrl+D [\#2314](https://github.com/VSCodeVim/Vim/pull/2314) ([Graham42](https://github.com/Graham42))
+- Left shift fix 2299 [\#2300](https://github.com/VSCodeVim/Vim/pull/2300) ([jessewmc](https://github.com/jessewmc))
+
+## [v0.10.11](https://github.com/vscodevim/vim/tree/v0.10.11) (2018-01-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.10...v0.10.11)
+
+- fix: status bar not updating properly when recording macros. fixes \#2296.  [\#2304](https://github.com/VSCodeVim/Vim/pull/2304) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.10](https://github.com/vscodevim/vim/tree/v0.10.10) (2018-01-16)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.9...v0.10.10)
+
+- fix: add tests for compareKeyPressSequence [\#2289](https://github.com/VSCodeVim/Vim/pull/2289) ([jpoon](https://github.com/jpoon))
+- Fix BaseAction.couldActionApply to work with two-dimensional keys array [\#2288](https://github.com/VSCodeVim/Vim/pull/2288) ([jpotterm](https://github.com/jpotterm))
+- refactor: move modehandlermap to own class [\#2285](https://github.com/VSCodeVim/Vim/pull/2285) ([jpoon](https://github.com/jpoon))
+- fix: status bar not updating following toggle [\#2283](https://github.com/VSCodeVim/Vim/pull/2283) ([jpoon](https://github.com/jpoon))
+- Fix: Warnings when retrieving configurations w/o resource [\#2282](https://github.com/VSCodeVim/Vim/pull/2282) ([jpoon](https://github.com/jpoon))
+- fix: \<C-d\> remapping disabled by default. functionality controlled by "handleKeys" [\#2269](https://github.com/VSCodeVim/Vim/pull/2269) ([Arxzin](https://github.com/Arxzin))
+
+## [v0.10.9](https://github.com/vscodevim/vim/tree/v0.10.9) (2018-01-11)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.8...v0.10.9)
+
+- feature: "h", "l" keybindings for sidebar [\#2290](https://github.com/VSCodeVim/Vim/pull/2290) ([Nodman](https://github.com/Nodman))
+- fix: no need to change cursor if there is no active editor. closes \#2273 [\#2278](https://github.com/VSCodeVim/Vim/pull/2278) ([jpoon](https://github.com/jpoon))
+- fix: fixes circular dependency between notation and configuration [\#2277](https://github.com/VSCodeVim/Vim/pull/2277) ([jpoon](https://github.com/jpoon))
+- fix: show cmd-line errors in status bar. add new E492 error [\#2272](https://github.com/VSCodeVim/Vim/pull/2272) ([jpoon](https://github.com/jpoon))
+- refactor: normalize keys when loading configuration [\#2268](https://github.com/VSCodeVim/Vim/pull/2268) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.8](https://github.com/vscodevim/vim/tree/v0.10.8) (2018-01-05)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.7...v0.10.8)
+
+- fix\(2162\): handleKeys was previously only handling negation [\#2267](https://github.com/VSCodeVim/Vim/pull/2267) ([jpoon](https://github.com/jpoon))
+- fix\(2264\): go-to-line [\#2266](https://github.com/VSCodeVim/Vim/pull/2266) ([jpoon](https://github.com/jpoon))
+- fix\(2261\): change status bar text for search-in-progress to be more l… [\#2263](https://github.com/VSCodeVim/Vim/pull/2263) ([jpoon](https://github.com/jpoon))
+- fix\(2261\): fix regression. show search string in status bar [\#2262](https://github.com/VSCodeVim/Vim/pull/2262) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.7](https://github.com/vscodevim/vim/tree/v0.10.7) (2018-01-04)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.6...v0.10.7)
+
+- Stop Silently Failing [\#2250](https://github.com/VSCodeVim/Vim/pull/2250) ([jpoon](https://github.com/jpoon))
+- Misc Bug Fixes and Refactoring [\#2243](https://github.com/VSCodeVim/Vim/pull/2243) ([jpoon](https://github.com/jpoon))
+- fix\(2184\): handle situation when no document is opened [\#2237](https://github.com/VSCodeVim/Vim/pull/2237) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.6](https://github.com/vscodevim/vim/tree/v0.10.6) (2017-12-15)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.5...v0.10.6)
+
+- update\(package.json\) [\#2225](https://github.com/VSCodeVim/Vim/pull/2225) ([jpoon](https://github.com/jpoon))
+- Add C-\[ to Replace Mode escape [\#2223](https://github.com/VSCodeVim/Vim/pull/2223) ([deybhayden](https://github.com/deybhayden))
+- Do not open open file dialog when calling `:e!` [\#2215](https://github.com/VSCodeVim/Vim/pull/2215) ([squgeim](https://github.com/squgeim))
+- Update `list.\*` command keybindings [\#2213](https://github.com/VSCodeVim/Vim/pull/2213) ([joaomoreno](https://github.com/joaomoreno))
+- moar clean-up [\#2208](https://github.com/VSCodeVim/Vim/pull/2208) ([jpoon](https://github.com/jpoon))
+- Fix cursor position of \<C-o\> command in insertmode [\#2206](https://github.com/VSCodeVim/Vim/pull/2206) ([hy950831](https://github.com/hy950831))
+- refactor\(modehandler-updateview\): use map and remove unused context [\#2197](https://github.com/VSCodeVim/Vim/pull/2197) ([jpoon](https://github.com/jpoon))
+- Integrate TravisBuddy [\#2191](https://github.com/VSCodeVim/Vim/pull/2191) ([bluzi](https://github.com/bluzi))
+- Fix \#2168: Surround offset [\#2171](https://github.com/VSCodeVim/Vim/pull/2171) ([westim](https://github.com/westim))
+- Fix \#1945 $ in VisualBlock works on ragged lines [\#2096](https://github.com/VSCodeVim/Vim/pull/2096) ([Strafos](https://github.com/Strafos))
+
+## [v0.10.5](https://github.com/vscodevim/vim/tree/v0.10.5) (2017-11-21)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.4...v0.10.5)
+
+- Fixed incorrect styling of 'fake' cursors [\#2161](https://github.com/VSCodeVim/Vim/pull/2161) ([Chillee](https://github.com/Chillee))
+- Fix \#2155, Fix \#2133: escape delimiter substitute [\#2159](https://github.com/VSCodeVim/Vim/pull/2159) ([westim](https://github.com/westim))
+- Fix \#2148: vertical split command [\#2158](https://github.com/VSCodeVim/Vim/pull/2158) ([westim](https://github.com/westim))
+- fix\(1673\): re-enable some tests [\#2152](https://github.com/VSCodeVim/Vim/pull/2152) ([jpoon](https://github.com/jpoon))
+- keep workbench color customizations when using status bar color [\#2122](https://github.com/VSCodeVim/Vim/pull/2122) ([rodrigo-garcia-leon](https://github.com/rodrigo-garcia-leon))
+
+## [v0.10.4](https://github.com/vscodevim/vim/tree/v0.10.4) (2017-11-14)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.3...v0.10.4)
+
+- fix\(2145\): reverse logic [\#2147](https://github.com/VSCodeVim/Vim/pull/2147) ([jpoon](https://github.com/jpoon))
+
+## [v0.10.3](https://github.com/vscodevim/vim/tree/v0.10.3) (2017-11-13)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.2...v0.10.3)
+
+- Fix release [\#2142](https://github.com/VSCodeVim/Vim/pull/2142) ([jpoon](https://github.com/jpoon))
+- Code Cleanup [\#2138](https://github.com/VSCodeVim/Vim/pull/2138) ([jpoon](https://github.com/jpoon))
+- Fixed typo in README [\#2137](https://github.com/VSCodeVim/Vim/pull/2137) ([Nonoctis](https://github.com/Nonoctis))
+- fix\(travis\): use lts/carbon \(v8.9.1\) for travis [\#2129](https://github.com/VSCodeVim/Vim/pull/2129) ([jpoon](https://github.com/jpoon))
+- Fix ^, $, add case sensitivity override in search [\#2123](https://github.com/VSCodeVim/Vim/pull/2123) ([parkovski](https://github.com/parkovski))
+- fix vscode launch/tasks [\#2121](https://github.com/VSCodeVim/Vim/pull/2121) ([jpoon](https://github.com/jpoon))
+- Fix remapping keys to actions with "mustBeFirstKey", fixes \#2216 [\#2117](https://github.com/VSCodeVim/Vim/pull/2117) ([ohjames](https://github.com/ohjames))
+- Fixes \#2113: Start in Disabled mode configuration. [\#2115](https://github.com/VSCodeVim/Vim/pull/2115) ([westim](https://github.com/westim))
+- fix\(line-endings\): change all files to lf [\#2111](https://github.com/VSCodeVim/Vim/pull/2111) ([jpoon](https://github.com/jpoon))
+- fix\(build\): position does not exist for replacetexttransformation [\#2105](https://github.com/VSCodeVim/Vim/pull/2105) ([jpoon](https://github.com/jpoon))
+- Use 'editor.unfold' with direction: 'down' [\#2104](https://github.com/VSCodeVim/Vim/pull/2104) ([aeschli](https://github.com/aeschli))
+- Pesky penguin CHANGELOG.md update. [\#2091](https://github.com/VSCodeVim/Vim/pull/2091) ([westim](https://github.com/westim))
+- Added unit tests for movement commands. [\#2088](https://github.com/VSCodeVim/Vim/pull/2088) ([westim](https://github.com/westim))
+- Fix \#2080 [\#2087](https://github.com/VSCodeVim/Vim/pull/2087) ([Strafos](https://github.com/Strafos))
+- Update Contributors [\#2083](https://github.com/VSCodeVim/Vim/pull/2083) ([mcsosa121](https://github.com/mcsosa121))
+- Fixes \#1974: U command [\#2081](https://github.com/VSCodeVim/Vim/pull/2081) ([westim](https://github.com/westim))
+- Fix \#2063 [\#2079](https://github.com/VSCodeVim/Vim/pull/2079) ([Strafos](https://github.com/Strafos))
+- Fix \#1852 surround issue at end of line [\#2077](https://github.com/VSCodeVim/Vim/pull/2077) ([Strafos](https://github.com/Strafos))
+- added `showOpenDialog` when typing emtpy e [\#2067](https://github.com/VSCodeVim/Vim/pull/2067) ([DanEEStar](https://github.com/DanEEStar))
+- Fix gj/gk in visual block mode [\#2046](https://github.com/VSCodeVim/Vim/pull/2046) ([orn688](https://github.com/orn688))
+
+## [v0.10.2](https://github.com/vscodevim/vim/tree/v0.10.2) (2017-10-14)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.1...v0.10.2)
+
+- Update ROADMAP.md [\#2073](https://github.com/VSCodeVim/Vim/pull/2073) ([xconverge](https://github.com/xconverge))
+- Change ignoreFocusOut to false for the command line [\#2072](https://github.com/VSCodeVim/Vim/pull/2072) ([gadkadosh](https://github.com/gadkadosh))
+- Upgrade packages [\#2070](https://github.com/VSCodeVim/Vim/pull/2070) ([jpoon](https://github.com/jpoon))
+- fixes \#1576 and showcmd configuration option [\#2069](https://github.com/VSCodeVim/Vim/pull/2069) ([xconverge](https://github.com/xconverge))
+- removed code which is not needed anymore due to \#2062 [\#2065](https://github.com/VSCodeVim/Vim/pull/2065) ([DanEEStar](https://github.com/DanEEStar))
+- An option to show the colon at the start of the command line box [\#2064](https://github.com/VSCodeVim/Vim/pull/2064) ([gadkadosh](https://github.com/gadkadosh))
+- Bugfix \#1951: text selection in insert mode [\#2062](https://github.com/VSCodeVim/Vim/pull/2062) ([DanEEStar](https://github.com/DanEEStar))
+- Dispose modehandler if NO documents match the modehandler document anymore [\#2058](https://github.com/VSCodeVim/Vim/pull/2058) ([xconverge](https://github.com/xconverge))
+- Fixes \#2050 Allow custom cursor styles per mode [\#2054](https://github.com/VSCodeVim/Vim/pull/2054) ([xconverge](https://github.com/xconverge))
+- Fixes \#1824: g; and g, commands. [\#2040](https://github.com/VSCodeVim/Vim/pull/2040) ([westim](https://github.com/westim))
+- Fixes \#1248: support for '., `., and gi commands. [\#2037](https://github.com/VSCodeVim/Vim/pull/2037) ([westim](https://github.com/westim))
+- Fix for issue \#1860, visual multicursor movement. [\#2036](https://github.com/VSCodeVim/Vim/pull/2036) ([westim](https://github.com/westim))
+- Fix a typo [\#2028](https://github.com/VSCodeVim/Vim/pull/2028) ([joonro](https://github.com/joonro))
+
+## [v0.10.1](https://github.com/vscodevim/vim/tree/v0.10.1) (2017-09-16)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.10.0...v0.10.1)
+
+- Fixing travis issues [\#2024](https://github.com/VSCodeVim/Vim/pull/2024) ([Chillee](https://github.com/Chillee))
+- Correct behavior of mouseSelectionGoesIntoVisualMode [\#2020](https://github.com/VSCodeVim/Vim/pull/2020) ([nguymin4](https://github.com/nguymin4))
+- Easymotion improvements [\#2017](https://github.com/VSCodeVim/Vim/pull/2017) ([MaxfieldWalker](https://github.com/MaxfieldWalker))
+- fix \#2009 [\#2012](https://github.com/VSCodeVim/Vim/pull/2012) ([MaxfieldWalker](https://github.com/MaxfieldWalker))
+- Fix deref of undefined race on startup. [\#2002](https://github.com/VSCodeVim/Vim/pull/2002) ([brandonbloom](https://github.com/brandonbloom))
+- Use Go To Def & history absent a tag stack. [\#2001](https://github.com/VSCodeVim/Vim/pull/2001) ([brandonbloom](https://github.com/brandonbloom))
+- Fix\#1981 [\#1997](https://github.com/VSCodeVim/Vim/pull/1997) ([MaxfieldWalker](https://github.com/MaxfieldWalker))
+- Improvements to paragraph text objects. [\#1996](https://github.com/VSCodeVim/Vim/pull/1996) ([brandonbloom](https://github.com/brandonbloom))
+- Implement '' and ``. [\#1993](https://github.com/VSCodeVim/Vim/pull/1993) ([brandonbloom](https://github.com/brandonbloom))
+
+## [v0.10.0](https://github.com/vscodevim/vim/tree/v0.10.0) (2017-08-30)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.9.0...v0.10.0)
+
+- Make prettier work on Windows [\#1987](https://github.com/VSCodeVim/Vim/pull/1987) ([MaxfieldWalker](https://github.com/MaxfieldWalker))
+- Remove flaky tests [\#1982](https://github.com/VSCodeVim/Vim/pull/1982) ([Chillee](https://github.com/Chillee))
+- Fixed iW on beginning of word \(\#1935\) [\#1977](https://github.com/VSCodeVim/Vim/pull/1977) ([Ghust1995](https://github.com/Ghust1995))
+- Easymotion new features [\#1967](https://github.com/VSCodeVim/Vim/pull/1967) ([MaxfieldWalker](https://github.com/MaxfieldWalker))
+- Trying to fix the travis issues with neovim [\#1958](https://github.com/VSCodeVim/Vim/pull/1958) ([Chillee](https://github.com/Chillee))
+- Fixes \#1941: Action repetition with Ctrl-\[ [\#1953](https://github.com/VSCodeVim/Vim/pull/1953) ([tagniam](https://github.com/tagniam))
+- Fixes \#1950: counter for $ [\#1952](https://github.com/VSCodeVim/Vim/pull/1952) ([tagniam](https://github.com/tagniam))
+- Makes all tests pass on Windows [\#1939](https://github.com/VSCodeVim/Vim/pull/1939) ([philipmat](https://github.com/philipmat))
+- Update tests due to VSCode PR 28238 [\#1926](https://github.com/VSCodeVim/Vim/pull/1926) ([philipmat](https://github.com/philipmat))
+- fix `z O` unfoldRecursively [\#1924](https://github.com/VSCodeVim/Vim/pull/1924) ([VincentBel](https://github.com/VincentBel))
+- Renamed test to reflect purpose [\#1913](https://github.com/VSCodeVim/Vim/pull/1913) ([philipmat](https://github.com/philipmat))
+- Ctrl-C should copy to clipboard in visual mode - fix for \#1896 [\#1912](https://github.com/VSCodeVim/Vim/pull/1912) ([philipmat](https://github.com/philipmat))
+- Substitute global flag \(like Vim's `gdefault`\) [\#1909](https://github.com/VSCodeVim/Vim/pull/1909) ([philipmat](https://github.com/philipmat))
+- Fixes \#1871: Adds configuration option to go into visual mode upon clicking in insert mode [\#1898](https://github.com/VSCodeVim/Vim/pull/1898) ([Chillee](https://github.com/Chillee))
+- Fixes \#1886: indent repeat doesn't work in visual mode [\#1890](https://github.com/VSCodeVim/Vim/pull/1890) ([Chillee](https://github.com/Chillee))
+- Formattted everything with prettier [\#1879](https://github.com/VSCodeVim/Vim/pull/1879) ([Chillee](https://github.com/Chillee))
+
+## [v0.9.0](https://github.com/vscodevim/vim/tree/v0.9.0) (2017-06-24)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.8.7...v0.9.0)
+
+- fixes \#1861 [\#1868](https://github.com/VSCodeVim/Vim/pull/1868) ([xconverge](https://github.com/xconverge))
+- Fix off by one error in visual mode [\#1862](https://github.com/VSCodeVim/Vim/pull/1862) ([Chillee](https://github.com/Chillee))
+
+## [v0.8.7](https://github.com/vscodevim/vim/tree/v0.8.7) (2017-06-23)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.8.6...v0.8.7)
+
+- Added :only command and corresponding shortcuts [\#1882](https://github.com/VSCodeVim/Vim/pull/1882) ([LeonB](https://github.com/LeonB))
+- Select in visual mode when scrolling [\#1859](https://github.com/VSCodeVim/Vim/pull/1859) ([Chillee](https://github.com/Chillee))
+- Fixes \#1857: P not creating an undo stop [\#1858](https://github.com/VSCodeVim/Vim/pull/1858) ([Chillee](https://github.com/Chillee))
+- Fixes \#979: Adds q! to close without saving [\#1854](https://github.com/VSCodeVim/Vim/pull/1854) ([Chillee](https://github.com/Chillee))
+- Update README.md \(minor\) [\#1851](https://github.com/VSCodeVim/Vim/pull/1851) ([BlueDrink9](https://github.com/BlueDrink9))
+- fixes \#1843 A and I preceded by count [\#1846](https://github.com/VSCodeVim/Vim/pull/1846) ([xconverge](https://github.com/xconverge))
+- WIP Fixes \#754: Adds j,k,o,\<Enter\>, gg, G, ctrl+d, and ctrl+u commands for navigating inside the file explorer [\#1718](https://github.com/VSCodeVim/Vim/pull/1718) ([Chillee](https://github.com/Chillee))
+
+## [v0.8.6](https://github.com/vscodevim/vim/tree/v0.8.6) (2017-06-15)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.8.5...v0.8.6)
+
+- Removed solid block cursor [\#1842](https://github.com/VSCodeVim/Vim/pull/1842) ([Chillee](https://github.com/Chillee))
+- Fix yiw cursor pos [\#1837](https://github.com/VSCodeVim/Vim/pull/1837) ([xconverge](https://github.com/xconverge))
+- Fixes \#1794: Undo not undoing all changes [\#1833](https://github.com/VSCodeVim/Vim/pull/1833) ([Chillee](https://github.com/Chillee))
+- Fixes \#1827: Autocomplete fails when any lines are wrapped/folded [\#1832](https://github.com/VSCodeVim/Vim/pull/1832) ([Chillee](https://github.com/Chillee))
+- Fixes \#1826: Jump to line with neovim disabled doesn't work [\#1831](https://github.com/VSCodeVim/Vim/pull/1831) ([Chillee](https://github.com/Chillee))
+
+## [v0.8.5](https://github.com/vscodevim/vim/tree/v0.8.5) (2017-06-11)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.8.4...v0.8.5)
+
+- Fixes \#1814: Undo history getting deleted when file changes [\#1820](https://github.com/VSCodeVim/Vim/pull/1820) ([Chillee](https://github.com/Chillee))
+- Fixes \#1200: :e doesn't expand tildes [\#1819](https://github.com/VSCodeVim/Vim/pull/1819) ([Chillee](https://github.com/Chillee))
+- Fixes \#1786: Adds relative line ranges [\#1810](https://github.com/VSCodeVim/Vim/pull/1810) ([Chillee](https://github.com/Chillee))
+- Fixed \#1803: zc automatically reopens folds if the fold is performed in the middle. [\#1809](https://github.com/VSCodeVim/Vim/pull/1809) ([Chillee](https://github.com/Chillee))
+- Vertical split shortcut keys [\#1795](https://github.com/VSCodeVim/Vim/pull/1795) ([beefsack](https://github.com/beefsack))
+
+## [v0.8.4](https://github.com/vscodevim/vim/tree/v0.8.4) (2017-05-29)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.8.3...v0.8.4)
+
+- Fixes \#1743: Fixed pasting over visual mode with named register overwriting the named register [\#1777](https://github.com/VSCodeVim/Vim/pull/1777) ([Chillee](https://github.com/Chillee))
+- Fixes \#1760: Deindenting not working properly with neovim ex-commands [\#1770](https://github.com/VSCodeVim/Vim/pull/1770) ([Chillee](https://github.com/Chillee))
+- Fixes \#1768: Backspace deletes more than one tab when tabs are mandated by language specific settings [\#1769](https://github.com/VSCodeVim/Vim/pull/1769) ([Chillee](https://github.com/Chillee))
+- More v8 patches [\#1766](https://github.com/VSCodeVim/Vim/pull/1766) ([Chillee](https://github.com/Chillee))
+- fixed \#1027 maybe? [\#1740](https://github.com/VSCodeVim/Vim/pull/1740) ([Chillee](https://github.com/Chillee))
+
+## [v0.8.3](https://github.com/vscodevim/vim/tree/v0.8.3) (2017-05-26)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.8.2...v0.8.3)
+
+## [v0.8.2](https://github.com/vscodevim/vim/tree/v0.8.2) (2017-05-26)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.8.1...v0.8.2)
+
+- Fixes \#1750: gq doesn't work for JSDoc type comments [\#1759](https://github.com/VSCodeVim/Vim/pull/1759) ([Chillee](https://github.com/Chillee))
+- Some patches for v0.8.0 [\#1757](https://github.com/VSCodeVim/Vim/pull/1757) ([Chillee](https://github.com/Chillee))
+
+## [v0.8.1](https://github.com/vscodevim/vim/tree/v0.8.1) (2017-05-26)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.8.0...v0.8.1)
+
+- Fixes \#1752: Tab Completion [\#1753](https://github.com/VSCodeVim/Vim/pull/1753) ([Chillee](https://github.com/Chillee))
+
+## [v0.8.0](https://github.com/vscodevim/vim/tree/v0.8.0) (2017-05-25)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.7.1...v0.8.0)
+
+- Fixes \#1749: \<D-d\> in insert mode doesn't work when the word isn't by itself [\#1748](https://github.com/VSCodeVim/Vim/pull/1748) ([Chillee](https://github.com/Chillee))
+- Added automatic changelog generator [\#1747](https://github.com/VSCodeVim/Vim/pull/1747) ([Chillee](https://github.com/Chillee))
+- Actually readded \<c-j\> and \<c-k\> [\#1730](https://github.com/VSCodeVim/Vim/pull/1730) ([Chillee](https://github.com/Chillee))
+- Revert "Unfixes \#1720" [\#1729](https://github.com/VSCodeVim/Vim/pull/1729) ([Chillee](https://github.com/Chillee))
+- Unfixes \#1720 [\#1728](https://github.com/VSCodeVim/Vim/pull/1728) ([Chillee](https://github.com/Chillee))
+- Embedding Neovim for Ex commands [\#1725](https://github.com/VSCodeVim/Vim/pull/1725) ([Chillee](https://github.com/Chillee))
+- Fixes \#1720: Removed unused \<c- \> bindings from package.json [\#1722](https://github.com/VSCodeVim/Vim/pull/1722) ([Chillee](https://github.com/Chillee))
+- Fixes \#1376: \<C-a\> doesn't work correctly when a word has more than 1 number [\#1721](https://github.com/VSCodeVim/Vim/pull/1721) ([Chillee](https://github.com/Chillee))
+- Fixes \#1715: Adds multicursor paste [\#1717](https://github.com/VSCodeVim/Vim/pull/1717) ([Chillee](https://github.com/Chillee))
+- Fixes \#1534, \#1518, \#1716, \#1618, \#1450: Refactored repeating motions [\#1712](https://github.com/VSCodeVim/Vim/pull/1712) ([Chillee](https://github.com/Chillee))
+- Fixes \#1520: search in visual/visualLine/visualBlock mode [\#1710](https://github.com/VSCodeVim/Vim/pull/1710) ([Chillee](https://github.com/Chillee))
+- Fixes \#1403: VisualBlock doesn't respect keybindings. [\#1709](https://github.com/VSCodeVim/Vim/pull/1709) ([Chillee](https://github.com/Chillee))
+- Fixes \#1655: Extends gf to line numbers [\#1708](https://github.com/VSCodeVim/Vim/pull/1708) ([Chillee](https://github.com/Chillee))
+- Fixes \#1436: extension prevents 'find all references' pop-up from closing through \<esc\> if it's empty. [\#1707](https://github.com/VSCodeVim/Vim/pull/1707) ([Chillee](https://github.com/Chillee))
+- Fixes \#1668: Self closing tags not properly handled. [\#1702](https://github.com/VSCodeVim/Vim/pull/1702) ([Chillee](https://github.com/Chillee))
+- Fixes \#1674: repeating . with characters like " or \) leaves cursor in wrong place [\#1700](https://github.com/VSCodeVim/Vim/pull/1700) ([Chillee](https://github.com/Chillee))
+- remove system clipboard hack for UTF-8 [\#1695](https://github.com/VSCodeVim/Vim/pull/1695) ([xconverge](https://github.com/xconverge))
+- Fixes \#1684: Fixed gq spacing issues [\#1686](https://github.com/VSCodeVim/Vim/pull/1686) ([Chillee](https://github.com/Chillee))
+- Fixed some regressions I introduced [\#1681](https://github.com/VSCodeVim/Vim/pull/1681) ([Chillee](https://github.com/Chillee))
+- feat\(surround\): support complex tags surround [\#1680](https://github.com/VSCodeVim/Vim/pull/1680) ([admosity](https://github.com/admosity))
+- Fixes \#1400, \#612, \#1632, \#1634, \#1531, \#1458: Tab isn't handled properly for insert and visualblockinsert modes [\#1663](https://github.com/VSCodeVim/Vim/pull/1663) ([Chillee](https://github.com/Chillee))
+- Fixes \#792: Selecting range before Ex-commands highlights initial text [\#1659](https://github.com/VSCodeVim/Vim/pull/1659) ([Chillee](https://github.com/Chillee))
+- Cobbweb/more readme fixes [\#1656](https://github.com/VSCodeVim/Vim/pull/1656) ([cobbweb](https://github.com/cobbweb))
+- Fixes \#1256 and \#394: Fixes delete key and adds functionality [\#1644](https://github.com/VSCodeVim/Vim/pull/1644) ([Chillee](https://github.com/Chillee))
+- Fixes \#1196, \#1197: d}/y} not working correctly [\#1621](https://github.com/VSCodeVim/Vim/pull/1621) ([Chillee](https://github.com/Chillee))
+- Fixing the automatic fold expansion \(\#1004\) [\#1552](https://github.com/VSCodeVim/Vim/pull/1552) ([Chillee](https://github.com/Chillee))
+- Fix visual mode bugs\#1304to\#1308 [\#1322](https://github.com/VSCodeVim/Vim/pull/1322) ([xlaech](https://github.com/xlaech))
+
+## [v0.7.1](https://github.com/vscodevim/vim/tree/v0.7.1) (2017-05-10)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.7.0...v0.7.1)
+
+- Changes tabs to navigate inside the same split [\#1677](https://github.com/VSCodeVim/Vim/pull/1677) ([vinicio](https://github.com/vinicio))
+- clean up tests. increase timeout [\#1672](https://github.com/VSCodeVim/Vim/pull/1672) ([jpoon](https://github.com/jpoon))
+- Fixes \#1585: Added \<C-w\> j and \<C-w\> k [\#1666](https://github.com/VSCodeVim/Vim/pull/1666) ([Chillee](https://github.com/Chillee))
+- Add :close support based on :quit [\#1665](https://github.com/VSCodeVim/Vim/pull/1665) ([mspaulding06](https://github.com/mspaulding06))
+- Fixes \#1280: Pasting over selection doesn't yank deleted section [\#1651](https://github.com/VSCodeVim/Vim/pull/1651) ([Chillee](https://github.com/Chillee))
+- Fixes \#1535, \#1467, \#1311: D-d doesn't work in insert mode [\#1631](https://github.com/VSCodeVim/Vim/pull/1631) ([Chillee](https://github.com/Chillee))
+
+## [v0.7.0](https://github.com/vscodevim/vim/tree/v0.7.0) (2017-05-05)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.20...v0.7.0)
+
+- Join HTML on single line to prevent extraneous \<br\>s [\#1643](https://github.com/VSCodeVim/Vim/pull/1643) ([cobbweb](https://github.com/cobbweb))
+- Refactor [\#1642](https://github.com/VSCodeVim/Vim/pull/1642) ([rebornix](https://github.com/rebornix))
+- Fixes \#1637, \#1638: z- and z\<CR\> movements [\#1640](https://github.com/VSCodeVim/Vim/pull/1640) ([Chillee](https://github.com/Chillee))
+- Fixes \#1503: Undo history isn't kept when switching tabs [\#1629](https://github.com/VSCodeVim/Vim/pull/1629) ([Chillee](https://github.com/Chillee))
+- Fixes \#1441: Ctrl-c dropping a character when selecting from right to left in insert mode [\#1628](https://github.com/VSCodeVim/Vim/pull/1628) ([Chillee](https://github.com/Chillee))
+- Fixes \#1300: Fixed bug with recently submitted tag PR [\#1625](https://github.com/VSCodeVim/Vim/pull/1625) ([Chillee](https://github.com/Chillee))
+- Fixes \#1137: i\_\<C-w\> deletes through whitespace at beginning of line [\#1624](https://github.com/VSCodeVim/Vim/pull/1624) ([Chillee](https://github.com/Chillee))
+- Further work on tag matching \(based off of \#1454\) [\#1620](https://github.com/VSCodeVim/Vim/pull/1620) ([Chillee](https://github.com/Chillee))
+- Toggle vim [\#1619](https://github.com/VSCodeVim/Vim/pull/1619) ([rebornix](https://github.com/rebornix))
+- Fixes \#1588: \<C-a\> does wrong things if cursor is to the right of a number \(and there's a number on the next line\) [\#1617](https://github.com/VSCodeVim/Vim/pull/1617) ([Chillee](https://github.com/Chillee))
+- Visualstar [\#1616](https://github.com/VSCodeVim/Vim/pull/1616) ([mikew](https://github.com/mikew))
+- outfiles needs to be globbed [\#1615](https://github.com/VSCodeVim/Vim/pull/1615) ([jpoon](https://github.com/jpoon))
+- Upgrade typescript 2.2.1-\>2.3.2. tslint 3.10.2-\>2.3.2. Fix errors [\#1614](https://github.com/VSCodeVim/Vim/pull/1614) ([jpoon](https://github.com/jpoon))
+- Fix warning [\#1613](https://github.com/VSCodeVim/Vim/pull/1613) ([jpoon](https://github.com/jpoon))
+- Stopped getLineMaxColumn from erroring on line 0 [\#1610](https://github.com/VSCodeVim/Vim/pull/1610) ([Chillee](https://github.com/Chillee))
+- use editor from event fixes \#1607 [\#1608](https://github.com/VSCodeVim/Vim/pull/1608) ([brandoncc](https://github.com/brandoncc))
+- Fixes \#1532: gd doesn't set desiredColumn properly [\#1605](https://github.com/VSCodeVim/Vim/pull/1605) ([Chillee](https://github.com/Chillee))
+- Fixes \#1594: \<Copy\> drops the first and last line when selecting in visual line mode from the bottom up [\#1604](https://github.com/VSCodeVim/Vim/pull/1604) ([Chillee](https://github.com/Chillee))
+- Fixes \#1575: Adds support for searching for strings with newlines [\#1603](https://github.com/VSCodeVim/Vim/pull/1603) ([Chillee](https://github.com/Chillee))
+- Fix status bar color when change mode [\#1602](https://github.com/VSCodeVim/Vim/pull/1602) ([zelphir](https://github.com/zelphir))
+- Made command line persistent when switching windows [\#1601](https://github.com/VSCodeVim/Vim/pull/1601) ([Chillee](https://github.com/Chillee))
+- Fixes \#890, \#1377: Selection \(both visual/visualline\) is very wonky with gj and gk [\#1600](https://github.com/VSCodeVim/Vim/pull/1600) ([Chillee](https://github.com/Chillee))
+- Fixes \#1251: gq always adds an extra space to beginning of block. [\#1596](https://github.com/VSCodeVim/Vim/pull/1596) ([Chillee](https://github.com/Chillee))
+- Fixes \#1599: dot command doesn't work in macros [\#1595](https://github.com/VSCodeVim/Vim/pull/1595) ([Chillee](https://github.com/Chillee))
+- Fixes \#1369: Change on a selection where endpoint was at beginning of line misses last character [\#1560](https://github.com/VSCodeVim/Vim/pull/1560) ([Chillee](https://github.com/Chillee))
+- Add support for indent objects [\#1550](https://github.com/VSCodeVim/Vim/pull/1550) ([mikew](https://github.com/mikew))
+- Navigate between view [\#1504](https://github.com/VSCodeVim/Vim/pull/1504) ([lyup](https://github.com/lyup))
+
+## [v0.6.20](https://github.com/vscodevim/vim/tree/v0.6.20) (2017-04-26)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.19...v0.6.20)
+
+## [v0.6.19](https://github.com/vscodevim/vim/tree/v0.6.19) (2017-04-26)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.18...v0.6.19)
+
+- Fixes \#1573: Backspace at beginning of file causes subsequent operation to nop [\#1577](https://github.com/VSCodeVim/Vim/pull/1577) ([Chillee](https://github.com/Chillee))
+- Fix logo src so logo displays inside VSCode [\#1572](https://github.com/VSCodeVim/Vim/pull/1572) ([cobbweb](https://github.com/cobbweb))
+- fixes \#1449 [\#1571](https://github.com/VSCodeVim/Vim/pull/1571) ([squedd](https://github.com/squedd))
+- fixes \#1252 [\#1569](https://github.com/VSCodeVim/Vim/pull/1569) ([xconverge](https://github.com/xconverge))
+- fixes \#1486 :wqa command [\#1568](https://github.com/VSCodeVim/Vim/pull/1568) ([xconverge](https://github.com/xconverge))
+- fixes \#1357 [\#1567](https://github.com/VSCodeVim/Vim/pull/1567) ([xconverge](https://github.com/xconverge))
+- Fix surround aliases [\#1564](https://github.com/VSCodeVim/Vim/pull/1564) ([xconverge](https://github.com/xconverge))
+
+## [v0.6.18](https://github.com/vscodevim/vim/tree/v0.6.18) (2017-04-24)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.17...v0.6.18)
+
+- update clipboardy library with windows utf-8 fix [\#1559](https://github.com/VSCodeVim/Vim/pull/1559) ([xconverge](https://github.com/xconverge))
+- Fixes \#1539: Displaying values in register stops displaying anything after the newline [\#1558](https://github.com/VSCodeVim/Vim/pull/1558) ([Chillee](https://github.com/Chillee))
+- Fixes \#1539: Viewing register value displays incorrectly for macros [\#1557](https://github.com/VSCodeVim/Vim/pull/1557) ([Chillee](https://github.com/Chillee))
+- Fixes \#1554, \#1553: Fixed daW bugs [\#1555](https://github.com/VSCodeVim/Vim/pull/1555) ([Chillee](https://github.com/Chillee))
+- Fixes \#1193, \#1350, \#967: Fixes daw bugs [\#1549](https://github.com/VSCodeVim/Vim/pull/1549) ([Chillee](https://github.com/Chillee))
+- Allow users to use VSCode keybinding for remapping [\#1548](https://github.com/VSCodeVim/Vim/pull/1548) ([rebornix](https://github.com/rebornix))
+- README enhancements [\#1547](https://github.com/VSCodeVim/Vim/pull/1547) ([cobbweb](https://github.com/cobbweb))
+- Fixes \#1533: \<Copy\> not activating when \<C-c\> is pressed [\#1542](https://github.com/VSCodeVim/Vim/pull/1542) ([Chillee](https://github.com/Chillee))
+- Fixes \#1528: daw on end of word doesn't delete properly [\#1536](https://github.com/VSCodeVim/Vim/pull/1536) ([Chillee](https://github.com/Chillee))
+- Fixes \#1513: Backspace on middle of whitespace only line fails [\#1514](https://github.com/VSCodeVim/Vim/pull/1514) ([Chillee](https://github.com/Chillee))
+
+## [v0.6.17](https://github.com/vscodevim/vim/tree/v0.6.17) (2017-04-20)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.16...v0.6.17)
+
+- Allow user to change status bar color based on mode [\#1529](https://github.com/VSCodeVim/Vim/pull/1529) ([xconverge](https://github.com/xconverge))
+- Fix README description for `af` [\#1522](https://github.com/VSCodeVim/Vim/pull/1522) ([esturcke](https://github.com/esturcke))
+- fixes \#1519 [\#1521](https://github.com/VSCodeVim/Vim/pull/1521) ([xconverge](https://github.com/xconverge))
+- make surround repeatable with dot [\#1515](https://github.com/VSCodeVim/Vim/pull/1515) ([xconverge](https://github.com/xconverge))
+- \[WIP\] change system clipboard library to a newer more maintained library [\#1487](https://github.com/VSCodeVim/Vim/pull/1487) ([xconverge](https://github.com/xconverge))
+
+## [v0.6.16](https://github.com/vscodevim/vim/tree/v0.6.16) (2017-04-16)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.6.15...v0.6.16)
+
+- added cmd\_line commands to remapper [\#1516](https://github.com/VSCodeVim/Vim/pull/1516) ([xconverge](https://github.com/xconverge))
+- fixes \#1507 and removes workspace settings that should not be there [\#1509](https://github.com/VSCodeVim/Vim/pull/1509) ([xconverge](https://github.com/xconverge))
+- Add line comment operator [\#1506](https://github.com/VSCodeVim/Vim/pull/1506) ([fiedler](https://github.com/fiedler))
+- Add 5i= or 4a- so that the previously inserted text is repeated upon exiting to normal mode [\#1495](https://github.com/VSCodeVim/Vim/pull/1495) ([xconverge](https://github.com/xconverge))
+- Add ability to turn surround plugin off [\#1494](https://github.com/VSCodeVim/Vim/pull/1494) ([xconverge](https://github.com/xconverge))
+- Added new style settings \(color, size, etc.\) for easymotion markers [\#1493](https://github.com/VSCodeVim/Vim/pull/1493) ([edasaki](https://github.com/edasaki))
+- fixes \#1475 [\#1485](https://github.com/VSCodeVim/Vim/pull/1485) ([xconverge](https://github.com/xconverge))
+- fix for double clicking a word with mouse not showing selection properly [\#1484](https://github.com/VSCodeVim/Vim/pull/1484) ([xconverge](https://github.com/xconverge))
+- fix easymotion j and k [\#1474](https://github.com/VSCodeVim/Vim/pull/1474) ([xconverge](https://github.com/xconverge))
+
+## [0.6.15](https://github.com/vscodevim/vim/tree/0.6.15) (2017-04-07)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.6.14...0.6.15)
+
+## [0.6.14](https://github.com/vscodevim/vim/tree/0.6.14) (2017-04-07)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.13...0.6.14)
+
+- Fix tables in roadmap [\#1469](https://github.com/VSCodeVim/Vim/pull/1469) ([xconverge](https://github.com/xconverge))
+- Fix visual block mode not updating multicursor selection [\#1468](https://github.com/VSCodeVim/Vim/pull/1468) ([xconverge](https://github.com/xconverge))
+- Fix type suggestion for handleKeys object [\#1465](https://github.com/VSCodeVim/Vim/pull/1465) ([abhiranjankumar00](https://github.com/abhiranjankumar00))
+
+## [v0.6.13](https://github.com/vscodevim/vim/tree/v0.6.13) (2017-04-04)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.6.12...v0.6.13)
+
+- fixes \#1448 [\#1462](https://github.com/VSCodeVim/Vim/pull/1462) ([xconverge](https://github.com/xconverge))
+- fix multi line in 'at' and 'it' commands [\#1454](https://github.com/VSCodeVim/Vim/pull/1454) ([jrenton](https://github.com/jrenton))
+
+## [0.6.12](https://github.com/vscodevim/vim/tree/0.6.12) (2017-04-04)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.11...0.6.12)
+
+- fixes \#1432 [\#1434](https://github.com/VSCodeVim/Vim/pull/1434) ([xconverge](https://github.com/xconverge))
+- fixes \#1312 [\#1433](https://github.com/VSCodeVim/Vim/pull/1433) ([xconverge](https://github.com/xconverge))
+- Change easymotion decoration colors to use searchHighlight colors [\#1431](https://github.com/VSCodeVim/Vim/pull/1431) ([xconverge](https://github.com/xconverge))
+- minor cleanup to improve leader usage with \<space\> [\#1429](https://github.com/VSCodeVim/Vim/pull/1429) ([xconverge](https://github.com/xconverge))
+- gUU and guu [\#1428](https://github.com/VSCodeVim/Vim/pull/1428) ([xconverge](https://github.com/xconverge))
+- Allowing user to selectively disable some key combos [\#1425](https://github.com/VSCodeVim/Vim/pull/1425) ([xconverge](https://github.com/xconverge))
+- Remapper cleanup key history [\#1416](https://github.com/VSCodeVim/Vim/pull/1416) ([xconverge](https://github.com/xconverge))
+- fix undo points when moving around in insert with mouse or arrow keys [\#1413](https://github.com/VSCodeVim/Vim/pull/1413) ([xconverge](https://github.com/xconverge))
+- update readme for plugins [\#1411](https://github.com/VSCodeVim/Vim/pull/1411) ([xconverge](https://github.com/xconverge))
+- Allow users to use their own cursor style for insert from editor.cursorStyle [\#1399](https://github.com/VSCodeVim/Vim/pull/1399) ([xconverge](https://github.com/xconverge))
+
+## [v0.6.11](https://github.com/vscodevim/vim/tree/v0.6.11) (2017-03-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.10...v0.6.11)
+
+- Fix comment syntax for shell commands. [\#1408](https://github.com/VSCodeVim/Vim/pull/1408) ([frewsxcv](https://github.com/frewsxcv))
+- Increase timeout for some test cases in mocha [\#1379](https://github.com/VSCodeVim/Vim/pull/1379) ([xconverge](https://github.com/xconverge))
+
+## [v0.6.10](https://github.com/vscodevim/vim/tree/v0.6.10) (2017-03-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.9...v0.6.10)
+
+## [v0.6.9](https://github.com/vscodevim/vim/tree/v0.6.9) (2017-03-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.8...v0.6.9)
+
+## [v0.6.8](https://github.com/vscodevim/vim/tree/v0.6.8) (2017-03-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.7...v0.6.8)
+
+## [v0.6.7](https://github.com/vscodevim/vim/tree/v0.6.7) (2017-03-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.6...v0.6.7)
+
+- fix bracket motion behavior for use with % and a count, or \[\( and a c… [\#1406](https://github.com/VSCodeVim/Vim/pull/1406) ([xconverge](https://github.com/xconverge))
+- fix for cursor not changing correctly, workaround for vscode issue [\#1402](https://github.com/VSCodeVim/Vim/pull/1402) ([xconverge](https://github.com/xconverge))
+
+## [v0.6.6](https://github.com/vscodevim/vim/tree/v0.6.6) (2017-03-17)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.5...v0.6.6)
+
+- Use block cursor in visual & underline in replace [\#1394](https://github.com/VSCodeVim/Vim/pull/1394) ([net](https://github.com/net))
+- Perform remapped commands when prefix by a number [\#1359](https://github.com/VSCodeVim/Vim/pull/1359) ([bdauria](https://github.com/bdauria))
+
+## [v0.6.5](https://github.com/vscodevim/vim/tree/v0.6.5) (2017-03-12)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.4...v0.6.5)
+
+## [v0.6.4](https://github.com/vscodevim/vim/tree/v0.6.4) (2017-03-12)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.3...v0.6.4)
+
+- Update README.md [\#1390](https://github.com/VSCodeVim/Vim/pull/1390) ([xconverge](https://github.com/xconverge))
+- fixes \#1385 % motion with a count [\#1387](https://github.com/VSCodeVim/Vim/pull/1387) ([xconverge](https://github.com/xconverge))
+- fixes \#1382 [\#1386](https://github.com/VSCodeVim/Vim/pull/1386) ([xconverge](https://github.com/xconverge))
+
+## [v0.6.3](https://github.com/vscodevim/vim/tree/v0.6.3) (2017-03-11)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.6.0...v0.6.3)
+
+- fixes \#1373 [\#1374](https://github.com/VSCodeVim/Vim/pull/1374) ([xconverge](https://github.com/xconverge))
+- Remove log file. [\#1368](https://github.com/VSCodeVim/Vim/pull/1368) ([frewsxcv](https://github.com/frewsxcv))
+- Remove our modified older typings [\#1367](https://github.com/VSCodeVim/Vim/pull/1367) ([xconverge](https://github.com/xconverge))
+- \[WIP\] fix travis due to double digit version numbers [\#1366](https://github.com/VSCodeVim/Vim/pull/1366) ([xconverge](https://github.com/xconverge))
+- Fixed numbered registered macros from overwriting themselves [\#1362](https://github.com/VSCodeVim/Vim/pull/1362) ([xconverge](https://github.com/xconverge))
+- Update config options without restarting [\#1361](https://github.com/VSCodeVim/Vim/pull/1361) ([xconverge](https://github.com/xconverge))
+- Index fixes [\#1190](https://github.com/VSCodeVim/Vim/pull/1190) ([xconverge](https://github.com/xconverge))
+
+## [v0.6.0](https://github.com/vscodevim/vim/tree/v0.6.0) (2017-03-03)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.5.3...v0.6.0)
+
+- Fix clipboard copy [\#1349](https://github.com/VSCodeVim/Vim/pull/1349) ([johnfn](https://github.com/johnfn))
+- regex match [\#1346](https://github.com/VSCodeVim/Vim/pull/1346) ([rebornix](https://github.com/rebornix))
+- Add limited support for :sort [\#1342](https://github.com/VSCodeVim/Vim/pull/1342) ([jordan-heemskerk](https://github.com/jordan-heemskerk))
+- Override VSCode copy command. \#1337, \#616. [\#1339](https://github.com/VSCodeVim/Vim/pull/1339) ([johnfn](https://github.com/johnfn))
+- Fix \#1318 [\#1338](https://github.com/VSCodeVim/Vim/pull/1338) ([rebornix](https://github.com/rebornix))
+- Fix \#1329 failing build by removing undefined in configuration.ts [\#1332](https://github.com/VSCodeVim/Vim/pull/1332) ([misoguy](https://github.com/misoguy))
+- fixes \#1327 [\#1331](https://github.com/VSCodeVim/Vim/pull/1331) ([xconverge](https://github.com/xconverge))
+- fixes \#1320 [\#1325](https://github.com/VSCodeVim/Vim/pull/1325) ([xconverge](https://github.com/xconverge))
+- fixes \#1313 [\#1324](https://github.com/VSCodeVim/Vim/pull/1324) ([xconverge](https://github.com/xconverge))
+- Add ctrl-w q action to quit current window. [\#1317](https://github.com/VSCodeVim/Vim/pull/1317) ([tail](https://github.com/tail))
+- Fix lint issue. [\#1316](https://github.com/VSCodeVim/Vim/pull/1316) ([tail](https://github.com/tail))
+- Fix c on line beginning\#1302 [\#1303](https://github.com/VSCodeVim/Vim/pull/1303) ([xlaech](https://github.com/xlaech))
+- fixes travis with minor hack used in tests [\#1301](https://github.com/VSCodeVim/Vim/pull/1301) ([xconverge](https://github.com/xconverge))
+- D in visual mode behaves like d [\#1297](https://github.com/VSCodeVim/Vim/pull/1297) ([xlaech](https://github.com/xlaech))
+- Fix for \#1293 [\#1296](https://github.com/VSCodeVim/Vim/pull/1296) ([xlaech](https://github.com/xlaech))
+- Update readme for some clarity on using settings [\#1295](https://github.com/VSCodeVim/Vim/pull/1295) ([xconverge](https://github.com/xconverge))
+- fixes \#1290, visual block still has the same issue though [\#1291](https://github.com/VSCodeVim/Vim/pull/1291) ([xconverge](https://github.com/xconverge))
+- More surround fixes [\#1289](https://github.com/VSCodeVim/Vim/pull/1289) ([xconverge](https://github.com/xconverge))
+
+## [v0.5.3](https://github.com/vscodevim/vim/tree/v0.5.3) (2017-02-12)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.5.0...v0.5.3)
+
+- fixes \#1258 [\#1286](https://github.com/VSCodeVim/Vim/pull/1286) ([xconverge](https://github.com/xconverge))
+- avoid using user remapping in test mode [\#1278](https://github.com/VSCodeVim/Vim/pull/1278) ([rufusroflpunch](https://github.com/rufusroflpunch))
+- Support exact and inexact current word search [\#1277](https://github.com/VSCodeVim/Vim/pull/1277) ([rhys-vdw](https://github.com/rhys-vdw))
+- fixes \#1271 [\#1274](https://github.com/VSCodeVim/Vim/pull/1274) ([xconverge](https://github.com/xconverge))
+- fixes \#1199 easymotion in visual mode [\#1273](https://github.com/VSCodeVim/Vim/pull/1273) ([xconverge](https://github.com/xconverge))
+- fixes \#1145 [\#1272](https://github.com/VSCodeVim/Vim/pull/1272) ([xconverge](https://github.com/xconverge))
+- Delete matching bracket upon backspace [\#1267](https://github.com/VSCodeVim/Vim/pull/1267) ([rufusroflpunch](https://github.com/rufusroflpunch))
+- Clearing commandList for remapped commands [\#1263](https://github.com/VSCodeVim/Vim/pull/1263) ([rufusroflpunch](https://github.com/rufusroflpunch))
+- Added tag text to status bar in surround mode [\#1254](https://github.com/VSCodeVim/Vim/pull/1254) ([xconverge](https://github.com/xconverge))
+- Fix autoindent when opening a line above [\#1249](https://github.com/VSCodeVim/Vim/pull/1249) ([inejge](https://github.com/inejge))
+- Fixes README spelling mistake [\#1246](https://github.com/VSCodeVim/Vim/pull/1246) ([eastwood](https://github.com/eastwood))
+
+## [v0.5.0](https://github.com/vscodevim/vim/tree/v0.5.0) (2017-01-23)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.5.1...v0.5.0)
+
+## [v0.5.1](https://github.com/vscodevim/vim/tree/v0.5.1) (2017-01-23)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.10...v0.5.1)
+
+- Surround [\#1238](https://github.com/VSCodeVim/Vim/pull/1238) ([johnfn](https://github.com/johnfn))
+- Support "gf" in es6 import statements by adding the file extension [\#1227](https://github.com/VSCodeVim/Vim/pull/1227) ([aminroosta](https://github.com/aminroosta))
+- fixes \#1214 [\#1217](https://github.com/VSCodeVim/Vim/pull/1217) ([Platzer](https://github.com/Platzer))
+
+## [v0.4.10](https://github.com/vscodevim/vim/tree/v0.4.10) (2016-12-22)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.9...v0.4.10)
+
+- fixes \#1132 [\#1187](https://github.com/VSCodeVim/Vim/pull/1187) ([xconverge](https://github.com/xconverge))
+- fixes \#1173 [\#1186](https://github.com/VSCodeVim/Vim/pull/1186) ([xconverge](https://github.com/xconverge))
+- Fixed register tests breaking due to \#1183 [\#1185](https://github.com/VSCodeVim/Vim/pull/1185) ([vikramthyagarajan](https://github.com/vikramthyagarajan))
+- fixes \#1180 [\#1183](https://github.com/VSCodeVim/Vim/pull/1183) ([xconverge](https://github.com/xconverge))
+- Adds documentation for adding leader bindings [\#1182](https://github.com/VSCodeVim/Vim/pull/1182) ([eastwood](https://github.com/eastwood))
+- Implements Global state [\#1179](https://github.com/VSCodeVim/Vim/pull/1179) ([vikramthyagarajan](https://github.com/vikramthyagarajan))
+- fixes \#1176 [\#1177](https://github.com/VSCodeVim/Vim/pull/1177) ([xconverge](https://github.com/xconverge))
+- Select inner vi\( fix [\#1175](https://github.com/VSCodeVim/Vim/pull/1175) ([xconverge](https://github.com/xconverge))
+- fixes \#1170 [\#1174](https://github.com/VSCodeVim/Vim/pull/1174) ([xconverge](https://github.com/xconverge))
+- Fixes travis [\#1169](https://github.com/VSCodeVim/Vim/pull/1169) ([xconverge](https://github.com/xconverge))
+- control key bindings respect the useCtrlKey setting [\#1151](https://github.com/VSCodeVim/Vim/pull/1151) ([xwvvvvwx](https://github.com/xwvvvvwx))
+- fixes \#657 implements search history [\#1147](https://github.com/VSCodeVim/Vim/pull/1147) ([xconverge](https://github.com/xconverge))
+- More click past eol o no [\#1146](https://github.com/VSCodeVim/Vim/pull/1146) ([xconverge](https://github.com/xconverge))
+- Reselect visual implemented \(gv\) [\#1141](https://github.com/VSCodeVim/Vim/pull/1141) ([xconverge](https://github.com/xconverge))
+- fixes \#1136 [\#1139](https://github.com/VSCodeVim/Vim/pull/1139) ([xconverge](https://github.com/xconverge))
+- minor fixes for \# and \* after using :nohl [\#1134](https://github.com/VSCodeVim/Vim/pull/1134) ([xconverge](https://github.com/xconverge))
+- Updated useCtrlKeys default value [\#1126](https://github.com/VSCodeVim/Vim/pull/1126) ([Mxbonn](https://github.com/Mxbonn))
+- fixes \#1063 [\#1124](https://github.com/VSCodeVim/Vim/pull/1124) ([xconverge](https://github.com/xconverge))
+- Fixed "d" and "D" in multicursor mode [\#1029](https://github.com/VSCodeVim/Vim/pull/1029) ([Platzer](https://github.com/Platzer))
+
+## [v0.4.9](https://github.com/vscodevim/vim/tree/v0.4.9) (2016-12-05)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.8...v0.4.9)
+
+## [v0.4.8](https://github.com/vscodevim/vim/tree/v0.4.8) (2016-12-05)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.7...v0.4.8)
+
+- Update readme for easymotion [\#1114](https://github.com/VSCodeVim/Vim/pull/1114) ([xconverge](https://github.com/xconverge))
+
+## [v0.4.7](https://github.com/vscodevim/vim/tree/v0.4.7) (2016-12-05)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.6...v0.4.7)
+
+- Fix minor typo [\#1113](https://github.com/VSCodeVim/Vim/pull/1113) ([xconverge](https://github.com/xconverge))
+- \[WIP\] initial leader fixes [\#1112](https://github.com/VSCodeVim/Vim/pull/1112) ([xconverge](https://github.com/xconverge))
+- Added more aliases for nohl [\#1111](https://github.com/VSCodeVim/Vim/pull/1111) ([xconverge](https://github.com/xconverge))
+- Turns highlighting back on after nohl if you try to go to a new searc… [\#1110](https://github.com/VSCodeVim/Vim/pull/1110) ([xconverge](https://github.com/xconverge))
+
+## [v0.4.6](https://github.com/vscodevim/vim/tree/v0.4.6) (2016-12-04)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.4.5...v0.4.6)
+
+## [0.4.5](https://github.com/vscodevim/vim/tree/0.4.5) (2016-12-04)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.5...0.4.5)
+
+- \[WIP\] gq [\#1106](https://github.com/VSCodeVim/Vim/pull/1106) ([johnfn](https://github.com/johnfn))
+
+## [v0.4.5](https://github.com/vscodevim/vim/tree/v0.4.5) (2016-12-02)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.4...v0.4.5)
+
+- Override home key \(for pressing home in visual for example\) [\#1100](https://github.com/VSCodeVim/Vim/pull/1100) ([xconverge](https://github.com/xconverge))
+- avoid syncing style back to config [\#1099](https://github.com/VSCodeVim/Vim/pull/1099) ([rebornix](https://github.com/rebornix))
+- Implement open file command - Issue \#801 [\#1098](https://github.com/VSCodeVim/Vim/pull/1098) ([jamirvin](https://github.com/jamirvin))
+
+## [v0.4.4](https://github.com/vscodevim/vim/tree/v0.4.4) (2016-11-29)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.3...v0.4.4)
+
+- Removed debug print [\#1083](https://github.com/VSCodeVim/Vim/pull/1083) ([xconverge](https://github.com/xconverge))
+- Update roadmap for ctrl-o [\#1082](https://github.com/VSCodeVim/Vim/pull/1082) ([xconverge](https://github.com/xconverge))
+- fixes \#1076 [\#1077](https://github.com/VSCodeVim/Vim/pull/1077) ([xconverge](https://github.com/xconverge))
+- fixes \#1073 [\#1074](https://github.com/VSCodeVim/Vim/pull/1074) ([xconverge](https://github.com/xconverge))
+- fixes \#1065 [\#1071](https://github.com/VSCodeVim/Vim/pull/1071) ([xconverge](https://github.com/xconverge))
+- fixes \#1023 [\#1069](https://github.com/VSCodeVim/Vim/pull/1069) ([xconverge](https://github.com/xconverge))
+
+## [v0.4.3](https://github.com/vscodevim/vim/tree/v0.4.3) (2016-11-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.2...v0.4.3)
+
+- fixes \#1034 [\#1068](https://github.com/VSCodeVim/Vim/pull/1068) ([xconverge](https://github.com/xconverge))
+- fixes \#1035 [\#1067](https://github.com/VSCodeVim/Vim/pull/1067) ([xconverge](https://github.com/xconverge))
+- fixes \#1064 [\#1066](https://github.com/VSCodeVim/Vim/pull/1066) ([xconverge](https://github.com/xconverge))
+- How can I fix travis failure [\#1062](https://github.com/VSCodeVim/Vim/pull/1062) ([rebornix](https://github.com/rebornix))
+
+## [v0.4.2](https://github.com/vscodevim/vim/tree/v0.4.2) (2016-11-17)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.1...v0.4.2)
+
+- Visual block fixes to cursor position and tests [\#1044](https://github.com/VSCodeVim/Vim/pull/1044) ([xconverge](https://github.com/xconverge))
+- Hide the info line in issue template [\#1037](https://github.com/VSCodeVim/Vim/pull/1037) ([octref](https://github.com/octref))
+- Implemented EasyMotion plugin functionality [\#993](https://github.com/VSCodeVim/Vim/pull/993) ([Metamist](https://github.com/Metamist))
+
+## [v0.4.1](https://github.com/vscodevim/vim/tree/v0.4.1) (2016-10-31)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.4.0...v0.4.1)
+
+- fixes \#1013 [\#1014](https://github.com/VSCodeVim/Vim/pull/1014) ([xconverge](https://github.com/xconverge))
+- Update Readme [\#1012](https://github.com/VSCodeVim/Vim/pull/1012) ([jpoon](https://github.com/jpoon))
+- fixes \#983 [\#1008](https://github.com/VSCodeVim/Vim/pull/1008) ([xconverge](https://github.com/xconverge))
+- Make create-multicursor commands repeatable [\#1007](https://github.com/VSCodeVim/Vim/pull/1007) ([Platzer](https://github.com/Platzer))
+- fix mouse clicking past EOL [\#1006](https://github.com/VSCodeVim/Vim/pull/1006) ([xconverge](https://github.com/xconverge))
+- fixes \#1000 and a minor replace issue [\#1005](https://github.com/VSCodeVim/Vim/pull/1005) ([xconverge](https://github.com/xconverge))
+- Update "r" for visual modes on roadmap [\#1002](https://github.com/VSCodeVim/Vim/pull/1002) ([xconverge](https://github.com/xconverge))
+- fixes \#998 [\#1001](https://github.com/VSCodeVim/Vim/pull/1001) ([xconverge](https://github.com/xconverge))
+- Remove fix-whitespace gulp command.  [\#999](https://github.com/VSCodeVim/Vim/pull/999) ([jpoon](https://github.com/jpoon))
+- Improved performance of visual block replace by a lot [\#997](https://github.com/VSCodeVim/Vim/pull/997) ([xconverge](https://github.com/xconverge))
+- fixes \#663 [\#996](https://github.com/VSCodeVim/Vim/pull/996) ([xconverge](https://github.com/xconverge))
+- No need for "i" flag on a numerical only regex [\#995](https://github.com/VSCodeVim/Vim/pull/995) ([stefanoio](https://github.com/stefanoio))
+- SearchState - Fixed isRegex not set on search [\#994](https://github.com/VSCodeVim/Vim/pull/994) ([Metamist](https://github.com/Metamist))
+- fix \#985 [\#992](https://github.com/VSCodeVim/Vim/pull/992) ([rebornix](https://github.com/rebornix))
+- Run all tests [\#990](https://github.com/VSCodeVim/Vim/pull/990) ([xconverge](https://github.com/xconverge))
+- Fix for visual line behaving funky when going from bottom up [\#989](https://github.com/VSCodeVim/Vim/pull/989) ([xconverge](https://github.com/xconverge))
+- Add Keymaps category [\#987](https://github.com/VSCodeVim/Vim/pull/987) ([waderyan](https://github.com/waderyan))
+- fix \#982 [\#984](https://github.com/VSCodeVim/Vim/pull/984) ([rebornix](https://github.com/rebornix))
+- fix \#977 [\#981](https://github.com/VSCodeVim/Vim/pull/981) ([rebornix](https://github.com/rebornix))
+- fix \#689 [\#980](https://github.com/VSCodeVim/Vim/pull/980) ([rebornix](https://github.com/rebornix))
+- Numbered, upper case and multicursor register [\#974](https://github.com/VSCodeVim/Vim/pull/974) ([Platzer](https://github.com/Platzer))
+- remove leading spaces when \<Esc\>... is pressed \#685 [\#962](https://github.com/VSCodeVim/Vim/pull/962) ([Zzzen](https://github.com/Zzzen))
+- Fix replace in visual, visual line, and visual block mode [\#953](https://github.com/VSCodeVim/Vim/pull/953) ([xconverge](https://github.com/xconverge))
+- Add some tests and fix some exceptions during the tests [\#914](https://github.com/VSCodeVim/Vim/pull/914) ([xconverge](https://github.com/xconverge))
+
+## [v0.4.0](https://github.com/vscodevim/vim/tree/v0.4.0) (2016-10-24)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.3.8...v0.4.0)
+
+- fix \#528 [\#966](https://github.com/VSCodeVim/Vim/pull/966) ([rebornix](https://github.com/rebornix))
+- fix \#693 [\#964](https://github.com/VSCodeVim/Vim/pull/964) ([rebornix](https://github.com/rebornix))
+- fix \#922 [\#960](https://github.com/VSCodeVim/Vim/pull/960) ([rebornix](https://github.com/rebornix))
+- fix \#939 [\#958](https://github.com/VSCodeVim/Vim/pull/958) ([rebornix](https://github.com/rebornix))
+-  Add a command is `D` in visual block mode. [\#957](https://github.com/VSCodeVim/Vim/pull/957) ([Kooooya](https://github.com/Kooooya))
+- Add commands is `s` and `S` in visual block mode. [\#954](https://github.com/VSCodeVim/Vim/pull/954) ([Kooooya](https://github.com/Kooooya))
+- fix \#808 [\#952](https://github.com/VSCodeVim/Vim/pull/952) ([rebornix](https://github.com/rebornix))
+- fix \#484 [\#951](https://github.com/VSCodeVim/Vim/pull/951) ([rebornix](https://github.com/rebornix))
+- fix \#921 [\#950](https://github.com/VSCodeVim/Vim/pull/950) ([rebornix](https://github.com/rebornix))
+- make tab sequence feel right [\#949](https://github.com/VSCodeVim/Vim/pull/949) ([rebornix](https://github.com/rebornix))
+- stop revealing cursor when not necessary [\#948](https://github.com/VSCodeVim/Vim/pull/948) ([rebornix](https://github.com/rebornix))
+- add gh hover command [\#945](https://github.com/VSCodeVim/Vim/pull/945) ([will-wow](https://github.com/will-wow))
+- New increment without separators [\#944](https://github.com/VSCodeVim/Vim/pull/944) ([xconverge](https://github.com/xconverge))
+- fix \#937 [\#943](https://github.com/VSCodeVim/Vim/pull/943) ([rebornix](https://github.com/rebornix))
+- fixes \#878 [\#942](https://github.com/VSCodeVim/Vim/pull/942) ([xconverge](https://github.com/xconverge))
+- Support num registers macros [\#941](https://github.com/VSCodeVim/Vim/pull/941) ([xconverge](https://github.com/xconverge))
+- Test enhancement [\#938](https://github.com/VSCodeVim/Vim/pull/938) ([rebornix](https://github.com/rebornix))
+- fix \#845 [\#911](https://github.com/VSCodeVim/Vim/pull/911) ([rebornix](https://github.com/rebornix))
+
+## [v0.3.8](https://github.com/vscodevim/vim/tree/v0.3.8) (2016-10-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.3.7...v0.3.8)
+
+- fixes \#879 [\#933](https://github.com/VSCodeVim/Vim/pull/933) ([xconverge](https://github.com/xconverge))
+- fixes \#905 [\#932](https://github.com/VSCodeVim/Vim/pull/932) ([xconverge](https://github.com/xconverge))
+- fixes \#652 [\#931](https://github.com/VSCodeVim/Vim/pull/931) ([xconverge](https://github.com/xconverge))
+- Update internal cursor position when necessary [\#927](https://github.com/VSCodeVim/Vim/pull/927) ([rebornix](https://github.com/rebornix))
+- Draw multicursor correctly in Visual Mode [\#920](https://github.com/VSCodeVim/Vim/pull/920) ([Platzer](https://github.com/Platzer))
+- update internal cursor position per Code selection change [\#919](https://github.com/VSCodeVim/Vim/pull/919) ([rebornix](https://github.com/rebornix))
+- display register value in reg-cmd, fix \#830 [\#915](https://github.com/VSCodeVim/Vim/pull/915) ([Platzer](https://github.com/Platzer))
+- \[Post 1.0\] Two way syncing of Vim and Code's configuration [\#913](https://github.com/VSCodeVim/Vim/pull/913) ([rebornix](https://github.com/rebornix))
+- Macro [\#894](https://github.com/VSCodeVim/Vim/pull/894) ([rebornix](https://github.com/rebornix))
+
+## [0.3.7](https://github.com/vscodevim/vim/tree/0.3.7) (2016-10-12)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.3.6...0.3.7)
+
+- fixes \#888 [\#902](https://github.com/VSCodeVim/Vim/pull/902) ([xconverge](https://github.com/xconverge))
+- fixes \#882 [\#900](https://github.com/VSCodeVim/Vim/pull/900) ([xconverge](https://github.com/xconverge))
+
+## [0.3.6](https://github.com/vscodevim/vim/tree/0.3.6) (2016-10-12)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.3.5...0.3.6)
+
+- allow remapping of ctrl-j and ctrl-k in settings.json [\#891](https://github.com/VSCodeVim/Vim/pull/891) ([xwvvvvwx](https://github.com/xwvvvvwx))
+- Fix visual block x [\#861](https://github.com/VSCodeVim/Vim/pull/861) ([xconverge](https://github.com/xconverge))
+
+## [0.3.5](https://github.com/vscodevim/vim/tree/0.3.5) (2016-10-10)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.3.4...0.3.5)
+
+## [0.3.4](https://github.com/vscodevim/vim/tree/0.3.4) (2016-10-10)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.3.3...0.3.4)
+
+- Remove unused modehandlers when tabs are closed [\#865](https://github.com/VSCodeVim/Vim/pull/865) ([xconverge](https://github.com/xconverge))
+- Insert Previous text [\#768](https://github.com/VSCodeVim/Vim/pull/768) ([rebornix](https://github.com/rebornix))
+
+## [0.3.3](https://github.com/vscodevim/vim/tree/0.3.3) (2016-10-08)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.3.2...0.3.3)
+
+## [0.3.2](https://github.com/vscodevim/vim/tree/0.3.2) (2016-10-08)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.3.1...0.3.2)
+
+## [v0.3.1](https://github.com/vscodevim/vim/tree/v0.3.1) (2016-10-08)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.3.0...v0.3.1)
+
+- Unnecessary quit check on untitled files [\#855](https://github.com/VSCodeVim/Vim/pull/855) ([xconverge](https://github.com/xconverge))
+- Add new logo icon [\#852](https://github.com/VSCodeVim/Vim/pull/852) ([kevincoleman](https://github.com/kevincoleman))
+- Fixes arrow navigation to EOL while in insert [\#838](https://github.com/VSCodeVim/Vim/pull/838) ([xconverge](https://github.com/xconverge))
+- fixes \#832 [\#837](https://github.com/VSCodeVim/Vim/pull/837) ([xconverge](https://github.com/xconverge))
+- \[WIP\] Use new transformation style in delete and paste [\#835](https://github.com/VSCodeVim/Vim/pull/835) ([johnfn](https://github.com/johnfn))
+- X eats eol [\#827](https://github.com/VSCodeVim/Vim/pull/827) ([xconverge](https://github.com/xconverge))
+- Fix to allow A while in visual mode [\#816](https://github.com/VSCodeVim/Vim/pull/816) ([xconverge](https://github.com/xconverge))
+- Fix issue where could not use I while in visual mode [\#815](https://github.com/VSCodeVim/Vim/pull/815) ([xconverge](https://github.com/xconverge))
+- fixes \#784 [\#814](https://github.com/VSCodeVim/Vim/pull/814) ([xconverge](https://github.com/xconverge))
+
+## [v0.3.0](https://github.com/vscodevim/vim/tree/v0.3.0) (2016-10-03)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.2.0...v0.3.0)
+
+- Show debug console when session launches [\#821](https://github.com/VSCodeVim/Vim/pull/821) ([xconverge](https://github.com/xconverge))
+- zz in visual, visualline, and visual block mode [\#820](https://github.com/VSCodeVim/Vim/pull/820) ([xconverge](https://github.com/xconverge))
+- Fixes \#817 [\#819](https://github.com/VSCodeVim/Vim/pull/819) ([xconverge](https://github.com/xconverge))
+- Clean up typings [\#818](https://github.com/VSCodeVim/Vim/pull/818) ([jpoon](https://github.com/jpoon))
+- Updated documentation for linux system clipboard use [\#813](https://github.com/VSCodeVim/Vim/pull/813) ([xconverge](https://github.com/xconverge))
+- Multi-Cursor Mode v 2.0 [\#811](https://github.com/VSCodeVim/Vim/pull/811) ([johnfn](https://github.com/johnfn))
+- Fix docs [\#807](https://github.com/VSCodeVim/Vim/pull/807) ([jpoon](https://github.com/jpoon))
+- Fix bug joining lines with whitespace only next line [\#799](https://github.com/VSCodeVim/Vim/pull/799) ([mleech](https://github.com/mleech))
+- Add autoindent to README, fix hlsearch default [\#796](https://github.com/VSCodeVim/Vim/pull/796) ([srenatus](https://github.com/srenatus))
+- Support "+ system clipboard register \(\#780\) [\#782](https://github.com/VSCodeVim/Vim/pull/782) ([bdchauvette](https://github.com/bdchauvette))
+- fixes \#739 [\#767](https://github.com/VSCodeVim/Vim/pull/767) ([xconverge](https://github.com/xconverge))
+
+## [v0.2.0](https://github.com/vscodevim/vim/tree/v0.2.0) (2016-09-21)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.11...v0.2.0)
+
+## [v0.1.11](https://github.com/vscodevim/vim/tree/v0.1.11) (2016-09-20)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.10...v0.1.11)
+
+- Release Pipeline [\#788](https://github.com/VSCodeVim/Vim/pull/788) ([jpoon](https://github.com/jpoon))
+- Fix delete line with CRLF \(\#743\) [\#770](https://github.com/VSCodeVim/Vim/pull/770) ([jgoz](https://github.com/jgoz))
+- fixes \#740 [\#766](https://github.com/VSCodeVim/Vim/pull/766) ([xconverge](https://github.com/xconverge))
+- fixes \#764 [\#765](https://github.com/VSCodeVim/Vim/pull/765) ([xconverge](https://github.com/xconverge))
+- fixes \#759 [\#760](https://github.com/VSCodeVim/Vim/pull/760) ([xconverge](https://github.com/xconverge))
+- Register info [\#756](https://github.com/VSCodeVim/Vim/pull/756) ([rebornix](https://github.com/rebornix))
+- build on extension/test launch [\#755](https://github.com/VSCodeVim/Vim/pull/755) ([jpoon](https://github.com/jpoon))
+- fixes \#750 [\#752](https://github.com/VSCodeVim/Vim/pull/752) ([xconverge](https://github.com/xconverge))
+- clean gulpfile [\#748](https://github.com/VSCodeVim/Vim/pull/748) ([jpoon](https://github.com/jpoon))
+- Substitute marks [\#744](https://github.com/VSCodeVim/Vim/pull/744) ([rebornix](https://github.com/rebornix))
+- Read command [\#736](https://github.com/VSCodeVim/Vim/pull/736) ([domgee](https://github.com/domgee))
+- Doc for enabling repeating j/k for Insider build [\#733](https://github.com/VSCodeVim/Vim/pull/733) ([octref](https://github.com/octref))
+- Add autoindent setting [\#726](https://github.com/VSCodeVim/Vim/pull/726) ([octref](https://github.com/octref))
+- Disable Vim Mode in Debug Repl [\#723](https://github.com/VSCodeVim/Vim/pull/723) ([rebornix](https://github.com/rebornix))
+- \[WIP\] Roadmap update [\#717](https://github.com/VSCodeVim/Vim/pull/717) ([rebornix](https://github.com/rebornix))
+- Editor Scroll [\#681](https://github.com/VSCodeVim/Vim/pull/681) ([rebornix](https://github.com/rebornix))
+- Implement :wa\[ll\] command \(write all\) [\#671](https://github.com/VSCodeVim/Vim/pull/671) ([mleech](https://github.com/mleech))
+- Special keys in Insert Mode [\#615](https://github.com/VSCodeVim/Vim/pull/615) ([rebornix](https://github.com/rebornix))
+
+## [v0.1.10](https://github.com/vscodevim/vim/tree/v0.1.10) (2016-09-06)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.9...v0.1.10)
+
+- Align Screen Line commands with latest Code API [\#724](https://github.com/VSCodeVim/Vim/pull/724) ([rebornix](https://github.com/rebornix))
+- Visual block tests [\#722](https://github.com/VSCodeVim/Vim/pull/722) ([xconverge](https://github.com/xconverge))
+- Remapper fixes [\#721](https://github.com/VSCodeVim/Vim/pull/721) ([jpoon](https://github.com/jpoon))
+- fixes \#718 A and I have cursor in right position now [\#720](https://github.com/VSCodeVim/Vim/pull/720) ([xconverge](https://github.com/xconverge))
+- fixes \#696 [\#715](https://github.com/VSCodeVim/Vim/pull/715) ([xconverge](https://github.com/xconverge))
+- fix \#690 and other toggle case issues [\#698](https://github.com/VSCodeVim/Vim/pull/698) ([xconverge](https://github.com/xconverge))
+
+## [v0.1.9](https://github.com/vscodevim/vim/tree/v0.1.9) (2016-09-05)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.8...v0.1.9)
+
+- Update README.md [\#714](https://github.com/VSCodeVim/Vim/pull/714) ([jpoon](https://github.com/jpoon))
+- Add vim.\* settings to readme. Fixes \#503 [\#713](https://github.com/VSCodeVim/Vim/pull/713) ([jpoon](https://github.com/jpoon))
+- Set diff timeout to 1 second. [\#712](https://github.com/VSCodeVim/Vim/pull/712) ([johnfn](https://github.com/johnfn))
+- Inserts repeated with . would add many undo points; fix this. [\#711](https://github.com/VSCodeVim/Vim/pull/711) ([johnfn](https://github.com/johnfn))
+- Hotfix remapping [\#710](https://github.com/VSCodeVim/Vim/pull/710) ([johnfn](https://github.com/johnfn))
+- Tiny change to issue template. [\#709](https://github.com/VSCodeVim/Vim/pull/709) ([johnfn](https://github.com/johnfn))
+
+## [v0.1.8](https://github.com/vscodevim/vim/tree/v0.1.8) (2016-09-04)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.7...v0.1.8)
+
+- Fix race condition with switching active text editor. [\#705](https://github.com/VSCodeVim/Vim/pull/705) ([johnfn](https://github.com/johnfn))
+- Fix bug with undo on untitled files. [\#704](https://github.com/VSCodeVim/Vim/pull/704) ([johnfn](https://github.com/johnfn))
+- clear history when content from disk is changed [\#703](https://github.com/VSCodeVim/Vim/pull/703) ([aminroosta](https://github.com/aminroosta))
+- Fix `\#` and `\*` Behaviour [\#702](https://github.com/VSCodeVim/Vim/pull/702) ([jpoon](https://github.com/jpoon))
+- Fix error when \<BS\> at beginning of document [\#691](https://github.com/VSCodeVim/Vim/pull/691) ([jpoon](https://github.com/jpoon))
+- Handle Ns and fix \#684 [\#688](https://github.com/VSCodeVim/Vim/pull/688) ([octref](https://github.com/octref))
+- Use Angle Bracket Notation \(Fixes \#64\) [\#683](https://github.com/VSCodeVim/Vim/pull/683) ([jpoon](https://github.com/jpoon))
+- Implement ; and , [\#674](https://github.com/VSCodeVim/Vim/pull/674) ([aminroosta](https://github.com/aminroosta))
+- Some visual block fixes [\#667](https://github.com/VSCodeVim/Vim/pull/667) ([xconverge](https://github.com/xconverge))
+- implement useSystemClipboard command [\#665](https://github.com/VSCodeVim/Vim/pull/665) ([aminroosta](https://github.com/aminroosta))
+- Document autoindent option [\#664](https://github.com/VSCodeVim/Vim/pull/664) ([sectioneight](https://github.com/sectioneight))
+- fix \#510 [\#659](https://github.com/VSCodeVim/Vim/pull/659) ([xconverge](https://github.com/xconverge))
+- fix \#654 [\#656](https://github.com/VSCodeVim/Vim/pull/656) ([xconverge](https://github.com/xconverge))
+- fix \#652 [\#655](https://github.com/VSCodeVim/Vim/pull/655) ([xconverge](https://github.com/xconverge))
+- improves bracket undo behavior when vscode autocloses brackets [\#649](https://github.com/VSCodeVim/Vim/pull/649) ([xconverge](https://github.com/xconverge))
+- Fix missleading readme instruction [\#647](https://github.com/VSCodeVim/Vim/pull/647) ([AntonAderum](https://github.com/AntonAderum))
+- Undo behavior when position changes using arrows or mouse [\#646](https://github.com/VSCodeVim/Vim/pull/646) ([xconverge](https://github.com/xconverge))
+- fix for extra character when double click mouse selection [\#645](https://github.com/VSCodeVim/Vim/pull/645) ([xconverge](https://github.com/xconverge))
+- fix \#639 visual block mode minor issues [\#640](https://github.com/VSCodeVim/Vim/pull/640) ([xconverge](https://github.com/xconverge))
+- Ctrl+a and Ctrl+x now create undo points correctly and can be repeate… [\#636](https://github.com/VSCodeVim/Vim/pull/636) ([xconverge](https://github.com/xconverge))
+- fix \#501 some more to include 'k' [\#635](https://github.com/VSCodeVim/Vim/pull/635) ([xconverge](https://github.com/xconverge))
+- updating the undo tree when using bracket operators slightly [\#634](https://github.com/VSCodeVim/Vim/pull/634) ([xconverge](https://github.com/xconverge))
+- fix \#501 [\#632](https://github.com/VSCodeVim/Vim/pull/632) ([xconverge](https://github.com/xconverge))
+- Fix bug \#613 ":wq command dows not work" [\#630](https://github.com/VSCodeVim/Vim/pull/630) ([Platzer](https://github.com/Platzer))
+- Respect indentation on cc and S [\#629](https://github.com/VSCodeVim/Vim/pull/629) ([sectioneight](https://github.com/sectioneight))
+- Fix tag markup in roadmap [\#628](https://github.com/VSCodeVim/Vim/pull/628) ([sectioneight](https://github.com/sectioneight))
+- Allow regex in / search [\#627](https://github.com/VSCodeVim/Vim/pull/627) ([sectioneight](https://github.com/sectioneight))
+- Synonyms [\#621](https://github.com/VSCodeVim/Vim/pull/621) ([rebornix](https://github.com/rebornix))
+- Implement tag movements [\#619](https://github.com/VSCodeVim/Vim/pull/619) ([sectioneight](https://github.com/sectioneight))
+
+## [v0.1.7](https://github.com/vscodevim/vim/tree/v0.1.7) (2016-08-14)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.6...v0.1.7)
+
+- Add support Y in visual mode [\#597](https://github.com/VSCodeVim/Vim/pull/597) ([shotaAkasaka](https://github.com/shotaAkasaka))
+- Sentence selection [\#592](https://github.com/VSCodeVim/Vim/pull/592) ([rebornix](https://github.com/rebornix))
+- fix C or cc kill the empty line [\#591](https://github.com/VSCodeVim/Vim/pull/591) ([shotaAkasaka](https://github.com/shotaAkasaka))
+- Added Non-Recursive mapping capability. Fixes issue \#408 [\#589](https://github.com/VSCodeVim/Vim/pull/589) ([somkun](https://github.com/somkun))
+- Vim Settings [\#508](https://github.com/VSCodeVim/Vim/pull/508) ([rebornix](https://github.com/rebornix))
+
+## [v0.1.6](https://github.com/vscodevim/vim/tree/v0.1.6) (2016-08-09)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.5...v0.1.6)
+
+- \[WIP\] Visual block mode [\#469](https://github.com/VSCodeVim/Vim/pull/469) ([johnfn](https://github.com/johnfn))
+
+## [v0.1.5](https://github.com/vscodevim/vim/tree/v0.1.5) (2016-08-09)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.1.5...v0.1.5)
+
+## [0.1.5](https://github.com/vscodevim/vim/tree/0.1.5) (2016-08-09)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.4...0.1.5)
+
+- Replace mode [\#580](https://github.com/VSCodeVim/Vim/pull/580) ([rebornix](https://github.com/rebornix))
+- Fix for issue \#571 [\#579](https://github.com/VSCodeVim/Vim/pull/579) ([xconverge](https://github.com/xconverge))
+- OS X non-global key repeat fix [\#577](https://github.com/VSCodeVim/Vim/pull/577) ([jimray](https://github.com/jimray))
+- Hack to mitigate \#569 and prevent extension from locking up [\#576](https://github.com/VSCodeVim/Vim/pull/576) ([jpoon](https://github.com/jpoon))
+- Fix binding of control-keys [\#575](https://github.com/VSCodeVim/Vim/pull/575) ([sectioneight](https://github.com/sectioneight))
+- Fix test regression [\#560](https://github.com/VSCodeVim/Vim/pull/560) ([rebornix](https://github.com/rebornix))
+- Fix gt,gT numeric prefix [\#559](https://github.com/VSCodeVim/Vim/pull/559) ([rebornix](https://github.com/rebornix))
+- Fix incorrect cursor location after deleting linebreak \(fixes \#550\) [\#551](https://github.com/VSCodeVim/Vim/pull/551) ([thomasboyt](https://github.com/thomasboyt))
+- Support gd [\#547](https://github.com/VSCodeVim/Vim/pull/547) ([johnfn](https://github.com/johnfn))
+- Add support for S [\#546](https://github.com/VSCodeVim/Vim/pull/546) ([glibsm](https://github.com/glibsm))
+- update roadmap [\#545](https://github.com/VSCodeVim/Vim/pull/545) ([rebornix](https://github.com/rebornix))
+- Support "{char} registers and clipboard access via "\* register. [\#543](https://github.com/VSCodeVim/Vim/pull/543) ([aminroosta](https://github.com/aminroosta))
+- Added CommandGoToOtherEndOfHiglightedText - \#526 [\#539](https://github.com/VSCodeVim/Vim/pull/539) ([Platzer](https://github.com/Platzer))
+- Move sections [\#533](https://github.com/VSCodeVim/Vim/pull/533) ([rebornix](https://github.com/rebornix))
+- Substitute with no range or marks [\#525](https://github.com/VSCodeVim/Vim/pull/525) ([rebornix](https://github.com/rebornix))
+- Correct Fold behavior and update roadmap [\#524](https://github.com/VSCodeVim/Vim/pull/524) ([rebornix](https://github.com/rebornix))
+- Make \<delete\> repeatable in Normal Mode. Fix \#394 [\#514](https://github.com/VSCodeVim/Vim/pull/514) ([octref](https://github.com/octref))
+- Screen lines and characters. [\#486](https://github.com/VSCodeVim/Vim/pull/486) ([rebornix](https://github.com/rebornix))
+
+## [v0.1.4](https://github.com/vscodevim/vim/tree/v0.1.4) (2016-07-28)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.3...v0.1.4)
+
+- Implement increment and decrement operators [\#515](https://github.com/VSCodeVim/Vim/pull/515) ([sectioneight](https://github.com/sectioneight))
+- Fix \#502 [\#509](https://github.com/VSCodeVim/Vim/pull/509) ([rebornix](https://github.com/rebornix))
+- Add tabs movement and fix tab command with correct counting [\#507](https://github.com/VSCodeVim/Vim/pull/507) ([rebornix](https://github.com/rebornix))
+- Omit first word in hash backwards search [\#506](https://github.com/VSCodeVim/Vim/pull/506) ([sectioneight](https://github.com/sectioneight))
+- Turn around for cursor problem [\#505](https://github.com/VSCodeVim/Vim/pull/505) ([rebornix](https://github.com/rebornix))
+- Fix instructions for setting key bindings [\#499](https://github.com/VSCodeVim/Vim/pull/499) ([positron](https://github.com/positron))
+- Code clean-up. Remove dead code. [\#497](https://github.com/VSCodeVim/Vim/pull/497) ([jpoon](https://github.com/jpoon))
+- Merge history changes into a single operation. Fixes \#427 [\#496](https://github.com/VSCodeVim/Vim/pull/496) ([infogulch](https://github.com/infogulch))
+- Fix \#438 - Limit the number of matches, and try to only recalculate when the searchString changes, or the document changes [\#494](https://github.com/VSCodeVim/Vim/pull/494) ([roblourens](https://github.com/roblourens))
+- CommandFold should be available in Normal mode [\#493](https://github.com/VSCodeVim/Vim/pull/493) ([aminroosta](https://github.com/aminroosta))
+- Fix % movement when not on opening character [\#490](https://github.com/VSCodeVim/Vim/pull/490) ([sectioneight](https://github.com/sectioneight))
+- Suggest npm run compile in CONTRIBUTING page [\#488](https://github.com/VSCodeVim/Vim/pull/488) ([aminroosta](https://github.com/aminroosta))
+- Implement quoted text objects [\#483](https://github.com/VSCodeVim/Vim/pull/483) ([sectioneight](https://github.com/sectioneight))
+- Fix \#338 - add gt, gT support [\#482](https://github.com/VSCodeVim/Vim/pull/482) ([arussellk](https://github.com/arussellk))
+- Set correct cursor and selection after code format. [\#478](https://github.com/VSCodeVim/Vim/pull/478) ([rebornix](https://github.com/rebornix))
+- CJK in all modes [\#475](https://github.com/VSCodeVim/Vim/pull/475) ([rebornix](https://github.com/rebornix))
+- Fix \#358. [\#399](https://github.com/VSCodeVim/Vim/pull/399) ([rebornix](https://github.com/rebornix))
+- Word in visual mode [\#385](https://github.com/VSCodeVim/Vim/pull/385) ([rebornix](https://github.com/rebornix))
+
+## [v0.1.3](https://github.com/vscodevim/vim/tree/v0.1.3) (2016-07-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.2...v0.1.3)
+
+- Fix wrong command for ctrl+f [\#476](https://github.com/VSCodeVim/Vim/pull/476) ([rebornix](https://github.com/rebornix))
+- Fix regressions in text objects [\#473](https://github.com/VSCodeVim/Vim/pull/473) ([sectioneight](https://github.com/sectioneight))
+- Fix handling of opener for nested text objects [\#472](https://github.com/VSCodeVim/Vim/pull/472) ([sectioneight](https://github.com/sectioneight))
+- Implement square-bracket text object [\#467](https://github.com/VSCodeVim/Vim/pull/467) ([sectioneight](https://github.com/sectioneight))
+- Add support for failed motions [\#466](https://github.com/VSCodeVim/Vim/pull/466) ([johnfn](https://github.com/johnfn))
+- Add test-specific tslint [\#464](https://github.com/VSCodeVim/Vim/pull/464) ([sectioneight](https://github.com/sectioneight))
+- Initialize mode and cursor after startup [\#462](https://github.com/VSCodeVim/Vim/pull/462) ([rebornix](https://github.com/rebornix))
+- FixTabStops [\#461](https://github.com/VSCodeVim/Vim/pull/461) ([rebornix](https://github.com/rebornix))
+- Convert 4 space tab to 2 space tab. [\#460](https://github.com/VSCodeVim/Vim/pull/460) ([rebornix](https://github.com/rebornix))
+- Enforce TSLint. Closes \#456 [\#459](https://github.com/VSCodeVim/Vim/pull/459) ([jpoon](https://github.com/jpoon))
+- Add back missing control-c registration [\#455](https://github.com/VSCodeVim/Vim/pull/455) ([sectioneight](https://github.com/sectioneight))
+- Fix checkmark syntax on roadmap [\#454](https://github.com/VSCodeVim/Vim/pull/454) ([sectioneight](https://github.com/sectioneight))
+- Add support for ctrl+w in insert mode [\#453](https://github.com/VSCodeVim/Vim/pull/453) ([sectioneight](https://github.com/sectioneight))
+- Implement additional text object commands [\#450](https://github.com/VSCodeVim/Vim/pull/450) ([sectioneight](https://github.com/sectioneight))
+- Remove custom keyboard mapping \(fixes \#432\). Fix duplicate definition… [\#447](https://github.com/VSCodeVim/Vim/pull/447) ([jpoon](https://github.com/jpoon))
+- Fix \#341 CJK Problem. [\#446](https://github.com/VSCodeVim/Vim/pull/446) ([rebornix](https://github.com/rebornix))
+- Fix \#426 [\#445](https://github.com/VSCodeVim/Vim/pull/445) ([arussellk](https://github.com/arussellk))
+- Read TextEditor options from active editor [\#444](https://github.com/VSCodeVim/Vim/pull/444) ([rebornix](https://github.com/rebornix))
+- \[p, \[p, gp and gP [\#412](https://github.com/VSCodeVim/Vim/pull/412) ([rebornix](https://github.com/rebornix))
+- Open file in new window. [\#404](https://github.com/VSCodeVim/Vim/pull/404) ([rebornix](https://github.com/rebornix))
+
+## [v0.1.2](https://github.com/vscodevim/vim/tree/v0.1.2) (2016-07-13)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1.1...v0.1.2)
+
+- Fix spec for otherModesKeyBindings to match insert [\#434](https://github.com/VSCodeVim/Vim/pull/434) ([sectioneight](https://github.com/sectioneight))
+- Use TypeScript 2.0 and use strictNullChecks. [\#431](https://github.com/VSCodeVim/Vim/pull/431) ([johnfn](https://github.com/johnfn))
+- Ctrl+U and Ctrl+D [\#430](https://github.com/VSCodeVim/Vim/pull/430) ([rebornix](https://github.com/rebornix))
+- Fix\#369. `dw` eats EOF. [\#428](https://github.com/VSCodeVim/Vim/pull/428) ([rebornix](https://github.com/rebornix))
+- Include vscode typings [\#419](https://github.com/VSCodeVim/Vim/pull/419) ([jpoon](https://github.com/jpoon))
+- Fix ctrl+b, ctrl+f [\#418](https://github.com/VSCodeVim/Vim/pull/418) ([jpoon](https://github.com/jpoon))
+- Fix \#397. [\#413](https://github.com/VSCodeVim/Vim/pull/413) ([rebornix](https://github.com/rebornix))
+- Fix layout mistake in Contributing and gulp typo [\#411](https://github.com/VSCodeVim/Vim/pull/411) ([frederickfogerty](https://github.com/frederickfogerty))
+
+## [v0.1.1](https://github.com/vscodevim/vim/tree/v0.1.1) (2016-07-08)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.1...v0.1.1)
+
+- Fix \#414. [\#415](https://github.com/VSCodeVim/Vim/pull/415) ([rebornix](https://github.com/rebornix))
+- Substitute [\#376](https://github.com/VSCodeVim/Vim/pull/376) ([rebornix](https://github.com/rebornix))
+
+## [v0.1](https://github.com/vscodevim/vim/tree/v0.1) (2016-07-08)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.28...v0.1)
+
+- Fix Roadmap link in Readme [\#405](https://github.com/VSCodeVim/Vim/pull/405) ([frederickfogerty](https://github.com/frederickfogerty))
+- Fix TS2318 and ignore .vscode-test folder [\#400](https://github.com/VSCodeVim/Vim/pull/400) ([rebornix](https://github.com/rebornix))
+- Update window command status [\#398](https://github.com/VSCodeVim/Vim/pull/398) ([rebornix](https://github.com/rebornix))
+- `workbench.files.action.closeAllFiles` is deprecated. [\#395](https://github.com/VSCodeVim/Vim/pull/395) ([rebornix](https://github.com/rebornix))
+- Basic Key Remapping [\#390](https://github.com/VSCodeVim/Vim/pull/390) ([johnfn](https://github.com/johnfn))
+- Use correct API for file open. [\#388](https://github.com/VSCodeVim/Vim/pull/388) ([rebornix](https://github.com/rebornix))
+- Use Arrows in Insert Mode. [\#387](https://github.com/VSCodeVim/Vim/pull/387) ([rebornix](https://github.com/rebornix))
+- Marks [\#386](https://github.com/VSCodeVim/Vim/pull/386) ([johnfn](https://github.com/johnfn))
+- Arrows [\#383](https://github.com/VSCodeVim/Vim/pull/383) ([rebornix](https://github.com/rebornix))
+- Edit File [\#372](https://github.com/VSCodeVim/Vim/pull/372) ([rebornix](https://github.com/rebornix))
+- Unclosed brackets [\#371](https://github.com/VSCodeVim/Vim/pull/371) ([rebornix](https://github.com/rebornix))
+- Manual history tracking [\#370](https://github.com/VSCodeVim/Vim/pull/370) ([johnfn](https://github.com/johnfn))
+- Tabs [\#368](https://github.com/VSCodeVim/Vim/pull/368) ([rebornix](https://github.com/rebornix))
+- Rebornix switch pane [\#367](https://github.com/VSCodeVim/Vim/pull/367) ([johnfn](https://github.com/johnfn))
+- Support `C` [\#366](https://github.com/VSCodeVim/Vim/pull/366) ([rebornix](https://github.com/rebornix))
+- Add Ncc support and revise cc behavior [\#365](https://github.com/VSCodeVim/Vim/pull/365) ([rebornix](https://github.com/rebornix))
+- Bring Ctrl keys back [\#364](https://github.com/VSCodeVim/Vim/pull/364) ([rebornix](https://github.com/rebornix))
+- \[WIP\]: Switch Window [\#363](https://github.com/VSCodeVim/Vim/pull/363) ([rebornix](https://github.com/rebornix))
+- Sentence [\#362](https://github.com/VSCodeVim/Vim/pull/362) ([rebornix](https://github.com/rebornix))
+- Add config option for nonblinking block cursor. [\#361](https://github.com/VSCodeVim/Vim/pull/361) ([johnfn](https://github.com/johnfn))
+- Refactor search [\#357](https://github.com/VSCodeVim/Vim/pull/357) ([johnfn](https://github.com/johnfn))
+- WriteQuit [\#354](https://github.com/VSCodeVim/Vim/pull/354) ([srepollock](https://github.com/srepollock))
+
+## [v0.0.28](https://github.com/vscodevim/vim/tree/v0.0.28) (2016-06-24)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.27...v0.0.28)
+
+- Implement \<count\>yy [\#351](https://github.com/VSCodeVim/Vim/pull/351) ([rebornix](https://github.com/rebornix))
+- Align TextEditorOptions between test code and workspace [\#350](https://github.com/VSCodeVim/Vim/pull/350) ([rebornix](https://github.com/rebornix))
+- Uppercase support [\#349](https://github.com/VSCodeVim/Vim/pull/349) ([johnfn](https://github.com/johnfn))
+- Add format code support. Fix \#308. [\#348](https://github.com/VSCodeVim/Vim/pull/348) ([rebornix](https://github.com/rebornix))
+
+## [v0.0.27](https://github.com/vscodevim/vim/tree/v0.0.27) (2016-06-23)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.26...v0.0.27)
+
+## [v0.0.26](https://github.com/vscodevim/vim/tree/v0.0.26) (2016-06-22)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.0.26...v0.0.26)
+
+## [0.0.26](https://github.com/vscodevim/vim/tree/0.0.26) (2016-06-22)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.0.25...0.0.26)
+
+- Star and hash [\#335](https://github.com/VSCodeVim/Vim/pull/335) ([johnfn](https://github.com/johnfn))
+- Tilde key toggles case and moves forwards [\#325](https://github.com/VSCodeVim/Vim/pull/325) ([markrendle](https://github.com/markrendle))
+- Pressing Enter moves cursor to start of next line [\#324](https://github.com/VSCodeVim/Vim/pull/324) ([markrendle](https://github.com/markrendle))
+- Add infrastructure for repeatable commands. [\#322](https://github.com/VSCodeVim/Vim/pull/322) ([johnfn](https://github.com/johnfn))
+- Add support for 'U' uppercase [\#312](https://github.com/VSCodeVim/Vim/pull/312) ([rebornix](https://github.com/rebornix))
+
+## [0.0.25](https://github.com/vscodevim/vim/tree/0.0.25) (2016-06-20)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.25...0.0.25)
+
+## [v0.0.25](https://github.com/vscodevim/vim/tree/v0.0.25) (2016-06-20)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.0.24...v0.0.25)
+
+- Repeated motions [\#321](https://github.com/VSCodeVim/Vim/pull/321) ([johnfn](https://github.com/johnfn))
+
+## [0.0.24](https://github.com/vscodevim/vim/tree/0.0.24) (2016-06-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.24...0.0.24)
+
+## [v0.0.24](https://github.com/vscodevim/vim/tree/v0.0.24) (2016-06-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.23...v0.0.24)
+
+## [v0.0.23](https://github.com/vscodevim/vim/tree/v0.0.23) (2016-06-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.0.23...v0.0.23)
+
+## [0.0.23](https://github.com/vscodevim/vim/tree/0.0.23) (2016-06-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.22...0.0.23)
+
+- Add %. [\#319](https://github.com/VSCodeVim/Vim/pull/319) ([johnfn](https://github.com/johnfn))
+- @darrenweston's test improvements + more work [\#316](https://github.com/VSCodeVim/Vim/pull/316) ([johnfn](https://github.com/johnfn))
+
+## [v0.0.22](https://github.com/vscodevim/vim/tree/v0.0.22) (2016-06-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.21...v0.0.22)
+
+## [v0.0.21](https://github.com/vscodevim/vim/tree/v0.0.21) (2016-06-17)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.20...v0.0.21)
+
+- Fix visual line selection from bottom to top. [\#307](https://github.com/VSCodeVim/Vim/pull/307) ([johnfn](https://github.com/johnfn))
+- Fix autocomplete [\#304](https://github.com/VSCodeVim/Vim/pull/304) ([johnfn](https://github.com/johnfn))
+- Select into visual mode [\#302](https://github.com/VSCodeVim/Vim/pull/302) ([johnfn](https://github.com/johnfn))
+- Refactor dot [\#294](https://github.com/VSCodeVim/Vim/pull/294) ([johnfn](https://github.com/johnfn))
+
+## [v0.0.20](https://github.com/vscodevim/vim/tree/v0.0.20) (2016-06-13)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.19...v0.0.20)
+
+- Add simpler test mechanism and convert some tests [\#292](https://github.com/VSCodeVim/Vim/pull/292) ([darrenweston](https://github.com/darrenweston))
+- Refactor motions [\#288](https://github.com/VSCodeVim/Vim/pull/288) ([johnfn](https://github.com/johnfn))
+- Search [\#277](https://github.com/VSCodeVim/Vim/pull/277) ([johnfn](https://github.com/johnfn))
+- Tests [\#275](https://github.com/VSCodeVim/Vim/pull/275) ([johnfn](https://github.com/johnfn))
+- Add P. [\#262](https://github.com/VSCodeVim/Vim/pull/262) ([johnfn](https://github.com/johnfn))
+- Add zz. [\#261](https://github.com/VSCodeVim/Vim/pull/261) ([johnfn](https://github.com/johnfn))
+- Added some 'r' tests [\#260](https://github.com/VSCodeVim/Vim/pull/260) ([darrenweston](https://github.com/darrenweston))
+- Add r. [\#252](https://github.com/VSCodeVim/Vim/pull/252) ([johnfn](https://github.com/johnfn))
+- J [\#251](https://github.com/VSCodeVim/Vim/pull/251) ([johnfn](https://github.com/johnfn))
+- Dot key. [\#249](https://github.com/VSCodeVim/Vim/pull/249) ([johnfn](https://github.com/johnfn))
+- No longer special case insert mode keys. [\#246](https://github.com/VSCodeVim/Vim/pull/246) ([johnfn](https://github.com/johnfn))
+- Use vscode built in support for block cursors [\#245](https://github.com/VSCodeVim/Vim/pull/245) ([Paxxi](https://github.com/Paxxi))
+
+## [v0.0.19](https://github.com/vscodevim/vim/tree/v0.0.19) (2016-06-07)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.18...v0.0.19)
+
+- Add f, F, t and T motions [\#244](https://github.com/VSCodeVim/Vim/pull/244) ([johnfn](https://github.com/johnfn))
+- Add visual line mode tests. [\#243](https://github.com/VSCodeVim/Vim/pull/243) ([johnfn](https://github.com/johnfn))
+- List keys individually rather than as a string. [\#242](https://github.com/VSCodeVim/Vim/pull/242) ([johnfn](https://github.com/johnfn))
+- Fix vims wonky visual eol behavior [\#241](https://github.com/VSCodeVim/Vim/pull/241) ([johnfn](https://github.com/johnfn))
+- Add Visual Line mode [\#240](https://github.com/VSCodeVim/Vim/pull/240) ([johnfn](https://github.com/johnfn))
+- Move word special case to appropriate place. [\#239](https://github.com/VSCodeVim/Vim/pull/239) ([johnfn](https://github.com/johnfn))
+- Cleanup cursor drawing and remove Motion class [\#238](https://github.com/VSCodeVim/Vim/pull/238) ([johnfn](https://github.com/johnfn))
+- dd, cc & yy tests [\#237](https://github.com/VSCodeVim/Vim/pull/237) ([johnfn](https://github.com/johnfn))
+- Add cc/yy/dd. [\#236](https://github.com/VSCodeVim/Vim/pull/236) ([johnfn](https://github.com/johnfn))
+- Add s keybinding [\#235](https://github.com/VSCodeVim/Vim/pull/235) ([Paxxi](https://github.com/Paxxi))
+- Refactor commands \[WIP\] [\#234](https://github.com/VSCodeVim/Vim/pull/234) ([johnfn](https://github.com/johnfn))
+- Don't use ctrl-c to leave insert mode by default. [\#233](https://github.com/VSCodeVim/Vim/pull/233) ([johnfn](https://github.com/johnfn))
+- Add rudimentary register implementation. [\#232](https://github.com/VSCodeVim/Vim/pull/232) ([johnfn](https://github.com/johnfn))
+- Rewrite normal mode tests. [\#231](https://github.com/VSCodeVim/Vim/pull/231) ([johnfn](https://github.com/johnfn))
+- Rewrite Normal Mode tests to use the ModeHandler interface. [\#230](https://github.com/VSCodeVim/Vim/pull/230) ([johnfn](https://github.com/johnfn))
+- Refactor CommandKeyMap [\#228](https://github.com/VSCodeVim/Vim/pull/228) ([jpoon](https://github.com/jpoon))
+- Add yank support for Visual mode [\#217](https://github.com/VSCodeVim/Vim/pull/217) ([pjvds](https://github.com/pjvds))
+
+## [v0.0.18](https://github.com/vscodevim/vim/tree/v0.0.18) (2016-05-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.17...v0.0.18)
+
+- Install Gulp for Travis [\#225](https://github.com/VSCodeVim/Vim/pull/225) ([jpoon](https://github.com/jpoon))
+- Update to vscode 0.10.12 APIs [\#224](https://github.com/VSCodeVim/Vim/pull/224) ([jpoon](https://github.com/jpoon))
+
+## [v0.0.17](https://github.com/vscodevim/vim/tree/v0.0.17) (2016-05-17)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.16...v0.0.17)
+
+- Added basic fold commands zc, zo, zC, zO. [\#222](https://github.com/VSCodeVim/Vim/pull/222) ([geksilla](https://github.com/geksilla))
+- keymap configurations only override defaults that are changed [\#221](https://github.com/VSCodeVim/Vim/pull/221) ([adiviness](https://github.com/adiviness))
+- Added basic support for rebinding keys. [\#219](https://github.com/VSCodeVim/Vim/pull/219) ([Lindenk](https://github.com/Lindenk))
+- waffle.io Badge [\#216](https://github.com/VSCodeVim/Vim/pull/216) ([waffle-iron](https://github.com/waffle-iron))
+- Add check mark to D key in README [\#215](https://github.com/VSCodeVim/Vim/pull/215) ([pjvds](https://github.com/pjvds))
+
+## [v0.0.16](https://github.com/vscodevim/vim/tree/v0.0.16) (2016-05-03)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.15...v0.0.16)
+
+- I think this may fix the build failure. [\#209](https://github.com/VSCodeVim/Vim/pull/209) ([edthedev](https://github.com/edthedev))
+- Support for copy and p command [\#208](https://github.com/VSCodeVim/Vim/pull/208) ([petegleeson](https://github.com/petegleeson))
+- Fix issue / key doesn't search current file [\#205](https://github.com/VSCodeVim/Vim/pull/205) ([tnngo2](https://github.com/tnngo2))
+- Fixes Incorrect Cursor Position after Transition into Normal Mode [\#202](https://github.com/VSCodeVim/Vim/pull/202) ([dpbackes](https://github.com/dpbackes))
+- Fixes Issue with Cursor Position After 'dw' [\#200](https://github.com/VSCodeVim/Vim/pull/200) ([dpbackes](https://github.com/dpbackes))
+
+## [v0.0.15](https://github.com/vscodevim/vim/tree/v0.0.15) (2016-03-22)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.14...v0.0.15)
+
+- Bug fixes [\#192](https://github.com/VSCodeVim/Vim/pull/192) ([jpoon](https://github.com/jpoon))
+
+## [v0.0.14](https://github.com/vscodevim/vim/tree/v0.0.14) (2016-03-21)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.13...v0.0.14)
+
+- Bug fixes [\#191](https://github.com/VSCodeVim/Vim/pull/191) ([jpoon](https://github.com/jpoon))
+- Search '/' in Command Mode [\#190](https://github.com/VSCodeVim/Vim/pull/190) ([jpoon](https://github.com/jpoon))
+
+## [v0.0.13](https://github.com/vscodevim/vim/tree/v0.0.13) (2016-03-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.12...v0.0.13)
+
+- fix appveyor build [\#189](https://github.com/VSCodeVim/Vim/pull/189) ([jpoon](https://github.com/jpoon))
+- Fixup/highlight eol char [\#182](https://github.com/VSCodeVim/Vim/pull/182) ([khisakuni](https://github.com/khisakuni))
+- c commands and ge motions [\#180](https://github.com/VSCodeVim/Vim/pull/180) ([frarees](https://github.com/frarees))
+- add github\_token to appveyor/travis [\#178](https://github.com/VSCodeVim/Vim/pull/178) ([jpoon](https://github.com/jpoon))
+- Commands can write to status bar [\#177](https://github.com/VSCodeVim/Vim/pull/177) ([frarees](https://github.com/frarees))
+- Wait for test files to get written [\#175](https://github.com/VSCodeVim/Vim/pull/175) ([frarees](https://github.com/frarees))
+- d{motion} support [\#174](https://github.com/VSCodeVim/Vim/pull/174) ([frarees](https://github.com/frarees))
+
+## [v0.0.12](https://github.com/vscodevim/vim/tree/v0.0.12) (2016-03-04)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.11...v0.0.12)
+
+- Spanish keyboard mappings [\#169](https://github.com/VSCodeVim/Vim/pull/169) ([frarees](https://github.com/frarees))
+- Fix visual mode activated on insert mode [\#168](https://github.com/VSCodeVim/Vim/pull/168) ([frarees](https://github.com/frarees))
+- Fix lexer unreachable code causing build error [\#165](https://github.com/VSCodeVim/Vim/pull/165) ([frarees](https://github.com/frarees))
+- Update Package Dependencies. Remove Ctrl+C [\#163](https://github.com/VSCodeVim/Vim/pull/163) ([jpoon](https://github.com/jpoon))
+- Add E \(end of WORD\), and fix up e \(end of word\). [\#160](https://github.com/VSCodeVim/Vim/pull/160) ([tma-isbx](https://github.com/tma-isbx))
+- Fix for block cursor in insert mode [\#154](https://github.com/VSCodeVim/Vim/pull/154) ([sWW26](https://github.com/sWW26))
+- Move private methods and update readme [\#153](https://github.com/VSCodeVim/Vim/pull/153) ([tma-isbx](https://github.com/tma-isbx))
+- Visual Mode + Rudimentary Operators [\#144](https://github.com/VSCodeVim/Vim/pull/144) ([johnfn](https://github.com/johnfn))
+
+## [v0.0.11](https://github.com/vscodevim/vim/tree/v0.0.11) (2016-02-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.10...v0.0.11)
+
+- Upgrade to Typings as TSD has been deprecated [\#152](https://github.com/VSCodeVim/Vim/pull/152) ([jpoon](https://github.com/jpoon))
+- Convert test to async/await style. [\#150](https://github.com/VSCodeVim/Vim/pull/150) ([johnfn](https://github.com/johnfn))
+- Capital W/B word movement [\#147](https://github.com/VSCodeVim/Vim/pull/147) ([tma-isbx](https://github.com/tma-isbx))
+- Implement 'X' in normal mode \(backspace\) [\#145](https://github.com/VSCodeVim/Vim/pull/145) ([tma-isbx](https://github.com/tma-isbx))
+- Fix b motion. [\#143](https://github.com/VSCodeVim/Vim/pull/143) ([johnfn](https://github.com/johnfn))
+- Implement ctrl+f/ctrl+b \(PageDown/PageUp\) [\#142](https://github.com/VSCodeVim/Vim/pull/142) ([tma-isbx](https://github.com/tma-isbx))
+- \[\#127\] Fix 'x' behavior at EOL  [\#141](https://github.com/VSCodeVim/Vim/pull/141) ([tma-isbx](https://github.com/tma-isbx))
+- Implement % to jump to matching brace [\#140](https://github.com/VSCodeVim/Vim/pull/140) ([tma-isbx](https://github.com/tma-isbx))
+- Add ctrl-c. [\#139](https://github.com/VSCodeVim/Vim/pull/139) ([johnfn](https://github.com/johnfn))
+- Fix word and back-word motions, and fix tests. [\#138](https://github.com/VSCodeVim/Vim/pull/138) ([johnfn](https://github.com/johnfn))
+- Convert to ES6, Promises, async and await. [\#137](https://github.com/VSCodeVim/Vim/pull/137) ([johnfn](https://github.com/johnfn))
+
+## [v0.0.10](https://github.com/vscodevim/vim/tree/v0.0.10) (2016-02-01)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.9...v0.0.10)
+
+- Implement % to jump to matching brace [\#134](https://github.com/VSCodeVim/Vim/pull/134) ([tma-isbx](https://github.com/tma-isbx))
+- Add paragraph motions [\#133](https://github.com/VSCodeVim/Vim/pull/133) ([johnfn](https://github.com/johnfn))
+- Add Swedish keyboard layout [\#130](https://github.com/VSCodeVim/Vim/pull/130) ([AntonAderum](https://github.com/AntonAderum))
+
+## [v0.0.9](https://github.com/vscodevim/vim/tree/v0.0.9) (2016-01-06)
+[Full Changelog](https://github.com/vscodevim/vim/compare/0.0.9...v0.0.9)
+
+## [0.0.9](https://github.com/vscodevim/vim/tree/0.0.9) (2016-01-06)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.8...0.0.9)
+
+- added danish keyboard layout - fix issue \#124 [\#125](https://github.com/VSCodeVim/Vim/pull/125) ([kedde](https://github.com/kedde))
+- Delete Right when user presses x [\#122](https://github.com/VSCodeVim/Vim/pull/122) ([sharpoverride](https://github.com/sharpoverride))
+
+## [v0.0.8](https://github.com/vscodevim/vim/tree/v0.0.8) (2016-01-03)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.7...v0.0.8)
+
+## [v0.0.7](https://github.com/vscodevim/vim/tree/v0.0.7) (2016-01-03)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.6...v0.0.7)
+
+- Block Cursor [\#120](https://github.com/VSCodeVim/Vim/pull/120) ([jpoon](https://github.com/jpoon))
+- BugFix: swapped cursor and caret. desired column not updated properly [\#119](https://github.com/VSCodeVim/Vim/pull/119) ([jpoon](https://github.com/jpoon))
+- Readme: update with keyboard configuration  [\#116](https://github.com/VSCodeVim/Vim/pull/116) ([jpoon](https://github.com/jpoon))
+- Tests: Enable all tests to be run in Travis CI [\#115](https://github.com/VSCodeVim/Vim/pull/115) ([jpoon](https://github.com/jpoon))
+- Cleanup [\#114](https://github.com/VSCodeVim/Vim/pull/114) ([jpoon](https://github.com/jpoon))
+
+## [v0.0.6](https://github.com/vscodevim/vim/tree/v0.0.6) (2015-12-30)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.5...v0.0.6)
+
+- Cleanup [\#113](https://github.com/VSCodeVim/Vim/pull/113) ([jpoon](https://github.com/jpoon))
+- Motion Fixes [\#112](https://github.com/VSCodeVim/Vim/pull/112) ([jpoon](https://github.com/jpoon))
+- Fix character position persistence on up/down commands, add : "e", "0", and fix "^"  [\#109](https://github.com/VSCodeVim/Vim/pull/109) ([corymickelson](https://github.com/corymickelson))
+
+## [v0.0.5](https://github.com/vscodevim/vim/tree/v0.0.5) (2015-12-09)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.3...v0.0.5)
+
+## [v0.0.3](https://github.com/vscodevim/vim/tree/v0.0.3) (2015-12-04)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.2...v0.0.3)
+
+- Promisify [\#92](https://github.com/VSCodeVim/Vim/pull/92) ([jpoon](https://github.com/jpoon))
+- fix cursor position after entering command mode \(again\) [\#91](https://github.com/VSCodeVim/Vim/pull/91) ([kimitake](https://github.com/kimitake))
+- Refactor motion. [\#87](https://github.com/VSCodeVim/Vim/pull/87) ([jpoon](https://github.com/jpoon))
+- Added CONTRIBUTING doc [\#83](https://github.com/VSCodeVim/Vim/pull/83) ([markrendle](https://github.com/markrendle))
+- readme: update more detailed contributing info [\#80](https://github.com/VSCodeVim/Vim/pull/80) ([jpoon](https://github.com/jpoon))
+- Created tests for modeInsert [\#79](https://github.com/VSCodeVim/Vim/pull/79) ([benjaminRomano](https://github.com/benjaminRomano))
+- gulp: add trim-whitespace task [\#78](https://github.com/VSCodeVim/Vim/pull/78) ([jpoon](https://github.com/jpoon))
+- implement correct w,b motion behaviour [\#76](https://github.com/VSCodeVim/Vim/pull/76) ([adriaanp](https://github.com/adriaanp))
+- Fix PR builds [\#75](https://github.com/VSCodeVim/Vim/pull/75) ([jpoon](https://github.com/jpoon))
+- Tests [\#74](https://github.com/VSCodeVim/Vim/pull/74) ([jpoon](https://github.com/jpoon))
+- Add commands support for 'gg' and 'G' [\#71](https://github.com/VSCodeVim/Vim/pull/71) ([liushuping](https://github.com/liushuping))
+- fix line end determination for a, A, $ [\#68](https://github.com/VSCodeVim/Vim/pull/68) ([kimitake](https://github.com/kimitake))
+- '$' and '^' for Moving to beginning and end of line [\#66](https://github.com/VSCodeVim/Vim/pull/66) ([josephliccini](https://github.com/josephliccini))
+- support x command [\#65](https://github.com/VSCodeVim/Vim/pull/65) ([kimitake](https://github.com/kimitake))
+- Update README.md [\#63](https://github.com/VSCodeVim/Vim/pull/63) ([markrendle](https://github.com/markrendle))
+- map keys from US keyboard to other layouts [\#61](https://github.com/VSCodeVim/Vim/pull/61) ([guillermooo](https://github.com/guillermooo))
+- fix bug for Cursor class [\#58](https://github.com/VSCodeVim/Vim/pull/58) ([kimitake](https://github.com/kimitake))
+- Cursor Motions [\#56](https://github.com/VSCodeVim/Vim/pull/56) ([jpoon](https://github.com/jpoon))
+- Add word motion and db [\#53](https://github.com/VSCodeVim/Vim/pull/53) ([adriaanp](https://github.com/adriaanp))
+
+## [v0.0.2](https://github.com/vscodevim/vim/tree/v0.0.2) (2015-11-29)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.0.1...v0.0.2)
+
+- move cursor position after getting normal mode [\#50](https://github.com/VSCodeVim/Vim/pull/50) ([kimitake](https://github.com/kimitake))
+
+## [v0.0.1](https://github.com/vscodevim/vim/tree/v0.0.1) (2015-11-29)
+- Implement Redo, Refactor Keybindings [\#46](https://github.com/VSCodeVim/Vim/pull/46) ([jpoon](https://github.com/jpoon))
+- reorganize tests; add tests [\#45](https://github.com/VSCodeVim/Vim/pull/45) ([guillermooo](https://github.com/guillermooo))
+- fixes; add VimError class [\#43](https://github.com/VSCodeVim/Vim/pull/43) ([guillermooo](https://github.com/guillermooo))
+- Refactor cmdline [\#42](https://github.com/VSCodeVim/Vim/pull/42) ([guillermooo](https://github.com/guillermooo))
+- ensure user can dismiss global messages with esc [\#41](https://github.com/VSCodeVim/Vim/pull/41) ([guillermooo](https://github.com/guillermooo))
+- implement :quit [\#40](https://github.com/VSCodeVim/Vim/pull/40) ([guillermooo](https://github.com/guillermooo))
+- Commands: `u` and `dw` [\#38](https://github.com/VSCodeVim/Vim/pull/38) ([jpoon](https://github.com/jpoon))
+- Update metadata getting ready for a release [\#37](https://github.com/VSCodeVim/Vim/pull/37) ([jpoon](https://github.com/jpoon))
+- rename command mode to normal mode [\#34](https://github.com/VSCodeVim/Vim/pull/34) ([jpoon](https://github.com/jpoon))
+- Support `\<\<` and `\>\>` [\#32](https://github.com/VSCodeVim/Vim/pull/32) ([jpoon](https://github.com/jpoon))
+- Add Slackin to Readme [\#31](https://github.com/VSCodeVim/Vim/pull/31) ([jpoon](https://github.com/jpoon))
+- start code in CI server [\#28](https://github.com/VSCodeVim/Vim/pull/28) ([guillermooo](https://github.com/guillermooo))
+- assorted fixes [\#27](https://github.com/VSCodeVim/Vim/pull/27) ([guillermooo](https://github.com/guillermooo))
+- travis: turn off email notifications [\#25](https://github.com/VSCodeVim/Vim/pull/25) ([jpoon](https://github.com/jpoon))
+- add keys [\#22](https://github.com/VSCodeVim/Vim/pull/22) ([guillermooo](https://github.com/guillermooo))
+- Ex mode [\#20](https://github.com/VSCodeVim/Vim/pull/20) ([guillermooo](https://github.com/guillermooo))
+- Command/Insert Modes [\#16](https://github.com/VSCodeVim/Vim/pull/16) ([jpoon](https://github.com/jpoon))
+- Update tslint to vscode official style guidelines [\#14](https://github.com/VSCodeVim/Vim/pull/14) ([jpoon](https://github.com/jpoon))
+- Run Tests a la Gulp [\#11](https://github.com/VSCodeVim/Vim/pull/11) ([jpoon](https://github.com/jpoon))
+- assorted fixes [\#10](https://github.com/VSCodeVim/Vim/pull/10) ([guillermooo](https://github.com/guillermooo))
+- Assorted fixes [\#7](https://github.com/VSCodeVim/Vim/pull/7) ([guillermooo](https://github.com/guillermooo))
+- add gulp + tslint [\#6](https://github.com/VSCodeVim/Vim/pull/6) ([jpoon](https://github.com/jpoon))
+- command line mode refactoring [\#5](https://github.com/VSCodeVim/Vim/pull/5) ([guillermooo](https://github.com/guillermooo))
+- Navigation mode [\#4](https://github.com/VSCodeVim/Vim/pull/4) ([jpoon](https://github.com/jpoon))
+- Add ex mode [\#3](https://github.com/VSCodeVim/Vim/pull/3) ([guillermooo](https://github.com/guillermooo))
+
+\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*

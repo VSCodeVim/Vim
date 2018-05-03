@@ -1,6 +1,6 @@
-import { VimState } from './../mode/modeHandler';
+import { configuration } from './../configuration/configuration';
 import { ModeName } from './../mode/mode';
-import { Configuration } from './../configuration/configuration';
+import { VimState } from './../state/vimState';
 
 const is2DArray = function<T>(x: any): x is T[][] {
   return Array.isArray(x[0]);
@@ -63,17 +63,17 @@ export let compareKeypressSequence = function(one: string[] | string[][], two: s
       continue;
     }
 
-    if (left === '<leader>' && right === Configuration.leader) {
+    if (left === '<leader>' && right === configuration.leader) {
       continue;
     }
-    if (right === '<leader>' && left === Configuration.leader) {
+    if (right === '<leader>' && left === configuration.leader) {
       continue;
     }
 
-    if (left === Configuration.leader) {
+    if (left === configuration.leader) {
       return false;
     }
-    if (right === Configuration.leader) {
+    if (right === configuration.leader) {
       return false;
     }
 
@@ -140,9 +140,13 @@ export class BaseAction {
     if (this.modes.indexOf(vimState.currentMode) === -1) {
       return false;
     }
-    if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
+
+    const keys2D = is2DArray(this.keys) ? this.keys : [this.keys];
+    const keysSlice = keys2D.map(x => x.slice(0, keysPressed.length));
+    if (!compareKeypressSequence(keysSlice, keysPressed)) {
       return false;
     }
+
     if (
       this.mustBeFirstKey &&
       vimState.recordedState.numberOfKeysInCommandWithoutCountPrefix - keysPressed.length > 0
@@ -184,29 +188,28 @@ export class Actions {
     keysPressed: string[],
     vimState: VimState
   ): BaseAction | KeypressState {
-    let couldPotentiallyHaveMatch = false;
+    let isPotentialMatch = false;
 
     for (const thing of Actions.allActions) {
       const { type, action } = thing!;
 
-      // It's an action that can't be called directly.
       if (action.keys === undefined) {
+        // action that can't be called directly
         continue;
       }
+
       if (action.doesActionApply(vimState, keysPressed)) {
         const result = new type();
-
         result.keysPressed = vimState.recordedState.actionKeys.slice(0);
-
         return result;
       }
 
       if (action.couldActionApply(vimState, keysPressed)) {
-        couldPotentiallyHaveMatch = true;
+        isPotentialMatch = true;
       }
     }
 
-    return couldPotentiallyHaveMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
+    return isPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
   }
 }
 

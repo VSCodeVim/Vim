@@ -23,7 +23,7 @@ function parseCount(args: string): number | undefined {
 
     return count;
   } else {
-    throw new Error(`Invalid tab number: ${c}!`);
+    throw new Error(`Invalid tab number (${c}).`);
   }
 }
 

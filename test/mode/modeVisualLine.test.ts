@@ -1,10 +1,11 @@
 import * as assert from 'assert';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
+
+import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
+import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
-import { getAndUpdateModeHandler } from '../../extension';
+import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
@@ -312,6 +313,15 @@ suite('Mode Visual Line', () => {
       // TODO: should be assertEqualLines(['one two three', 'one two three', 'one two three']);
       // unfortunately it is
       assertEqualLines(['one two threeone two three', 'one two three']);
+    });
+  });
+
+  suite('replace text in linewise visual-mode with linewise register content', () => {
+    newTest({
+      title: 'yyVp does not change the content but changes cursor position',
+      start: ['fo|o', 'bar', 'fun', 'baz'],
+      keysPressed: 'yyVp',
+      end: ['|foo', 'bar', 'fun', 'baz'],
     });
   });
 });

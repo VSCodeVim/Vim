@@ -1,34 +1,34 @@
-import { ModeName } from './../../mode/mode';
+import { VimState } from '../../state/vimState';
+import { PairMatcher } from './../../common/matching/matcher';
 import { Position } from './../../common/motion/position';
 import { Range } from './../../common/motion/range';
+import { configuration } from './../../configuration/configuration';
+import { ModeName } from './../../mode/mode';
 import { TextEditor } from './../../textEditor';
-import { VimState } from './../../mode/modeHandler';
-import { PairMatcher } from './../../common/matching/matcher';
-import { Configuration } from './../../configuration/configuration';
 import { RegisterAction } from './../base';
-import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
 import { BaseCommand } from './../commands/actions';
 import { BaseMovement } from './../motion';
 import {
   IMovement,
-  MoveQuoteMatch,
-  MoveASingleQuotes,
-  MoveADoubleQuotes,
   MoveABacktick,
-  MoveInsideCharacter,
-  MoveACurlyBrace,
-  MoveInsideTag,
-  MoveAParentheses,
-  MoveASquareBracket,
   MoveACaret,
+  MoveACurlyBrace,
+  MoveADoubleQuotes,
+  MoveAParentheses,
   MoveAroundTag,
+  MoveASingleQuotes,
+  MoveASquareBracket,
+  MoveInsideCharacter,
+  MoveInsideTag,
+  MoveQuoteMatch,
 } from './../motion';
+import { ChangeOperator, DeleteOperator, YankOperator } from './../operator';
 import {
-  TextObjectMovement,
-  SelectInnerWord,
   SelectInnerBigWord,
-  SelectInnerSentence,
   SelectInnerParagraph,
+  SelectInnerSentence,
+  SelectInnerWord,
+  TextObjectMovement,
 } from './../textobject';
 
 @RegisterAction
@@ -138,7 +138,7 @@ class CommandSurroundModeStart extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Only execute the action if the configuration is set
-    if (!Configuration.surround) {
+    if (!configuration.surround) {
       return vimState;
     }
 
@@ -204,7 +204,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Only execute the action if the configuration is set
-    if (!Configuration.surround) {
+    if (!configuration.surround) {
       return vimState;
     }
 

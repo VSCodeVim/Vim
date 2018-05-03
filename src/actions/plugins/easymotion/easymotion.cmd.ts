@@ -1,14 +1,14 @@
-import { EasyMotion } from './easymotion';
+import { VimState } from '../../../state/vimState';
 import { Position } from './../../../common/motion/position';
+import { configuration } from './../../../configuration/configuration';
 import { ModeName } from './../../../mode/mode';
-import { Configuration } from './../../../configuration/configuration';
-import { BaseCommand } from './../../commands/actions';
 import { RegisterAction } from './../../base';
-import { VimState } from './../../../mode/modeHandler';
+import { BaseCommand } from './../../commands/actions';
+import { EasyMotion } from './easymotion';
 import {
+  EasyMotionCharMoveOpions,
   EasyMotionMoveOptionsBase,
   EasyMotionWordMoveOpions,
-  EasyMotionCharMoveOpions,
 } from './types';
 
 export interface EasymotionTrigger {
@@ -71,7 +71,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Only execute the action if the configuration is set
-    if (!Configuration.easymotion) {
+    if (!configuration.easymotion) {
       return vimState;
     } else {
       // Search all occurences of the character pressed
@@ -118,7 +118,7 @@ function getMatchesForString(
     default:
       // Search all occurences of the character pressed
       const ignorecase =
-        Configuration.ignorecase && !(Configuration.smartcase && /[A-Z]/.test(searchString));
+        configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString));
       const regexFlags = ignorecase ? 'gi' : 'g';
       return vimState.easyMotion.sortedSearch(
         position,
@@ -258,7 +258,7 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     // Only execute the action if easymotion is enabled
-    if (!Configuration.easymotion) {
+    if (!configuration.easymotion) {
       return vimState;
     } else {
       vimState.easyMotion = new EasyMotion();
@@ -299,8 +299,10 @@ export class EasyMotionWordMoveCommandBase extends BaseEasyMotionCommand {
     vimState: VimState,
     options?: EasyMotion.SearchOptions
   ): EasyMotion.Match[] {
-    // Search for the beginning of all words after the cursor
-    return vimState.easyMotion.sortedSearch(position, new RegExp('\\w{1,}', 'g'), options);
+    const regex = this._options.jumpToAnywhere
+      ? new RegExp(configuration.easymotionJumpToAnywhereRegex, 'g')
+      : new RegExp('\\w{1,}', 'g');
+    return vimState.easyMotion.sortedSearch(position, regex, options);
   }
 }
 

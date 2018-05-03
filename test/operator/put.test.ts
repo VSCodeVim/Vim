@@ -1,7 +1,7 @@
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
-import { getTestingFunctions } from '../testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { getTestingFunctions } from '../testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('put operator', () => {
   let modeHandler: ModeHandler;

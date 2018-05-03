@@ -1,6 +1,6 @@
+import { ErrorCode, VimError } from '../../error';
 import * as node from '../commands/writequitall';
 import { Scanner } from '../scanner';
-import { VimError, ErrorCode } from '../../error';
 
 export function parseWriteQuitAllCommandArgs(args: string): node.WriteQuitAllCommand {
   if (!args) {

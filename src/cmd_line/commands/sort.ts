@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
+
+import { ModeName } from '../../mode/mode';
+import { VimState } from '../../state/vimState';
+import { TextEditor } from '../../textEditor';
 import * as node from '../node';
 import * as token from '../token';
-import { ModeHandler } from '../../mode/modeHandler';
-import { TextEditor } from '../../textEditor';
-import { ModeName } from '../../mode/mode';
 
 export interface ISortCommandArguments extends node.ICommandArgs {
   reverse: boolean;
@@ -22,10 +23,10 @@ export class SortCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(modeHandler: ModeHandler): Promise<void> {
-    let mode = modeHandler.vimState.currentMode;
+  async execute(vimState: VimState): Promise<void> {
+    let mode = vimState.currentMode;
     if ([ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(mode) >= 0) {
-      const selection = modeHandler.vimState.editor.selection;
+      const selection = vimState.editor.selection;
       let start = selection.start;
       let end = selection.end;
       if (start.isAfter(end)) {
@@ -66,7 +67,7 @@ export class SortCommand extends node.CommandBase {
     );
   }
 
-  async executeWithRange(modeHandler: ModeHandler, range: node.LineRange) {
+  async executeWithRange(vimState: VimState, range: node.LineRange) {
     let startLine: vscode.Position;
     let endLine: vscode.Position;
 
@@ -74,8 +75,8 @@ export class SortCommand extends node.CommandBase {
       startLine = new vscode.Position(0, 0);
       endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
     } else {
-      startLine = range.lineRefToPosition(modeHandler.vimState.editor, range.left, modeHandler);
-      endLine = range.lineRefToPosition(modeHandler.vimState.editor, range.right, modeHandler);
+      startLine = range.lineRefToPosition(vimState.editor, range.left, vimState);
+      endLine = range.lineRefToPosition(vimState.editor, range.right, vimState);
     }
 
     await this.sortLines(startLine, endLine);

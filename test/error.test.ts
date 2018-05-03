@@ -1,5 +1,6 @@
 import * as assert from 'assert';
-import { VimError, ErrorCode, ErrorMessage } from '../src/error';
+
+import { ErrorCode, ErrorMessage } from '../src/error';
 
 suite('Error', () => {
   test('error code has message', () => {

@@ -1,11 +1,18 @@
 import * as assert from 'assert';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from './../testUtils';
+
+import { getAndUpdateModeHandler } from '../../extension';
+import { Globals } from '../../src/globals';
 import { ModeName } from '../../src/mode/mode';
+import { ModeHandler } from '../../src/mode/modeHandler';
 import { TextEditor } from '../../src/textEditor';
 import { getTestingFunctions } from '../testSimplifier';
-import { Configuration } from '../../src/configuration/configuration';
-import { getAndUpdateModeHandler } from '../../extension';
+import {
+  assertEqual,
+  assertEqualLines,
+  cleanUpWorkspace,
+  reloadConfiguration,
+  setupWorkspace,
+} from './../testUtils';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
@@ -557,6 +564,22 @@ suite('Mode Visual', () => {
     endMode: ModeName.Normal,
   });
 
+  newTest({
+    title: 'Can do vi{ on outer pair of nested braces',
+    start: ['{', '  te|st', '  {', '    test', '  }', '}'],
+    keysPressed: 'vi{d',
+    end: ['{', '|}'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Can do vi{ on braces indented by 1 and preserve indent',
+    start: ['{', '  t|est', ' }'],
+    keysPressed: 'vi{d',
+    end: ['{', '| }'],
+    endMode: ModeName.Normal,
+  });
+
   suite('handles replace in visual mode', () => {
     newTest({
       title: 'Can do a single line replace',
@@ -684,15 +707,9 @@ suite('Mode Visual', () => {
   });
 
   suite('visualstar', () => {
-    let originalVisualstarValue = false;
-
     setup(() => {
-      originalVisualstarValue = Configuration.visualstar;
-      Configuration.visualstar = true;
-    });
-
-    teardown(() => {
-      Configuration.visualstar = originalVisualstarValue;
+      Globals.mockConfiguration.visualstar = true;
+      reloadConfiguration();
     });
 
     newTest({
@@ -749,6 +766,19 @@ suite('Mode Visual', () => {
       start: ['foo', 'bar', 'fun', 'b|az'],
       keysPressed: 'v?foo\nx',
       end: ['|z'],
+    });
+
+    test('Selects correct range', async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo bar fun baz'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'w', '/']);
+
+      const selection = TextEditor.getSelection();
+
+      // ensuring selection range starts from the beginning
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 4);
+      assertEqual(selection.end.line, 0);
     });
   });
 
@@ -842,6 +872,71 @@ suite('Mode Visual', () => {
       start: ['    func() {', '    |    hi;', '        alw;', '    }'],
       keysPressed: 'vi{yGP',
       end: ['    func() {', '        hi;', '        alw;', '|        hi;', '        alw;', '    }'],
+    });
+  });
+
+  suite('Transition between visual mode', () => {
+    test('vv will back to normal mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    });
+
+    test('vV will transit to visual line mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+    });
+
+    test('v<C-v> will transit to visual block mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+    });
+
+    test('Vv will transit to visual (char) mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    });
+
+    test('VV will back to normal mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    });
+
+    test('V<C-v> will transit to visual block mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+    });
+
+    test('<C-v>v will transit to visual (char) mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      await modeHandler.handleMultipleKeyEvents(['v']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+    });
+
+    test('<C-v>V will back to visual line mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      await modeHandler.handleMultipleKeyEvents(['V']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+    });
+
+    test('<C-v><C-v> will back to normal mode', async () => {
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualBlock);
+      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
+      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
     });
   });
 });

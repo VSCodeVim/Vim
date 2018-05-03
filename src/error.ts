@@ -1,25 +1,27 @@
-import * as util from './util';
-
 interface IErrorMessage {
   [index: number]: string;
 }
 
 export enum ErrorCode {
   E32 = 32,
+  E35 = 35,
   E37 = 37,
   E208 = 208,
   E348 = 348,
   E444 = 444,
   E488 = 488,
+  E492 = 492,
 }
 
 export const ErrorMessage: IErrorMessage = {
   32: 'No file name',
+  35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',
   208: 'Error writing to file',
   348: 'No string under cursor',
   444: 'Cannot close last window',
   488: 'Trailing characters',
+  492: 'Not an editor command',
 };
 
 export class VimError extends Error {
@@ -46,10 +48,6 @@ export class VimError extends Error {
 
   get message(): string {
     return this._message;
-  }
-
-  display(): void {
-    util.showError(this.toString());
   }
 
   toString(): string {

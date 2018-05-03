@@ -1,6 +1,6 @@
-import * as node from '../node';
+import { configuration } from '../../configuration/configuration';
 import * as util from '../../util';
-import { Configuration } from '../../configuration/configuration';
+import * as node from '../node';
 
 export enum SetOptionOperator {
   /*
@@ -62,37 +62,41 @@ export class SetOptionsCommand extends node.CommandBase {
 
   async execute(): Promise<void> {
     if (!this._arguments.name) {
-      throw new Error('Unknown option');
+      throw new Error('Missing argument.');
+    }
+
+    if (configuration[this._arguments.name] == null) {
+      throw new Error('Unsupported option. ' + this._arguments.name);
     }
 
     switch (this._arguments.operator) {
       case SetOptionOperator.Set:
-        Configuration[this._arguments.name] = true;
+        configuration[this._arguments.name] = true;
         break;
       case SetOptionOperator.Reset:
-        Configuration[this._arguments.name] = false;
+        configuration[this._arguments.name] = false;
         break;
       case SetOptionOperator.Equal:
-        Configuration[this._arguments.name] = this._arguments.value!;
+        configuration[this._arguments.name] = this._arguments.value!;
         break;
       case SetOptionOperator.Invert:
-        Configuration[this._arguments.name] = !Configuration[this._arguments.name];
+        configuration[this._arguments.name] = !configuration[this._arguments.name];
         break;
       case SetOptionOperator.Append:
-        Configuration[this._arguments.name] += this._arguments.value!;
+        configuration[this._arguments.name] += this._arguments.value!;
         break;
       case SetOptionOperator.Subtract:
         if (typeof this._arguments.value! === 'number') {
-          Configuration[this._arguments.name] -= this._arguments.value! as number;
+          configuration[this._arguments.name] -= this._arguments.value! as number;
         } else {
-          let initialValue = Configuration[this._arguments.name];
-          Configuration[this._arguments.name] = initialValue
+          let initialValue = configuration[this._arguments.name];
+          configuration[this._arguments.name] = initialValue
             .split(this._arguments.value! as string)
             .join('');
         }
         break;
       case SetOptionOperator.Info:
-        let value = Configuration[this._arguments.name];
+        let value = configuration[this._arguments.name];
         if (value === undefined) {
           await util.showError(`E518 Unknown option: ${this._arguments.name}`);
         } else {

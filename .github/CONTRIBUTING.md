@@ -1,9 +1,10 @@
 # Contribution Guide
 
-The following is a set of guidelines for contributing to Vim for VSCode.
-These are just guidelines, not rules, use your best judgment and feel free to propose changes to this document in a pull request.
-If you need help with Vim for VSCode, drop by on [Slack](https://vscodevim-slackin.azurewebsites.net/).
-Thanks for helping us make Vim for VSCode better!
+This document offers a set of guidelines for contributing to VSCodeVim.
+These are just guidelines, not rules, use your best judgment and feel free to propose changes to this document.
+If you need help, drop by on [Slack](https://vscodevim-slackin.azurewebsites.net/).
+
+Thanks for helping us in making VSCodeVim better! :clap:
 
 ## Submitting Issues
 
@@ -11,63 +12,65 @@ The [GitHub issue tracker](https://github.com/VSCodeVim/Vim/issues) is the prefe
 When creating a new bug report do:
 
 * Search against existing issues to check if somebody else has already reported your problem or requested your idea
-* Include as many details as possible -- include screenshots/gifs and repro steps where applicable.
+* Fill out the issue template.
 
 ## Submitting Pull Requests
 
 Pull requests are *awesome*.
 If you're looking to raise a PR for something which doesn't have an open issue, consider creating an issue first.
-When submitting a PR, ensure:
 
-1. All tests pass.
-2. If you added a new feature, add tests to exercise the new code path.
-3. If you fixed a bug, add tests to ensure the bug stays away.
-4. Submit the PR. Pour yourself a glass of champagne and feel good about contributing to open source!
+When submitting a PR, please fill out the template that is presented by GitHub when a PR is opened.
 
 ## First Time Setup
 
 1. Install prerequisites:
    * latest [Visual Studio Code](https://code.visualstudio.com/)
-   * [Node.js](https://nodejs.org/) v4.0.0 or higher
-2. Fork and clone the repository
-3. `cd Vim`
-4. Install the dependencies:
+   * [Node.js](https://nodejs.org/) v8.0.0 or higher
+1. In a terminal:
 
-	```bash
-	$ npm install -g gulp-cli
-	$ npm install
-	```
-5. Open the folder in VS Code
+    ```bash
+    # fork and clone the repository
+    git clone git@github.com:<YOUR-FORK>/Vim.git
+    cd Vim
 
-## Developing
+    # Install the dependencies
+    npm install -g gulp-cli
+    npm install
 
-1. Watch for changes and recompile Typescript files. Run this in the `Vim` directory: `gulp watch`
-2. Open Visual Studio Code and add the `Vim` directory as a folder.
-3. Click on the debugger. You have two options - Launch Extension (to play around with the extension) and Launch Tests (to run the tests).
+    # Open in VSCode
+    code .
+
+    # Choose the "Build, Run Extension" in the dropdown of VSCode's
+    # debug tab to build and run the extension.
+    # Or run tests by selecting the appropriate drop down option
+
+    # Alternatively, build and run tests through gulp and npm scripts
+    npm run build         # build
+    npm test              # test
+    gulp test             # run tests inside Docker container
+    ```
 
 ## Code Architecture
 
-The code is split into two parts - ModeHandler (which is essentially the Vim state machine), and Actions (which are things that modify the state).
+The code is split into two parts:
+* ModeHandler - Vim state machine
+* Actions - 'actions' which modify the state
 
 ### Actions
 
 Actions are all currently stuffed into actions.ts (sorry!). There are:
-* BaseAction - the base Action type that all Actions derive from.
-* BaseMovement - A movement, like `w`, `h`, `{`, etc. ONLY updates the cursor position. At worst, might return an IMovement, which indicates a start and stop. This is used for movements like aw which may actually start before the cursor.
-* BaseCommand - Anything which is not just a movement is a Command. That includes motions which also update the state of Vim in some way, like `*`.
+* `BaseAction` - the base Action type that all Actions derive from.
+* `BaseMovement` - A movement (e.g.`w`, `h`, `{`, etc.) *ONLY* updates the cursor position or returns an `IMovement`, which indicates a start and stop. This is used for movements like `aw` which may actually start before the cursor.
+* `BaseCommand` - Anything which is not just a movement is a Command. That includes motions which also update the state of Vim in some way, like `*`.
 
 At one point, I wanted to have actions.ts be completely pure (no side effects whatsoever), so commands would just return objects indicating what side effects on the editor they would have. This explains the giant switch in handleCommand in ModeHandler. I now believe this to be a dumb idea and someone should get rid of it.
 
-Probably me. :wink:
-
 ### The Vim State Machine
 
-It's contained entirely within modeHandler.ts. It's actually pretty complicated, and I probably won't be able to articulate all of the edge cases it contains.
+Consists of two data structures:
 
-It consists of two data structures:
-
-* VimState - this is the state of Vim. It's what actions update.
-* RecordedState - this is temporary state that will reset at the end of a change. (RecordedState is a poor name for this; I've been going back and forth on different names).
+* `VimState` - this is the state of Vim. It's what actions update.
+* `RecordedState` - this is temporary state that will reset at the end of a change.
 
 #### How it works
 
@@ -84,8 +87,14 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 
 To push a release:
 
+1. Update changelog and commit changes.
+
+    1. We use `github-change-log-generator`. The instructions to install are [here](https://github.com/skywinder/github-changelog-generator#installation).
+    1. `github_changelog_generator vscodevim/vim --token=[TOKEN] --simple-list --no-issues --unreleased-label [LABEL]`
+    1. `git commit -am 'update changelog'`
+
 1. Bump the version number and create a git tag: `gulp patch|minor|major`
-2. Push the changes: `git push origin --tags`
+1. Push the changes: `git push origin --tags`
 
 In addition to building and testing the extension, when a tag is applied to the commit, the CI server will also create a GitHub release and publish the new version to the Visual Studio marketplace.
 
@@ -93,9 +102,7 @@ In addition to building and testing the extension, when a tag is applied to the 
 
 ### Visual Studio Code Slowdown
 
-If your autocomplete, your fuzzy file search, or your _everything_ is suddenly running slower, try to recall if you ever ran `npm test` instead of just running tests through Visual Studio Code. This will add a massive folder called `.vscode-test/` to your project, which Visual Studio Code will happily consume all of your CPU cycles indexing.
-
-Long story short, you can speed up VS Code by:
+If you notice a slowdown and have ever ran `npm test` in the past instread of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VS Code by:
 
 `$ rm -rf .vscode-test/`
 

@@ -1,10 +1,10 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
+
+import { VimState } from '../../state/vimState';
+import { configuration } from './../../configuration/configuration';
+import { VisualBlockMode } from './../../mode/modes';
 import { TextEditor } from './../../textEditor';
-import { VimState } from './../../mode/modeHandler';
-import { VisualBlockMode } from './../../mode/modeVisualBlock';
-import { Configuration } from './../../configuration/configuration';
-import { betterEscapeRegex } from './../../util';
 
 /**
  * Represents a difference between two positions. Add it to a position
@@ -95,7 +95,7 @@ export class PositionDiff {
 }
 
 export class Position extends vscode.Position {
-  private static NonWordCharacters = Configuration.iskeyword!;
+  private static NonWordCharacters = configuration.iskeyword!;
   private static NonBigWordCharacters = '';
   private static NonFileCharacters = '"\'`;<>{}[]()';
 
@@ -373,12 +373,13 @@ export class Position extends vscode.Position {
   }
 
   /**
-   * Gets the position one to the left of this position. Does not go up line
+   * Gets the position one or more to the left of this position. Does not go up line
    * breaks.
    */
-  public getLeft(): Position {
-    if (!this.isLineBeginning()) {
-      return new Position(this.line, this.character - 1);
+  public getLeft(count: number = 1): Position {
+    let newCharacter = Math.max(this.character - count, 0);
+    if (newCharacter !== this.character) {
+      return new Position(this.line, newCharacter);
     }
 
     return this;
@@ -655,7 +656,7 @@ export class Position extends vscode.Position {
    * is disabled.
    */
   public getLineBeginRespectingIndent(): Position {
-    if (!Configuration.autoindent) {
+    if (!configuration.autoindent) {
       return this.getLineBegin();
     }
     return this.getFirstLineNonBlankChar();
@@ -807,7 +808,7 @@ export class Position extends vscode.Position {
   }
 
   private makeWordRegex(characterSet: string): RegExp {
-    let escaped = characterSet && betterEscapeRegex(characterSet);
+    let escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     let segments: string[] = [];
 
     segments.push(`([^\\s${escaped}]+)`);

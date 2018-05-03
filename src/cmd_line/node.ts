@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+
+import { VimState } from '../state/vimState';
 import * as token from './token';
-import { ModeHandler } from '../mode/modeHandler';
 
 export class LineRange {
   left: token.Token[];
@@ -41,22 +42,20 @@ export class LineRange {
     return this.left.toString() + this.separator.content + this.right.toString();
   }
 
-  execute(document: vscode.TextEditor, modeHandler: ModeHandler): void {
+  execute(document: vscode.TextEditor, vimState: VimState): void {
     if (this.isEmpty) {
       return;
     }
     var lineRef = this.right.length === 0 ? this.left : this.right;
-    var pos = this.lineRefToPosition(document, lineRef, modeHandler);
-    let vimState = modeHandler.vimState;
+    var pos = this.lineRefToPosition(document, lineRef, vimState);
     vimState.cursorPosition = vimState.cursorPosition.setLocation(pos.line, pos.character);
     vimState.cursorStartPosition = vimState.cursorPosition;
-    modeHandler.updateView(modeHandler.vimState);
   }
 
   lineRefToPosition(
     doc: vscode.TextEditor,
     toks: token.Token[],
-    modeHandler: ModeHandler
+    vimState: VimState
   ): vscode.Position {
     var first = toks[0];
     switch (first.type) {
@@ -91,9 +90,9 @@ export class LineRange {
         );
         return new vscode.Position(endLine, 0);
       case token.TokenType.Mark:
-        return modeHandler.vimState.historyTracker.getMark(first.content).position;
+        return vimState.historyTracker.getMark(first.content).position;
       default:
-        throw new Error('not implemented');
+        throw new Error('Not Implemented');
     }
   }
 }
@@ -114,16 +113,16 @@ export class CommandLine {
     return ':' + this.range.toString() + ' ' + this.command.toString();
   }
 
-  async execute(document: vscode.TextEditor, modeHandler: ModeHandler): Promise<void> {
+  async execute(document: vscode.TextEditor, vimState: VimState): Promise<void> {
     if (!this.command) {
-      this.range.execute(document, modeHandler);
+      this.range.execute(document, vimState);
       return;
     }
 
     if (this.range.isEmpty) {
-      await this.command.execute(modeHandler);
+      await this.command.execute(vimState);
     } else {
-      await this.command.executeWithRange(modeHandler, this.range);
+      await this.command.executeWithRange(vimState, this.range);
     }
   }
 }
@@ -149,9 +148,9 @@ export abstract class CommandBase {
   }
   protected _arguments: ICommandArgs;
 
-  abstract execute(modeHandler: ModeHandler): void;
+  abstract execute(vimState: VimState): void;
 
-  executeWithRange(modeHandler: ModeHandler, range: LineRange): void {
+  executeWithRange(vimState: VimState, range: LineRange): void {
     throw new Error('Not implemented!');
   }
 }

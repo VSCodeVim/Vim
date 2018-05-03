@@ -1,11 +1,10 @@
 import * as assert from 'assert';
-import { TextEditor } from './../src/textEditor';
-import { Position } from './../src/common/motion/position';
-import { setupWorkspace, cleanUpWorkspace } from './testUtils';
-import { ModeHandler } from './../src/mode/modeHandler';
-import { getTestingFunctions } from './testSimplifier';
 
-suite('old motion tests', () => {
+import { Position } from './../src/common/motion/position';
+import { TextEditor } from './../src/textEditor';
+import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+
+suite('basic motion', () => {
   let text: string[] = ['mary had', 'a', 'little lamb', ' whose fleece was '];
 
   suiteSetup(async () => {

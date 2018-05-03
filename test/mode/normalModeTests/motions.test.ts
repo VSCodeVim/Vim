@@ -1,8 +1,7 @@
-import { setupWorkspace, cleanUpWorkspace } from './../../testUtils';
-import { ModeHandler } from '../../../src/mode/modeHandler';
-import { getTestingFunctions, testIt } from '../../testSimplifier';
-import { waitForTabChange } from '../../../src/util';
 import { getAndUpdateModeHandler } from '../../../extension';
+import { ModeHandler } from '../../../src/mode/modeHandler';
+import { getTestingFunctions } from '../../testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Motions in Normal Mode', () => {
   let modeHandler: ModeHandler;

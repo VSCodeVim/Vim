@@ -1,7 +1,6 @@
-import { setupWorkspace, cleanUpWorkspace } from './../../testUtils';
 import { ModeName } from '../../../src/mode/mode';
-import { ModeHandler } from '../../../src/mode/modeHandler';
 import { getTestingFunctions } from '../../testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Mode Normal', () => {
   let { newTest, newTestOnly } = getTestingFunctions();

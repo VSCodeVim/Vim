@@ -1,16 +1,14 @@
+import * as vscode from 'vscode';
+
+import { getAndUpdateModeHandler } from '../../extension';
+import { CommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import {
-  setupWorkspace,
-  cleanUpWorkspace,
-  assertEqualLines,
   assertEqual,
-  WaitForEditors,
+  cleanUpWorkspace,
+  setupWorkspace,
+  WaitForEditorsToClose,
 } from './../testUtils';
-import { runCmdLine } from '../../src/cmd_line/main';
-import * as vscode from 'vscode';
-import { join } from 'path';
-import * as assert from 'assert';
-import { getAndUpdateModeHandler } from '../../extension';
 
 suite('Vertical split', () => {
   let modeHandler: ModeHandler;
@@ -23,15 +21,15 @@ suite('Vertical split', () => {
   teardown(cleanUpWorkspace);
 
   test('Run :vs', async () => {
-    await runCmdLine('vs', modeHandler);
-    await WaitForEditors(2);
+    await CommandLine.Run('vs', modeHandler.vimState);
+    await WaitForEditorsToClose(2);
 
     assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
   });
 
   test('Run :vsp', async () => {
-    await runCmdLine('vsp', modeHandler);
-    await WaitForEditors(2);
+    await CommandLine.Run('vsp', modeHandler.vimState);
+    await WaitForEditorsToClose(2);
 
     assertEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split in 1 sec');
   });

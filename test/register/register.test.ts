@@ -1,9 +1,13 @@
+import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines, assertEqual } from '../testUtils';
-import { getTestingFunctions } from '../testSimplifier';
-import * as util from '../../src/util';
+
 import { getAndUpdateModeHandler } from '../../extension';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { IRegisterContent, Register } from '../../src/register/register';
+import { VimState } from '../../src/state/vimState';
+import { Clipboard } from '../../src/util';
+import { getTestingFunctions } from '../testSimplifier';
+import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('register', () => {
   let modeHandler: ModeHandler;
@@ -17,16 +21,9 @@ suite('register', () => {
 
   teardown(cleanUpWorkspace);
 
-  newTest({
-    title: 'Can copy to a register',
-    start: ['|one', 'two'],
-    keysPressed: '"add"ap',
-    end: ['two', '|one'],
-  });
-
   suite('clipboard', () => {
     setup(async () => {
-      util.clipboardCopy('12345');
+      Clipboard.Copy('12345');
     });
 
     newTest({
@@ -45,6 +42,13 @@ suite('register', () => {
   });
 
   newTest({
+    title: 'Can copy to a register',
+    start: ['|one', 'two'],
+    keysPressed: '"add"ap',
+    end: ['two', '|one'],
+  });
+
+  newTest({
     title: 'Can use two registers together',
     start: ['|one', 'two'],
     keysPressed: '"ayyj"byy"ap"bp',
@@ -60,8 +64,8 @@ suite('register', () => {
 
   test('System clipboard works with chinese characters', async () => {
     const testString = '你好';
-    util.clipboardCopy(testString);
-    assertEqual(testString, util.clipboardPaste());
+    Clipboard.Copy(testString);
+    assertEqual(testString, Clipboard.Paste());
 
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
@@ -192,5 +196,20 @@ suite('register', () => {
     ]);
 
     assertEqualLines(['test1', 'test2', 'test1test2']);
+  });
+
+  test('Can put and get to register', async () => {
+    const expected = 'text-to-put-on-register';
+    let vimState = new VimState(vscode.window.activeTextEditor!);
+    vimState.recordedState.registerName = '0';
+    let actual: IRegisterContent;
+
+    try {
+      Register.put(expected, vimState);
+      actual = await Register.get(vimState);
+      assert.equal(actual.text, expected);
+    } catch (err) {
+      assert.fail(err);
+    }
   });
 });

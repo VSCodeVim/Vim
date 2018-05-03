@@ -1,6 +1,7 @@
+import * as vscode from 'vscode';
+
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
-import * as vscode from 'vscode';
 
 /**
  * This file contains definitions of objects that represent text
@@ -266,8 +267,8 @@ export const isTextTransformation = (x: Transformation): x is TextTransformation
     x.type === 'insertText' ||
     x.type === 'replaceText' ||
     x.type === 'deleteText' ||
-    x.type === 'moveCursor' ||
-    x.type === 'deleteRange'
+    x.type === 'deleteRange' ||
+    x.type === 'moveCursor'
   );
 };
 
@@ -285,7 +286,7 @@ const getRangeFromTextTransformation = (transformation: TextTransformations): Ra
       return undefined;
   }
 
-  throw new Error('This should never happen!');
+  throw new Error('Unhandled text transformation: ' + transformation);
 };
 
 export const areAnyTransformationsOverlapping = (transformations: TextTransformations[]) => {

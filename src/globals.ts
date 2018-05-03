@@ -1,12 +1,13 @@
+import { IConfiguration } from './configuration/iconfiguration';
+import { ModeHandler } from './mode/modeHandler';
+
 /**
- * globals.ts hold some globals used throughout the extension
+ * Global variables shared throughout extension
  */
-
 export class Globals {
-  // true for running tests, false during regular runtime
-  public static isTesting = false;
+  static isTesting = false;
 
-  public static modeHandlerForTesting: any = undefined;
+  static mockModeHandler: ModeHandler;
 
-  public static WhitespaceRegExp = new RegExp('^ *$');
+  static mockConfiguration: IConfiguration;
 }

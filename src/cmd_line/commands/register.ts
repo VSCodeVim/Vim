@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
-import * as node from '../node';
-import { ModeHandler, RecordedState } from '../../mode/modeHandler';
+
+import { VimState } from '../../state/vimState';
 import { Register } from '../../register/register';
+import { RecordedState } from '../../state/recordedState';
+import * as node from '../node';
 
 export interface IRegisterCommandArguments extends node.ICommandArgs {
   arg?: string;
@@ -36,7 +38,7 @@ export class RegisterCommand extends node.CommandBase {
     vscode.window.showInformationMessage(`${register} ${result}`);
   }
 
-  async execute(modeHandler: ModeHandler): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     if (this.arguments.arg !== undefined && this.arguments.arg.length > 0) {
       await this.displayRegisterValue(this.arguments.arg);
     } else {

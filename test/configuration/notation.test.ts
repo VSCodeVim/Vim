@@ -1,20 +1,28 @@
 import * as assert from 'assert';
-import { AngleBracketNotation } from '../src/notation';
+
+import { Notation } from '../../src/configuration/notation';
 
 suite('Notation', () => {
   test('Normalize', () => {
+    let leaderKey = '//';
     let testCases = {
       '<cTrL+w>': '<C-w>',
       'cTrL+x': '<C-x>',
       'CtRl+y': '<C-y>',
       'c-z': '<C-z>',
+      '<CmD+a>': '<D-a>',
+      eScapE: '<Esc>',
+      '<LeAder>': '//',
+      LEaDer: '//',
+      '<space>': ' ',
+      '<uP>': '<up>',
     };
 
     for (const test in testCases) {
       if (testCases.hasOwnProperty(test)) {
         let expected = testCases[test];
 
-        let actual = AngleBracketNotation.Normalize(test);
+        let actual = Notation.NormalizeKey(test, leaderKey);
         assert.equal(actual, expected);
       }
     }

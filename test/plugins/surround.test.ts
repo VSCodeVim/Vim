@@ -1,15 +1,14 @@
-import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
+import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { getTestingFunctions } from '../testSimplifier';
-import { getAndUpdateModeHandler } from '../../extension';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('surround plugin', () => {
   let modeHandler: ModeHandler;
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace('.js');
+    await setupWorkspace(undefined, '.js');
     modeHandler = await getAndUpdateModeHandler();
   });
 

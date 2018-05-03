@@ -1,13 +1,12 @@
-import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
-import { ModeName } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { getTestingFunctions } from '../testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
-import { Configuration } from '../../src/configuration/configuration';
 import {
-  EasymotionTrigger,
   buildTriggerKeys,
+  EasymotionTrigger,
 } from '../../src/actions/plugins/easymotion/easymotion.cmd';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { Configuration } from '../testConfiguration';
+import { getTestingFunctions } from '../testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpKey: string) {
   return [...buildTriggerKeys(trigger), searchWord, jumpKey].join('');
@@ -18,15 +17,14 @@ suite('easymotion plugin', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
+    let configuration = new Configuration();
+    configuration.easymotion = true;
+
+    await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
-    Configuration.easymotion = true;
   });
 
-  teardown(async () => {
-    Configuration.easymotion = false;
-    await cleanUpWorkspace();
-  });
+  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can handle s move',

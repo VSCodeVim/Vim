@@ -1,28 +1,26 @@
-import {
-  setupWorkspace,
-  setTextEditorOptions,
-  cleanUpWorkspace,
-  assertEqual,
-  crossPlatformIt,
-} from './../testUtils';
+import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
-import { getAndUpdateModeHandler } from '../../extension';
+import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
-    await setupWorkspace();
-    setTextEditorOptions(4, false);
+    let configuration = new Configuration();
+    configuration.tabstop = 4;
+    configuration.expandtab = false;
+
+    await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);
 
-  test('can be activated', async () => {
+  test('Can be activated', async () => {
     let activationKeys = ['<Esc>', '<C-[>'];
 
     for (let key of activationKeys) {
@@ -1578,42 +1576,42 @@ suite('Mode Normal', () => {
   newTest({
     title: '/ can search with newline',
     start: ['|asdf', '__asdf', 'asdf'],
-    keysPressed: crossPlatformIt('/\\nasdf\n'),
+    keysPressed: '/\\nasdf\n',
     end: ['asdf', '__asd|f', 'asdf'],
   });
 
   newTest({
     title: '/ can search through multiple newlines',
     start: ['|asdf', '__asdf', 'asdf', 'abc', '   abc'],
-    keysPressed: crossPlatformIt('/asdf\\nasdf\\nabc\n'),
+    keysPressed: '/asdf\\nasdf\\nabc\n',
     end: ['asdf', '__|asdf', 'asdf', 'abc', '   abc'],
   });
 
   newTest({
     title: '/ matches ^ per line',
     start: ['|  asdf', 'asasdf', 'asdf', 'asdf'],
-    keysPressed: crossPlatformIt('/^asdf\n'),
+    keysPressed: '/^asdf\n',
     end: ['  asdf', 'asasdf', '|asdf', 'asdf'],
   });
 
   newTest({
     title: '/ matches $ per line',
     start: ['|asdfjkl', 'asdf  ', 'asdf', 'asdf'],
-    keysPressed: crossPlatformIt('/asdf$\n'),
+    keysPressed: '/asdf$\n',
     end: ['asdfjkl', 'asdf  ', '|asdf', 'asdf'],
   });
 
   newTest({
     title: '/\\c forces case insensitive search',
     start: ['|__ASDF', 'asdf'],
-    keysPressed: crossPlatformIt('/\\casdf\n'),
+    keysPressed: '/\\casdf\n',
     end: ['__|ASDF', 'asdf'],
   });
 
   newTest({
     title: '/\\C forces case sensitive search',
     start: ['|__ASDF', 'asdf'],
-    keysPressed: crossPlatformIt('/\\Casdf\n'),
+    keysPressed: '/\\Casdf\n',
     end: ['__ASDF', '|asdf'],
   });
 

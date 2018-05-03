@@ -1,10 +1,10 @@
 import { RegisterAction } from './../../base';
 import {
+  EasyMotionCharMoveCommandBase,
+  EasyMotionLineMoveCommandBase,
+  EasyMotionWordMoveCommandBase,
   SearchByCharCommand,
   SearchByNCharCommand,
-  EasyMotionCharMoveCommandBase,
-  EasyMotionWordMoveCommandBase,
-  EasyMotionLineMoveCommandBase,
 } from './easymotion.cmd';
 
 // EasyMotion n-char-move command
@@ -139,6 +139,15 @@ class EasyMotionStartOfWordForwardsCommand extends EasyMotionWordMoveCommandBase
 class EasyMotionStartOfWordBidirectionalCommand extends EasyMotionWordMoveCommandBase {
   constructor() {
     super({ key: 'bdw', leaderCount: 3 });
+  }
+}
+
+// easymotion "JumpToAnywhere" motion
+
+@RegisterAction
+class EasyMotionJumpToAnywhereCommand extends EasyMotionWordMoveCommandBase {
+  constructor() {
+    super({ key: 'j', leaderCount: 3 }, { jumpToAnywhere: true, labelPosition: 'after' });
   }
 }
 

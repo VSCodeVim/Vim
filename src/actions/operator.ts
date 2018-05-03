@@ -1,14 +1,15 @@
 import * as vscode from 'vscode';
-import { VimState } from './../mode/modeHandler';
-import { Register, RegisterMode } from './../register/register';
+
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
+import { configuration } from './../configuration/configuration';
 import { ModeName } from './../mode/mode';
+import { Register, RegisterMode } from './../register/register';
+import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
-import { Configuration } from './../configuration/configuration';
-import { TextObjectMovement } from './textobject';
-import { BaseAction, RegisterAction, compareKeypressSequence } from './base';
+import { BaseAction, compareKeypressSequence, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
+import { TextObjectMovement } from './textobject';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -158,7 +159,9 @@ export class DeleteOperator extends BaseOperator {
       // slice final newline in linewise mode - linewise put will add it back.
       text = text.endsWith('\r\n')
         ? text.slice(0, -2)
-        : text.endsWith('\n') ? text.slice(0, -1) : text;
+        : text.endsWith('\n')
+          ? text.slice(0, -1)
+          : text;
     }
 
     if (yank) {
@@ -203,7 +206,7 @@ export class DeleteOperator extends BaseOperator {
       start,
       end,
       vimState.currentMode,
-      vimState.effectiveRegisterMode(),
+      vimState.effectiveRegisterMode,
       vimState,
       yank
     );
@@ -323,6 +326,11 @@ export class DeleteOperatorXVisual extends BaseOperator {
 export class ChangeOperatorSVisual extends BaseOperator {
   public keys = ['s'];
   public modes = [ModeName.Visual, ModeName.VisualLine];
+
+  // Don't clash with Sneak plugin
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return super.doesActionApply(vimState, keysPressed) && !configuration.sneak;
+  }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     return await new ChangeOperator().run(vimState, start, end);
@@ -490,7 +498,7 @@ class OutdentOperator extends BaseOperator {
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    vimState.editor.selection = new vscode.Selection(start, end);
+    vimState.editor.selection = new vscode.Selection(start, end.getLineEnd());
 
     await vscode.commands.executeCommand('editor.action.outdentLines');
     vimState.currentMode = ModeName.Normal;
@@ -546,7 +554,7 @@ export class ChangeOperator extends BaseOperator {
         vimState = await new DeleteOperator(this.multicursorIndex).run(vimState, start, end, false);
       }
     }
-    vimState.currentRegisterMode = RegisterMode.FigureItOutFromCurrentMode;
+    vimState.currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
     vimState.currentMode = ModeName.Insert;
 
@@ -745,7 +753,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
   }
 
   public reflowParagraph(s: string, indentLevel: number): string {
-    const maximumLineLength = Configuration.textwidth - indentLevel - 2;
+    const maximumLineLength = configuration.textwidth - indentLevel - 2;
     const indent = Array(indentLevel + 1).join(' ');
 
     // Chunk the lines by commenting style.

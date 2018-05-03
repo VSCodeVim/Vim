@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
-import { Range } from './common/motion/range';
+
 import { Position } from './common/motion/position';
+import { Range } from './common/motion/range';
 
 export async function showInfo(message: string): Promise<{}> {
   return vscode.window.showInformationMessage('Vim: ' + message) as {};
@@ -13,12 +14,14 @@ export async function showError(message: string): Promise<{}> {
 
 const clipboardy = require('clipboardy');
 
-export function clipboardCopy(text: string) {
-  clipboardy.writeSync(text);
-}
+export class Clipboard {
+  public static Copy(text: string) {
+    clipboardy.writeSync(text);
+  }
 
-export function clipboardPaste(): string {
-  return clipboardy.readSync();
+  public static Paste(): string {
+    return clipboardy.readSync();
+  }
 }
 
 /**
@@ -26,9 +29,9 @@ export function clipboardPaste(): string {
  * is that writing editor.selection = new Position() won't immediately
  * update the position of the cursor. So we have to wait!
  */
-export async function waitForCursorUpdatesToHappen(): Promise<void> {
+export async function waitForCursorUpdatesToHappen(timeout: number): Promise<void> {
   await new Promise((resolve, reject) => {
-    setTimeout(resolve, 100);
+    setTimeout(resolve, timeout);
 
     const disposer = vscode.window.onDidChangeTextEditorSelection(x => {
       disposer.dispose();
@@ -55,22 +58,12 @@ export async function waitForTabChange(): Promise<void> {
     });
   });
 }
-export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(): Promise<Range[]> {
-  await waitForCursorUpdatesToHappen();
+export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(
+  timeout: number
+): Promise<Range[]> {
+  await waitForCursorUpdatesToHappen(timeout);
 
   return vscode.window.activeTextEditor!.selections.map(
     x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
   );
-}
-
-export async function wait(time: number): Promise<void> {
-  await new Promise((resolve, reject) => {
-    setTimeout(resolve, time);
-  });
-}
-
-export function betterEscapeRegex(str: string): string {
-  let result = _.escapeRegExp(str);
-
-  return result.replace(/-/g, '\\-');
 }

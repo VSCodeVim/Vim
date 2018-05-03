@@ -1,24 +1,28 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { ModeName } from '../src/mode/mode';
-import { HistoryTracker } from '../src/history/historyTracker';
+
+import { getAndUpdateModeHandler } from '../extension';
 import { Position } from '../src/common/motion/position';
+import { Globals } from '../src/globals';
+import { ModeName } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
-import { assertEqualLines } from './testUtils';
 import { waitForCursorUpdatesToHappen } from '../src/util';
-import { Globals } from '../src/globals';
-import { getAndUpdateModeHandler } from '../extension';
+import { assertEqualLines } from './testUtils';
 
 export function getTestingFunctions() {
-  const newTest = (testObj: ITestObject): void => {
-    const stack = new Error().stack;
-    let niceStack = stack
+  const getNiceStack = (stack: string | undefined): string => {
+    return stack
       ? stack
           .split('\n')
           .splice(2, 1)
           .join('\n')
       : 'no stack available :(';
+  };
+
+  const newTest = (testObj: ITestObject): void => {
+    const stack = new Error().stack;
+    let niceStack = getNiceStack(stack);
 
     test(testObj.title, async () =>
       testIt
@@ -33,12 +37,7 @@ export function getTestingFunctions() {
   const newTestOnly = (testObj: ITestObject): void => {
     console.log('!!! Running single test !!!');
     const stack = new Error().stack;
-    let niceStack = stack
-      ? stack
-          .split('\n')
-          .splice(2, 1)
-          .join('\n')
-      : 'no stack available :(';
+    let niceStack = getNiceStack(stack);
 
     test.only(testObj.title, async () =>
       testIt
@@ -172,11 +171,24 @@ function tokenizeKeySequence(sequence: string): string[] {
   let key = '';
   let result: string[] = [];
 
+  // no close bracket, probably trying to do a left shift, take literal
+  // char sequence
+  function rawTokenize(characters: string): void {
+    for (const char of characters) {
+      result.push(char);
+    }
+  }
+
   for (const char of sequence) {
     key += char;
 
     if (char === '<') {
-      isBracketedKey = true;
+      if (isBracketedKey) {
+        rawTokenize(key.slice(0, key.length - 1));
+        key = '<';
+      } else {
+        isBracketedKey = true;
+      }
     }
 
     if (char === '>') {
@@ -191,6 +203,10 @@ function tokenizeKeySequence(sequence: string): string[] {
     key = '';
   }
 
+  if (isBracketedKey) {
+    rawTokenize(key);
+  }
+
   return result;
 }
 
@@ -200,7 +216,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   let helper = new TestObjectHelper(testObj);
 
   // Don't try this at home, kids.
-  (modeHandler as any)._vimState.cursorPosition = new Position(0, 0);
+  (modeHandler as any).vimState.cursorPosition = new Position(0, 0);
 
   await modeHandler.handleKeyEvent('<Esc>');
 
@@ -211,7 +227,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
 
-  await waitForCursorUpdatesToHappen();
+  await waitForCursorUpdatesToHappen(0);
 
   // Since we bypassed VSCodeVim to add text,
   // we need to tell the history tracker that we added it.
@@ -221,12 +237,17 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   // move cursor to start position using 'hjkl'
   await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
 
-  await waitForCursorUpdatesToHappen();
+  await waitForCursorUpdatesToHappen(0);
 
-  Globals.modeHandlerForTesting = modeHandler;
+  Globals.mockModeHandler = modeHandler;
 
-  // assumes key presses are single characters for now
-  await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
+  let keysPressed = testObj.keysPressed;
+  if (process.platform === 'win32') {
+    keysPressed = keysPressed.replace(/\\n/g, '\\r\\n');
+  }
+
+  // assumes key presses are single characters for nowkA
+  await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
 
   // Check valid test object input
   assert(helper.isValid, "Missing '|' in test object.");

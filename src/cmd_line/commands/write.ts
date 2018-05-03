@@ -1,11 +1,11 @@
-// XXX: use graceful-fs ??
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import * as node from '../node';
+import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
 import * as util from '../../util';
-import { ModeHandler } from '../../mode/modeHandler';
+import * as node from '../node';
 
 export interface IWriteCommandArguments extends node.ICommandArgs {
   opt?: string;
@@ -34,7 +34,7 @@ export class WriteCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(modeHandler: ModeHandler): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     if (this.arguments.opt) {
       util.showError('Not implemented.');
       return;
@@ -49,43 +49,43 @@ export class WriteCommand extends node.CommandBase {
       return;
     }
 
-    if (modeHandler.vimState.editor.document.isUntitled) {
+    if (vimState.editor.document.isUntitled) {
       await vscode.commands.executeCommand('workbench.action.files.save');
       return;
     }
 
     try {
-      fs.accessSync(modeHandler.vimState.editor.document.fileName, fs.constants.W_OK);
-      return this.save(modeHandler);
+      fs.accessSync(vimState.editor.document.fileName, fs.constants.W_OK);
+      return this.save(vimState);
     } catch (accessErr) {
       if (this.arguments.bang) {
-        fs.chmod(modeHandler.vimState.editor.document.fileName, 666, e => {
-          if (e) {
-            return modeHandler.setStatusBarText(e.message);
-          } else {
-            return this.save(modeHandler);
+        fs.chmod(vimState.editor.document.fileName, 666, e => {
+          if (!e) {
+            return this.save(vimState);
           }
+          StatusBar.SetText(e.message, vimState.currentMode, vimState.isRecordingMacro, true);
+          return;
         });
       } else {
-        modeHandler.setStatusBarText(accessErr.message);
+        StatusBar.SetText(accessErr.message, vimState.currentMode, vimState.isRecordingMacro, true);
       }
     }
   }
 
-  private async save(modeHandler: ModeHandler): Promise<void> {
-    await modeHandler.vimState.editor.document.save().then(
-      ok => {
-        modeHandler.setStatusBarText(
+  private async save(vimState: VimState): Promise<void> {
+    await vimState.editor.document.save().then(
+      () => {
+        let text =
           '"' +
-            path.basename(modeHandler.vimState.editor.document.fileName) +
-            '" ' +
-            modeHandler.vimState.editor.document.lineCount +
-            'L ' +
-            modeHandler.vimState.editor.document.getText().length +
-            'C written'
-        );
+          path.basename(vimState.editor.document.fileName) +
+          '" ' +
+          vimState.editor.document.lineCount +
+          'L ' +
+          vimState.editor.document.getText().length +
+          'C written';
+        StatusBar.SetText(text, vimState.currentMode, vimState.isRecordingMacro, true);
       },
-      e => modeHandler.setStatusBarText(e)
+      e => StatusBar.SetText(e, vimState.currentMode, vimState.isRecordingMacro, true)
     );
   }
 }
