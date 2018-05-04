@@ -2076,4 +2076,170 @@ suite('Mode Normal', () => {
       endMode: ModeName.Insert,
     });
   });
+
+  suite('can handle gN', () => {
+    test(`gN selects the previous match text`, async () => {
+      await modeHandler.handleMultipleKeyEvents('ihello world\nhello\nhi hello\nfoo'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(['G']);
+      await modeHandler.handleMultipleKeyEvents(['g', 'N']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 'hi '.length);
+      assertEqual(selection.start.line, 2);
+      assertEqual(selection.end.character, 'hi hello'.length);
+      assertEqual(selection.end.line, 2);
+    });
+
+    const gnSelectsCurrentWord = async (jumpCmd: string) => {
+      await modeHandler.handleMultipleKeyEvents('ihello world\nhello\nhi hello\nfoo'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'N']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 'hi '.length);
+      assertEqual(selection.start.line, 2);
+      assertEqual(selection.end.character, 'hi hello'.length);
+      assertEqual(selection.end.line, 2);
+    };
+
+    test(`gN selects the current word at hell|o`, async () => {
+      await gnSelectsCurrentWord('3gg7l');
+    });
+
+    test(`gN selects the current word at hel|lo`, async () => {
+      await gnSelectsCurrentWord('3gg6l');
+    });
+
+    test(`gN selects the current word at h|ello`, async () => {
+      await gnSelectsCurrentWord('3gg4l');
+    });
+
+    test(`gN selects the current word at |hello`, async () => {
+      await gnSelectsCurrentWord('3gg3l');
+    });
+
+    test(`gN selects the previous word at | hello`, async () => {
+      await modeHandler.handleMultipleKeyEvents('ihello world\nhello\nhi hello\nfoo'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('3gg2l'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'N']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 1);
+    });
+  });
+
+  suite('can handle dgN', () => {
+    newTest({
+      title: 'dgN deletes the previous match text (from first line)',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\nGdgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the current word when cursor is at hell|o',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3gg$dgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the current word when cursor is at hel|lo',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3gg$hdgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the current word when cursor is at h|ello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwldgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the current word when cursor is at |hello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwdgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the previous word when cursor is at | hello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwhdgN',
+      end: ['hello world', '|', 'hi hello', 'foo'],
+      endMode: ModeName.Normal,
+    });
+  });
+
+  suite('can handle cgN', () => {
+    newTest({
+      title: 'cgN deletes the previous match text (from first line)',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\nGcgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the current word when cursor is at hell|o',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3gg$cgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the current word when cursor is at hel|lo',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3gg$hcgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the current word when cursor is at h|ello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwlcgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the current word when cursor is at |hello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwcgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the previous word when cursor is at | hello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwhcgN',
+      end: ['hello world', '|', 'hi hello', 'foo'],
+      endMode: ModeName.Insert,
+    });
+  });
 });
