@@ -2026,4 +2026,54 @@ suite('Mode Normal', () => {
       endMode: ModeName.Normal,
     });
   });
+
+  suite('can handle cgn', () => {
+    newTest({
+      title: 'cgn deletes the next match text (from first line)',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nggcgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the current word when cursor is at |hello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\ncgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the current word when cursor is at h|ello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nlcgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the current word when cursor is at hel|lo',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n3lcgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the current word when cursor is at hell|o',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\necgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the next word when cursor is at hello|',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nelcgn',
+      end: ['foo', 'hello world', '|', 'hello'],
+      endMode: ModeName.Insert,
+    });
+  });
 });
