@@ -107,6 +107,11 @@
         "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !suggestWidgetMultipleSuggestions"
       },
       {
+        "key": "g g",
+        "command": "list.focusFirst",
+        "when": "listFocus && !inputFocus"
+      },
+      {
         "key": "h",
         "command": "list.collapse",
         "when": "listFocus && !inputFocus"
@@ -172,11 +177,6 @@
         "when": "editorTextFocus && vim.active && vim.use<C-h> && !inDebugRepl"
       },
       {
-        "key": "ctrl+h",
-        "command": "extension.vim_navigateCtrlH",
-        "when": "editorTextFocus && vim.active && vim.use<C-h> && !inDebugRepl"
-      },
-      {
         "key": "ctrl+i",
         "command": "extension.vim_ctrl+i",
         "when": "editorTextFocus && vim.active && vim.use<C-i> && !inDebugRepl"
@@ -184,21 +184,11 @@
       {
         "key": "ctrl+j",
         "command": "extension.vim_ctrl+j",
-        "when": "editorTextFocus && vim.active && vim.use<C-j> && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+j",
-        "command": "extension.vim_navigateCtrlJ",
         "when": "editorTextFocus && vim.active && vim.use<C-j> && !inDebugRepl"
       },
       {
         "key": "ctrl+k",
         "command": "extension.vim_ctrl+k",
-        "when": "editorTextFocus && vim.active && vim.use<C-k> && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+k",
-        "command": "extension.vim_navigateCtrlK",
         "when": "editorTextFocus && vim.active && vim.use<C-k> && !inDebugRepl"
       },
       {
@@ -249,11 +239,6 @@
       {
         "key": "ctrl+v",
         "command": "extension.vim_ctrl+v",
-        "when": "editorTextFocus && vim.active && vim.use<C-v> && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+v",
-        "command": "extension.vim_winCtrlV",
         "when": "editorTextFocus && vim.active && vim.use<C-v> && !inDebugRepl"
       },
       {
