@@ -323,6 +323,27 @@ suite('Mode Visual Line', () => {
     end: ['|world', 'hello'],
   });
 
+  newTest({
+    title: 'Vp does not append unnecessary newlines (first line)',
+    start: ['|begin', 'middle', 'end'],
+    keysPressed: 'yyVp',
+    end: ['|begin', 'middle', 'end'],
+  });
+
+  newTest({
+    title: 'Vp does not append unnecessary newlines (middle line)',
+    start: ['begin', '|middle', 'end'],
+    keysPressed: 'yyVp',
+    end: ['begin', '|middle', 'end'],
+  });
+
+  newTest({
+    title: 'Vp does not append unnecessary newlines (last line)',
+    start: ['begin', 'middle', '|end'],
+    keysPressed: 'yyVp',
+    end: ['begin', 'middle', '|end'],
+  });
+
   suite('replace text in linewise visual-mode with linewise register content', () => {
     newTest({
       title: 'yyVp does not change the content but changes cursor position',
