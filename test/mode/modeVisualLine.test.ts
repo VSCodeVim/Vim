@@ -337,9 +337,7 @@ suite('Mode Visual Line', () => {
       keysPressed: 'yyVp',
       end: ['foo', 'bar', 'fun', '|baz'],
     });
-  });
 
-  suite('replace text in linewise visual-mode with linewise register content', () => {
     test('gv selects the last pasted text (which is shorter than original)', async () => {
       await modeHandler.handleMultipleKeyEvents(
         'ireplace this\nwith me\nor with me longer than the target'.split('')
