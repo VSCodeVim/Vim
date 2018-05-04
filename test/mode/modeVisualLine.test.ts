@@ -320,9 +320,28 @@ suite('Mode Visual Line', () => {
     title: 'Vp updates register content',
     start: ['|hello', 'world'],
     keysPressed: 'ddVpP',
-    // TODO: this is not the same behavior as original Vim.
-    // But currently unnecessary line is left at the end (see #2602).
-    end: ['|world', 'hello', ''],
+    end: ['|world', 'hello'],
+  });
+
+  newTest({
+    title: 'Vp does not append unnecessary newlines (first line)',
+    start: ['|begin', 'middle', 'end'],
+    keysPressed: 'yyVp',
+    end: ['|begin', 'middle', 'end'],
+  });
+
+  newTest({
+    title: 'Vp does not append unnecessary newlines (middle line)',
+    start: ['begin', '|middle', 'end'],
+    keysPressed: 'yyVp',
+    end: ['begin', '|middle', 'end'],
+  });
+
+  newTest({
+    title: 'Vp does not append unnecessary newlines (last line)',
+    start: ['begin', 'middle', '|end'],
+    keysPressed: 'yyVp',
+    end: ['begin', 'middle', '|end'],
   });
 
   suite('replace text in linewise visual-mode with linewise register content', () => {
@@ -339,9 +358,7 @@ suite('Mode Visual Line', () => {
       keysPressed: 'yyVp',
       end: ['foo', 'bar', 'fun', '|baz'],
     });
-  });
 
-  suite('replace text in linewise visual-mode with linewise register content', () => {
     test('gv selects the last pasted text (which is shorter than original)', async () => {
       await modeHandler.handleMultipleKeyEvents(
         'ireplace this\nwith me\nor with me longer than the target'.split('')
