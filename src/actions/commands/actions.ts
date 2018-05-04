@@ -1285,18 +1285,29 @@ export class PutCommand extends BaseCommand {
     let whereToAddText: Position;
     let diff = new PositionDiff(0, 0);
 
+    const noPrevLine = vimState.cursorStartPosition.isAtDocumentBegin();
+    const noNextLine = vimState.cursorPosition.isAtDocumentEnd();
+
     if (register.registerMode === RegisterMode.CharacterWise) {
       textToAdd = text;
       whereToAddText = dest;
     } else if (
-      (vimState.currentMode === ModeName.Visual ||
-        (vimState.currentMode === ModeName.VisualLine &&
-          !vimState.cursorPosition.isAtDocumentEnd())) &&
+      vimState.currentMode === ModeName.Visual &&
       register.registerMode === RegisterMode.LineWise
     ) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
-      textToAdd = (vimState.currentMode === ModeName.Visual ? '\n' : '') + text + '\n';
+      textToAdd = '\n' + text + '\n';
+      whereToAddText = dest;
+    } else if (
+      vimState.currentMode === ModeName.VisualLine &&
+      register.registerMode === RegisterMode.LineWise
+    ) {
+      // in the specific case of linewise register data during visual mode,
+      // we need extra newline feeds
+      const left = !noPrevLine && noNextLine ? '\n' : '';
+      const right = noNextLine ? '' : '\n';
+      textToAdd = left + text + right;
       whereToAddText = dest;
     } else {
       if (adjustIndent) {
@@ -1316,12 +1327,6 @@ export class PutCommand extends BaseCommand {
           .join('\n');
       }
 
-      if (
-        vimState.currentMode === ModeName.VisualLine &&
-        vimState.cursorPosition.isAtDocumentEnd()
-      ) {
-        after = false;
-      }
       if (after) {
         // P insert before current line
         textToAdd = text + '\n';
@@ -1359,7 +1364,13 @@ export class PutCommand extends BaseCommand {
     const numNewlines = text.split('\n').length - 1;
     const currentLineLength = TextEditor.getLineAt(position).text.length;
 
-    if (register.registerMode === RegisterMode.LineWise) {
+    if (
+      vimState.currentMode === ModeName.VisualLine &&
+      register.registerMode === RegisterMode.LineWise
+    ) {
+      const numNewline = [...text].filter(c => c === '\n').length;
+      diff = PositionDiff.NewBOLDiff(-numNewline - (noNextLine ? 0 : 1));
+    } else if (register.registerMode === RegisterMode.LineWise) {
       const check = text.match(/^\s*/);
       let numWhitespace = 0;
 
