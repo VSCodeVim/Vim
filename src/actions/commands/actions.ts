@@ -1547,11 +1547,18 @@ export class PutCommandVisual extends BaseCommand {
     let oldMode = vimState.currentMode;
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
+      const replaceRegister = await Register.getByKey(vimState.recordedState.registerName);
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
-        false
+        true
+      );
+      const deletedRegister = await Register.getByKey(vimState.recordedState.registerName);
+      Register.putByKey(
+        replaceRegister.text,
+        vimState.recordedState.registerName,
+        replaceRegister.registerMode
       );
       // to ensure, that the put command nows this is
       // an linewise register insertion in visual mode of
@@ -1560,6 +1567,11 @@ export class PutCommandVisual extends BaseCommand {
       deleteResult.currentMode = oldMode;
       deleteResult = await new PutCommand().exec(start, deleteResult, true);
       deleteResult.currentMode = resultMode;
+      Register.putByKey(
+        deletedRegister.text,
+        vimState.recordedState.registerName,
+        deletedRegister.registerMode
+      );
       return deleteResult;
     }
 
