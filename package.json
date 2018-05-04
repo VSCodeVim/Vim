@@ -206,49 +206,24 @@
         "when": "editorTextFocus && vim.active && vim.use<C-]> && !inDebugRepl"
       },
       {
-        "key": "ctrl+w h",
-        "command": "extension.vim_navigateLeft",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
-      },
-      {
         "key": "ctrl+h",
         "command": "extension.vim_navigateCtrlH",
-        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+w l",
-        "command": "extension.vim_navigateRight",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+        "when": "editorTextFocus && vim.active && vim.use<C-h> && !inDebugRepl"
       },
       {
         "key": "ctrl+l",
         "command": "extension.vim_navigateCtrlL",
-        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+w ctrl+w",
-        "command": "extension.vim_navigateGroups",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
-      },
-      {
-        "key": "ctrl+w j",
-        "command": "extension.vim_navigateDown",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+        "when": "editorTextFocus && vim.active && vim.use<C-l> && !inDebugRepl"
       },
       {
         "key": "ctrl+j",
         "command": "extension.vim_navigateCtrlJ",
-        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
-      },
-      {
-        "key": "ctrl+w k",
-        "command": "extension.vim_navigateUp",
-        "when": "vim.use<C-w> && vim.active && !editorTextFocus"
+        "when": "editorTextFocus && vim.active && vim.use<C-j> && !inDebugRepl"
       },
       {
         "key": "ctrl+k",
         "command": "extension.vim_navigateCtrlK",
-        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-k> && !inDebugRepl"
       },
       {
         "key": "ctrl+w",
@@ -258,12 +233,12 @@
       {
         "key": "ctrl+q",
         "command": "extension.vim_winCtrlQ",
-        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-q> && !inDebugRepl"
       },
       {
         "key": "ctrl+v",
         "command": "extension.vim_winCtrlV",
-        "when": "editorTextFocus && vim.active && vim.use<C-w> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-v> && !inDebugRepl"
       },
       {
         "key": "ctrl+c",
@@ -358,11 +333,6 @@
       {
         "key": "h",
         "command": "list.collapse",
-        "when": "listFocus && !inputFocus"
-      },
-      {
-        "key": "g g",
-        "command": "list.focusFirst",
         "when": "listFocus && !inputFocus"
       },
       {
