@@ -320,6 +320,8 @@ suite('Mode Visual Line', () => {
     title: 'Vp updates register content',
     start: ['|hello', 'world'],
     keysPressed: 'ddVpP',
+    // TODO: this is not the same behavior as original Vim.
+    // But currently unnecessary line is left at the end (see #2602).
     end: ['|world', 'hello', ''],
   });
 
