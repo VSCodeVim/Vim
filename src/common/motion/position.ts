@@ -776,6 +776,10 @@ export class Position extends vscode.Position {
     return Position.getFirstNonBlankCharAtLine(this.line) === this.character;
   }
 
+  public isAtDocumentBegin(): boolean {
+    return this.line === 0 && this.isLineBeginning();
+  }
+
   public isAtDocumentEnd(): boolean {
     return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
   }
@@ -972,7 +976,7 @@ export class Position extends vscode.Position {
       );
 
       if (newCharacter !== undefined) {
-        return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
+        return new Position(currentLine, <number>newCharacter).getRightThroughLineBreaks();
       }
     }
 

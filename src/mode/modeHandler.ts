@@ -799,20 +799,14 @@ export class ModeHandler implements vscode.Disposable {
       resultingCursors.push(resultingRange);
     }
 
+    // Keep track of all cursors
+    resultVimState.allCursors = resultingCursors;
+    this.vimState.editor.selections = vimState.allCursors.map(
+      cursor => new vscode.Selection(cursor.start, cursor.stop)
+    );
+
     if (vimState.recordedState.transformations.length > 0) {
       await this.executeCommand(vimState);
-    } else {
-      // Keep track of all cursors (in the case of multi-cursor).
-
-      resultVimState.allCursors = resultingCursors;
-
-      const selections: vscode.Selection[] = [];
-
-      for (const cursor of vimState.allCursors) {
-        selections.push(new vscode.Selection(cursor.start, cursor.stop));
-      }
-
-      this.vimState.editor.selections = selections;
     }
 
     return resultVimState;
@@ -1316,10 +1310,10 @@ export class ModeHandler implements vscode.Disposable {
 
       searchRanges.push.apply(searchRanges, searchState.matchRanges);
 
-      const { pos, match } = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+      const { start, end, match } = searchState.getNextSearchMatchRange(vimState.cursorPosition);
 
       if (match) {
-        searchRanges.push(new vscode.Range(pos, pos.getRight(searchState.searchString.length)));
+        searchRanges.push(new vscode.Range(start, end));
       }
     }
     this.vimState.editor.setDecorations(Decoration.SearchHighlight, searchRanges);

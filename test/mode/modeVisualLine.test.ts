@@ -316,12 +316,124 @@ suite('Mode Visual Line', () => {
     });
   });
 
+  newTest({
+    title: 'Vp updates register content',
+    start: ['|hello', 'world'],
+    keysPressed: 'ddVpP',
+    end: ['|world', 'hello'],
+  });
+
+  newTest({
+    title: 'Vp does not append unnecessary newlines (first line)',
+    start: ['|begin', 'middle', 'end'],
+    keysPressed: 'yyVp',
+    end: ['|begin', 'middle', 'end'],
+  });
+
+  newTest({
+    title: 'Vp does not append unnecessary newlines (middle line)',
+    start: ['begin', '|middle', 'end'],
+    keysPressed: 'yyVp',
+    end: ['begin', '|middle', 'end'],
+  });
+
+  newTest({
+    title: 'Vp does not append unnecessary newlines (last line)',
+    start: ['begin', 'middle', '|end'],
+    keysPressed: 'yyVp',
+    end: ['begin', 'middle', '|end'],
+  });
+
   suite('replace text in linewise visual-mode with linewise register content', () => {
     newTest({
       title: 'yyVp does not change the content but changes cursor position',
       start: ['fo|o', 'bar', 'fun', 'baz'],
       keysPressed: 'yyVp',
       end: ['|foo', 'bar', 'fun', 'baz'],
+    });
+
+    newTest({
+      title: 'linewise visual put works also in the end of document',
+      start: ['foo', 'bar', 'fun', '|baz'],
+      keysPressed: 'yyVp',
+      end: ['foo', 'bar', 'fun', '|baz'],
+    });
+
+    test('gv selects the last pasted text (which is shorter than original)', async () => {
+      await modeHandler.handleMultipleKeyEvents(
+        'ireplace this\nwith me\nor with me longer than the target'.split('')
+      );
+      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(
+        '2ggyy'.split('') // yank the second line
+      );
+      await modeHandler.handleMultipleKeyEvents(
+        'ggVp'.split('') // replace the first line
+      );
+      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
+
+      const selection = TextEditor.getSelection();
+
+      // ensuring selecting 'with me' at the first line
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 'with me'.length);
+      assertEqual(selection.end.line, 0);
+    });
+
+    test('gv selects the last pasted text (which is longer than original)', async () => {
+      await modeHandler.handleMultipleKeyEvents(
+        'ireplace this\nwith me\nor with me longer than the target'.split('')
+      );
+      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(
+        'yy'.split('') // yank the last line
+      );
+      await modeHandler.handleMultipleKeyEvents(
+        'ggVp'.split('') // replace the first line
+      );
+      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqualLines([
+        'or with me longer than the target',
+        'with me',
+        'or with me longer than the target',
+      ]);
+
+      const selection = TextEditor.getSelection();
+
+      // ensuring selecting 'or with me longer than the target' at the first line
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 'or with me longer than the target'.length);
+      assertEqual(selection.end.line, 0);
+    });
+
+    test('gv selects the last pasted text (multiline)', async () => {
+      await modeHandler.handleMultipleKeyEvents('ireplace this\nfoo\nbar'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(
+        'Vky'.split('') // yank 'foo\nbar\n'
+      );
+      await modeHandler.handleMultipleKeyEvents(
+        'ggVp'.split('') // replace the first line
+      );
+      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.VisualLine);
+      assertEqualLines(['foo', 'bar', 'foo', 'bar']);
+
+      const selection = TextEditor.getSelection();
+
+      // ensuring selecting 'foo\nbar\n'
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 3);
+      assertEqual(selection.end.line, 1);
     });
   });
 });
