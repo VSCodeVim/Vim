@@ -1911,8 +1911,8 @@ suite('Mode Normal', () => {
     endMode: ModeName.Normal,
   });
 
-  suite('can handle gn (normal)', () => {
-    test(`gn selects the next match text (normal)`, async () => {
+  suite('can handle gn', () => {
+    test(`gn selects the next match text`, async () => {
       await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
       await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
       await modeHandler.handleMultipleKeyEvents('gg'.split(''));
@@ -1944,23 +1944,23 @@ suite('Mode Normal', () => {
       assertEqual(selection.end.line, 1);
     };
 
-    test(`gn selects the current word at |hello (normal)`, async () => {
+    test(`gn selects the current word at |hello`, async () => {
       await gnSelectsCurrentWord('2gg');
     });
 
-    test(`gn selects the current word at h|ello (normal)`, async () => {
+    test(`gn selects the current word at h|ello`, async () => {
       await gnSelectsCurrentWord('2ggl');
     });
 
-    test(`gn selects the current word at hel|lo (normal)`, async () => {
+    test(`gn selects the current word at hel|lo`, async () => {
       await gnSelectsCurrentWord('2ggeh');
     });
 
-    test(`gn selects the current word at hell|o (normal)`, async () => {
+    test(`gn selects the current word at hell|o`, async () => {
       await gnSelectsCurrentWord('2gge');
     });
 
-    test(`gn selects the next word at hello| (normal)`, async () => {
+    test(`gn selects the next word at hello|`, async () => {
       await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
       await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
       await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
@@ -1977,69 +1977,53 @@ suite('Mode Normal', () => {
     });
   });
 
-  suite('can handle gn (operator-pending)', () => {
-    test(`gn selects the next match text (operator-pending)`, async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('gg'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['d', 'g', 'n']);
-
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
-
-      const selection = TextEditor.getSelection();
-
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 0);
-      assertEqual(selection.end.line, 1);
+  suite('can handle dgn', () => {
+    newTest({
+      title: 'dgn deletes the next match text (from first line)',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nggdgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
     });
 
-    const gnSelectsCurrentWord = async (jumpCmd: string) => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
-      await modeHandler.handleMultipleKeyEvents(['d', 'g', 'n']);
-
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
-
-      const selection = TextEditor.getSelection();
-
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 1);
-      assertEqual(selection.end.character, 0);
-      assertEqual(selection.end.line, 1);
-    };
-
-    test(`gn selects the current word at |hello (operator-pending)`, async () => {
-      await gnSelectsCurrentWord('2gg');
+    newTest({
+      title: 'dgn deletes the current word when cursor is at |hello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\ndgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
     });
 
-    test(`gn selects the current word at h|ello (operator-pending)`, async () => {
-      await gnSelectsCurrentWord('2ggl');
+    newTest({
+      title: 'dgn deletes the current word when cursor is at h|ello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nldgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
     });
 
-    test(`gn selects the current word at hel|lo (operator-pending)`, async () => {
-      await gnSelectsCurrentWord('2ggeh');
+    newTest({
+      title: 'dgn deletes the current word when cursor is at hel|lo',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n3ldgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
     });
 
-    test(`gn selects the current word at hell|o (operator-pending)`, async () => {
-      await gnSelectsCurrentWord('2gge');
+    newTest({
+      title: 'dgn deletes the current word when cursor is at hell|o',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nedgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
     });
 
-    test(`gn selects the next word at hello| (operator-pending)`, async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['d', 'g', 'n']);
-
-      assertEqual(modeHandler.currentMode.name, ModeName.Normal);
-
-      const selection = TextEditor.getSelection();
-
-      assertEqual(selection.start.character, 0);
-      assertEqual(selection.start.line, 2);
-      assertEqual(selection.end.character, 0);
-      assertEqual(selection.end.line, 2);
+    newTest({
+      title: 'dgn deletes the next word when cursor is at hello|',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\neldgn',
+      end: ['foo', 'hello world', '|', 'hello'],
+      endMode: ModeName.Normal,
     });
   });
 });
