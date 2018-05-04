@@ -972,7 +972,7 @@ export class Position extends vscode.Position {
       );
 
       if (newCharacter !== undefined) {
-        return new Position(currentLine, newCharacter).getRightThroughLineBreaks();
+        return new Position(currentLine, <number>newCharacter).getRightThroughLineBreaks();
       }
     }
 
