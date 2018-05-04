@@ -2154,6 +2154,73 @@ class CommandReselectVisual extends BaseCommand {
   }
 }
 
+function selectLastSearchWord(vimState: VimState, direction: SearchDirection) {
+  const searchState = vimState.globalState.searchState;
+  if (!searchState || searchState.searchString === '') {
+    return vimState;
+  }
+
+  const newSearchState = new SearchState(
+    direction,
+    vimState.cursorPosition,
+    searchState!.searchString,
+    { isRegex: true },
+    vimState.currentMode
+  );
+
+  let result = {
+    start: vimState.cursorPosition,
+    end: vimState.cursorPosition,
+    match: false,
+  };
+
+  // At first, try to search for current word, and stop searching if matched.
+  // Try to search for the next word if not matched or
+  // if the cursor is at the end of a match string in visual-mode.
+  result = newSearchState.getSearchMatchRangeOf(vimState.cursorPosition);
+  if (
+    vimState.currentMode === ModeName.Visual &&
+    vimState.cursorPosition.isEqual(result.end.getLeftThroughLineBreaks())
+  ) {
+    result.match = false;
+  }
+
+  if (!result.match) {
+    // Try to search for the next word
+    result = newSearchState.getNextSearchMatchRange(vimState.cursorPosition, 1);
+    if (!result.match) {
+      return vimState; // no match...
+    }
+  }
+
+  vimState.cursorStartPosition =
+    vimState.currentMode === ModeName.Normal ? result.start : vimState.cursorPosition;
+  vimState.cursorPosition = result.end.getLeftThroughLineBreaks(); // end is exclusive
+  vimState.currentMode = ModeName.Visual;
+
+  return vimState;
+}
+
+@RegisterAction
+class CommandSelectNextLastSearchWord extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  keys = ['g', 'n'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return selectLastSearchWord(vimState, SearchDirection.Forward);
+  }
+}
+
+@RegisterAction
+class CommandSelectPreviousLastSearchWord extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  keys = ['g', 'N'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return selectLastSearchWord(vimState, SearchDirection.Backward);
+  }
+}
+
 @RegisterAction
 class CommandVisualBlockMode extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
