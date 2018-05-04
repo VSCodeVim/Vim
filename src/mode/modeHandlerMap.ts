@@ -29,11 +29,17 @@ class ModeHandlerMapImpl {
   }
 
   delete(key: string) {
+    if (key in this.modeHandlerMap) {
+      this.modeHandlerMap[key].dispose();
+    }
+
     delete this.modeHandlerMap[key];
   }
 
   clear() {
-    this.modeHandlerMap = {};
+    for (const key of Object.keys(this.modeHandlerMap)) {
+      this.delete(key);
+    }
   }
 }
 

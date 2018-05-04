@@ -782,7 +782,7 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 @RegisterAction
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
-  keys = [['<character>'], ['<up>'], ['<down>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -793,7 +793,7 @@ class CommandInsertInSearchMode extends BaseCommand {
     const prevSearchList = vimState.globalState.searchStatePrevious!;
 
     // handle special keys first
-    if (key === '<BS>' || key === '<shift+BS>') {
+    if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === '\n') {
       vimState.currentMode = vimState.globalState.searchState!.previousMode;
@@ -1289,7 +1289,9 @@ export class PutCommand extends BaseCommand {
       textToAdd = text;
       whereToAddText = dest;
     } else if (
-      (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) &&
+      (vimState.currentMode === ModeName.Visual ||
+        (vimState.currentMode === ModeName.VisualLine &&
+          !vimState.cursorPosition.isAtDocumentEnd())) &&
       register.registerMode === RegisterMode.LineWise
     ) {
       // in the specific case of linewise register data during visual mode,
@@ -1314,6 +1316,12 @@ export class PutCommand extends BaseCommand {
           .join('\n');
       }
 
+      if (
+        vimState.currentMode === ModeName.VisualLine &&
+        vimState.cursorPosition.isAtDocumentEnd()
+      ) {
+        after = false;
+      }
       if (after) {
         // P insert before current line
         textToAdd = text + '\n';
@@ -1323,6 +1331,26 @@ export class PutCommand extends BaseCommand {
         textToAdd = '\n' + text;
         whereToAddText = dest.getLineEnd();
       }
+    }
+
+    // After using "p" or "P" in Visual mode the text that was put will be
+    // selected (from Vim's ":help gv").
+    if (
+      vimState.currentMode === ModeName.Visual ||
+      vimState.currentMode === ModeName.VisualLine ||
+      vimState.currentMode === ModeName.VisualBlock
+    ) {
+      vimState.lastVisualMode = vimState.currentMode;
+      vimState.lastVisualSelectionStart = whereToAddText;
+      let textToEnd = textToAdd;
+      if (
+        vimState.currentMode === ModeName.VisualLine &&
+        textToAdd[textToAdd.length - 1] === '\n'
+      ) {
+        // don't go next line
+        textToEnd = textToAdd.substring(0, textToAdd.length - 1);
+      }
+      vimState.lastVisualSelectionEnd = whereToAddText.advancePositionByText(textToEnd);
     }
 
     // More vim weirdness: If the thing you're pasting has a newline, the cursor
@@ -1527,11 +1555,18 @@ export class PutCommandVisual extends BaseCommand {
     let oldMode = vimState.currentMode;
     let register = await Register.get(vimState);
     if (register.registerMode === RegisterMode.LineWise) {
+      const replaceRegister = await Register.getByKey(vimState.recordedState.registerName);
       let deleteResult = await new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         start,
         end,
-        false
+        true
+      );
+      const deletedRegister = await Register.getByKey(vimState.recordedState.registerName);
+      Register.putByKey(
+        replaceRegister.text,
+        vimState.recordedState.registerName,
+        replaceRegister.registerMode
       );
       // to ensure, that the put command nows this is
       // an linewise register insertion in visual mode of
@@ -1540,6 +1575,11 @@ export class PutCommandVisual extends BaseCommand {
       deleteResult.currentMode = oldMode;
       deleteResult = await new PutCommand().exec(start, deleteResult, true);
       deleteResult.currentMode = resultMode;
+      Register.putByKey(
+        deletedRegister.text,
+        vimState.recordedState.registerName,
+        deletedRegister.registerMode
+      );
       return deleteResult;
     }
 
@@ -1912,7 +1952,7 @@ class CommandBottomScrollFirstChar extends BaseCommand {
 
 @RegisterAction
 class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
-  modes = [ModeName.Visual, ModeName.VisualLine];
+  modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['o'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -2119,6 +2159,73 @@ class CommandReselectVisual extends BaseCommand {
       }
     }
     return vimState;
+  }
+}
+
+function selectLastSearchWord(vimState: VimState, direction: SearchDirection) {
+  const searchState = vimState.globalState.searchState;
+  if (!searchState || searchState.searchString === '') {
+    return vimState;
+  }
+
+  const newSearchState = new SearchState(
+    direction,
+    vimState.cursorPosition,
+    searchState!.searchString,
+    { isRegex: true },
+    vimState.currentMode
+  );
+
+  let result = {
+    start: vimState.cursorPosition,
+    end: vimState.cursorPosition,
+    match: false,
+  };
+
+  // At first, try to search for current word, and stop searching if matched.
+  // Try to search for the next word if not matched or
+  // if the cursor is at the end of a match string in visual-mode.
+  result = newSearchState.getSearchMatchRangeOf(vimState.cursorPosition);
+  if (
+    vimState.currentMode === ModeName.Visual &&
+    vimState.cursorPosition.isEqual(result.end.getLeftThroughLineBreaks())
+  ) {
+    result.match = false;
+  }
+
+  if (!result.match) {
+    // Try to search for the next word
+    result = newSearchState.getNextSearchMatchRange(vimState.cursorPosition, 1);
+    if (!result.match) {
+      return vimState; // no match...
+    }
+  }
+
+  vimState.cursorStartPosition =
+    vimState.currentMode === ModeName.Normal ? result.start : vimState.cursorPosition;
+  vimState.cursorPosition = result.end.getLeftThroughLineBreaks(); // end is exclusive
+  vimState.currentMode = ModeName.Visual;
+
+  return vimState;
+}
+
+@RegisterAction
+class CommandSelectNextLastSearchWord extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  keys = ['g', 'n'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return selectLastSearchWord(vimState, SearchDirection.Forward);
+  }
+}
+
+@RegisterAction
+class CommandSelectPreviousLastSearchWord extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
+  keys = ['g', 'N'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return selectLastSearchWord(vimState, SearchDirection.Backward);
   }
 }
 

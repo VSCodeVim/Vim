@@ -77,7 +77,7 @@ Status | Command | Description
 :white_check_mark:   | :1234:  _		| down N-1 lines, on the first non-blank character
 :white_check_mark:   | :1234:  G		| goto line N (default: last line), on the first non-blank character
 :white_check_mark:   | :1234:  gg		| goto line N (default: first line), on the first non-blank character
-:white_check_mark:   | :1234:  %		| goto line N percentage down in the file; N must be given, otherwise it is the |%| command
+:white_check_mark:   | :1234:  %		| goto line N percentage down in the file; N must be given, otherwise it is the `%` command
 :white_check_mark:   | :1234:  gk		| up N screen lines (differs from "k" when line wraps)
 :white_check_mark:   | :1234:  gj		| own N screen lines (differs from "j" when line wraps)
 

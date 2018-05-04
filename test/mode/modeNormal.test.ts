@@ -1,6 +1,7 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeName } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { TextEditor } from '../../src/textEditor';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -726,6 +727,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'daW' around word at whitespace",
+    start: ['<div  | class="btn"> foo'],
+    keysPressed: 'daW',
+    end: ['<div| foo'],
+  });
+
+  newTest({
     title: "Can handle 'daW' on word with trailing spaces",
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'daW',
@@ -772,11 +780,47 @@ suite('Mode Normal', () => {
     end: ['on|e'],
     endMode: ModeName.Normal,
   });
+
   newTest({
-    title: "Can handle 'daW' around word at end of line",
+    title: "Can handle 'daW' around word at the last WORD (t|wo)",
     start: ['one t|wo', ' three'],
     keysPressed: 'daW',
     end: ['on|e', ' three'],
+  });
+
+  newTest({
+    title: "Can handle 'daW' around word at the last WORD (tw|o)",
+    start: ['one tw|o', ' three'],
+    keysPressed: 'daW',
+    end: ['on|e', ' three'],
+  });
+
+  newTest({
+    title: 'Can handle \'daW\' around word at the last WORD (class="btn"|>)',
+    start: ['<div class="btn"|>', 'foo'],
+    keysPressed: 'daW',
+    end: ['<di|v', 'foo'],
+  });
+
+  newTest({
+    title: 'Can handle \'daW\' around word at the last WORD of the end of document (class="btn"|>)',
+    start: ['<div class="btn"|>'],
+    keysPressed: 'daW',
+    end: ['<di|v'],
+  });
+
+  newTest({
+    title: 'Can handle \'daW\' around word at the last WORD (c|lass="btn">)',
+    start: ['<div c|lass="btn">', 'foo'],
+    keysPressed: 'daW',
+    end: ['<di|v', 'foo'],
+  });
+
+  newTest({
+    title: 'Can handle \'daW\' around word at the last WORD of the end of document (c|lass="btn">)',
+    start: ['<div c|lass="btn">'],
+    keysPressed: 'daW',
+    end: ['<di|v'],
   });
 
   newTest({
@@ -1616,6 +1660,30 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: '<BS> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<BS>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: '<S-BS> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<shift+BS>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: '<C-h> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<C-h>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
     title: 'Can do C',
     start: ['export const options = {', '|', '};'],
     keysPressed: 'C',
@@ -1841,5 +1909,337 @@ suite('Mode Normal', () => {
     keysPressed: 'daI',
     end: ['|'],
     endMode: ModeName.Normal,
+  });
+
+  suite('can handle gn', () => {
+    test(`gn selects the next match text`, async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('gg'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 1);
+    });
+
+    const gnSelectsCurrentWord = async (jumpCmd: string) => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 1);
+    };
+
+    test(`gn selects the current word at |hello`, async () => {
+      await gnSelectsCurrentWord('2gg');
+    });
+
+    test(`gn selects the current word at h|ello`, async () => {
+      await gnSelectsCurrentWord('2ggl');
+    });
+
+    test(`gn selects the current word at hel|lo`, async () => {
+      await gnSelectsCurrentWord('2ggeh');
+    });
+
+    test(`gn selects the current word at hell|o`, async () => {
+      await gnSelectsCurrentWord('2gge');
+    });
+
+    test(`gn selects the next word at hello|`, async () => {
+      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 2);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 2);
+    });
+  });
+
+  suite('can handle dgn', () => {
+    newTest({
+      title: 'dgn deletes the next match text (from first line)',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nggdgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgn deletes the current word when cursor is at |hello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\ndgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgn deletes the current word when cursor is at h|ello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nldgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgn deletes the current word when cursor is at hel|lo',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n3ldgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgn deletes the current word when cursor is at hell|o',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nedgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgn deletes the next word when cursor is at hello|',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\neldgn',
+      end: ['foo', 'hello world', '|', 'hello'],
+      endMode: ModeName.Normal,
+    });
+  });
+
+  suite('can handle cgn', () => {
+    newTest({
+      title: 'cgn deletes the next match text (from first line)',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nggcgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the current word when cursor is at |hello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\ncgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the current word when cursor is at h|ello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nlcgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the current word when cursor is at hel|lo',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n3lcgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the current word when cursor is at hell|o',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\necgn',
+      end: ['foo', '| world', 'hello', 'hello'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgn deletes the next word when cursor is at hello|',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\nelcgn',
+      end: ['foo', 'hello world', '|', 'hello'],
+      endMode: ModeName.Insert,
+    });
+  });
+
+  suite('can handle gN', () => {
+    test(`gN selects the previous match text`, async () => {
+      await modeHandler.handleMultipleKeyEvents('ihello world\nhello\nhi hello\nfoo'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(['G']);
+      await modeHandler.handleMultipleKeyEvents(['g', 'N']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 'hi '.length);
+      assertEqual(selection.start.line, 2);
+      assertEqual(selection.end.character, 'hi hello'.length);
+      assertEqual(selection.end.line, 2);
+    });
+
+    const gnSelectsCurrentWord = async (jumpCmd: string) => {
+      await modeHandler.handleMultipleKeyEvents('ihello world\nhello\nhi hello\nfoo'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'N']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 'hi '.length);
+      assertEqual(selection.start.line, 2);
+      assertEqual(selection.end.character, 'hi hello'.length);
+      assertEqual(selection.end.line, 2);
+    };
+
+    test(`gN selects the current word at hell|o`, async () => {
+      await gnSelectsCurrentWord('3gg7l');
+    });
+
+    test(`gN selects the current word at hel|lo`, async () => {
+      await gnSelectsCurrentWord('3gg6l');
+    });
+
+    test(`gN selects the current word at h|ello`, async () => {
+      await gnSelectsCurrentWord('3gg4l');
+    });
+
+    test(`gN selects the current word at |hello`, async () => {
+      await gnSelectsCurrentWord('3gg3l');
+    });
+
+    test(`gN selects the previous word at | hello`, async () => {
+      await modeHandler.handleMultipleKeyEvents('ihello world\nhello\nhi hello\nfoo'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
+      await modeHandler.handleMultipleKeyEvents('3gg2l'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['g', 'N']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+      const selection = TextEditor.getSelection();
+
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 1);
+      assertEqual(selection.end.character, 'hello'.length);
+      assertEqual(selection.end.line, 1);
+    });
+  });
+
+  suite('can handle dgN', () => {
+    newTest({
+      title: 'dgN deletes the previous match text (from first line)',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\nGdgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the current word when cursor is at hell|o',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3gg$dgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the current word when cursor is at hel|lo',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3gg$hdgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the current word when cursor is at h|ello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwldgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the current word when cursor is at |hello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwdgN',
+      end: ['hello world', 'hello', 'hi| ', 'foo'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'dgN deletes the previous word when cursor is at | hello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwhdgN',
+      end: ['hello world', '|', 'hi hello', 'foo'],
+      endMode: ModeName.Normal,
+    });
+  });
+
+  suite('can handle cgN', () => {
+    newTest({
+      title: 'cgN deletes the previous match text (from first line)',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\nGcgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the current word when cursor is at hell|o',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3gg$cgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the current word when cursor is at hel|lo',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3gg$hcgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the current word when cursor is at h|ello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwlcgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the current word when cursor is at |hello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwcgN',
+      end: ['hello world', 'hello', 'hi |', 'foo'],
+      endMode: ModeName.Insert,
+    });
+
+    newTest({
+      title: 'cgN deletes the previous word when cursor is at | hello',
+      start: ['hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '/hello\n3ggwhcgN',
+      end: ['hello world', '|', 'hi hello', 'foo'],
+      endMode: ModeName.Insert,
+    });
   });
 });
