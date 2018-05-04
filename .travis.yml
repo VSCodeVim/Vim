@@ -35,10 +35,9 @@ before_install:
     sleep 3;
   fi
 
-
 script:
-- gulp forceprettier
-- if [[ $(git diff-index HEAD --) ]]; then
+- npm run forceprettier
+- if [[ $(git diff-index HEAD -- *.js *.ts) ]]; then
     git diff;
     echo "Prettier Failed. Run `gulp` or `gulp forceprettier`";
     exit 1;

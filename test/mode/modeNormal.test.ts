@@ -727,6 +727,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'daW' around word at whitespace",
+    start: ['<div  | class="btn"> foo'],
+    keysPressed: 'daW',
+    end: ['<div| foo'],
+  });
+
+  newTest({
     title: "Can handle 'daW' on word with trailing spaces",
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'daW',
@@ -773,11 +780,47 @@ suite('Mode Normal', () => {
     end: ['on|e'],
     endMode: ModeName.Normal,
   });
+
   newTest({
-    title: "Can handle 'daW' around word at end of line",
+    title: "Can handle 'daW' around word at the last WORD (t|wo)",
     start: ['one t|wo', ' three'],
     keysPressed: 'daW',
     end: ['on|e', ' three'],
+  });
+
+  newTest({
+    title: "Can handle 'daW' around word at the last WORD (tw|o)",
+    start: ['one tw|o', ' three'],
+    keysPressed: 'daW',
+    end: ['on|e', ' three'],
+  });
+
+  newTest({
+    title: 'Can handle \'daW\' around word at the last WORD (class="btn"|>)',
+    start: ['<div class="btn"|>', 'foo'],
+    keysPressed: 'daW',
+    end: ['<di|v', 'foo'],
+  });
+
+  newTest({
+    title: 'Can handle \'daW\' around word at the last WORD of the end of document (class="btn"|>)',
+    start: ['<div class="btn"|>'],
+    keysPressed: 'daW',
+    end: ['<di|v'],
+  });
+
+  newTest({
+    title: 'Can handle \'daW\' around word at the last WORD (c|lass="btn">)',
+    start: ['<div c|lass="btn">', 'foo'],
+    keysPressed: 'daW',
+    end: ['<di|v', 'foo'],
+  });
+
+  newTest({
+    title: 'Can handle \'daW\' around word at the last WORD of the end of document (c|lass="btn">)',
+    start: ['<div c|lass="btn">'],
+    keysPressed: 'daW',
+    end: ['<di|v'],
   });
 
   newTest({
@@ -1614,6 +1657,30 @@ suite('Mode Normal', () => {
     start: ['|__ASDF', 'asdf'],
     keysPressed: '/\\Casdf\n',
     end: ['__ASDF', '|asdf'],
+  });
+
+  newTest({
+    title: '<BS> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<BS>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: '<S-BS> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<shift+BS>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: '<C-h> deletes the last character in search in progress mode',
+    start: ['|foo', 'bar', 'abd'],
+    keysPressed: '/abc<C-h>d\n',
+    end: ['foo', 'bar', '|abd'],
+    endMode: ModeName.Normal,
   });
 
   newTest({

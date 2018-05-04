@@ -940,6 +940,85 @@ suite('Mode Visual', () => {
     });
   });
 
+  suite('replace text in characterwise visual-mode with characterwise register content', () => {
+    test('gv selects the last pasted text (which is shorter than original)', async () => {
+      await modeHandler.handleMultipleKeyEvents(
+        'ireplace this\nwith me\nor with me longer than the target'.split('')
+      );
+      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(
+        '2ggv$hy'.split('') // yank the second line
+      );
+      await modeHandler.handleMultipleKeyEvents(
+        'ggv$hp'.split('') // replace the first line
+      );
+      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
+
+      const selection = TextEditor.getSelection();
+
+      // ensuring selecting 'with me' at the first line
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 'with me'.length);
+      assertEqual(selection.end.line, 0);
+    });
+
+    test('gv selects the last pasted text (which is longer than original)', async () => {
+      await modeHandler.handleMultipleKeyEvents(
+        'ireplace this\nwith me\nor with me longer than the target'.split('')
+      );
+      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(
+        'v0y'.split('') // yank the last line
+      );
+      await modeHandler.handleMultipleKeyEvents(
+        'ggv$hp'.split('') // replace the first line
+      );
+      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqualLines([
+        'or with me longer than the target',
+        'with me',
+        'or with me longer than the target',
+      ]);
+
+      const selection = TextEditor.getSelection();
+
+      // ensuring selecting 'or with me longer than the target' at the first line
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 'or with me longer than the target'.length);
+      assertEqual(selection.end.line, 0);
+    });
+
+    test('gv selects the last pasted text (multiline)', async () => {
+      await modeHandler.handleMultipleKeyEvents('ireplace this\nfoo\nbar'.split(''));
+      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(
+        '2ggvjey'.split('') // yank 'foo\nbar'
+      );
+      await modeHandler.handleMultipleKeyEvents(
+        'ggvep'.split('') // replace 'replace'
+      );
+      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
+
+      assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+      assertEqualLines(['foo', 'bar this', 'foo', 'bar']);
+
+      const selection = TextEditor.getSelection();
+
+      // ensuring selecting 'foo\nbar'
+      assertEqual(selection.start.character, 0);
+      assertEqual(selection.start.line, 0);
+      assertEqual(selection.end.character, 3);
+      assertEqual(selection.end.line, 1);
+    });
+  });
+
   suite('can handle gn', () => {
     test('gn selects the next match text', async () => {
       await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));

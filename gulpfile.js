@@ -9,7 +9,7 @@ var gulp = require('gulp'),
 
 // compile
 gulp.task('compile', function() {
-  var tsProject = ts.createProject('tsconfig.json');
+  var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
   return tsProject
     .src()
     .pipe(sourcemaps.init())
@@ -39,7 +39,7 @@ function runPrettier(command, cb) {
     }
 
     var files = stdout
-      .split('\n')
+      .split(/\r?\n/)
       .filter(f => {
         return f.endsWith('.ts') || f.endsWith('.js');
       })
