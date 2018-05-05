@@ -1310,10 +1310,10 @@ export class ModeHandler implements vscode.Disposable {
 
       searchRanges.push.apply(searchRanges, searchState.matchRanges);
 
-      const { pos, match } = searchState.getNextSearchMatchPosition(vimState.cursorPosition);
+      const { start, end, match } = searchState.getNextSearchMatchRange(vimState.cursorPosition);
 
       if (match) {
-        searchRanges.push(new vscode.Range(pos, pos.getRight(searchState.searchString.length)));
+        searchRanges.push(new vscode.Range(start, end));
       }
     }
     this.vimState.editor.setDecorations(Decoration.SearchHighlight, searchRanges);
