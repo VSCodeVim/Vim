@@ -2649,7 +2649,7 @@ class CommandNavigateLastBOL extends BaseCommand {
 @RegisterAction
 class CommandQuit extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = ['<C-w>', 'q'];
+  keys = [['<C-w>', 'q'], ['<C-w>', '<C-q>'], ['<C-w>', 'c'], ['<C-w>', '<C-c>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new QuitCommand({}).execute();
@@ -2661,7 +2661,7 @@ class CommandQuit extends BaseCommand {
 @RegisterAction
 class CommandOnly extends BaseCommand {
   modes = [ModeName.Normal];
-  keys = [['<C-w>', 'o'], ['<C-w>', 'C-o']];
+  keys = [['<C-w>', 'o'], ['<C-w>', '<C-o>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new OnlyCommand({}).execute();
@@ -2673,7 +2673,7 @@ class CommandOnly extends BaseCommand {
 @RegisterAction
 class MoveToRightPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [['<C-w>', 'l'], ['<C-w>', '<right>'], ['<C-w l>']];
+  keys = [['<C-w>', 'l'], ['<C-w>', '<right>'], ['<C-w l>'], ['<C-w>', '<C-l>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2688,7 +2688,7 @@ class MoveToRightPane extends BaseCommand {
 @RegisterAction
 class MoveToLowerPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [['<C-w>', 'j'], ['<C-w>', '<down>'], ['<C-w j>']];
+  keys = [['<C-w>', 'j'], ['<C-w>', '<down>'], ['<C-w j>'], ['<C-w>', '<C-j>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2703,7 +2703,7 @@ class MoveToLowerPane extends BaseCommand {
 @RegisterAction
 class MoveToUpperPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [['<C-w>', 'k'], ['<C-w>', '<up>'], ['<C-w k>']];
+  keys = [['<C-w>', 'k'], ['<C-w>', '<up>'], ['<C-w k>'], ['<C-w>', '<C-k>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2718,7 +2718,7 @@ class MoveToUpperPane extends BaseCommand {
 @RegisterAction
 class MoveToLeftPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [['<C-w>', 'h'], ['<C-w>', '<left>'], ['<C-w h>']];
+  keys = [['<C-w>', 'h'], ['<C-w>', '<left>'], ['<C-w h>'], ['<C-w>', '<C-h>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2753,7 +2753,7 @@ class BaseTabCommand extends BaseCommand {
 @RegisterAction
 class VerticalSplit extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ['<C-w>', 'v'];
+  keys = [['<C-w>', 'v'], ['<C-w>', '<C-v>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
