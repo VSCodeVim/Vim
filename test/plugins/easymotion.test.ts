@@ -186,4 +186,32 @@ suite('easymotion plugin', () => {
     keysPressed: easymotionCommand({ key: 'bdjk', leaderCount: 3 }, '', 'h'),
     end: ['abc', 'def', 'ghi', '|jkl'],
   });
+
+  newTest({
+    title: 'Can handle lineforward move (1)',
+    start: ['|abcDefGhi'],
+    keysPressed: easymotionCommand({ key: 'l', leaderCount: 2 }, '', 'h'),
+    end: ['abc|DefGhi'],
+  });
+
+  newTest({
+    title: 'Can handle lineforward move (2)',
+    start: ['|abcDefGhi'],
+    keysPressed: easymotionCommand({ key: 'l', leaderCount: 2 }, '', 'k'),
+    end: ['abcDef|Ghi'],
+  });
+
+  newTest({
+    title: 'Can handle linebackward move (1)',
+    start: ['abcDefGhi|'],
+    keysPressed: easymotionCommand({ key: 'h', leaderCount: 2 }, '', 'k'),
+    end: ['abc|DefGhi'],
+  });
+
+  newTest({
+    title: 'Can handle linebackward move (2)',
+    start: ['abcDefGhi|'],
+    keysPressed: easymotionCommand({ key: 'h', leaderCount: 2 }, '', 'h'),
+    end: ['abcDef|Ghi'],
+  });
 });
