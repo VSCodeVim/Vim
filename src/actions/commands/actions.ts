@@ -371,7 +371,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 @RegisterAction
 class CommandRecordMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ['q', '<character>'];
+  keys = [['q', '<alpha>'], ['q', '<number>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
@@ -1701,6 +1701,31 @@ class CommandShowCommandLine extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.recordedState.transformations.push({
       type: 'showCommandLine',
+    });
+
+    if (vimState.currentMode === ModeName.Normal) {
+      vimState.commandInitialText = '';
+    } else {
+      vimState.commandInitialText = "'<,'>";
+    }
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandShowCommandHistory extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ['q', ':'];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type: 'showCommandHistory',
     });
 
     if (vimState.currentMode === ModeName.Normal) {

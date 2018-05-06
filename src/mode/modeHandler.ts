@@ -911,6 +911,14 @@ export class ModeHandler implements vscode.Disposable {
           this.updateView(this.vimState);
           break;
 
+        case 'showCommandHistory':
+          let cmd = await CommandLine.ShowHistory(vimState.commandInitialText, this.vimState);
+          if (cmd && cmd.length !== 0) {
+            await CommandLine.PromptAndRun(cmd, this.vimState);
+            this.updateView(this.vimState);
+          }
+          break;
+
         case 'dot':
           if (!vimState.globalState.previousFullAction) {
             return vimState; // TODO(bell)
