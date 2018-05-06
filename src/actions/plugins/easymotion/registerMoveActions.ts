@@ -142,6 +142,20 @@ class EasyMotionStartOfWordBidirectionalCommand extends EasyMotionWordMoveComman
   }
 }
 
+@RegisterAction
+class EasyMotionLineForward extends EasyMotionWordMoveCommandBase {
+  constructor() {
+    super({ key: 'l' }, { jumpToAnywhere: true, searchOptions: 'min', labelPosition: 'after' });
+  }
+}
+
+@RegisterAction
+class EasyMotionLineBackward extends EasyMotionWordMoveCommandBase {
+  constructor() {
+    super({ key: 'h' }, { jumpToAnywhere: true, searchOptions: 'max', labelPosition: 'after' });
+  }
+}
+
 // easymotion "JumpToAnywhere" motion
 
 @RegisterAction
