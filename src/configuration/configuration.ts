@@ -322,6 +322,14 @@ class Configuration implements IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   otherModesKeyBindings: IKeyRemapping[] = [];
   otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
+
+  // stay on ...
+  stayOnYank = false;
+  stayOnUpperCase = false;
+  stayOnLowerCase = false;
+  stayOnToggleCase = false;
+  stayOnIndent = false;
+  stayOnOutdent = false;
 }
 
 function overlapSetting(args: {

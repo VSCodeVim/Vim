@@ -245,8 +245,10 @@ export class YankOperator extends BaseOperator {
     if (vimState.surround) {
       vimState.surround.range = new Range(start, end);
       vimState.currentMode = ModeName.SurroundInputMode;
-      // vimState.cursorPosition = start;
-      // vimState.cursorStartPosition = start;
+      if (!configuration.stayOnYank) {
+        vimState.cursorPosition = start;
+        vimState.cursorStartPosition = start;
+      }
 
       return vimState;
     }
@@ -278,14 +280,26 @@ export class YankOperator extends BaseOperator {
     Register.put(text, vimState, this.multicursorIndex);
 
     vimState.currentMode = ModeName.Normal;
-    // vimState.cursorStartPosition = start;
+    // Only change cursor position if we ran a text object movement
+    let moveCursor = false;
+    if (!configuration.stayOnYank) {
+      vimState.cursorStartPosition = start;
 
-    if (originalMode === ModeName.Normal) {
+      if (vimState.recordedState.actionsRun.length > 1) {
+        if (vimState.recordedState.actionsRun[1] instanceof TextObjectMovement) {
+          moveCursor = true;
+        }
+      }
+    }
+
+    if (originalMode === ModeName.Normal && !moveCursor) {
       vimState.allCursors = vimState.cursorPositionJustBeforeAnythingHappened.map(
         x => new Range(x, x)
       );
     } else {
-      // vimState.cursorPosition = start;
+      if (!configuration.stayOnYank) {
+        vimState.cursorPosition = start;
+      }
     }
 
     return vimState;
@@ -363,7 +377,9 @@ export class UpperCaseOperator extends BaseOperator {
     await TextEditor.replace(range, text.toUpperCase());
 
     vimState.currentMode = ModeName.Normal;
-    // vimState.cursorPosition = start;
+    if (!configuration.stayOnUpperCase) {
+      vimState.cursorPosition = start;
+    }
 
     return vimState;
   }
@@ -388,8 +404,10 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
     }
 
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
-    // vimState.cursorPosition = cursorPosition;
-    // vimState.cursorStartPosition = cursorPosition;
+    if (!configuration.stayOnUpperCase) {
+      vimState.cursorPosition = cursorPosition;
+      vimState.cursorStartPosition = cursorPosition;
+    }
     vimState.currentMode = ModeName.Normal;
 
     return vimState;
@@ -408,7 +426,9 @@ export class LowerCaseOperator extends BaseOperator {
     await TextEditor.replace(range, text.toLowerCase());
 
     vimState.currentMode = ModeName.Normal;
-    // vimState.cursorPosition = start;
+    if (!configuration.stayOnLowerCase) {
+      vimState.cursorPosition = start;
+    }
 
     return vimState;
   }
@@ -433,8 +453,10 @@ class LowerCaseVisualBlockOperator extends BaseOperator {
     }
 
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
-    // vimState.cursorPosition = cursorPosition;
-    // vimState.cursorStartPosition = cursorPosition;
+    if (!configuration.stayOnLowerCase) {
+      vimState.cursorPosition = cursorPosition;
+      vimState.cursorStartPosition = cursorPosition;
+    }
     vimState.currentMode = ModeName.Normal;
 
     return vimState;
@@ -452,7 +474,9 @@ class IndentOperator extends BaseOperator {
     await vscode.commands.executeCommand('editor.action.indentLines');
 
     vimState.currentMode = ModeName.Normal;
-    // vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    if (!configuration.stayOnIndent) {
+      vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    }
 
     return vimState;
   }
@@ -478,7 +502,9 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     vimState.currentMode = ModeName.Normal;
-    // vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    if (!configuration.stayOnIndent) {
+      vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    }
 
     return vimState;
   }
@@ -494,7 +520,9 @@ class OutdentOperator extends BaseOperator {
 
     await vscode.commands.executeCommand('editor.action.outdentLines');
     vimState.currentMode = ModeName.Normal;
-    // vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    if (!configuration.stayOnOutdent) {
+      vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    }
 
     return vimState;
   }
@@ -514,7 +542,9 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     vimState.currentMode = ModeName.Normal;
-    // vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    if (!configuration.stayOnOutdent) {
+      vimState.cursorPosition = start.getFirstLineNonBlankChar();
+    }
 
     return vimState;
   }
@@ -595,7 +625,9 @@ export class YankVisualBlockMode extends BaseOperator {
     Register.put(toCopy, vimState, this.multicursorIndex);
 
     vimState.currentMode = ModeName.Normal;
-    // vimState.cursorPosition = start;
+    if (!configuration.stayOnYank) {
+      vimState.cursorPosition = start;
+    }
     return vimState;
   }
 }
@@ -611,8 +643,10 @@ export class ToggleCaseOperator extends BaseOperator {
     await ToggleCaseOperator.toggleCase(range);
 
     const cursorPosition = start.isBefore(end) ? start : end;
-    // vimState.cursorPosition = cursorPosition;
-    // vimState.cursorStartPosition = cursorPosition;
+    if (!configuration.stayOnToggleCase) {
+      vimState.cursorPosition = cursorPosition;
+      vimState.cursorStartPosition = cursorPosition;
+    }
     vimState.currentMode = ModeName.Normal;
 
     return vimState;
@@ -648,8 +682,10 @@ class ToggleCaseVisualBlockOperator extends BaseOperator {
     }
 
     const cursorPosition = startPos.isBefore(endPos) ? startPos : endPos;
-    // vimState.cursorPosition = cursorPosition;
-    // vimState.cursorStartPosition = cursorPosition;
+    if (!configuration.stayOnToggleCase) {
+      vimState.cursorPosition = cursorPosition;
+      vimState.cursorStartPosition = cursorPosition;
+    }
     vimState.currentMode = ModeName.Normal;
 
     return vimState;

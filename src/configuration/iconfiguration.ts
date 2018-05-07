@@ -205,4 +205,14 @@ export interface IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[];
   otherModesKeyBindings: IKeyRemapping[];
   otherModesKeyBindingsNonRecursive: IKeyRemapping[];
+
+  /**
+   * Cursor movement options
+   */
+  stayOnYank: boolean;
+  stayOnUpperCase: boolean;
+  stayOnLowerCase: boolean;
+  stayOnToggleCase: boolean;
+  stayOnIndent: boolean;
+  stayOnOutdent: boolean;
 }
