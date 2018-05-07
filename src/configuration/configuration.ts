@@ -329,7 +329,9 @@ class Configuration implements IConfiguration {
   stayOnLowerCase = false;
   stayOnToggleCase = false;
   stayOnIndent = false;
+  stayOnVisualBlockIndent = false;
   stayOnOutdent = false;
+  stayOnVisualBlockOutdent = false;
 }
 
 function overlapSetting(args: {

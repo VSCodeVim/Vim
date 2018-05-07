@@ -502,7 +502,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     vimState.currentMode = ModeName.Normal;
-    if (!configuration.stayOnIndent) {
+    if (!configuration.stayOnVisualBlockIndent) {
       vimState.cursorPosition = start.getFirstLineNonBlankChar();
     }
 
@@ -542,7 +542,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     }
 
     vimState.currentMode = ModeName.Normal;
-    if (!configuration.stayOnOutdent) {
+    if (!configuration.stayOnVisualBlockOutdent) {
       vimState.cursorPosition = start.getFirstLineNonBlankChar();
     }
 

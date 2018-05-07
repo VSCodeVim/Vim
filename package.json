@@ -570,6 +570,46 @@
           "type": "boolean",
           "description": "When typing a command show the initial colon ':' character",
           "default": false
+        },
+        "vim.stayOnYank": {
+          "type": "boolean",
+          "description": "Keep the cursor in the original starting position after yanking text",
+          "default": false
+        },
+        "vim.stayOnUpperCase": {
+          "type": "boolean",
+          "description": "Keep the cursor in the original starting position after uppercasing text",
+          "default": false
+        },
+        "vim.stayOnLowerCase": {
+          "type": "boolean",
+          "description": "Keep the cursor in the original starting position after lowercasing text",
+          "default": false
+        },
+        "vim.stayOnToggleCase": {
+          "type": "boolean",
+          "description": "Keep the cursor in the original starting position after toggling the case of text",
+          "default": false
+        },
+        "vim.stayOnIndentCase": {
+          "type": "boolean",
+          "description": "Keep the cursor in the original starting position after indenting",
+          "default": false
+        },
+        "vim.stayOnVisualBlockIndentCase": {
+          "type": "boolean",
+          "description": "Keep the cursor in the original starting position after indenting in visual block mode",
+          "default": false
+        },
+        "vim.stayOnOutdentCase": {
+          "type": "boolean",
+          "description": "Keep the cursor in the original starting position after indenting",
+          "default": false
+        },
+        "vim.stayOnVisualBlockOutdentCase": {
+          "type": "boolean",
+          "description": "Keep the cursor in the original starting position after indenting in visual block mode",
+          "default": false
         }
       }
     }

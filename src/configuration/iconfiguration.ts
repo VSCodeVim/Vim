@@ -214,5 +214,7 @@ export interface IConfiguration {
   stayOnLowerCase: boolean;
   stayOnToggleCase: boolean;
   stayOnIndent: boolean;
+  stayOnVisualBlockIndent: boolean;
   stayOnOutdent: boolean;
+  stayOnVisualBlockOutdent: boolean;
 }
