@@ -34,6 +34,13 @@ class CommandLineHistory {
       this.load();
       this._is_loaded = true;
     }
+
+    if (this._history.length > configuration.history) {
+      // resize history because "vim.history" is updated.
+      this._history = this._history.slice(0, configuration.history);
+      this.save();
+    }
+
     return this._history;
   }
 
