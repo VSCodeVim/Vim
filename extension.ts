@@ -20,6 +20,7 @@ import { Notation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
+import { Logger } from './src/logger';
 
 let extensionContext: vscode.ExtensionContext;
 
@@ -46,9 +47,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   curHandler.vimState.editor = vscode.window.activeTextEditor!;
   if (!prevHandler || curHandler.vimState.identity !== prevHandler!.vimState.identity) {
-    setTimeout(() => {
-      curHandler.syncCursors();
-    }, 0);
+    curHandler.syncCursors();
   }
 
   if (previousActiveEditorId.hasSameBuffer(activeEditorId)) {
@@ -95,7 +94,10 @@ export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   let compositionState = new CompositionState();
 
-  // Event to update active configuration items when changed without restarting vscode
+  extensionContext.subscriptions.push(StatusBar);
+  extensionContext.subscriptions.push(Logger);
+
+  // Reload active configurations
   vscode.workspace.onDidChangeConfiguration(() => {
     configuration.reload();
   });
@@ -362,5 +364,5 @@ async function handleActiveEditorChange(): Promise<void> {
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
-  console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
+  Logger.debug(`Unhandled Rejection at: Promise ${p}. Reason: ${reason}.`);
 });
