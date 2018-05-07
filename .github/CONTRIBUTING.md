@@ -53,12 +53,14 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 ## Code Architecture
 
 The code is split into two parts:
+
 * ModeHandler - Vim state machine
 * Actions - 'actions' which modify the state
 
 ### Actions
 
 Actions are all currently stuffed into actions.ts (sorry!). There are:
+
 * `BaseAction` - the base Action type that all Actions derive from.
 * `BaseMovement` - A movement (e.g.`w`, `h`, `{`, etc.) *ONLY* updates the cursor position or returns an `IMovement`, which indicates a start and stop. This is used for movements like `aw` which may actually start before the cursor.
 * `BaseCommand` - Anything which is not just a movement is a Command. That includes motions which also update the state of Vim in some way, like `*`.
