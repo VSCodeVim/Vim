@@ -265,7 +265,6 @@ export class ModeHandler implements vscode.Disposable {
   async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
-    Logger.debug('test');
     // Rewrite commands
     if (configuration.overrideCopy) {
       // The conditions when you trigger a "copy" rather than a ctrl-c are

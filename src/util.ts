@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { Range } from './common/motion/range';
+import { Logger } from './logger';
 
 export async function showInfo(message: string): Promise<{}> {
   return vscode.window.showInformationMessage('Vim: ' + message) as {};
@@ -16,7 +17,11 @@ const clipboardy = require('clipboardy');
 
 export class Clipboard {
   public static Copy(text: string) {
-    clipboardy.writeSync(text);
+    try {
+      clipboardy.writeSync(text);
+    } catch (e) {
+      Logger.error(e, 'Error');
+    }
   }
 
   public static Paste(): string {

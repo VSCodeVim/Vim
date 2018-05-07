@@ -13,7 +13,7 @@ class LoggerImpl implements vscode.Disposable {
 
   public error(message?: string, friendlyMessage?: string): void {
     this.emitMessage(message);
-    vscode.window.showErrorMessage(`${friendlyMessage} ${message}`);
+    vscode.window.showErrorMessage(`Error: ${friendlyMessage} || ${message}`);
   }
 
   private emitMessage(message?: string) {
