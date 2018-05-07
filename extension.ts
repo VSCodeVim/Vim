@@ -107,12 +107,9 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
 
-    /**
-     * Change from vscode editor should set document.isDirty to true but they initially don't!
-     * There is a timing issue in vscode codebase between when the isDirty flag is set and
-     * when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
-     */
-
+    // Change from vscode editor should set document.isDirty to true but they initially don't!
+    // There is a timing issue in vscode codebase between when the isDirty flag is set and
+    // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
     let contentChangeHandler = (modeHandler: ModeHandler) => {
       if (modeHandler.vimState.currentMode === ModeName.Insert) {
         if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
@@ -234,14 +231,15 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidCloseTextDocument(async event => {
     const documents = vscode.workspace.textDocuments;
 
-    // Delete modehandler if vscode knows NOTHING about this document. This does
-    // not handle the case of the same file open twice. This only handles the
-    // case of deleting a modehandler once all tabs of this document have been
-    // closed
+    // Delete modehandler once all tabs of this document have been closed
     for (let editorIdentity of ModeHandlerMap.getKeys()) {
-      let [modeHandler] = await ModeHandlerMap.getOrCreate(editorIdentity);
-      const editor = modeHandler.vimState.editor;
-      if (editor === undefined || documents.indexOf(editor.document) === -1) {
+      let modeHandler = await ModeHandlerMap.get(editorIdentity);
+
+      if (
+        modeHandler == null ||
+        modeHandler.vimState.editor === undefined ||
+        documents.indexOf(modeHandler.vimState.editor.document) === -1
+      ) {
         ModeHandlerMap.delete(editorIdentity);
       }
     }
