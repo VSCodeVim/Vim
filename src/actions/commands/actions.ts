@@ -371,7 +371,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 @RegisterAction
 class CommandRecordMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = [['q', '<alpha>'], ['q', '<number>']];
+  keys = [['q', '<alpha>'], ['q', '<number>'], ['q', '"']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
