@@ -583,7 +583,7 @@
   },
   "dependencies": {
     "clipboardy": "1.2.3",
-    "diff-match-patch": "1.0.0",
+    "diff-match-patch": "1.0.1",
     "lodash": "4.17.10",
     "neovim-client": "2.1.0",
     "promised-neovim-client": "2.0.2",
