@@ -22,6 +22,7 @@ Please report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim
 * [Getting Started](#getting-started)
     * [Mac setup](#mac-setup)
     * [Windows setup](#windows-setup)
+    * [Linux setup](#linux-setup)
 * [Settings](#settings)
     * [VSCodeVim settings](#vscodevim-settings)
     * [Neovim Integration](#neovim-integration)
