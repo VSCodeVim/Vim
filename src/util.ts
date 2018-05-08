@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { Range } from './common/motion/range';
-import { Logger } from './logger';
+import { Logger } from './util/logger';
 
 export async function showInfo(message: string): Promise<{}> {
   return vscode.window.showInformationMessage('Vim: ' + message) as {};
@@ -13,14 +13,14 @@ export async function showError(message: string): Promise<{}> {
   return vscode.window.showErrorMessage('Vim: ' + message) as {};
 }
 
-const clipboardy = require('clipboardy');
+import * as clipboardy from 'clipboardy';
 
 export class Clipboard {
   public static Copy(text: string) {
     try {
       clipboardy.writeSync(text);
     } catch (e) {
-      Logger.error(e, 'Error');
+      Logger.error(e, `Clipboard: Error copying to clipboard. Error=${e}`);
     }
   }
 

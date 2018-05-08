@@ -7,12 +7,12 @@ import { StatusBar } from '../statusBar';
 import * as parser from './parser';
 import * as util from '../util';
 import { VimError, ErrorCode } from '../error';
-import { Logger } from '../logger';
+import { Logger } from '../util/logger';
 
 export class CommandLine {
   public static async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
-      Logger.debug('CommandLine: No active document.');
+      Logger.debug('CommandLine: No active document');
       return;
     }
 

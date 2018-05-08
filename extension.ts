@@ -20,7 +20,7 @@ import { Notation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
-import { Logger } from './src/logger';
+import { Logger } from './src/util/logger';
 
 let extensionContext: vscode.ExtensionContext;
 

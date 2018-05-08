@@ -30,7 +30,7 @@ import {
   TextTransformations,
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
-import { Logger } from '../logger';
+import { Logger } from '../util/logger';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -73,7 +73,7 @@ export class ModeHandler implements vscode.Disposable {
     this.syncCursors();
 
     // Handle scenarios where mouse used to change current position.
-    const disposable = vscode.window.onDidChangeTextEditorSelection(e => {
+    const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(e => {
       if (configuration.disableExt) {
         return;
       }
@@ -106,7 +106,7 @@ export class ModeHandler implements vscode.Disposable {
       );
     });
 
-    this._disposables.push(disposable);
+    this._disposables.push(onChangeTextEditorSelection);
     this._disposables.push(this.vimState);
   }
 
