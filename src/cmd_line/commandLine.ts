@@ -30,11 +30,6 @@ class CommandLineHistory {
   }
 
   public get(): string[] {
-    if (!this._is_loaded) {
-      this.load();
-      this._is_loaded = true;
-    }
-
     if (this._history.length > configuration.history) {
       // resize history because "vim.history" is updated.
       this._history = this._history.slice(0, configuration.history);
@@ -48,29 +43,56 @@ class CommandLineHistory {
     this._filePath = filePath;
   }
 
-  private load(): void {
+  public load(): void {
     const fs = require('fs');
 
-    if (!fs.existsSync(this._filePath)) {
-      return;
-    }
+    fs.readFile(this._filePath, 'utf-8', (err: Error, data: string) => {
+      this._is_loaded = true;
 
-    try {
-      let data = fs.readFileSync(this._filePath, 'utf-8');
-      let parsedData = JSON.parse(data);
-      if (Array.isArray(parsedData)) {
-        this._history = parsedData;
-      } else {
-        console.log('CommandLine: Failed to load history.');
+      if (err) {
+        console.log(err);
+
+        if (this._history.length > 0) {
+          this.save();
+        }
+        return;
       }
-    } catch (e) {
-      console.error(e);
-    }
+
+      try {
+        let parsedData = JSON.parse(data);
+        if (Array.isArray(parsedData)) {
+          let not_saved_history: string[] = this._history;
+          this._history = parsedData;
+
+          // add ccommands that were run before history was loaded.
+          if (not_saved_history.length > 0) {
+            for (let cmd of not_saved_history.reverse()) {
+              this.add(cmd);
+            }
+            this.save();
+          }
+        } else {
+          console.log('CommandLine: Failed to load history.');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
   }
 
   public save(): void {
+    if (!this._is_loaded) {
+      console.log('CommandLine: Failed to save history because history is unloaded.');
+      return;
+    }
+
     const fs = require('fs');
-    fs.writeFileSync(this._filePath, JSON.stringify(this._history), 'utf-8');
+
+    fs.writeFile(this._filePath, JSON.stringify(this._history), 'utf-8', (err: Error) => {
+      if (err) {
+        console.log(err);
+      }
+    });
   }
 }
 
@@ -161,5 +183,6 @@ export class CommandLine {
     const path = require('path');
     const filePath: string = path.join(historyDirPath, '.cmdline_history');
     this._history.setFilePath(filePath);
+    this._history.load();
   }
 }
