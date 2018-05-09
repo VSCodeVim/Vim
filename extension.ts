@@ -265,7 +265,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  CommandLine.SetHistoryDirPath(context.extensionPath);
+  CommandLine.LoadHistory();
 
   registerCommand(context, 'toggleVim', async () => {
     configuration.disableExt = !configuration.disableExt;

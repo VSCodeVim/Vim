@@ -67,3 +67,22 @@ export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(
     x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
   );
 }
+
+export async function getExternalExtensionDirPath(): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const os = require('os');
+    const homeDir: string = os.homedir();
+    const path = require('path');
+    const extensionFolder = path.join(homeDir, '.VSCodeVim');
+    const fs = require('fs');
+
+    fs.mkdir(extensionFolder, 0o775, (err: any) => {
+      if (!err || err.code === 'EEXIST') {
+        resolve(extensionFolder);
+      } else {
+        console.log(err);
+        reject(err);
+      }
+    });
+  });
+}

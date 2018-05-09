@@ -92,10 +92,13 @@ export class CommandLine {
     return cmd;
   }
 
-  public static SetHistoryDirPath(historyDirPath: string): void {
-    const path = require('path');
-    const filePath: string = path.join(historyDirPath, '.cmdline_history');
-    this._history.setFilePath(filePath);
-    this._history.load();
+  public static LoadHistory(): void {
+    util.getExternalExtensionDirPath().then(externalExtensionDirPath => {
+      const path = require('path');
+      const filePath: string = path.join(externalExtensionDirPath, '.cmdline_history');
+
+      this._history.setFilePath(filePath);
+      this._history.load();
+    });
   }
 }
