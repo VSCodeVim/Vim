@@ -9,7 +9,7 @@ var gulp = require('gulp'),
 
 // compile
 gulp.task('compile', function() {
-  let isError = false;
+  var isError = false;
 
   var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
   var tsResult = tsProject

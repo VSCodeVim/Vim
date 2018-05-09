@@ -35,14 +35,15 @@ before_install:
     sleep 3;
   fi
 
-before_script:
-- npm run build
+script:
 - npm run forceprettier
 - if [[ $(git diff-index HEAD -- *.js *.ts) ]]; then
     git diff;
     echo "Prettier Failed. Run `gulp` or `gulp forceprettier`";
     exit 1;
   fi
+- npm run build
+- npm test --silent
 
 before_deploy:
 - npm install -g vsce;
