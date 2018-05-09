@@ -38,13 +38,7 @@ export let compareKeypressSequence = function(one: string[] | string[][], two: s
     );
   };
 
-  const isSingleAlpha = (s: string): boolean => {
-    if (s.length === 1 && (('a' <= s && s <= 'z') || ('A' <= s && s <= 'Z'))) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+  const singleAlpha: RegExp = /^[a-zA-Z]$/;
 
   for (let i = 0, j = 0; i < one.length; i++, j++) {
     const left = one[i],
@@ -64,10 +58,10 @@ export let compareKeypressSequence = function(one: string[] | string[][], two: s
       continue;
     }
 
-    if (left === '<alpha>' && isSingleAlpha(right)) {
+    if (left === '<alpha>' && singleAlpha.test(right)) {
       continue;
     }
-    if (right === '<alpha>' && isSingleAlpha(left)) {
+    if (right === '<alpha>' && singleAlpha.test(left)) {
       continue;
     }
 
