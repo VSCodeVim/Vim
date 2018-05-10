@@ -85,7 +85,7 @@ export async function getExternalExtensionDirPath(): Promise<string> {
       if (!err || err.code === 'EEXIST') {
         resolve(extensionFolder);
       } else {
-        console.log(err);
+        Logger.debug(err.message);
         reject(err);
       }
     });

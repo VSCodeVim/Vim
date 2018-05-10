@@ -79,7 +79,7 @@ export class CommandLine {
     vimState: VimState
   ): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
-      console.log('CommandLine: No active document.');
+      Logger.debug('CommandLine: No active document.');
       return '';
     }
 

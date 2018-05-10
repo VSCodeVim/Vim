@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
+import { Logger } from '../util/logger';
 
 export class CommandLineHistory {
   private _history: string[] = [];
@@ -40,15 +41,18 @@ export class CommandLineHistory {
   public load(): void {
     const fs = require('fs');
 
-    fs.readFile(this._filePath, 'utf-8', (err: Error, data: string) => {
+    fs.readFile(this._filePath, 'utf-8', (err: any, data: string) => {
       this._is_loaded = true;
 
       if (err) {
-        console.log(err);
-
-        // add ccommands that were run before history was loaded.
-        if (this._history.length > 0) {
-          this.save();
+        if (err.code === 'ENOENT') {
+          Logger.debug('CommandLineHistory: History does not exist.');
+          // add ccommands that were run before history was loaded.
+          if (this._history.length > 0) {
+            this.save();
+          }
+        } else {
+          Logger.error(err.message, 'Failed to load history.');
         }
         return;
       }
@@ -67,17 +71,20 @@ export class CommandLineHistory {
             this.save();
           }
         } else {
-          console.log('CommandLine: Failed to load history.');
+          Logger.error(
+            'CommandLineHistory: The history format is unknown.',
+            'Failed to load history.'
+          );
         }
       } catch (e) {
-        console.error(e);
+        Logger.error(e.message, 'Failed to load history.');
       }
     });
   }
 
   public save(): void {
     if (!this._is_loaded) {
-      console.log('CommandLine: Failed to save history because history is unloaded.');
+      Logger.debug('CommandLineHistory: Failed to save history because history is unloaded.');
       return;
     }
 
@@ -85,7 +92,7 @@ export class CommandLineHistory {
 
     fs.writeFile(this._filePath, JSON.stringify(this._history), 'utf-8', (err: Error) => {
       if (err) {
-        console.log(err);
+        Logger.error(err.message, 'Failed to save history.');
       }
     });
   }
