@@ -205,6 +205,10 @@ class Configuration implements IConfiguration {
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
+  enableSmartIM = false;
+  smartIMPath = '/usr/local/bin/im-select';
+  defaultIMKey = 'com.apple.keylayout.US';
+
   timeout = 1000;
 
   showcmd = true;

@@ -199,6 +199,13 @@ export interface IConfiguration {
   cmdLineInitialColon: boolean;
 
   /**
+   * SmartIM
+   */
+  enableSmartIM: boolean;
+  smartIMPath: string;
+  defaultIMKey: string;
+
+  /**
    * Keybindings
    */
   insertModeKeyBindings: IKeyRemapping[];

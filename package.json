@@ -570,6 +570,21 @@
           "type": "boolean",
           "description": "When typing a command show the initial colon ':' character",
           "default": false
+        },
+        "vim.enableSmartIM": {
+          "type": "boolean",
+          "description": "Automatically change to English input method when you exit insert mode",
+          "default": false
+        },
+        "vim.smartIMPath": {
+          "type": "string",
+          "description": "The path of the im-select program",
+          "default": "/usr/local/bin/im-select"
+        },
+        "vim.defaultIMKey": {
+          "type": "string",
+          "description": "The key of your input method, use im-select to find it",
+          "default": "com.apple.keylayout.US"
         }
       }
     }

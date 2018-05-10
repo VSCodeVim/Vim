@@ -24,6 +24,9 @@ export class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'normal';
   easymotionMarkerYOffset = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
+  enableSmartIM = false;
+  smartIMPath = '/usr/local/bin/im-select';
+  defaultIMKey = 'com.apple.keylayout.US';
   timeout = 1000;
   showcmd = true;
   showmodename = true;

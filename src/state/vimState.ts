@@ -14,6 +14,7 @@ import { ReplaceState } from './../state/replaceState';
 import { RecordedState } from './recordedState';
 import { Neovim } from '../neovim/neovim';
 import { Logger } from '../util/logger';
+import { SmartIM } from '../actions/plugins/smartim';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -41,6 +42,8 @@ export class VimState implements vscode.Disposable {
   public identity: EditorIdentity;
 
   public editor: vscode.TextEditor;
+
+  public smartIM: SmartIM;
 
   /**
    * For timing out remapped keys like jj to esc.
@@ -188,6 +191,7 @@ export class VimState implements vscode.Disposable {
   }
 
   public set currentMode(value: number) {
+    this.smartIM.changeInputMethod(this._currentMode, value);
     this._currentMode = value;
   }
 
@@ -229,6 +233,7 @@ export class VimState implements vscode.Disposable {
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
+    this.smartIM = new SmartIM();
   }
 
   dispose() {
