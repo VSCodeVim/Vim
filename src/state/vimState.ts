@@ -13,6 +13,7 @@ import { GlobalState } from './../state/globalState';
 import { ReplaceState } from './../state/replaceState';
 import { RecordedState } from './recordedState';
 import { Neovim } from '../neovim/neovim';
+import { Logger } from '../util/logger';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -146,7 +147,7 @@ export class VimState implements vscode.Disposable {
   public set allCursors(value: Range[]) {
     for (const cursor of value) {
       if (!cursor.start.isValid() || !cursor.stop.isValid()) {
-        console.log('invalid value for set cursor position. This is probably bad?');
+        Logger.debug('VimState: invalid value for set cursor position. This is probably bad?');
       }
     }
 

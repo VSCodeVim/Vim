@@ -43,7 +43,7 @@ script:
     exit 1;
   fi
 - npm run build
-- npm test --silent;
+- npm test --silent
 
 before_deploy:
 - npm install -g vsce;

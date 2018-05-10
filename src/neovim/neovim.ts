@@ -10,6 +10,7 @@ import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
 import { Position } from './../common/motion/position';
 import { VimState } from './../state/vimState';
+import { Logger } from '../util/logger';
 
 export class Neovim implements vscode.Disposable {
   private process: ChildProcess;
@@ -24,8 +25,7 @@ export class Neovim implements vscode.Disposable {
       cwd: dir,
     });
     this.process.on('error', err => {
-      console.log(err);
-      vscode.window.showErrorMessage('Unable to setup neovim instance! Check your path.');
+      Logger.error(err.message, `Neovim: Error spawning neovim. Error=${err.message}.`);
       configuration.enableNeovim = false;
     });
     this.nvim = await attach(this.process.stdin, this.process.stdout);
@@ -115,7 +115,9 @@ export class Neovim implements vscode.Disposable {
       fixedLines.join('\n')
     );
 
-    console.log(`${lines.length} lines in nvim but ${TextEditor.getLineCount()} in editor.`);
+    Logger.debug(
+      `Neovim: ${lines.length} lines in nvim but ${TextEditor.getLineCount()} in editor.`
+    );
 
     let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
       1,

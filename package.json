@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.11.5",
+  "version": "0.11.6",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -583,19 +583,20 @@
   },
   "dependencies": {
     "clipboardy": "1.2.3",
-    "diff-match-patch": "1.0.0",
+    "diff-match-patch": "1.0.1",
     "lodash": "4.17.10",
     "neovim-client": "2.1.0",
     "promised-neovim-client": "2.0.2",
     "untildify": "3.0.2"
   },
   "devDependencies": {
+    "@types/clipboardy": "1.1.0",
     "@types/copy-paste": "1.1.30",
     "@types/diff": "3.5.1",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.108",
     "@types/mocha": "5.2.0",
-    "@types/node": "9.6.7",
+    "@types/node": "9.6.14",
     "gulp": "3.9.1",
     "gulp-bump": "3.1.1",
     "gulp-filter": "5.1.0",

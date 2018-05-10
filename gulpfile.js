@@ -9,12 +9,22 @@ var gulp = require('gulp'),
 
 // compile
 gulp.task('compile', function() {
+  var isError = false;
+
   var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
-  return tsProject
+  var tsResult = tsProject
     .src()
     .pipe(sourcemaps.init())
     .pipe(tsProject())
-    .js.pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '' }))
+    .on('error', function(error) {
+      isError = true;
+    })
+    .on('finish', function() {
+      isError && process.exit(1);
+    });
+
+  return tsResult.js
+    .pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '' }))
     .pipe(gulp.dest('out'));
 });
 

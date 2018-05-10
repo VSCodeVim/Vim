@@ -30,12 +30,12 @@ import {
   TextTransformations,
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
+import { Logger } from '../util/logger';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _remappers: Remappers;
-  public debugId: number; // Used solely for debugging purposes
 
   public vimState: VimState;
 
@@ -44,7 +44,6 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   constructor() {
-    this.debugId = Math.floor(Math.random() * 1000);
     this._remappers = new Remappers();
     this._modes = [
       new modes.NormalMode(),
@@ -71,13 +70,28 @@ export class ModeHandler implements vscode.Disposable {
     // This also makes things like gd work.
     // For whatever reason, the editor positions aren't updated until after the
     // stack clears, which is why this setTimeout is necessary
-    setTimeout(() => {
-      this.syncCursors();
-    }, 0);
+    this.syncCursors();
 
     // Handle scenarios where mouse used to change current position.
-    const disposable = vscode.window.onDidChangeTextEditorSelection(e => {
+    const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(e => {
       if (configuration.disableExt) {
+        return;
+      }
+
+      if (Globals.isTesting) {
+        return;
+      }
+
+      if (e.textEditor !== this.vimState.editor) {
+        return;
+      }
+
+      if (this.vimState.focusChanged) {
+        this.vimState.focusChanged = false;
+        return;
+      }
+
+      if (this.currentMode.name === ModeName.EasyMotionMode) {
         return;
       }
 
@@ -92,7 +106,7 @@ export class ModeHandler implements vscode.Disposable {
       );
     });
 
-    this._disposables.push(disposable);
+    this._disposables.push(onChangeTextEditorSelection);
     this._disposables.push(this.vimState);
   }
 
@@ -112,23 +126,6 @@ export class ModeHandler implements vscode.Disposable {
    * perform the manual testing.
    */
   private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
-    if (Globals.isTesting) {
-      return;
-    }
-
-    if (e.textEditor !== this.vimState.editor) {
-      return;
-    }
-
-    if (this.vimState.focusChanged) {
-      this.vimState.focusChanged = false;
-      return;
-    }
-
-    if (this.currentMode.name === ModeName.EasyMotionMode) {
-      return;
-    }
-
     let selection = e.selections[0];
     if (
       (e.selections.length !== this.vimState.allCursors.length || this.vimState.isMultiCursor) &&
@@ -868,7 +865,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
-        console.log(
+        Logger.debug(
           `Text transformations are overlapping. Falling back to serial
            transformations. This is generally a very bad sign. Try to make
            your text transformations operate on non-overlapping ranges.`
@@ -1445,16 +1442,18 @@ export class ModeHandler implements vscode.Disposable {
 
   // Syncs cursors between vscode representation and vim representation
   syncCursors() {
-    if (this.vimState.editor) {
-      this.vimState.cursorStartPosition = Position.FromVSCodePosition(
-        this.vimState.editor.selection.start
-      );
-      this.vimState.cursorPosition = Position.FromVSCodePosition(
-        this.vimState.editor.selection.start
-      );
-      this.vimState.desiredColumn = this.vimState.cursorPosition.character;
+    setTimeout(() => {
+      if (this.vimState.editor) {
+        this.vimState.cursorStartPosition = Position.FromVSCodePosition(
+          this.vimState.editor.selection.start
+        );
+        this.vimState.cursorPosition = Position.FromVSCodePosition(
+          this.vimState.editor.selection.start
+        );
+        this.vimState.desiredColumn = this.vimState.cursorPosition.character;
 
-      this.vimState.prevSelection = this.vimState.editor.selection;
-    }
+        this.vimState.prevSelection = this.vimState.editor.selection;
+      }
+    }, 0);
   }
 }

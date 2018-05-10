@@ -1,8 +1,37 @@
 # Change Log
 
-## [v0.11.5](https://github.com/vscodevim/vim/tree/HEAD)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.4...HEAD)
+## [v0.11.6](https://github.com/vscodevim/vim/tree/HEAD)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.5...HEAD)
+
+- chore\(deps\): update dependency @types/node to v9.6.12 [\#2615](https://github.com/VSCodeVim/Vim/pull/2615) ([renovate-bot](https://github.com/renovate-bot))
+- \[Fix\] \* command highlights extra content [\#2611](https://github.com/VSCodeVim/Vim/pull/2611) ([tyru](https://github.com/tyru))
+- \[Fix\] p in visual line appends unnecessary newline [\#2609](https://github.com/VSCodeVim/Vim/pull/2609) ([tyru](https://github.com/tyru))
+- chore\(deps\): update dependency tslint to v5.10.0 [\#2605](https://github.com/VSCodeVim/Vim/pull/2605) ([renovate-bot](https://github.com/renovate-bot))
+- Add o command in visual block mode [\#2604](https://github.com/VSCodeVim/Vim/pull/2604) ([tyru](https://github.com/tyru))
+- \[Fix\] p in visual-mode should update register content [\#2602](https://github.com/VSCodeVim/Vim/pull/2602) ([tyru](https://github.com/tyru))
+- \[Fix\] p won't work in linewise visual-mode at the end of document [\#2601](https://github.com/VSCodeVim/Vim/pull/2601) ([tyru](https://github.com/tyru))
+- Add missing window keys \(\<C-w\>\<C-\[hjklovq\]\>\) [\#2600](https://github.com/VSCodeVim/Vim/pull/2600) ([tyru](https://github.com/tyru))
+- fix: fail on ts transpile errors by setting noEmitOnErrors [\#2599](https://github.com/VSCodeVim/Vim/pull/2599) ([jpoon](https://github.com/jpoon))
+- add easymotion-lineforward and easymotion-linebackward [\#2596](https://github.com/VSCodeVim/Vim/pull/2596) ([hy950831](https://github.com/hy950831))
+- Fix description in 🔢 % command [\#2595](https://github.com/VSCodeVim/Vim/pull/2595) ([Ding-Fan](https://github.com/Ding-Fan))
+- \[Fix\] \<C-h\> should work as same as \<BS\> in search mode [\#2593](https://github.com/VSCodeVim/Vim/pull/2593) ([tyru](https://github.com/tyru))
+- \[Fix\] aW doesn't work at the end of lines [\#2591](https://github.com/VSCodeVim/Vim/pull/2591) ([tyru](https://github.com/tyru))
+- Implement gn,gN command [\#2589](https://github.com/VSCodeVim/Vim/pull/2589) ([tyru](https://github.com/tyru))
+- \[Fix\] p in visual-mode should save last selection [\#2588](https://github.com/VSCodeVim/Vim/pull/2588) ([tyru](https://github.com/tyru))
+- \[Fix\] Transition between v,V,\<C-v\> is different with original Vim behavior [\#2581](https://github.com/VSCodeVim/Vim/pull/2581) ([tyru](https://github.com/tyru))
+- \[Fix\] Don't add beginning newline of linewise put in visual-mode [\#2579](https://github.com/VSCodeVim/Vim/pull/2579) ([tyru](https://github.com/tyru))
+- fix: Manually dispose ModeHandler when no longer needed [\#2577](https://github.com/VSCodeVim/Vim/pull/2577) ([BinaryKhaos](https://github.com/BinaryKhaos))
+- chore\(deps\): update dependency vscode to v1.1.16 [\#2575](https://github.com/VSCodeVim/Vim/pull/2575) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/node to v9.6.7 [\#2573](https://github.com/VSCodeVim/Vim/pull/2573) ([renovate-bot](https://github.com/renovate-bot))
+- Fixes \#2569. Fix vi{ for nested braces. [\#2572](https://github.com/VSCodeVim/Vim/pull/2572) ([Shadaraman](https://github.com/Shadaraman))
+- Fixed neovim spawning in invalid directories [\#2570](https://github.com/VSCodeVim/Vim/pull/2570) ([Chillee](https://github.com/Chillee))
+- chore\(deps\): update dependency @types/lodash to v4.14.108 [\#2565](https://github.com/VSCodeVim/Vim/pull/2565) ([renovate-bot](https://github.com/renovate-bot))
+- Hopefully fixing the rest of our undo issues [\#2559](https://github.com/VSCodeVim/Vim/pull/2559) ([Chillee](https://github.com/Chillee))
+
+## [v0.11.5](https://github.com/vscodevim/vim/tree/v0.11.5) (2018-04-23)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.4...v0.11.5)
 
 - chore\(deps\): update dependency gulp-bump to v3.1.1 [\#2556](https://github.com/VSCodeVim/Vim/pull/2556) ([renovate-bot](https://github.com/renovate-bot))
 - chore\(deps\): update dependency typescript to v2.8.3 [\#2553](https://github.com/VSCodeVim/Vim/pull/2553) ([renovate-bot](https://github.com/renovate-bot))
