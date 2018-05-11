@@ -3,7 +3,12 @@ import * as vscode from 'vscode';
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
 import { Notation } from './notation';
-import { IConfiguration, IKeyRemapping, IModeSpecificStrings } from './iconfiguration';
+import {
+  IConfiguration,
+  IKeyRemapping,
+  IModeSpecificStrings,
+  IAutoSwitchInputMethodConfig,
+} from './iconfiguration';
 
 const packagejson: {
   contributes: {
@@ -205,9 +210,11 @@ class Configuration implements IConfiguration {
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
-  enableSmartIM = false;
-  smartIMPath = '/usr/local/bin/im-select';
-  defaultIMKey = 'com.apple.keylayout.US';
+  autoSwitchInputMethod = false;
+  autoSwitchInputMethodConfig: IAutoSwitchInputMethodConfig = {
+    dependencyPath: '/usr/local/bin/im-select',
+    defaultInputMethodKey: 'com.apple.keylayout.US',
+  };
 
   timeout = 1000;
 

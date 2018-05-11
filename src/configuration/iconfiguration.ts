@@ -15,6 +15,11 @@ export interface IKeyRemapping {
   commands?: { command: string; args: any[] }[];
 }
 
+export interface IAutoSwitchInputMethodConfig {
+  dependencyPath: string;
+  defaultInputMethodKey: string;
+}
+
 export interface IConfiguration {
   /**
    * Use the system's clipboard when copying.
@@ -199,11 +204,10 @@ export interface IConfiguration {
   cmdLineInitialColon: boolean;
 
   /**
-   * SmartIM
+   * InputMethodSwicher
    */
-  enableSmartIM: boolean;
-  smartIMPath: string;
-  defaultIMKey: string;
+  autoSwitchInputMethod: boolean;
+  autoSwitchInputMethodConfig: IAutoSwitchInputMethodConfig;
 
   /**
    * Keybindings

@@ -4,13 +4,13 @@ import { existsSync } from 'fs';
 import { configuration } from '../../configuration/configuration';
 import * as vscode from 'vscode';
 
-// SmartIM change input method automatically when mode changed
-export class SmartIM {
+// InputMethodSwitcher change input method automatically when mode changed
+export class InputMethodSwitcher {
   public savedIM = '';
 
-  public async changeInputMethod(oldMode: ModeName, newMode: ModeName) {
-    const enableSmartIM = configuration.enableSmartIM;
-    if (enableSmartIM !== true) {
+  public async switchInputMethod(oldMode: ModeName, newMode: ModeName) {
+    const enableAutoSwitch = configuration.autoSwitchInputMethod;
+    if (enableAutoSwitch !== true) {
       return;
     }
     // when you exit from insert-like mode, save origin input method and set it to default
@@ -47,16 +47,16 @@ export class SmartIM {
   // save origin input method and set input method to default
   public async disableOriginInputMethod() {
     if (process.platform === 'darwin') {
-      const commandPath = configuration.smartIMPath;
+      const commandPath = configuration.autoSwitchInputMethodConfig.dependencyPath;
       if (existsSync(commandPath)) {
         const originIM = await this.execShell(commandPath);
         if (originIM !== undefined) {
           this.savedIM = originIM;
         }
-        const defaultIMKey = configuration.defaultIMKey;
+        const defaultIMKey = configuration.autoSwitchInputMethodConfig.defaultInputMethodKey;
         await this.execShell(commandPath + ' ' + defaultIMKey);
       } else {
-        vscode.window.showErrorMessage('Unable to find im-select, check your smartIMPath config');
+        vscode.window.showErrorMessage('Unable to find im-select, check your InputMethodSwitcherPath config');
       }
     }
   }
@@ -64,13 +64,13 @@ export class SmartIM {
   // resume origin inputmethod
   public async enableOriginInputMethod() {
     if (process.platform === 'darwin') {
-      const commandPath = configuration.smartIMPath;
+      const commandPath = configuration.autoSwitchInputMethodConfig.dependencyPath;
       if (existsSync(commandPath)) {
         if (this.savedIM !== undefined && this.savedIM !== '') {
           await this.execShell(commandPath + ' ' + this.savedIM);
         }
       } else {
-        vscode.window.showErrorMessage('Unable to find im-select, check your smartIMPath config');
+        vscode.window.showErrorMessage('Unable to find im-select, check your InputMethodSwitcherPath config');
       }
     }
   }
