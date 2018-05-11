@@ -56,7 +56,11 @@ export class InputMethodSwitcher {
         const defaultIMKey = configuration.autoSwitchInputMethodConfig.defaultInputMethodKey;
         await this.execShell(commandPath + ' ' + defaultIMKey);
       } else {
-        vscode.window.showErrorMessage('Unable to find im-select, check your InputMethodSwitcherPath config');
+        vscode.window.showErrorMessage(
+          'Unable to find im-select,\
+        check your "vim.autoSwitchInputMethodConfig" in VSCode setting. \
+        Or you can turn off "vim.autoSwitchInputMethod" to dismiss this error message'
+        );
       }
     }
   }
@@ -70,7 +74,11 @@ export class InputMethodSwitcher {
           await this.execShell(commandPath + ' ' + this.savedIM);
         }
       } else {
-        vscode.window.showErrorMessage('Unable to find im-select, check your InputMethodSwitcherPath config');
+        vscode.window.showErrorMessage(
+          'Unable to find im-select,\
+        check your "vim.autoSwitchInputMethodConfig" in VSCode setting. \
+        Or you can turn off "vim.autoSwitchInputMethod" to dismiss this error message'
+        );
       }
     }
   }
