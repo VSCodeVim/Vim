@@ -513,6 +513,65 @@ Motion Command | Description
 `<operator>z<char><char>`|Perform `<operator>` forward to the first occurence of `<char><char>`
 `<operator>Z<char><char>`|Perform `<operator>` backward to the first occurence of `<char><char>`
 
+## Switch Input Method Automatically
+(only support macOS for now)
+
+### 1.Install dependency
+
+Run following command in your terminal
+```shell
+curl -Ls https://raw.githubusercontent.com/daipeihust/smartim/master/install.sh | sh
+```
+This command will download a binary file `im-select` to your `/usr/local/bin/` path
+
+### 2.Find your default input method key
+
+Switch your input method to English, and run following command in your terminal
+```shell
+/usr/local/bin/im-select
+```
+My output is: `com.apple.keylayout.US`
+
+The main English input method key on macOS:
+key | description
+--- | -----------
+com.apple.keylayout.US | U.S.
+com.apple.keylayout.ABC | ABC
+com.apple.keylayout.British | British
+com.apple.keylayout.Irish | Irish
+com.apple.keylayout.Australian | Australian
+com.apple.keylayout.Dvorak | Dvorak
+com.apple.keylayout.Colemak | Colemak
+
+### 3.Add configuration to your VScode setting
+
+Open this function first
+```json
+"vim.autoSwitchInputMethod": true
+```
+
+If your default input key is `com.apple.keylayout.US` and your haven't move the im-select to other path, you don't need to config any more, you can use this function now.
+
+If your default input key is not `com.apple.keylayout.US`, you should add following configuration:
+
+```json
+"vim.autoSwitchInputMethodConfig": {
+    "dependencyPath": "/path/to/your/im-select",
+    "defaultInputMethodKey": "com.apple.keylayout.xxx"
+}
+```
+
+#### Example configuration for whole AutoSwitchInputMethod function:
+
+If your default input method key is `com.apple.keylayout.ABC`, and  `im-select` path is default path. The configuration is:
+
+```json
+"vim.autoSwitchInputMethod": true,
+"vim.autoSwitchInputMethodConfig": {
+    "dependencyPath": "/usr/local/bin/im-select",
+    "defaultInputMethodKey": "com.apple.keylayout.ABC"
+}
+```
 
 ## VSCodeVim tricks!
 
