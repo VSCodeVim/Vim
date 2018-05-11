@@ -2240,6 +2240,13 @@ function selectLastSearchWord(vimState: VimState, direction: SearchDirection) {
   vimState.cursorStartPosition =
     vimState.currentMode === ModeName.Normal ? result.start : vimState.cursorPosition;
   vimState.cursorPosition = result.end.getLeftThroughLineBreaks(); // end is exclusive
+
+  // Move the cursor, this is a bit hacky...
+  vscode.window.activeTextEditor!.selection = new vscode.Selection(
+    vimState.cursorStartPosition,
+    vimState.cursorPosition
+  );
+
   vimState.currentMode = ModeName.Visual;
 
   return vimState;

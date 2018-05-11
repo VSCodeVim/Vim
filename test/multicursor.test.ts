@@ -1,0 +1,60 @@
+import * as assert from 'assert';
+
+import * as vscode from 'vscode';
+import { getAndUpdateModeHandler } from '../extension';
+import { ModeHandler } from '../src/mode/modeHandler';
+import { TextEditor } from '../src/textEditor';
+import * as util from '../src/util';
+import { getTestingFunctions } from './testSimplifier';
+import {
+  assertEqual,
+  assertEqualLines,
+  cleanUpWorkspace,
+  reloadConfiguration,
+  setupWorkspace,
+} from './testUtils';
+
+suite('Multicursor', () => {
+  let modeHandler: ModeHandler;
+
+  let { newTest, newTestOnly } = getTestingFunctions();
+
+  setup(async () => {
+    await setupWorkspace();
+    modeHandler = await getAndUpdateModeHandler();
+  });
+
+  teardown(cleanUpWorkspace);
+
+  test('can add multiple cursors below', async () => {
+    await modeHandler.handleMultipleKeyEvents('i11\n22'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    assertEqualLines(['11', '22']);
+
+    if (process.platform === 'darwin') {
+      await modeHandler.handleMultipleKeyEvents(['<D-alt+down>']);
+    } else {
+      await modeHandler.handleMultipleKeyEvents(['<C-alt+down>']);
+    }
+
+    assertEqual(modeHandler.vimState.allCursors.length, 2, 'Cursor succesfully created.');
+    await modeHandler.handleMultipleKeyEvents(['c', 'w', '3', '3', '<Esc>']);
+    assertEqualLines(['33', '33']);
+  });
+
+  test('can add multiple cursors above', async () => {
+    await modeHandler.handleMultipleKeyEvents('i11\n22\n33'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0']);
+    assertEqualLines(['11', '22', '33']);
+
+    if (process.platform === 'darwin') {
+      await modeHandler.handleMultipleKeyEvents(['<D-alt+up>', '<D-alt+up>']);
+    } else {
+      await modeHandler.handleMultipleKeyEvents(['<C-alt+up>', '<C-alt+up>']);
+    }
+
+    assertEqual(modeHandler.vimState.allCursors.length, 3, 'Cursor succesfully created.');
+    await modeHandler.handleMultipleKeyEvents(['c', 'w', '4', '4', '<Esc>']);
+    assertEqualLines(['44', '44', '44']);
+  });
+});
