@@ -5,7 +5,7 @@ import { Logger } from '../util/logger';
 
 export class CommandLineHistory {
   private _history: string[] = [];
-  private _is_loaded: boolean = false;
+  private _is_loading: boolean = false;
   private _filePath: string = '';
 
   public add(command: string | undefined): void {
@@ -38,62 +38,77 @@ export class CommandLineHistory {
     this._filePath = filePath;
   }
 
-  public load(): void {
-    const fs = require('fs');
+  public async load(): Promise<void> {
+    this._history = [];
+    this._is_loading = true;
 
-    fs.readFile(this._filePath, 'utf-8', (err: any, data: string) => {
-      this._is_loaded = true;
+    return new Promise<void>((resolve, reject) => {
+      const fs = require('fs');
+      fs.readFile(this._filePath, 'utf-8', (err: any, data: string) => {
+        this._is_loading = false;
 
-      if (err) {
-        if (err.code === 'ENOENT') {
-          Logger.debug('CommandLineHistory: History does not exist.');
-          // add ccommands that were run before history was loaded.
-          if (this._history.length > 0) {
-            this.save();
-          }
-        } else {
-          Logger.error(err.message, 'Failed to load history.');
-        }
-        return;
-      }
-
-      try {
-        let parsedData = JSON.parse(data);
-        if (Array.isArray(parsedData)) {
-          let not_saved_history: string[] = this._history;
-          this._history = parsedData;
-
-          // add ccommands that were run before history was loaded.
-          if (not_saved_history.length > 0) {
-            for (let cmd of not_saved_history.reverse()) {
-              this.add(cmd);
+        if (err) {
+          if (err.code === 'ENOENT') {
+            Logger.debug('CommandLineHistory: History does not exist.');
+            // add ccommands that were run before history was loaded.
+            if (this._history.length > 0) {
+              this.save();
             }
-            this.save();
+            resolve();
+          } else {
+            Logger.error(err.message, 'Failed to load history.');
+            reject();
           }
-        } else {
-          Logger.error(
-            'CommandLineHistory: The history format is unknown.',
-            'Failed to load history.'
-          );
+          return;
         }
-      } catch (e) {
-        Logger.error(e.message, 'Failed to load history.');
-      }
+
+        try {
+          let parsedData = JSON.parse(data);
+          if (Array.isArray(parsedData)) {
+            let not_saved_history: string[] = this._history;
+            this._history = parsedData;
+
+            // add ccommands that were run before history was loaded.
+            if (not_saved_history.length > 0) {
+              for (let cmd of not_saved_history.reverse()) {
+                this.add(cmd);
+              }
+              this.save();
+            }
+            resolve();
+          } else {
+            Logger.error(
+              'CommandLineHistory: The history format is unknown.',
+              'Failed to load history.'
+            );
+            reject();
+          }
+        } catch (e) {
+          Logger.error(e.message, 'Failed to load history.');
+          reject();
+        }
+      });
     });
   }
 
-  public save(): void {
-    if (!this._is_loaded) {
-      Logger.debug('CommandLineHistory: Failed to save history because history is unloaded.');
-      return;
-    }
-
-    const fs = require('fs');
-
-    fs.writeFile(this._filePath, JSON.stringify(this._history), 'utf-8', (err: Error) => {
-      if (err) {
-        Logger.error(err.message, 'Failed to save history.');
+  public async save(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (this._is_loading) {
+        Logger.debug('CommandLineHistory: Failed to save history because history is loading.');
+        resolve();
+        return;
       }
+
+      const fs = require('fs');
+
+      fs.writeFile(this._filePath, JSON.stringify(this._history), 'utf-8', (err: Error) => {
+        if (!err) {
+          resolve();
+        } else {
+          Logger.error(err.message, 'Failed to save history.');
+          reject();
+        }
+      });
     });
   }
 }
