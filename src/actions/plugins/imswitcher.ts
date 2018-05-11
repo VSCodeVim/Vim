@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
-  public savedIM = '';
+  public savedIMKey = '';
 
   public async switchInputMethod(oldMode: ModeName, newMode: ModeName) {
     const enableAutoSwitch = configuration.autoSwitchInputMethod;
@@ -49,12 +49,14 @@ export class InputMethodSwitcher {
     if (process.platform === 'darwin') {
       const commandPath = configuration.autoSwitchInputMethodConfig.dependencyPath;
       if (existsSync(commandPath)) {
-        const originIM = await this.execShell(commandPath);
-        if (originIM !== undefined) {
-          this.savedIM = originIM;
+        const originIMKey = await this.execShell(commandPath);
+        if (originIMKey !== undefined) {
+          this.savedIMKey = originIMKey.trim();
         }
         const defaultIMKey = configuration.autoSwitchInputMethodConfig.defaultInputMethodKey;
-        await this.execShell(commandPath + ' ' + defaultIMKey);
+        if (this.savedIMKey !== defaultIMKey) {
+          await this.execShell(commandPath + ' ' + defaultIMKey);
+        }
       } else {
         vscode.window.showErrorMessage(
           'Unable to find im-select,\
@@ -69,9 +71,14 @@ export class InputMethodSwitcher {
   public async enableOriginInputMethod() {
     if (process.platform === 'darwin') {
       const commandPath = configuration.autoSwitchInputMethodConfig.dependencyPath;
+      const defaultIMKey = configuration.autoSwitchInputMethodConfig.defaultInputMethodKey;
       if (existsSync(commandPath)) {
-        if (this.savedIM !== undefined && this.savedIM !== '') {
-          await this.execShell(commandPath + ' ' + this.savedIM);
+        if (
+          this.savedIMKey !== defaultIMKey &&
+          this.savedIMKey !== undefined &&
+          this.savedIMKey !== ''
+        ) {
+          await this.execShell(commandPath + ' ' + this.savedIMKey);
         }
       } else {
         vscode.window.showErrorMessage(
