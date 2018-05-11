@@ -189,6 +189,13 @@ export interface ShowCommandLine {
 }
 
 /**
+ * Represents pressing ':'
+ */
+export interface ShowCommandHistory {
+  type: 'showCommandHistory';
+}
+
+/**
  * Represents pressing '.'
  */
 export interface Dot {
@@ -234,6 +241,7 @@ export type Transformation =
   | DeleteTextTransformation
   | MoveCursorTransformation
   | ShowCommandLine
+  | ShowCommandHistory
   | Dot
   | Macro
   | ContentChangeTransformation

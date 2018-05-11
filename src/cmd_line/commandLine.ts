@@ -8,8 +8,11 @@ import * as parser from './parser';
 import * as util from '../util';
 import { VimError, ErrorCode } from '../error';
 import { Logger } from '../util/logger';
+import { CommandLineHistory } from './commandLineHistory';
 
 export class CommandLine {
+  private static _history: CommandLineHistory = new CommandLineHistory();
+
   public static async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
       Logger.debug('CommandLine: No active document');
@@ -20,6 +23,9 @@ export class CommandLine {
     if (cmd && cmd[0] === ':' && configuration.cmdLineInitialColon) {
       cmd = cmd.slice(1);
     }
+
+    this._history.add(cmd);
+    this._history.save();
 
     await CommandLine.Run(cmd!, vimState);
   }
@@ -66,5 +72,34 @@ export class CommandLine {
         configuration.cmdLineInitialColon ? text.length + 1 : text.length,
       ],
     };
+  }
+
+  public static async ShowHistory(
+    initialText: string,
+    vimState: VimState
+  ): Promise<string | undefined> {
+    if (!vscode.window.activeTextEditor) {
+      Logger.debug('CommandLine: No active document.');
+      return '';
+    }
+
+    this._history.add(initialText);
+
+    let cmd = await vscode.window.showQuickPick(this._history.get(), {
+      placeHolder: 'Vim command history',
+      ignoreFocusOut: false,
+    });
+
+    return cmd;
+  }
+
+  public static LoadHistory(): void {
+    util.getExternalExtensionDirPath().then(externalExtensionDirPath => {
+      const path = require('path');
+      const filePath: string = path.join(externalExtensionDirPath, '.cmdline_history');
+
+      this._history.setFilePath(filePath);
+      this._history.load();
+    });
   }
 }
