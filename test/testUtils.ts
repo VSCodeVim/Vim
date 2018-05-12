@@ -19,10 +19,10 @@ function rndName() {
 export async function createRandomFile(
   contents: string,
   fileExtension: string
-): Promise<vscode.Uri> {
+): Promise<string> {
   const tmpFile = join(os.tmpdir(), rndName() + fileExtension);
   fs.writeFileSync(tmpFile, contents);
-  return vscode.Uri.file(tmpFile);
+  return tmpFile;
 }
 
 /**
@@ -79,8 +79,8 @@ export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = ''
 ): Promise<any> {
-  const file = await createRandomFile('', fileExtension);
-  const doc = await vscode.workspace.openTextDocument(file);
+  const filePath = await createRandomFile('', fileExtension);
+  const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
 
   await vscode.window.showTextDocument(doc);
 
