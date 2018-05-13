@@ -59,8 +59,9 @@ function runPrettier(command, cb) {
       return cb();
     }
 
+    const prettierPath = require('path').normalize('./node_modules/.bin/prettier');
     exec(
-      `node ./node_modules/.bin/prettier --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
+      `${prettierPath} --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
       function(err, stdout, stderr) {
         cb(err);
       }
