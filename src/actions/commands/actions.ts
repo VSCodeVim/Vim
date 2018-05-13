@@ -371,7 +371,7 @@ class CommandInsertRegisterContentInSearchMode extends BaseCommand {
 @RegisterAction
 class CommandRecordMacro extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
-  keys = ['q', '<character>'];
+  keys = [['q', '<alpha>'], ['q', '<number>'], ['q', '"']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
@@ -1715,6 +1715,31 @@ class CommandShowCommandLine extends BaseCommand {
 }
 
 @RegisterAction
+class CommandShowCommandHistory extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
+  keys = ['q', ':'];
+
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.recordedState.transformations.push({
+      type: 'showCommandHistory',
+    });
+
+    if (vimState.currentMode === ModeName.Normal) {
+      vimState.commandInitialText = '';
+    } else {
+      vimState.commandInitialText = "'<,'>";
+    }
+    vimState.currentMode = ModeName.Normal;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class CommandDot extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['.'];
@@ -2215,6 +2240,13 @@ function selectLastSearchWord(vimState: VimState, direction: SearchDirection) {
   vimState.cursorStartPosition =
     vimState.currentMode === ModeName.Normal ? result.start : vimState.cursorPosition;
   vimState.cursorPosition = result.end.getLeftThroughLineBreaks(); // end is exclusive
+
+  // Move the cursor, this is a bit hacky...
+  vscode.window.activeTextEditor!.selection = new vscode.Selection(
+    vimState.cursorStartPosition,
+    vimState.cursorPosition
+  );
+
   vimState.currentMode = ModeName.Visual;
 
   return vimState;

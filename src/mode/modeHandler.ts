@@ -796,14 +796,14 @@ export class ModeHandler implements vscode.Disposable {
       resultingCursors.push(resultingRange);
     }
 
-    // Keep track of all cursors
-    resultVimState.allCursors = resultingCursors;
-    this.vimState.editor.selections = vimState.allCursors.map(
-      cursor => new vscode.Selection(cursor.start, cursor.stop)
-    );
-
     if (vimState.recordedState.transformations.length > 0) {
       await this.executeCommand(vimState);
+    } else {
+      // Keep track of all cursors (in the case of multi-cursor).
+      resultVimState.allCursors = resultingCursors;
+      this.vimState.editor.selections = vimState.allCursors.map(
+        cursor => new vscode.Selection(cursor.start, cursor.stop)
+      );
     }
 
     return resultVimState;
@@ -906,6 +906,14 @@ export class ModeHandler implements vscode.Disposable {
         case 'showCommandLine':
           await CommandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
           this.updateView(this.vimState);
+          break;
+
+        case 'showCommandHistory':
+          let cmd = await CommandLine.ShowHistory(vimState.commandInitialText, this.vimState);
+          if (cmd && cmd.length !== 0) {
+            await CommandLine.PromptAndRun(cmd, this.vimState);
+            this.updateView(this.vimState);
+          }
           break;
 
         case 'dot':
