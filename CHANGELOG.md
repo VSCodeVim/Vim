@@ -1,9 +1,22 @@
 # Change Log
 
+## [v0.12.0](https://github.com/vscodevim/vim/tree/HEAD)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.6...HEAD)
 
-## [v0.11.6](https://github.com/vscodevim/vim/tree/HEAD)
+- Fix development problems on win [\#2651](https://github.com/VSCodeVim/Vim/pull/2651) ([KamikazeZirou](https://github.com/KamikazeZirou))
+- Fixes \#2632 [\#2641](https://github.com/VSCodeVim/Vim/pull/2641) ([xconverge](https://github.com/xconverge))
+- Revert "\[Fix\] Restore 'when' conditions in \<C-v\>, \<C-j\>, \<C-k\>" [\#2640](https://github.com/VSCodeVim/Vim/pull/2640) ([jpoon](https://github.com/jpoon))
+- fix\(deps\): update dependency diff-match-patch to v1.0.1 [\#2631](https://github.com/VSCodeVim/Vim/pull/2631) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.14 [\#2630](https://github.com/VSCodeVim/Vim/pull/2630) ([renovate-bot](https://github.com/renovate-bot))
+- \[Fix\] Restore 'when' conditions in \<C-v\>, \<C-j\>, \<C-k\> [\#2628](https://github.com/VSCodeVim/Vim/pull/2628) ([tyru](https://github.com/tyru))
+- Link to Linux setup [\#2627](https://github.com/VSCodeVim/Vim/pull/2627) ([gggauravgandhi](https://github.com/gggauravgandhi))
+- fix: immediately exit travis on build error [\#2626](https://github.com/VSCodeVim/Vim/pull/2626) ([jpoon](https://github.com/jpoon))
+- fix: immediately exit if there is an error on ts [\#2625](https://github.com/VSCodeVim/Vim/pull/2625) ([jpoon](https://github.com/jpoon))
+- feat: log to outputChannel [\#2623](https://github.com/VSCodeVim/Vim/pull/2623) ([jpoon](https://github.com/jpoon))
+- Implement "q:" command [\#2618](https://github.com/VSCodeVim/Vim/pull/2618) ([KamikazeZirou](https://github.com/KamikazeZirou))
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.5...HEAD)
+## [v0.11.6](https://github.com/vscodevim/vim/tree/v0.11.6) (2018-05-07)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.5...v0.11.6)
 
 - chore\(deps\): update dependency @types/node to v9.6.12 [\#2615](https://github.com/VSCodeVim/Vim/pull/2615) ([renovate-bot](https://github.com/renovate-bot))
 - \[Fix\] \* command highlights extra content [\#2611](https://github.com/VSCodeVim/Vim/pull/2611) ([tyru](https://github.com/tyru))
