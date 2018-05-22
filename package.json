@@ -587,7 +587,7 @@
     "lodash": "4.17.10",
     "neovim-client": "2.1.0",
     "promised-neovim-client": "2.0.2",
-    "untildify": "3.0.2"
+    "untildify": "3.0.3"
   },
   "devDependencies": {
     "@types/clipboardy": "1.1.0",
