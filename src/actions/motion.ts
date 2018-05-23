@@ -12,7 +12,7 @@ import { VimState } from './../state/vimState';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { BaseAction } from './base';
 import { RegisterAction } from './base';
-import { ChangeOperator } from './operator';
+import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -1732,6 +1732,15 @@ class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
     if (!result) {
       return failure;
     }
+
+    if (
+      vimState.recordedState.operator instanceof ChangeOperator ||
+      vimState.recordedState.operator instanceof DeleteOperator ||
+      vimState.recordedState.operator instanceof YankOperator
+    ) {
+      return result.getLeftThroughLineBreaks();
+    }
+
     return result;
   }
 }
@@ -1772,6 +1781,15 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
     if (!result) {
       return failure;
     }
+
+    if (
+      vimState.recordedState.operator instanceof ChangeOperator ||
+      vimState.recordedState.operator instanceof DeleteOperator ||
+      vimState.recordedState.operator instanceof YankOperator
+    ) {
+      return result.getLeftThroughLineBreaks();
+    }
+
     return result;
   }
 }
