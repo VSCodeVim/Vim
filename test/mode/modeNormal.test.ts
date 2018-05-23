@@ -220,6 +220,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'd])' without deleting closing parenthesis",
+    start: ['(hello, |world)'],
+    keysPressed: 'd])',
+    end: ['(hello, |)'],
+  });
+
+  newTest({
+    title: "Can handle 'd]}' without deleting closing bracket",
+    start: ['{hello, |world}'],
+    keysPressed: 'd]}',
+    end: ['{hello, |}'],
+  });
+
+  newTest({
     title: "Can handle 'cw'",
     start: ['text text tex|t'],
     keysPressed: '^lllllllcw',
@@ -248,6 +262,22 @@ suite('Mode Normal', () => {
     start: ['|text;', 'text'],
     keysPressed: 'llllcw',
     end: ['text|', 'text'],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'c])' without deleting closing parenthesis",
+    start: ['(hello, |world)'],
+    keysPressed: 'c])',
+    end: ['(hello, |)'],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'c]}' without deleting closing bracket",
+    start: ['{hello, |world}'],
+    keysPressed: 'c]}',
+    end: ['{hello, |}'],
     endMode: ModeName.Insert,
   });
 
@@ -1149,6 +1179,20 @@ suite('Mode Normal', () => {
     start: ['|one', 'two', 'three'],
     keysPressed: "majjy'ap",
     end: ['one', 'two', 'three', '|one', 'two', 'three'],
+  });
+
+  newTest({
+    title: "Can handle 'p' after 'y])' without including closing parenthesis",
+    start: ['(hello, |world)'],
+    keysPressed: 'y])$p',
+    end: ['(hello, world)worl|d'],
+  });
+
+  newTest({
+    title: "Can handle 'p' after 'y]}' without including closing bracket",
+    start: ['{hello, |world}'],
+    keysPressed: 'y]}$p',
+    end: ['{hello, world}worl|d'],
   });
 
   newTest({
