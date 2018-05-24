@@ -32,7 +32,12 @@ gulp.task('compile', function() {
 gulp.task('tslint', function() {
   return gulp
     .src(['**/*.ts', '!node_modules/**', '!typings/**'])
-    .pipe(tslint({ formatter: 'prose' }))
+    .pipe(
+      tslint({
+        formatter: 'prose',
+        program: require('tslint').Linter.createProgram('./tsconfig.json'),
+      })
+    )
     .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
