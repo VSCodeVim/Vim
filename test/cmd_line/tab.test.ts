@@ -36,23 +36,31 @@ suite('cmd_line tab', () => {
   });
 
   test('tabe with absolute path when not in workspace opens file', async () => {
-    const file = await createRandomFile('', '');
-    await CommandLine.Run(`tabe ${file.path}`, modeHandler.vimState);
+    const filePath = await createRandomFile('', '');
+    await CommandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
     const editor = vscode.window.activeTextEditor;
 
     if (editor === undefined) {
       assert.fail('File did not open');
     } else {
-      assert.equal(editor.document.fileName, file.path, 'Opened wrong file');
+      if (process.platform !== 'win32') {
+        assert.equal(editor.document.fileName, filePath, 'Opened wrong file');
+      } else {
+        assert.equal(
+          editor.document.fileName.toLowerCase(),
+          filePath.toLowerCase(),
+          'Opened wrong file'
+        );
+      }
     }
   });
 
   test('tabe with current file path does nothing', async () => {
-    const file = await createRandomFile('', '');
-    await CommandLine.Run(`tabe ${file.path}`, modeHandler.vimState);
+    const filePath = await createRandomFile('', '');
+    await CommandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
 
     const beforeEditor = vscode.window.activeTextEditor;
-    await CommandLine.Run(`tabe ${file.path}`, modeHandler.vimState);
+    await CommandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
     const afterEditor = vscode.window.activeTextEditor;
 
     assert.equal(

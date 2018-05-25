@@ -32,7 +32,12 @@ gulp.task('compile', function() {
 gulp.task('tslint', function() {
   return gulp
     .src(['**/*.ts', '!node_modules/**', '!typings/**'])
-    .pipe(tslint({ formatter: 'prose' }))
+    .pipe(
+      tslint({
+        formatter: 'prose',
+        program: require('tslint').Linter.createProgram('./tsconfig.json'),
+      })
+    )
     .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
@@ -59,8 +64,9 @@ function runPrettier(command, cb) {
       return cb();
     }
 
+    const prettierPath = require('path').normalize('./node_modules/.bin/prettier');
     exec(
-      `node ./node_modules/.bin/prettier --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
+      `${prettierPath} --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
       function(err, stdout, stderr) {
         cb(err);
       }
