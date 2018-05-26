@@ -15,9 +15,11 @@ export interface IKeyRemapping {
   commands?: { command: string; args: any[] }[];
 }
 
-export interface IAutoSwitchInputMethodConfig {
-  dependencyPath: string;
-  defaultInputMethodKey: string;
+export interface IAutoSwitchIM {
+  enable: boolean;
+  defaultIM: string;
+  switchIMCmd: string;
+  obtainIMCmd: string;
 }
 
 export interface IConfiguration {
@@ -206,8 +208,7 @@ export interface IConfiguration {
   /**
    * InputMethodSwicher
    */
-  autoSwitchInputMethod: boolean;
-  autoSwitchInputMethodConfig: IAutoSwitchInputMethodConfig;
+  autoSwitchIM: IAutoSwitchIM;
 
   /**
    * Keybindings

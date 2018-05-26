@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import { ModeName, Mode } from '../../mode/mode';
-import { existsSync } from 'fs';
+import { existsSync, exists } from 'fs';
 import { configuration } from '../../configuration/configuration';
 import * as vscode from 'vscode';
 
@@ -9,7 +9,7 @@ export class InputMethodSwitcher {
   public savedIMKey = '';
 
   public async switchInputMethod(oldMode: ModeName, newMode: ModeName) {
-    const enableAutoSwitch = configuration.autoSwitchInputMethod;
+    const enableAutoSwitch = configuration.autoSwitchIM.enable;
     if (enableAutoSwitch !== true) {
       return;
     }
@@ -24,7 +24,7 @@ export class InputMethodSwitcher {
         newMode !== ModeName.SurroundInputMode &&
         newMode !== ModeName.Replace
       ) {
-        this.disableOriginInputMethod();
+        this.switchToDefaultIM();
         return;
       }
     }
@@ -39,55 +39,76 @@ export class InputMethodSwitcher {
         oldMode !== ModeName.SurroundInputMode &&
         oldMode !== ModeName.Replace
       ) {
-        this.enableOriginInputMethod();
+        this.resumeIM();
       }
     }
   }
 
   // save origin input method and set input method to default
-  public async disableOriginInputMethod() {
-    if (process.platform === 'darwin') {
-      const commandPath = configuration.autoSwitchInputMethodConfig.dependencyPath;
-      if (existsSync(commandPath)) {
-        const originIMKey = await this.execShell(commandPath);
-        if (originIMKey !== undefined) {
-          this.savedIMKey = originIMKey.trim();
-        }
-        const defaultIMKey = configuration.autoSwitchInputMethodConfig.defaultInputMethodKey;
-        if (this.savedIMKey !== defaultIMKey) {
-          await this.execShell(commandPath + ' ' + defaultIMKey);
+  public async switchToDefaultIM() {
+    const obtainIMCmd = configuration.autoSwitchIM.obtainIMCmd;
+    const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
+    if (obtainIMCmd !== '') {
+      if (existsSync(rawObtainIMCmd)) {
+        const insertIMKey = await this.execShell(obtainIMCmd);
+        if (insertIMKey !== undefined) {
+          this.savedIMKey = insertIMKey.trim();
         }
       } else {
-        vscode.window.showErrorMessage(
-          'Unable to find im-select,\
-        check your "vim.autoSwitchInputMethodConfig" in VSCode setting. \
-        Or you can turn off "vim.autoSwitchInputMethod" to dismiss this error message'
-        );
+        this.showErrorMessage(rawObtainIMCmd);
+      }
+    }
+
+    const switchIMCmd = configuration.autoSwitchIM.switchIMCmd;
+    const defaultIMKey = configuration.autoSwitchIM.defaultIM;
+    const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
+    if (switchIMCmd !== '') {
+      if (existsSync(rawSwitchIMCmd)) {
+        if (this.savedIMKey !== defaultIMKey) {
+          await this.execShell(switchIMCmd + ' ' + defaultIMKey);
+        }
+      } else {
+        this.showErrorMessage(rawSwitchIMCmd);
       }
     }
   }
 
   // resume origin inputmethod
-  public async enableOriginInputMethod() {
-    if (process.platform === 'darwin') {
-      const commandPath = configuration.autoSwitchInputMethodConfig.dependencyPath;
-      const defaultIMKey = configuration.autoSwitchInputMethodConfig.defaultInputMethodKey;
-      if (existsSync(commandPath)) {
+  public async resumeIM() {
+    const switchIMCmd = configuration.autoSwitchIM.switchIMCmd;
+    const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
+    const defaultIMKey = configuration.autoSwitchIM.defaultIM;
+    if (switchIMCmd !== '') {
+      if (existsSync(rawSwitchIMCmd)) {
         if (
           this.savedIMKey !== defaultIMKey &&
-          this.savedIMKey !== undefined &&
-          this.savedIMKey !== ''
+          this.savedIMKey !== '' &&
+          this.savedIMKey !== undefined
         ) {
-          await this.execShell(commandPath + ' ' + this.savedIMKey);
+          await this.execShell(switchIMCmd + ' ' + this.savedIMKey);
         }
       } else {
-        vscode.window.showErrorMessage(
-          'Unable to find im-select,\
-        check your "vim.autoSwitchInputMethodConfig" in VSCode setting. \
-        Or you can turn off "vim.autoSwitchInputMethod" to dismiss this error message'
-        );
+        this.showErrorMessage(rawSwitchIMCmd);
       }
     }
+  }
+
+  private getRawCmd(cmd: string): string {
+    const cmds = cmd.split(' ');
+    let rawCmd = '';
+    if (cmds.length > 0) {
+      rawCmd = cmds[0];
+    }
+    return rawCmd;
+  }
+
+  private showErrorMessage(cmd: string) {
+    vscode.window.showErrorMessage(
+      'Unable to find ' +
+        cmd +
+        '. check your "vim.autoSwitchIMCommand" in VSCode setting. \
+    Or you can turn off "vim.autoSwitchIM" to dismiss this error message'
+    );
   }
 
   private execShell(cmd: string): Promise<string> {

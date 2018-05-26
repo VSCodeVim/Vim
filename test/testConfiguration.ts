@@ -24,10 +24,11 @@ export class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'normal';
   easymotionMarkerYOffset = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
-  autoSwitchInputMethod = false;
-  autoSwitchInputMethodConfig = {
-    dependencyPath: '/usr/local/bin/im-select',
-    defaultInputMethodKey: 'com.apple.keylayout.US',
+  autoSwitchIM = {
+    enable: false,
+    defaultIM: '',
+    switchIMCmd: '',
+    obtainIMCmd: '',
   };
   timeout = 1000;
   showcmd = true;

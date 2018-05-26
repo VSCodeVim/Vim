@@ -571,17 +571,14 @@
           "description": "When typing a command show the initial colon ':' character",
           "default": false
         },
-        "vim.autoSwitchInputMethod": {
-          "type": "boolean",
-          "description": "Automatically change to English input method when you exit insert mode",
-          "default": false
-        },
-        "vim.autoSwitchInputMethodConfig": {
+        "vim.autoSwitchIM": {
           "type": "object",
-          "description": "Configuration for auto switch input method function",
+          "description": "Automatically change to English input method when you exit insert mode, and resume your input method when you back to insert mode",
           "default": {
-            "dependencyPath": "/usr/local/bin/im-select",
-            "defaultInputMethodKey": "com.apple.keylayout.US"
+            "enable": false,
+            "defaultIM": "",
+            "switchIMCmd": "",
+            "obtainIMCmd": ""
           }
         }
       }

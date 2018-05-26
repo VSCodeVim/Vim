@@ -7,7 +7,7 @@ import {
   IConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
-  IAutoSwitchInputMethodConfig,
+  IAutoSwitchIM,
 } from './iconfiguration';
 
 const packagejson: {
@@ -210,10 +210,11 @@ class Configuration implements IConfiguration {
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
-  autoSwitchInputMethod = false;
-  autoSwitchInputMethodConfig: IAutoSwitchInputMethodConfig = {
-    dependencyPath: '/usr/local/bin/im-select',
-    defaultInputMethodKey: 'com.apple.keylayout.US',
+  autoSwitchIM: IAutoSwitchIM = {
+    enable: false,
+    defaultIM: '',
+    switchIMCmd: '',
+    obtainIMCmd: '',
   };
 
   timeout = 1000;
