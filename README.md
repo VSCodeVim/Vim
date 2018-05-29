@@ -36,7 +36,7 @@ Please report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim
     * [vim-commentary](#vim-commentary)
     * [vim-indent-object](#vim-indent-object)
     * [vim-sneak](#vim-sneak)
-* [Switch Input Method Automatically](#switch-input-method-automaticall)
+* [Switch Input Method Automatically](#switch-input-method-automatically)
 * [VSCodeVim tricks](#vscodevim-tricks)
 * [F.A.Q / Troubleshooting](#faq)
 * [Contributing](#contributing)
@@ -534,6 +534,7 @@ Switch your input method to English, and run following command in your terminal
 My output is: `com.apple.keylayout.US`
 
 The main English input method key on macOS:
+
 key | description
 --- | -----------
 com.apple.keylayout.US | U.S.
