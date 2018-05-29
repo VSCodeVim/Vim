@@ -517,7 +517,7 @@ Motion Command | Description
 ## Switch Input Method Automatically
 (Support macOS and windows for now, linux will come soon)
 
-### Use our recommend program
+### Use our recommended program
 
 #### 1.Install im-select
 
