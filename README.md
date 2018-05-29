@@ -36,6 +36,7 @@ Please report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim
     * [vim-commentary](#vim-commentary)
     * [vim-indent-object](#vim-indent-object)
     * [vim-sneak](#vim-sneak)
+* [Switch Input Method Automatically](#switch-input-method-automaticall)
 * [VSCodeVim tricks](#vscodevim-tricks)
 * [F.A.Q / Troubleshooting](#faq)
 * [Contributing](#contributing)
@@ -525,6 +526,7 @@ Follow the [Installation Guide](https://github.com/daipeihust/im-select#installa
 #### 2.Find your default input method key
 
 **For macOS:**
+
 Switch your input method to English, and run following command in your terminal
 ```shell
 /usr/local/bin/im-select
@@ -543,6 +545,7 @@ com.apple.keylayout.Dvorak | Dvorak
 com.apple.keylayout.Colemak | Colemak
 
 **For windows:**
+
 For most people, their default input method key is 1033, the locale ID of en_US. But if your default keyboard layout is not en_US, you can use im-select.exe to find out, the guide is [here](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale). You can also find your locale ID in [this page](https://www.science.co.il/language/Locale-codes.php), the `LCID Decimal` column is the locale ID.
 
 #### 3.Add configuration to your VScode setting
@@ -550,13 +553,13 @@ For most people, their default input method key is 1033, the locale ID of en_US.
 ```json
 "vim.autoSwitchIM": {
     "enable": true,
-    "defaultIM": "the input method key we get below",
+    "defaultIM": "the input method key we get above",
     "switchIMCmd": "/path/to/im-select {im}",
     "obtainIMCmd": "/path/to/im-select"
 }
 ```
 
-**Example configuration for whole AutoSwitchInputMethod function:**
+**Example:**
 
 - for macOS:
 
@@ -591,8 +594,8 @@ If you want to use third-party program to switch your input method, your should 
 "vim.autoSwitchIM": {
     "enable": true,
     "defaultIM": "the default(english) input method key your program can recognize",
-    "switchIMCmd": "/path/to/your/program {im}", // The command to switch input method, the {im} is necessary, it's a placeholder, we replace it with the input method key and run the command
-    "obtainIMCmd": "/path/to/your/program" // The command to get current input method
+    "switchIMCmd": "/path/to/your/program {im}",
+    "obtainIMCmd": "/path/to/your/program"
 }
 ```
 
