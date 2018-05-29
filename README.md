@@ -514,18 +514,17 @@ Motion Command | Description
 `<operator>Z<char><char>`|Perform `<operator>` backward to the first occurence of `<char><char>`
 
 ## Switch Input Method Automatically
-(only support macOS for now)
+(Support macOS and windows for now, linux will comming soon)
 
-### 1.Install dependency
+### Use our recommend program
 
-Run following command in your terminal
-```shell
-curl -Ls https://raw.githubusercontent.com/daipeihust/smartim/master/install.sh | sh
-```
-This command will download a binary file `im-select` to your `/usr/local/bin/` path
+#### 1.Install im-select
 
-### 2.Find your default input method key
+Follow the [Installation Guide](https://github.com/daipeihust/im-select#installation) to install in-select according to your platform.
 
+#### 2.Find your default input method key
+
+**For macOS:**
 Switch your input method to English, and run following command in your terminal
 ```shell
 /usr/local/bin/im-select
@@ -543,33 +542,57 @@ com.apple.keylayout.Australian | Australian
 com.apple.keylayout.Dvorak | Dvorak
 com.apple.keylayout.Colemak | Colemak
 
-### 3.Add configuration to your VScode setting
+**For windows:**
+For most people, their default input method key is 1033, the locale ID of en_US. But if your default keyboard layout is not en_US, you can use im-select.exe to find out, the guide is [here](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale). You can also find your locale ID in [this page](https://www.science.co.il/language/Locale-codes.php), the `LCID Decimal` column is the locale ID.
 
-Open this function first
-```json
-"vim.autoSwitchInputMethod": true
-```
-
-If your default input key is `com.apple.keylayout.US` and your haven't move the im-select to other path, you don't need to config any more, you can use this function now.
-
-If your default input key is not `com.apple.keylayout.US`, you should add following configuration:
+#### 3.Add configuration to your VScode setting
 
 ```json
-"vim.autoSwitchInputMethodConfig": {
-    "dependencyPath": "/path/to/your/im-select",
-    "defaultInputMethodKey": "com.apple.keylayout.xxx"
+"vim.autoSwitchIM": {
+    "enable": true,
+    "defaultIM": "the input method key we get below",
+    "switchIMCmd": "/path/to/im-select {im}",
+    "obtainIMCmd": "/path/to/im-select"
 }
 ```
 
-#### Example configuration for whole AutoSwitchInputMethod function:
+**Example configuration for whole AutoSwitchInputMethod function:**
 
-If your default input method key is `com.apple.keylayout.ABC`, and  `im-select` path is default path. The configuration is:
+- for macOS:
+
+If your default input method key is `com.apple.keylayout.US`, and  `im-select` path is default path. The configuration is:
 
 ```json
-"vim.autoSwitchInputMethod": true,
-"vim.autoSwitchInputMethodConfig": {
-    "dependencyPath": "/usr/local/bin/im-select",
-    "defaultInputMethodKey": "com.apple.keylayout.ABC"
+"vim.autoSwitchIM": {
+    "enable": true,
+    "defaultIM": "com.apple.keylayout.US",
+    "switchIMCmd": "/usr/local/bin/im-select {im}",
+    "obtainIMCmd": "/usr/local/bin/im-select"
+}
+```
+
+- for windows:
+
+If your default input method key is `1033`(en_US), and your `im-select.exe` is in `bin` dir of D disk. The configuration is:
+```json
+"vim.autoSwitchIM": {
+    "enable": true,
+    "defaultIM": "1033",
+    "switchIMCmd": "D:\\bin\\im-select.exe {im}",
+    "obtainIMCmd": "D:\\bin\\im-select.exe"
+}
+```
+
+### Use your own program
+
+If you want to use third-party program to switch your input method, your should download it first. Then you should have following config:
+
+```json
+"vim.autoSwitchIM": {
+    "enable": true,
+    "defaultIM": "the default(english) input method key your program can recognize",
+    "switchIMCmd": "/path/to/your/program {im}", // The command to switch input method, the {im} is necessary, it's a placeholder, we replace it with the input method key and run the command
+    "obtainIMCmd": "/path/to/your/program" // The command to get current input method
 }
 ```
 
