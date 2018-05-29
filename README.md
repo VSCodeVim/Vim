@@ -515,13 +515,13 @@ Motion Command | Description
 `<operator>Z<char><char>`|Perform `<operator>` backward to the first occurence of `<char><char>`
 
 ## Switch Input Method Automatically
-(Support macOS and windows for now, linux will comming soon)
+(Support macOS and windows for now, linux will come soon)
 
 ### Use our recommend program
 
 #### 1.Install im-select
 
-Follow the [Installation Guide](https://github.com/daipeihust/im-select#installation) to install in-select according to your platform.
+Follow the [Installation Guide](https://github.com/daipeihust/im-select#installation) to install im-select according to your platform.
 
 #### 2.Find your default input method key
 
@@ -554,11 +554,15 @@ For most people, their default input method key is 1033, the locale ID of en_US.
 ```json
 "vim.autoSwitchIM": {
     "enable": true,
-    "defaultIM": "the input method key we get above",
+    "defaultIM": "the input method key we get from step two",
     "switchIMCmd": "/path/to/im-select {im}",
     "obtainIMCmd": "/path/to/im-select"
 }
 ```
+- enable: true to turn this function on, false to turn this function off.
+- defaultIM: the input method key from step two, for most mac users is "com.apple.keylayout.US", for most windows users is "1033".
+- switchIMCmd: the command to switch input method, {im} is placeholder for input method key.
+- obtainIMCmd: the command to get current input method key.
 
 **Example:**
 
@@ -599,6 +603,9 @@ If you want to use third-party program to switch your input method, your should 
     "obtainIMCmd": "/path/to/your/program"
 }
 ```
+Note: If your program need options to switch IM or get IM, you should add the option to the config.
+
+For example, your program's usage is `program -s imKey` to switch input method, your `switchIMCmd` config should be "program -s {im}"
 
 ## VSCodeVim tricks!
 
