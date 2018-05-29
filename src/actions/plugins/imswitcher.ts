@@ -55,40 +55,39 @@ export class InputMethodSwitcher {
           this.savedIMKey = insertIMKey.trim();
         }
       } else {
-        this.showErrorMessage(rawObtainIMCmd);
+        this.showCmdNotFoundErrorMessage(rawObtainIMCmd);
       }
     }
 
-    const switchIMCmd = configuration.autoSwitchIM.switchIMCmd;
     const defaultIMKey = configuration.autoSwitchIM.defaultIM;
-    const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
-    if (switchIMCmd !== '') {
-      if (existsSync(rawSwitchIMCmd)) {
-        if (this.savedIMKey !== defaultIMKey) {
-          await this.execShell(switchIMCmd + ' ' + defaultIMKey);
-        }
-      } else {
-        this.showErrorMessage(rawSwitchIMCmd);
-      }
+    if (defaultIMKey !== this.savedIMKey) {
+      this.switchToIM(defaultIMKey);
     }
   }
 
   // resume origin inputmethod
   public async resumeIM() {
-    const switchIMCmd = configuration.autoSwitchIM.switchIMCmd;
-    const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
     const defaultIMKey = configuration.autoSwitchIM.defaultIM;
+    if (this.savedIMKey !== defaultIMKey) {
+      this.switchToIM(this.savedIMKey);
+    }
+  }
+
+  private async switchToIM(imKey: string) {
+    let switchIMCmd = configuration.autoSwitchIM.switchIMCmd;
+    if (!switchIMCmd.includes('{im}')) {
+      this.showWrongSwitchIMCmdErrorMessage();
+      return;
+    }
+    const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
     if (switchIMCmd !== '') {
       if (existsSync(rawSwitchIMCmd)) {
-        if (
-          this.savedIMKey !== defaultIMKey &&
-          this.savedIMKey !== '' &&
-          this.savedIMKey !== undefined
-        ) {
-          await this.execShell(switchIMCmd + ' ' + this.savedIMKey);
+        if (imKey !== '' && imKey !== undefined) {
+          switchIMCmd = switchIMCmd.replace('{im}', imKey);
+          await this.execShell(switchIMCmd);
         }
       } else {
-        this.showErrorMessage(rawSwitchIMCmd);
+        this.showCmdNotFoundErrorMessage(rawSwitchIMCmd);
       }
     }
   }
@@ -102,12 +101,19 @@ export class InputMethodSwitcher {
     return rawCmd;
   }
 
-  private showErrorMessage(cmd: string) {
+  private showCmdNotFoundErrorMessage(cmd: string) {
     vscode.window.showErrorMessage(
       'Unable to find ' +
         cmd +
         '. check your "vim.autoSwitchIMCommand" in VSCode setting. \
-    Or you can turn off "vim.autoSwitchIM" to dismiss this error message'
+      Or you can disable "vim.autoSwitchIM" to dismiss this error message'
+    );
+  }
+
+  private showWrongSwitchIMCmdErrorMessage() {
+    vscode.window.showErrorMessage(
+      'switchIMCmd config in vim.autoSwitchIM is incorrect, \
+      it should contain the placeholder {im}'
     );
   }
 
