@@ -18,21 +18,19 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
 
   return new node.FileCommand({
     name: name.trim(),
-    position: node.FilePosition.CurrentWindow,
     bang: bang,
     createFileIfNotExists: true,
   });
 }
 
-// Note that this isn't really implemented.
-export function parseEditNewFileInNewWindowCommandArgs(args: string): node.FileCommand {
+export function parseEditNewFileCommandArgs(): node.FileCommand {
   return new node.FileCommand({
     name: undefined,
-    position: node.FilePosition.NewWindow,
+    createFileIfNotExists: true,
   });
 }
 
-export function parseEditFileInNewWindowCommandArgs(args: string): node.FileCommand {
+export function parseEditFileInNewVerticalWindowCommandArgs(args: string): node.FileCommand {
   let name = '';
 
   if (args) {
@@ -42,6 +40,36 @@ export function parseEditFileInNewWindowCommandArgs(args: string): node.FileComm
 
   return new node.FileCommand({
     name: name,
-    position: node.FilePosition.NewWindow,
+    position: node.FilePosition.NewWindowVerticalSplit,
+  });
+}
+
+export function parseEditFileInNewHorizontalWindowCommandArgs(args: string): node.FileCommand {
+  let name = '';
+
+  if (args) {
+    let scanner = new Scanner(args);
+    name = scanner.nextWord();
+  }
+
+  return new node.FileCommand({
+    name: name,
+    position: node.FilePosition.NewWindowHorizontalSplit,
+  });
+}
+
+export function parseEditNewFileInNewVerticalWindowCommandArgs(): node.FileCommand {
+  return new node.FileCommand({
+    name: undefined,
+    createFileIfNotExists: true,
+    position: node.FilePosition.NewWindowVerticalSplit,
+  });
+}
+
+export function parseEditNewFileInNewHorizontalWindowCommandArgs(): node.FileCommand {
+  return new node.FileCommand({
+    name: undefined,
+    createFileIfNotExists: true,
+    position: node.FilePosition.NewWindowHorizontalSplit,
   });
 }
