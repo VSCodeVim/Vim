@@ -483,7 +483,7 @@ Some examples:
 Similar to [vim-commentary](https://github.com/tpope/vim-commentary), but uses the VSCode native "Toggle Line Comment" and "Toggle Block Comment" features.
 
 Usage examples:
-* `gc` - toggles line comment. For example `gcc` to toggle line comment for current line and `gc2j` to toggle line comments for the current line and the next line.
+* `gc` - toggles line comment. For example `gcc` to toggle line comment for current line and `gc2j` to toggle line comments for the current line and the next two lines.
 * `gC` - toggles block comment. For example `gCi)` to comment out everything within parenthesis.
 
 
