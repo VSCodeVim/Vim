@@ -8,16 +8,16 @@ import * as vscode from 'vscode';
 export class InputMethodSwitcher {
   public savedIMKey = '';
 
-  public async switchInputMethod(oldMode: ModeName, newMode: ModeName) {
+  public async switchInputMethod(prevMode: ModeName, newMode: ModeName) {
     const enableAutoSwitch = configuration.autoSwitchIM.enable;
     if (enableAutoSwitch !== true) {
       return;
     }
     // when you exit from insert-like mode, save origin input method and set it to default
     if (
-      oldMode === ModeName.Insert ||
-      oldMode === ModeName.SurroundInputMode ||
-      oldMode === ModeName.Replace
+      prevMode === ModeName.Insert ||
+      prevMode === ModeName.SurroundInputMode ||
+      prevMode === ModeName.Replace
     ) {
       if (
         newMode !== ModeName.Insert &&
@@ -35,9 +35,9 @@ export class InputMethodSwitcher {
       newMode === ModeName.Replace
     ) {
       if (
-        oldMode !== ModeName.Insert &&
-        oldMode !== ModeName.SurroundInputMode &&
-        oldMode !== ModeName.Replace
+        prevMode !== ModeName.Insert &&
+        prevMode !== ModeName.SurroundInputMode &&
+        prevMode !== ModeName.Replace
       ) {
         this.resumeIM();
       }
