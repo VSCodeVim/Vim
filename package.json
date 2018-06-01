@@ -571,9 +571,9 @@
           "description": "When typing a command show the initial colon ':' character",
           "default": false
         },
-        "vim.autoSwitchIM": {
+        "vim.autoSwitchInputMethod": {
           "type": "object",
-          "description": "Automatically change to English input method when you exit insert mode, and resume your input method when you back to insert mode",
+          "description": "Automatically change to English input method when you exit insert mode, and resume your input method when you re-enter insert mode",
           "default": {
             "enable": false,
             "defaultIM": "",
