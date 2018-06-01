@@ -43,7 +43,7 @@ export class VimState implements vscode.Disposable {
 
   public editor: vscode.TextEditor;
 
-  public inputMethodSwitcher: InputMethodSwitcher;
+  private inputMethodSwitcher: InputMethodSwitcher;
 
   /**
    * For timing out remapped keys like jj to esc.

@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
-  public savedIMKey = '';
+  private savedIMKey = '';
 
   public async switchInputMethod(prevMode: ModeName, newMode: ModeName) {
     const enableAutoSwitch = configuration.autoSwitchIM.enable;
@@ -45,7 +45,7 @@ export class InputMethodSwitcher {
   }
 
   // save origin input method and set input method to default
-  public async switchToDefaultIM() {
+  private async switchToDefaultIM() {
     const obtainIMCmd = configuration.autoSwitchIM.obtainIMCmd;
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
     if (obtainIMCmd !== '') {
@@ -66,7 +66,7 @@ export class InputMethodSwitcher {
   }
 
   // resume origin inputmethod
-  public async resumeIM() {
+  private async resumeIM() {
     const defaultIMKey = configuration.autoSwitchIM.defaultIM;
     if (this.savedIMKey !== defaultIMKey) {
       this.switchToIM(this.savedIMKey);
