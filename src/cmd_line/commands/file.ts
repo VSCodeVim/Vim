@@ -16,6 +16,7 @@ export interface IFileCommandArguments extends node.ICommandArgs {
   bang?: boolean;
   position?: FilePosition;
   lineNumber?: number;
+  dontCreateFile?: boolean;
 }
 
 export class FileCommand extends node.CommandBase {
@@ -102,7 +103,12 @@ export class FileCommand extends node.CommandBase {
             filePath = pathWithExt;
           } else {
             // create file
-            fs.closeSync(fs.openSync(filePath, 'w'));
+            if (this.arguments.dontCreateFile === true) {
+              vscode.window.showErrorMessage('File path does not exits');
+              return;
+            } else {
+              fs.closeSync(fs.openSync(filePath, 'w'));
+            }
           }
         }
       }
