@@ -9,8 +9,7 @@ export class InputMethodSwitcher {
   private savedIMKey = '';
 
   public async switchInputMethod(prevMode: ModeName, newMode: ModeName) {
-    const enableAutoSwitch = configuration.autoSwitchIM.enable;
-    if (enableAutoSwitch !== true) {
+    if (configuration.autoSwitchIM.enable !== true) {
       return;
     }
     // when you exit from insert-like mode, save origin input method and set it to default
