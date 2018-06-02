@@ -2346,7 +2346,7 @@ class CommandOpenFile extends BaseCommand {
       const fileCommand = new FileCommand({
         name: filePath,
         lineNumber: lineNumber,
-        dontCreateFile: true,
+        createFileIfNotExists: false,
       });
       fileCommand.execute();
     }
