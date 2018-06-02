@@ -3,7 +3,7 @@ import { Scanner } from '../scanner';
 
 export function parseEditFileCommandArgs(args: string): node.FileCommand {
   if (!args) {
-    return new node.FileCommand({ name: '' });
+    return new node.FileCommand({ name: '', createFileIfNotExists: true });
   }
 
   let scanner = new Scanner(args);
@@ -11,7 +11,7 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
   const c = scanner.next();
   bang = c === '!';
   if (scanner.isAtEof) {
-    return new node.FileCommand({ name: '', bang: bang });
+    return new node.FileCommand({ name: '', bang: bang, createFileIfNotExists: true });
   }
 
   let name = scanner.nextWord();
@@ -20,6 +20,7 @@ export function parseEditFileCommandArgs(args: string): node.FileCommand {
     name: name.trim(),
     position: node.FilePosition.CurrentWindow,
     bang: bang,
+    createFileIfNotExists: true,
   });
 }
 

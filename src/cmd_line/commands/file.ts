@@ -104,11 +104,11 @@ export class FileCommand extends node.CommandBase {
             filePath = pathWithExt;
           } else {
             // create file
-            if (!this.arguments.createFileIfNotExists) {
+            if (this.arguments.createFileIfNotExists) {
+              fs.closeSync(fs.openSync(filePath, 'w'));
+            } else {
               showError('The file ' + filePath + ' does not exist.');
               return;
-            } else {
-              fs.closeSync(fs.openSync(filePath, 'w'));
             }
           }
         }
