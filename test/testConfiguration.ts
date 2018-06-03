@@ -24,7 +24,7 @@ export class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'normal';
   easymotionMarkerYOffset = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
-  autoSwitchIM = {
+  autoSwitchInputMethod = {
     enable: false,
     defaultIM: '',
     switchIMCmd: '',

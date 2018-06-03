@@ -3,13 +3,14 @@ import { ModeName, Mode } from '../../mode/mode';
 import { existsSync, exists } from 'fs';
 import { configuration } from '../../configuration/configuration';
 import * as vscode from 'vscode';
+import * as util from '../../util';
 
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
   private savedIMKey = '';
 
   public async switchInputMethod(prevMode: ModeName, newMode: ModeName) {
-    if (configuration.autoSwitchIM.enable !== true) {
+    if (configuration.autoSwitchInputMethod.enable !== true) {
       return;
     }
     // when you exit from insert-like mode, save origin input method and set it to default
@@ -45,7 +46,7 @@ export class InputMethodSwitcher {
 
   // save origin input method and set input method to default
   private async switchToDefaultIM() {
-    const obtainIMCmd = configuration.autoSwitchIM.obtainIMCmd;
+    const obtainIMCmd = configuration.autoSwitchInputMethod.obtainIMCmd;
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
     if (obtainIMCmd !== '') {
       if (existsSync(rawObtainIMCmd)) {
@@ -58,7 +59,7 @@ export class InputMethodSwitcher {
       }
     }
 
-    const defaultIMKey = configuration.autoSwitchIM.defaultIM;
+    const defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
     if (defaultIMKey !== this.savedIMKey) {
       this.switchToIM(defaultIMKey);
     }
@@ -66,16 +67,19 @@ export class InputMethodSwitcher {
 
   // resume origin inputmethod
   private async resumeIM() {
-    const defaultIMKey = configuration.autoSwitchIM.defaultIM;
+    const defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
     if (this.savedIMKey !== defaultIMKey) {
       this.switchToIM(this.savedIMKey);
     }
   }
 
   private async switchToIM(imKey: string) {
-    let switchIMCmd = configuration.autoSwitchIM.switchIMCmd;
+    let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
     if (!switchIMCmd.includes('{im}')) {
-      this.showWrongSwitchIMCmdErrorMessage();
+      await util.showError(
+        'switchIMCmd config in vim.autoSwitchInputMethod is incorrect, \
+        it should contain the placeholder {im}'
+      );
       return;
     }
     const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
@@ -104,15 +108,8 @@ export class InputMethodSwitcher {
     vscode.window.showErrorMessage(
       'Unable to find ' +
         cmd +
-        '. check your "vim.autoSwitchIMCommand" in VSCode setting. \
-      Or you can disable "vim.autoSwitchIM" to dismiss this error message'
-    );
-  }
-
-  private showWrongSwitchIMCmdErrorMessage() {
-    vscode.window.showErrorMessage(
-      'switchIMCmd config in vim.autoSwitchIM is incorrect, \
-      it should contain the placeholder {im}'
+        '. check your "vim.autoSwitchInputMethod" in VSCode setting. \
+      Or you can disable "vim.autoSwitchInputMethod" to dismiss this error message'
     );
   }
 

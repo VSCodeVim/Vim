@@ -15,7 +15,7 @@ export interface IKeyRemapping {
   commands?: { command: string; args: any[] }[];
 }
 
-export interface IAutoSwitchIM {
+export interface IAutoSwitchInputMethod {
   enable: boolean;
   defaultIM: string;
   switchIMCmd: string;
@@ -208,7 +208,7 @@ export interface IConfiguration {
   /**
    * InputMethodSwicher
    */
-  autoSwitchIM: IAutoSwitchIM;
+  autoSwitchInputMethod: IAutoSwitchInputMethod;
 
   /**
    * Keybindings

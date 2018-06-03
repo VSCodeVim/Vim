@@ -7,7 +7,7 @@ import {
   IConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
-  IAutoSwitchIM,
+  IAutoSwitchInputMethod,
 } from './iconfiguration';
 
 const packagejson: {
@@ -210,7 +210,7 @@ class Configuration implements IConfiguration {
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
-  autoSwitchIM: IAutoSwitchIM = {
+  autoSwitchInputMethod: IAutoSwitchInputMethod = {
     enable: false,
     defaultIM: '',
     switchIMCmd: '',

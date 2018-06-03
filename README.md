@@ -552,7 +552,7 @@ For most people, their default input method key is 1033, the locale ID of en_US.
 #### 3.Add configuration to your VScode setting
 
 ```json
-"vim.autoSwitchIM": {
+"vim.autoSwitchInputMethod": {
     "enable": true,
     "defaultIM": "the input method key we get from step two",
     "switchIMCmd": "/path/to/im-select {im}",
@@ -571,7 +571,7 @@ For most people, their default input method key is 1033, the locale ID of en_US.
 If your default input method key is `com.apple.keylayout.US`, and  `im-select` path is default path. The configuration is:
 
 ```json
-"vim.autoSwitchIM": {
+"vim.autoSwitchInputMethod": {
     "enable": true,
     "defaultIM": "com.apple.keylayout.US",
     "switchIMCmd": "/usr/local/bin/im-select {im}",
@@ -583,7 +583,7 @@ If your default input method key is `com.apple.keylayout.US`, and  `im-select` p
 
 If your default input method key is `1033`(en_US), and your `im-select.exe` is in `bin` dir of D disk. The configuration is:
 ```json
-"vim.autoSwitchIM": {
+"vim.autoSwitchInputMethod": {
     "enable": true,
     "defaultIM": "1033",
     "switchIMCmd": "D:\\bin\\im-select.exe {im}",
@@ -596,7 +596,7 @@ If your default input method key is `1033`(en_US), and your `im-select.exe` is i
 If you want to use third-party program to switch your input method, your should download it first. Then you should have following config:
 
 ```json
-"vim.autoSwitchIM": {
+"vim.autoSwitchInputMethod": {
     "enable": true,
     "defaultIM": "the default(english) input method key your program can recognize",
     "switchIMCmd": "/path/to/your/program {im}",
