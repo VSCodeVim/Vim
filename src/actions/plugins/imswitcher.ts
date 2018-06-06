@@ -104,11 +104,8 @@ export class InputMethodSwitcher {
   }
 
   private showCmdNotFoundErrorMessage(cmd: string) {
-    vscode.window.showErrorMessage(
-      'Unable to find ' +
-        cmd +
-        '. check your "vim.autoSwitchInputMethod" in VSCode setting. \
-      Or you can disable "vim.autoSwitchInputMethod" to dismiss this error message'
+    util.showError(
+      'Unable to find ' + cmd + '. check your "vim.autoSwitchInputMethod" in VSCode setting.'
     );
   }
 
