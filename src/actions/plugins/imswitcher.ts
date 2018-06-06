@@ -79,6 +79,7 @@ export class InputMethodSwitcher {
         'switchIMCmd config in vim.autoSwitchInputMethod is incorrect, \
         it should contain the placeholder {im}'
       );
+      this.disableIMSwitch();
       return;
     }
     const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
@@ -107,5 +108,16 @@ export class InputMethodSwitcher {
     util.showError(
       'Unable to find ' + cmd + '. check your "vim.autoSwitchInputMethod" in VSCode setting.'
     );
+    this.disableIMSwitch();
+  }
+
+  private disableIMSwitch() {
+    const originConfig = configuration.autoSwitchInputMethod;
+    configuration.autoSwitchInputMethod = {
+      enable: false,
+      defaultIM: originConfig.defaultIM,
+      switchIMCmd: originConfig.switchIMCmd,
+      obtainIMCmd: originConfig.obtainIMCmd,
+    };
   }
 }
