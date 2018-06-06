@@ -67,8 +67,7 @@ export class InputMethodSwitcher {
 
   // resume origin inputmethod
   private async resumeIM() {
-    const defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
-    if (this.savedIMKey !== defaultIMKey) {
+    if (this.savedIMKey !== configuration.autoSwitchInputMethod.defaultIM) {
       this.switchToIM(this.savedIMKey);
     }
   }
