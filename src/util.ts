@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
+import { exec } from 'child_process';
 
 import { Position } from './common/motion/position';
 import { Range } from './common/motion/range';
@@ -11,6 +12,25 @@ export async function showInfo(message: string): Promise<{}> {
 
 export async function showError(message: string): Promise<{}> {
   return vscode.window.showErrorMessage('Vim: ' + message) as {};
+}
+
+/**
+ * This function execute a shell command and return the standard output as string.
+ */
+export function execShell(cmd: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    try {
+      exec(cmd, (err, stdout, stderr) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(stdout);
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
 import * as clipboardy from 'clipboardy';

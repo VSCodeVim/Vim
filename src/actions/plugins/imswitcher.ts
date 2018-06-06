@@ -50,7 +50,7 @@ export class InputMethodSwitcher {
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
     if (obtainIMCmd !== '') {
       if (existsSync(rawObtainIMCmd)) {
-        const insertIMKey = await this.execShell(obtainIMCmd);
+        const insertIMKey = await util.execShell(obtainIMCmd);
         if (insertIMKey !== undefined) {
           this.savedIMKey = insertIMKey.trim();
         }
@@ -75,7 +75,7 @@ export class InputMethodSwitcher {
   private async switchToIM(imKey: string) {
     let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
     if (!switchIMCmd.includes('{im}')) {
-      await util.showError(
+      util.showError(
         'switchIMCmd config in vim.autoSwitchInputMethod is incorrect, \
         it should contain the placeholder {im}'
       );
@@ -86,7 +86,7 @@ export class InputMethodSwitcher {
       if (existsSync(rawSwitchIMCmd)) {
         if (imKey !== '' && imKey !== undefined) {
           switchIMCmd = switchIMCmd.replace('{im}', imKey);
-          await this.execShell(switchIMCmd);
+          await util.execShell(switchIMCmd);
         }
       } else {
         this.showCmdNotFoundErrorMessage(rawSwitchIMCmd);
@@ -107,21 +107,5 @@ export class InputMethodSwitcher {
     util.showError(
       'Unable to find ' + cmd + '. check your "vim.autoSwitchInputMethod" in VSCode setting.'
     );
-  }
-
-  private execShell(cmd: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      try {
-        exec(cmd, (err, stdout, stderr) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(stdout);
-          }
-        });
-      } catch (error) {
-        reject(error);
-      }
-    });
   }
 }
