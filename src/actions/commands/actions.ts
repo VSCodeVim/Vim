@@ -2343,7 +2343,11 @@ class CommandOpenFile extends BaseCommand {
     if (fileInfo) {
       const filePath = fileInfo[1];
       const lineNumber = parseInt(fileInfo[2], 10);
-      const fileCommand = new FileCommand({ name: filePath, lineNumber: lineNumber });
+      const fileCommand = new FileCommand({
+        name: filePath,
+        lineNumber: lineNumber,
+        createFileIfNotExists: false,
+      });
       fileCommand.execute();
     }
 
