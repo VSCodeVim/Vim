@@ -16,10 +16,7 @@ function rndName() {
     .substr(0, 10);
 }
 
-export async function createRandomFile(
-  contents: string,
-  fileExtension: string
-): Promise<string> {
+export async function createRandomFile(contents: string, fileExtension: string): Promise<string> {
   const tmpFile = join(os.tmpdir(), rndName() + fileExtension);
   fs.writeFileSync(tmpFile, contents);
   return tmpFile;
