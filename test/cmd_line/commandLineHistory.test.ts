@@ -14,7 +14,7 @@ suite('command-line history', () => {
 
   const assertArrayEquals = (expected: any, actual: any) => {
     assertEqual(expected.length, actual.length);
-    for (let i : number = 0; i < expected.length; i++) {
+    for (let i: number = 0; i < expected.length; i++) {
       assertEqual(expected[i], actual[i]);
     }
   };
@@ -31,7 +31,7 @@ suite('command-line history', () => {
     await setupWorkspace(_configuration);
 
     run_cmds = new Array();
-    for (let i : number = 0; i < _configuration.history; i++) {
+    for (let i: number = 0; i < _configuration.history; i++) {
       run_cmds.push(i.toString());
     }
     history = new CommandLineHistory();
@@ -52,7 +52,7 @@ suite('command-line history', () => {
     for (let cmd of run_cmds) {
       history.add(cmd);
     }
-    history.add("");
+    history.add('');
     assertArrayEquals(run_cmds.slice().reverse(), history.get());
     history.add(undefined);
     assertArrayEquals(run_cmds.slice().reverse(), history.get());
@@ -65,14 +65,20 @@ suite('command-line history', () => {
     let added_cmd: string = String(configuration.history);
     run_cmds.push(added_cmd);
     history.add(added_cmd);
-    assertArrayEquals(run_cmds.slice().splice(1, configuration.history).reverse(), history.get());
+    assertArrayEquals(
+      run_cmds
+        .slice()
+        .splice(1, configuration.history)
+        .reverse(),
+      history.get()
+    );
   });
 
   test('add command that exists in history', async () => {
     for (let cmd of run_cmds) {
       history.add(cmd);
     }
-    let existed_cmd: string = "0";
+    let existed_cmd: string = '0';
     history.add(existed_cmd);
     let expected_raw_history: string[] = run_cmds.slice().reverse();
     expected_raw_history.splice(expected_raw_history.indexOf(existed_cmd), 1);
@@ -95,7 +101,7 @@ suite('command-line history', () => {
     await history.save();
   });
 
-  test('change configuration.history', async() => {
+  test('change configuration.history', async () => {
     let filePath: string = _path.join(_os.tmpdir(), rndName());
     history.setFilePath(filePath);
 
@@ -104,11 +110,23 @@ suite('command-line history', () => {
       history.add(cmd);
     }
     configuration.history = 10;
-    assertArrayEquals(run_cmds.slice().splice(run_cmds.length - 10).reverse(), history.get());
+    assertArrayEquals(
+      run_cmds
+        .slice()
+        .splice(run_cmds.length - 10)
+        .reverse(),
+      history.get()
+    );
     await history.save();
 
     await history.load();
-    assertArrayEquals(run_cmds.slice().splice(run_cmds.length - 10).reverse(), history.get());
+    assertArrayEquals(
+      run_cmds
+        .slice()
+        .splice(run_cmds.length - 10)
+        .reverse(),
+      history.get()
+    );
     await history.save();
   });
 });

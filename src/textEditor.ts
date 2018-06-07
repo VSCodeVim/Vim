@@ -242,7 +242,7 @@ export class TextEditor {
         indentString += new Array(Math.floor(screenCharacters / tabSize) + 1).join('\t');
       }
 
-      indentString += new Array(screenCharacters % tabSize + 1).join(' ');
+      indentString += new Array((screenCharacters % tabSize) + 1).join(' ');
     }
 
     let firstNonWhiteSpace = 0;
