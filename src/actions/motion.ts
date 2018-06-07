@@ -346,9 +346,8 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let count = 0;
 
     do {
-      t = <Position>await new MoveUpByScreenLineMaintainDesiredColumn().execAction(
-        position,
-        vimState
+      t = <Position>(
+        await new MoveUpByScreenLineMaintainDesiredColumn().execAction(position, vimState)
       );
       count += 1;
     } while (t.line === position.line);
@@ -1389,7 +1388,7 @@ class MoveToMatchingBracket extends BaseMovement {
         return { start: position, stop: position, failed: true };
       }
 
-      const targetLine = Math.round(count * TextEditor.getLineCount() / 100);
+      const targetLine = Math.round((count * TextEditor.getLineCount()) / 100);
       return new Position(targetLine - 1, 0).getFirstLineNonBlankChar();
     } else {
       return super.execActionWithCount(position, vimState, count);

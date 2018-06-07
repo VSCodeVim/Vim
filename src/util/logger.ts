@@ -3,14 +3,14 @@ import * as vscode from 'vscode';
 enum LoggingLevel {
   Error = 0,
   Warn = 1,
-  Debug = 2
+  Debug = 2,
 }
 
 class LoggerImpl implements vscode.Disposable {
   private _channel: vscode.OutputChannel;
 
   constructor() {
-    this._channel = vscode.window.createOutputChannel("vscodevim");
+    this._channel = vscode.window.createOutputChannel('vscodevim');
   }
 
   public debug(message?: string): void {
@@ -46,10 +46,10 @@ class LoggerImpl implements vscode.Disposable {
 
   private static getNow(): string {
     const now = new Date();
-    let time = [ String(now.getHours()), String(now.getMinutes()), String(now.getSeconds()) ];
+    let time = [String(now.getHours()), String(now.getMinutes()), String(now.getSeconds())];
     for (let i = 0; i < time.length; i++) {
-      if ( Number(time[i]) < 10 ) {
-        time[i] = "0" + time[i];
+      if (Number(time[i]) < 10) {
+        time[i] = '0' + time[i];
       }
     }
 
