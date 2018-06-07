@@ -170,17 +170,19 @@ export class EasyMotion {
     }
 
     // Sort by the index distance from the cursor index
-    matches.sort((a: EasyMotion.Match, b: EasyMotion.Match): number => {
-      const absDiffA = computeAboluteDiff(a.index);
-      const absDiffB = computeAboluteDiff(b.index);
-      return absDiffA - absDiffB;
+    matches.sort(
+      (a: EasyMotion.Match, b: EasyMotion.Match): number => {
+        const absDiffA = computeAboluteDiff(a.index);
+        const absDiffB = computeAboluteDiff(b.index);
+        return absDiffA - absDiffB;
 
-      function computeAboluteDiff(matchIndex: number) {
-        const absDiff = Math.abs(cursorIndex - matchIndex);
-        // Prioritize the matches on the right side of the cursor index
-        return matchIndex < cursorIndex ? absDiff - 0.5 : absDiff;
+        function computeAboluteDiff(matchIndex: number) {
+          const absDiff = Math.abs(cursorIndex - matchIndex);
+          // Prioritize the matches on the right side of the cursor index
+          return matchIndex < cursorIndex ? absDiff - 0.5 : absDiff;
+        }
       }
-    });
+    );
 
     return matches;
   }

@@ -72,7 +72,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     const desiredStyle = curHandler.vimState.editor.options.cursorStyle;
 
     // Temporarily change to any other cursor style besides the desired type, then change back
-    let tempStyle = (desiredStyle || vscode.TextEditorCursorStyle.Line) % 6 + 1;
+    let tempStyle = ((desiredStyle || vscode.TextEditorCursorStyle.Line) % 6) + 1;
     curHandler.vimState.editor.options.cursorStyle = tempStyle;
     curHandler.vimState.editor.options.cursorStyle = desiredStyle;
   }
