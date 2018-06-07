@@ -17,7 +17,7 @@ export async function showError(message: string): Promise<{}> {
 /**
  * This function execute a shell command and return the standard output as string.
  */
-export function execShell(cmd: string): Promise<string> {
+export function executeShell(cmd: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     try {
       exec(cmd, (err, stdout, stderr) => {

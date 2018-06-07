@@ -50,7 +50,7 @@ export class InputMethodSwitcher {
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
     if (obtainIMCmd !== '') {
       if (existsSync(rawObtainIMCmd)) {
-        const insertIMKey = await util.execShell(obtainIMCmd);
+        const insertIMKey = await util.executeShell(obtainIMCmd);
         if (insertIMKey !== undefined) {
           this.savedIMKey = insertIMKey.trim();
         }
@@ -87,7 +87,7 @@ export class InputMethodSwitcher {
       if (existsSync(rawSwitchIMCmd)) {
         if (imKey !== '' && imKey !== undefined) {
           switchIMCmd = switchIMCmd.replace('{im}', imKey);
-          await util.execShell(switchIMCmd);
+          await util.executeShell(switchIMCmd);
         }
       } else {
         this.showCmdNotFoundErrorMessage(rawSwitchIMCmd);
