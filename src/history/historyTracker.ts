@@ -17,7 +17,7 @@ import { Position } from './../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
-import logger from './../util/logger';
+import { logger } from './../util/logger';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second

@@ -12,7 +12,7 @@ import { GlobalState } from './../state/globalState';
 import { ReplaceState } from './../state/replaceState';
 import { RecordedState } from './recordedState';
 import { Neovim } from '../neovim/neovim';
-import logger from '../util/logger';
+import { logger } from '../util/logger';
 
 /**
  * The VimState class holds permanent state that carries over from action

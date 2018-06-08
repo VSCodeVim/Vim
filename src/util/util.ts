@@ -1,33 +1,8 @@
-import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { Position } from './common/motion/position';
-import { Range } from './common/motion/range';
-import logger from './util/logger';
-
-export async function showInfo(message: string): Promise<{}> {
-  return vscode.window.showInformationMessage('Vim: ' + message) as {};
-}
-
-export async function showError(message: string): Promise<{}> {
-  return vscode.window.showErrorMessage('Vim: ' + message) as {};
-}
-
-import * as clipboardy from 'clipboardy';
-
-export class Clipboard {
-  public static Copy(text: string) {
-    try {
-      clipboardy.writeSync(text);
-    } catch (e) {
-      logger.error(e, `Clipboard: Error copying to clipboard. Error=${e}`);
-    }
-  }
-
-  public static Paste(): string {
-    return clipboardy.readSync();
-  }
-}
+import { Position } from '../common/motion/position';
+import { Range } from '../common/motion/range';
+import { logger } from './logger';
 
 /**
  * This is certainly quite janky! The problem we're trying to solve
@@ -63,6 +38,7 @@ export async function waitForTabChange(): Promise<void> {
     });
   });
 }
+
 export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(
   timeout: number
 ): Promise<Range[]> {
@@ -85,7 +61,7 @@ export async function getExternalExtensionDirPath(): Promise<string> {
       if (!err || err.code === 'EEXIST') {
         resolve(extensionFolder);
       } else {
-        logger.error(err.message);
+        logger.debug(err.message);
         reject(err);
       }
     });

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
-import logger from '../util/logger';
+import { logger } from '../util/logger';
 
 export class CommandLineHistory {
   private _history: string[] = [];

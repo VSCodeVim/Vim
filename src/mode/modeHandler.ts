@@ -7,7 +7,7 @@ import { Decoration } from '../configuration/decoration';
 import { Remappers } from '../configuration/remapper';
 import { Globals } from '../globals';
 import { StatusBar } from '../statusBar';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
+import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util/util';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
 import {
   BaseCommand,
@@ -30,7 +30,7 @@ import {
   TextTransformations,
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
-import logger from '../util/logger';
+import { logger } from '../util/logger';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];

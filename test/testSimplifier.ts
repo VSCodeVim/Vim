@@ -7,7 +7,7 @@ import { Globals } from '../src/globals';
 import { ModeName } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { TextEditor } from '../src/textEditor';
-import { waitForCursorUpdatesToHappen } from '../src/util';
+import { waitForCursorUpdatesToHappen } from '../src/util/util';
 import { assertEqualLines } from './testUtils';
 
 export function getTestingFunctions() {

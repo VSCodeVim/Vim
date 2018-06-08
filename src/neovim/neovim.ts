@@ -9,7 +9,7 @@ import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
 import { Position } from './../common/motion/position';
 import { VimState } from './../state/vimState';
-import logger from '../util/logger';
+import { logger } from '../util/logger';
 
 export class Neovim implements vscode.Disposable {
   private process: ChildProcess;

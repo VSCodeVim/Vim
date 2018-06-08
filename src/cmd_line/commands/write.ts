@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
-import * as util from '../../util';
+import { Message } from '../../util/message';
 import * as node from '../node';
 
 export interface IWriteCommandArguments extends node.ICommandArgs {
@@ -36,16 +36,16 @@ export class WriteCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     if (this.arguments.opt) {
-      util.showError('Not implemented.');
+      Message.ShowError('Not implemented.');
       return;
     } else if (this.arguments.file) {
-      util.showError('Not implemented.');
+      Message.ShowError('Not implemented.');
       return;
     } else if (this.arguments.append) {
-      util.showError('Not implemented.');
+      Message.ShowError('Not implemented.');
       return;
     } else if (this.arguments.cmd) {
-      util.showError('Not implemented.');
+      Message.ShowError('Not implemented.');
       return;
     }
 

@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
-import logger from '../util/logger';
+import { logger } from '../util/logger';
+import { Message } from '../util/message';
+import { getExternalExtensionDirPath } from '../util/util';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import * as parser from './parser';
-import * as util from '../util';
 import { VimError, ErrorCode } from '../error';
 import { CommandLineHistory } from './commandLineHistory';
 
@@ -56,7 +57,7 @@ export class CommandLine {
           );
         }
       } else {
-        util.showError(e.toString());
+        Message.ShowError(e.toString());
       }
     }
   }
@@ -93,7 +94,7 @@ export class CommandLine {
   }
 
   public static LoadHistory(): void {
-    util.getExternalExtensionDirPath().then(externalExtensionDirPath => {
+    getExternalExtensionDirPath().then(externalExtensionDirPath => {
       const path = require('path');
       const filePath: string = path.join(externalExtensionDirPath, '.cmdline_history');
 

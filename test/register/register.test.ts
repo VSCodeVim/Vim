@@ -5,7 +5,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { VimState } from '../../src/state/vimState';
-import { Clipboard } from '../../src/util';
+import { Clipboard } from '../../src/util/clipboard';
 import { getTestingFunctions } from '../testSimplifier';
 import { assertEqual, assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
