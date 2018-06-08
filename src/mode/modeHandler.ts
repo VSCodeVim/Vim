@@ -30,7 +30,7 @@ import {
   TextTransformations,
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
-import { Logger } from '../util/logger';
+import logger from '../util/logger';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -865,7 +865,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
-        Logger.debug(
+        logger.debug(
           `Text transformations are overlapping. Falling back to serial
            transformations. This is generally a very bad sign. Try to make
            your text transformations operate on non-overlapping ranges.`
@@ -1370,7 +1370,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    let text = [];
+    let text: string[] = [];
 
     if (configuration.showmodename) {
       text.push(this.currentMode.getStatusBarText(this.vimState));

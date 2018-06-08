@@ -69,7 +69,7 @@ export class RecordedState {
    */
   public getCurrentCommandWithoutCountPrefix(): string[] {
     const commandList = this.commandList;
-    const result = [];
+    const result: string[] = [];
     let previousWasCount = true;
 
     for (const commandKey of commandList) {

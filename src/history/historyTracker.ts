@@ -17,7 +17,7 @@ import { Position } from './../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
-import { Logger } from './../util/logger';
+import logger from './../util/logger';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -184,7 +184,7 @@ export class HistoryTracker {
   private get currentHistoryStep(): HistoryStep {
     if (this.currentHistoryStepIndex === -1) {
       let msg = 'HistoryTracker: Tried to modify history at index -1';
-      Logger.debug(msg);
+      logger.debug(msg);
       throw new Error(msg);
     }
 
@@ -455,7 +455,7 @@ export class HistoryTracker {
    */
   async undoAndRemoveChanges(n: number): Promise<void> {
     if (this.currentHistoryStep.changes.length < n) {
-      Logger.debug('HistoryTracker: Something bad happened in removeChange');
+      logger.debug('HistoryTracker: Something bad happened in removeChange');
       return;
     }
 

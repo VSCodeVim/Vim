@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { configuration } from '../../src/configuration/configuration';
+import { configuration } from '../configuration/configuration';
 import { Position } from './../common/motion/position';
 import { ModeName } from './../mode/mode';
 import { TextEditor } from './../textEditor';
@@ -111,7 +111,7 @@ export class SearchState {
       const finalPos = new Position(TextEditor.getLineCount() - 1, 0).getLineEndIncludingEOL();
       const text = TextEditor.getText(new vscode.Range(new Position(0, 0), finalPos));
       const lineLengths = text.split('\n').map(x => x.length + 1);
-      let sumLineLengths = [];
+      let sumLineLengths: number[] = [];
       let curLength = 0;
       for (const length of lineLengths) {
         sumLineLengths.push(curLength);

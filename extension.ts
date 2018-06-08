@@ -20,7 +20,7 @@ import { Notation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
-import { Logger } from './src/util/logger';
+import logger from './src/util/logger';
 
 let extensionContext: vscode.ExtensionContext;
 
@@ -95,7 +95,6 @@ export async function activate(context: vscode.ExtensionContext) {
   let compositionState = new CompositionState();
 
   extensionContext.subscriptions.push(StatusBar);
-  extensionContext.subscriptions.push(Logger);
 
   // Reload active configurations
   vscode.workspace.onDidChangeConfiguration(() => {
@@ -366,5 +365,5 @@ async function handleActiveEditorChange(): Promise<void> {
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
-  Logger.debug(`Unhandled Rejection at: Promise ${p}. Reason: ${reason}.`);
+  logger.error(`Unhandled Rejection at: Promise ${p}. Reason: ${reason}.`);
 });

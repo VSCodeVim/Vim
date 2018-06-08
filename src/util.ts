@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 import { Position } from './common/motion/position';
 import { Range } from './common/motion/range';
-import { Logger } from './util/logger';
+import logger from './util/logger';
 
 export async function showInfo(message: string): Promise<{}> {
   return vscode.window.showInformationMessage('Vim: ' + message) as {};
@@ -20,7 +20,7 @@ export class Clipboard {
     try {
       clipboardy.writeSync(text);
     } catch (e) {
-      Logger.error(e, `Clipboard: Error copying to clipboard. Error=${e}`);
+      logger.error(e, `Clipboard: Error copying to clipboard. Error=${e}`);
     }
   }
 
@@ -85,7 +85,7 @@ export async function getExternalExtensionDirPath(): Promise<string> {
       if (!err || err.code === 'EEXIST') {
         resolve(extensionFolder);
       } else {
-        Logger.debug(err.message);
+        logger.error(err.message);
         reject(err);
       }
     });
