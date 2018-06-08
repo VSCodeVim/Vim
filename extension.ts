@@ -65,18 +65,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     prevHandler!.vimState.focusChanged = true;
   }
 
-  // Temporary workaround for vscode bug not changing cursor style properly
-  // https://github.com/Microsoft/vscode/issues/17472
-  // https://github.com/Microsoft/vscode/issues/17513
-  if (curHandler.vimState.editor) {
-    const desiredStyle = curHandler.vimState.editor.options.cursorStyle;
-
-    // Temporarily change to any other cursor style besides the desired type, then change back
-    let tempStyle = ((desiredStyle || vscode.TextEditorCursorStyle.Line) % 6) + 1;
-    curHandler.vimState.editor.options.cursorStyle = tempStyle;
-    curHandler.vimState.editor.options.cursorStyle = desiredStyle;
-  }
-
   return curHandler;
 }
 
