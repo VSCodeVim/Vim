@@ -7,6 +7,12 @@ import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { VimState } from './../state/vimState';
 import { IKeyRemapping } from './iconfiguration';
+import { logger } from '../util/logger';
+
+interface IRemapper {
+  sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean>;
+  readonly isPotentialRemap: boolean;
+}
 
 export class Remappers implements IRemapper {
   private remappers: IRemapper[];
@@ -37,11 +43,6 @@ export class Remappers implements IRemapper {
   }
 }
 
-interface IRemapper {
-  sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean>;
-  readonly isPotentialRemap: boolean;
-}
-
 class Remapper implements IRemapper {
   private readonly _remappedModes: ModeName[];
   private readonly _recursive: boolean;
@@ -59,6 +60,14 @@ class Remapper implements IRemapper {
     this._recursive = recursive;
     this._remappedModes = remappedModes;
     this._remappings = configuration[configKey] as IKeyRemapping[];
+
+    for (let keyRemapping of this._remappings) {
+      logger.debug(
+        `Remapper: ${configKey}. before=${keyRemapping.before}. after=${
+          keyRemapping.after
+        }. commands=${keyRemapping.commands}.`
+      );
+    }
   }
 
   public async sendKey(
@@ -72,20 +81,19 @@ class Remapper implements IRemapper {
       return false;
     }
 
-    let remapping: IKeyRemapping | undefined;
-    const longestKeySequence = this._longestKeySequence();
-
     /**
      * Check to see if the keystrokes match any user-specified remapping.
      * In insert mode, we allow the users to precede the remapped command
      * with extraneous keystrokes (eg. "hello world jj").
      * In other modes, we have to precisely match the entire keysequence.
      */
+    let remapping: IKeyRemapping | undefined;
     if (this._remappedModes.indexOf(ModeName.Insert) === -1) {
       remapping = _.find(this._remappings, map => {
         return map.before.join('') === keys.join('');
       });
     } else {
+      const longestKeySequence = this._getLongestedRemappedKeySequence();
       for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
         const slice = keys.slice(-sliceLength);
         const result = _.find(this._remappings, map => map.before.join('') === slice.join(''));
@@ -161,7 +169,7 @@ class Remapper implements IRemapper {
     return false;
   }
 
-  private _longestKeySequence(): number {
+  private _getLongestedRemappedKeySequence(): number {
     if (this._remappings.length > 0) {
       return _.maxBy(this._remappings, map => map.before.length)!.before.length;
     } else {
