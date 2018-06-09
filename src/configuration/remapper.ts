@@ -10,7 +10,14 @@ import { IKeyRemapping } from './iconfiguration';
 import { logger } from '../util/logger';
 
 interface IRemapper {
+  /**
+   * Send keys to remapper
+   */
   sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean>;
+
+  /**
+   * Given keys pressed thus far, denotes if it is a potential remap
+   */
   readonly isPotentialRemap: boolean;
 }
 
@@ -48,9 +55,6 @@ class Remapper implements IRemapper {
   private readonly _recursive: boolean;
   private readonly _remappings: IKeyRemapping[] = [];
 
-  /**
-   * Have the keys pressed so far potentially be a remap
-   */
   private _isPotentialRemap = false;
   get isPotentialRemap(): boolean {
     return this._isPotentialRemap;
@@ -81,18 +85,11 @@ class Remapper implements IRemapper {
       return false;
     }
 
-    /**
-     * Check to see if the keystrokes match any user-specified remapping.
-     * In insert mode, we allow the users to precede the remapped command
-     * with extraneous keystrokes (eg. "hello world jj").
-     * In other modes, we have to precisely match the entire keysequence.
-     */
+    // Check to see if the keystrokes match any user-specified remapping.
     let remapping: IKeyRemapping | undefined;
-    if (this._remappedModes.indexOf(ModeName.Insert) === -1) {
-      remapping = _.find(this._remappings, map => {
-        return map.before.join('') === keys.join('');
-      });
-    } else {
+    if (vimState.currentMode === ModeName.Insert) {
+      // In insert mode, we allow users to precede remapped commands
+      // with extraneous keystrokes (e.g. "hello world jj")
       const longestKeySequence = this._getLongestedRemappedKeySequence();
       for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
         const slice = keys.slice(-sliceLength);
@@ -103,9 +100,21 @@ class Remapper implements IRemapper {
           break;
         }
       }
+    } else {
+      // In other modes, we have to precisely match the entire keysequence
+      remapping = _.find(this._remappings, map => {
+        return map.before.join('') === keys.join('');
+      });
     }
 
     if (remapping) {
+      logger.debug(
+        `Remapper: remapping found.
+          before=${remapping.before}.
+          after=${remapping.after}.
+          commands=${remapping.commands}.`
+      );
+
       if (!this._recursive) {
         vimState.isCurrentlyPerformingRemapping = true;
       }
@@ -116,7 +125,7 @@ class Remapper implements IRemapper {
       const numToRemove = remapping.before.length - 1;
       // Revert previously inserted characters
       // (e.g. jj remapped to esc, we have to revert the inserted "jj")
-      if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
+      if (vimState.currentMode === ModeName.Insert) {
         // Revert every single inserted character.
         // We subtract 1 because we haven't actually applied the last key.
         await vimState.historyTracker.undoAndRemoveChanges(
