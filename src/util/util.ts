@@ -9,7 +9,10 @@ import { logger } from './logger';
  * is that writing editor.selection = new Position() won't immediately
  * update the position of the cursor. So we have to wait!
  */
-export async function waitForCursorSync(timeout: number = 0, rejectOnTimeout = false): Promise<void> {
+export async function waitForCursorSync(
+  timeout: number = 0,
+  rejectOnTimeout = false
+): Promise<void> {
   await new Promise((resolve, reject) => {
     let timer = setTimeout(rejectOnTimeout ? reject : resolve, timeout);
 
@@ -25,7 +28,7 @@ export async function getCursorsAfterSync(timeout: number = 0): Promise<Range[]>
   try {
     await waitForCursorSync(timeout, true);
   } catch (e) {
-    logger.warn(`getCursorsAfterSync: expected selection to have updated within ${timeout}ms. error=${e.message}.`);
+    logger.warn(`getCursorsAfterSync: selection not updated within ${timeout}ms. error=${e}.`);
   }
 
   return vscode.window.activeTextEditor!.selections.map(
@@ -45,7 +48,9 @@ export async function getExternalExtensionDirPath(): Promise<string> {
       if (!err || err.code === 'EEXIST') {
         resolve(extensionFolder);
       } else {
-        logger.error(`getExternalExtensionDirPath: ${err.message}`);
+        logger.error(
+          `getExternalExtensionDirPath: Failed to retrieve extension path. err=${err}.`
+        );
         reject(err);
       }
     });

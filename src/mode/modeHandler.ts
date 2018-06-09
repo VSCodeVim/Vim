@@ -265,7 +265,9 @@ export class ModeHandler implements vscode.Disposable {
   async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
-    // Rewrite commands
+    logger.info(`ModeHandler: handling key=${key}.`);
+
+    // rewrite copy
     if (configuration.overrideCopy) {
       // The conditions when you trigger a "copy" rather than a ctrl-c are
       // too sophisticated to be covered by the "when" condition in package.json
@@ -324,7 +326,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      console.error(e);
+      logger.error(`ModeHandler: error handling key=${key}. err=${e}.`)
       throw e;
     }
 
@@ -1206,27 +1208,32 @@ export class ModeHandler implements vscode.Disposable {
         }
       } else {
         // MultiCursor mode is active.
+        selections = [];
+        switch (selectionMode) {
+          case ModeName.Visual:
+            {
+              for (let { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
+                if (cursorStart.compareTo(cursorStop) > 0) {
+                  cursorStart = cursorStart.getRight();
+                }
 
-        if (selectionMode === ModeName.Visual) {
-          selections = [];
-
-          for (let { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
-            if (cursorStart.compareTo(cursorStop) > 0) {
-              cursorStart = cursorStart.getRight();
+                selections.push(new vscode.Selection(cursorStart, cursorStop));
+              }
+              break;
             }
-
-            selections.push(new vscode.Selection(cursorStart, cursorStop));
-          }
-        } else if (selectionMode === ModeName.Normal || selectionMode === ModeName.Insert) {
-          selections = [];
-
-          for (const { stop: cursorStop } of vimState.allCursors) {
-            selections.push(new vscode.Selection(cursorStop, cursorStop));
-          }
-        } else {
-          console.error('This is pretty bad!');
-
-          selections = [];
+          case ModeName.Normal:
+          case ModeName.Insert:
+            {
+              for (const { stop: cursorStop } of vimState.allCursors) {
+                selections.push(new vscode.Selection(cursorStop, cursorStop));
+              }
+              break;
+            }
+          default:
+            {
+              logger.error(`ModeHandler: unexpected selection mode. selectionMode=${selectionMode}`)
+              break;
+            }
         }
       }
 

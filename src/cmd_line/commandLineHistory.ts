@@ -56,7 +56,7 @@ export class CommandLineHistory {
             }
             resolve();
           } else {
-            logger.error(`Failed to load history. err=${err.message}.`);
+            logger.error(`CommandLineHistory: Failed to load history. err=${err}.`);
             reject();
           }
           return;
@@ -77,15 +77,12 @@ export class CommandLineHistory {
             }
             resolve();
           } else {
-            logger.error(
-              'CommandLineHistory: The history format is unknown.',
-              'Failed to load history.'
-            );
+            logger.error('CommandLineHistory: The history format is unknown.');
             reject();
           }
         } catch (e) {
-          logger.error(e.message, 'Failed to load history.');
-          reject();
+          logger.error(`CommandLineHistory: Failed to load history. err=${e}.`);
+          reject(e);
         }
       });
     });
@@ -105,7 +102,7 @@ export class CommandLineHistory {
         if (!err) {
           resolve();
         } else {
-          logger.error(err.message, 'Failed to save history.');
+          logger.error(`CommandLineHistory: Failed to save history. err=${err}.`);
           reject();
         }
       });

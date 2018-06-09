@@ -21,6 +21,7 @@ import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { logger } from './src/util/logger';
+import { CompositionState } from './src/state/compositionState';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
@@ -78,16 +79,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   }
 
   return curHandler;
-}
-
-class CompositionState {
-  isInComposition: boolean = false;
-  composingText: string = '';
-
-  reset() {
-    this.isInComposition = false;
-    this.composingText = '';
-  }
 }
 
 export async function activate(context: vscode.ExtensionContext) {

@@ -6,7 +6,7 @@ export class Clipboard {
     try {
       clipboardy.writeSync(text);
     } catch (e) {
-      logger.error(e, `Clipboard: Error copying to clipboard. Error=${e}`);
+      logger.error(e, `Clipboard: Error copying to clipboard. err=${e}`);
     }
   }
 
