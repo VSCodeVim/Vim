@@ -7,7 +7,7 @@ import { Decoration } from '../configuration/decoration';
 import { Remappers } from '../configuration/remapper';
 import { Globals } from '../globals';
 import { StatusBar } from '../statusBar';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util/util';
+import { getCursorsAfterSync } from '../util/util';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
 import {
   BaseCommand,
@@ -1334,7 +1334,7 @@ export class ModeHandler implements vscode.Disposable {
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
-      vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+      vimState.allCursors = await getCursorsAfterSync();
     }
     this.vimState.postponedCodeViewChanges = [];
 

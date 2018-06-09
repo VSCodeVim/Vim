@@ -9,40 +9,24 @@ import { logger } from './logger';
  * is that writing editor.selection = new Position() won't immediately
  * update the position of the cursor. So we have to wait!
  */
-export async function waitForCursorUpdatesToHappen(timeout: number): Promise<void> {
+export async function waitForCursorSync(timeout: number = 0, rejectOnTimeout = false): Promise<void> {
   await new Promise((resolve, reject) => {
-    setTimeout(resolve, timeout);
+    let timer = setTimeout(rejectOnTimeout ? reject : resolve, timeout);
 
-    const disposer = vscode.window.onDidChangeTextEditorSelection(x => {
-      disposer.dispose();
-
+    const disposable = vscode.window.onDidChangeTextEditorSelection(x => {
+      disposable.dispose();
+      clearTimeout(timer);
       resolve();
     });
   });
 }
 
-/**
- * Waits for the tabs to change after a command like 'gt' or 'gT' is run.
- * Sometimes it is not immediate, so we must busy wait
- * On certain versions, the tab changes are synchronous
- * For those, a timeout is given
- */
-export async function waitForTabChange(): Promise<void> {
-  await new Promise((resolve, reject) => {
-    setTimeout(resolve, 500);
-
-    const disposer = vscode.window.onDidChangeActiveTextEditor(textEditor => {
-      disposer.dispose();
-
-      resolve(textEditor);
-    });
-  });
-}
-
-export async function allowVSCodeToPropagateCursorUpdatesAndReturnThem(
-  timeout: number
-): Promise<Range[]> {
-  await waitForCursorUpdatesToHappen(timeout);
+export async function getCursorsAfterSync(timeout: number = 0): Promise<Range[]> {
+  try {
+    await waitForCursorSync(timeout, true);
+  } catch (e) {
+    logger.warn(`getCursorsAfterSync: expected selection to have updated within ${timeout}ms. error=${e.message}.`);
+  }
 
   return vscode.window.activeTextEditor!.selections.map(
     x => new Range(Position.FromVSCodePosition(x.start), Position.FromVSCodePosition(x.end))
@@ -61,7 +45,7 @@ export async function getExternalExtensionDirPath(): Promise<string> {
       if (!err || err.code === 'EEXIST') {
         resolve(extensionFolder);
       } else {
-        logger.debug(err.message);
+        logger.error(`getExternalExtensionDirPath: ${err.message}`);
         reject(err);
       }
     });

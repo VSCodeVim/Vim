@@ -23,12 +23,12 @@ import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { logger } from './src/util/logger';
 
 let extensionContext: vscode.ExtensionContext;
-
-/**
- * Note: We can't initialize modeHandler here, or even inside activate(), because some people
- * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
- */
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
+
+interface ICodeKeybinding {
+  after?: string[];
+  commands?: { command: string; args: any[] }[];
+}
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const prevHandler = ModeHandlerMap.get(previousActiveEditorId.toString());
@@ -37,7 +37,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   let [curHandler, isNewModeHandler] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
   if (isNewModeHandler) {
     if (configuration.enableNeovim) {
-      let neovim = new Neovim();
+      const neovim = new Neovim();
       await neovim.initialize();
 
       curHandler.vimState.nvim = neovim;
@@ -96,8 +96,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   extensionContext.subscriptions.push(StatusBar);
 
-  // Reload active configurations
   vscode.workspace.onDidChangeConfiguration(() => {
+    logger.debug('onDidChangeConfiguration: reloading configuration');
     configuration.reload();
   });
 
@@ -200,11 +200,6 @@ export async function activate(context: vscode.ExtensionContext) {
     modeHandler.updateView(modeHandler.vimState);
   });
 
-  interface ICodeKeybinding {
-    after?: string[];
-    commands?: { command: string; args: any[] }[];
-  }
-
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
@@ -229,7 +224,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  vscode.workspace.onDidCloseTextDocument(async event => {
+  vscode.workspace.onDidCloseTextDocument(async () => {
     const documents = vscode.workspace.textDocuments;
 
     // Delete modehandler once all tabs of this document have been closed
