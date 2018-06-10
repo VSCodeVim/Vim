@@ -18,7 +18,7 @@ export interface IKeyRemapping {
 export interface IDebugConfiguration {
   /**
    * Maximum level of messages to log.
-   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug', 'silly']
+   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
   loggingLevel: string;
 }
