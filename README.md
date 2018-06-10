@@ -272,7 +272,7 @@ There's several different mechanisms you can use to define custom remappings. Al
 ]
 ```
 
-* Bind `ZZ` to save and close the current file:
+* Bind `ZZ` to the vim command `:wq` (save and close the current file):
 
 ```json
     "vim.otherModesKeyBindingsNonRecursive": [
@@ -281,13 +281,9 @@ There's several different mechanisms you can use to define custom remappings. Al
             "after": [],
             "commands": [
                 {
-                    "command": "workbench.action.files.save",
+                    "command": ":wq",
                     "args": []
                 },
-                {
-                    "command": "workbench.action.closeActiveEditor",
-                    "args": []
-                }
             ]
         }
     ]
