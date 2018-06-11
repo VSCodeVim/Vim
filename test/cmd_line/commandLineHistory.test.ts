@@ -1,7 +1,5 @@
-import * as assert from 'assert';
 import { CommandLineHistory } from '../../src/cmd_line/commandLineHistory';
 import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
-import { Uri } from 'vscode';
 import { Configuration } from '../testConfiguration';
 import { configuration } from '../../src/configuration/configuration';
 

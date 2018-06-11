@@ -20,15 +20,16 @@ import { Notation } from './src/configuration/notation';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
-import { Logger } from './src/util/logger';
+import { logger } from './src/util/logger';
+import { CompositionState } from './src/state/compositionState';
 
 let extensionContext: vscode.ExtensionContext;
-
-/**
- * Note: We can't initialize modeHandler here, or even inside activate(), because some people
- * see a bug where VSC hasn't fully initialized yet, which pretty much breaks VSCodeVim entirely.
- */
 let previousActiveEditorId: EditorIdentity = new EditorIdentity();
+
+interface ICodeKeybinding {
+  after?: string[];
+  commands?: { command: string; args: any[] }[];
+}
 
 export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   const prevHandler = ModeHandlerMap.get(previousActiveEditorId.toString());
@@ -37,7 +38,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   let [curHandler, isNewModeHandler] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
   if (isNewModeHandler) {
     if (configuration.enableNeovim) {
-      let neovim = new Neovim();
+      const neovim = new Neovim();
       await neovim.initialize();
 
       curHandler.vimState.nvim = neovim;
@@ -80,25 +81,14 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   return curHandler;
 }
 
-class CompositionState {
-  isInComposition: boolean = false;
-  composingText: string = '';
-
-  reset() {
-    this.isInComposition = false;
-    this.composingText = '';
-  }
-}
-
 export async function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   let compositionState = new CompositionState();
 
   extensionContext.subscriptions.push(StatusBar);
-  extensionContext.subscriptions.push(Logger);
 
-  // Reload active configurations
   vscode.workspace.onDidChangeConfiguration(() => {
+    logger.debug('onDidChangeConfiguration: reloading configuration');
     configuration.reload();
   });
 
@@ -201,11 +191,6 @@ export async function activate(context: vscode.ExtensionContext) {
     modeHandler.updateView(modeHandler.vimState);
   });
 
-  interface ICodeKeybinding {
-    after?: string[];
-    commands?: { command: string; args: any[] }[];
-  }
-
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
@@ -230,7 +215,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  vscode.workspace.onDidCloseTextDocument(async event => {
+  vscode.workspace.onDidCloseTextDocument(async () => {
     const documents = vscode.workspace.textDocuments;
 
     // Delete modehandler once all tabs of this document have been closed
@@ -366,5 +351,5 @@ async function handleActiveEditorChange(): Promise<void> {
 }
 
 process.on('unhandledRejection', function(reason: any, p: any) {
-  Logger.debug(`Unhandled Rejection at: Promise ${p}. Reason: ${reason}.`);
+  logger.error(`Unhandled Rejection at: Promise ${p}. Reason: ${reason}.`);
 });

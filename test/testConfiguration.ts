@@ -40,6 +40,9 @@ export class Configuration implements IConfiguration {
     visualblock: '#86592d';
     replace: '#000000';
   };
+  debug: {
+    loggingLevel: 'info';
+  };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   tabstop = 2;
   userCursor = vscode.TextEditorCursorStyle.Line;

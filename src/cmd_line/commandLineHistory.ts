@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
-import { Logger } from '../util/logger';
+import { logger } from '../util/logger';
 
 export class CommandLineHistory {
   private _history: string[] = [];
@@ -49,14 +49,14 @@ export class CommandLineHistory {
 
         if (err) {
           if (err.code === 'ENOENT') {
-            Logger.debug('CommandLineHistory: History does not exist.');
+            logger.debug('CommandLineHistory: History does not exist.');
             // add ccommands that were run before history was loaded.
             if (this._history.length > 0) {
               this.save();
             }
             resolve();
           } else {
-            Logger.error(err.message, 'Failed to load history.');
+            logger.error(`CommandLineHistory: Failed to load history. err=${err}.`);
             reject();
           }
           return;
@@ -77,15 +77,12 @@ export class CommandLineHistory {
             }
             resolve();
           } else {
-            Logger.error(
-              'CommandLineHistory: The history format is unknown.',
-              'Failed to load history.'
-            );
+            logger.error('CommandLineHistory: The history format is unknown.');
             reject();
           }
         } catch (e) {
-          Logger.error(e.message, 'Failed to load history.');
-          reject();
+          logger.error(`CommandLineHistory: Failed to load history. err=${e}.`);
+          reject(e);
         }
       });
     });
@@ -94,7 +91,7 @@ export class CommandLineHistory {
   public async save(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (this._is_loading) {
-        Logger.debug('CommandLineHistory: Failed to save history because history is loading.');
+        logger.debug('CommandLineHistory: Failed to save history because history is loading.');
         resolve();
         return;
       }
@@ -105,7 +102,7 @@ export class CommandLineHistory {
         if (!err) {
           resolve();
         } else {
-          Logger.error(err.message, 'Failed to save history.');
+          logger.error(`CommandLineHistory: Failed to save history. err=${err}.`);
           reject();
         }
       });

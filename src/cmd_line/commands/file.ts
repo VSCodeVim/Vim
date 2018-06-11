@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import * as node from '../node';
-import { showError } from './../../util';
+import { Message } from './../../util/message';
 
 const untildify = require('untildify');
 
@@ -107,7 +107,7 @@ export class FileCommand extends node.CommandBase {
             if (this.arguments.createFileIfNotExists) {
               fs.closeSync(fs.openSync(filePath, 'w'));
             } else {
-              showError('The file ' + filePath + ' does not exist.');
+              Message.ShowError('The file ' + filePath + ' does not exist.');
               return;
             }
           }

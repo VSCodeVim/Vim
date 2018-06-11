@@ -3,7 +3,6 @@
     "module": "commonjs",
     "target": "es6",
     "outDir": "out",
-    "noImplicitAny": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

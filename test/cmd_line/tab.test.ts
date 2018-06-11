@@ -6,7 +6,6 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { CommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { getTestingFunctions } from '../testSimplifier';
 import { createRandomFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
 suite('cmd_line tab', () => {
