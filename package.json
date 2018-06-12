@@ -604,7 +604,7 @@
     "@types/diff": "3.5.1",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.108",
-    "@types/mocha": "5.2.1",
+    "@types/mocha": "5.2.2",
     "@types/node": "9.6.21",
     "gulp": "3.9.1",
     "gulp-bump": "3.1.1",
