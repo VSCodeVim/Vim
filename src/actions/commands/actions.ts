@@ -2130,16 +2130,7 @@ class CommandClearLine extends BaseCommand {
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let count = vimState.recordedState.count || 1;
-    let end = position
-      .getDownByCount(Math.max(0, count - 1))
-      .getLineEnd()
-      .getLeft();
-    return new operator.ChangeOperator().run(
-      vimState,
-      position.getLineBeginRespectingIndent(),
-      end
-    );
+    return new operator.ChangeOperator(this.multicursorIndex).runRepeat(vimState, position, 1);
   }
 
   // Don't clash with sneak
