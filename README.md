@@ -241,9 +241,9 @@ Here's some ideas on what you can do with neovim integration:
 
 There's several different mechanisms you can use to define custom remappings. Also see the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
 
-#### `"vim.insertModeKeyBindings"`/`"vim.otherModesKeyBindings"`
+#### `"vim.insertModeKeyBindings"`/`"vim.otherModesKeyBindings"`/`"vim.visualModesKeyBindings"`
 
-* Keybinding overrides to use for insert and other (non-insert) modes.
+* Keybinding overrides to use for insert, visual and other (non-insert) modes.
 * Bind `jj` to `<Esc>` in insert mode:
 
 ```json
@@ -316,9 +316,9 @@ There's several different mechanisms you can use to define custom remappings. Al
     ]
 ```
 
-#### `"vim.insertModeKeyBindingsNonRecursive"`/`"otherModesKeyBindingsNonRecursive"`
+#### `"vim.insertModeKeyBindingsNonRecursive"`/`"otherModesKeyBindingsNonRecursive"`/`"visualModesKeyBindingsNonRecursive"`
 
-* Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
+* Non-recursive keybinding overrides to use for insert, visual and other (non-insert) modes (similar to `:noremap`)
 * *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
 
 ```json

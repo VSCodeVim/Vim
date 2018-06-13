@@ -95,6 +95,8 @@ class Configuration implements IConfiguration {
       this.insertModeKeyBindingsNonRecursive,
       this.otherModesKeyBindings,
       this.otherModesKeyBindingsNonRecursive,
+      this.visualModesKeyBindings,
+      this.visualModesKeyBindingsNonRecursive,
     ];
     for (const keybindings of keybindingList) {
       for (let remapping of keybindings) {
@@ -331,6 +333,8 @@ class Configuration implements IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   otherModesKeyBindings: IKeyRemapping[] = [];
   otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  visualModesKeyBindings: IKeyRemapping[] = [];
+  visualModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
 
 function overlapSetting(args: {

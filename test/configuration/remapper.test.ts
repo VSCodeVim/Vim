@@ -29,12 +29,25 @@ suite('Remapper', () => {
       ],
     },
   ];
+  const visualModeKeyBindings = [
+    {
+      before: ['leader', 'c'],
+      after: [],
+      commands: [
+        {
+          command: 'workbench.action.closeActiveEditor',
+          args: [],
+        },
+      ],
+    },
+  ];
 
   setup(async () => {
     let configuration = new Configuration();
     configuration.leader = leaderKey;
     configuration.insertModeKeyBindings = insertModeKeyBindings;
     configuration.otherModesKeyBindings = otherModeKeysRebindings;
+    configuration.visualModesKeyBindings = visualModeKeyBindings;
 
     await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
@@ -70,6 +83,38 @@ suite('Remapper', () => {
     let actual = false;
     try {
       actual = await remapper.sendKey([leaderKey, 'w'], modeHandler, modeHandler.vimState);
+    } catch (e) {
+      assert.fail(e);
+    }
+
+    // assert
+    assert.equal(actual, true);
+    assert.equal(vscode.window.visibleTextEditors.length, 0);
+  });
+
+  test('remapped command with leader, only on visual mode', async () => {
+    // setup - normal mode
+    let remapper = new Remappers();
+    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+
+    // act
+    try {
+      await remapper.sendKey([leaderKey, 'c'], modeHandler, modeHandler.vimState);
+    } catch (e) {
+      assert.ok(true);
+    }
+
+    // assert
+    assert.equal(vscode.window.visibleTextEditors.length, 1);
+
+    // setup - visual mode
+    await modeHandler.handleKeyEvent('v');
+    assertEqual(modeHandler.currentMode.name, ModeName.Visual);
+
+    // act
+    let actual = false;
+    try {
+      actual = await remapper.sendKey([leaderKey, 'c'], modeHandler, modeHandler.vimState);
     } catch (e) {
       assert.fail(e);
     }

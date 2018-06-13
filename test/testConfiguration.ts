@@ -70,4 +70,6 @@ export class Configuration implements IConfiguration {
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   otherModesKeyBindings: IKeyRemapping[] = [];
   otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  visualModesKeyBindings: IKeyRemapping[] = [];
+  visualModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }

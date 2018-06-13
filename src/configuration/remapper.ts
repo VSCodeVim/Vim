@@ -28,8 +28,10 @@ export class Remappers implements IRemapper {
     this.remappers = [
       new InsertModeRemapper(true),
       new OtherModesRemapper(true),
+      new VisualModesRemapper(true),
       new InsertModeRemapper(false),
       new OtherModesRemapper(false),
+      new VisualModesRemapper(false),
     ];
   }
 
@@ -201,6 +203,16 @@ class OtherModesRemapper extends Remapper {
     super(
       'otherModesKeyBindings' + (recursive ? '' : 'NonRecursive'),
       [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
+      recursive
+    );
+  }
+}
+
+class VisualModesRemapper extends Remapper {
+  constructor(recursive: boolean) {
+    super(
+      'visualModesKeyBindings' + (recursive ? '' : 'NonRecursive'),
+      [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
       recursive
     );
   }
