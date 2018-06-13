@@ -2130,7 +2130,11 @@ class CommandClearLine extends BaseCommand {
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return new operator.ChangeOperator(this.multicursorIndex).runRepeat(vimState, position, 1);
+    return new operator.ChangeOperator(this.multicursorIndex).runRepeat(
+      vimState,
+      position,
+      vimState.recordedState.count || 1
+    );
   }
 
   // Don't clash with sneak
