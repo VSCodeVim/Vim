@@ -216,6 +216,19 @@ export interface Tab {
 }
 
 /**
+ * Represents reindenting the selected line
+ */
+export interface Reindent {
+  type: 'reindent';
+  cursorIndex?: number;
+
+  /**
+   * Move the cursor this much.
+   */
+  diff?: PositionDiff;
+}
+
+/**
  * Represents macro
  */
 export interface Macro {
@@ -246,7 +259,8 @@ export type Transformation =
   | Macro
   | ContentChangeTransformation
   | DeleteTextTransformation
-  | Tab;
+  | Tab
+  | Reindent;
 
 /**
  * Text Transformations
