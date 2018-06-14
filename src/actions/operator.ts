@@ -566,7 +566,7 @@ export class ChangeOperator extends BaseOperator {
   }
 
   public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-    let thisLineIndent = vimState.editor.document.getText(
+    const thisLineIndent = vimState.editor.document.getText(
       new vscode.Range(position.getLineBegin(), position.getLineBeginRespectingIndent())
     );
 
