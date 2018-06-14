@@ -566,21 +566,36 @@ export class ChangeOperator extends BaseOperator {
   }
 
   public async runRepeat(vimState: VimState, position: Position, count: number): Promise<VimState> {
-    const lineIsAllWhitespace = TextEditor.getLineAt(position).text.trim() === '';
+    const thisLineIndent = vimState.editor.document.getText(
+      new vscode.Range(position.getLineBegin(), position.getLineBeginRespectingIndent())
+    );
+
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    if (lineIsAllWhitespace) {
-      return this.run(
-        vimState,
-        position.getLineBegin(),
-        position.getDownByCount(Math.max(0, count - 1)).getLineEnd()
-      );
-    } else {
-      return this.run(
-        vimState,
-        position.getLineBeginRespectingIndent(),
-        position.getDownByCount(Math.max(0, count - 1)).getLineEnd()
-      );
+
+    vimState = await this.run(
+      vimState,
+      position.getLineBegin(),
+      position.getDownByCount(Math.max(0, count - 1)).getLineEnd()
+    );
+
+    if (configuration.autoindent) {
+      if (vimState.editor.document.languageId === 'plaintext') {
+        vimState.recordedState.transformations.push({
+          type: 'insertText',
+          text: thisLineIndent,
+          position: position.getLineBegin(),
+          cursorIndex: this.multicursorIndex,
+        });
+      } else {
+        vimState.recordedState.transformations.push({
+          type: 'reindent',
+          cursorIndex: this.multicursorIndex,
+          diff: new PositionDiff(0, 1), // Handle transition from Normal to Insert modes
+        });
+      }
     }
+
+    return vimState;
   }
 }
 

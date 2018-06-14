@@ -980,6 +980,20 @@ export class ModeHandler implements vscode.Disposable {
             accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
           }
           break;
+        case 'reindent':
+          await vscode.commands.executeCommand('editor.action.reindentselectedlines');
+          if (command.diff) {
+            if (command.cursorIndex === undefined) {
+              throw new Error('No cursor index - this should never ever happen!');
+            }
+
+            if (!accumulatedPositionDifferences[command.cursorIndex]) {
+              accumulatedPositionDifferences[command.cursorIndex] = [];
+            }
+
+            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+          }
+          break;
         default:
           console.warn(`Unhandled text transformation type: ${command.type}.`);
           break;
