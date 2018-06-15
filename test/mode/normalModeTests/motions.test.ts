@@ -1,16 +1,12 @@
 import { getAndUpdateModeHandler } from '../../../extension';
-import { ModeHandler } from '../../../src/mode/modeHandler';
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Motions in Normal Mode', () => {
-  let modeHandler: ModeHandler;
-
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);
@@ -474,20 +470,6 @@ suite('Motions in Normal Mode', () => {
     start: ['|one', 'two', 'three'],
     keysPressed: '2gg',
     end: ['one', '|two', 'three'],
-  });
-
-  newTest({
-    title: 'Can handle dot with A',
-    start: ['|one', 'two', 'three'],
-    keysPressed: 'A!<Esc>j.j.',
-    end: ['one!', 'two!', 'three|!'],
-  });
-
-  newTest({
-    title: 'Can handle dot with I',
-    start: ['on|e', 'two', 'three'],
-    keysPressed: 'I!<Esc>j.j.',
-    end: ['!one', '!two', '|!three'],
   });
 
   // This is still currently not possible.

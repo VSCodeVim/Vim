@@ -1,12 +1,8 @@
-import { getAndUpdateModeHandler } from '../../../extension';
-import { ModeHandler } from '../../../src/mode/modeHandler';
 import { Configuration } from '../../testConfiguration';
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
 suite('Dot Operator', () => {
-  let modeHandler: ModeHandler;
-
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
@@ -15,7 +11,6 @@ suite('Dot Operator', () => {
     configuration.expandtab = false;
 
     await setupWorkspace(configuration);
-    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);

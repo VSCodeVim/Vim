@@ -1,16 +1,12 @@
-import { getAndUpdateModeHandler } from '../../extension';
-import { ModeHandler } from '../../src/mode/modeHandler';
 import { Globals } from '../../src/globals';
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
 
 suite('sneak plugin', () => {
-  let modeHandler: ModeHandler;
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
     Globals.mockConfiguration.sneak = true;
     reloadConfiguration();
   });
