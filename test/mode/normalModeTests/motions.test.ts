@@ -1,4 +1,3 @@
-import { getAndUpdateModeHandler } from '../../../extension';
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
 
@@ -10,48 +9,6 @@ suite('Motions in Normal Mode', () => {
   });
 
   teardown(cleanUpWorkspace);
-
-  newTest({
-    title: 'Can handle %',
-    start: ['|((( )))'],
-    keysPressed: '%',
-    end: ['((( ))|)'],
-  });
-
-  newTest({
-    title: 'Can handle %',
-    start: ['((( ))|)'],
-    keysPressed: '%',
-    end: ['|((( )))'],
-  });
-
-  newTest({
-    title: 'Can handle %',
-    start: ['|[(( ))]'],
-    keysPressed: '%',
-    end: ['[(( ))|]'],
-  });
-
-  newTest({
-    title: 'Can handle %',
-    start: ['|[(( }}} ))]'],
-    keysPressed: '%',
-    end: ['[(( }}} ))|]'],
-  });
-
-  newTest({
-    title: 'Can handle %',
-    start: ['|[(( }}} ))]'],
-    keysPressed: '%',
-    end: ['[(( }}} ))|]'],
-  });
-
-  newTest({
-    title: 'Can handle %',
-    start: ['[(( }}} ))|]'],
-    keysPressed: '%',
-    end: ['|[(( }}} ))]'],
-  });
 
   newTest({
     title: 'Can handle [(',
