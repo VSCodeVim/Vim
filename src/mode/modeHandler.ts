@@ -350,9 +350,9 @@ export class ModeHandler implements vscode.Disposable {
       case KeypressState.NoPossibleMatch:
         if (!this._remappers.isPotentialRemap) {
           vimState.recordedState = new RecordedState();
-          return vimState;
         }
-        break;
+
+        return vimState;
       case KeypressState.WaitingOnKeys:
         return vimState;
     }
