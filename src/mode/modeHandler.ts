@@ -310,13 +310,8 @@ export class ModeHandler implements vscode.Disposable {
        *
        * 1) We are not already performing a nonrecursive remapping.
        * 2) We haven't timed out of our previous remapping.
-       * 3) We are not running tests as user remappings bork tests
        */
-      if (
-        !this.vimState.isCurrentlyPerformingRemapping &&
-        (withinTimeout || keys.length === 1) &&
-        !Globals.isTesting
-      ) {
+      if (!this.vimState.isCurrentlyPerformingRemapping && (withinTimeout || keys.length === 1)) {
         handled = await this._remappers.sendKey(keys, this, this.vimState);
       }
 
