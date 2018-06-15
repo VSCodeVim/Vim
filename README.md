@@ -207,15 +207,11 @@ These settings are specific to VSCodeVim.
 * This setting can be changed through the settings or via `toggleVim` command in the Command Palette
 * Type: Boolean (Default: `false`)
 
-#### `"vim.debug"`
+#### `"vim.debug.loggingLevel"`
 
-* If the extension is giving you issues, toggle some settings here to provide more verbose debugging information
-
-```json
-    "vim.debug": {
-        "loggingLevel": "error"
-    },
-```
+* Extension logging level. Maximum level of messages to log.
+* Logs will be visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_profiling-your-extension).
+* Type: String (Default: 'error'). Supported values: 'error', 'warn', 'info', 'verbose', 'debug'.
 
 ### Neovim Integration
 
