@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as os from 'os';
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
