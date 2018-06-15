@@ -1840,6 +1840,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'Resets cursor to indent end with cc',
+    start: ['{', ' | int a;'],
+    keysPressed: 'cc',
+    end: ['{', '  |'],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
     title: "can handle 'cc' on empty line",
     start: ['foo', '|', 'bar'],
     keysPressed: 'cc',
@@ -1901,10 +1909,10 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'cc on whitespace-only line clears line',
+    title: 'cc on whitespace-only treats whitespace as indent',
     start: ['|     '],
     keysPressed: 'cc',
-    end: ['|'],
+    end: ['     |'],
   });
 
   newTest({

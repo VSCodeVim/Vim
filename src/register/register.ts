@@ -2,7 +2,7 @@ import { BaseCommand, CommandRegister, CommandYankFullLine } from './../actions/
 import { BaseOperator, DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
-import { Clipboard } from './../util';
+import { Clipboard } from './../util/clipboard';
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character

@@ -340,6 +340,13 @@
       "title": "Vim Configuration",
       "type": "object",
       "properties": {
+        "vim.debug": {
+          "type": "object",
+          "description": "Extension debugging options",
+          "default": {
+            "loggingLevel": "error"
+          }
+        },
         "vim.otherModesKeyBindings": {
           "type": "array",
           "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
@@ -587,7 +594,9 @@
     "lodash": "4.17.10",
     "neovim-client": "2.1.0",
     "promised-neovim-client": "2.0.2",
-    "untildify": "3.0.3"
+    "untildify": "3.0.3",
+    "winston": "^3.0.0-rc6",
+    "winston-console-for-electron": "0.0.3"
   },
   "devDependencies": {
     "@types/clipboardy": "1.1.0",
@@ -595,8 +604,8 @@
     "@types/diff": "3.5.1",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.108",
-    "@types/mocha": "5.2.1",
-    "@types/node": "9.6.20",
+    "@types/mocha": "5.2.2",
+    "@types/node": "9.6.21",
     "gulp": "3.9.1",
     "gulp-bump": "3.1.1",
     "gulp-filter": "5.1.0",
@@ -608,7 +617,7 @@
     "mocha": "5.2.0",
     "prettier": "1.13.5",
     "tslint": "5.10.0",
-    "typescript": "2.9.1",
+    "typescript": "2.9.2",
     "vscode": "1.1.18"
   }
 }

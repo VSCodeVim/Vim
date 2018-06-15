@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-
 import { ModeName } from './mode/mode';
 
 class StatusBarImpl implements vscode.Disposable {
@@ -57,4 +56,4 @@ class StatusBarImpl implements vscode.Disposable {
   }
 }
 
-export let StatusBar = new StatusBarImpl();
+export const StatusBar = new StatusBarImpl();

@@ -15,6 +15,14 @@ export interface IKeyRemapping {
   commands?: { command: string; args: any[] }[];
 }
 
+export interface IDebugConfiguration {
+  /**
+   * Maximum level of messages to log.
+   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
+   */
+  loggingLevel: string;
+}
+
 export interface IConfiguration {
   /**
    * Use the system's clipboard when copying.
@@ -130,6 +138,11 @@ export interface IConfiguration {
    * Status bar colors to change to based on mode
    */
   statusBarColors: IModeSpecificStrings<string>;
+
+  /**
+   * Extension debugging settings
+   */
+  debug: IDebugConfiguration;
 
   /**
    * Color of search highlights.

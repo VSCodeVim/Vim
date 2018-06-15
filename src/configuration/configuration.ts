@@ -3,7 +3,12 @@ import * as vscode from 'vscode';
 import { Globals } from '../globals';
 import { taskQueue } from '../taskQueue';
 import { Notation } from './notation';
-import { IConfiguration, IKeyRemapping, IModeSpecificStrings } from './iconfiguration';
+import {
+  IConfiguration,
+  IKeyRemapping,
+  IModeSpecificStrings,
+  IDebugConfiguration,
+} from './iconfiguration';
 
 const packagejson: {
   contributes: {
@@ -230,6 +235,10 @@ class Configuration implements IConfiguration {
     replace: '#000000',
   };
 
+  debug: IDebugConfiguration = {
+    loggingLevel: 'error',
+  };
+
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
 
   @overlapSetting({ codeName: 'tabSize', default: 8 })
@@ -368,4 +377,4 @@ function overlapSetting(args: {
   };
 }
 
-export let configuration = new Configuration();
+export const configuration = new Configuration();
