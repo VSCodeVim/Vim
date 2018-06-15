@@ -340,12 +340,10 @@
       "title": "Vim Configuration",
       "type": "object",
       "properties": {
-        "vim.debug": {
-          "type": "object",
-          "description": "Extension debugging options",
-          "default": {
-            "loggingLevel": "error"
-          }
+        "vim.debug.loggingLevel": {
+          "type": "string",
+          "description": "Extension logging level",
+          "default": "error"
         },
         "vim.otherModesKeyBindings": {
           "type": "array",
