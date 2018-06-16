@@ -1,9 +1,7 @@
-import { getAndUpdateModeHandler } from '../../extension';
 import {
   buildTriggerKeys,
   EasymotionTrigger,
 } from '../../src/actions/plugins/easymotion/easymotion.cmd';
-import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -13,7 +11,6 @@ function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpK
 }
 
 suite('easymotion plugin', () => {
-  let modeHandler: ModeHandler;
   let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
@@ -21,7 +18,6 @@ suite('easymotion plugin', () => {
     configuration.easymotion = true;
 
     await setupWorkspace(configuration);
-    modeHandler = await getAndUpdateModeHandler();
   });
 
   teardown(cleanUpWorkspace);

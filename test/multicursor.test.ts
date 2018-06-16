@@ -1,21 +1,14 @@
-import * as assert from 'assert';
-
-import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
-import { getTestingFunctions } from './testSimplifier';
 import {
   assertEqual,
   assertEqualLines,
   cleanUpWorkspace,
-  reloadConfiguration,
   setupWorkspace,
 } from './testUtils';
 
 suite('Multicursor', () => {
   let modeHandler: ModeHandler;
-
-  let { newTest, newTestOnly } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

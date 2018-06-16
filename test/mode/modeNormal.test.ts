@@ -38,27 +38,6 @@ suite('Mode Normal', () => {
   });
 
   newTest({
-    title: 'Can handle %',
-    start: ['|((( )))'],
-    keysPressed: '%',
-    end: ['((( ))|)'],
-  });
-
-  newTest({
-    title: 'Can handle % before opening brace',
-    start: ['|one (two)'],
-    keysPressed: '%',
-    end: ['one (two|)'],
-  });
-
-  newTest({
-    title: 'Can handle % nested inside parens',
-    start: ['(|one { two })'],
-    keysPressed: '%',
-    end: ['(one { two |})'],
-  });
-
-  newTest({
     title: 'Can handle dw',
     start: ['one |two three'],
     keysPressed: 'dw',
