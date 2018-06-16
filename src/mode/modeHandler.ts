@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as modes from './modes';
 
-import { CommandLine } from '../cmd_line/commandLine';
+import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { Decoration } from '../configuration/decoration';
 import { Remappers } from '../configuration/remapper';
@@ -901,14 +901,14 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'showCommandLine':
-          await CommandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
+          await commandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
           this.updateView(this.vimState);
           break;
 
         case 'showCommandHistory':
-          let cmd = await CommandLine.ShowHistory(vimState.commandInitialText, this.vimState);
+          let cmd = await commandLine.ShowHistory(vimState.commandInitialText, this.vimState);
           if (cmd && cmd.length !== 0) {
-            await CommandLine.PromptAndRun(cmd, this.vimState);
+            await commandLine.PromptAndRun(cmd, this.vimState);
             this.updateView(this.vimState);
           }
           break;

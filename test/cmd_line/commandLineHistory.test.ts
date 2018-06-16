@@ -2,11 +2,11 @@ import { CommandLineHistory } from '../../src/cmd_line/commandLineHistory';
 import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { Configuration } from '../testConfiguration';
 import { configuration } from '../../src/configuration/configuration';
+import * as path from 'path';
+import * as os from 'os';
+import * as fs from 'fs';
 
 suite('command-line history', () => {
-  const _fs = require('fs');
-  const _os = require('os');
-  const _path = require('path');
   let history: CommandLineHistory;
   let run_cmds: string[];
 
@@ -24,19 +24,22 @@ suite('command-line history', () => {
       .substr(0, 10);
   };
 
-  setup(async () => {
-    let _configuration: Configuration = new Configuration();
-    await setupWorkspace(_configuration);
+  const filePath = path.join(os.tmpdir(), rndName());
 
-    run_cmds = new Array();
-    for (let i: number = 0; i < _configuration.history; i++) {
+  setup(async () => {
+    await setupWorkspace(new Configuration());
+
+    run_cmds = [];
+    for (let i = 0; i < configuration.history; i++) {
       run_cmds.push(i.toString());
     }
-    history = new CommandLineHistory();
+
+    history = new CommandLineHistory(filePath);
   });
 
   teardown(async () => {
     cleanUpWorkspace();
+    history.clear();
   });
 
   test('add command', async () => {
@@ -85,28 +88,15 @@ suite('command-line history', () => {
   });
 
   test('load and save history', async () => {
-    let filePath: string = _path.join(_os.tmpdir(), rndName());
-    history.setFilePath(filePath);
-
-    await history.load();
     for (let cmd of run_cmds) {
       history.add(cmd);
     }
-    await history.save();
 
-    await history.load();
-    assertArrayEquals(run_cmds.slice().reverse(), history.get());
-    await history.save();
+    let history2 = new CommandLineHistory(filePath);
+    assertArrayEquals(run_cmds.slice().reverse(), history2.get());
   });
 
   test('change configuration.history', async () => {
-    let filePath: string = _path.join(_os.tmpdir(), rndName());
-    history.setFilePath(filePath);
-
-    await history.load();
-    for (let cmd of run_cmds) {
-      history.add(cmd);
-    }
     configuration.history = 10;
     assertArrayEquals(
       run_cmds
@@ -115,9 +105,11 @@ suite('command-line history', () => {
         .reverse(),
       history.get()
     );
-    await history.save();
 
-    await history.load();
+    for (let cmd of run_cmds) {
+      history.add(cmd);
+    }
+
     assertArrayEquals(
       run_cmds
         .slice()
@@ -125,6 +117,5 @@ suite('command-line history', () => {
         .reverse(),
       history.get()
     );
-    await history.save();
   });
 });

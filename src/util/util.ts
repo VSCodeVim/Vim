@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-
+import * as os from 'os';
+import * as path from 'path';
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
 import { logger } from './logger';
@@ -36,23 +37,6 @@ export async function getCursorsAfterSync(timeout: number = 0): Promise<Range[]>
   );
 }
 
-export async function getExternalExtensionDirPath(): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const os = require('os');
-    const homeDir: string = os.homedir();
-    const path = require('path');
-    const extensionFolder = path.join(homeDir, '.VSCodeVim');
-    const fs = require('fs');
-
-    fs.mkdir(extensionFolder, 0o775, (err: any) => {
-      if (!err || err.code === 'EEXIST') {
-        resolve(extensionFolder);
-      } else {
-        logger.error(
-          `getExternalExtensionDirPath: Failed to retrieve extension path. err=${err}.`
-        );
-        reject(err);
-      }
-    });
-  });
+export function getExtensionDirPath(): string {
+  return path.join(os.homedir(), '.VSCodeVim');
 }
