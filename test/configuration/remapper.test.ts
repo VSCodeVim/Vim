@@ -74,7 +74,7 @@ suite('Remapper', () => {
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
   });
 
-  test('remapped command with leader ', async () => {
+  test('remapped command with leader on normal mode', async () => {
     // setup
     let remapper = new Remappers();
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
@@ -92,22 +92,11 @@ suite('Remapper', () => {
     assert.equal(vscode.window.visibleTextEditors.length, 0);
   });
 
-  test('remapped command with leader, only on visual mode', async () => {
-    // setup - normal mode
+  test('remapped command with leader on visual mode', async () => {
+    // setup
     let remapper = new Remappers();
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
 
-    // act
-    try {
-      await remapper.sendKey([leaderKey, 'c'], modeHandler, modeHandler.vimState);
-    } catch (e) {
-      assert.ok(true);
-    }
-
-    // assert
-    assert.equal(vscode.window.visibleTextEditors.length, 1);
-
-    // setup - visual mode
     await modeHandler.handleKeyEvent('v');
     assertEqual(modeHandler.currentMode.name, ModeName.Visual);
 
