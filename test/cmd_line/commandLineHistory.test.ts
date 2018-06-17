@@ -4,7 +4,7 @@ import { Configuration } from '../testConfiguration';
 import { configuration } from '../../src/configuration/configuration';
 import * as path from 'path';
 import * as os from 'os';
-import * as fs from 'fs';
+import * as assert from 'assert';
 
 suite('command-line history', () => {
   let history: CommandLineHistory;
@@ -97,15 +97,13 @@ suite('command-line history', () => {
   });
 
   test('change configuration.history', async () => {
-    configuration.history = 10;
-    assertArrayEquals(
-      run_cmds
-        .slice()
-        .splice(run_cmds.length - 10)
-        .reverse(),
-      history.get()
-    );
+    for (let cmd of run_cmds) {
+      history.add(cmd);
+    }
 
+    assert.equal(history.get().length, configuration.history);
+
+    configuration.history = 10;
     for (let cmd of run_cmds) {
       history.add(cmd);
     }

@@ -99,13 +99,13 @@ export class CommandLineHistory {
 
     try {
       let parsedData = JSON.parse(data);
-      if (Array.isArray(parsedData)) {
-        this._history = parsedData;
-      } else {
-        logger.error('CommandLineHistory: Corrupted history file.');
+      if (!Array.isArray(parsedData)) {
+        throw Error('Expected JSON');
       }
+      this._history = parsedData;
     } catch (e) {
-      logger.error(`CommandLineHistory: Failed to load history. err=${e}.`);
+      logger.error(`CommandLineHistory: Deleting corrupted history file. err=${e}.`);
+      this.clear();
     }
   }
 }
