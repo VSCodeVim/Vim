@@ -93,7 +93,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
             "after": ["<Esc>"]
         }
     ],
-    "vim.otherModesKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before": ["<leader>","d"],
             "after": ["d", "d"]
@@ -237,9 +237,9 @@ Here's some ideas on what you can do with neovim integration:
 
 There's several different mechanisms you can use to define custom remappings. Also see the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
 
-#### `"vim.insertModeKeyBindings"`/`"vim.otherModesKeyBindings"`/`"vim.visualModesKeyBindings"`
+#### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`
 
-* Keybinding overrides to use for insert, visual and other (non-insert) modes.
+* Keybinding overrides to use for insert, normal, and visual modes.
 * Bind `jj` to `<Esc>` in insert mode:
 
 ```json
@@ -254,7 +254,7 @@ There's several different mechanisms you can use to define custom remappings. Al
 * Bind `:` to show the command palette:
 
 ```json
-"vim.otherModesKeyBindingsNonRecursive": [
+"vim.normalModeKeyBindingsNonRecursive": [
     {
         "before": [":"],
         "after": [],
@@ -271,7 +271,7 @@ There's several different mechanisms you can use to define custom remappings. Al
 * Bind `ZZ` to the vim command `:wq` (save and close the current file):
 
 ```json
-    "vim.otherModesKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before": ["Z", "Z"],
             "after": [],
@@ -288,7 +288,7 @@ There's several different mechanisms you can use to define custom remappings. Al
 * Bind `ctrl+n` to turn off search highlighting and `<leader>w` to save the current file:
 
 ```json
-    "vim.otherModesKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before":["<C-n>"],
             "after":[],
@@ -312,13 +312,64 @@ There's several different mechanisms you can use to define custom remappings. Al
     ]
 ```
 
-#### `"vim.insertModeKeyBindingsNonRecursive"`/`"otherModesKeyBindingsNonRecursive"`/`"visualModesKeyBindingsNonRecursive"`
-
-* Non-recursive keybinding overrides to use for insert, visual and other (non-insert) modes (similar to `:noremap`)
-* *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
+* Bind `p` in visual mode to paste without overriding the current register
 
 ```json
-    "vim.otherModesKeyBindingsNonRecursive": [
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "after": [
+                "\"",
+                "_",
+                "d",
+                "P"
+            ],
+            "before": [
+                "p",
+            ]
+        }
+    ],
+```
+
+* Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
+
+
+```json
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "after": [],
+            "before": [
+                ">"
+            ],
+            "commands": [
+                {
+                    "args": [],
+                    "command": "editor.action.indentLines"
+                }
+            ]
+        },
+        {
+            "after": [],
+            "before": [
+                "<"
+            ],
+            "commands": [
+                {
+                    "args": [],
+                    "command": "editor.action.outdentLines"
+                }
+            ]
+        },
+    ]
+```
+
+
+#### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`
+
+* Non-recursive keybinding overrides to use for insert, normal, and visual modes
+* *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or normalModeKeyBindingNonRecursive.
+
+```json
+    "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before": ["j"],
             "after": ["g", "j"]

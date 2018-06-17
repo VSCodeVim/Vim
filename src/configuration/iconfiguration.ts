@@ -216,8 +216,8 @@ export interface IConfiguration {
    */
   insertModeKeyBindings: IKeyRemapping[];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[];
-  otherModesKeyBindings: IKeyRemapping[];
-  otherModesKeyBindingsNonRecursive: IKeyRemapping[];
-  visualModesKeyBindings: IKeyRemapping[];
-  visualModesKeyBindingsNonRecursive: IKeyRemapping[];
+  normalModeKeyBindings: IKeyRemapping[];
+  normalModeKeyBindingsNonRecursive: IKeyRemapping[];
+  visualModeKeyBindings: IKeyRemapping[];
+  visualModeKeyBindingsNonRecursive: IKeyRemapping[];
 }

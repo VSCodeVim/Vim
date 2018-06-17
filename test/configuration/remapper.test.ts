@@ -17,7 +17,7 @@ suite('Remapper', () => {
       after: ['<Esc>'],
     },
   ];
-  const otherModeKeysRebindings = [
+  const normalModeKeyBindings = [
     {
       before: ['leader', 'w'],
       after: [],
@@ -46,8 +46,8 @@ suite('Remapper', () => {
     let configuration = new Configuration();
     configuration.leader = leaderKey;
     configuration.insertModeKeyBindings = insertModeKeyBindings;
-    configuration.otherModesKeyBindings = otherModeKeysRebindings;
-    configuration.visualModesKeyBindings = visualModeKeyBindings;
+    configuration.normalModeKeyBindings = normalModeKeyBindings;
+    configuration.visualModeKeyBindings = visualModeKeyBindings;
 
     await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
