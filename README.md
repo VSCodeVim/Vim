@@ -100,7 +100,6 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
         },
         {
             "before":["<C-n>"],
-            "after":[],
             "commands": [
                 {
                     "command": ":nohl"
@@ -257,7 +256,6 @@ There's several different mechanisms you can use to define custom remappings. Al
 "vim.normalModeKeyBindingsNonRecursive": [
     {
         "before": [":"],
-        "after": [],
         "commands": [
             {
                 "command": "workbench.action.showCommands",
@@ -274,7 +272,6 @@ There's several different mechanisms you can use to define custom remappings. Al
     "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before": ["Z", "Z"],
-            "after": [],
             "commands": [
                 {
                     "command": ":wq",
@@ -291,7 +288,6 @@ There's several different mechanisms you can use to define custom remappings. Al
     "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before":["<C-n>"],
-            "after":[],
             "commands": [
                 {
                     "command": ":nohl",
@@ -301,7 +297,6 @@ There's several different mechanisms you can use to define custom remappings. Al
         },
         {
             "before": ["leader", "w"],
-            "after": [],
             "commands": [
                 {
                     "command": "workbench.action.files.save",
@@ -336,7 +331,6 @@ There's several different mechanisms you can use to define custom remappings. Al
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
         {
-            "after": [],
             "before": [
                 ">"
             ],
@@ -348,7 +342,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             ]
         },
         {
-            "after": [],
             "before": [
                 "<"
             ],

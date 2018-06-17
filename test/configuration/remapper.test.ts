@@ -20,7 +20,6 @@ suite('Remapper', () => {
   const normalModeKeyBindings = [
     {
       before: ['leader', 'w'],
-      after: [],
       commands: [
         {
           command: 'workbench.action.closeActiveEditor',
@@ -32,7 +31,6 @@ suite('Remapper', () => {
   const visualModeKeyBindings = [
     {
       before: ['leader', 'c'],
-      after: [],
       commands: [
         {
           command: 'workbench.action.closeActiveEditor',
