@@ -3,19 +3,23 @@ import * as vscode from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { logger } from '../util/logger';
 import { Message } from '../util/message';
-import { getExternalExtensionDirPath } from '../util/util';
+import { getExtensionDirPath } from '../util/util';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import * as parser from './parser';
 import { VimError, ErrorCode } from '../error';
 import { CommandLineHistory } from './commandLineHistory';
 
-export class CommandLine {
-  private static _history: CommandLineHistory = new CommandLineHistory();
+class CommandLine {
+  private _history: CommandLineHistory;
 
-  public static async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
+  constructor() {
+    this._history = new CommandLineHistory(getExtensionDirPath());
+  }
+
+  public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
-      logger.debug('CommandLine: No active document');
+      logger.debug('commandLine : No active document');
       return;
     }
 
@@ -25,12 +29,11 @@ export class CommandLine {
     }
 
     this._history.add(cmd);
-    this._history.save();
 
-    await CommandLine.Run(cmd!, vimState);
+    await this.Run(cmd!, vimState);
   }
 
-  public static async Run(command: string, vimState: VimState): Promise<void> {
+  public async Run(command: string, vimState: VimState): Promise<void> {
     if (!command || command.length === 0) {
       return;
     }
@@ -45,7 +48,7 @@ export class CommandLine {
         await cmd.execute(vimState.editor, vimState);
       }
     } catch (e) {
-      logger.error(`CommandLine: error executing cmd=${command}. err=${e}.`);
+      logger.error(`commandLine : error executing cmd=${command}. err=${e}.`);
       if (e instanceof VimError) {
         if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
           await vimState.nvim.run(vimState, command);
@@ -63,7 +66,7 @@ export class CommandLine {
     }
   }
 
-  private static getInputBoxOptions(text: string): vscode.InputBoxOptions {
+  private getInputBoxOptions(text: string): vscode.InputBoxOptions {
     return {
       prompt: 'Vim command line',
       value: configuration.cmdLineInitialColon ? ':' + text : text,
@@ -75,12 +78,9 @@ export class CommandLine {
     };
   }
 
-  public static async ShowHistory(
-    initialText: string,
-    vimState: VimState
-  ): Promise<string | undefined> {
+  public async ShowHistory(initialText: string, vimState: VimState): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
-      logger.debug('CommandLine: No active document.');
+      logger.debug('commandLine : No active document.');
       return '';
     }
 
@@ -93,14 +93,6 @@ export class CommandLine {
 
     return cmd;
   }
-
-  public static LoadHistory(): void {
-    getExternalExtensionDirPath().then(externalExtensionDirPath => {
-      const path = require('path');
-      const filePath: string = path.join(externalExtensionDirPath, '.cmdline_history');
-
-      this._history.setFilePath(filePath);
-      this._history.load();
-    });
-  }
 }
+
+export const commandLine = new CommandLine();

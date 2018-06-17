@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { CommandLine } from '../../src/cmd_line/commandLine';
+import { commandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import {
   assertEqual,
@@ -23,7 +23,7 @@ suite('Basic write-quit', () => {
   test('Run write and quit', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
 
-    await CommandLine.Run('wq', modeHandler.vimState);
+    await commandLine.Run('wq', modeHandler.vimState);
     await WaitForEditorsToClose();
 
     assertEqual(vscode.window.visibleTextEditors.length, 0, 'Window after 1sec still open');
