@@ -1,5 +1,5 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import { CommandLine } from '../../src/cmd_line/commandLine';
+import { commandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { VimState } from '../../src/state/vimState';
 import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -28,7 +28,7 @@ suite('Basic sort', () => {
       'c',
       '<Esc>',
     ]);
-    await CommandLine.Run('sort', vimState);
+    await commandLine.Run('sort', vimState);
 
     assertEqualLines(['a', 'b', 'c']);
   });
@@ -45,7 +45,7 @@ suite('Basic sort', () => {
       'c',
       '<Esc>',
     ]);
-    await CommandLine.Run('sort!', modeHandler.vimState);
+    await commandLine.Run('sort!', modeHandler.vimState);
 
     assertEqualLines(['c', 'b', 'a']);
   });
@@ -65,7 +65,7 @@ suite('Basic sort', () => {
       'c',
       '<Esc>',
     ]);
-    await CommandLine.Run('1,3sort', vimState);
+    await commandLine.Run('1,3sort', vimState);
 
     assertEqualLines(['a', 'b', 'd', 'c']);
   });
@@ -85,7 +85,7 @@ suite('Basic sort', () => {
       'c',
       '<Esc>',
     ]);
-    await CommandLine.Run('2,4sort!', vimState);
+    await commandLine.Run('2,4sort!', vimState);
 
     assertEqualLines(['b', 'd', 'c', 'a']);
   });

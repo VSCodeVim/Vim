@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { CommandLine } from '../../src/cmd_line/commandLine';
+import { commandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { createRandomFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
@@ -18,7 +18,7 @@ suite('cmd_line tab', () => {
 
   test('tabe with no arguments when not in workspace opens an untitled file', async () => {
     const beforeEditor = vscode.window.activeTextEditor;
-    await CommandLine.Run('tabe', modeHandler.vimState);
+    await commandLine.Run('tabe', modeHandler.vimState);
     const afterEditor = vscode.window.activeTextEditor;
 
     assert.notEqual(beforeEditor, afterEditor, 'Active editor did not change');
@@ -26,7 +26,7 @@ suite('cmd_line tab', () => {
 
   test('tabedit with no arguments when not in workspace opens an untitled file', async () => {
     const beforeEditor = vscode.window.activeTextEditor;
-    await CommandLine.Run('tabedit', modeHandler.vimState);
+    await commandLine.Run('tabedit', modeHandler.vimState);
     const afterEditor = vscode.window.activeTextEditor;
 
     assert.notEqual(beforeEditor, afterEditor, 'Active editor did not change');
@@ -34,7 +34,7 @@ suite('cmd_line tab', () => {
 
   test('tabe with absolute path when not in workspace opens file', async () => {
     const filePath = await createRandomFile('', '');
-    await CommandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
+    await commandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
     const editor = vscode.window.activeTextEditor;
 
     if (editor === undefined) {
@@ -54,10 +54,10 @@ suite('cmd_line tab', () => {
 
   test('tabe with current file path does nothing', async () => {
     const filePath = await createRandomFile('', '');
-    await CommandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
+    await commandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
 
     const beforeEditor = vscode.window.activeTextEditor;
-    await CommandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
+    await commandLine.Run(`tabe ${filePath}`, modeHandler.vimState);
     const afterEditor = vscode.window.activeTextEditor;
 
     assert.equal(

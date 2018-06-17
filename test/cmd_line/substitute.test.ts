@@ -1,5 +1,5 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import { CommandLine } from '../../src/cmd_line/commandLine';
+import { commandLine } from '../../src/cmd_line/commandLine';
 import { Globals } from '../../src/globals';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import {
@@ -21,28 +21,28 @@ suite('Basic substitute', () => {
 
   test('Replace single word once', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
-    await CommandLine.Run('%s/a/d', modeHandler.vimState);
+    await commandLine.Run('%s/a/d', modeHandler.vimState);
 
     assertEqualLines(['dba']);
   });
 
   test('Replace with `g` flag', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
-    await CommandLine.Run('%s/a/d/g', modeHandler.vimState);
+    await commandLine.Run('%s/a/d/g', modeHandler.vimState);
 
     assertEqualLines(['dbd']);
   });
 
   test('Replace multiple lines', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
-    await CommandLine.Run('%s/a/d/g', modeHandler.vimState);
+    await commandLine.Run('%s/a/d/g', modeHandler.vimState);
 
     assertEqualLines(['dbd', 'db']);
   });
 
   test('Replace across specific lines', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
-    await CommandLine.Run('1,1s/a/d/g', modeHandler.vimState);
+    await commandLine.Run('1,1s/a/d/g', modeHandler.vimState);
 
     assertEqualLines(['dbd', 'ab']);
   });
@@ -59,7 +59,7 @@ suite('Basic substitute', () => {
       'b',
       '<Esc>',
     ]);
-    await CommandLine.Run('s/a/d/g', modeHandler.vimState);
+    await commandLine.Run('s/a/d/g', modeHandler.vimState);
 
     assertEqualLines(['aba', 'db']);
   });
@@ -80,7 +80,7 @@ suite('Basic substitute', () => {
       'k',
       '0',
     ]);
-    await CommandLine.Run("'<,'>s/a/d/g", modeHandler.vimState);
+    await commandLine.Run("'<,'>s/a/d/g", modeHandler.vimState);
 
     assertEqualLines(['dbd', 'db']);
   });
@@ -104,7 +104,7 @@ suite('Basic substitute', () => {
       'm',
       'b',
     ]);
-    await CommandLine.Run("'a,'bs/a/d/g", modeHandler.vimState);
+    await commandLine.Run("'a,'bs/a/d/g", modeHandler.vimState);
 
     assertEqualLines(['dbc', 'dbc', 'abc']);
   });
@@ -117,28 +117,28 @@ suite('Basic substitute', () => {
 
     test('Replace all matches in the line', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
-      await CommandLine.Run('%s/a/d', modeHandler.vimState);
+      await commandLine.Run('%s/a/d', modeHandler.vimState);
 
       assertEqualLines(['dbd']);
     });
 
     test('Replace with `g` flag inverts global flag', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
-      await CommandLine.Run('%s/a/d/g', modeHandler.vimState);
+      await commandLine.Run('%s/a/d/g', modeHandler.vimState);
 
       assertEqualLines(['dba']);
     });
 
     test('Replace multiple lines', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
-      await CommandLine.Run('%s/a/d/', modeHandler.vimState);
+      await commandLine.Run('%s/a/d/', modeHandler.vimState);
 
       assertEqualLines(['dbd', 'db']);
     });
 
     test('Replace across specific lines', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
-      await CommandLine.Run('1,1s/a/d/', modeHandler.vimState);
+      await commandLine.Run('1,1s/a/d/', modeHandler.vimState);
 
       assertEqualLines(['dbd', 'ab']);
     });
@@ -155,7 +155,7 @@ suite('Basic substitute', () => {
         'b',
         '<Esc>',
       ]);
-      await CommandLine.Run('s/a/d/', modeHandler.vimState);
+      await commandLine.Run('s/a/d/', modeHandler.vimState);
 
       assertEqualLines(['aba', 'db']);
     });
@@ -176,7 +176,7 @@ suite('Basic substitute', () => {
         'k',
         '0',
       ]);
-      await CommandLine.Run("'<,'>s/a/d/", modeHandler.vimState);
+      await commandLine.Run("'<,'>s/a/d/", modeHandler.vimState);
 
       assertEqualLines(['dbd', 'db']);
     });
@@ -200,14 +200,14 @@ suite('Basic substitute', () => {
         'm',
         'b',
       ]);
-      await CommandLine.Run("'a,'bs/a/d/", modeHandler.vimState);
+      await commandLine.Run("'a,'bs/a/d/", modeHandler.vimState);
 
       assertEqualLines(['dbc', 'dbc', 'abc']);
     });
 
     test('Substitute with escaped delimiter', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', 'b', '/', '/', 'f', '<Esc>']);
-      await CommandLine.Run('s/\\/\\/f/z/g', modeHandler.vimState);
+      await commandLine.Run('s/\\/\\/f/z/g', modeHandler.vimState);
 
       assertEqualLines(['bz']);
     });
@@ -239,7 +239,7 @@ suite('Basic substitute', () => {
         'g', // back to the first line
         '*', // search for foo
       ]);
-      await CommandLine.Run('%s//fighters', modeHandler.vimState);
+      await commandLine.Run('%s//fighters', modeHandler.vimState);
 
       assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
     });
@@ -267,7 +267,7 @@ suite('Basic substitute', () => {
         '<Esc>',
         '#', // search for bar
       ]);
-      await CommandLine.Run('%s//fighters', modeHandler.vimState);
+      await commandLine.Run('%s//fighters', modeHandler.vimState);
 
       assertEqualLines(['foo', 'fighters', 'foo', 'fighters']);
     });
@@ -299,7 +299,7 @@ suite('Basic substitute', () => {
         'o', // search for foo
         '\n',
       ]);
-      await CommandLine.Run('%s//fighters', modeHandler.vimState);
+      await commandLine.Run('%s//fighters', modeHandler.vimState);
 
       assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
     });
@@ -335,7 +335,7 @@ suite('Basic substitute', () => {
         'g',
         '*', // now search for bar
       ]);
-      await CommandLine.Run('%s//fighters', modeHandler.vimState);
+      await commandLine.Run('%s//fighters', modeHandler.vimState);
 
       assertEqualLines(['foo', 'fighters', 'foo', 'fighters']);
     });
