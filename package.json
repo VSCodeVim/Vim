@@ -345,11 +345,11 @@
           "description": "Extension logging level",
           "default": "error"
         },
-        "vim.otherModesKeyBindings": {
+        "vim.normalModeKeyBindings": {
           "type": "array",
           "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
-        "vim.otherModesKeyBindingsNonRecursive": {
+        "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
           "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
@@ -385,6 +385,14 @@
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
           "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+        },
+        "vim.visualModeKeyBindings": {
+          "type": "array",
+          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for more."
+        },
+        "vim.visualModeKeyBindingsNonRecursive": {
+          "type": "array",
+          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
         "vim.textwidth": {
           "type": "number",

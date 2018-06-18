@@ -68,6 +68,8 @@ export class Configuration implements IConfiguration {
   cmdLineInitialColon = false;
   insertModeKeyBindings: IKeyRemapping[] = [];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
-  otherModesKeyBindings: IKeyRemapping[] = [];
-  otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  normalModeKeyBindings: IKeyRemapping[] = [];
+  normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  visualModeKeyBindings: IKeyRemapping[] = [];
+  visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
