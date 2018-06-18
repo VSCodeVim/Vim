@@ -312,14 +312,14 @@ There's several different mechanisms you can use to define custom remappings. Al
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
         {
-            "after": [
-                "\"",
-                "_",
-                "d",
-                "P"
-            ],
             "before": [
                 "p",
+            ],
+            "after": [
+                "p",
+                "g",
+                "v",
+                "y"
             ]
         }
     ],
