@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.17.0"
+    "vscode": "^1.22.0"
   },
   "categories": [
     "Other",
