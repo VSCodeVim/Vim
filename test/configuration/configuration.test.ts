@@ -10,7 +10,7 @@ suite('Configuration', () => {
   const { newTest } = getTestingFunctions();
   const configuration = new testConfiguration.Configuration();
   configuration.leader = '<space>';
-  configuration.otherModesKeyBindingsNonRecursive = [
+  configuration.normalModeKeyBindingsNonRecursive = [
     {
       before: ['leader', 'o'],
       after: ['o', 'eSc', 'k'],
@@ -28,8 +28,8 @@ suite('Configuration', () => {
   teardown(cleanUpWorkspace);
 
   test('remappings are normalized', async () => {
-    const normalizedKeybinds = srcConfiguration.configuration.otherModesKeyBindingsNonRecursive;
-    const testingKeybinds = configuration.otherModesKeyBindingsNonRecursive;
+    const normalizedKeybinds = srcConfiguration.configuration.normalModeKeyBindingsNonRecursive;
+    const testingKeybinds = configuration.normalModeKeyBindingsNonRecursive;
 
     assert.equal(normalizedKeybinds.length, testingKeybinds.length);
     assert.deepEqual(normalizedKeybinds[0].before, [' ', 'o']);

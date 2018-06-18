@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { CommandLine } from '../cmd_line/commandLine';
+import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
@@ -27,9 +27,11 @@ export class Remappers implements IRemapper {
   constructor() {
     this.remappers = [
       new InsertModeRemapper(true),
-      new OtherModesRemapper(true),
+      new NormalModeRemapper(true),
+      new VisualModeRemapper(true),
       new InsertModeRemapper(false),
-      new OtherModesRemapper(false),
+      new NormalModeRemapper(false),
+      new VisualModeRemapper(false),
     ];
   }
 
@@ -152,7 +154,7 @@ class Remapper implements IRemapper {
         for (const command of remapping.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.slice(0, 1) === ':') {
-            await CommandLine.Run(
+            await commandLine.Run(
               command.command.slice(1, command.command.length),
               modeHandler.vimState
             );
@@ -196,11 +198,21 @@ class InsertModeRemapper extends Remapper {
   }
 }
 
-class OtherModesRemapper extends Remapper {
+class NormalModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      'otherModesKeyBindings' + (recursive ? '' : 'NonRecursive'),
-      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
+      'normalModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
+      [ModeName.Normal],
+      recursive
+    );
+  }
+}
+
+class VisualModeRemapper extends Remapper {
+  constructor(recursive: boolean) {
+    super(
+      'visualModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
+      [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
       recursive
     );
   }

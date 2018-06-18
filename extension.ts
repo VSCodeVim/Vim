@@ -8,9 +8,9 @@ import './src/actions/include-all';
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { CommandLine } from './src/cmd_line/commandLine';
-import { Position } from './src/common/motion/position';
 import { configuration } from './src/configuration/configuration';
+import { commandLine } from './src/cmd_line/commandLine';
+import { Position } from './src/common/motion/position';
 import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
@@ -64,18 +64,6 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
   if (prevHandler && curHandler.vimState.focusChanged) {
     curHandler.vimState.focusChanged = false;
     prevHandler!.vimState.focusChanged = true;
-  }
-
-  // Temporary workaround for vscode bug not changing cursor style properly
-  // https://github.com/Microsoft/vscode/issues/17472
-  // https://github.com/Microsoft/vscode/issues/17513
-  if (curHandler.vimState.editor) {
-    const desiredStyle = curHandler.vimState.editor.options.cursorStyle;
-
-    // Temporarily change to any other cursor style besides the desired type, then change back
-    let tempStyle = ((desiredStyle || vscode.TextEditorCursorStyle.Line) % 6) + 1;
-    curHandler.vimState.editor.options.cursorStyle = tempStyle;
-    curHandler.vimState.editor.options.cursorStyle = desiredStyle;
   }
 
   return curHandler;
@@ -212,7 +200,7 @@ export async function activate(context: vscode.ExtensionContext) {
     let [modeHandler] = await ModeHandlerMap.getOrCreate(
       new EditorIdentity(vscode.window.activeTextEditor).toString()
     );
-    CommandLine.PromptAndRun('', modeHandler.vimState);
+    commandLine.PromptAndRun('', modeHandler.vimState);
     modeHandler.updateView(modeHandler.vimState);
   });
 
@@ -230,7 +218,7 @@ export async function activate(context: vscode.ExtensionContext) {
         for (const command of args.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.slice(0, 1) === ':') {
-            await CommandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
+            await commandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
             await mh.updateView(mh.vimState);
           } else {
             await vscode.commands.executeCommand(command.command, command.args);
@@ -244,8 +232,6 @@ export async function activate(context: vscode.ExtensionContext) {
     configuration.disableExt = !configuration.disableExt;
     toggleExtension(configuration.disableExt, compositionState);
   });
-
-  CommandLine.LoadHistory();
 
   for (const boundKey of configuration.boundKeyCombinations) {
     registerCommand(context, boundKey.command, () => handleKeyEvent(`${boundKey.key}`));
