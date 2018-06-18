@@ -93,14 +93,13 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
             "after": ["<Esc>"]
         }
     ],
-    "vim.otherModesKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before": ["<leader>","d"],
             "after": ["d", "d"]
         },
         {
             "before":["<C-n>"],
-            "after":[],
             "commands": [
                 {
                     "command": ":nohl"
@@ -207,15 +206,11 @@ These settings are specific to VSCodeVim.
 * This setting can be changed through the settings or via `toggleVim` command in the Command Palette
 * Type: Boolean (Default: `false`)
 
-#### `"vim.debug"`
+#### `"vim.debug.loggingLevel"`
 
-* If the extension is giving you issues, toggle some settings here to provide more verbose debugging information
-
-```json
-    "vim.debug": {
-        "loggingLevel": "error"
-    },
-```
+* Extension logging level. Maximum level of messages to log.
+* Logs will be visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_profiling-your-extension).
+* Type: String (Default: 'error'). Supported values: 'error', 'warn', 'info', 'verbose', 'debug'.
 
 ### Neovim Integration
 
@@ -241,9 +236,9 @@ Here's some ideas on what you can do with neovim integration:
 
 There's several different mechanisms you can use to define custom remappings. Also see the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
 
-#### `"vim.insertModeKeyBindings"`/`"vim.otherModesKeyBindings"`
+#### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`
 
-* Keybinding overrides to use for insert and other (non-insert) modes.
+* Keybinding overrides to use for insert, normal, and visual modes.
 * Bind `jj` to `<Esc>` in insert mode:
 
 ```json
@@ -258,10 +253,9 @@ There's several different mechanisms you can use to define custom remappings. Al
 * Bind `:` to show the command palette:
 
 ```json
-"vim.otherModesKeyBindingsNonRecursive": [
+"vim.normalModeKeyBindingsNonRecursive": [
     {
         "before": [":"],
-        "after": [],
         "commands": [
             {
                 "command": "workbench.action.showCommands",
@@ -275,10 +269,9 @@ There's several different mechanisms you can use to define custom remappings. Al
 * Bind `ZZ` to the vim command `:wq` (save and close the current file):
 
 ```json
-    "vim.otherModesKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before": ["Z", "Z"],
-            "after": [],
             "commands": [
                 {
                     "command": ":wq",
@@ -292,10 +285,9 @@ There's several different mechanisms you can use to define custom remappings. Al
 * Bind `ctrl+n` to turn off search highlighting and `<leader>w` to save the current file:
 
 ```json
-    "vim.otherModesKeyBindingsNonRecursive": [
+    "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before":["<C-n>"],
-            "after":[],
             "commands": [
                 {
                     "command": ":nohl",
@@ -305,7 +297,6 @@ There's several different mechanisms you can use to define custom remappings. Al
         },
         {
             "before": ["leader", "w"],
-            "after": [],
             "commands": [
                 {
                     "command": "workbench.action.files.save",
@@ -316,13 +307,62 @@ There's several different mechanisms you can use to define custom remappings. Al
     ]
 ```
 
-#### `"vim.insertModeKeyBindingsNonRecursive"`/`"otherModesKeyBindingsNonRecursive"`
-
-* Non-recursive keybinding overrides to use for insert and other (non-insert) modes (similar to `:noremap`)
-* *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or otherModesKeyBindingNonRecursive.
+* Bind `p` in visual mode to paste without overriding the current register
 
 ```json
-    "vim.otherModesKeyBindingsNonRecursive": [
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "after": [
+                "\"",
+                "_",
+                "d",
+                "P"
+            ],
+            "before": [
+                "p",
+            ]
+        }
+    ],
+```
+
+* Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
+
+
+```json
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                ">"
+            ],
+            "commands": [
+                {
+                    "args": [],
+                    "command": "editor.action.indentLines"
+                }
+            ]
+        },
+        {
+            "before": [
+                "<"
+            ],
+            "commands": [
+                {
+                    "args": [],
+                    "command": "editor.action.outdentLines"
+                }
+            ]
+        },
+    ]
+```
+
+
+#### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`
+
+* Non-recursive keybinding overrides to use for insert, normal, and visual modes
+* *Example:* Bind `j` to `gj`. Notice that if you attempted this binding normally, the j in gj would be expanded into gj, on and on forever. Stop this recursive expansion using insertModeKeyBindingsNonRecursive and/or normalModeKeyBindingNonRecursive.
+
+```json
+    "vim.normalModeKeyBindingsNonRecursive": [
         {
             "before": ["j"],
             "after": ["g", "j"]

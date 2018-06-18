@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as modes from './modes';
 
-import { CommandLine } from '../cmd_line/commandLine';
+import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { Decoration } from '../configuration/decoration';
 import { Remappers } from '../configuration/remapper';
@@ -310,13 +310,8 @@ export class ModeHandler implements vscode.Disposable {
        *
        * 1) We are not already performing a nonrecursive remapping.
        * 2) We haven't timed out of our previous remapping.
-       * 3) We are not running tests as user remappings bork tests
        */
-      if (
-        !this.vimState.isCurrentlyPerformingRemapping &&
-        (withinTimeout || keys.length === 1) &&
-        !Globals.isTesting
-      ) {
+      if (!this.vimState.isCurrentlyPerformingRemapping && (withinTimeout || keys.length === 1)) {
         handled = await this._remappers.sendKey(keys, this, this.vimState);
       }
 
@@ -906,14 +901,14 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'showCommandLine':
-          await CommandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
+          await commandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
           this.updateView(this.vimState);
           break;
 
         case 'showCommandHistory':
-          let cmd = await CommandLine.ShowHistory(vimState.commandInitialText, this.vimState);
+          let cmd = await commandLine.ShowHistory(vimState.commandInitialText, this.vimState);
           if (cmd && cmd.length !== 0) {
-            await CommandLine.PromptAndRun(cmd, this.vimState);
+            await commandLine.PromptAndRun(cmd, this.vimState);
             this.updateView(this.vimState);
           }
           break;
@@ -968,6 +963,20 @@ export class ModeHandler implements vscode.Disposable {
           break;
         case 'tab':
           await vscode.commands.executeCommand('tab');
+          if (command.diff) {
+            if (command.cursorIndex === undefined) {
+              throw new Error('No cursor index - this should never ever happen!');
+            }
+
+            if (!accumulatedPositionDifferences[command.cursorIndex]) {
+              accumulatedPositionDifferences[command.cursorIndex] = [];
+            }
+
+            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+          }
+          break;
+        case 'reindent':
+          await vscode.commands.executeCommand('editor.action.reindentselectedlines');
           if (command.diff) {
             if (command.cursorIndex === undefined) {
               throw new Error('No cursor index - this should never ever happen!');

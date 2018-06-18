@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -340,18 +340,16 @@
       "title": "Vim Configuration",
       "type": "object",
       "properties": {
-        "vim.debug": {
-          "type": "object",
-          "description": "Extension debugging options",
-          "default": {
-            "loggingLevel": "error"
-          }
+        "vim.debug.loggingLevel": {
+          "type": "string",
+          "description": "Extension logging level",
+          "default": "error"
         },
-        "vim.otherModesKeyBindings": {
+        "vim.normalModeKeyBindings": {
           "type": "array",
           "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
-        "vim.otherModesKeyBindingsNonRecursive": {
+        "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
           "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
@@ -387,6 +385,14 @@
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
           "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+        },
+        "vim.visualModeKeyBindings": {
+          "type": "array",
+          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for more."
+        },
+        "vim.visualModeKeyBindingsNonRecursive": {
+          "type": "array",
+          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for more."
         },
         "vim.textwidth": {
           "type": "number",
@@ -604,8 +610,8 @@
     "@types/diff": "3.5.1",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.108",
-    "@types/mocha": "5.2.1",
-    "@types/node": "9.6.21",
+    "@types/mocha": "5.2.2",
+    "@types/node": "9.6.22",
     "gulp": "3.9.1",
     "gulp-bump": "3.1.1",
     "gulp-filter": "5.1.0",
@@ -617,7 +623,7 @@
     "mocha": "5.2.0",
     "prettier": "1.13.5",
     "tslint": "5.10.0",
-    "typescript": "2.9.1",
+    "typescript": "2.9.2",
     "vscode": "1.1.18"
   }
 }

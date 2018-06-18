@@ -9,7 +9,7 @@ suite('Configuration', () => {
   suiteSetup(() => {
     let configuration = new testConfiguration.Configuration();
     configuration.leader = '<space>';
-    configuration.otherModesKeyBindingsNonRecursive = [
+    configuration.normalModeKeyBindingsNonRecursive = [
       {
         before: ['leader', 'o'],
         after: ['o', 'eSc', 'k'],
@@ -22,7 +22,7 @@ suite('Configuration', () => {
 
   test('remappings are normalized', async () => {
     let configuration = srcConfiguration.configuration;
-    let keybindings = configuration.otherModesKeyBindingsNonRecursive;
+    let keybindings = configuration.normalModeKeyBindingsNonRecursive;
 
     assert.equal(keybindings.length, 1);
     assert.deepEqual(keybindings[0].before, [' ', 'o']);
