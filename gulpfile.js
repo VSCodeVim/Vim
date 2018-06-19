@@ -118,15 +118,17 @@ gulp.task('test', function(cb) {
   });
 });
 
+gulp.task('tag', ['default'], function() {
+  return gulp.src(['./package.json']).pipe(tag_version());
+});
+
 // version bump
 function versionBump(semver) {
   return gulp
     .src(['./package.json', './package-lock.json'])
     .pipe(bump({ type: semver }))
     .pipe(gulp.dest('./'))
-    .pipe(git.commit('bump version'))
-    .pipe(filter('package.json'))
-    .pipe(tag_version());
+    .pipe(git.commit('bump version'));
 }
 
 gulp.task('patch', ['default'], function() {
