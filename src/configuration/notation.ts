@@ -25,7 +25,7 @@ export class Notation {
       return ' ';
     }
 
-    if (key.toLocaleLowerCase() === '<cr>') {
+    if (key.toLocaleLowerCase() === '<cr>' || key.toLocaleLowerCase() === '<enter>') {
       return '\n';
     }
 
