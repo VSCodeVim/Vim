@@ -36,7 +36,7 @@ Please report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim
     * [vim-commentary](#vim-commentary)
     * [vim-indent-object](#vim-indent-object)
     * [vim-sneak](#vim-sneak)
-* [Switch Input Method Automatically](#switch-input-method-automatically)
+    * [Input Method](#input-method)
 * [VSCodeVim tricks](#vscodevim-tricks)
 * [F.A.Q / Troubleshooting](#faq)
 * [Contributing](#contributing)
@@ -575,16 +575,16 @@ Motion Command | Description
 `<operator>z<char><char>`|Perform `<operator>` forward to the first occurence of `<char><char>`
 `<operator>Z<char><char>`|Perform `<operator>` backward to the first occurence of `<char><char>`
 
-## Switch Input Method Automatically
+### Input Method
 (Support macOS and windows for now, linux will come soon)
 
-### Use our recommended program
+#### Use our recommended program
 
-#### 1.Install im-select
+##### 1.Install im-select
 
 Follow the [Installation Guide](https://github.com/daipeihust/im-select#installation) to install im-select according to your platform.
 
-#### 2.Find your default input method key
+##### 2.Find your default input method key
 
 **For macOS:**
 
@@ -610,7 +610,7 @@ com.apple.keylayout.Colemak | Colemak
 
 For most people, their default input method key is 1033, the locale ID of en_US. But if your default keyboard layout is not en_US, you can use im-select.exe to find out, the guide is [here](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale). You can also find your locale ID in [this page](https://www.science.co.il/language/Locale-codes.php), the `LCID Decimal` column is the locale ID.
 
-#### 3.Add configuration to your VScode setting
+##### 3.Add configuration to your VScode setting
 
 ```json
 "vim.autoSwitchInputMethod": {
@@ -652,7 +652,7 @@ If your default input method key is `1033`(en_US), and your `im-select.exe` is i
 }
 ```
 
-### Use your own program
+#### Use your own program
 
 If you want to use third-party program to switch your input method, your should download it first. Then you should have following config:
 
