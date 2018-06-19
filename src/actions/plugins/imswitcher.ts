@@ -3,7 +3,8 @@ import { ModeName, Mode } from '../../mode/mode';
 import { existsSync, exists } from 'fs';
 import { configuration } from '../../configuration/configuration';
 import * as vscode from 'vscode';
-import * as util from '../../util';
+import * as util from '../../util/util';
+import { Message } from '../../util/message';
 
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
@@ -75,7 +76,7 @@ export class InputMethodSwitcher {
   private async switchToIM(imKey: string) {
     let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
     if (!switchIMCmd.includes('{im}')) {
-      util.showError(
+      Message.ShowError(
         'switchIMCmd config in vim.autoSwitchInputMethod is incorrect, \
         it should contain the placeholder {im}'
       );
@@ -105,7 +106,7 @@ export class InputMethodSwitcher {
   }
 
   private showCmdNotFoundErrorMessage(cmd: string) {
-    util.showError(
+    Message.ShowError(
       'Unable to find ' + cmd + '. check your "vim.autoSwitchInputMethod" in VSCode setting.'
     );
     this.disableIMSwitch();
