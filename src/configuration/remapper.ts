@@ -192,7 +192,7 @@ class InsertModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
       'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
-      [ModeName.Insert],
+      [ModeName.Insert, ModeName.Replace],
       recursive
     );
   }
