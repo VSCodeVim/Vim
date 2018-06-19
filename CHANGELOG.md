@@ -1,8 +1,16 @@
 # Change Log
 
-## [v0.13.0](https://github.com/vscodevim/vim/tree/HEAD)
+## [v0.13.1](https://github.com/vscodevim/vim/tree/HEAD)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.13.0...HEAD)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.12.0...HEAD)
+- fix: closes \#1472. insertModeKeyBindings apply to insert and replace modes [\#2749](https://github.com/VSCodeVim/Vim/pull/2749) ([jpoon](https://github.com/jpoon))
+- fix: closes \#2390. enables remapping using '\<enter\>'  [\#2748](https://github.com/VSCodeVim/Vim/pull/2748) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/lodash to v4.14.110 [\#2745](https://github.com/VSCodeVim/Vim/pull/2745) ([renovate-bot](https://github.com/renovate-bot))
+- Update visualModeKeyBindingsNonRecursive example [\#2744](https://github.com/VSCodeVim/Vim/pull/2744) ([chibicode](https://github.com/chibicode))
+- Fix \#1348. ctrl+D/U correct position [\#2723](https://github.com/VSCodeVim/Vim/pull/2723) ([rebornix](https://github.com/rebornix))
+
+## [v0.13.0](https://github.com/vscodevim/vim/tree/v0.13.0) (2018-06-18)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.12.0...v0.13.0)
 
 - **Breaking Change**: We have removed `otherModesKeyBindings` configuration. In its stead we have added: `normalModeKeyBindings` and `visualModeKeyBidnings` to allow more fine-grain customization of your remappings. For more information, see our [documentation](https://github.com/vscodevim/vim#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindings).
 - fix: handle when commandLineHistory is empty [\#2741](https://github.com/VSCodeVim/Vim/pull/2741) ([jpoon](https://github.com/jpoon))
