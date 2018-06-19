@@ -1,12 +1,25 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { CommandLine } from '../cmd_line/commandLine';
+import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { ModeName } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { VimState } from './../state/vimState';
 import { IKeyRemapping } from './iconfiguration';
+import { logger } from '../util/logger';
+
+interface IRemapper {
+  /**
+   * Send keys to remapper
+   */
+  sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean>;
+
+  /**
+   * Given keys pressed thus far, denotes if it is a potential remap
+   */
+  readonly isPotentialRemap: boolean;
+}
 
 export class Remappers implements IRemapper {
   private remappers: IRemapper[];
@@ -14,9 +27,11 @@ export class Remappers implements IRemapper {
   constructor() {
     this.remappers = [
       new InsertModeRemapper(true),
-      new OtherModesRemapper(true),
+      new NormalModeRemapper(true),
+      new VisualModeRemapper(true),
       new InsertModeRemapper(false),
-      new OtherModesRemapper(false),
+      new NormalModeRemapper(false),
+      new VisualModeRemapper(false),
     ];
   }
 
@@ -37,28 +52,20 @@ export class Remappers implements IRemapper {
   }
 }
 
-interface IRemapper {
-  sendKey(keys: string[], modeHandler: ModeHandler, vimState: VimState): Promise<boolean>;
-  readonly isPotentialRemap: boolean;
-}
-
 class Remapper implements IRemapper {
+  private readonly _configKey: string;
   private readonly _remappedModes: ModeName[];
   private readonly _recursive: boolean;
-  private readonly _remappings: IKeyRemapping[] = [];
 
-  /**
-   * Have the keys pressed so far potentially be a remap
-   */
   private _isPotentialRemap = false;
   get isPotentialRemap(): boolean {
     return this._isPotentialRemap;
   }
 
   constructor(configKey: string, remappedModes: ModeName[], recursive: boolean) {
+    this._configKey = configKey;
     this._recursive = recursive;
     this._remappedModes = remappedModes;
-    this._remappings = configuration[configKey] as IKeyRemapping[];
   }
 
   public async sendKey(
@@ -72,32 +79,44 @@ class Remapper implements IRemapper {
       return false;
     }
 
-    let remapping: IKeyRemapping | undefined;
-    const longestKeySequence = this._longestKeySequence();
+    const userDefinedRemappings = configuration[this._configKey] as IKeyRemapping[];
+    for (let userDefinedRemapping of userDefinedRemappings) {
+      logger.debug(
+        `Remapper: ${this._configKey}. loaded remappings. before=${
+          userDefinedRemapping.before
+        }. after=${userDefinedRemapping.after}. commands=${userDefinedRemapping.commands}.`
+      );
+    }
 
-    /**
-     * Check to see if the keystrokes match any user-specified remapping.
-     * In insert mode, we allow the users to precede the remapped command
-     * with extraneous keystrokes (eg. "hello world jj").
-     * In other modes, we have to precisely match the entire keysequence.
-     */
-    if (this._remappedModes.indexOf(ModeName.Insert) === -1) {
-      remapping = _.find(this._remappings, map => {
-        return map.before.join('') === keys.join('');
-      });
-    } else {
+    // Check to see if the keystrokes match any user-specified remapping.
+    let remapping: IKeyRemapping | undefined;
+    if (vimState.currentMode === ModeName.Insert) {
+      // In insert mode, we allow users to precede remapped commands
+      // with extraneous keystrokes (e.g. "hello world jj")
+      const longestKeySequence = Remapper._getLongestedRemappedKeySequence(userDefinedRemappings);
       for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
         const slice = keys.slice(-sliceLength);
-        const result = _.find(this._remappings, map => map.before.join('') === slice.join(''));
+        const result = _.find(userDefinedRemappings, map => map.before.join('') === slice.join(''));
 
         if (result) {
           remapping = result;
           break;
         }
       }
+    } else {
+      // In other modes, we have to precisely match the entire keysequence
+      remapping = _.find(userDefinedRemappings, map => {
+        return map.before.join('') === keys.join('');
+      });
     }
 
     if (remapping) {
+      logger.debug(
+        `Remapper: ${this._configKey}. match found. before=${remapping.before}. after=${
+          remapping.after
+        }. command=${remapping.commands}.`
+      );
+
       if (!this._recursive) {
         vimState.isCurrentlyPerformingRemapping = true;
       }
@@ -108,7 +127,7 @@ class Remapper implements IRemapper {
       const numToRemove = remapping.before.length - 1;
       // Revert previously inserted characters
       // (e.g. jj remapped to esc, we have to revert the inserted "jj")
-      if (this._remappedModes.indexOf(ModeName.Insert) >= 0) {
+      if (vimState.currentMode === ModeName.Insert) {
         // Revert every single inserted character.
         // We subtract 1 because we haven't actually applied the last key.
         await vimState.historyTracker.undoAndRemoveChanges(
@@ -135,7 +154,7 @@ class Remapper implements IRemapper {
         for (const command of remapping.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.slice(0, 1) === ':') {
-            await CommandLine.Run(
+            await commandLine.Run(
               command.command.slice(1, command.command.length),
               modeHandler.vimState
             );
@@ -151,7 +170,7 @@ class Remapper implements IRemapper {
     }
 
     // Check to see if a remapping could potentially be applied when more keys are received
-    for (let remap of this._remappings) {
+    for (let remap of userDefinedRemappings) {
       if (keys.join('') === remap.before.slice(0, keys.length).join('')) {
         this._isPotentialRemap = true;
         break;
@@ -161,12 +180,11 @@ class Remapper implements IRemapper {
     return false;
   }
 
-  private _longestKeySequence(): number {
-    if (this._remappings.length > 0) {
-      return _.maxBy(this._remappings, map => map.before.length)!.before.length;
-    } else {
+  private static _getLongestedRemappedKeySequence(remappings: IKeyRemapping[]): number {
+    if (remappings.length === 0) {
       return 1;
     }
+    return _.maxBy(remappings, map => map.before.length)!.before.length;
   }
 }
 
@@ -174,17 +192,27 @@ class InsertModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
       'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
-      [ModeName.Insert],
+      [ModeName.Insert, ModeName.Replace],
       recursive
     );
   }
 }
 
-class OtherModesRemapper extends Remapper {
+class NormalModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      'otherModesKeyBindings' + (recursive ? '' : 'NonRecursive'),
-      [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
+      'normalModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
+      [ModeName.Normal],
+      recursive
+    );
+  }
+}
+
+class VisualModeRemapper extends Remapper {
+  constructor(recursive: boolean) {
+    super(
+      'visualModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
+      [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
       recursive
     );
   }

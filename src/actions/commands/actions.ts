@@ -3,7 +3,8 @@ import * as vscode from 'vscode';
 import { RecordedState } from '../../state/recordedState';
 import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem, Clipboard } from '../../util';
+import { getCursorsAfterSync } from '../../util/util';
+import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
 import { QuitCommand } from './../../cmd_line/commands/quit';
@@ -652,6 +653,32 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
   keys = ['<C-d>'];
   to: EditorScrollDirection = 'down';
   by: EditorScrollByUnit = 'halfPage';
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let lineOffset = 0;
+    let editor = vscode.window.activeTextEditor!;
+    let startColumn = vimState.cursorStartPosition.character;
+    let firstLine = editor.visibleRanges[0].start.line;
+    let currentSelectionLine = editor.selection.start.line;
+    lineOffset = currentSelectionLine - firstLine;
+
+    let timesToRepeat = vimState.recordedState.count || 1;
+    await vscode.commands.executeCommand('editorScroll', {
+      to: this.to,
+      by: this.by,
+      value: timesToRepeat,
+      revealCursor: false,
+      select:
+        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
+          vimState.currentMode
+        ) >= 0,
+    });
+
+    let newFirstLine = editor.visibleRanges[0].start.line;
+    let newPosition = new Position(newFirstLine + lineOffset, startColumn);
+    vimState.cursorPosition = newPosition;
+    return vimState;
+  }
 }
 
 @RegisterAction
@@ -659,6 +686,33 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
   keys = ['<C-u>'];
   to: EditorScrollDirection = 'up';
   by: EditorScrollByUnit = 'halfPage';
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    let lineOffset = 0;
+    let editor = vscode.window.activeTextEditor!;
+    let startColumn = vimState.cursorStartPosition.character;
+
+    let firstLine = editor.visibleRanges[0].start.line;
+    let currentSelectionLine = editor.selection.start.line;
+    lineOffset = currentSelectionLine - firstLine;
+
+    let timesToRepeat = vimState.recordedState.count || 1;
+    await vscode.commands.executeCommand('editorScroll', {
+      to: this.to,
+      by: this.by,
+      value: timesToRepeat,
+      revealCursor: false,
+      select:
+        [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
+          vimState.currentMode
+        ) >= 0,
+    });
+
+    let newFirstLine = editor.visibleRanges[0].start.line;
+    let newPosition = new Position(newFirstLine + lineOffset, startColumn);
+    vimState.cursorPosition = newPosition;
+    return vimState;
+  }
 }
 
 @RegisterAction
@@ -1780,7 +1834,7 @@ class CommandCloseFold extends CommandFold {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand('editor.fold', { levels: timesToRepeat, direction: 'up' });
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+    vimState.allCursors = await getCursorsAfterSync();
     return vimState;
   }
 }
@@ -2129,15 +2183,10 @@ class CommandClearLine extends BaseCommand {
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let count = vimState.recordedState.count || 1;
-    let end = position
-      .getDownByCount(Math.max(0, count - 1))
-      .getLineEnd()
-      .getLeft();
-    return new operator.ChangeOperator().run(
+    return new operator.ChangeOperator(this.multicursorIndex).runRepeat(
       vimState,
-      position.getLineBeginRespectingIndent(),
-      end
+      position,
+      vimState.recordedState.count || 1
     );
   }
 
@@ -2343,7 +2392,11 @@ class CommandOpenFile extends BaseCommand {
     if (fileInfo) {
       const filePath = fileInfo[1];
       const lineNumber = parseInt(fileInfo[2], 10);
-      const fileCommand = new FileCommand({ name: filePath, lineNumber: lineNumber });
+      const fileCommand = new FileCommand({
+        name: filePath,
+        lineNumber: lineNumber,
+        createFileIfNotExists: false,
+      });
       fileCommand.execute();
     }
 
@@ -2538,7 +2591,7 @@ class CommandInsertNewLineAbove extends BaseCommand {
       await vscode.commands.executeCommand('editor.action.insertLineBefore');
     }
 
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+    vimState.allCursors = await getCursorsAfterSync();
     for (let i = 0; i < count; i++) {
       const newPos = new Position(
         vimState.allCursors[0].start.line + i,
@@ -2568,7 +2621,7 @@ class CommandInsertNewLineBefore extends BaseCommand {
     for (let i = 0; i < count; i++) {
       await vscode.commands.executeCommand('editor.action.insertLineAfter');
     }
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+    vimState.allCursors = await getCursorsAfterSync();
     for (let i = 1; i < count; i++) {
       const newPos = new Position(
         vimState.allCursors[0].start.line - i,
@@ -3761,7 +3814,7 @@ class ActionOverrideCmdD extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+    vimState.allCursors = await getCursorsAfterSync();
 
     // If this is the first cursor, select 1 character less
     // so that only the word is selected, no extra character
@@ -3814,7 +3867,7 @@ class ActionOverrideCmdDInsert extends BaseCommand {
       }
     );
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+    vimState.allCursors = await getCursorsAfterSync();
     return vimState;
   }
 }
@@ -3833,7 +3886,7 @@ class ActionOverrideCmdAltDown extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorBelow');
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+    vimState.allCursors = await getCursorsAfterSync();
 
     return vimState;
   }
@@ -3853,7 +3906,7 @@ class ActionOverrideCmdAltUp extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('editor.action.insertCursorAbove');
-    vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+    vimState.allCursors = await getCursorsAfterSync();
 
     return vimState;
   }

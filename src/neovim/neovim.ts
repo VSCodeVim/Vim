@@ -1,16 +1,14 @@
+import * as vscode from 'vscode';
 import { spawn, ChildProcess } from 'child_process';
 import { dirname } from 'path';
 import { existsSync } from 'fs';
 import { attach, Nvim } from 'promised-neovim-client';
-import * as vscode from 'vscode';
-
 import { configuration } from '../configuration/configuration';
-import { ModeName } from '../mode/mode';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
 import { Position } from './../common/motion/position';
 import { VimState } from './../state/vimState';
-import { Logger } from '../util/logger';
+import { logger } from '../util/logger';
 
 export class Neovim implements vscode.Disposable {
   private process: ChildProcess;
@@ -25,7 +23,7 @@ export class Neovim implements vscode.Disposable {
       cwd: dir,
     });
     this.process.on('error', err => {
-      Logger.error(err.message, `Neovim: Error spawning neovim. Error=${err.message}.`);
+      logger.error(`Neovim: Error spawning neovim. Error=${err.message}.`);
       configuration.enableNeovim = false;
     });
     this.nvim = await attach(this.process.stdin, this.process.stdout);
@@ -115,9 +113,7 @@ export class Neovim implements vscode.Disposable {
       fixedLines.join('\n')
     );
 
-    Logger.debug(
-      `Neovim: ${lines.length} lines in nvim but ${TextEditor.getLineCount()} in editor.`
-    );
+    logger.debug(`Neovim: ${lines.length} lines in nvim. ${TextEditor.getLineCount()} in editor.`);
 
     let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
       1,

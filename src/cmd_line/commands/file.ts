@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import * as node from '../node';
+import { Message } from './../../util/message';
 
 const untildify = require('untildify');
 
@@ -16,6 +17,7 @@ export interface IFileCommandArguments extends node.ICommandArgs {
   bang?: boolean;
   position?: FilePosition;
   lineNumber?: number;
+  createFileIfNotExists?: boolean;
 }
 
 export class FileCommand extends node.CommandBase {
@@ -102,7 +104,12 @@ export class FileCommand extends node.CommandBase {
             filePath = pathWithExt;
           } else {
             // create file
-            fs.closeSync(fs.openSync(filePath, 'w'));
+            if (this.arguments.createFileIfNotExists) {
+              fs.closeSync(fs.openSync(filePath, 'w'));
+            } else {
+              Message.ShowError('The file ' + filePath + ' does not exist.');
+              return;
+            }
           }
         }
       }

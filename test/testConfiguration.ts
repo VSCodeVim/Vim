@@ -46,6 +46,9 @@ export class Configuration implements IConfiguration {
     visualblock: '#86592d';
     replace: '#000000';
   };
+  debug: {
+    loggingLevel: 'warn';
+  };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   tabstop = 2;
   userCursor = vscode.TextEditorCursorStyle.Line;
@@ -71,6 +74,8 @@ export class Configuration implements IConfiguration {
   cmdLineInitialColon = false;
   insertModeKeyBindings: IKeyRemapping[] = [];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
-  otherModesKeyBindings: IKeyRemapping[] = [];
-  otherModesKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  normalModeKeyBindings: IKeyRemapping[] = [];
+  normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  visualModeKeyBindings: IKeyRemapping[] = [];
+  visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }

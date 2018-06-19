@@ -21,6 +21,13 @@ export interface IAutoSwitchInputMethod {
   switchIMCmd: string;
   obtainIMCmd: string;
 }
+export interface IDebugConfiguration {
+  /**
+   * Maximum level of messages to log.
+   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
+   */
+  loggingLevel: string;
+}
 
 export interface IConfiguration {
   /**
@@ -139,6 +146,11 @@ export interface IConfiguration {
   statusBarColors: IModeSpecificStrings<string>;
 
   /**
+   * Extension debugging settings
+   */
+  debug: IDebugConfiguration;
+
+  /**
    * Color of search highlights.
    */
   searchHighlightColor: string;
@@ -215,6 +227,8 @@ export interface IConfiguration {
    */
   insertModeKeyBindings: IKeyRemapping[];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[];
-  otherModesKeyBindings: IKeyRemapping[];
-  otherModesKeyBindingsNonRecursive: IKeyRemapping[];
+  normalModeKeyBindings: IKeyRemapping[];
+  normalModeKeyBindingsNonRecursive: IKeyRemapping[];
+  visualModeKeyBindings: IKeyRemapping[];
+  visualModeKeyBindingsNonRecursive: IKeyRemapping[];
 }

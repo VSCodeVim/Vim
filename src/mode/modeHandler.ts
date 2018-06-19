@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import * as modes from './modes';
 
-import { CommandLine } from '../cmd_line/commandLine';
+import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { Decoration } from '../configuration/decoration';
 import { Remappers } from '../configuration/remapper';
 import { Globals } from '../globals';
 import { StatusBar } from '../statusBar';
-import { allowVSCodeToPropagateCursorUpdatesAndReturnThem } from '../util';
+import { getCursorsAfterSync } from '../util/util';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
 import {
   BaseCommand,
@@ -30,7 +30,7 @@ import {
   TextTransformations,
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
-import { Logger } from '../util/logger';
+import { logger } from '../util/logger';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -265,7 +265,9 @@ export class ModeHandler implements vscode.Disposable {
   async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
-    // Rewrite commands
+    logger.debug(`ModeHandler: handling key=${key}.`);
+
+    // rewrite copy
     if (configuration.overrideCopy) {
       // The conditions when you trigger a "copy" rather than a ctrl-c are
       // too sophisticated to be covered by the "when" condition in package.json
@@ -308,13 +310,8 @@ export class ModeHandler implements vscode.Disposable {
        *
        * 1) We are not already performing a nonrecursive remapping.
        * 2) We haven't timed out of our previous remapping.
-       * 3) We are not running tests as user remappings bork tests
        */
-      if (
-        !this.vimState.isCurrentlyPerformingRemapping &&
-        (withinTimeout || keys.length === 1) &&
-        !Globals.isTesting
-      ) {
+      if (!this.vimState.isCurrentlyPerformingRemapping && (withinTimeout || keys.length === 1)) {
         handled = await this._remappers.sendKey(keys, this, this.vimState);
       }
 
@@ -324,7 +321,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      console.error(e);
+      logger.error(`ModeHandler: error handling key=${key}. err=${e}.`);
       throw e;
     }
 
@@ -865,7 +862,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
-        Logger.debug(
+        logger.debug(
           `Text transformations are overlapping. Falling back to serial
            transformations. This is generally a very bad sign. Try to make
            your text transformations operate on non-overlapping ranges.`
@@ -904,14 +901,14 @@ export class ModeHandler implements vscode.Disposable {
           break;
 
         case 'showCommandLine':
-          await CommandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
+          await commandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
           this.updateView(this.vimState);
           break;
 
         case 'showCommandHistory':
-          let cmd = await CommandLine.ShowHistory(vimState.commandInitialText, this.vimState);
+          let cmd = await commandLine.ShowHistory(vimState.commandInitialText, this.vimState);
           if (cmd && cmd.length !== 0) {
-            await CommandLine.PromptAndRun(cmd, this.vimState);
+            await commandLine.PromptAndRun(cmd, this.vimState);
             this.updateView(this.vimState);
           }
           break;
@@ -966,6 +963,20 @@ export class ModeHandler implements vscode.Disposable {
           break;
         case 'tab':
           await vscode.commands.executeCommand('tab');
+          if (command.diff) {
+            if (command.cursorIndex === undefined) {
+              throw new Error('No cursor index - this should never ever happen!');
+            }
+
+            if (!accumulatedPositionDifferences[command.cursorIndex]) {
+              accumulatedPositionDifferences[command.cursorIndex] = [];
+            }
+
+            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+          }
+          break;
+        case 'reindent':
+          await vscode.commands.executeCommand('editor.action.reindentselectedlines');
           if (command.diff) {
             if (command.cursorIndex === undefined) {
               throw new Error('No cursor index - this should never ever happen!');
@@ -1206,27 +1217,29 @@ export class ModeHandler implements vscode.Disposable {
         }
       } else {
         // MultiCursor mode is active.
+        selections = [];
+        switch (selectionMode) {
+          case ModeName.Visual: {
+            for (let { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
+              if (cursorStart.compareTo(cursorStop) > 0) {
+                cursorStart = cursorStart.getRight();
+              }
 
-        if (selectionMode === ModeName.Visual) {
-          selections = [];
-
-          for (let { start: cursorStart, stop: cursorStop } of vimState.allCursors) {
-            if (cursorStart.compareTo(cursorStop) > 0) {
-              cursorStart = cursorStart.getRight();
+              selections.push(new vscode.Selection(cursorStart, cursorStop));
             }
-
-            selections.push(new vscode.Selection(cursorStart, cursorStop));
+            break;
           }
-        } else if (selectionMode === ModeName.Normal || selectionMode === ModeName.Insert) {
-          selections = [];
-
-          for (const { stop: cursorStop } of vimState.allCursors) {
-            selections.push(new vscode.Selection(cursorStop, cursorStop));
+          case ModeName.Normal:
+          case ModeName.Insert: {
+            for (const { stop: cursorStop } of vimState.allCursors) {
+              selections.push(new vscode.Selection(cursorStop, cursorStop));
+            }
+            break;
           }
-        } else {
-          console.error('This is pretty bad!');
-
-          selections = [];
+          default: {
+            logger.error(`ModeHandler: unexpected selection mode. selectionMode=${selectionMode}`);
+            break;
+          }
         }
       }
 
@@ -1334,7 +1347,7 @@ export class ModeHandler implements vscode.Disposable {
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
       await vscode.commands.executeCommand(viewChange.command, viewChange.args);
-      vimState.allCursors = await allowVSCodeToPropagateCursorUpdatesAndReturnThem(0);
+      vimState.allCursors = await getCursorsAfterSync();
     }
     this.vimState.postponedCodeViewChanges = [];
 
@@ -1370,7 +1383,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    let text = [];
+    let text: string[] = [];
 
     if (configuration.showmodename) {
       text.push(this.currentMode.getStatusBarText(this.vimState));

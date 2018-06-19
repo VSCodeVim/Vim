@@ -1,114 +1,111 @@
-import * as vscode from 'vscode';
-
+import * as fs from 'fs';
+import * as path from 'path';
 import { configuration } from '../configuration/configuration';
-import { Logger } from '../util/logger';
+import { logger } from '../util/logger';
 
 export class CommandLineHistory {
+  private static readonly _historyFileName = '.cmdline_history';
+  private _historyDir: string;
   private _history: string[] = [];
-  private _is_loading: boolean = false;
-  private _filePath: string = '';
+  private get _historyFilePath(): string {
+    return path.join(this._historyDir, CommandLineHistory._historyFileName);
+  }
+
+  constructor(historyDir: string) {
+    this._historyDir = historyDir;
+    this._loadFromFile();
+  }
 
   public add(command: string | undefined): void {
     if (!command || command.length === 0) {
       return;
     }
 
+    // remove duplicates
     let index: number = this._history.indexOf(command);
     if (index !== -1) {
       this._history.splice(index, 1);
     }
+
+    // append to beginning
     this._history.unshift(command);
 
+    // resize array if necessary
     if (this._history.length > configuration.history) {
-      this._history.pop();
+      this._history = this._history.slice(0, configuration.history);
     }
+
+    this.save();
   }
 
   public get(): string[] {
+    // resize array if necessary
     if (this._history.length > configuration.history) {
-      // resize history because "vim.history" is updated.
       this._history = this._history.slice(0, configuration.history);
-      this.save();
     }
 
     return this._history;
   }
 
-  public setFilePath(filePath: string): void {
-    this._filePath = filePath;
-  }
-
-  public async load(): Promise<void> {
-    this._history = [];
-    this._is_loading = true;
-
-    return new Promise<void>((resolve, reject) => {
-      const fs = require('fs');
-      fs.readFile(this._filePath, 'utf-8', (err: any, data: string) => {
-        this._is_loading = false;
-
-        if (err) {
-          if (err.code === 'ENOENT') {
-            Logger.debug('CommandLineHistory: History does not exist.');
-            // add ccommands that were run before history was loaded.
-            if (this._history.length > 0) {
-              this.save();
-            }
-            resolve();
-          } else {
-            Logger.error(err.message, 'Failed to load history.');
-            reject();
-          }
-          return;
-        }
-
-        try {
-          let parsedData = JSON.parse(data);
-          if (Array.isArray(parsedData)) {
-            let not_saved_history: string[] = this._history;
-            this._history = parsedData;
-
-            // add ccommands that were run before history was loaded.
-            if (not_saved_history.length > 0) {
-              for (let cmd of not_saved_history.reverse()) {
-                this.add(cmd);
-              }
-              this.save();
-            }
-            resolve();
-          } else {
-            Logger.error(
-              'CommandLineHistory: The history format is unknown.',
-              'Failed to load history.'
-            );
-            reject();
-          }
-        } catch (e) {
-          Logger.error(e.message, 'Failed to load history.');
-          reject();
-        }
-      });
-    });
+  public clear() {
+    try {
+      fs.unlinkSync(this._historyFilePath);
+    } catch (err) {
+      logger.warn(`CommandLineHistory: unable to delete ${this._historyFilePath}. err=${err}.`);
+    }
   }
 
   public async save(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      if (this._is_loading) {
-        Logger.debug('CommandLineHistory: Failed to save history because history is loading.');
-        resolve();
-        return;
+      try {
+        if (!fs.existsSync(this._historyDir)) {
+          fs.mkdirSync(this._historyDir, 0o775);
+        }
+      } catch (err) {
+        logger.error(
+          `CommandLineHistory: Failed to create directory. path=${this._historyDir}. err=${err}.`
+        );
+        reject(err);
       }
 
-      const fs = require('fs');
+      try {
+        fs.writeFileSync(this._historyFilePath, JSON.stringify(this._history), 'utf-8');
+      } catch (err) {
+        logger.error(`CommandLineHistory: Failed to save history. err=${err}.`);
+        reject(err);
+      }
 
-      fs.writeFile(this._filePath, JSON.stringify(this._history), 'utf-8', (err: Error) => {
-        if (!err) {
-          resolve();
-        } else {
-          Logger.error(err.message, 'Failed to save history.');
-          reject();
-        }
-      });
+      resolve();
     });
+  }
+
+  private _loadFromFile() {
+    let data = '';
+
+    try {
+      data = fs.readFileSync(this._historyFilePath, 'utf-8');
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        logger.debug('CommandLineHistory: History does not exist.');
+      } else {
+        logger.error(`CommandLineHistory: Failed to load history. err=${err}.`);
+        return;
+      }
+    }
+
+    if (data.length === 0) {
+      return;
+    }
+
+    try {
+      let parsedData = JSON.parse(data);
+      if (!Array.isArray(parsedData)) {
+        throw Error('Expected JSON');
+      }
+      this._history = parsedData;
+    } catch (e) {
+      logger.error(`CommandLineHistory: Deleting corrupted history file. err=${e}.`);
+      this.clear();
+    }
   }
 }

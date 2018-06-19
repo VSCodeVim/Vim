@@ -1,7 +1,39 @@
 # Change Log
 
-## [v0.12.0](https://github.com/vscodevim/vim/tree/HEAD)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.6...HEAD)
+## [v0.13.0](https://github.com/vscodevim/vim/tree/HEAD)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.12.0...HEAD)
+
+- **Breaking Change**: We have removed `otherModesKeyBindings` configuration. In its stead we have added: `normalModeKeyBindings` and `visualModeKeyBidnings` to allow more fine-grain customization of your remappings. For more information, see our [documentation](https://github.com/vscodevim/vim#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindings).
+- fix: handle when commandLineHistory is empty [\#2741](https://github.com/VSCodeVim/Vim/pull/2741) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/node to v9.6.22 [\#2739](https://github.com/VSCodeVim/Vim/pull/2739) ([renovate-bot](https://github.com/renovate-bot))
+- fix: use explicit configuration for logginglevel [\#2738](https://github.com/VSCodeVim/Vim/pull/2738) ([jpoon](https://github.com/jpoon))
+- fix: remove duplicate UT [\#2734](https://github.com/VSCodeVim/Vim/pull/2734) ([jpoon](https://github.com/jpoon))
+- Don't ignore mocked configurations' remaps during testing. [\#2733](https://github.com/VSCodeVim/Vim/pull/2733) ([regiontog](https://github.com/regiontog))
+- chore\(deps\): update dependency typescript to v2.9.2 [\#2730](https://github.com/VSCodeVim/Vim/pull/2730) ([renovate-bot](https://github.com/renovate-bot))
+- Fix autoindent on cc/S \#2497 [\#2729](https://github.com/VSCodeVim/Vim/pull/2729) ([dqsully](https://github.com/dqsully))
+- Add normalModeKeyBindings and visualModeKeyBindings, remove otherModesKeyBindings [\#2726](https://github.com/VSCodeVim/Vim/pull/2726) ([chibicode](https://github.com/chibicode))
+- chore\(deps\): update dependency @types/mocha to v5.2.2 [\#2724](https://github.com/VSCodeVim/Vim/pull/2724) ([renovate-bot](https://github.com/renovate-bot))
+- fix: revert our workaround cursor toggle as this has been fixed in vscode [\#2720](https://github.com/VSCodeVim/Vim/pull/2720) ([jpoon](https://github.com/jpoon))
+- feat: use winston for logging [\#2719](https://github.com/VSCodeVim/Vim/pull/2719) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency prettier to v1.13.5 [\#2718](https://github.com/VSCodeVim/Vim/pull/2718) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/node to v9.6.21 [\#2715](https://github.com/VSCodeVim/Vim/pull/2715) ([renovate-bot](https://github.com/renovate-bot))
+- Update prettier dependency [\#2712](https://github.com/VSCodeVim/Vim/pull/2712) ([xconverge](https://github.com/xconverge))
+- chore\(deps\): update dependency @types/mocha to v5.2.1 [\#2704](https://github.com/VSCodeVim/Vim/pull/2704) ([renovate-bot](https://github.com/renovate-bot))
+- fix gf to be like issue \#2683 [\#2701](https://github.com/VSCodeVim/Vim/pull/2701) ([SuyogSoti](https://github.com/SuyogSoti))
+- chore\(deps\): update dependency typescript to v2.9.1 [\#2698](https://github.com/VSCodeVim/Vim/pull/2698) ([renovate-bot](https://github.com/renovate-bot))
+- Fix vim-commentary description in README [\#2694](https://github.com/VSCodeVim/Vim/pull/2694) ([Ran4](https://github.com/Ran4))
+- chore\(deps\): update dependency @types/node to v9.6.20 [\#2691](https://github.com/VSCodeVim/Vim/pull/2691) ([renovate-bot](https://github.com/renovate-bot))
+- fix: fix 'no-use-before-declare' requires type information lint warning [\#2679](https://github.com/VSCodeVim/Vim/pull/2679) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency gulp-git to v2.7.0 [\#2678](https://github.com/VSCodeVim/Vim/pull/2678) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency vscode to v1.1.18 [\#2676](https://github.com/VSCodeVim/Vim/pull/2676) ([renovate-bot](https://github.com/renovate-bot))
+- Fixed difference in behavior for \]\) and \]} when combined with certain operators [\#2671](https://github.com/VSCodeVim/Vim/pull/2671) ([willcassella](https://github.com/willcassella))
+- fix\(deps\): update dependency untildify to v3.0.3 [\#2669](https://github.com/VSCodeVim/Vim/pull/2669) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency mocha to v5.2.0 [\#2666](https://github.com/VSCodeVim/Vim/pull/2666) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/node to v9.6.16 [\#2644](https://github.com/VSCodeVim/Vim/pull/2644) ([renovate-bot](https://github.com/renovate-bot))
+
+## [v0.12.0](https://github.com/vscodevim/vim/tree/v0.12.0) (2018-05-16)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.11.6...v0.12.0)
 
 - Fix development problems on win [\#2651](https://github.com/VSCodeVim/Vim/pull/2651) ([KamikazeZirou](https://github.com/KamikazeZirou))
 - Fixes \#2632 [\#2641](https://github.com/VSCodeVim/Vim/pull/2641) ([xconverge](https://github.com/xconverge))

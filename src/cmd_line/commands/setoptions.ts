@@ -1,5 +1,5 @@
 import { configuration } from '../../configuration/configuration';
-import * as util from '../../util';
+import { Message } from '../../util/message';
 import * as node from '../node';
 
 export enum SetOptionOperator {
@@ -98,9 +98,9 @@ export class SetOptionsCommand extends node.CommandBase {
       case SetOptionOperator.Info:
         let value = configuration[this._arguments.name];
         if (value === undefined) {
-          await util.showError(`E518 Unknown option: ${this._arguments.name}`);
+          await Message.ShowError(`E518 Unknown option: ${this._arguments.name}`);
         } else {
-          await util.showInfo(`${this._arguments.name}=${value}`);
+          await Message.ShowInfo(`${this._arguments.name}=${value}`);
         }
         break;
       default:
