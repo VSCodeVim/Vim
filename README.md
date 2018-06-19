@@ -259,7 +259,6 @@ There's several different mechanisms you can use to define custom remappings. Al
         "commands": [
             {
                 "command": "workbench.action.showCommands",
-                "args": []
             }
         ]
     }
@@ -274,8 +273,7 @@ There's several different mechanisms you can use to define custom remappings. Al
             "before": ["Z", "Z"],
             "commands": [
                 {
-                    "command": ":wq",
-                    "args": []
+                    "command": ":wq"
                 },
             ]
         }
@@ -291,7 +289,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             "commands": [
                 {
                     "command": ":nohl",
-                    "args": []
                 }
             ]
         },
@@ -300,7 +297,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             "commands": [
                 {
                     "command": "workbench.action.files.save",
-                    "args": []
                 }
             ]
         }
@@ -336,7 +332,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             ],
             "commands": [
                 {
-                    "args": [],
                     "command": "editor.action.indentLines"
                 }
             ]
@@ -347,7 +342,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             ],
             "commands": [
                 {
-                    "args": [],
                     "command": "editor.action.outdentLines"
                 }
             ]
