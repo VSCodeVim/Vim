@@ -8,6 +8,7 @@ export enum ModeName {
   VisualBlock,
   VisualLine,
   SearchInProgressMode,
+  CommandlineInProgress,
   Replace,
   EasyMotionMode,
   EasyMotionInputMode,

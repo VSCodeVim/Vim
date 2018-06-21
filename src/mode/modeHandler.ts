@@ -52,6 +52,7 @@ export class ModeHandler implements vscode.Disposable {
       new modes.VisualBlockMode(),
       new modes.VisualLineMode(),
       new modes.SearchInProgressMode(),
+      new modes.CommandlineInProgress(),
       new modes.ReplaceMode(),
       new modes.EasyMotionMode(),
       new modes.EasyMotionInputMode(),
@@ -176,6 +177,10 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (this.vimState.currentMode === ModeName.SearchInProgressMode) {
+      return;
+    }
+
+    if (this.vimState.currentMode === ModeName.CommandlineInProgress) {
       return;
     }
 
@@ -485,7 +490,11 @@ export class ModeHandler implements vscode.Disposable {
       this.setCurrentMode(vimState.currentMode);
 
       // We don't want to mark any searches as a repeatable action
-      if (vimState.currentMode === ModeName.Normal && prevState !== ModeName.SearchInProgressMode) {
+      if (
+        vimState.currentMode === ModeName.Normal &&
+        prevState !== ModeName.SearchInProgressMode &&
+        prevState !== ModeName.CommandlineInProgress
+      ) {
         ranRepeatableAction = true;
       }
     }
@@ -900,15 +909,10 @@ export class ModeHandler implements vscode.Disposable {
           vimState.cursorPosition = Position.FromVSCodePosition(this.vimState.editor.selection.end);
           break;
 
-        case 'showCommandLine':
-          await commandLine.PromptAndRun(vimState.commandInitialText, this.vimState);
-          this.updateView(this.vimState);
-          break;
-
         case 'showCommandHistory':
           let cmd = await commandLine.ShowHistory(vimState.commandInitialText, this.vimState);
           if (cmd && cmd.length !== 0) {
-            await commandLine.PromptAndRun(cmd, this.vimState);
+            await commandLine.Run(cmd, this.vimState);
             this.updateView(this.vimState);
           }
           break;

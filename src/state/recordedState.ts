@@ -193,6 +193,7 @@ export class RecordedState {
       this.operator &&
       !this.hasRunOperator &&
       mode !== ModeName.SearchInProgressMode &&
+      mode !== ModeName.CommandlineInProgress &&
       (this.hasRunAMovement ||
         (mode === ModeName.Visual || mode === ModeName.VisualLine) ||
         (this.operators.length > 1 &&

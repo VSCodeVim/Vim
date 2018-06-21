@@ -184,13 +184,6 @@ export interface MoveCursorTransformation {
 /**
  * Represents pressing ':'
  */
-export interface ShowCommandLine {
-  type: 'showCommandLine';
-}
-
-/**
- * Represents pressing ':'
- */
 export interface ShowCommandHistory {
   type: 'showCommandHistory';
 }
@@ -253,7 +246,6 @@ export type Transformation =
   | DeleteTextRangeTransformation
   | DeleteTextTransformation
   | MoveCursorTransformation
-  | ShowCommandLine
   | ShowCommandHistory
   | Dot
   | Macro
