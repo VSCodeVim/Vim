@@ -27,8 +27,8 @@ export class CommandLineHistory {
       this._history.splice(index, 1);
     }
 
-    // append to beginning
-    this._history.unshift(command);
+    // append to the end
+    this._history.push(command);
 
     // resize array if necessary
     if (this._history.length > configuration.history) {

@@ -21,6 +21,7 @@ import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../t
 import { isTextTransformation } from './../../transformations/transformations';
 import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
+import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 
 export class DocumentContentChangeAction extends BaseAction {
@@ -1754,11 +1755,14 @@ class CommandShowCommandLine extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Normal) {
-      vimState.commandInitialText = '';
+      vimState.currentCommandlineText = '';
     } else {
-      vimState.commandInitialText = "'<,'>";
+      vimState.currentCommandlineText = "'<,'>";
     }
     vimState.currentMode = ModeName.CommandlineInProgress;
+
+    // Reset history navigation index
+    commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
 
     return vimState;
   }
@@ -1774,76 +1778,40 @@ class CommandInsertInCommandline extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
-    const searchState = vimState.globalState.searchState!;
-    const prevSearchList = vimState.globalState.searchStatePrevious!;
 
     // handle special keys first
     if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
-      searchState.searchString = searchState.searchString.slice(0, -1);
+      vimState.currentCommandlineText = vimState.currentCommandlineText.slice(0, -1);
     } else if (key === '\n') {
-      vimState.currentMode = vimState.globalState.searchState!.previousMode;
-
-      // Repeat the previous search if no new string is entered
-      if (searchState.searchString === '') {
-        if (prevSearchList.length > 0) {
-          searchState.searchString = prevSearchList[prevSearchList.length - 1].searchString;
-        }
-      }
-
-      // Store this search if different than previous
-      if (vimState.globalState.searchStatePrevious.length !== 0) {
-        let previousSearchState = vimState.globalState.searchStatePrevious;
-        if (
-          searchState.searchString !==
-          previousSearchState[previousSearchState.length - 1]!.searchString
-        ) {
-          previousSearchState.push(searchState);
-        }
-      } else {
-        vimState.globalState.searchStatePrevious.push(searchState);
-      }
-
-      // Make sure search history does not exceed configuration option
-      if (vimState.globalState.searchStatePrevious.length > configuration.history) {
-        vimState.globalState.searchStatePrevious.splice(0, 1);
-      }
-
-      // Update the index to the end of the search history
-      vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
-
-      // Move cursor to next match
-      vimState.cursorPosition = searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
-
+      await commandLine.Run(vimState.currentCommandlineText, vimState);
+      vimState.currentMode = ModeName.Normal;
       return vimState;
     } else if (key === '<up>') {
-      vimState.globalState.searchStateIndex -= 1;
+      commandLine.commandlineHistoryIndex -= 1;
 
-      // Clamp the history index to stay within bounds of search history length
-      vimState.globalState.searchStateIndex = Math.max(vimState.globalState.searchStateIndex, 0);
+      // Clamp the history index to stay within bounds of command history length
+      commandLine.commandlineHistoryIndex = Math.max(commandLine.commandlineHistoryIndex, 0);
 
-      if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
-        searchState.searchString =
-          prevSearchList[vimState.globalState.searchStateIndex].searchString;
+      if (commandLine.historyEntries[commandLine.commandlineHistoryIndex] !== undefined) {
+        vimState.currentCommandlineText =
+          commandLine.historyEntries[commandLine.commandlineHistoryIndex];
       }
     } else if (key === '<down>') {
-      vimState.globalState.searchStateIndex += 1;
+      commandLine.commandlineHistoryIndex += 1;
 
-      // If past the first history item, allow user to enter their own search string (not using history)
-      if (
-        vimState.globalState.searchStateIndex >
-        vimState.globalState.searchStatePrevious.length - 1
-      ) {
-        searchState.searchString = '';
-        vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
+      // If past the first history item, allow user to enter their own new command string (not using history)
+      if (commandLine.commandlineHistoryIndex > commandLine.historyEntries.length - 1) {
+        vimState.currentCommandlineText = '';
+        commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
         return vimState;
       }
 
-      if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
-        searchState.searchString =
-          prevSearchList[vimState.globalState.searchStateIndex].searchString;
+      if (commandLine.historyEntries[commandLine.commandlineHistoryIndex] !== undefined) {
+        vimState.currentCommandlineText =
+          commandLine.historyEntries[commandLine.commandlineHistoryIndex];
       }
     } else {
-      searchState.searchString += this.keysPressed[0];
+      vimState.currentCommandlineText += this.keysPressed[0];
     }
 
     return vimState;
@@ -1860,7 +1828,6 @@ class CommandEscInCommandline extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Normal;
-    vimState.globalState.searchState = undefined;
 
     return vimState;
   }
@@ -1875,10 +1842,9 @@ class CommandCtrlVInCommandline extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const searchState = vimState.globalState.searchState!;
     const textFromClipboard = Clipboard.Paste();
 
-    searchState.searchString += textFromClipboard;
+    vimState.currentCommandlineText += textFromClipboard;
     return vimState;
   }
 }
@@ -1892,10 +1858,9 @@ class CommandCmdVInCommandline extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const searchState = vimState.globalState.searchState!;
     const textFromClipboard = Clipboard.Paste();
 
-    searchState.searchString += textFromClipboard;
+    vimState.currentCommandlineText += textFromClipboard;
     return vimState;
   }
 }
@@ -1915,9 +1880,9 @@ class CommandShowCommandHistory extends BaseCommand {
     });
 
     if (vimState.currentMode === ModeName.Normal) {
-      vimState.commandInitialText = '';
+      vimState.currentCommandlineText = '';
     } else {
-      vimState.commandInitialText = "'<,'>";
+      vimState.currentCommandlineText = "'<,'>";
     }
     vimState.currentMode = ModeName.Normal;
 

@@ -77,7 +77,7 @@ export class CommandlineInProgress extends Mode {
   }
 
   getStatusBarText(vimState: VimState): string {
-    return `:${vimState.commandInitialText}`;
+    return `:${vimState.currentCommandlineText}`;
   }
 
   getStatusBarCommandText(vimState: VimState): string {

@@ -13,6 +13,23 @@ import { CommandLineHistory } from './commandLineHistory';
 class CommandLine {
   private _history: CommandLineHistory;
 
+  /**
+   *  Index used for navigating commandline history with <up> and <down>
+   */
+  private _commandLineHistoryIndex: number = 0;
+
+  public get commandlineHistoryIndex(): number {
+    return this._commandLineHistoryIndex;
+  }
+
+  public set commandlineHistoryIndex(index: number) {
+    this._commandLineHistoryIndex = index;
+  }
+
+  public get historyEntries() {
+    return this._history.get();
+  }
+
   constructor() {
     this._history = new CommandLineHistory(getExtensionDirPath());
   }
@@ -27,6 +44,7 @@ class CommandLine {
     }
 
     this._history.add(command);
+    this._commandLineHistoryIndex = this._history.get().length;
 
     try {
       const cmd = parser.parse(command);
