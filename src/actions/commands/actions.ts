@@ -250,6 +250,7 @@ class DisableExtension extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.VisualLine,
     ModeName.SearchInProgressMode,
+    ModeName.CommandlineInProgress,
     ModeName.Replace,
     ModeName.EasyMotionMode,
     ModeName.EasyMotionInputMode,
