@@ -1158,10 +1158,14 @@ export class ModeHandler implements vscode.Disposable {
 
     if (args.drawSelection) {
       let selections: vscode.Selection[];
-      const selectionMode: ModeName =
-        vimState.currentMode === ModeName.SearchInProgressMode
-          ? vimState.globalState.searchState!.previousMode
-          : vimState.currentMode;
+
+      let selectionMode: ModeName = vimState.currentMode;
+      if (vimState.currentMode === ModeName.SearchInProgressMode) {
+        selectionMode = vimState.globalState.searchState!.previousMode;
+      }
+      if (vimState.currentMode === ModeName.CommandlineInProgress) {
+        selectionMode = commandLine.previousMode;
+      }
 
       if (!vimState.isMultiCursor) {
         let start = vimState.cursorStartPosition;

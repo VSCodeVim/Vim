@@ -1759,6 +1759,11 @@ class CommandShowCommandLine extends BaseCommand {
     } else {
       vimState.currentCommandlineText = "'<,'>";
     }
+
+    // Store the current mode for use in retaining selection
+    commandLine.previousMode = vimState.currentMode;
+
+    // Change to the new mode
     vimState.currentMode = ModeName.CommandlineInProgress;
 
     // Reset history navigation index

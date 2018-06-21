@@ -9,6 +9,7 @@ import { StatusBar } from '../statusBar';
 import * as parser from './parser';
 import { VimError, ErrorCode } from '../error';
 import { CommandLineHistory } from './commandLineHistory';
+import { ModeName } from './../mode/mode';
 
 class CommandLine {
   private _history: CommandLineHistory;
@@ -29,6 +30,8 @@ class CommandLine {
   public get historyEntries() {
     return this._history.get();
   }
+
+  public previousMode = ModeName.Normal;
 
   constructor() {
     this._history = new CommandLineHistory(getExtensionDirPath());
