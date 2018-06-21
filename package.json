@@ -38,10 +38,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.showCmdLine",
-        "title": "Vim: Show Command Line"
-      },
-      {
         "command": "vim.remap",
         "title": "Vim: Remap any key combination that VS Code supports to Vim motions/operators/ExCommands/macro."
       },
@@ -578,11 +574,6 @@
         "vim.cursorStylePerMode": {
           "type": "object",
           "description": "Customize cursor style per mode"
-        },
-        "vim.cmdLineInitialColon": {
-          "type": "boolean",
-          "description": "When typing a command show the initial colon ':' character",
-          "default": false
         }
       }
     }
