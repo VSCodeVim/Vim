@@ -66,12 +66,8 @@ suite('command-line history', () => {
     let added_cmd: string = String(configuration.history);
     run_cmds.push(added_cmd);
     history.add(added_cmd);
-    assertArrayEquals(
-      run_cmds
-        .slice()
-        .splice(1, configuration.history),
-      history.get()
-    );
+
+    assertArrayEquals(run_cmds.slice(1), history.get());
   });
 
   test('add command that exists in history', async () => {
@@ -107,11 +103,6 @@ suite('command-line history', () => {
       history.add(cmd);
     }
 
-    assertArrayEquals(
-      run_cmds
-        .slice()
-        .splice(run_cmds.length - 10),
-      history.get()
-    );
+    assertArrayEquals(run_cmds.slice(run_cmds.length - configuration.history), history.get());
   });
 });

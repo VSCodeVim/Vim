@@ -32,7 +32,7 @@ export class CommandLineHistory {
 
     // resize array if necessary
     if (this._history.length > configuration.history) {
-      this._history = this._history.slice(0, configuration.history);
+      this._history = this._history.slice(this._history.length - configuration.history);
     }
 
     this.save();
@@ -41,7 +41,7 @@ export class CommandLineHistory {
   public get(): string[] {
     // resize array if necessary
     if (this._history.length > configuration.history) {
-      this._history = this._history.slice(0, configuration.history);
+      this._history = this._history.slice(this._history.length - configuration.history);
     }
 
     return this._history;
