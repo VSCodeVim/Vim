@@ -1806,7 +1806,12 @@ class CommandInsertInCommandline extends BaseCommand {
 
       // If past the first history item, allow user to enter their own new command string (not using history)
       if (commandLine.commandlineHistoryIndex > commandLine.historyEntries.length - 1) {
-        vimState.currentCommandlineText = '';
+        if (commandLine.previousMode === ModeName.Normal) {
+          vimState.currentCommandlineText = '';
+        } else {
+          vimState.currentCommandlineText = "'<,'>";
+        }
+
         commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
         return vimState;
       }
