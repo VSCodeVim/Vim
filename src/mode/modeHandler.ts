@@ -499,6 +499,20 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
+    // Set context for overriding cmd-V, this is only done in search entry and
+    // commandline modes
+    if (
+      this.IsModeWhereCmdVIsOverriden(vimState.currentMode) &&
+      !this.IsModeWhereCmdVIsOverriden(prevState)
+    ) {
+      await vscode.commands.executeCommand('setContext', 'vim.overrideCmdV', true);
+    } else if (
+      this.IsModeWhereCmdVIsOverriden(prevState) &&
+      !this.IsModeWhereCmdVIsOverriden(vimState.currentMode)
+    ) {
+      await vscode.commands.executeCommand('setContext', 'vim.overrideCmdV', false);
+    }
+
     if (recordedState.operatorReadyToExecute(vimState.currentMode)) {
       vimState = await this.executeOperator(vimState);
 
@@ -1476,5 +1490,9 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState.prevSelection = this.vimState.editor.selection;
       }
     }, 0);
+  }
+
+  private IsModeWhereCmdVIsOverriden(mode: ModeName): boolean {
+    return mode === ModeName.SearchInProgressMode || mode === ModeName.CommandlineInProgress;
   }
 }

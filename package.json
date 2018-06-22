@@ -315,7 +315,7 @@
       {
         "key": "cmd+v",
         "command": "extension.vim_cmd+v",
-        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.mode == 'SearchInProgressMode' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<D-v> && vim.overrideCmdV && !inDebugRepl"
       },
       {
         "key": "ctrl+alt+down",
