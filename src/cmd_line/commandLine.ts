@@ -85,10 +85,16 @@ class CommandLine {
 
     this._history.add(initialText);
 
-    let cmd = await vscode.window.showQuickPick(this._history.get(), {
-      placeHolder: 'Vim command history',
-      ignoreFocusOut: false,
-    });
+    let cmd = await vscode.window.showQuickPick(
+      this._history
+        .get()
+        .slice()
+        .reverse(),
+      {
+        placeHolder: 'Vim command history',
+        ignoreFocusOut: false,
+      }
+    );
 
     return cmd;
   }
