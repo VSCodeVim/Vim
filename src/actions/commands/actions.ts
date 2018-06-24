@@ -3062,11 +3062,15 @@ class ActionDeleteLastChar extends BaseCommand {
       return vimState;
     }
 
-    return await new operator.DeleteOperator(this.multicursorIndex).run(
+    let timesToRepeat = vimState.recordedState.count || 1;
+
+    const state = await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
-      position.getLeft(),
+      position.getLeftByCount(timesToRepeat),
       position.getLeft()
     );
+
+    return state;
   }
 }
 
