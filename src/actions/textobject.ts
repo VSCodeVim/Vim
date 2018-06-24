@@ -18,7 +18,6 @@ import { ChangeOperator } from './operator';
 
 export abstract class TextObjectMovement extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
-  canBePrefixedWithCount = true;
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     const res = (await this.execAction(position, vimState)) as IMovement;
