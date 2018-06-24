@@ -21,6 +21,7 @@ import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from './../../t
 import { isTextTransformation } from './../../transformations/transformations';
 import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
+import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 
 export class DocumentContentChangeAction extends BaseAction {
@@ -249,6 +250,7 @@ class DisableExtension extends BaseCommand {
     ModeName.VisualBlock,
     ModeName.VisualLine,
     ModeName.SearchInProgressMode,
+    ModeName.CommandlineInProgress,
     ModeName.Replace,
     ModeName.EasyMotionMode,
     ModeName.EasyMotionInputMode,
@@ -1753,17 +1755,123 @@ class CommandShowCommandLine extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.recordedState.transformations.push({
-      type: 'showCommandLine',
-    });
-
     if (vimState.currentMode === ModeName.Normal) {
-      vimState.commandInitialText = '';
+      vimState.currentCommandlineText = '';
     } else {
-      vimState.commandInitialText = "'<,'>";
+      vimState.currentCommandlineText = "'<,'>";
     }
+
+    // Store the current mode for use in retaining selection
+    commandLine.previousMode = vimState.currentMode;
+
+    // Change to the new mode
+    vimState.currentMode = ModeName.CommandlineInProgress;
+
+    // Reset history navigation index
+    commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandInsertInCommandline extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const key = this.keysPressed[0];
+
+    // handle special keys first
+    if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
+      vimState.currentCommandlineText = vimState.currentCommandlineText.slice(0, -1);
+    } else if (key === '\n') {
+      await commandLine.Run(vimState.currentCommandlineText, vimState);
+      vimState.currentMode = ModeName.Normal;
+      return vimState;
+    } else if (key === '<up>') {
+      commandLine.commandlineHistoryIndex -= 1;
+
+      // Clamp the history index to stay within bounds of command history length
+      commandLine.commandlineHistoryIndex = Math.max(commandLine.commandlineHistoryIndex, 0);
+
+      if (commandLine.historyEntries[commandLine.commandlineHistoryIndex] !== undefined) {
+        vimState.currentCommandlineText =
+          commandLine.historyEntries[commandLine.commandlineHistoryIndex];
+      }
+    } else if (key === '<down>') {
+      commandLine.commandlineHistoryIndex += 1;
+
+      // If past the first history item, allow user to enter their own new command string (not using history)
+      if (commandLine.commandlineHistoryIndex > commandLine.historyEntries.length - 1) {
+        if (commandLine.previousMode === ModeName.Normal) {
+          vimState.currentCommandlineText = '';
+        } else {
+          vimState.currentCommandlineText = "'<,'>";
+        }
+
+        commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
+        return vimState;
+      }
+
+      if (commandLine.historyEntries[commandLine.commandlineHistoryIndex] !== undefined) {
+        vimState.currentCommandlineText =
+          commandLine.historyEntries[commandLine.commandlineHistoryIndex];
+      }
+    } else {
+      vimState.currentCommandlineText += this.keysPressed[0];
+    }
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandEscInCommandline extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = ['<Esc>'];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.currentMode = ModeName.Normal;
 
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlVInCommandline extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = ['<C-v>'];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const textFromClipboard = Clipboard.Paste();
+
+    vimState.currentCommandlineText += textFromClipboard;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCmdVInCommandline extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = ['<D-v>'];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const textFromClipboard = Clipboard.Paste();
+
+    vimState.currentCommandlineText += textFromClipboard;
     return vimState;
   }
 }
@@ -1783,9 +1891,9 @@ class CommandShowCommandHistory extends BaseCommand {
     });
 
     if (vimState.currentMode === ModeName.Normal) {
-      vimState.commandInitialText = '';
+      vimState.currentCommandlineText = '';
     } else {
-      vimState.commandInitialText = "'<,'>";
+      vimState.currentCommandlineText = "'<,'>";
     }
     vimState.currentMode = ModeName.Normal;
 

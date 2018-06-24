@@ -46,7 +46,7 @@ suite('command-line history', () => {
     for (let cmd of run_cmds) {
       history.add(cmd);
     }
-    assertArrayEquals(run_cmds.slice().reverse(), history.get());
+    assertArrayEquals(run_cmds.slice(), history.get());
   });
 
   test('add empty command', async () => {
@@ -54,9 +54,9 @@ suite('command-line history', () => {
       history.add(cmd);
     }
     history.add('');
-    assertArrayEquals(run_cmds.slice().reverse(), history.get());
+    assertArrayEquals(run_cmds.slice(), history.get());
     history.add(undefined);
-    assertArrayEquals(run_cmds.slice().reverse(), history.get());
+    assertArrayEquals(run_cmds.slice(), history.get());
   });
 
   test('add command over configuration.history', async () => {
@@ -66,13 +66,8 @@ suite('command-line history', () => {
     let added_cmd: string = String(configuration.history);
     run_cmds.push(added_cmd);
     history.add(added_cmd);
-    assertArrayEquals(
-      run_cmds
-        .slice()
-        .splice(1, configuration.history)
-        .reverse(),
-      history.get()
-    );
+
+    assertArrayEquals(run_cmds.slice(1), history.get());
   });
 
   test('add command that exists in history', async () => {
@@ -81,9 +76,9 @@ suite('command-line history', () => {
     }
     let existed_cmd: string = '0';
     history.add(existed_cmd);
-    let expected_raw_history: string[] = run_cmds.slice().reverse();
+    let expected_raw_history: string[] = run_cmds.slice();
     expected_raw_history.splice(expected_raw_history.indexOf(existed_cmd), 1);
-    expected_raw_history.unshift(existed_cmd);
+    expected_raw_history.push(existed_cmd);
     assertArrayEquals(expected_raw_history, history.get());
   });
 
@@ -93,7 +88,7 @@ suite('command-line history', () => {
     }
 
     let history2 = new CommandLineHistory(filePath);
-    assertArrayEquals(run_cmds.slice().reverse(), history2.get());
+    assertArrayEquals(run_cmds.slice(), history2.get());
   });
 
   test('change configuration.history', async () => {
@@ -108,12 +103,6 @@ suite('command-line history', () => {
       history.add(cmd);
     }
 
-    assertArrayEquals(
-      run_cmds
-        .slice()
-        .splice(run_cmds.length - 10)
-        .reverse(),
-      history.get()
-    );
+    assertArrayEquals(run_cmds.slice(run_cmds.length - configuration.history), history.get());
   });
 });
