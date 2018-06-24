@@ -3007,7 +3007,6 @@ class CommandTabPrevious extends BaseTabCommand {
 class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['x'];
-  runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3016,10 +3015,12 @@ class ActionDeleteChar extends BaseCommand {
       return vimState;
     }
 
+    let timesToRepeat = vimState.recordedState.count || 1;
+
     const state = await new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
       position,
-      position
+      position.getRightByCount(timesToRepeat - 1)
     );
 
     state.currentMode = ModeName.Normal;
