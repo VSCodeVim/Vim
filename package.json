@@ -612,7 +612,7 @@
     "gulp-tslint": "8.1.3",
     "gulp-typescript": "4.0.2",
     "mocha": "5.2.0",
-    "prettier": "1.13.5",
+    "prettier": "1.13.6",
     "tslint": "5.10.0",
     "typescript": "2.9.2",
     "vscode": "1.1.18"
