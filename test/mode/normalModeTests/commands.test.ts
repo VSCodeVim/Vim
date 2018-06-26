@@ -26,6 +26,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'Nx' and paste",
+    start: ['t|ext'],
+    keysPressed: '2xo<Esc>p',
+    end: ['tt', 'e|x'],
+  });
+
+  newTest({
     title: "Can handle 'x' at end of line",
     start: ['one tw|o'],
     keysPressed: '^llxxxxxxxxx',

@@ -9,34 +9,45 @@ import { StatusBar } from '../statusBar';
 import * as parser from './parser';
 import { VimError, ErrorCode } from '../error';
 import { CommandLineHistory } from './commandLineHistory';
+import { ModeName } from './../mode/mode';
 
 class CommandLine {
   private _history: CommandLineHistory;
 
-  constructor() {
-    this._history = new CommandLineHistory(getExtensionDirPath());
+  /**
+   *  Index used for navigating commandline history with <up> and <down>
+   */
+  private _commandLineHistoryIndex: number = 0;
+
+  public get commandlineHistoryIndex(): number {
+    return this._commandLineHistoryIndex;
   }
 
-  public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
-    if (!vscode.window.activeTextEditor) {
-      logger.debug('commandLine : No active document');
-      return;
-    }
+  public set commandlineHistoryIndex(index: number) {
+    this._commandLineHistoryIndex = index;
+  }
 
-    let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
-    if (cmd && cmd[0] === ':' && configuration.cmdLineInitialColon) {
-      cmd = cmd.slice(1);
-    }
+  public get historyEntries() {
+    return this._history.get();
+  }
 
-    this._history.add(cmd);
+  public previousMode = ModeName.Normal;
 
-    await this.Run(cmd!, vimState);
+  constructor() {
+    this._history = new CommandLineHistory(getExtensionDirPath());
   }
 
   public async Run(command: string, vimState: VimState): Promise<void> {
     if (!command || command.length === 0) {
       return;
     }
+
+    if (command && command[0] === ':') {
+      command = command.slice(1);
+    }
+
+    this._history.add(command);
+    this._commandLineHistoryIndex = this._history.get().length;
 
     try {
       const cmd = parser.parse(command);
@@ -66,18 +77,6 @@ class CommandLine {
     }
   }
 
-  private getInputBoxOptions(text: string): vscode.InputBoxOptions {
-    return {
-      prompt: 'Vim command line',
-      value: configuration.cmdLineInitialColon ? ':' + text : text,
-      ignoreFocusOut: false,
-      valueSelection: [
-        configuration.cmdLineInitialColon ? text.length + 1 : text.length,
-        configuration.cmdLineInitialColon ? text.length + 1 : text.length,
-      ],
-    };
-  }
-
   public async ShowHistory(initialText: string, vimState: VimState): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
       logger.debug('commandLine : No active document.');
@@ -86,10 +85,16 @@ class CommandLine {
 
     this._history.add(initialText);
 
-    let cmd = await vscode.window.showQuickPick(this._history.get(), {
-      placeHolder: 'Vim command history',
-      ignoreFocusOut: false,
-    });
+    let cmd = await vscode.window.showQuickPick(
+      this._history
+        .get()
+        .slice()
+        .reverse(),
+      {
+        placeHolder: 'Vim command history',
+        ignoreFocusOut: false,
+      }
+    );
 
     return cmd;
   }

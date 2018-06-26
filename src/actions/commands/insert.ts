@@ -18,6 +18,7 @@ import {
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
 } from './actions';
+import { Clipboard } from '../../util/clipboard';
 
 @RegisterAction
 class CommandEscInsertMode extends BaseCommand {
@@ -474,9 +475,9 @@ class CommandCtrlUInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlN extends BaseCommand {
+class CommandNavigateAutocompleteDown extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ['<C-n>'];
+  keys = [['<C-n>'], ['<C-j>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('selectNextSuggestion');
@@ -486,12 +487,37 @@ class CommandCtrlN extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlP extends BaseCommand {
+class CommandNavigateAutocompleteUp extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ['<C-p>'];
+  keys = [['<C-p>'], ['<C-k>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('selectPrevSuggestion');
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandCtrlVInInsertMode extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ['<C-v>'];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const textFromClipboard = Clipboard.Paste();
+
+    if (vimState.isMultiCursor) {
+      vimState.recordedState.transformations.push({
+        type: 'insertText',
+        text: textFromClipboard,
+        position: vimState.cursorPosition,
+      });
+    } else {
+      vimState.recordedState.transformations.push({
+        type: 'insertTextVSCode',
+        text: textFromClipboard,
+      });
+    }
 
     return vimState;
   }
