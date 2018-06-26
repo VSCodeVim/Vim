@@ -575,15 +575,25 @@
           "type": "object",
           "description": "Customize cursor style per mode"
         },
-        "vim.autoSwitchInputMethod": {
-          "type": "object",
-          "description": "Automatically change to English input method when you exit insert mode, and resume your input method when you re-enter insert mode",
-          "default": {
-            "enable": false,
-            "defaultIM": "",
-            "switchIMCmd": "",
-            "obtainIMCmd": ""
-          }
+        "vim.autoSwitchInputMethod.enable": {
+          "type": "boolean",
+          "description": "Switch input method automatically when mode changed",
+          "default": false
+        },
+        "vim.autoSwitchInputMethod.defaultIM": {
+          "type": "string",
+          "description": "The input method for your normal mode",
+          "default": "com.apple.keylayout.US"
+        },
+        "vim.autoSwitchInputMethod.switchIMCmd": {
+          "type": "string",
+          "description": "The shell command to switch input method",
+          "default": "/path/to/im-select {im}"
+        },
+        "vim.autoSwitchInputMethod.obtainIMCmd": {
+          "type": "string",
+          "description": "The shell command to get current input method",
+          "default": "/path/to/im-select"
         }
       }
     }
