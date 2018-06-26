@@ -475,9 +475,9 @@ class CommandCtrlUInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlN extends BaseCommand {
+class CommandNavigateAutocompleteDown extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ['<C-n>'];
+  keys = [['<C-n>'], ['<C-j>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('selectNextSuggestion');
@@ -487,9 +487,9 @@ class CommandCtrlN extends BaseCommand {
 }
 
 @RegisterAction
-class CommandCtrlP extends BaseCommand {
+class CommandNavigateAutocompleteUp extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = ['<C-p>'];
+  keys = [['<C-p>'], ['<C-k>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('selectPrevSuggestion');

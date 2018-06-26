@@ -1,7 +1,23 @@
 # Change Log
 
-## [v0.13.1](https://github.com/vscodevim/vim/tree/HEAD)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.13.0...HEAD)
+## [v0.14.0](https://github.com/vscodevim/vim/tree/HEAD)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.13.1...HEAD)
+
+- **Note**: Commandline has moved to the status bar to allow for navigating command history with up and down arrows.
+- Fixes \#2769 Surround aliases not working as targets [\#2772](https://github.com/VSCodeVim/Vim/pull/2772) ([xconverge](https://github.com/xconverge))
+- Fixes \#2766 Ctrl+D stuck on top of the window on visual mode [\#2771](https://github.com/VSCodeVim/Vim/pull/2771) ([rebornix](https://github.com/rebornix))
+- Fixes \#1980 Can't navigate in autocompletion with "Ctrl+j" and "Ctrl+k" [\#2765](https://github.com/VSCodeVim/Vim/pull/2765) ([xconverge](https://github.com/xconverge))
+- Fixes \#1780 Backwards delete using "X" doesn't allow count prefixes [\#2764](https://github.com/VSCodeVim/Vim/pull/2764) ([xconverge](https://github.com/xconverge))
+- Fixes \#2664 Searching forward / backward ignores count [\#2763](https://github.com/VSCodeVim/Vim/pull/2763) ([xconverge](https://github.com/xconverge))
+- Fixes \#2706 Paste with CTRL+V while in edit mode does not work [\#2762](https://github.com/VSCodeVim/Vim/pull/2762) ([xconverge](https://github.com/xconverge))
+- Fixes \#2760 Cut two characters but only paste one [\#2761](https://github.com/VSCodeVim/Vim/pull/2761) ([xconverge](https://github.com/xconverge))
+- Move commandline to status bar to allow history navigation [\#2758](https://github.com/VSCodeVim/Vim/pull/2758) ([xconverge](https://github.com/xconverge))
+- chore\(deps\): update dependency @types/mocha to v5.2.3 [\#2757](https://github.com/VSCodeVim/Vim/pull/2757) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency prettier to v1.13.6 [\#2768](https://github.com/VSCodeVim/Vim/pull/2768) ([renovate-bot](https://github.com/renovate-bot))
+
+## [v0.13.1](https://github.com/vscodevim/vim/tree/v0.13.1) (2018-06-19)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.13.0...v0.13.1)
 
 - fix: closes \#1472. insertModeKeyBindings apply to insert and replace modes [\#2749](https://github.com/VSCodeVim/Vim/pull/2749) ([jpoon](https://github.com/jpoon))
 - fix: closes \#2390. enables remapping using '\<enter\>'  [\#2748](https://github.com/VSCodeVim/Vim/pull/2748) ([jpoon](https://github.com/jpoon))
