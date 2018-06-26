@@ -334,8 +334,6 @@ class Configuration implements IConfiguration {
     // nop
   }
 
-  cmdLineInitialColon = false;
-
   // remappings
   insertModeKeyBindings: IKeyRemapping[] = [];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];

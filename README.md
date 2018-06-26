@@ -164,11 +164,6 @@ These settings are specific to VSCodeVim.
     * etc.
 * Type: Boolean (Default: `true`)
 
-#### `"vim.cmdLineInitialColon"`
-
-* Set this to have VSCodeVim mimick Vim, showing the ':' colon character in the Vim command line when it is called.
-* Type: Boolean (Default: `false`)
-
 #### `"vim.handleKeys"`
 
 * Delegate certain keybindings to be handled natively by VSCode instead of by the VSCodeVim extension

@@ -213,11 +213,6 @@ export interface IConfiguration {
   modeToCursorStyleMap: IModeSpecificStrings<vscode.TextEditorCursorStyle>;
 
   /**
-   * When typing a command show the initial colon ':' character
-   */
-  cmdLineInitialColon: boolean;
-
-  /**
    * InputMethodSwicher
    */
   autoSwitchInputMethod: IAutoSwitchInputMethod;
