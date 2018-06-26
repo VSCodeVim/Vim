@@ -581,7 +581,7 @@ Follow the [Installation Guide](https://github.com/daipeihust/im-select#installa
 
 ##### 2.Find your default input method key
 
-**For macOS:**
+For macOS:
 
 Switch your input method to English, and run following command in your terminal
 ```shell
@@ -601,7 +601,7 @@ com.apple.keylayout.Australian | Australian
 com.apple.keylayout.Dvorak | Dvorak
 com.apple.keylayout.Colemak | Colemak
 
-**For windows:**
+For windows:
 
 For most people, their default input method key is 1033, the locale ID of en_US. But if your default keyboard layout is not en_US, you can use im-select.exe to find out, the guide is [here](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale). You can also find your locale ID in [this page](https://www.science.co.il/language/Locale-codes.php), the `LCID Decimal` column is the locale ID.
 
