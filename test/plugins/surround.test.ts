@@ -87,6 +87,13 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: 'change surround with alias',
+    start: ["first (li|ne) test"],
+    keysPressed: "csb]",
+    end: ['first [li|ne] test'],
+  });
+
+  newTest({
     title: 'change surround to tags',
     start: ['first [li|ne] test'],
     keysPressed: 'cs]tabc>',
@@ -97,6 +104,13 @@ suite('surround plugin', () => {
     title: 'delete surround',
     start: ["first 'li|ne' test"],
     keysPressed: "ds'",
+    end: ['first li|ne test'],
+  });
+
+  newTest({
+    title: 'delete surround with alias',
+    start: ["first {li|ne} test"],
+    keysPressed: "dsB",
     end: ['first li|ne test'],
   });
 
