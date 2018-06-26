@@ -582,8 +582,8 @@
         },
         "vim.autoSwitchInputMethod.defaultIM": {
           "type": "string",
-          "description": "The input method for your normal mode",
-          "default": "com.apple.keylayout.US"
+          "description": "The input method for your normal mode, find more information here:https://github.com/daipeihust/Vim#2find-your-default-input-method-key",
+          "default": ""
         },
         "vim.autoSwitchInputMethod.switchIMCmd": {
           "type": "string",
