@@ -160,7 +160,11 @@ class Remapper implements IRemapper {
             );
             await modeHandler.updateView(modeHandler.vimState);
           } else {
-            await vscode.commands.executeCommand(command.command, command.args);
+            if (command.args) {
+              await vscode.commands.executeCommand(command.command, command.args);
+            } else {
+              await vscode.commands.executeCommand(command.command);
+            }
           }
         }
       }
