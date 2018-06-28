@@ -79,14 +79,7 @@ class Remapper implements IRemapper {
       return false;
     }
 
-    const userDefinedRemappings = configuration[this._configKey] as IKeyRemapping[];
-    for (let userDefinedRemapping of userDefinedRemappings) {
-      logger.debug(
-        `Remapper: ${this._configKey}. loaded remappings. before=${
-          userDefinedRemapping.before
-        }. after=${userDefinedRemapping.after}. commands=${userDefinedRemapping.commands}.`
-      );
-    }
+    const userDefinedRemappings = this._getRemappings();
 
     // Check to see if the keystrokes match any user-specified remapping.
     let remapping: IKeyRemapping | undefined;
@@ -96,7 +89,10 @@ class Remapper implements IRemapper {
       const longestKeySequence = Remapper._getLongestedRemappedKeySequence(userDefinedRemappings);
       for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
         const slice = keys.slice(-sliceLength);
-        const result = _.find(userDefinedRemappings, map => map.before.join('') === slice.join(''));
+        const result = _.find(
+          userDefinedRemappings,
+          remap => remap.before.join('') === slice.join('')
+        );
 
         if (result) {
           remapping = result;
@@ -113,7 +109,7 @@ class Remapper implements IRemapper {
     if (remapping) {
       logger.debug(
         `Remapper: ${this._configKey}. match found. before=${remapping.before}. after=${
-          remapping.after
+        remapping.after
         }. command=${remapping.commands}.`
       );
 
@@ -182,6 +178,34 @@ class Remapper implements IRemapper {
     }
 
     return false;
+  }
+
+  private _getRemappings(): IKeyRemapping[] {
+    let remappings: IKeyRemapping[] = [];
+    for (let remapping of configuration[this._configKey] as IKeyRemapping[]) {
+      let debugMsg = `before=${remapping.before}. `;
+
+      if (remapping.after) {
+        debugMsg += `after=${remapping.after}. `;
+      }
+
+      if (remapping.commands) {
+        for (const command of remapping.commands) {
+          debugMsg += `command=${command.command}. args=${command.args}.`;
+        }
+      }
+
+      if (!remapping.after && !remapping.commands) {
+        logger.error(
+          `Remapper: ${this._configKey}. Invalid configuration. Missing remapped 'after' key or 'command'. ${debugMsg}`
+        );
+      } else {
+        logger.debug(`Remapper: ${this._configKey}. ${debugMsg}`);
+        remappings.push(remapping);
+      }
+    }
+
+    return remappings;
   }
 
   private static _getLongestedRemappedKeySequence(remappings: IKeyRemapping[]): number {
