@@ -481,6 +481,19 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
   keys = ['>'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    // Repeating this command with dot should apply the indent to the previous selection
+    if (vimState.isRunningDotCommand) {
+      if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
+        const shiftSelectionByNum =
+          vimState.cursorStartPosition.line - vimState.cursorPosition.line;
+
+        start = vimState.cursorPosition.getDownByCount(shiftSelectionByNum);
+        const newEnd = vimState.cursorStartPosition.getDownByCount(shiftSelectionByNum);
+
+        vimState.editor.selection = new vscode.Selection(start, newEnd);
+      }
+    }
+
     for (let i = 0; i < (vimState.recordedState.count || 1); i++) {
       await vscode.commands.executeCommand('editor.action.indentLines');
     }
@@ -517,6 +530,19 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
   keys = ['<'];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    // Repeating this command with dot should apply the indent to the previous selection
+    if (vimState.isRunningDotCommand) {
+      if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
+        const shiftSelectionByNum =
+          vimState.cursorStartPosition.line - vimState.cursorPosition.line;
+
+        start = vimState.cursorPosition.getDownByCount(shiftSelectionByNum);
+        const newEnd = vimState.cursorStartPosition.getDownByCount(shiftSelectionByNum);
+
+        vimState.editor.selection = new vscode.Selection(start, newEnd);
+      }
+    }
+
     for (let i = 0; i < (vimState.recordedState.count || 1); i++) {
       await vscode.commands.executeCommand('editor.action.outdentLines');
     }
