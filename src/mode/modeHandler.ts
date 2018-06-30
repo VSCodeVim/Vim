@@ -305,7 +305,6 @@ export class ModeHandler implements vscode.Disposable {
 
     try {
       // Take the count prefix out to perform the correct remapping.
-      const keys = this.vimState.recordedState.getCurrentCommandWithoutCountPrefix();
       const withinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
 
       let handled = false;
@@ -316,8 +315,15 @@ export class ModeHandler implements vscode.Disposable {
        * 1) We are not already performing a nonrecursive remapping.
        * 2) We haven't timed out of our previous remapping.
        */
-      if (!this.vimState.isCurrentlyPerformingRemapping && (withinTimeout || keys.length === 1)) {
-        handled = await this._remappers.sendKey(keys, this, this.vimState);
+      if (
+        !this.vimState.isCurrentlyPerformingRemapping &&
+        (withinTimeout || this.vimState.recordedState.commandList.length === 1)
+      ) {
+        handled = await this._remappers.sendKey(
+          this.vimState.recordedState.commandList,
+          this,
+          this.vimState
+        );
       }
 
       if (handled) {

@@ -1,9 +1,18 @@
 # Change Log
 
-## [v0.14.0](https://github.com/vscodevim/vim/tree/HEAD)
+## [v0.14.1](https://github.com/vscodevim/vim/tree/HEAD)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.13.1...HEAD)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.0...HEAD)
 
+- doc: emojify readme [\#2796](https://github.com/VSCodeVim/Vim/pull/2796) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/mocha to v5.2.4 [\#2795](https://github.com/VSCodeVim/Vim/pull/2795) ([renovate-bot](https://github.com/renovate-bot))
+- fix: enable remapping of numbers [\#2793](https://github.com/VSCodeVim/Vim/pull/2793) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency prettier to v1.13.7 [\#2786](https://github.com/VSCodeVim/Vim/pull/2786) ([renovate-bot](https://github.com/renovate-bot))
+- refactor: simplify normalizekey\(\) by using existing map [\#2782](https://github.com/VSCodeVim/Vim/pull/2782) ([jpoon](https://github.com/jpoon))
+- fix: fixes bug where null arguments to vscode executecommand would fail [\#2776](https://github.com/VSCodeVim/Vim/pull/2776) ([jpoon](https://github.com/jpoon))
+
+## [v0.14.0](https://github.com/vscodevim/vim/tree/v0.14.0) (2018-06-26)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.13.1...v0.14.0)
 - **Note**: Commandline has moved to the status bar to allow for navigating command history with up and down arrows.
 - Fixes \#2769 Surround aliases not working as targets [\#2772](https://github.com/VSCodeVim/Vim/pull/2772) ([xconverge](https://github.com/xconverge))
 - Fixes \#2766 Ctrl+D stuck on top of the window on visual mode [\#2771](https://github.com/VSCodeVim/Vim/pull/2771) ([rebornix](https://github.com/rebornix))
