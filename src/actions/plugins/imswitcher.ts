@@ -56,7 +56,7 @@ export class InputMethodSwitcher {
           this.savedIMKey = insertIMKey.trim();
         }
       } else {
-        this.showCmdNotFoundErrorMessage(rawObtainIMCmd);
+        this.showCmdNotFoundErrorMessage(rawObtainIMCmd, 'vim.autoSwitchInputMethod.obtainIMCmd');
       }
     }
 
@@ -77,7 +77,7 @@ export class InputMethodSwitcher {
     let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
     if (!switchIMCmd.includes('{im}')) {
       Message.ShowError(
-        'switchIMCmd config in vim.autoSwitchInputMethod is incorrect, \
+        'vim.autoSwitchInputMethod.switchIMCmd is incorrect, \
         it should contain the placeholder {im}'
       );
       this.disableIMSwitch();
@@ -91,7 +91,7 @@ export class InputMethodSwitcher {
           await util.executeShell(switchIMCmd);
         }
       } else {
-        this.showCmdNotFoundErrorMessage(rawSwitchIMCmd);
+        this.showCmdNotFoundErrorMessage(rawSwitchIMCmd, 'vim.autoSwitchInputMethod.switchIMCmd');
       }
     }
   }
@@ -105,10 +105,8 @@ export class InputMethodSwitcher {
     return rawCmd;
   }
 
-  private showCmdNotFoundErrorMessage(cmd: string) {
-    Message.ShowError(
-      'Unable to find ' + cmd + '. check your "vim.autoSwitchInputMethod" in VSCode setting.'
-    );
+  private showCmdNotFoundErrorMessage(cmd: string, config: string) {
+    Message.ShowError('Unable to find ' + cmd + '. check your ' + config + ' in VSCode setting.');
     this.disableIMSwitch();
   }
 
