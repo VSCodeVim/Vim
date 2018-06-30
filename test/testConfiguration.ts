@@ -65,7 +65,6 @@ export class Configuration implements IConfiguration {
     visualblock: vscode.TextEditorCursorStyle.Line,
     replace: vscode.TextEditorCursorStyle.Line,
   };
-  cmdLineInitialColon = false;
   insertModeKeyBindings: IKeyRemapping[] = [];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   normalModeKeyBindings: IKeyRemapping[] = [];

@@ -8,25 +8,19 @@ export class Notation {
     Esc: ['escape', 'esc'],
     BS: ['backspace', 'bs'],
     Del: ['delete', 'del'],
+    ' ': ['<space>'],
+    '\n': ['<cr>', '<enter>']
   };
 
   /**
    * Normalizes key to AngleBracketNotation
    * (e.g. <ctrl+x>, Ctrl+x, <c-x> normalized to <C-x>)
-   * and resolves special cases such as '<leader>'
+   * and converts the characters to their literals
+   * (e.g. <space>, <cr>, <leader>)
    */
   public static NormalizeKey(key: string, leaderKey: string): string {
     if (!this.isSurroundedByAngleBrackets(key) && key.length > 1) {
       key = `<${key.toLocaleLowerCase()}>`;
-    }
-
-    // Special cases that we handle incorrectly (internally)
-    if (key.toLocaleLowerCase() === '<space>') {
-      return ' ';
-    }
-
-    if (key.toLocaleLowerCase() === '<cr>') {
-      return '\n';
     }
 
     if (key.toLocaleLowerCase() === '<leader>') {
@@ -34,7 +28,7 @@ export class Notation {
     }
 
     if (_.includes(['<up>', '<down>', '<left>', '<right>'], key.toLocaleLowerCase())) {
-      key = key.toLocaleLowerCase();
+      return key.toLocaleLowerCase();
     }
 
     for (const notationMapKey in this._notationMap) {

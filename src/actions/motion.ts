@@ -46,8 +46,6 @@ export abstract class BaseMovement extends BaseAction {
 
   isMotion = true;
 
-  canBePrefixedWithCount = false;
-
   /**
    * If movement can be repeated with semicolon or comma this will be true when
    * running the repetition.
@@ -431,13 +429,13 @@ class CommandNextSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     vimState.globalState.hl = true;
 
-    if (vimState.cursorPosition.getRight().isEqual(vimState.cursorPosition.getLineEnd())) {
-      return searchState.getNextSearchMatchPosition(vimState.cursorPosition.getRight()).pos;
+    if (position.getRight().isEqual(position.getLineEnd())) {
+      return searchState.getNextSearchMatchPosition(position.getRight()).pos;
     }
 
     // Turn one of the highlighting flags back on (turned off with :nohl)
 
-    return searchState.getNextSearchMatchPosition(vimState.cursorPosition).pos;
+    return searchState.getNextSearchMatchPosition(position).pos;
   }
 }
 
@@ -455,7 +453,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     // Turn one of the highlighting flags back on (turned off with :nohl)
     vimState.globalState.hl = true;
 
-    return searchState.getNextSearchMatchPosition(vimState.cursorPosition, -1).pos;
+    return searchState.getNextSearchMatchPosition(position, -1).pos;
   }
 }
 
@@ -807,7 +805,6 @@ class MoveScreenLineEnd extends MoveByScreenLine {
 class MoveScreenLineEndNonBlank extends MoveByScreenLine {
   keys = ['g', '_'];
   movementType: CursorMovePosition = 'wrappedLineLastNonWhitespaceCharacter';
-  canBePrefixedWithCount = true;
 
   public async execActionWithCount(
     position: Position,
@@ -978,7 +975,6 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
   movementType: CursorMovePosition = 'viewPortTop';
   by: CursorMoveByUnit = 'line';
   value = 1;
-  canBePrefixedWithCount = true;
 
   public async execActionWithCount(
     position: Position,
@@ -996,7 +992,6 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
   movementType: CursorMovePosition = 'viewPortBottom';
   by: CursorMoveByUnit = 'line';
   value = 1;
-  canBePrefixedWithCount = true;
 
   public async execActionWithCount(
     position: Position,
@@ -1874,7 +1869,6 @@ export class MoveAroundTag extends MoveTagMatch {
 export class ArrowsInInsertMode extends BaseMovement {
   modes = [ModeName.Insert];
   keys: string[];
-  canBePrefixedWithCount = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     // we are in Insert Mode and arrow keys will clear all other actions except the first action, which enters Insert Mode.

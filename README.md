@@ -163,11 +163,6 @@ These settings are specific to VSCodeVim.
     * etc.
 * Type: Boolean (Default: `true`)
 
-#### `"vim.cmdLineInitialColon"`
-
-* Set this to have VSCodeVim mimick Vim, showing the ':' colon character in the Vim command line when it is called.
-* Type: Boolean (Default: `false`)
-
 #### `"vim.handleKeys"`
 
 * Delegate certain keybindings to be handled natively by VSCode instead of by the VSCodeVim extension
@@ -259,7 +254,6 @@ There's several different mechanisms you can use to define custom remappings. Al
         "commands": [
             {
                 "command": "workbench.action.showCommands",
-                "args": []
             }
         ]
     }
@@ -274,8 +268,7 @@ There's several different mechanisms you can use to define custom remappings. Al
             "before": ["Z", "Z"],
             "commands": [
                 {
-                    "command": ":wq",
-                    "args": []
+                    "command": ":wq"
                 },
             ]
         }
@@ -291,7 +284,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             "commands": [
                 {
                     "command": ":nohl",
-                    "args": []
                 }
             ]
         },
@@ -300,7 +292,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             "commands": [
                 {
                     "command": "workbench.action.files.save",
-                    "args": []
                 }
             ]
         }
@@ -336,7 +327,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             ],
             "commands": [
                 {
-                    "args": [],
                     "command": "editor.action.indentLines"
                 }
             ]
@@ -347,7 +337,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             ],
             "commands": [
                 {
-                    "args": [],
                     "command": "editor.action.outdentLines"
                 }
             ]
