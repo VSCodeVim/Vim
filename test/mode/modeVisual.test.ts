@@ -865,7 +865,7 @@ suite('Mode Visual', () => {
       title: 'repeat multiline indent top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'Vjj>.',
-      end: ['111', '  |222', '  333', '  444', '555'],
+      end: ['111', '    |222', '    333', '    444', '555'],
     });
 
     newTest({
