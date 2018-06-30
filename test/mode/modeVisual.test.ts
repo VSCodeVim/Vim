@@ -846,6 +846,66 @@ suite('Mode Visual', () => {
     });
   });
 
+  suite('Indent Tests using > on visual selections', () => {
+    newTest({
+      title: 'multiline indent top down selection',
+      start: ['111', '2|22', '333', '444', '555'],
+      keysPressed: 'Vjj>',
+      end: ['111', '  |222', '  333', '  444', '555'],
+    });
+
+    newTest({
+      title: 'multiline indent bottom up selection',
+      start: ['111', '222', '333', '4|44', '555'],
+      keysPressed: 'Vkk>',
+      end: ['111', '  |222', '  333', '  444', '555'],
+    });
+
+    newTest({
+      title: 'repeat multiline indent top down selection',
+      start: ['111', '2|22', '333', '444', '555'],
+      keysPressed: 'Vjj>.',
+      end: ['111', '  |222', '  333', '  444', '555'],
+    });
+
+    newTest({
+      title: 'repeat multiline indent bottom up selection',
+      start: ['111', '222', '333', '4|44', '555'],
+      keysPressed: 'Vkk>.',
+      end: ['111', '    |222', '    333', '    444', '555'],
+    });
+  });
+
+  suite('Outdent Tests using < on visual selections', () => {
+    newTest({
+      title: 'multiline outdent top down selection',
+      start: ['    111', '    2|22', '    333', '   444', '    555'],
+      keysPressed: 'Vjj<',
+      end: ['    111', '  |222', '  333', '  444', '    555'],
+    });
+
+    newTest({
+      title: 'multiline outdent bottom up selection',
+      start: ['    111', '    222', '    333', '   4|44', '    555'],
+      keysPressed: 'Vkk<',
+      end: ['    111', '  |222', '  333', '  444', '    555'],
+    });
+
+    newTest({
+      title: 'repeat multiline outdent top down selection',
+      start: ['    111', '    2|22', '    333', '   444', '    555'],
+      keysPressed: 'Vjj<.',
+      end: ['    111', '|222', '333', '444', '    555'],
+    });
+
+    newTest({
+      title: 'repeat multiline outdent bottom up selection',
+      start: ['    111', '    222', '    333', '   4|44', '    555'],
+      keysPressed: 'Vkk<.',
+      end: ['    111', '|222', '333', '444', '    555'],
+    });
+  });
+
   suite('Non-darwin <C-c> tests', () => {
     if (process.platform === 'darwin') {
       return;
