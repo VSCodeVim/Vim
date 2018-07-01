@@ -485,9 +485,10 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     if (vimState.isRunningDotCommand) {
       if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
         const shiftSelectionByNum =
-          vimState.cursorStartPosition.line - vimState.cursorPosition.line;
+          vimState.dotCommandPreviousVisualSelection.end.line -
+          vimState.dotCommandPreviousVisualSelection.start.line;
 
-        start = vimState.cursorPosition.getDownByCount(shiftSelectionByNum);
+        start = vimState.cursorStartPosition;
         const newEnd = vimState.cursorStartPosition.getDownByCount(shiftSelectionByNum);
 
         vimState.editor.selection = new vscode.Selection(start, newEnd);
@@ -534,9 +535,10 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
     if (vimState.isRunningDotCommand) {
       if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
         const shiftSelectionByNum =
-          vimState.cursorStartPosition.line - vimState.cursorPosition.line;
+          vimState.dotCommandPreviousVisualSelection.end.line -
+          vimState.dotCommandPreviousVisualSelection.start.line;
 
-        start = vimState.cursorPosition.getDownByCount(shiftSelectionByNum);
+        start = vimState.cursorStartPosition;
         const newEnd = vimState.cursorStartPosition.getDownByCount(shiftSelectionByNum);
 
         vimState.editor.selection = new vscode.Selection(start, newEnd);
