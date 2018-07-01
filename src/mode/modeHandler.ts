@@ -1112,10 +1112,16 @@ export class ModeHandler implements vscode.Disposable {
     const surroundKeys = recordedState.surroundKeys;
 
     vimState.isRunningDotCommand = true;
-    vimState.dotCommandPreviousVisualSelection = new vscode.Selection(
-      vimState.lastVisualSelectionStart,
-      vimState.lastVisualSelectionEnd
-    );
+
+    // If a previous visual selection exists, store it for use in replay of some
+    // commands
+    if (vimState.lastVisualSelectionStart && vimState.lastVisualSelectionEnd) {
+      vimState.dotCommandPreviousVisualSelection = new vscode.Selection(
+        vimState.lastVisualSelectionStart,
+        vimState.lastVisualSelectionEnd
+      );
+    }
+
     recordedState = new RecordedState();
     vimState.recordedState = recordedState;
 

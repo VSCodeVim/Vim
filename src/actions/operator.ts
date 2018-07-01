@@ -482,7 +482,7 @@ class IndentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // Repeating this command with dot should apply the indent to the previous selection
-    if (vimState.isRunningDotCommand) {
+    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
       if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
         const shiftSelectionByNum =
           vimState.dotCommandPreviousVisualSelection.end.line -
@@ -532,7 +532,7 @@ class OutdentOperatorInVisualModesIsAWeirdSpecialCase extends BaseOperator {
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     // Repeating this command with dot should apply the indent to the previous selection
-    if (vimState.isRunningDotCommand) {
+    if (vimState.isRunningDotCommand && vimState.dotCommandPreviousVisualSelection) {
       if (vimState.cursorStartPosition.isAfter(vimState.cursorPosition)) {
         const shiftSelectionByNum =
           vimState.dotCommandPreviousVisualSelection.end.line -

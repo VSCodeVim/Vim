@@ -76,7 +76,7 @@ export class VimState implements vscode.Disposable {
   /**
    * The last visual selection before running the dot command
    */
-  public dotCommandPreviousVisualSelection: vscode.Selection;
+  public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
 
   public focusChanged = false;
 
