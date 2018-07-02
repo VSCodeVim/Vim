@@ -649,7 +649,7 @@ export class ModeHandler implements vscode.Disposable {
 
     vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
 
-    if (this.currentMode.isVisualMode) {
+    if (this.currentMode.isVisualMode && !this.vimState.isRunningDotCommand) {
       // Store selection for commands like gv
       this.vimState.lastVisualMode = this.vimState.currentMode;
       this.vimState.lastVisualSelectionStart = this.vimState.cursorStartPosition;
@@ -1112,6 +1112,16 @@ export class ModeHandler implements vscode.Disposable {
     const surroundKeys = recordedState.surroundKeys;
 
     vimState.isRunningDotCommand = true;
+
+    // If a previous visual selection exists, store it for use in replay of some
+    // commands
+    if (vimState.lastVisualSelectionStart && vimState.lastVisualSelectionEnd) {
+      vimState.dotCommandPreviousVisualSelection = new vscode.Selection(
+        vimState.lastVisualSelectionStart,
+        vimState.lastVisualSelectionEnd
+      );
+    }
+
     recordedState = new RecordedState();
     vimState.recordedState = recordedState;
 
