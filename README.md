@@ -583,6 +583,25 @@ Are you on a Mac? Did you go through our [mac-setup](#mac-setup) instructions?
 
 Press `shift+<esc>` to close all of those boxes.
 
+### How can I use the commandline when in Zen mode or when the status bar is disabled?
+
+This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in visual studio keybindings.json settings file.
+```
+{
+    "key": "shift+;",
+    "command": "vim.showQuickpickCmdLine",
+    "when": "editorTextFocus && vim.mode != 'Insert'"
+}
+```
+Or for Zen mode only:
+```
+{
+    "key": "shift+;",
+    "command": "vim.showQuickpickCmdLine",
+    "when": "inZenMode && vim.mode != 'Insert'"
+}
+```
+
 ## ❤️ Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).

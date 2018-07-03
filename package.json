@@ -44,6 +44,10 @@
       {
         "command": "toggleVim",
         "title": "Vim: Toggle Vim Mode"
+      },
+      {
+        "command": "vim.showQuickpickCmdLine",
+        "title": "Vim: Show Command Line"
       }
     ],
     "keybindings": [
