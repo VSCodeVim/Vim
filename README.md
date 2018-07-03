@@ -585,7 +585,7 @@ Press `shift+<esc>` to close all of those boxes.
 
 ### How can I use the commandline when in Zen mode or when the status bar is disabled?
 
-This extension exposes a remappable command to show a quickpick version of the commandline. This can be remapped as follows in visual studio keybindings.json settings file.
+This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in visual studio keybindings.json settings file.
 ```
 {
     "key": "shift+;",
@@ -603,7 +603,6 @@ Or for Zen mode only:
 ```
 
 ## ❤️ Contributing
-
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
 
