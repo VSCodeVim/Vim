@@ -172,6 +172,45 @@ suite('Mode Insert', () => {
     end: ['foo|bar'],
   });
 
+  test("Can handle '<C-u>'", async () => {
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      't',
+      'e',
+      'x',
+      't',
+      ' ',
+      't',
+      'e',
+      'x',
+      't',
+      '<Esc>',
+      '^',
+      'l',
+      'l',
+      'l',
+      'l',
+      'a',
+      '<C-u>',
+    ]);
+
+    assertEqualLines(['text']);
+  });
+
+  newTest({
+    title: 'Can handle <C-u> on leading characters',
+    start: ['{', '  foo: |true', '}'],
+    keysPressed: 'i<C-u>',
+    end: ['{', '  |true', '}'],
+  });
+
+  newTest({
+    title: 'Can handle <C-u> on leading whitespace',
+    start: ['{', '  |true', '}'],
+    keysPressed: 'i<C-u>',
+    end: ['{', '|true', '}'],
+  });
+
   test('Correctly places the cursor after deleting the previous line break', async () => {
     await modeHandler.handleMultipleKeyEvents([
       'i',
