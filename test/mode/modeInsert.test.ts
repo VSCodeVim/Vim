@@ -172,29 +172,11 @@ suite('Mode Insert', () => {
     end: ['foo|bar'],
   });
 
-  test("Can handle '<C-u>'", async () => {
-    await modeHandler.handleMultipleKeyEvents([
-      'i',
-      't',
-      'e',
-      'x',
-      't',
-      ' ',
-      't',
-      'e',
-      'x',
-      't',
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l',
-      'a',
-      '<C-u>',
-    ]);
-
-    assertEqualLines(['text']);
+  newTest({
+    title: 'Can handle <C-u>',
+    start: ['text |text'],
+    keysPressed: 'i<C-u>',
+    end: ['|text'],
   });
 
   newTest({
