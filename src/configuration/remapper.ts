@@ -90,7 +90,7 @@ export class Remapper implements IRemapper {
     if (remapping) {
       logger.debug(
         `Remapper: ${this._configKey}. match found. before=${remapping.before}. after=${
-        remapping.after
+          remapping.after
         }. command=${remapping.commands}.`
       );
 
@@ -130,17 +130,28 @@ export class Remapper implements IRemapper {
       if (remapping.commands) {
         for (const command of remapping.commands) {
           // Check if this is a vim command by looking for :
-          if (command.command.slice(0, 1) === ':') {
+          let commandString: string;
+          let commandArgs: string[];
+
+          if (typeof command === 'string') {
+            commandString = command;
+            commandArgs = [];
+          } else {
+            commandString = command.command;
+            commandArgs = command.args;
+          }
+
+          if (commandString.slice(0, 1) === ':') {
             await commandLine.Run(
-              command.command.slice(1, command.command.length),
+              commandString.slice(1, commandString.length),
               modeHandler.vimState
             );
             await modeHandler.updateView(modeHandler.vimState);
           } else {
-            if (command.args) {
-              await vscode.commands.executeCommand(command.command, command.args);
+            if (commandArgs) {
+              await vscode.commands.executeCommand(commandString, commandArgs);
             } else {
-              await vscode.commands.executeCommand(command.command);
+              await vscode.commands.executeCommand(commandString);
             }
           }
         }
@@ -172,14 +183,18 @@ export class Remapper implements IRemapper {
 
       if (remapping.commands) {
         for (const command of remapping.commands) {
-          debugMsg += `command=${command.command}. args=${command.args}.`;
+          if (typeof command === 'string') {
+            debugMsg += `command=${command}. args=.`;
+          } else {
+            debugMsg += `command=${command.command}. args=${command.args}.`;
+          }
         }
       }
 
       if (!remapping.after && !remapping.commands) {
         logger.error(
           `Remapper: ${
-          this._configKey
+            this._configKey
           }. Invalid configuration. Missing 'after' key or 'command'. ${debugMsg}`
         );
         continue;
