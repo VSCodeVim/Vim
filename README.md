@@ -245,16 +245,16 @@ Custom remappings are defined on a per-mode basis.
 * Bind `:` to show the command palette:
 
 ```json
-"vim.normalModeKeyBindingsNonRecursive": [
-    {
-        "before": [":"],
-        "commands": [
-            {
-                "command": "workbench.action.showCommands",
-            }
-        ]
-    }
-]
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": [":"],
+            "commands": [
+                {
+                    "command": "workbench.action.showCommands",
+                }
+            ]
+        }
+    ]
 ```
 
 * Bind `<leader>m` to add a bookmark and `<leader>b` to open the list of all bookmarks (using the [Bookmarks](https://github.com/alefragnani/vscode-bookmarks) extension):
