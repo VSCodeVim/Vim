@@ -1,8 +1,16 @@
 # Change Log
 
-## [v0.14.1](https://github.com/vscodevim/vim/tree/HEAD)
+## [v0.14.2](https://github.com/vscodevim/vim/tree/HEAD)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.1...HEAD)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.0...HEAD)
+- Make gt work correctly like gT [\#2812](https://github.com/VSCodeVim/Vim/pull/2812) ([xconverge](https://github.com/xconverge))
+- Update \<C-u\> insert mode behavior [\#2805](https://github.com/VSCodeVim/Vim/pull/2805) ([mrwest808](https://github.com/mrwest808))
+- Fixes \#2606 Repeating a VISUAL LINE indentation is inconsistent [\#2790](https://github.com/VSCodeVim/Vim/pull/2790) ([xconverge](https://github.com/xconverge))
+- Allow for quickpick commandline usage [\#2781](https://github.com/VSCodeVim/Vim/pull/2781) ([xconverge](https://github.com/xconverge))
+- chore\(deps\): update dependency @types/node to v9.6.23 [\#2811](https://github.com/VSCodeVim/Vim/pull/2811) ([renovate-bot](https://github.com/renovate-bot))
+
+## [v0.14.1](https://github.com/vscodevim/vim/tree/v0.14.1) (2018-06-30)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.0...v0.14.1)
 
 - doc: emojify readme [\#2796](https://github.com/VSCodeVim/Vim/pull/2796) ([jpoon](https://github.com/jpoon))
 - chore\(deps\): update dependency @types/mocha to v5.2.4 [\#2795](https://github.com/VSCodeVim/Vim/pull/2795) ([renovate-bot](https://github.com/renovate-bot))
