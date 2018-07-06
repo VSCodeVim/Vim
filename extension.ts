@@ -197,10 +197,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // register extension commands
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
-    let [modeHandler] = await ModeHandlerMap.getOrCreate(
-      new EditorIdentity(vscode.window.activeTextEditor).toString()
-    );
-    commandLine.PromptAndRun('', modeHandler.vimState);
+    const modeHandler = await getAndUpdateModeHandler();
+    await commandLine.PromptAndRun('', modeHandler.vimState);
     modeHandler.updateView(modeHandler.vimState);
   });
 
