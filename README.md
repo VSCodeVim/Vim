@@ -257,6 +257,26 @@ Custom remappings are defined on a per-mode basis.
 ]
 ```
 
+* Bind `<leader>m` to add a bookmark and `<leader>b` to open the list of all bookmarks (using the [Bookmarks](https://github.com/alefragnani/vscode-bookmarks) extension):
+    * *Note:* `"commands": [ "cmd" ]` is equivalent to `"commands": [ { "command": "cmd", "args": [] } ]`.
+
+```json
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": ["<leader>", "m"],
+            "commands": [
+                "bookmarks.toggle"
+            ]
+        },
+        {
+            "before": ["<leader>", "b"],
+            "commands": [
+                "bookmarks.list"
+            ]
+        }
+    ]
+```
+
 * Bind `ZZ` to the vim command `:wq` (save and close the current file):
 
 ```json
