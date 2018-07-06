@@ -95,7 +95,8 @@ To push a release:
     1. `github_changelog_generator vscodevim/vim --token=[TOKEN] --simple-list --no-issues --unreleased-label [LABEL]`
     1. `git commit -am 'update changelog'`
 
-1. Bump the version number and create a git tag: `gulp patch|minor|major`
+1. Bump the version number: `gulp patch|minor|major`
+1. Create the tag: `gulp tag`
 1. Push the changes: `git push origin --tags`
 
 In addition to building and testing the extension, when a tag is applied to the commit, the CI server will also create a GitHub release and publish the new version to the Visual Studio marketplace.
