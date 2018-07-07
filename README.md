@@ -99,9 +99,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
         {
             "before":["<C-n>"],
             "commands": [
-                {
-                    "command": ":nohl"
-                }
+                ":nohl"
             ]
         }
     ],
@@ -249,16 +247,13 @@ Custom remappings are defined on a per-mode basis.
         {
             "before": [":"],
             "commands": [
-                {
-                    "command": "workbench.action.showCommands",
-                }
+                "workbench.action.showCommands",
             ]
         }
     ]
 ```
 
 * Bind `<leader>m` to add a bookmark and `<leader>b` to open the list of all bookmarks (using the [Bookmarks](https://github.com/alefragnani/vscode-bookmarks) extension):
-    * *Note:* `"commands": [ "cmd" ]` is equivalent to `"commands": [ { "command": "cmd", "args": [] } ]`.
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
@@ -284,9 +279,7 @@ Custom remappings are defined on a per-mode basis.
         {
             "before": ["Z", "Z"],
             "commands": [
-                {
-                    "command": ":wq"
-                },
+                ":wq"
             ]
         }
     ]
@@ -299,17 +292,13 @@ Custom remappings are defined on a per-mode basis.
         {
             "before":["<C-n>"],
             "commands": [
-                {
-                    "command": ":nohl",
-                }
+                ":nohl",
             ]
         },
         {
             "before": ["leader", "w"],
             "commands": [
-                {
-                    "command": "workbench.action.files.save",
-                }
+                "workbench.action.files.save",
             ]
         }
     ]
@@ -335,7 +324,6 @@ Custom remappings are defined on a per-mode basis.
 
 * Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
 
-
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
         {
@@ -343,9 +331,7 @@ Custom remappings are defined on a per-mode basis.
                 ">"
             ],
             "commands": [
-                {
-                    "command": "editor.action.indentLines"
-                }
+                "editor.action.indentLines"
             ]
         },
         {
@@ -353,14 +339,29 @@ Custom remappings are defined on a per-mode basis.
                 "<"
             ],
             "commands": [
-                {
-                    "command": "editor.action.outdentLines"
-                }
+                "editor.action.outdentLines"
             ]
         },
     ]
 ```
 
+* Bind `<leader>vim` to clone this repository to the selected location.
+
+```json
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                "<leader>", "v", "i", "m"
+            ],
+            "commands": [
+                {
+                    "command": "git.clone",
+                    "args": [ "https://github.com/VSCodeVim/Vim.git" ]
+                }
+            ]
+        }
+    ]
+```
 
 #### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`
 
