@@ -2981,7 +2981,7 @@ class CommandTabNext extends BaseTabCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     new TabCommand({
       tab: Tab.Next,
-      count: vimState.recordedState.count,
+      count: 1,
     }).execute();
 
     return vimState;

@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -606,7 +606,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.110",
     "@types/mocha": "5.2.4",
-    "@types/node": "9.6.22",
+    "@types/node": "9.6.23",
     "gulp": "3.9.1",
     "gulp-bump": "3.1.1",
     "gulp-filter": "5.1.0",
