@@ -52,7 +52,7 @@ export class Remappers implements IRemapper {
   }
 }
 
-class Remapper implements IRemapper {
+export class Remapper implements IRemapper {
   private readonly _configKey: string;
   private readonly _remappedModes: ModeName[];
   private readonly _recursive: boolean;
@@ -79,41 +79,18 @@ class Remapper implements IRemapper {
       return false;
     }
 
-    const userDefinedRemappings = configuration[this._configKey] as IKeyRemapping[];
-    for (let userDefinedRemapping of userDefinedRemappings) {
-      logger.debug(
-        `Remapper: ${this._configKey}. loaded remappings. before=${
-          userDefinedRemapping.before
-        }. after=${userDefinedRemapping.after}. commands=${userDefinedRemapping.commands}.`
-      );
-    }
+    const userDefinedRemappings = this._getRemappings();
 
-    // Check to see if the keystrokes match any user-specified remapping.
-    let remapping: IKeyRemapping | undefined;
-    if (vimState.currentMode === ModeName.Insert) {
-      // In insert mode, we allow users to precede remapped commands
-      // with extraneous keystrokes (e.g. "hello world jj")
-      const longestKeySequence = Remapper._getLongestedRemappedKeySequence(userDefinedRemappings);
-      for (let sliceLength = 1; sliceLength <= longestKeySequence; sliceLength++) {
-        const slice = keys.slice(-sliceLength);
-        const result = _.find(userDefinedRemappings, map => map.before.join('') === slice.join(''));
-
-        if (result) {
-          remapping = result;
-          break;
-        }
-      }
-    } else {
-      // In other modes, we have to precisely match the entire keysequence
-      remapping = _.find(userDefinedRemappings, map => {
-        return map.before.join('') === keys.join('');
-      });
-    }
+    let remapping: IKeyRemapping | undefined = Remapper._findMatchingRemap(
+      userDefinedRemappings,
+      keys,
+      vimState.currentMode
+    );
 
     if (remapping) {
       logger.debug(
         `Remapper: ${this._configKey}. match found. before=${remapping.before}. after=${
-          remapping.after
+        remapping.after
         }. command=${remapping.commands}.`
       );
 
@@ -121,25 +98,25 @@ class Remapper implements IRemapper {
         vimState.isCurrentlyPerformingRemapping = true;
       }
 
-      // Record length of remapped command
-      vimState.recordedState.numberOfRemappedKeys += remapping.before.length;
-
-      const numToRemove = remapping.before.length - 1;
+      const numCharsToRemove = remapping.before.length - 1;
       // Revert previously inserted characters
       // (e.g. jj remapped to esc, we have to revert the inserted "jj")
       if (vimState.currentMode === ModeName.Insert) {
         // Revert every single inserted character.
         // We subtract 1 because we haven't actually applied the last key.
         await vimState.historyTracker.undoAndRemoveChanges(
-          Math.max(0, numToRemove * vimState.allCursors.length)
+          Math.max(0, numCharsToRemove * vimState.allCursors.length)
         );
-        vimState.cursorPosition = vimState.cursorPosition.getLeft(numToRemove);
+        vimState.cursorPosition = vimState.cursorPosition.getLeft(numCharsToRemove);
       }
 
       // We need to remove the keys that were remapped into different keys
       // from the state.
-      vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(0, -numToRemove);
-      vimState.keyHistory = vimState.keyHistory.slice(0, -numToRemove);
+      vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(
+        0,
+        -numCharsToRemove
+      );
+      vimState.keyHistory = vimState.keyHistory.slice(0, -numCharsToRemove);
 
       if (remapping.after) {
         const count = vimState.recordedState.count || 1;
@@ -160,7 +137,11 @@ class Remapper implements IRemapper {
             );
             await modeHandler.updateView(modeHandler.vimState);
           } else {
-            await vscode.commands.executeCommand(command.command, command.args);
+            if (command.args) {
+              await vscode.commands.executeCommand(command.command, command.args);
+            } else {
+              await vscode.commands.executeCommand(command.command);
+            }
           }
         }
       }
@@ -170,8 +151,8 @@ class Remapper implements IRemapper {
     }
 
     // Check to see if a remapping could potentially be applied when more keys are received
-    for (let remap of userDefinedRemappings) {
-      if (keys.join('') === remap.before.slice(0, keys.length).join('')) {
+    for (let remap of Object.keys(userDefinedRemappings)) {
+      if (keys.join('') === remap.slice(0, keys.length)) {
         this._isPotentialRemap = true;
         break;
       }
@@ -180,11 +161,89 @@ class Remapper implements IRemapper {
     return false;
   }
 
-  private static _getLongestedRemappedKeySequence(remappings: IKeyRemapping[]): number {
-    if (remappings.length === 0) {
-      return 1;
+  private _getRemappings(): { [key: string]: IKeyRemapping } {
+    let remappings: { [key: string]: IKeyRemapping } = {};
+    for (let remapping of configuration[this._configKey] as IKeyRemapping[]) {
+      let debugMsg = `before=${remapping.before}. `;
+
+      if (remapping.after) {
+        debugMsg += `after=${remapping.after}. `;
+      }
+
+      if (remapping.commands) {
+        for (const command of remapping.commands) {
+          debugMsg += `command=${command.command}. args=${command.args}.`;
+        }
+      }
+
+      if (!remapping.after && !remapping.commands) {
+        logger.error(
+          `Remapper: ${
+          this._configKey
+          }. Invalid configuration. Missing 'after' key or 'command'. ${debugMsg}`
+        );
+        continue;
+      }
+
+      const keys = remapping.before.join('');
+      if (keys in remappings) {
+        logger.error(`Remapper: ${this._configKey}. Duplicate configuration. ${debugMsg}`);
+        continue;
+      }
+
+      logger.debug(`Remapper: ${this._configKey}. ${debugMsg}`);
+      remappings[keys] = remapping;
     }
-    return _.maxBy(remappings, map => map.before.length)!.before.length;
+
+    return remappings;
+  }
+
+  protected static _findMatchingRemap(
+    userDefinedRemappings: { [key: string]: IKeyRemapping },
+    inputtedKeys: string[],
+    currentMode: ModeName
+  ) {
+    let remapping: IKeyRemapping | undefined;
+
+    let range = Remapper._getRemappedKeysLengthRange(userDefinedRemappings);
+    const startingSliceLength = Math.max(range[1], inputtedKeys.length);
+    for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
+      const keySlice = inputtedKeys.slice(-sliceLength).join('');
+
+      if (keySlice in userDefinedRemappings) {
+        // In Insert mode, we allow users to precede remapped commands
+        // with extraneous keystrokes (eg. "hello world jj")
+        // In other modes, we have to precisely match the keysequence
+        // unless the preceding keys are numbers
+        if (currentMode !== ModeName.Insert) {
+          const precedingKeys = inputtedKeys
+            .slice(0, inputtedKeys.length - keySlice.length)
+            .join('');
+          if (precedingKeys.length > 0 && !/^[0-9]+$/.test(precedingKeys)) {
+            break;
+          }
+        }
+
+        remapping = userDefinedRemappings[keySlice];
+        break;
+      }
+    }
+
+    return remapping;
+  }
+
+  /**
+   * Given list of remappings, returns the length of the shortest and longest remapped keys
+   * @param remappings
+   */
+  protected static _getRemappedKeysLengthRange(remappings: {
+    [key: string]: IKeyRemapping;
+  }): [number, number] {
+    const keys = Object.keys(remappings);
+    if (keys.length === 0) {
+      return [0, 0];
+    }
+    return [_.minBy(keys, m => m.length)!.length, _.maxBy(keys, m => m.length)!.length];
   }
 }
 

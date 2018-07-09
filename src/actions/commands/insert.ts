@@ -465,9 +465,10 @@ class CommandCtrlUInInsertMode extends BaseCommand {
   keys = ['<C-u>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const start = position.getLineBegin();
-    const stop = position.getLineEnd();
-    await TextEditor.delete(new vscode.Range(start, stop));
+    const start = position.isInLeadingWhitespace()
+      ? position.getLineBegin()
+      : position.getLineBeginRespectingIndent();
+    await TextEditor.delete(new vscode.Range(start, position));
     vimState.cursorPosition = start;
     vimState.cursorStartPosition = start;
     return vimState;

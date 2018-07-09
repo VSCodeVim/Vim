@@ -42,11 +42,6 @@ export class RecordedState {
   public commandList: string[] = [];
 
   /**
-   * The number of keys the user has pressed that have been remapped.
-   */
-  public numberOfRemappedKeys: number = 0;
-
-  /**
    * String representation of the exact keys that the user entered. Used for
    * showcmd.
    */
@@ -63,32 +58,12 @@ export class RecordedState {
 
     return result;
   }
-  /**
-   * get the current command without the prefixed count.
-   * For instance: if the current commandList is ['2', 'h'], returns only ['h'].
-   */
-  public getCurrentCommandWithoutCountPrefix(): string[] {
-    const commandList = this.commandList;
-    const result: string[] = [];
-    let previousWasCount = true;
-
-    for (const commandKey of commandList) {
-      if (previousWasCount && commandKey.match(/[0-9]/)) {
-        continue;
-      } else {
-        previousWasCount = false;
-        result.push(commandKey);
-      }
-    }
-
-    return result;
-  }
 
   /**
-   * lenth of the current command with remappings and the prefixed count excluded.
+   * Determines if the current command list is prefixed with a count
    */
-  public get numberOfKeysInCommandWithoutCountPrefix() {
-    return this.getCurrentCommandWithoutCountPrefix().length - this.numberOfRemappedKeys;
+  public get commandWithoutCountPrefix() {
+    return this.commandList.join('').replace(/^[0-9]+/g, '');
   }
 
   /**
@@ -96,7 +71,6 @@ export class RecordedState {
    */
   public resetCommandList() {
     this.commandList = [];
-    this.numberOfRemappedKeys = 0;
   }
 
   /**

@@ -77,6 +77,24 @@ class CommandLine {
     }
   }
 
+  public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
+    if (!vscode.window.activeTextEditor) {
+      logger.debug('commandLine : No active document');
+      return;
+    }
+    let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
+    await this.Run(cmd!, vimState);
+  }
+
+  private getInputBoxOptions(text: string): vscode.InputBoxOptions {
+    return {
+      prompt: 'Vim command line',
+      value: text,
+      ignoreFocusOut: false,
+      valueSelection: [text.length, text.length],
+    };
+  }
+
   public async ShowHistory(initialText: string, vimState: VimState): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
       logger.debug('commandLine : No active document.');
