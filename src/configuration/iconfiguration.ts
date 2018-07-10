@@ -12,7 +12,7 @@ export interface IModeSpecificStrings<T> {
 export interface IKeyRemapping {
   before: string[];
   after?: string[];
-  commands?: { command: string; args: any[] }[];
+  commands?: ({ command: string; args: any[] } | string)[];
 }
 
 export interface IDebugConfiguration {
