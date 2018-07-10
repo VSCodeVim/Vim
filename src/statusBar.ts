@@ -3,13 +3,15 @@ import { ModeName } from './mode/mode';
 
 class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
-  private _prevModeName: ModeName | undefined;
+  private _prevModeNameForText: ModeName | undefined;
+  private _prevModeNameForColor: ModeName | undefined;
   private _isRecordingMacro: boolean;
   private _isErrorCurrentlyShown: boolean;
 
   constructor() {
     this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    this._prevModeName = undefined;
+    this._prevModeNameForText = undefined;
+    this._prevModeNameForColor = undefined;
     this._isRecordingMacro = false;
     this._isErrorCurrentlyShown = true;
   }
@@ -22,7 +24,9 @@ class StatusBarImpl implements vscode.Disposable {
     isError: boolean = false
   ) {
     let updateStatusBar =
-      this._prevModeName !== mode || this._isRecordingMacro !== isRecordingMacro || forceUpdate;
+      this._prevModeNameForText !== mode ||
+      this._isRecordingMacro !== isRecordingMacro ||
+      forceUpdate;
 
     updateStatusBar = updateStatusBar && !this._isErrorCurrentlyShown;
     if (isError) {
@@ -30,11 +34,11 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     // If an error is shown, don't update the status bar until mode is changed
-    if (this._prevModeName !== mode && mode !== ModeName.Normal) {
+    if (this._prevModeNameForText !== mode && mode !== ModeName.Normal) {
       this._isErrorCurrentlyShown = false;
     }
 
-    this._prevModeName = mode;
+    this._prevModeNameForText = mode;
     this._isRecordingMacro = isRecordingMacro;
 
     if (updateStatusBar) {
@@ -43,7 +47,13 @@ class StatusBarImpl implements vscode.Disposable {
     }
   }
 
-  public SetColor(background: string, foreground?: string) {
+  public SetColor(mode: ModeName, background: string, foreground?: string) {
+    if (this._prevModeNameForColor === mode) {
+      return;
+    }
+
+    this._prevModeNameForColor = mode;
+
     const currentColorCustomizations = vscode.workspace
       .getConfiguration('workbench')
       .get('colorCustomizations');
