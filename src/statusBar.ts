@@ -3,12 +3,14 @@ import { ModeName } from './mode/mode';
 
 class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
-  private _prevModeName: ModeName | undefined;
+  private _prevModeNameForText: ModeName | undefined;
+  private _prevModeNameForColor: ModeName | undefined;
   private _isRecordingMacro: boolean;
 
   constructor() {
     this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    this._prevModeName = undefined;
+    this._prevModeNameForText = undefined;
+    this._prevModeNameForColor = undefined;
     this._isRecordingMacro = false;
   }
 
@@ -19,9 +21,11 @@ class StatusBarImpl implements vscode.Disposable {
     forceUpdate: boolean = false
   ) {
     let updateStatusBar =
-      this._prevModeName !== mode || this._isRecordingMacro !== isRecordingMacro || forceUpdate;
+      this._prevModeNameForText !== mode ||
+      this._isRecordingMacro !== isRecordingMacro ||
+      forceUpdate;
 
-    this._prevModeName = mode;
+    this._prevModeNameForText = mode;
     this._isRecordingMacro = isRecordingMacro;
 
     if (updateStatusBar) {
@@ -30,7 +34,13 @@ class StatusBarImpl implements vscode.Disposable {
     }
   }
 
-  public SetColor(background: string, foreground?: string) {
+  public SetColor(mode: ModeName, background: string, foreground?: string) {
+    if (this._prevModeNameForColor === mode) {
+      return;
+    }
+
+    this._prevModeNameForColor = mode;
+
     const currentColorCustomizations = vscode.workspace
       .getConfiguration('workbench')
       .get('colorCustomizations');
