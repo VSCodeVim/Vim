@@ -68,6 +68,7 @@ class CommandLine {
             `${e.toString()}. ${command}`,
             vimState.currentMode,
             vimState.isRecordingMacro,
+            true,
             true
           );
         }

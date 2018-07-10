@@ -2,6 +2,7 @@
 
 import * as node from '../commands/substitute';
 import { Scanner } from '../scanner';
+import * as error from '../../error';
 
 function isValidDelimiter(char: string): boolean {
   return !!/^[^\w\s\\|"]{1}$/g.exec(char);
@@ -126,39 +127,43 @@ function parseCount(scanner: Scanner): number {
  * {string} can be a literal string, or something special; see |sub-replace-special|.
  */
 export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand {
-  let delimiter = args[0];
+  try {
+    let delimiter = args[0];
 
-  if (isValidDelimiter(delimiter)) {
-    let scanner = new Scanner(args.substr(1, args.length - 1));
-    let [searchPattern, searchDelimiter] = parsePattern('', scanner, delimiter);
+    if (isValidDelimiter(delimiter)) {
+      let scanner = new Scanner(args.substr(1, args.length - 1));
+      let [searchPattern, searchDelimiter] = parsePattern('', scanner, delimiter);
 
-    if (searchDelimiter) {
-      let replaceString = parsePattern('', scanner, delimiter)[0];
+      if (searchDelimiter) {
+        let replaceString = parsePattern('', scanner, delimiter)[0];
 
-      scanner.skipWhiteSpace();
-      let flags = parseSubstituteFlags(scanner);
-      scanner.skipWhiteSpace();
-      let count = parseCount(scanner);
-      return new node.SubstituteCommand({
-        pattern: searchPattern,
-        replace: replaceString,
-        flags: flags,
-        count: count,
-      });
-    } else {
-      return new node.SubstituteCommand({
-        pattern: searchPattern,
-        replace: '',
-        flags: node.SubstituteFlags.None,
-        count: 0,
-      });
+        scanner.skipWhiteSpace();
+        let flags = parseSubstituteFlags(scanner);
+        scanner.skipWhiteSpace();
+        let count = parseCount(scanner);
+        return new node.SubstituteCommand({
+          pattern: searchPattern,
+          replace: replaceString,
+          flags: flags,
+          count: count,
+        });
+      } else {
+        return new node.SubstituteCommand({
+          pattern: searchPattern,
+          replace: '',
+          flags: node.SubstituteFlags.None,
+          count: 0,
+        });
+      }
     }
-  }
 
-  // TODO(rebornix): Can this ever happen?
-  return new node.SubstituteCommand({
-    pattern: '',
-    replace: '',
-    flags: node.SubstituteFlags.None,
-  });
+    // TODO(rebornix): Can this ever happen?
+    return new node.SubstituteCommand({
+      pattern: '',
+      replace: '',
+      flags: node.SubstituteFlags.None,
+    });
+  } catch (e) {
+    throw error.VimError.fromCode(error.ErrorCode.E486);
+  }
 }
