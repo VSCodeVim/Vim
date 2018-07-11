@@ -347,6 +347,10 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       vimState.recordedState.surroundKeys.push(vimState.keyHistory[i]);
     }
 
+    // When deleting surroundings, handled == false. This workaround
+    // resets the command list anyway.
+    vimState.recordedState.resetCommandList();
+
     return false;
   }
 
