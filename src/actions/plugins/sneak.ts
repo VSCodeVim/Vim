@@ -102,9 +102,9 @@ class SneakBackward extends BaseMovement {
       if (ignorecase) {
         matchIndex = lineText
           .toLocaleLowerCase()
-          .indexOf(searchString.toLocaleLowerCase(), fromIndex);
+          .lastIndexOf(searchString.toLocaleLowerCase(), fromIndex);
       } else {
-        matchIndex = lineText.indexOf(searchString, fromIndex);
+        matchIndex = lineText.lastIndexOf(searchString, fromIndex);
       }
 
       if (matchIndex >= 0) {
