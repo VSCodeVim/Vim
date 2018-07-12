@@ -1761,6 +1761,9 @@ class CommandShowCommandLine extends BaseCommand {
       vimState.currentCommandlineText = "'<,'>";
     }
 
+    // Initialize the cursor position
+    vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
+
     // Store the current mode for use in retaining selection
     commandLine.previousMode = vimState.currentMode;
 
@@ -1777,7 +1780,7 @@ class CommandShowCommandLine extends BaseCommand {
 @RegisterAction
 class CommandInsertInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
+  keys = [['<character>'], ['<up>'], ['<down>'], ['<left>'], ['<right>'], ['<C-h>']];
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
@@ -1787,7 +1790,10 @@ class CommandInsertInCommandline extends BaseCommand {
 
     // handle special keys first
     if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
-      vimState.currentCommandlineText = vimState.currentCommandlineText.slice(0, -1);
+      vimState.currentCommandlineText =
+        vimState.currentCommandlineText.slice(0, vimState.statusBarCursorCharacterPos - 1) +
+        vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos);
+      vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else if (key === '\n') {
       await commandLine.Run(vimState.currentCommandlineText, vimState);
       vimState.currentMode = ModeName.Normal;
@@ -1802,6 +1808,7 @@ class CommandInsertInCommandline extends BaseCommand {
         vimState.currentCommandlineText =
           commandLine.historyEntries[commandLine.commandlineHistoryIndex];
       }
+      vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     } else if (key === '<down>') {
       commandLine.commandlineHistoryIndex += 1;
 
@@ -1821,8 +1828,20 @@ class CommandInsertInCommandline extends BaseCommand {
         vimState.currentCommandlineText =
           commandLine.historyEntries[commandLine.commandlineHistoryIndex];
       }
+
+      vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
+    } else if (key === '<right>') {
+      vimState.statusBarCursorCharacterPos = Math.min(
+        vimState.statusBarCursorCharacterPos + 1,
+        vimState.currentCommandlineText.length
+      );
+    } else if (key === '<left>') {
+      vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else {
-      vimState.currentCommandlineText += this.keysPressed[0];
+      vimState.statusBarCursorCharacterPos += 1;
+      let modifiedString = vimState.currentCommandlineText.split('');
+      modifiedString.splice(vimState.statusBarCursorCharacterPos - 1, 0, this.keysPressed[0]);
+      vimState.currentCommandlineText = modifiedString.join('');
     }
 
     return vimState;
