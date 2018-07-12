@@ -1,6 +1,6 @@
 # Change Log
 
-## [0.14.3](https://github.com/vscodevim/vim/tree/HEAD)
+## [0.15.0](https://github.com/vscodevim/vim/tree/HEAD)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.2...HEAD)
 
