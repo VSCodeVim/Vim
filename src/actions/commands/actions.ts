@@ -1821,6 +1821,7 @@ class CommandInsertInCommandline extends BaseCommand {
         }
 
         commandLine.commandlineHistoryIndex = commandLine.historyEntries.length;
+        vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
         return vimState;
       }
 
@@ -1838,10 +1839,10 @@ class CommandInsertInCommandline extends BaseCommand {
     } else if (key === '<left>') {
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
     } else {
-      vimState.statusBarCursorCharacterPos += 1;
       let modifiedString = vimState.currentCommandlineText.split('');
-      modifiedString.splice(vimState.statusBarCursorCharacterPos - 1, 0, this.keysPressed[0]);
+      modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, this.keysPressed[0]);
       vimState.currentCommandlineText = modifiedString.join('');
+      vimState.statusBarCursorCharacterPos += 1;
     }
 
     return vimState;
@@ -1874,7 +1875,12 @@ class CommandCtrlVInCommandline extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const textFromClipboard = Clipboard.Paste();
 
-    vimState.currentCommandlineText += textFromClipboard;
+    let modifiedString = vimState.currentCommandlineText.split('');
+    modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, textFromClipboard);
+    vimState.currentCommandlineText = modifiedString.join('');
+
+    vimState.statusBarCursorCharacterPos += textFromClipboard.length;
+
     return vimState;
   }
 }
@@ -1890,7 +1896,12 @@ class CommandCmdVInCommandline extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const textFromClipboard = Clipboard.Paste();
 
-    vimState.currentCommandlineText += textFromClipboard;
+    let modifiedString = vimState.currentCommandlineText.split('');
+    modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, textFromClipboard);
+    vimState.currentCommandlineText = modifiedString.join('');
+
+    vimState.statusBarCursorCharacterPos += textFromClipboard.length;
+
     return vimState;
   }
 }
