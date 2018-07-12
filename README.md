@@ -567,6 +567,8 @@ Command | Description
 
 Based on [vim-sneak](https://github.com/justinmk/vim-sneak). To activate sneak, you need to make sure that `sneak` is set to `true` in settings.json (default is `false`).
 
+```"vim.sneakUseIgnorecaseAndSmartcase": true``` can be set if desired to allow for respecting `vim.ignorecase` and `vim.smartcase` while sneaking (default is `false`)
+
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
 Motion Command | Description

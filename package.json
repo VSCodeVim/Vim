@@ -496,6 +496,11 @@
           "description": "Enable the Sneak plugin for Vim.",
           "default": false
         },
+        "vim.sneakUseIgnorecaseAndSmartcase": {
+          "type": "boolean",
+          "description": "Case sensitivity is determined by 'ignorecase' and 'smartcase'",
+          "default": false
+        },
         "vim.surround": {
           "type": "boolean",
           "description": "Enable the Surround plugin for Vim.",

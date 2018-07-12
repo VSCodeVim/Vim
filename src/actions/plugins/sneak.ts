@@ -38,7 +38,20 @@ class SneakForward extends BaseMovement {
       // Start searching after the current character so we don't find the same match twice
       const fromIndex = i === position.line ? position.character + 1 : 0;
 
-      const matchIndex = lineText.indexOf(searchString, fromIndex);
+      let matchIndex = -1;
+
+      const ignorecase =
+        configuration.sneakUseIgnorecaseAndSmartcase &&
+        (configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString)));
+
+      // Check for matches
+      if (ignorecase) {
+        matchIndex = lineText
+          .toLocaleLowerCase()
+          .indexOf(searchString.toLocaleLowerCase(), fromIndex);
+      } else {
+        matchIndex = lineText.indexOf(searchString, fromIndex);
+      }
 
       if (matchIndex >= 0) {
         return new Position(i, matchIndex);
@@ -79,7 +92,20 @@ class SneakBackward extends BaseMovement {
       // Start searching before the current character so we don't find the same match twice
       const fromIndex = i === position.line ? position.character - 1 : +Infinity;
 
-      const matchIndex = lineText.lastIndexOf(searchString, fromIndex);
+      let matchIndex = -1;
+
+      const ignorecase =
+        configuration.sneakUseIgnorecaseAndSmartcase &&
+        (configuration.ignorecase && !(configuration.smartcase && /[A-Z]/.test(searchString)));
+
+      // Check for matches
+      if (ignorecase) {
+        matchIndex = lineText
+          .toLocaleLowerCase()
+          .indexOf(searchString.toLocaleLowerCase(), fromIndex);
+      } else {
+        matchIndex = lineText.indexOf(searchString, fromIndex);
+      }
 
       if (matchIndex >= 0) {
         return new Position(i, matchIndex);

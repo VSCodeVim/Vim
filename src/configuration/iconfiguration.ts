@@ -76,6 +76,11 @@ export interface IConfiguration {
   sneak: boolean;
 
   /**
+   * Case sensitivity is determined by 'ignorecase' and 'smartcase'
+   */
+  sneakUseIgnorecaseAndSmartcase: boolean;
+
+  /**
    * Use surround plugin?
    */
   surround: boolean;
