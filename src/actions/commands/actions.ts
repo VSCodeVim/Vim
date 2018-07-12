@@ -1790,6 +1790,10 @@ class CommandInsertInCommandline extends BaseCommand {
 
     // handle special keys first
     if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
+      if (vimState.statusBarCursorCharacterPos === 0) {
+        return vimState;
+      }
+
       vimState.currentCommandlineText =
         vimState.currentCommandlineText.slice(0, vimState.statusBarCursorCharacterPos - 1) +
         vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos);
