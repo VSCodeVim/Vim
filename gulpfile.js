@@ -6,11 +6,19 @@ var gulp = require('gulp'),
   tslint = require('gulp-tslint'),
   ts = require('gulp-typescript'),
   PluginError = require('plugin-error'),
-  minimist = require('minimist');
+  minimist = require('minimist'),
+  path = require('path');
+
+const exec = require('child_process').exec;
+const spawn = require('child_process').spawn;
+
+const releaseOptions = {
+  semver: '',
+  githubToken: '',
+};
 
 // prettier
 function runPrettier(command, done) {
-  var exec = require('child_process').exec;
   exec(command, function (err, stdout) {
     if (err) {
       return done(new PluginError('runPrettier', { message: err }));
@@ -31,7 +39,7 @@ function runPrettier(command, done) {
       return done();
     }
 
-    const prettierPath = require('path').normalize('./node_modules/.bin/prettier');
+    const prettierPath = path.normalize('./node_modules/.bin/prettier');
     exec(
       `${prettierPath} --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
       function (err) {
@@ -44,14 +52,16 @@ function runPrettier(command, done) {
   });
 }
 
-function generateChangelog(done) {
+function createChangelog(done) {
   const imageName = 'jpoon/github-changelog-generator';
-  const spawn = require('child_process').spawn;
+  const version = require('./package.json').version;
 
-  if (!process.env.TOKEN) {
+  var options = minimist(process.argv.slice(2), releaseOptions);
+
+  if (!options.githubToken) {
     return done(
-      new PluginError('runPrettier', {
-        message: 'Missing GitHub Token. Please set TOKEN environment variable.',
+      new PluginError('createChangelog', {
+        message: 'Missing `--githubToken` option. Please supply GitHub API Token.',
       })
     );
   }
@@ -59,13 +69,20 @@ function generateChangelog(done) {
   var dockerRunCmd = spawn(
     'docker',
     [
-      'run -it --rm -v',
+      'run',
+      '-it',
+      '--rm',
+      '-v',
       process.cwd() + ':/usr/local/src/your-app',
       imageName,
-      '--user vscodevim',
-      '--project vim',
+      '--user',
+      'vscodevim',
+      '--project',
+      'vim',
       '--token',
-      process.env.TOKEN,
+      options.githubToken,
+      '--future-release',
+      'v' + version
     ],
     {
       cwd: process.cwd(),
@@ -88,16 +105,12 @@ function createGitCommit() {
     .pipe(git.commit('bump version'));
 }
 
-function bumpPackageVersion(done) {
-  var expectedOptions = {
-    semver: '',
-  };
-
-  var options = minimist(process.argv.slice(2), expectedOptions);
+function updateVersion(done) {
+  var options = minimist(process.argv.slice(2), releaseOptions);
 
   if (!options.semver) {
     return done(
-      new PluginError('bumpPackageVersion', {
+      new PluginError('updateVersion', {
         message: 'Missing `--semver` option. Possible values: patch, minor, major',
       })
     );
@@ -107,7 +120,7 @@ function bumpPackageVersion(done) {
     .src(['./package.json', './package-lock.json'])
     .pipe(bump({ type: options.semver }))
     .pipe(gulp.dest('./'))
-    .on('end', function () {
+    .on('end', () => {
       done();
     });
 }
@@ -192,8 +205,5 @@ gulp.task('test', function (done) {
 });
 
 gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint')));
-gulp.task(
-  'release',
-  gulp.series(bumpPackageVersion, generateChangelog, createGitTag, createGitCommit)
-);
+gulp.task('release', gulp.series(updateVersion, createChangelog, createGitTag, createGitCommit));
 gulp.task('default', gulp.series('build', 'test'));
