@@ -1,0 +1,8 @@
+unreleased=false
+max-issues=1500
+bugs-label=**Fixed Bugs:**
+bug-labels=kind/bug
+enhancement-label=**Enhancements:**
+enhancement-labels=kind/enhancement,kind/feature
+exclude-labels=status/by-design,status/duplicate,kind/question,kind/discussion
+since-tag=v0.13.0
