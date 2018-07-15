@@ -19,7 +19,7 @@ const releaseOptions = {
 
 // prettier
 function runPrettier(command, done) {
-  exec(command, function (err, stdout) {
+  exec(command, function(err, stdout) {
     if (err) {
       return done(new PluginError('runPrettier', { message: err }));
     }
@@ -42,7 +42,7 @@ function runPrettier(command, done) {
     const prettierPath = path.normalize('./node_modules/.bin/prettier');
     exec(
       `${prettierPath} --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
-      function (err) {
+      function(err) {
         if (err) {
           return done(new PluginError('runPrettier', { message: err }));
         }
@@ -82,7 +82,7 @@ function createChangelog(done) {
       '--token',
       options.githubToken,
       '--future-release',
-      'v' + version
+      'v' + version,
     ],
     {
       cwd: process.cwd(),
@@ -90,7 +90,7 @@ function createChangelog(done) {
     }
   );
 
-  dockerRunCmd.on('exit', function (exitCode) {
+  dockerRunCmd.on('exit', function(exitCode) {
     done(exitCode);
   });
 }
@@ -125,7 +125,7 @@ function updateVersion(done) {
     });
 }
 
-gulp.task('tsc', function () {
+gulp.task('tsc', function() {
   var isError = false;
 
   var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
@@ -145,7 +145,7 @@ gulp.task('tsc', function () {
     .pipe(gulp.dest('out'));
 });
 
-gulp.task('tslint', function () {
+gulp.task('tslint', function() {
   const program = require('tslint').Linter.createProgram('./tsconfig.json');
   return gulp
     .src(['**/*.ts', '!node_modules/**', '!typings/**'])
@@ -158,18 +158,18 @@ gulp.task('tslint', function () {
     .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
-gulp.task('prettier', function (done) {
+gulp.task('prettier', function(done) {
   // files changed
   runPrettier('git diff --name-only HEAD', done);
 });
 
-gulp.task('forceprettier', function (done) {
+gulp.task('forceprettier', function(done) {
   // files managed by git
   runPrettier('git ls-files', done);
 });
 
 // test
-gulp.task('test', function (done) {
+gulp.task('test', function(done) {
   var spawn = require('child_process').spawn;
   const dockerTag = 'vscodevim';
 
@@ -183,7 +183,7 @@ gulp.task('test', function (done) {
     }
   );
 
-  dockerBuildCmd.on('exit', function (exitCode) {
+  dockerBuildCmd.on('exit', function(exitCode) {
     if (exitCode !== 0) {
       return done(
         new PluginError('test', {
@@ -198,7 +198,7 @@ gulp.task('test', function (done) {
       stdio: 'inherit',
     });
 
-    dockerRunCmd.on('exit', function (exitCode) {
+    dockerRunCmd.on('exit', function(exitCode) {
       done(exitCode);
     });
   });
