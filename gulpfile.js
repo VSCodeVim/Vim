@@ -1,6 +1,5 @@
 var gulp = require('gulp'),
   bump = require('gulp-bump'),
-  filter = require('gulp-filter'),
   git = require('gulp-git'),
   sourcemaps = require('gulp-sourcemaps'),
   tag_version = require('gulp-tag-version'),
