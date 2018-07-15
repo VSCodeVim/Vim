@@ -589,7 +589,7 @@
   },
   "scripts": {
     "vscode:prepublish": "gulp compile",
-    "build": "gulp",
+    "build": "gulp build",
     "test": "node ./node_modules/vscode/bin/test",
     "forceprettier": "gulp forceprettier",
     "postinstall": "node ./node_modules/vscode/bin/install"
