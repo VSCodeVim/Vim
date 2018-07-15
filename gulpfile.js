@@ -205,5 +205,5 @@ gulp.task('test', function (done) {
 });
 
 gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint')));
-gulp.task('release', gulp.series(updateVersion, createChangelog, createGitTag, createGitCommit));
+gulp.task('release', gulp.series(updateVersion, createChangelog, createGitCommit, createGitTag));
 gulp.task('default', gulp.series('build', 'test'));
