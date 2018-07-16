@@ -1,8 +1,6 @@
-import { exec } from 'child_process';
-import { ModeName, Mode } from '../../mode/mode';
-import { existsSync, exists } from 'fs';
+import { ModeName } from '../../mode/mode';
+import { existsSync } from 'fs';
 import { configuration } from '../../configuration/configuration';
-import * as vscode from 'vscode';
 import * as util from '../../util/util';
 import { Message } from '../../util/message';
 
