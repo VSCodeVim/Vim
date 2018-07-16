@@ -582,13 +582,15 @@ Motion Command | Description
 ### Input Method
 (Support macOS and windows for now, linux will come soon)
 
-#### Use our recommended program
+There are two ways you can configure input method, using [`im-select`](https://github.com/daipeihust/im-select), or your own program.
 
-##### 1.Install im-select
+#### Use im-select
+
+1. Install im-select
 
 Follow the [Installation Guide](https://github.com/daipeihust/im-select#installation) to install im-select according to your platform.
 
-##### 2.Find your default input method key
+2. Find your default input method key
 
 For macOS:
 
@@ -614,7 +616,7 @@ For windows:
 
 For most people, their default input method key is 1033, the locale ID of en_US. But if your default keyboard layout is not en_US, you can use im-select.exe to find out, the guide is [here](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale). You can also find your locale ID in [this page](https://www.science.co.il/language/Locale-codes.php), the `LCID Decimal` column is the locale ID.
 
-##### 3.Add configuration to your VScode setting
+3. Add configuration to your VScode setting
 
 ```json
 "vim.autoSwitchInputMethod.enable": true,
