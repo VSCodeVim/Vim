@@ -4,52 +4,50 @@
 [![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
 [![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
 
-VSCodeVim is a [Visual Studio Code](https://code.visualstudio.com/) extension that enables:
+VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
 
-* Keybindings and command combinations (`c3w`, `daw`, `2dd`, etc)
-* Modes: normal, insert, command-line, visual, visual line, visual block
-* Command remapping (`jj` to `<Esc>`, `:` to command panel, etc.)
-* Incremental search with `/` and `?`
-* Marks
-* Popular vim plugin features built-in (easymotion, surround, commentary)
-* Multi-cursor support, run vim commands everywhere!
-* Refer to our [roadmap](ROADMAP.md) for a full list
+* 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
+* 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
+* ❓ If you need to ask any questions, join us on [Slack](https://vscodevim-slackin.azurewebsites.net)
+* :octocat: Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
 
-Please report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues) and join us on [Slack](https://vscodevim-slackin.azurewebsites.net).
+<details>
+ <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
-## Contents
-
-* [Getting Started](#getting-started)
+* [Installation](#-Installation)
+    * [Vim Compatibility](#vim-compatibility)
     * [Mac setup](#mac-setup)
     * [Windows setup](#windows-setup)
     * [Linux setup](#linux-setup)
-* [Settings](#settings)
+* [Settings](#-settings)
     * [VSCodeVim settings](#vscodevim-settings)
     * [Neovim Integration](#neovim-integration)
     * [Key remapping](#key-remapping)
     * [Vim settings](#vim-settings)
-    * [Status bar colors (vim-airline)](#status-bar-color-settings)
-* [Multi-cursor mode](#multi-cursor-mode)
+* [Multi-Cursor mode](#-multi-cursor-mode)
 * [Emulated plugins](#emulated-plugins)
+    * [vim-airline](#vim-airline)
     * [vim-easymotion](#vim-easymotion)
     * [vim-surround](#vim-surround)
     * [vim-commentary](#vim-commentary)
     * [vim-indent-object](#vim-indent-object)
     * [vim-sneak](#vim-sneak)
     * [Input Method](#input-method)
-* [VSCodeVim tricks](#vscodevim-tricks)
-* [F.A.Q / Troubleshooting](#faq)
-* [Contributing](#contributing)
+* [VSCodeVim tricks](#-vscodevim-tricks)
+* [F.A.Q / Troubleshooting](#-faq)
+* [Contributing](#️-contributing)
 
-## Getting started
+</details>
+
+## 💾 Installation
 
 VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and the reloading of VSCode.
 
-### Vim compatibility
+### Vim Compatibility
 
-All common Vim commands are supported. For a detailed list of supported features, refer to our [roadmap](ROADMAP.md). Vimscript is *not* supported, so you aren't able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
+Vimscript is *not* supported, so we are *not* able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
 
-### Mac setup
+### Mac Setup
 
 If key repeating isn't working for you, execute this in your Terminal, then restart VS Code.
 
@@ -62,11 +60,11 @@ defaults delete -g ApplePressAndHoldEnabled                                     
 
 We also recommend going into *System Preferences -> Keyboard* and increasing the Key Repeat and Delay Until Repeat settings to improve your speed.
 
-### Windows setup
+### Windows Setup
 
 VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
 
-### Linux setup
+### Linux Setup
 
 If you have configured `vim.useSystemClipboard: "true"`, we rely on [clipboardy](https://github.com/sindresorhus/clipboardy) for cross-platform copy/paste operations. This library is dependent on `xsel`:
 
@@ -74,11 +72,11 @@ If you have configured `vim.useSystemClipboard: "true"`, we rely on [clipboardy]
 apt install xsel
 ```
 
-## Settings
+## ⚙️ Settings
 
 ### Quick Example
 
-Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension.
+Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension:
 
 ```json
 {
@@ -102,9 +100,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
         {
             "before":["<C-n>"],
             "commands": [
-                {
-                    "command": ":nohl"
-                }
+                ":nohl"
             ]
         }
     ],
@@ -168,11 +164,10 @@ These settings are specific to VSCodeVim.
 
 * Delegate certain keybindings to be handled natively by VSCode instead of by the VSCodeVim extension
 * Complete list of key combinations supported by this setting can be found under the `keybindings` section of our [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json). Each key that has a `vim.use<C-...>` in the when argument can be delegated back to vscode by setting `"<C-...>": false`.
-* Example: user wants to use `ctrl+f` for find (native VSCode behaviour), but wants to have [`useCtrlKeys`](#vimusectrlkeys) set to true so that other vim bindings work:
+* Example: you want to use `ctrl+f` for find (native VSCode behaviour), but also wants to have [`useCtrlKeys`](#vimusectrlkeys) set to true so that other vim bindings work:
 
 ```json
     "vim.handleKeys": {
-        "<C-a>": false,
         "<C-f>": false
     }
 ```
@@ -212,10 +207,10 @@ These settings are specific to VSCodeVim.
 
 > :warning: Experimental feature. Please leave feedback on neovim integration [here](https://github.com/VSCodeVim/Vim/issues/1735).
 
-We now have neovim integration for Ex-commands. To enable,
+You can leverage neovim for Ex-commands. To enable:
 
-1. install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
-2. add the following configurations:
+1. Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
+2. Add the following configurations:
 
 ```json
 "vim.enableNeovim": true
@@ -228,9 +223,9 @@ Here's some ideas on what you can do with neovim integration:
 * [The :normal command](https://vi.stackexchange.com/questions/4418/execute-normal-command-over-range)
 * Faster search and replace!
 
-### Key remapping
+### Key Remapping
 
-There's several different mechanisms you can use to define custom remappings. Also see the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
+Custom remappings are defined on a per-mode basis.
 
 #### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`
 
@@ -249,16 +244,33 @@ There's several different mechanisms you can use to define custom remappings. Al
 * Bind `:` to show the command palette:
 
 ```json
-"vim.normalModeKeyBindingsNonRecursive": [
-    {
-        "before": [":"],
-        "commands": [
-            {
-                "command": "workbench.action.showCommands",
-            }
-        ]
-    }
-]
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": [":"],
+            "commands": [
+                "workbench.action.showCommands",
+            ]
+        }
+    ]
+```
+
+* Bind `<leader>m` to add a bookmark and `<leader>b` to open the list of all bookmarks (using the [Bookmarks](https://github.com/alefragnani/vscode-bookmarks) extension):
+
+```json
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": ["<leader>", "m"],
+            "commands": [
+                "bookmarks.toggle"
+            ]
+        },
+        {
+            "before": ["<leader>", "b"],
+            "commands": [
+                "bookmarks.list"
+            ]
+        }
+    ]
 ```
 
 * Bind `ZZ` to the vim command `:wq` (save and close the current file):
@@ -268,9 +280,7 @@ There's several different mechanisms you can use to define custom remappings. Al
         {
             "before": ["Z", "Z"],
             "commands": [
-                {
-                    "command": ":wq"
-                },
+                ":wq"
             ]
         }
     ]
@@ -283,17 +293,13 @@ There's several different mechanisms you can use to define custom remappings. Al
         {
             "before":["<C-n>"],
             "commands": [
-                {
-                    "command": ":nohl",
-                }
+                ":nohl",
             ]
         },
         {
             "before": ["leader", "w"],
             "commands": [
-                {
-                    "command": "workbench.action.files.save",
-                }
+                "workbench.action.files.save",
             ]
         }
     ]
@@ -319,7 +325,6 @@ There's several different mechanisms you can use to define custom remappings. Al
 
 * Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
 
-
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
         {
@@ -327,9 +332,7 @@ There's several different mechanisms you can use to define custom remappings. Al
                 ">"
             ],
             "commands": [
-                {
-                    "command": "editor.action.indentLines"
-                }
+                "editor.action.indentLines"
             ]
         },
         {
@@ -337,14 +340,29 @@ There's several different mechanisms you can use to define custom remappings. Al
                 "<"
             ],
             "commands": [
-                {
-                    "command": "editor.action.outdentLines"
-                }
+                "editor.action.outdentLines"
             ]
         },
     ]
 ```
 
+* Bind `<leader>vim` to clone this repository to the selected location.
+
+```json
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                "<leader>", "v", "i", "m"
+            ],
+            "commands": [
+                {
+                    "command": "git.clone",
+                    "args": [ "https://github.com/VSCodeVim/Vim.git" ]
+                }
+            ]
+        }
+    ]
+```
 
 #### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`
 
@@ -358,31 +376,6 @@ There's several different mechanisms you can use to define custom remappings. Al
             "after": ["g", "j"]
         }
     ]
-```
-
-### Status bar color settings
-
-Almost like vim-airline in VSCode!
-
-#### `"vim.statusBarColorControl"`
-
-> :warning: Experimental feature. Due to VSCode API limitations, this function modifies settings.json in the workspace resulting in latency and a constant changing diff in your working directory (see [issue#2124](https://github.com/VSCodeVim/Vim/issues/2124)).
-
-* Control status bar color based on current mode
-* Type: Boolean (Default: `false`)
-
-Once enabled, configure `"vim.statusBarColors"`. Colors can be defined for each mode either as `string` (background only), or `string[]` (background, foreground).
-
-```json
-    "vim.statusBarColorControl": true,
-    "vim.statusBarColors": {
-        "normal": ["#8FBCBB", "#434C5E"],
-        "insert": "#BF616A",
-        "visual": "#B48EAD",
-        "visualline": "#B48EAD",
-        "visualblock": "#A3BE8C",
-        "replace": "#D08770"
-    }
 ```
 
 ### Vim settings
@@ -444,26 +437,40 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 * What key should `<leader>` map to in key remappings?
 * Type: string (Default: `\`)
 
-## Multi-Cursor mode
+## 🖱️ Multi-Cursor Mode
 
 > :warning: Multi-Cursor mode is experimental. Please report issues in our [feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)
 
-### Entering into multi-cursor mode
-
 Enter multi-cursor mode by:
 
-* Pressing `cmd-d` on OSX.
+* On OSX, `cmd-d`. On Windows, `ctrl-d`.
+* `gb`, a new shortcut we added which is equivalent to `cmd-d` (OSX) or `ctrl-d` (Windows). It adds another cursor at the next word that matches the word the cursor is currently on.
 * Running "Add Cursor Above/Below" or the shortcut on any platform.
-* Pressing `gb`, a new shortcut we added which is equivalent to `cmd-d` on OSX or `ctrl-d` on Windows. (It adds another cursor at the next word that matches the word the cursor is currently on.)
 
-### Doing stuff
-
-Now that you have multiple cursors, you should be able to use Vim commands as you see fit. Most should work; some are unsupported (ref [PR#587](https://github.com/VSCodeVim/Vim/pull/587)).
+Once you have multiple cursors, you should be able to use Vim commands as you see fit. Most should work; some are unsupported (ref [PR#587](https://github.com/VSCodeVim/Vim/pull/587)).
 
 * Each cursor has its own clipboard.
 * Pressing Escape in Multi-Cursor Visual Mode will bring you to Multi-Cursor Normal mode. Pressing it again will return you to Normal mode.
 
-## Emulated plugins
+## 🔌 Emulated Plugins
+
+### vim-airline
+
+> :warning: Experimental feature. Due to VSCode API limitations, this function modifies settings.json in the workspace resulting in latency and a constant changing diff in your working directory (see [issue#2124](https://github.com/VSCodeVim/Vim/issues/2124)).
+
+Change the color of the status bar based on the current mode. Once enabled, configure `"vim.statusBarColors"`. Colors can be defined for each mode either as `string` (background only), or `string[]` (background, foreground).
+
+```json
+    "vim.statusBarColorControl": true,
+    "vim.statusBarColors": {
+        "normal": ["#8FBCBB", "#434C5E"],
+        "insert": "#BF616A",
+        "visual": "#B48EAD",
+        "visualline": "#B48EAD",
+        "visualblock": "#A3BE8C",
+        "replace": "#D08770"
+    }
+```
 
 ### vim-easymotion
 
@@ -561,6 +568,8 @@ Command | Description
 
 Based on [vim-sneak](https://github.com/justinmk/vim-sneak). To activate sneak, you need to make sure that `sneak` is set to `true` in settings.json (default is `false`).
 
+```"vim.sneakUseIgnorecaseAndSmartcase": true``` can be set if desired to allow for respecting `vim.ignorecase` and `vim.smartcase` while sneaking (default is `false`)
+
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
 Motion Command | Description
@@ -655,7 +664,7 @@ Note: If your program need options to switch IM or get IM, you should add the op
 
 For example, your program's usage is `program -s imKey` to switch input method, your `switchIMCmd` config should be "program -s {im}"
 
-## VSCodeVim tricks!
+## 🎩 VSCodeVim tricks!
 
 Vim has a lot of nifty tricks and we try to preserve some of them:
 
@@ -665,7 +674,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 * `af` - visual mode command which selects increasingly large blocks of text. For example, if you had "blah (foo [bar 'ba|z'])" then it would select 'baz' first. If you pressed `af` again, it'd then select [bar 'baz'], and if you did it a third time it would select "(foo [bar 'baz'])".
 * `gh` - equivalent to hovering your mouse over wherever the cursor is. Handy for seeing types and error messages without reaching for the mouse!
 
-## F.A.Q.
+## 📚 F.A.Q.
 
 ### None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
@@ -683,7 +692,26 @@ Are you on a Mac? Did you go through our [mac-setup](#mac-setup) instructions?
 
 Press `shift+<esc>` to close all of those boxes.
 
-## Contributing
+### How can I use the commandline when in Zen mode or when the status bar is disabled?
+
+This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in visual studio keybindings.json settings file.
+```
+{
+    "key": "shift+;",
+    "command": "vim.showQuickpickCmdLine",
+    "when": "editorTextFocus && vim.mode != 'Insert'"
+}
+```
+Or for Zen mode only:
+```
+{
+    "key": "shift+;",
+    "command": "vim.showQuickpickCmdLine",
+    "when": "inZenMode && vim.mode != 'Insert'"
+}
+```
+
+## ❤️ Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
 

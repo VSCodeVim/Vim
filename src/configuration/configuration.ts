@@ -197,6 +197,7 @@ class Configuration implements IConfiguration {
   autoindent = true;
 
   sneak = false;
+  sneakUseIgnorecaseAndSmartcase = false;
 
   surround = true;
 

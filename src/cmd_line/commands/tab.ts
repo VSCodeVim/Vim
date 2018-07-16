@@ -46,15 +46,14 @@ export class TabCommand extends node.CommandBase {
   async execute(): Promise<void> {
     switch (this._arguments.tab) {
       case Tab.Next:
-        if (this._arguments.count /** not undefined or 0 */) {
-          await vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
-          await this.executeCommandWithCount(
-            this._arguments.count! - 1,
-            'workbench.action.nextEditorInGroup'
-          );
-        } else {
-          await vscode.commands.executeCommand('workbench.action.nextEditorInGroup');
+        if (this._arguments.count !== undefined && this._arguments.count <= 0) {
+          break;
         }
+
+        await this.executeCommandWithCount(
+          this._arguments.count || 1,
+          'workbench.action.nextEditorInGroup'
+        );
         break;
       case Tab.Previous:
         if (this._arguments.count !== undefined && this._arguments.count <= 0) {

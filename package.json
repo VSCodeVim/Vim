@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -44,6 +44,10 @@
       {
         "command": "toggleVim",
         "title": "Vim: Toggle Vim Mode"
+      },
+      {
+        "command": "vim.showQuickpickCmdLine",
+        "title": "Vim: Show Command Line"
       }
     ],
     "keybindings": [
@@ -492,6 +496,11 @@
           "description": "Enable the Sneak plugin for Vim.",
           "default": false
         },
+        "vim.sneakUseIgnorecaseAndSmartcase": {
+          "type": "boolean",
+          "description": "Case sensitivity is determined by 'ignorecase' and 'smartcase'",
+          "default": false
+        },
         "vim.surround": {
           "type": "boolean",
           "description": "Enable the Surround plugin for Vim.",
@@ -620,9 +629,9 @@
     "@types/copy-paste": "1.1.30",
     "@types/diff": "3.5.1",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.110",
-    "@types/mocha": "5.2.3",
-    "@types/node": "9.6.22",
+    "@types/lodash": "4.14.112",
+    "@types/mocha": "5.2.4",
+    "@types/node": "9.6.23",
     "gulp": "3.9.1",
     "gulp-bump": "3.1.1",
     "gulp-filter": "5.1.0",

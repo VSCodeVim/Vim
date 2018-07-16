@@ -172,6 +172,27 @@ suite('Mode Insert', () => {
     end: ['foo|bar'],
   });
 
+  newTest({
+    title: 'Can handle <C-u>',
+    start: ['text |text'],
+    keysPressed: 'i<C-u>',
+    end: ['|text'],
+  });
+
+  newTest({
+    title: 'Can handle <C-u> on leading characters',
+    start: ['{', '  foo: |true', '}'],
+    keysPressed: 'i<C-u>',
+    end: ['{', '  |true', '}'],
+  });
+
+  newTest({
+    title: 'Can handle <C-u> on leading whitespace',
+    start: ['{', '  |true', '}'],
+    keysPressed: 'i<C-u>',
+    end: ['{', '|true', '}'],
+  });
+
   test('Correctly places the cursor after deleting the previous line break', async () => {
     await modeHandler.handleMultipleKeyEvents([
       'i',

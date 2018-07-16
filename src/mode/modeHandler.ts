@@ -305,7 +305,6 @@ export class ModeHandler implements vscode.Disposable {
 
     try {
       // Take the count prefix out to perform the correct remapping.
-      const keys = this.vimState.recordedState.getCurrentCommandWithoutCountPrefix();
       const withinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
 
       let handled = false;
@@ -316,8 +315,15 @@ export class ModeHandler implements vscode.Disposable {
        * 1) We are not already performing a nonrecursive remapping.
        * 2) We haven't timed out of our previous remapping.
        */
-      if (!this.vimState.isCurrentlyPerformingRemapping && (withinTimeout || keys.length === 1)) {
-        handled = await this._remappers.sendKey(keys, this, this.vimState);
+      if (
+        !this.vimState.isCurrentlyPerformingRemapping &&
+        (withinTimeout || this.vimState.recordedState.commandList.length === 1)
+      ) {
+        handled = await this._remappers.sendKey(
+          this.vimState.recordedState.commandList,
+          this,
+          this.vimState
+        );
       }
 
       if (handled) {
@@ -643,7 +649,7 @@ export class ModeHandler implements vscode.Disposable {
 
     vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
 
-    if (this.currentMode.isVisualMode) {
+    if (this.currentMode.isVisualMode && !this.vimState.isRunningDotCommand) {
       // Store selection for commands like gv
       this.vimState.lastVisualMode = this.vimState.currentMode;
       this.vimState.lastVisualSelectionStart = this.vimState.cursorStartPosition;
@@ -1106,6 +1112,16 @@ export class ModeHandler implements vscode.Disposable {
     const surroundKeys = recordedState.surroundKeys;
 
     vimState.isRunningDotCommand = true;
+
+    // If a previous visual selection exists, store it for use in replay of some
+    // commands
+    if (vimState.lastVisualSelectionStart && vimState.lastVisualSelectionEnd) {
+      vimState.dotCommandPreviousVisualSelection = new vscode.Selection(
+        vimState.lastVisualSelectionStart,
+        vimState.lastVisualSelectionEnd
+      );
+    }
+
     recordedState = new RecordedState();
     vimState.recordedState = recordedState;
 
@@ -1401,7 +1417,7 @@ export class ModeHandler implements vscode.Disposable {
           [background, foreground] = colorToSet;
         }
 
-        StatusBar.SetColor(background, foreground);
+        StatusBar.SetColor(this.vimState.currentMode, background, foreground);
       }
     }
 
@@ -1425,6 +1441,7 @@ export class ModeHandler implements vscode.Disposable {
 
     let forceUpdate =
       this.currentMode.name === ModeName.SearchInProgressMode ||
+      this.currentMode.name === ModeName.CommandlineInProgress ||
       this.vimState.isRecordingMacro ||
       configuration.showcmd;
 
