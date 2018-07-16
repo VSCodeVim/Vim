@@ -95,12 +95,7 @@ export class InputMethodSwitcher {
   }
 
   private getRawCmd(cmd: string): string {
-    const cmds = cmd.split(' ');
-    let rawCmd = '';
-    if (cmds.length > 0) {
-      rawCmd = cmds[0];
-    }
-    return rawCmd;
+    return cmd.split(' ')[0];
   }
 
   private showCmdNotFoundErrorMessage(cmd: string, config: string) {
