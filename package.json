@@ -601,7 +601,7 @@
     "neovim-client": "2.1.0",
     "promised-neovim-client": "2.0.2",
     "untildify": "3.0.3",
-    "winston": "^3.0.0-rc6",
+    "winston": "3.0.0",
     "winston-console-for-electron": "0.0.3"
   },
   "devDependencies": {
