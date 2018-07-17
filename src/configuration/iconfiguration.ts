@@ -12,7 +12,7 @@ export interface IModeSpecificStrings<T> {
 export interface IKeyRemapping {
   before: string[];
   after?: string[];
-  commands?: { command: string; args: any[] }[];
+  commands?: ({ command: string; args: any[] } | string)[];
 }
 
 export interface IDebugConfiguration {
@@ -74,6 +74,11 @@ export interface IConfiguration {
    * Use sneak plugin?
    */
   sneak: boolean;
+
+  /**
+   * Case sensitivity is determined by 'ignorecase' and 'smartcase'
+   */
+  sneakUseIgnorecaseAndSmartcase: boolean;
 
   /**
    * Use surround plugin?

@@ -1417,7 +1417,7 @@ export class ModeHandler implements vscode.Disposable {
           [background, foreground] = colorToSet;
         }
 
-        StatusBar.SetColor(background, foreground);
+        StatusBar.SetColor(this.vimState.currentMode, background, foreground);
       }
     }
 
@@ -1441,6 +1441,7 @@ export class ModeHandler implements vscode.Disposable {
 
     let forceUpdate =
       this.currentMode.name === ModeName.SearchInProgressMode ||
+      this.currentMode.name === ModeName.CommandlineInProgress ||
       this.vimState.isRecordingMacro ||
       configuration.showcmd;
 

@@ -45,7 +45,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     # Or run tests by selecting the appropriate drop down option
 
     # Alternatively, build and run tests through gulp and npm scripts
-    npm run build         # build
+    gulp build            # build
     npm test              # test
     gulp test             # run tests inside Docker container
     ```
@@ -89,14 +89,17 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 
 To push a release:
 
-1. Update changelog and commit changes.
+```
+gulp release --semver [SEMVER] --githubToken [TOKEN]
+git push --follow-tags
+```
 
-    1. We use `github-change-log-generator`. The instructions to install are [here](https://github.com/skywinder/github-changelog-generator#installation).
-    1. `github_changelog_generator vscodevim/vim --token=[TOKEN] --simple-list --no-issues --unreleased-label [LABEL]`
-    1. `git commit -am 'update changelog'`
+The above Gulp command will:
 
-1. Bump the version number and create a git tag: `gulp patch|minor|major`
-1. Push the changes: `git push origin --tags`
+1. Bump the package version based off the semver supplied. Supported values: patch, minor, major).
+2. Create a changelog using [github-changelog-generator](https://github.com/github-changelog-generator/github-changelog-generator).
+3. Create a Git commit with the above changes.
+4. Create a Git tag using the new package version.
 
 In addition to building and testing the extension, when a tag is applied to the commit, the CI server will also create a GitHub release and publish the new version to the Visual Studio marketplace.
 

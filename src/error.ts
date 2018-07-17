@@ -9,6 +9,7 @@ export enum ErrorCode {
   E208 = 208,
   E348 = 348,
   E444 = 444,
+  E486 = 486,
   E488 = 488,
   E492 = 492,
 }
@@ -20,6 +21,7 @@ export const ErrorMessage: IErrorMessage = {
   208: 'Error writing to file',
   348: 'No string under cursor',
   444: 'Cannot close last window',
+  486: 'Pattern not found',
   488: 'Trailing characters',
   492: 'Not an editor command',
 };

@@ -196,6 +196,12 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   // register extension commands
+  registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
+    const modeHandler = await getAndUpdateModeHandler();
+    await commandLine.PromptAndRun('', modeHandler.vimState);
+    modeHandler.updateView(modeHandler.vimState);
+  });
+
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();

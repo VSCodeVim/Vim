@@ -14,7 +14,7 @@ function parseCount(args: string): number | undefined {
   }
 
   let c = scanner.next();
-  let count = Number.parseInt(c);
+  let count = Number.parseInt(c, 10);
 
   if (Number.isInteger(count) && count >= 0) {
     if (count > 999) {

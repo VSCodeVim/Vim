@@ -99,9 +99,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
         {
             "before":["<C-n>"],
             "commands": [
-                {
-                    "command": ":nohl"
-                }
+                ":nohl"
             ]
         }
     ],
@@ -245,16 +243,33 @@ Custom remappings are defined on a per-mode basis.
 * Bind `:` to show the command palette:
 
 ```json
-"vim.normalModeKeyBindingsNonRecursive": [
-    {
-        "before": [":"],
-        "commands": [
-            {
-                "command": "workbench.action.showCommands",
-            }
-        ]
-    }
-]
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": [":"],
+            "commands": [
+                "workbench.action.showCommands",
+            ]
+        }
+    ]
+```
+
+* Bind `<leader>m` to add a bookmark and `<leader>b` to open the list of all bookmarks (using the [Bookmarks](https://github.com/alefragnani/vscode-bookmarks) extension):
+
+```json
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": ["<leader>", "m"],
+            "commands": [
+                "bookmarks.toggle"
+            ]
+        },
+        {
+            "before": ["<leader>", "b"],
+            "commands": [
+                "bookmarks.list"
+            ]
+        }
+    ]
 ```
 
 * Bind `ZZ` to the vim command `:wq` (save and close the current file):
@@ -264,9 +279,7 @@ Custom remappings are defined on a per-mode basis.
         {
             "before": ["Z", "Z"],
             "commands": [
-                {
-                    "command": ":wq"
-                },
+                ":wq"
             ]
         }
     ]
@@ -279,17 +292,13 @@ Custom remappings are defined on a per-mode basis.
         {
             "before":["<C-n>"],
             "commands": [
-                {
-                    "command": ":nohl",
-                }
+                ":nohl",
             ]
         },
         {
             "before": ["leader", "w"],
             "commands": [
-                {
-                    "command": "workbench.action.files.save",
-                }
+                "workbench.action.files.save",
             ]
         }
     ]
@@ -315,7 +324,6 @@ Custom remappings are defined on a per-mode basis.
 
 * Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
 
-
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
         {
@@ -323,9 +331,7 @@ Custom remappings are defined on a per-mode basis.
                 ">"
             ],
             "commands": [
-                {
-                    "command": "editor.action.indentLines"
-                }
+                "editor.action.indentLines"
             ]
         },
         {
@@ -333,14 +339,29 @@ Custom remappings are defined on a per-mode basis.
                 "<"
             ],
             "commands": [
-                {
-                    "command": "editor.action.outdentLines"
-                }
+                "editor.action.outdentLines"
             ]
         },
     ]
 ```
 
+* Bind `<leader>vim` to clone this repository to the selected location.
+
+```json
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                "<leader>", "v", "i", "m"
+            ],
+            "commands": [
+                {
+                    "command": "git.clone",
+                    "args": [ "https://github.com/VSCodeVim/Vim.git" ]
+                }
+            ]
+        }
+    ]
+```
 
 #### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`
 
@@ -546,6 +567,8 @@ Command | Description
 
 Based on [vim-sneak](https://github.com/justinmk/vim-sneak). To activate sneak, you need to make sure that `sneak` is set to `true` in settings.json (default is `false`).
 
+```"vim.sneakUseIgnorecaseAndSmartcase": true``` can be set if desired to allow for respecting `vim.ignorecase` and `vim.smartcase` while sneaking (default is `false`)
+
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
 Motion Command | Description
@@ -582,6 +605,25 @@ Are you on a Mac? Did you go through our [mac-setup](#mac-setup) instructions?
 ### There are annoying intellisense/notifications/popups that I can't close with `<esc>`! Or I'm in a snippet and I want to close intellisense
 
 Press `shift+<esc>` to close all of those boxes.
+
+### How can I use the commandline when in Zen mode or when the status bar is disabled?
+
+This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in visual studio keybindings.json settings file.
+```
+{
+    "key": "shift+;",
+    "command": "vim.showQuickpickCmdLine",
+    "when": "editorTextFocus && vim.mode != 'Insert'"
+}
+```
+Or for Zen mode only:
+```
+{
+    "key": "shift+;",
+    "command": "vim.showQuickpickCmdLine",
+    "when": "inZenMode && vim.mode != 'Insert'"
+}
+```
 
 ## ❤️ Contributing
 
