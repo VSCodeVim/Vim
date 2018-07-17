@@ -88,8 +88,8 @@ suite('surround plugin', () => {
 
   newTest({
     title: 'change surround with alias',
-    start: ["first (li|ne) test"],
-    keysPressed: "csb]",
+    start: ['first (li|ne) test'],
+    keysPressed: 'csb]',
     end: ['first [li|ne] test'],
   });
 
@@ -109,8 +109,8 @@ suite('surround plugin', () => {
 
   newTest({
     title: 'delete surround with alias',
-    start: ["first {li|ne} test"],
-    keysPressed: "dsB",
+    start: ['first {li|ne} test'],
+    keysPressed: 'dsB',
     end: ['first li|ne test'],
   });
 

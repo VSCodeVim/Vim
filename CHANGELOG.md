@@ -1,26 +1,73 @@
 # Change Log
 
-## [0.15.0](https://github.com/vscodevim/vim/tree/HEAD)
+## [v0.15.0](https://github.com/vscodevim/vim/tree/v0.15.0) (2018-07-12)
 
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.2...HEAD)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.2...v0.15.0)
+
+**Enhancements:**
+
+- TypeError shown on invalid search command. [\#2823](https://github.com/VSCodeVim/Vim/issues/2823)
+- Allow registering keybindings commands using strings [\#2806](https://github.com/VSCodeVim/Vim/issues/2806)
+
+**Fixed Bugs:**
+
+- Keybindings not triggering [\#2833](https://github.com/VSCodeVim/Vim/issues/2833)
+- Macro doesn't memoryize `delete` key. [\#2702](https://github.com/VSCodeVim/Vim/issues/2702)
+- VimError's does not show up on the status bar [\#2525](https://github.com/VSCodeVim/Vim/issues/2525)
+
+**Merged pull requests:**
 
 - Add "cursor" to commandline entry [\#2836](https://github.com/VSCodeVim/Vim/pull/2836) ([xconverge](https://github.com/xconverge))
+- Update issue templates [\#2825](https://github.com/VSCodeVim/Vim/pull/2825) ([jpoon](https://github.com/jpoon))
 - Cache the mode for updating status bar colors [\#2822](https://github.com/VSCodeVim/Vim/pull/2822) ([xconverge](https://github.com/xconverge))
+- chore\(deps\): update dependency @types/lodash to v4.14.111 [\#2821](https://github.com/VSCodeVim/Vim/pull/2821) ([renovate-bot](https://github.com/renovate-bot))
 - Fix quickpick commandline [\#2816](https://github.com/VSCodeVim/Vim/pull/2816) ([xconverge](https://github.com/xconverge))
 - Added ability to register commands using simple strings \(fixes \#2806\) [\#2807](https://github.com/VSCodeVim/Vim/pull/2807) ([6A](https://github.com/6A))
-- chore\(deps\): update dependency @types/lodash to v4.14.111 [\#2821](https://github.com/VSCodeVim/Vim/pull/2821) ([renovate-bot](https://github.com/renovate-bot))
 
 ## [v0.14.2](https://github.com/vscodevim/vim/tree/v0.14.2) (2018-07-06)
+
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.1...v0.14.2)
 
+**Enhancements:**
+
+- \<C-u\> doesn't behave as expected in insert mode [\#2804](https://github.com/VSCodeVim/Vim/issues/2804)
+- \(feature\) Add an option to bring commandline back to old place  [\#2773](https://github.com/VSCodeVim/Vim/issues/2773)
+
+**Fixed Bugs:**
+
+- 2gt not goes to the right tab [\#2789](https://github.com/VSCodeVim/Vim/issues/2789)
+- Repeating a VISUAL LINE indentation is inconsistent with native vim behaviour [\#2606](https://github.com/VSCodeVim/Vim/issues/2606)
+- ngt/ngT for tab switching is broken [\#2580](https://github.com/VSCodeVim/Vim/issues/2580)
+
+**Closed issues:**
+
+- editor.cursorStyle not being respected [\#2809](https://github.com/VSCodeVim/Vim/issues/2809)
+
+**Merged pull requests:**
+
 - Make gt work correctly like gT [\#2812](https://github.com/VSCodeVim/Vim/pull/2812) ([xconverge](https://github.com/xconverge))
-- Update \<C-u\> insert mode behavior [\#2805](https://github.com/VSCodeVim/Vim/pull/2805) ([mrwest808](https://github.com/mrwest808))
-- Fixes \#2606 Repeating a VISUAL LINE indentation is inconsistent [\#2790](https://github.com/VSCodeVim/Vim/pull/2790) ([xconverge](https://github.com/xconverge))
-- Allow for quickpick commandline usage [\#2781](https://github.com/VSCodeVim/Vim/pull/2781) ([xconverge](https://github.com/xconverge))
 - chore\(deps\): update dependency @types/node to v9.6.23 [\#2811](https://github.com/VSCodeVim/Vim/pull/2811) ([renovate-bot](https://github.com/renovate-bot))
+- feat: Update \<C-u\> insert mode behavior [\#2805](https://github.com/VSCodeVim/Vim/pull/2805) ([mrwest808](https://github.com/mrwest808))
+- bump version [\#2797](https://github.com/VSCodeVim/Vim/pull/2797) ([jpoon](https://github.com/jpoon))
+- fixes \#2606 [\#2790](https://github.com/VSCodeVim/Vim/pull/2790) ([xconverge](https://github.com/xconverge))
+- Allow for quickpick commandline usage [\#2781](https://github.com/VSCodeVim/Vim/pull/2781) ([xconverge](https://github.com/xconverge))
 
 ## [v0.14.1](https://github.com/vscodevim/vim/tree/v0.14.1) (2018-06-30)
+
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.0...v0.14.1)
+
+**Fixed Bugs:**
+
+- Remapping \> to editor.fold [\#2774](https://github.com/VSCodeVim/Vim/issues/2774)
+- Bug: Remapping Numbers \(0-9\) [\#2759](https://github.com/VSCodeVim/Vim/issues/2759)
+- At a certain point VSCodeVim "forgets" all remappings for every new tab opened [\#2271](https://github.com/VSCodeVim/Vim/issues/2271)
+
+**Closed issues:**
+
+- 0.14.0 doesn't work on Fedora 28, but 0.13.1 works. [\#2780](https://github.com/VSCodeVim/Vim/issues/2780)
+- \[neovim\] Inconsistent behaviour when clicking files in the file tree [\#2770](https://github.com/VSCodeVim/Vim/issues/2770)
+
+**Merged pull requests:**
 
 - doc: emojify readme [\#2796](https://github.com/VSCodeVim/Vim/pull/2796) ([jpoon](https://github.com/jpoon))
 - chore\(deps\): update dependency @types/mocha to v5.2.4 [\#2795](https://github.com/VSCodeVim/Vim/pull/2795) ([renovate-bot](https://github.com/renovate-bot))
@@ -30,21 +77,49 @@
 - fix: fixes bug where null arguments to vscode executecommand would fail [\#2776](https://github.com/VSCodeVim/Vim/pull/2776) ([jpoon](https://github.com/jpoon))
 
 ## [v0.14.0](https://github.com/vscodevim/vim/tree/v0.14.0) (2018-06-26)
+
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.13.1...v0.14.0)
-- **Note**: Commandline has moved to the status bar to allow for navigating command history with up and down arrows.
-- Fixes \#2769 Surround aliases not working as targets [\#2772](https://github.com/VSCodeVim/Vim/pull/2772) ([xconverge](https://github.com/xconverge))
-- Fixes \#2766 Ctrl+D stuck on top of the window on visual mode [\#2771](https://github.com/VSCodeVim/Vim/pull/2771) ([rebornix](https://github.com/rebornix))
-- Fixes \#1980 Can't navigate in autocompletion with "Ctrl+j" and "Ctrl+k" [\#2765](https://github.com/VSCodeVim/Vim/pull/2765) ([xconverge](https://github.com/xconverge))
-- Fixes \#1780 Backwards delete using "X" doesn't allow count prefixes [\#2764](https://github.com/VSCodeVim/Vim/pull/2764) ([xconverge](https://github.com/xconverge))
-- Fixes \#2664 Searching forward / backward ignores count [\#2763](https://github.com/VSCodeVim/Vim/pull/2763) ([xconverge](https://github.com/xconverge))
-- Fixes \#2706 Paste with CTRL+V while in edit mode does not work [\#2762](https://github.com/VSCodeVim/Vim/pull/2762) ([xconverge](https://github.com/xconverge))
-- Fixes \#2760 Cut two characters but only paste one [\#2761](https://github.com/VSCodeVim/Vim/pull/2761) ([xconverge](https://github.com/xconverge))
+
+**Fixed Bugs:**
+
+- Surround aliases not working as targets [\#2769](https://github.com/VSCodeVim/Vim/issues/2769)
+- Ctrl+D stuck on top of the window on visual mode [\#2766](https://github.com/VSCodeVim/Vim/issues/2766)
+- Cut two characters but only paste one. [\#2760](https://github.com/VSCodeVim/Vim/issues/2760)
+- Paste with CTRL+V while in edit mode does not work [\#2706](https://github.com/VSCodeVim/Vim/issues/2706)
+- Can't bind leader key shortcuts to some vscode methods [\#2674](https://github.com/VSCodeVim/Vim/issues/2674)
+- Searching forward / backward ignores count [\#2664](https://github.com/VSCodeVim/Vim/issues/2664)
+
+**Closed issues:**
+
+- Yanking/deleting multiline into default register then pasting over other multiline text copies that overwritten multiline text, instead of retaining original yanked text. [\#2717](https://github.com/VSCodeVim/Vim/issues/2717)
+- "S" \(capital s\) does not behave properly when on prefixing whitespace [\#2240](https://github.com/VSCodeVim/Vim/issues/2240)
+- Bug: Can't navigate in autocompletion with "Ctrl+j" and "Ctrl+k". [\#1980](https://github.com/VSCodeVim/Vim/issues/1980)
+- Backwards delete using "X" doesn't allow count prefixes [\#1780](https://github.com/VSCodeVim/Vim/issues/1780)
+
+**Merged pull requests:**
+
+- fixes \#2769 [\#2772](https://github.com/VSCodeVim/Vim/pull/2772) ([xconverge](https://github.com/xconverge))
+- Fix \#2766. [\#2771](https://github.com/VSCodeVim/Vim/pull/2771) ([rebornix](https://github.com/rebornix))
+- Update dependency prettier to v1.13.6 [\#2768](https://github.com/VSCodeVim/Vim/pull/2768) ([renovate-bot](https://github.com/renovate-bot))
+- fixes \#2766 [\#2767](https://github.com/VSCodeVim/Vim/pull/2767) ([xconverge](https://github.com/xconverge))
+- fixes \#1980 [\#2765](https://github.com/VSCodeVim/Vim/pull/2765) ([xconverge](https://github.com/xconverge))
+- Fixes \#1780 [\#2764](https://github.com/VSCodeVim/Vim/pull/2764) ([xconverge](https://github.com/xconverge))
+- fixes \#2664 and removes unused variable [\#2763](https://github.com/VSCodeVim/Vim/pull/2763) ([xconverge](https://github.com/xconverge))
+- fixes \#2706 [\#2762](https://github.com/VSCodeVim/Vim/pull/2762) ([xconverge](https://github.com/xconverge))
+- fixes \#2760 [\#2761](https://github.com/VSCodeVim/Vim/pull/2761) ([xconverge](https://github.com/xconverge))
 - Move commandline to status bar to allow history navigation [\#2758](https://github.com/VSCodeVim/Vim/pull/2758) ([xconverge](https://github.com/xconverge))
 - chore\(deps\): update dependency @types/mocha to v5.2.3 [\#2757](https://github.com/VSCodeVim/Vim/pull/2757) ([renovate-bot](https://github.com/renovate-bot))
-- Update dependency prettier to v1.13.6 [\#2768](https://github.com/VSCodeVim/Vim/pull/2768) ([renovate-bot](https://github.com/renovate-bot))
+- v0.13.1 [\#2753](https://github.com/VSCodeVim/Vim/pull/2753) ([jpoon](https://github.com/jpoon))
 
 ## [v0.13.1](https://github.com/vscodevim/vim/tree/v0.13.1) (2018-06-19)
+
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.13.0...v0.13.1)
+
+**Closed issues:**
+
+- Remapping ESC in insert mode with CR or Space does work via settings [\#2584](https://github.com/VSCodeVim/Vim/issues/2584)
+
+**Merged pull requests:**
 
 - fix: closes \#1472. insertModeKeyBindings apply to insert and replace modes [\#2749](https://github.com/VSCodeVim/Vim/pull/2749) ([jpoon](https://github.com/jpoon))
 - fix: closes \#2390. enables remapping using '\<enter\>'  [\#2748](https://github.com/VSCodeVim/Vim/pull/2748) ([jpoon](https://github.com/jpoon))
@@ -53,9 +128,46 @@
 - Fix \#1348. ctrl+D/U correct position [\#2723](https://github.com/VSCodeVim/Vim/pull/2723) ([rebornix](https://github.com/rebornix))
 
 ## [v0.13.0](https://github.com/vscodevim/vim/tree/v0.13.0) (2018-06-18)
+
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.12.0...v0.13.0)
 
-- **Breaking Change**: We have removed `otherModesKeyBindings` configuration. In its stead we have added: `normalModeKeyBindings` and `visualModeKeyBidnings` to allow more fine-grain customization of your remappings. For more information, see our [documentation](https://github.com/vscodevim/vim#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindings).
+**Breaking changes:**
+
+- Add normalModeKeyBindings and visualModeKeyBindings, remove otherModesKeyBindings [\#2726](https://github.com/VSCodeVim/Vim/pull/2726) ([chibicode](https://github.com/chibicode))
+
+**Enhancements:**
+
+- Allow remappings from mocked configurations during testing. [\#2732](https://github.com/VSCodeVim/Vim/issues/2732)
+- use vscode task api [\#2731](https://github.com/VSCodeVim/Vim/issues/2731)
+- Add visualModeKeyBindings, in addition to otherModesKeyBindings [\#2705](https://github.com/VSCodeVim/Vim/issues/2705)
+- \[FEATURE REQUEST\] "q:" command [\#2617](https://github.com/VSCodeVim/Vim/issues/2617)
+- How to make a keybinding only work in visual mode? [\#1805](https://github.com/VSCodeVim/Vim/issues/1805)
+- Allow simplified keybinding syntax in settings.json [\#1667](https://github.com/VSCodeVim/Vim/issues/1667)
+
+**Fixed Bugs:**
+
+- gf creates files when the given file does not exist [\#2683](https://github.com/VSCodeVim/Vim/issues/2683)
+- Change/Delete/Yank combined with next unmatched bracket/parenthesis not behaving correctly [\#2670](https://github.com/VSCodeVim/Vim/issues/2670)
+- \[Bug report\]: 'c' key in multi-cursor mode removes additional cursors [\#2668](https://github.com/VSCodeVim/Vim/issues/2668)
+
+**Closed issues:**
+
+- Keybindings with Alt modifier. [\#2713](https://github.com/VSCodeVim/Vim/issues/2713)
+- Commands cc and S do not respect indent level if executed before the first character [\#2497](https://github.com/VSCodeVim/Vim/issues/2497)
+- Toggling Vim Mode using keybindings is broken [\#2381](https://github.com/VSCodeVim/Vim/issues/2381)
+- Searching finds nothing when pasting from cmd [\#2362](https://github.com/VSCodeVim/Vim/issues/2362)
+- Evil mode [\#2328](https://github.com/VSCodeVim/Vim/issues/2328)
+- different key bindings for normal and visual mode [\#2205](https://github.com/VSCodeVim/Vim/issues/2205)
+- need support for alt+x key mapping [\#2061](https://github.com/VSCodeVim/Vim/issues/2061)
+- Keybindings with space don't seem to work [\#2039](https://github.com/VSCodeVim/Vim/issues/2039)
+- \[Not Sure\] Copy using Windows Clipboard looses CR/LF [\#2022](https://github.com/VSCodeVim/Vim/issues/2022)
+- "TypeError: Cannot read property 'isEqual' of undefined" while debugging an extension with vim enabled [\#2019](https://github.com/VSCodeVim/Vim/issues/2019)
+- :m command doesn't work [\#2010](https://github.com/VSCodeVim/Vim/issues/2010)
+- pane switching is broken in newest vscode-insiders [\#1973](https://github.com/VSCodeVim/Vim/issues/1973)
+- \[Bug\] Copy text destroys special characters [\#1825](https://github.com/VSCodeVim/Vim/issues/1825)
+
+**Merged pull requests:**
+
 - fix: handle when commandLineHistory is empty [\#2741](https://github.com/VSCodeVim/Vim/pull/2741) ([jpoon](https://github.com/jpoon))
 - chore\(deps\): update dependency @types/node to v9.6.22 [\#2739](https://github.com/VSCodeVim/Vim/pull/2739) ([renovate-bot](https://github.com/renovate-bot))
 - fix: use explicit configuration for logginglevel [\#2738](https://github.com/VSCodeVim/Vim/pull/2738) ([jpoon](https://github.com/jpoon))
@@ -63,7 +175,6 @@
 - Don't ignore mocked configurations' remaps during testing. [\#2733](https://github.com/VSCodeVim/Vim/pull/2733) ([regiontog](https://github.com/regiontog))
 - chore\(deps\): update dependency typescript to v2.9.2 [\#2730](https://github.com/VSCodeVim/Vim/pull/2730) ([renovate-bot](https://github.com/renovate-bot))
 - Fix autoindent on cc/S \#2497 [\#2729](https://github.com/VSCodeVim/Vim/pull/2729) ([dqsully](https://github.com/dqsully))
-- Add normalModeKeyBindings and visualModeKeyBindings, remove otherModesKeyBindings [\#2726](https://github.com/VSCodeVim/Vim/pull/2726) ([chibicode](https://github.com/chibicode))
 - chore\(deps\): update dependency @types/mocha to v5.2.2 [\#2724](https://github.com/VSCodeVim/Vim/pull/2724) ([renovate-bot](https://github.com/renovate-bot))
 - fix: revert our workaround cursor toggle as this has been fixed in vscode [\#2720](https://github.com/VSCodeVim/Vim/pull/2720) ([jpoon](https://github.com/jpoon))
 - feat: use winston for logging [\#2719](https://github.com/VSCodeVim/Vim/pull/2719) ([jpoon](https://github.com/jpoon))
@@ -1323,5 +1434,7 @@
 - command line mode refactoring [\#5](https://github.com/VSCodeVim/Vim/pull/5) ([guillermooo](https://github.com/guillermooo))
 - Navigation mode [\#4](https://github.com/VSCodeVim/Vim/pull/4) ([jpoon](https://github.com/jpoon))
 - Add ex mode [\#3](https://github.com/VSCodeVim/Vim/pull/3) ([guillermooo](https://github.com/guillermooo))
+
+\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
 
 \* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
