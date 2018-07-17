@@ -115,7 +115,7 @@ function parseCount(scanner: Scanner): number {
     countStr += scanner.next();
   }
 
-  let count = Number.parseInt(countStr);
+  let count = Number.parseInt(countStr, 10);
 
   // TODO: If count is not valid number, raise error
   return Number.isInteger(count) ? count : -1;
