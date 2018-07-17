@@ -580,9 +580,8 @@ Motion Command | Description
 `<operator>Z<char><char>`|Perform `<operator>` backward to the first occurence of `<char><char>`
 
 ### Input Method
-(Support macOS and windows for now, linux will come soon)
 
-There are two ways you can configure input method, using [`im-select`](https://github.com/daipeihust/im-select), or your own program.
+There are two ways you can configure input method, using [`im-select`](https://github.com/daipeihust/im-select), or your own program.(Support macOS and windows for now, linux will come soon)
 
 #### Use im-select
 
