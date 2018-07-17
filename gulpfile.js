@@ -14,7 +14,7 @@ const spawn = require('child_process').spawn;
 
 const releaseOptions = {
   semver: '',
-  githubToken: '',
+  gitHubToken: '',
 };
 
 // prettier
@@ -62,11 +62,12 @@ function validateArgs(done) {
     );
   }
 
-  if (!options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN) {
+  const gitHubToken = options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN;
+  if (!gitHubToken) {
     return done(
       new PluginError('createChangelog', {
         message:
-          'Missing GitHub API Token. Supply token using `--githubToken` option or `CHANGELOG_GITHUB_TOKEN` environment variable.',
+          'Missing GitHub API Token. Supply token using `--gitHubToken` option or `CHANGELOG_GITHUB_TOKEN` environment variable.',
       })
     );
   }
@@ -212,6 +213,7 @@ gulp.task('test', function(done) {
 });
 
 gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint')));
+gulp.task('changelog', gulp.series(validateArgs, createChangelog));
 gulp.task(
   'release',
   gulp.series(validateArgs, updateVersion, createChangelog, createGitCommit, createGitTag)
