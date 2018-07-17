@@ -213,6 +213,7 @@ export class VimState implements vscode.Disposable {
   public registerName = '"';
 
   public currentCommandlineText = '';
+  public statusBarCursorCharacterPos = 0;
 
   public recordedState = new RecordedState();
 

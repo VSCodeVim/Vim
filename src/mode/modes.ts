@@ -77,7 +77,10 @@ export class CommandlineInProgress extends Mode {
   }
 
   getStatusBarText(vimState: VimState): string {
-    return `:${vimState.currentCommandlineText}`;
+    let stringWithCursor = vimState.currentCommandlineText.split('');
+    stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, '|');
+
+    return `:${stringWithCursor.join('')}`;
   }
 
   getStatusBarCommandText(vimState: VimState): string {

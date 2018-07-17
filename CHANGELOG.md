@@ -1,7 +1,17 @@
 # Change Log
 
-## [v0.14.2](https://github.com/vscodevim/vim/tree/HEAD)
-[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.1...HEAD)
+## [0.15.0](https://github.com/vscodevim/vim/tree/HEAD)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.2...HEAD)
+
+- Add "cursor" to commandline entry [\#2836](https://github.com/VSCodeVim/Vim/pull/2836) ([xconverge](https://github.com/xconverge))
+- Cache the mode for updating status bar colors [\#2822](https://github.com/VSCodeVim/Vim/pull/2822) ([xconverge](https://github.com/xconverge))
+- Fix quickpick commandline [\#2816](https://github.com/VSCodeVim/Vim/pull/2816) ([xconverge](https://github.com/xconverge))
+- Added ability to register commands using simple strings \(fixes \#2806\) [\#2807](https://github.com/VSCodeVim/Vim/pull/2807) ([6A](https://github.com/6A))
+- chore\(deps\): update dependency @types/lodash to v4.14.111 [\#2821](https://github.com/VSCodeVim/Vim/pull/2821) ([renovate-bot](https://github.com/renovate-bot))
+
+## [v0.14.2](https://github.com/vscodevim/vim/tree/v0.14.2) (2018-07-06)
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.14.1...v0.14.2)
 
 - Make gt work correctly like gT [\#2812](https://github.com/VSCodeVim/Vim/pull/2812) ([xconverge](https://github.com/xconverge))
 - Update \<C-u\> insert mode behavior [\#2805](https://github.com/VSCodeVim/Vim/pull/2805) ([mrwest808](https://github.com/mrwest808))

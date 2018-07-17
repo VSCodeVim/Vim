@@ -65,7 +65,7 @@ export class LineRange {
       case token.TokenType.Dot:
         return new vscode.Position(doc.selection.active.line, 0);
       case token.TokenType.LineNumber:
-        var line = Number.parseInt(first.content);
+        var line = Number.parseInt(first.content, 10);
         line = Math.max(0, line - 1);
         line = Math.min(doc.document.lineCount, line);
         return new vscode.Position(line, 0);
