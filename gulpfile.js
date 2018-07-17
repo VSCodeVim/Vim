@@ -52,19 +52,34 @@ function runPrettier(command, done) {
   });
 }
 
+function validateArgs(done) {
+  const options = minimist(process.argv.slice(2), releaseOptions);
+  if (!options.semver) {
+    return done(
+      new PluginError('updateVersion', {
+        message: 'Missing `--semver` option. Possible values: patch, minor, major',
+      })
+    );
+  }
+
+  if (!options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN) {
+    return done(
+      new PluginError('createChangelog', {
+        message:
+          'Missing GitHub API Token. Supply token using `--githubToken` option or `CHANGELOG_GITHUB_TOKEN` environment variable.',
+      })
+    );
+  }
+
+  done();
+}
+
 function createChangelog(done) {
   const imageName = 'jpoon/github-changelog-generator';
   const version = require('./package.json').version;
 
-  var options = minimist(process.argv.slice(2), releaseOptions);
-
-  if (!options.githubToken) {
-    return done(
-      new PluginError('createChangelog', {
-        message: 'Missing `--githubToken` option. Please supply GitHub API Token.',
-      })
-    );
-  }
+  const options = minimist(process.argv.slice(2), releaseOptions);
+  const gitHubToken = options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN;
 
   var dockerRunCmd = spawn(
     'docker',
@@ -80,7 +95,7 @@ function createChangelog(done) {
       '--project',
       'vim',
       '--token',
-      options.githubToken,
+      gitHubToken,
       '--future-release',
       'v' + version,
     ],
@@ -107,14 +122,6 @@ function createGitCommit() {
 
 function updateVersion(done) {
   var options = minimist(process.argv.slice(2), releaseOptions);
-
-  if (!options.semver) {
-    return done(
-      new PluginError('updateVersion', {
-        message: 'Missing `--semver` option. Possible values: patch, minor, major',
-      })
-    );
-  }
 
   return gulp
     .src(['./package.json', './package-lock.json'])
@@ -205,5 +212,8 @@ gulp.task('test', function(done) {
 });
 
 gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint')));
-gulp.task('release', gulp.series(updateVersion, createChangelog, createGitCommit, createGitTag));
+gulp.task(
+  'release',
+  gulp.series(validateArgs, updateVersion, createChangelog, createGitCommit, createGitTag)
+);
 gulp.task('default', gulp.series('build', 'test'));
