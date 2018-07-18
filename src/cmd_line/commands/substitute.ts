@@ -141,7 +141,7 @@ export class SubstituteCommand extends node.CommandBase {
     matchIndex: number
   ): Promise<boolean> {
     const cancellationToken = new vscode.CancellationTokenSource();
-    let validSelections: string[] = ['y', 'n', 'a', 'q', 'l'];
+    const validSelections: string[] = ['y', 'n', 'a', 'q', 'l'];
     let selection: string = '';
 
     const searchRanges: vscode.Range[] = [
