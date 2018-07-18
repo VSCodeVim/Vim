@@ -65,5 +65,6 @@ deploy:
   skip_cleanup: true
   on:
     repo: VSCodeVim/Vim
+    branch: master
     tags: true
     condition: $TRAVIS_OS_NAME = linux
