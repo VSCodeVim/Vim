@@ -12,6 +12,10 @@ export class InputMethodSwitcher {
     if (configuration.autoSwitchInputMethod.enable !== true) {
       return;
     }
+    if (!this.validateConfiguration()) {
+      this.disableIMSwitch();
+      return;
+    }
     // when you exit from insert-like mode, save origin input method and set it to default
     if (
       prevMode === ModeName.Insert ||
@@ -47,19 +51,17 @@ export class InputMethodSwitcher {
   private async switchToDefaultIM() {
     const obtainIMCmd = configuration.autoSwitchInputMethod.obtainIMCmd;
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
-    if (obtainIMCmd !== '') {
-      if (existsSync(rawObtainIMCmd)) {
-        try {
-          const insertIMKey = await util.executeShell(obtainIMCmd);
-          if (insertIMKey !== undefined) {
-            this.savedIMKey = insertIMKey.trim();
-          }
-        } catch (error) {
-          console.log(error);
+    if (existsSync(rawObtainIMCmd)) {
+      try {
+        const insertIMKey = await util.executeShell(obtainIMCmd);
+        if (insertIMKey !== undefined) {
+          this.savedIMKey = insertIMKey.trim();
         }
-      } else {
-        this.showCmdNotFoundErrorMessage(rawObtainIMCmd, 'vim.autoSwitchInputMethod.obtainIMCmd');
+      } catch (error) {
+        console.log(error);
       }
+    } else {
+      this.showCmdNotFoundErrorMessage(rawObtainIMCmd, 'vim.autoSwitchInputMethod.obtainIMCmd');
     }
 
     const defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
@@ -77,28 +79,18 @@ export class InputMethodSwitcher {
 
   private async switchToIM(imKey: string) {
     let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
-    if (!switchIMCmd.includes('{im}')) {
-      Message.ShowError(
-        'vim.autoSwitchInputMethod.switchIMCmd is incorrect, \
-        it should contain the placeholder {im}'
-      );
-      this.disableIMSwitch();
-      return;
-    }
     const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
-    if (switchIMCmd !== '') {
-      if (existsSync(rawSwitchIMCmd)) {
-        if (imKey !== '' && imKey !== undefined) {
-          switchIMCmd = switchIMCmd.replace('{im}', imKey);
-          try {
-            await util.executeShell(switchIMCmd);
-          } catch (error) {
-            console.log(error);
-          }
+    if (existsSync(rawSwitchIMCmd)) {
+      if (imKey !== '' && imKey !== undefined) {
+        switchIMCmd = switchIMCmd.replace('{im}', imKey);
+        try {
+          await util.executeShell(switchIMCmd);
+        } catch (error) {
+          console.log(error);
         }
-      } else {
-        this.showCmdNotFoundErrorMessage(rawSwitchIMCmd, 'vim.autoSwitchInputMethod.switchIMCmd');
       }
+    } else {
+      this.showCmdNotFoundErrorMessage(rawSwitchIMCmd, 'vim.autoSwitchInputMethod.switchIMCmd');
     }
   }
 
@@ -119,5 +111,27 @@ export class InputMethodSwitcher {
       switchIMCmd: originConfig.switchIMCmd,
       obtainIMCmd: originConfig.obtainIMCmd,
     };
+  }
+
+  private validateConfiguration(): boolean {
+    let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
+    if (!switchIMCmd.includes('{im}')) {
+      Message.ShowError(
+        'vim.autoSwitchInputMethod.switchIMCmd is incorrect, \
+        it should contain the placeholder {im}'
+      );
+      return false;
+    }
+    let obtainIMCmd = configuration.autoSwitchInputMethod.obtainIMCmd;
+    if (obtainIMCmd === undefined || obtainIMCmd === '') {
+      Message.ShowError('vim.autoSwitchInputMethod.obtainIMCmd is empty, please set it correctly!');
+      return false;
+    }
+    let defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
+    if (defaultIMKey === undefined || defaultIMKey === '') {
+      Message.ShowError('vim.autoSwitchInputMethod.defaultIM is empty, please set it correctly!');
+      return false;
+    }
+    return true;
   }
 }
