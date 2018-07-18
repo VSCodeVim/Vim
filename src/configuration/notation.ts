@@ -9,7 +9,7 @@ export class Notation {
     BS: ['backspace', 'bs'],
     Del: ['delete', 'del'],
     ' ': ['<space>'],
-    '\n': ['<cr>', '<enter>']
+    '\n': ['<cr>', '<enter>'],
   };
 
   /**

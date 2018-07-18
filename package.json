@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -588,8 +588,8 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "gulp compile",
-    "build": "gulp",
+    "vscode:prepublish": "gulp build",
+    "build": "gulp build",
     "test": "node ./node_modules/vscode/bin/test",
     "forceprettier": "gulp forceprettier",
     "postinstall": "node ./node_modules/vscode/bin/install"
@@ -601,7 +601,7 @@
     "neovim-client": "2.1.0",
     "promised-neovim-client": "2.0.2",
     "untildify": "3.0.3",
-    "winston": "^3.0.0-rc6",
+    "winston": "3.0.0",
     "winston-console-for-electron": "0.0.3"
   },
   "devDependencies": {
@@ -612,15 +612,16 @@
     "@types/lodash": "4.14.112",
     "@types/mocha": "5.2.5",
     "@types/node": "9.6.23",
-    "gulp": "3.9.1",
+    "gulp": "4.0.0",
     "gulp-bump": "3.1.1",
-    "gulp-filter": "5.1.0",
     "gulp-git": "2.7.0",
     "gulp-sourcemaps": "2.6.4",
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.3",
     "gulp-typescript": "4.0.2",
+    "minimist": "1.2.0",
     "mocha": "5.2.0",
+    "plugin-error": "1.0.1",
     "prettier": "1.13.7",
     "tslint": "5.11.0",
     "typescript": "2.9.2",

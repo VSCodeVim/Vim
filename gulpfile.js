@@ -1,56 +1,31 @@
 var gulp = require('gulp'),
   bump = require('gulp-bump'),
-  filter = require('gulp-filter'),
   git = require('gulp-git'),
   sourcemaps = require('gulp-sourcemaps'),
   tag_version = require('gulp-tag-version'),
   tslint = require('gulp-tslint'),
-  ts = require('gulp-typescript');
+  ts = require('gulp-typescript'),
+  PluginError = require('plugin-error'),
+  minimist = require('minimist'),
+  path = require('path');
 
-// compile
-gulp.task('compile', function() {
-  var isError = false;
+const exec = require('child_process').exec;
+const spawn = require('child_process').spawn;
 
-  var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
-  var tsResult = tsProject
-    .src()
-    .pipe(sourcemaps.init())
-    .pipe(tsProject())
-    .on('error', function(error) {
-      isError = true;
-    })
-    .on('finish', function() {
-      isError && process.exit(1);
-    });
-
-  return tsResult.js
-    .pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '' }))
-    .pipe(gulp.dest('out'));
-});
-
-// tslint
-gulp.task('tslint', function() {
-  return gulp
-    .src(['**/*.ts', '!node_modules/**', '!typings/**'])
-    .pipe(
-      tslint({
-        formatter: 'prose',
-        program: require('tslint').Linter.createProgram('./tsconfig.json'),
-      })
-    )
-    .pipe(tslint.report({ summarizeFailureOutput: true }));
-});
+const releaseOptions = {
+  semver: '',
+  gitHubToken: '',
+};
 
 // prettier
-function runPrettier(command, cb) {
-  var exec = require('child_process').exec;
-  exec(command, function(err, stdout, stderr) {
+function runPrettier(command, done) {
+  exec(command, function(err, stdout) {
     if (err) {
-      return cb(err);
+      return done(new PluginError('runPrettier', { message: err }));
     }
 
     if (!stdout) {
-      return cb();
+      return done();
     }
 
     var files = stdout
@@ -61,31 +36,148 @@ function runPrettier(command, cb) {
       .join(' ');
 
     if (!files) {
-      return cb();
+      return done();
     }
 
-    const prettierPath = require('path').normalize('./node_modules/.bin/prettier');
+    const prettierPath = path.normalize('./node_modules/.bin/prettier');
     exec(
       `${prettierPath} --write --print-width 100 --single-quote --trailing-comma es5 ${files}`,
-      function(err, stdout, stderr) {
-        cb(err);
+      function(err) {
+        if (err) {
+          return done(new PluginError('runPrettier', { message: err }));
+        }
+        return done();
       }
     );
   });
 }
 
-gulp.task('prettier', function(cb) {
-  // files changed
-  runPrettier('git diff --name-only HEAD', cb);
+function validateArgs(done) {
+  const options = minimist(process.argv.slice(2), releaseOptions);
+  if (!options.semver) {
+    return done(
+      new PluginError('updateVersion', {
+        message: 'Missing `--semver` option. Possible values: patch, minor, major',
+      })
+    );
+  }
+
+  const gitHubToken = options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN;
+  if (!gitHubToken) {
+    return done(
+      new PluginError('createChangelog', {
+        message:
+          'Missing GitHub API Token. Supply token using `--gitHubToken` option or `CHANGELOG_GITHUB_TOKEN` environment variable.',
+      })
+    );
+  }
+
+  done();
+}
+
+function createChangelog(done) {
+  const imageName = 'jpoon/github-changelog-generator';
+  const version = require('./package.json').version;
+
+  const options = minimist(process.argv.slice(2), releaseOptions);
+  const gitHubToken = options.gitHubToken || process.env.CHANGELOG_GITHUB_TOKEN;
+
+  var dockerRunCmd = spawn(
+    'docker',
+    [
+      'run',
+      '-it',
+      '--rm',
+      '-v',
+      process.cwd() + ':/usr/local/src/your-app',
+      imageName,
+      '--user',
+      'vscodevim',
+      '--project',
+      'vim',
+      '--token',
+      gitHubToken,
+      '--future-release',
+      'v' + version,
+    ],
+    {
+      cwd: process.cwd(),
+      stdio: 'inherit',
+    }
+  );
+
+  dockerRunCmd.on('exit', function(exitCode) {
+    done(exitCode);
+  });
+}
+
+function createGitTag() {
+  return gulp.src(['./package.json']).pipe(tag_version());
+}
+
+function createGitCommit() {
+  return gulp
+    .src(['./package.json', './package-lock.json', 'CHANGELOG.md'])
+    .pipe(git.commit('bump version'));
+}
+
+function updateVersion(done) {
+  var options = minimist(process.argv.slice(2), releaseOptions);
+
+  return gulp
+    .src(['./package.json', './package-lock.json'])
+    .pipe(bump({ type: options.semver }))
+    .pipe(gulp.dest('./'))
+    .on('end', () => {
+      done();
+    });
+}
+
+gulp.task('tsc', function() {
+  var isError = false;
+
+  var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
+  var tsResult = tsProject
+    .src()
+    .pipe(sourcemaps.init())
+    .pipe(tsProject())
+    .on('error', () => {
+      isError = true;
+    })
+    .on('finish', () => {
+      isError && process.exit(1);
+    });
+
+  return tsResult.js
+    .pipe(sourcemaps.write('.', { includeContent: false, sourceRoot: '' }))
+    .pipe(gulp.dest('out'));
 });
 
-gulp.task('forceprettier', function(cb) {
+gulp.task('tslint', function() {
+  const program = require('tslint').Linter.createProgram('./tsconfig.json');
+  return gulp
+    .src(['**/*.ts', '!node_modules/**', '!typings/**'])
+    .pipe(
+      tslint({
+        formatter: 'prose',
+        program: program,
+      })
+    )
+    .pipe(tslint.report({ summarizeFailureOutput: true }));
+});
+
+gulp.task('prettier', function(done) {
+  // files changed
+  runPrettier('git diff --name-only HEAD', done);
+});
+
+gulp.task('forceprettier', function(done) {
   // files managed by git
-  runPrettier('git ls-files', cb);
+  runPrettier('git ls-files', done);
 });
 
 // test
-gulp.task('test', function(cb) {
+gulp.task('test', function(done) {
   var spawn = require('child_process').spawn;
   const dockerTag = 'vscodevim';
 
@@ -99,48 +191,31 @@ gulp.task('test', function(cb) {
     }
   );
 
-  dockerBuildCmd.on('exit', function(code) {
-    if (code !== 0) {
-      cb(code);
-      return;
+  dockerBuildCmd.on('exit', function(exitCode) {
+    if (exitCode !== 0) {
+      return done(
+        new PluginError('test', {
+          message: 'Docker build failed.',
+        })
+      );
     }
 
     console.log('Running tests inside container...');
-    console.log('To break, run `docker kill` in a separate terminal.');
-    var dockerRunCmd = spawn('docker', ['run', '-v', process.cwd() + ':/app', dockerTag], {
+    var dockerRunCmd = spawn('docker', ['run', '-it', '-v', process.cwd() + ':/app', dockerTag], {
       cwd: process.cwd(),
       stdio: 'inherit',
     });
 
-    dockerRunCmd.on('exit', function(code) {
-      cb(code);
+    dockerRunCmd.on('exit', function(exitCode) {
+      done(exitCode);
     });
   });
 });
 
-gulp.task('tag', ['default'], function() {
-  return gulp.src(['./package.json']).pipe(tag_version());
-});
-
-// version bump
-function versionBump(semver) {
-  return gulp
-    .src(['./package.json', './package-lock.json'])
-    .pipe(bump({ type: semver }))
-    .pipe(gulp.dest('./'))
-    .pipe(git.commit('bump version'));
-}
-
-gulp.task('patch', ['default'], function() {
-  return versionBump('patch');
-});
-
-gulp.task('minor', ['default'], function() {
-  return versionBump('minor');
-});
-
-gulp.task('major', ['default'], function() {
-  return versionBump('major');
-});
-
-gulp.task('default', ['prettier', 'tslint', 'compile']);
+gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint')));
+gulp.task('changelog', gulp.series(validateArgs, createChangelog));
+gulp.task(
+  'release',
+  gulp.series(validateArgs, updateVersion, createChangelog, createGitCommit, createGitTag)
+);
+gulp.task('default', gulp.series('build', 'test'));
