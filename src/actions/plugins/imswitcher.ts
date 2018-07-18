@@ -49,9 +49,13 @@ export class InputMethodSwitcher {
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
     if (obtainIMCmd !== '') {
       if (existsSync(rawObtainIMCmd)) {
-        const insertIMKey = await util.executeShell(obtainIMCmd);
-        if (insertIMKey !== undefined) {
-          this.savedIMKey = insertIMKey.trim();
+        try {
+          const insertIMKey = await util.executeShell(obtainIMCmd);
+          if (insertIMKey !== undefined) {
+            this.savedIMKey = insertIMKey.trim();
+          }
+        } catch (error) {
+          console.log(error);
         }
       } else {
         this.showCmdNotFoundErrorMessage(rawObtainIMCmd, 'vim.autoSwitchInputMethod.obtainIMCmd');
@@ -86,7 +90,11 @@ export class InputMethodSwitcher {
       if (existsSync(rawSwitchIMCmd)) {
         if (imKey !== '' && imKey !== undefined) {
           switchIMCmd = switchIMCmd.replace('{im}', imKey);
-          await util.executeShell(switchIMCmd);
+          try {
+            await util.executeShell(switchIMCmd);
+          } catch (error) {
+            console.log(error);
+          }
         }
       } else {
         this.showCmdNotFoundErrorMessage(rawSwitchIMCmd, 'vim.autoSwitchInputMethod.switchIMCmd');
