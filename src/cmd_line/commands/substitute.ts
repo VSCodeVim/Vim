@@ -121,7 +121,10 @@ export class SubstituteCommand extends node.CommandBase {
           (await this.confirmReplacement(regex.source, line, vimState, match, matchPos))
         ) {
           newContent = newContent.replace(nonGlobalRegex, this._arguments.replace);
-          await TextEditor.replace(new vscode.Range(line, 0, line, newContent.length), newContent);
+          await TextEditor.replace(
+            new vscode.Range(line, 0, line, originalContent.length),
+            newContent
+          );
         }
         matchPos += match.length;
       }
