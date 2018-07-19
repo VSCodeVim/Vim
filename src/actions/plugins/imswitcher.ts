@@ -2,6 +2,7 @@ import { ModeName } from '../../mode/mode';
 import { existsSync } from 'fs';
 import { configuration } from '../../configuration/configuration';
 import * as util from '../../util/util';
+import { logger } from '../../util/logger';
 import { Message } from '../../util/message';
 
 // InputMethodSwitcher change input method automatically when mode changed
@@ -57,8 +58,8 @@ export class InputMethodSwitcher {
         if (insertIMKey !== undefined) {
           this.savedIMKey = insertIMKey.trim();
         }
-      } catch (error) {
-        console.log(error);
+      } catch (e) {
+        logger.error('IMSwitcher: ${e}.');
       }
     } else {
       this.showCmdNotFoundErrorMessage(rawObtainIMCmd, 'vim.autoSwitchInputMethod.obtainIMCmd');
@@ -84,9 +85,9 @@ export class InputMethodSwitcher {
       if (imKey !== '' && imKey !== undefined) {
         switchIMCmd = switchIMCmd.replace('{im}', imKey);
         try {
-          await util.executeShell(switchIMCmd);
-        } catch (error) {
-          console.log(error);
+          await util.executeShell('lss');
+        } catch (e) {
+          logger.error('IMSwitcher: ${e}');
         }
       }
     } else {
