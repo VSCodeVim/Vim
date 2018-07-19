@@ -1480,6 +1480,20 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can delete with + motion and count',
+    start: ['one', 'two', 'three', 'fo|ur', 'five', 'six', 'seven'],
+    keysPressed: 'd2+',
+    end: ['one', 'two', 'three', '|seven'],
+  });
+
+  newTest({
+    title: 'can delete with - motion and count',
+    start: ['one', 'two', 'three', 'four', 'five', 's|ix', 'seven'],
+    keysPressed: 'd3-',
+    end: ['one', 'two', '|seven'],
+  });
+
+  newTest({
     title: 'can dE correctly',
     start: ['|one two three'],
     keysPressed: 'dE',
