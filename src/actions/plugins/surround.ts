@@ -405,7 +405,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     let endReplace = replacement;
 
     if (startReplace[0] === '<') {
-      let tagName = /([-\w]+)/.exec(startReplace);
+      let tagName = /([-\w.]+)/.exec(startReplace);
       if (tagName) {
         endReplace = `</${tagName[1]}>`;
       } else {
