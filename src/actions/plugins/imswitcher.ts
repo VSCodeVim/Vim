@@ -59,7 +59,7 @@ export class InputMethodSwitcher {
           this.savedIMKey = insertIMKey.trim();
         }
       } catch (e) {
-        logger.error('IMSwitcher: ${e}.');
+        logger.error(`IMSwitcher: promise is rejected. err=${e}`);
       }
     } else {
       this.showCmdNotFoundErrorMessage(rawObtainIMCmd, 'vim.autoSwitchInputMethod.obtainIMCmd');
@@ -85,9 +85,9 @@ export class InputMethodSwitcher {
       if (imKey !== '' && imKey !== undefined) {
         switchIMCmd = switchIMCmd.replace('{im}', imKey);
         try {
-          await util.executeShell('lss');
+          await util.executeShell(switchIMCmd);
         } catch (e) {
-          logger.error('IMSwitcher: ${e}');
+          logger.error(`IMSwitcher: promise is rejected. err=${e}`);
         }
       }
     } else {
