@@ -7,7 +7,12 @@ import { Message } from '../../util/message';
 
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
+  constructor(execute: (cmd: string) => Promise<string> = util.executeShell) {
+    this.execute = execute;
+  }
+
   private savedIMKey = '';
+  private execute: (cmd: string) => Promise<string>;
 
   public async switchInputMethod(prevMode: ModeName, newMode: ModeName) {
     if (configuration.autoSwitchInputMethod.enable !== true) {
@@ -54,7 +59,7 @@ export class InputMethodSwitcher {
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
     if (existsSync(rawObtainIMCmd)) {
       try {
-        const insertIMKey = await util.executeShell(obtainIMCmd);
+        const insertIMKey = await this.execute(obtainIMCmd);
         if (insertIMKey !== undefined) {
           this.savedIMKey = insertIMKey.trim();
         }
@@ -85,7 +90,7 @@ export class InputMethodSwitcher {
       if (imKey !== '' && imKey !== undefined) {
         switchIMCmd = switchIMCmd.replace('{im}', imKey);
         try {
-          await util.executeShell(switchIMCmd);
+          await this.execute(switchIMCmd);
         } catch (e) {
           logger.error(`IMSwitcher: promise is rejected. err=${e}`);
         }
