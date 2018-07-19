@@ -1,5 +1,21 @@
 # Change Log
 
+## [v0.15.2](https://github.com/vscodevim/vim/tree/v0.15.2) (2018-07-19)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.1...v0.15.2)
+
+**Fixed Bugs:**
+
+- Change surround tag with tag including a dot [\#2850](https://github.com/VSCodeVim/Vim/issues/2850)
+- Delete using \('d' + 'number' + '+/-'\) \(e.g. d5+\) doesn't work like expected. [\#2846](https://github.com/VSCodeVim/Vim/issues/2846)
+
+**Merged pull requests:**
+
+- fixes \#2850 [\#2856](https://github.com/VSCodeVim/Vim/pull/2856) ([xconverge](https://github.com/xconverge))
+- fix: don't run test when launching through vscode [\#2854](https://github.com/VSCodeVim/Vim/pull/2854) ([jpoon](https://github.com/jpoon))
+- v0.15.1 [\#2853](https://github.com/VSCodeVim/Vim/pull/2853) ([jpoon](https://github.com/jpoon))
+- Interactive Substitute [\#2851](https://github.com/VSCodeVim/Vim/pull/2851) ([kevintighe](https://github.com/kevintighe))
+
 ## [v0.15.1](https://github.com/vscodevim/vim/tree/v0.15.1) (2018-07-17)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.0...v0.15.1)
