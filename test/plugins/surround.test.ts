@@ -76,7 +76,7 @@ suite('surround plugin', () => {
     title: "'cst<' surrounds word with tags that have a dot in them",
     start: ['first <test>li|ne</test> test'],
     keysPressed: 'cst<abc.def>',
-    end: ['first <abc.def>|line</abc.def> test'],
+    end: ['first <abc.def>li|ne</abc.def> test'],
   });
 
   newTest({
