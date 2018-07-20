@@ -85,7 +85,9 @@ class CommandSurroundAddTarget extends BaseCommand {
     }
 
     // It's possible we're already done, e.g. dst
-    await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position);
+    if (await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position)) {
+      this.isCompleteAction = true;
+    }
 
     return vimState;
   }
@@ -326,7 +328,9 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
 
     vimState.surround.replacement += stringToAdd;
 
-    await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position);
+    if (await CommandSurroundAddToReplacement.TryToExecuteSurround(vimState, position)) {
+      this.isCompleteAction = true;
+    }
 
     return vimState;
   }
@@ -347,11 +351,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       vimState.recordedState.surroundKeys.push(vimState.keyHistory[i]);
     }
 
-    // When deleting surroundings, handled == false. This workaround
-    // resets the command list anyway.
-    vimState.recordedState.resetCommandList();
-
-    return false;
+    return true;
   }
 
   // we assume that we start directly on the characters we're operating over
