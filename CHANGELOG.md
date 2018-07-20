@@ -1,5 +1,18 @@
 # Change Log
 
+## [v0.15.3](https://github.com/vscodevim/vim/tree/v0.15.3) (2018-07-20)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.2...v0.15.3)
+
+**Fixed Bugs:**
+
+- :$ requires additional enter to go to end of buffer [\#2858](https://github.com/VSCodeVim/Vim/issues/2858)
+
+**Merged pull requests:**
+
+- Fixes $ and % commands [\#2860](https://github.com/VSCodeVim/Vim/pull/2860) ([xconverge](https://github.com/xconverge))
+- fixed buggy interactive substitute replacements [\#2857](https://github.com/VSCodeVim/Vim/pull/2857) ([kevintighe](https://github.com/kevintighe))
+
 ## [v0.15.2](https://github.com/vscodevim/vim/tree/v0.15.2) (2018-07-19)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.1...v0.15.2)

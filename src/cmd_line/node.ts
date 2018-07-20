@@ -61,7 +61,7 @@ export class LineRange {
     switch (first.type) {
       case token.TokenType.Dollar:
       case token.TokenType.Percent:
-        return new vscode.Position(doc.document.lineCount, 0);
+        return new vscode.Position(doc.document.lineCount - 1, 0);
       case token.TokenType.Dot:
         return new vscode.Position(doc.selection.active.line, 0);
       case token.TokenType.LineNumber:
