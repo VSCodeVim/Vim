@@ -436,6 +436,13 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 * What key should `<leader>` map to in key remappings?
 * Type: string (Default: `\`)
 
+#### `"vim.whichwrap"`
+
+* Controls wrapping at beginning and end of line.
+* Comma-separated set of keys that should wrap to next/previous line. Arrow keys are represented by `[` and `]` in insert mode, `<` and `>` in normal and visual mode.
+* Type: string (Default: ``)
+* To wrap "everything", set this to `h,l,<,>,[,]`
+
 ## 🖱️ Multi-Cursor Mode
 
 > :warning: Multi-Cursor mode is experimental. Please report issues in our [feedback thread.](https://github.com/VSCodeVim/Vim/issues/824)

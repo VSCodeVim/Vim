@@ -483,12 +483,31 @@ export class MarkMovement extends BaseMovement {
   }
 }
 
+const modes = {};
+
+modes[ModeName.Normal] = {
+  '<left>': '<',
+  '<right>': '>',
+};
+
+modes[ModeName.Visual] = modes[ModeName.Normal];
+
+modes[ModeName.Insert] = {
+  '<left>': '[',
+  '<right>': ']',
+};
+
+const translateMovementKey = (mode: ModeName, key: string) => {
+  return (modes[mode] || {})[key] || key;
+};
+
 @RegisterAction
 export class MoveLeft extends BaseMovement {
   keys = ['h'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLeft();
+    const key = translateMovementKey(vimState.currentMode, this.keysPressed[0]);
+    return configuration.wrapKeys[key] ? position.getLeftThroughLineBreaks() : position.getLeft();
   }
 }
 
@@ -513,7 +532,12 @@ class MoveRight extends BaseMovement {
   keys = ['l'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(position.line, position.character + 1);
+    const key = translateMovementKey(vimState.currentMode, this.keysPressed[0]);
+    const includeEol = vimState.currentMode === ModeName.Insert;
+
+    return configuration.wrapKeys[key]
+      ? position.getRightThroughLineBreaks(includeEol)
+      : position.getRight();
   }
 }
 
@@ -1889,10 +1913,10 @@ export class ArrowsInInsertMode extends BaseMovement {
         newPosition = <Position>await new MoveDownArrow().execAction(position, vimState);
         break;
       case '<left>':
-        newPosition = await new MoveLeftArrow().execAction(position, vimState);
+        newPosition = await new MoveLeftArrow(this.keysPressed).execAction(position, vimState);
         break;
       case '<right>':
-        newPosition = await new MoveRightArrow().execAction(position, vimState);
+        newPosition = await new MoveRightArrow(this.keysPressed).execAction(position, vimState);
         break;
       default:
         break;

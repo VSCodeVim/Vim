@@ -220,4 +220,9 @@ export interface IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[];
   visualModeKeyBindings: IKeyRemapping[];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
+
+  /**
+   *  emulate whichwrap
+   */
+  whichwrap: string;
 }

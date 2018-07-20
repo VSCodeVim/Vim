@@ -583,6 +583,11 @@
         "vim.cursorStylePerMode": {
           "type": "object",
           "description": "Customize cursor style per mode"
+        },
+        "vim.whichwrap": {
+          "type": "string",
+          "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
+          "default": ""
         }
       }
     }

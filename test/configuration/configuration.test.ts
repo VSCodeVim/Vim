@@ -16,6 +16,8 @@ suite('Configuration', () => {
       },
     ];
 
+    configuration.whichwrap = 'h,l';
+
     Globals.mockConfiguration = configuration;
     reloadConfiguration();
   });
@@ -27,5 +29,15 @@ suite('Configuration', () => {
     assert.equal(keybindings.length, 1);
     assert.deepEqual(keybindings[0].before, [' ', 'o']);
     assert.deepEqual(keybindings[0].after, ['o', '<Esc>', 'k']);
+  });
+
+  test('whichwrap is parsed into wrapKeys', async () => {
+    let configuration = srcConfiguration.configuration;
+
+    const h = 'h';
+    const j = 'j';
+
+    assert.equal(configuration.wrapKeys[h], true);
+    assert.equal(configuration.wrapKeys[j], undefined);
   });
 });
