@@ -13,6 +13,7 @@ import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEdito
 import { BaseAction } from './base';
 import { RegisterAction } from './base';
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
+import { shouldWrapKey } from './wrapping';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -482,32 +483,15 @@ export class MarkMovement extends BaseMovement {
     return mark.position;
   }
 }
-
-const modes = {};
-
-modes[ModeName.Normal] = {
-  '<left>': '<',
-  '<right>': '>',
-};
-
-modes[ModeName.Visual] = modes[ModeName.Normal];
-
-modes[ModeName.Insert] = {
-  '<left>': '[',
-  '<right>': ']',
-};
-
-const translateMovementKey = (mode: ModeName, key: string) => {
-  return (modes[mode] || {})[key] || key;
-};
-
 @RegisterAction
 export class MoveLeft extends BaseMovement {
   keys = ['h'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const key = translateMovementKey(vimState.currentMode, this.keysPressed[0]);
-    return configuration.wrapKeys[key] ? position.getLeftThroughLineBreaks() : position.getLeft();
+    if (shouldWrapKey(vimState, this.keysPressed)) {
+      return position.getLeftThroughLineBreaks();
+    }
+    return position.getLeft();
   }
 }
 
@@ -532,12 +516,11 @@ class MoveRight extends BaseMovement {
   keys = ['l'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const key = translateMovementKey(vimState.currentMode, this.keysPressed[0]);
-    const includeEol = vimState.currentMode === ModeName.Insert;
-
-    return configuration.wrapKeys[key]
-      ? position.getRightThroughLineBreaks(includeEol)
-      : position.getRight();
+    if (shouldWrapKey(vimState, this.keysPressed)) {
+      const includeEol = vimState.currentMode === ModeName.Insert;
+      return position.getRightThroughLineBreaks(includeEol);
+    }
+    return position.getRight();
   }
 }
 
