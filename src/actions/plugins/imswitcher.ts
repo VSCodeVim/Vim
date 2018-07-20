@@ -4,6 +4,7 @@ import { configuration } from '../../configuration/configuration';
 import * as util from '../../util/util';
 import { logger } from '../../util/logger';
 import { Message } from '../../util/message';
+import { Globals } from '../../globals';
 
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
@@ -57,7 +58,7 @@ export class InputMethodSwitcher {
   private async switchToDefaultIM() {
     const obtainIMCmd = configuration.autoSwitchInputMethod.obtainIMCmd;
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
-    if (existsSync(rawObtainIMCmd)) {
+    if (existsSync(rawObtainIMCmd) || Globals.isTesting) {
       try {
         const insertIMKey = await this.execute(obtainIMCmd);
         if (insertIMKey !== undefined) {
@@ -86,7 +87,7 @@ export class InputMethodSwitcher {
   private async switchToIM(imKey: string) {
     let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
     const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
-    if (existsSync(rawSwitchIMCmd)) {
+    if (existsSync(rawSwitchIMCmd) || Globals.isTesting) {
       if (imKey !== '' && imKey !== undefined) {
         switchIMCmd = switchIMCmd.replace('{im}', imKey);
         try {
