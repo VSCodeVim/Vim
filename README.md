@@ -14,7 +14,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 <details>
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
-* [Installation](#-Installation)
+* [Installation](#-installation)
     * [Vim Compatibility](#vim-compatibility)
     * [Mac setup](#mac-setup)
     * [Windows setup](#windows-setup)
@@ -151,12 +151,12 @@ These settings are specific to VSCodeVim.
 #### `"vim.useCtrlKeys"`
 
 * Enable Vim ctrl keys thus overriding common VSCode operations such as copy, paste, find, etc. Enabling this setting will result in the following keybindings:
-    * `ctrl+c`, `ctrl+[` => `<Esc>`
-    * `ctrl+f` => Full Page Forward
-    * `ctrl+d` => Half Page Back
-    * `ctrl+b` => Half Page Forward
-    * `ctrl+v` => Visual Block Mode
-    * etc.
+  * `ctrl+c`, `ctrl+[` => `<Esc>`
+  * `ctrl+f` => Full Page Forward
+  * `ctrl+d` => Half Page Back
+  * `ctrl+b` => Half Page Forward
+  * `ctrl+v` => Visual Block Mode
+  * etc.
 * Type: Boolean (Default: `true`)
 
 #### `"vim.handleKeys"`
@@ -199,7 +199,7 @@ These settings are specific to VSCodeVim.
 #### `"vim.debug.loggingLevel"`
 
 * Extension logging level. Maximum level of messages to log.
-* Logs will be visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_profiling-your-extension).
+* Logs will be visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_developer-tools-console).
 * Type: String (Default: 'error'). Supported values: 'error', 'warn', 'info', 'verbose', 'debug'.
 
 ### Neovim Integration
@@ -376,6 +376,33 @@ Custom remappings are defined on a per-mode basis.
         }
     ]
 ```
+
+### Debugging Remappings
+
+1. Are your configurations correct?
+
+    Adjust the extension's [logging level](#vimdebuglogginglevel) to 'debug', restart VSCode. In the Developer Tools console, do you see any errors?
+
+    ```console
+    debug: Remapper: normalModeKeyBindingsNonRecursive. before=0. after=^.
+    debug: Remapper: insertModeKeyBindings. before=j,j. after=<Esc>.
+    error: Remapper: insertModeKeyBindings. Invalid configuration. Missing 'after' key or 'command'. before=j,k.
+    ```
+
+    As each remapped configuration is loaded, it is outputted to console. Misconfigured configurations  are ignored.
+
+2. Does the extension handle the keys you are trying to remap?
+
+    VSCodeVim explicitly instructs VSCode which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/1a5f358a1a57c62d5079093ad0dd12c2bf018bba/package.json#L53). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. With [logging level](#vimdebuglogginglevel) adjusted to 'debug', as you press keys, you should see output similar to:
+
+    ```console
+    debug: ModeHandler: handling key=A.
+    debug: ModeHandler: handling key=l.
+    debug: ModeHandler: handling key=<BS>.
+    debug: ModeHandler: handling key=<C-a>.
+    ```
+
+    As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events.
 
 ### Vim settings
 
@@ -609,15 +636,18 @@ Press `shift+<esc>` to close all of those boxes.
 ### How can I use the commandline when in Zen mode or when the status bar is disabled?
 
 This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in visual studio keybindings.json settings file.
-```
+
+```json
 {
     "key": "shift+;",
     "command": "vim.showQuickpickCmdLine",
     "when": "editorTextFocus && vim.mode != 'Insert'"
 }
 ```
+
 Or for Zen mode only:
-```
+
+```json
 {
     "key": "shift+;",
     "command": "vim.showQuickpickCmdLine",
