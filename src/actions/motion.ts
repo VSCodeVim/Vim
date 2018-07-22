@@ -541,6 +541,7 @@ class MoveDownNonBlank extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getDownByCount(Math.max(count, 1)).getFirstLineNonBlankChar();
   }
 }
@@ -554,6 +555,7 @@ class MoveUpNonBlank extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getUpByCount(Math.max(count, 1)).getFirstLineNonBlankChar();
   }
 }
