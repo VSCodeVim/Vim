@@ -352,7 +352,7 @@ Status | Command | Description
 :white_check_mark:  | :1234:  s		| change N characters
 :white_check_mark:  | {visual}c	| in Visual block mode: Change each of the selected lines with the entered text
 :white_check_mark:  |    {visual}C	| in Visual block mode: Change each of the selected lines until end-of-line with the entered text
-:white_check_mark:	| switch case for highlighted text
+:white_check_mark:	| {visual}~ | switch case for highlighted text
 :white_check_mark:  |    {visual}u	| make highlighted text lowercase
 :white_check_mark:  |    {visual}U	| make highlighted text uppercase
 :white_check_mark:  |    g~{motion}     | switch case for the text that is moved over with {motion}
