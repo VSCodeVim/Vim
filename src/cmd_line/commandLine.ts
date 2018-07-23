@@ -59,7 +59,6 @@ class CommandLine {
         await cmd.execute(vimState.editor, vimState);
       }
     } catch (e) {
-      logger.error(`commandLine : error executing cmd=${command}. err=${e}.`);
       if (e instanceof VimError) {
         if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
           await vimState.nvim.run(vimState, command);
@@ -73,6 +72,7 @@ class CommandLine {
           );
         }
       } else {
+        logger.error(`commandLine : error executing cmd=${command}. err=${e}.`);
         Message.ShowError(e.toString());
       }
     }
