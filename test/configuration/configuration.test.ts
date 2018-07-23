@@ -7,24 +7,23 @@ import { getTestingFunctions } from '../testSimplifier';
 import { ModeName } from '../../src/mode/mode';
 
 suite('Configuration', () => {
-  suiteSetup(() => {
-    let configuration = new testConfiguration.Configuration();
-    configuration.leader = '<space>';
-    configuration.normalModeKeyBindingsNonRecursive = [
-      {
-        before: ['leader', 'o'],
-        after: ['o', 'eSc', 'k'],
-      },
-      {
-        before: ['<leader>', 'f', 'e', 's'],
-        after: ['v'],
-      },
-    ];
+  const { newTest } = getTestingFunctions();
+  let configuration = new testConfiguration.Configuration();
+  configuration.leader = '<space>';
+  configuration.normalModeKeyBindingsNonRecursive = [
+    {
+      before: ['leader', 'o'],
+      after: ['o', 'eSc', 'k'],
+    },
+    {
+      before: ['<leader>', 'f', 'e', 's'],
+      after: ['v'],
+    },
+  ];
+  configuration.whichwrap = 'h,l';
 
-    configuration.whichwrap = 'h,l';
-
-    Globals.mockConfiguration = configuration;
-    reloadConfiguration();
+  setup(async () => {
+    await setupWorkspace(configuration);
   });
 
   teardown(cleanUpWorkspace);
@@ -47,12 +46,12 @@ suite('Configuration', () => {
   });
 
   test('whichwrap is parsed into wrapKeys', async () => {
-    let configuration = srcConfiguration.configuration;
+    let wrapKeys = srcConfiguration.configuration.wrapKeys;
 
     const h = 'h';
     const j = 'j';
 
-    assert.equal(configuration.wrapKeys[h], true);
-    assert.equal(configuration.wrapKeys[j], undefined);
+    assert.equal(wrapKeys[h], true);
+    assert.equal(wrapKeys[j], undefined);
   });
 });
