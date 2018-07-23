@@ -15,6 +15,10 @@ suite('Configuration', () => {
         before: ['leader', 'o'],
         after: ['o', 'eSc', 'k'],
       },
+      {
+        before: ['<leader>', 'f', 'e', 's'],
+        after: ['v'],
+      },
     ];
 
     configuration.whichwrap = 'h,l';
