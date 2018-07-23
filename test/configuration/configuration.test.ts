@@ -7,22 +7,20 @@ import { getTestingFunctions } from '../testSimplifier';
 import { ModeName } from '../../src/mode/mode';
 
 suite('Configuration', () => {
-  const { newTest } = getTestingFunctions();
-  const configuration = new testConfiguration.Configuration();
-  configuration.leader = '<space>';
-  configuration.normalModeKeyBindingsNonRecursive = [
-    {
-      before: ['leader', 'o'],
-      after: ['o', 'eSc', 'k'],
-    },
-    {
-      before: ['<leader>', 'f', 'e', 's'],
-      after: ['v'],
-    },
-  ];
+  suiteSetup(() => {
+    let configuration = new testConfiguration.Configuration();
+    configuration.leader = '<space>';
+    configuration.normalModeKeyBindingsNonRecursive = [
+      {
+        before: ['leader', 'o'],
+        after: ['o', 'eSc', 'k'],
+      },
+    ];
 
-  setup(async () => {
-    await setupWorkspace(configuration);
+    configuration.whichwrap = 'h,l';
+
+    Globals.mockConfiguration = configuration;
+    reloadConfiguration();
   });
 
   teardown(cleanUpWorkspace);
@@ -42,5 +40,15 @@ suite('Configuration', () => {
     keysPressed: ' fes',
     end: ['|'],
     endMode: ModeName.Visual,
+  });
+
+  test('whichwrap is parsed into wrapKeys', async () => {
+    let configuration = srcConfiguration.configuration;
+
+    const h = 'h';
+    const j = 'j';
+
+    assert.equal(configuration.wrapKeys[h], true);
+    assert.equal(configuration.wrapKeys[j], undefined);
   });
 });
