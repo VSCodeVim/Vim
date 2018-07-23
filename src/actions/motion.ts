@@ -13,6 +13,7 @@ import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEdito
 import { BaseAction } from './base';
 import { RegisterAction } from './base';
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
+import { shouldWrapKey } from './wrapping';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -483,12 +484,14 @@ export class MarkMovement extends BaseMovement {
     return mark.position;
   }
 }
-
 @RegisterAction
 export class MoveLeft extends BaseMovement {
   keys = ['h'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
+    if (shouldWrapKey(vimState, this.keysPressed)) {
+      return position.getLeftThroughLineBreaks();
+    }
     return position.getLeft();
   }
 }
@@ -514,7 +517,11 @@ class MoveRight extends BaseMovement {
   keys = ['l'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return new Position(position.line, position.character + 1);
+    if (shouldWrapKey(vimState, this.keysPressed)) {
+      const includeEol = vimState.currentMode === ModeName.Insert;
+      return position.getRightThroughLineBreaks(includeEol);
+    }
+    return position.getRight();
   }
 }
 
@@ -1890,10 +1897,10 @@ export class ArrowsInInsertMode extends BaseMovement {
         newPosition = <Position>await new MoveDownArrow().execAction(position, vimState);
         break;
       case '<left>':
-        newPosition = await new MoveLeftArrow().execAction(position, vimState);
+        newPosition = await new MoveLeftArrow(this.keysPressed).execAction(position, vimState);
         break;
       case '<right>':
-        newPosition = await new MoveRightArrow().execAction(position, vimState);
+        newPosition = await new MoveRightArrow(this.keysPressed).execAction(position, vimState);
         break;
       default:
         break;
