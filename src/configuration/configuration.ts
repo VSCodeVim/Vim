@@ -115,6 +115,12 @@ class Configuration implements IConfiguration {
       }
     }
 
+    this.wrapKeys = {};
+
+    for (const wrapKey of this.whichwrap.split(',')) {
+      this.wrapKeys[wrapKey] = true;
+    }
+
     // read package.json for bound keys
     this.boundKeyCombinations = [];
     for (let keybinding of packagejson.contributes.keybindings) {
@@ -310,6 +316,8 @@ class Configuration implements IConfiguration {
   neovimPath = 'nvim';
 
   substituteGlobalFlag = false;
+  whichwrap = '';
+  wrapKeys = {};
 
   private cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,

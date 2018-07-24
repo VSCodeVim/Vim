@@ -78,4 +78,6 @@ export class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  whichwrap = '';
+  wrapKeys = {};
 }

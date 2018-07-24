@@ -410,13 +410,17 @@ export class Position extends vscode.Position {
     }
   }
 
-  public getRightThroughLineBreaks(): Position {
+  public getRightThroughLineBreaks(includeEol = false): Position {
     if (this.isAtDocumentEnd()) {
       // TODO(bell)
       return this;
     }
 
-    if (this.getRight().isLineEnd()) {
+    if (this.isLineEnd()) {
+      return this.getDown(0);
+    }
+
+    if (!includeEol && this.getRight().isLineEnd()) {
       return this.getDown(0);
     }
 

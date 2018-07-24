@@ -1,5 +1,53 @@
 # Change Log
 
+## [v0.15.6](https://github.com/vscodevim/vim/tree/v0.15.6) (2018-07-24)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.5...v0.15.6)
+
+**Merged pull requests:**
+
+- Fix regression with setContext in modeHandler [\#2880](https://github.com/VSCodeVim/Vim/pull/2880) ([xconverge](https://github.com/xconverge))
+
+## [v0.15.5](https://github.com/vscodevim/vim/tree/v0.15.5) (2018-07-24)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.4...v0.15.5)
+
+**Merged pull requests:**
+
+- Neovim integration show errors when using commandline at correct times [\#2877](https://github.com/VSCodeVim/Vim/pull/2877) ([xconverge](https://github.com/xconverge))
+- Improve error reporting with neovim commandline [\#2876](https://github.com/VSCodeVim/Vim/pull/2876) ([xconverge](https://github.com/xconverge))
+- chore\(deps\): update dependency @types/lodash to v4.14.113 [\#2875](https://github.com/VSCodeVim/Vim/pull/2875) ([renovate-bot](https://github.com/renovate-bot))
+
+## [v0.15.4](https://github.com/vscodevim/vim/tree/v0.15.4) (2018-07-24)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.3...v0.15.4)
+
+**Enhancements:**
+
+- Moving down at a fold that's at the end of the file causes an infinite loop [\#1855](https://github.com/VSCodeVim/Vim/issues/1855)
+
+**Fixed Bugs:**
+
+- Cursor jumps erratically before moving vertically [\#2163](https://github.com/VSCodeVim/Vim/issues/2163)
+
+**Closed issues:**
+
+- Vim extension stops working [\#2873](https://github.com/VSCodeVim/Vim/issues/2873)
+- ^f stopped working after 1.25.1 update [\#2865](https://github.com/VSCodeVim/Vim/issues/2865)
+- Switching escape and capslock [\#2859](https://github.com/VSCodeVim/Vim/issues/2859)
+- Long key chords does not trigger configured action. [\#2735](https://github.com/VSCodeVim/Vim/issues/2735)
+
+**Merged pull requests:**
+
+- fix: add missing wrapkeys to test configuration [\#2871](https://github.com/VSCodeVim/Vim/pull/2871) ([jpoon](https://github.com/jpoon))
+- Improve foldfix performance and potentially fix some bugs\(\#1855 \#2163\) [\#2867](https://github.com/VSCodeVim/Vim/pull/2867) ([xmbhasin](https://github.com/xmbhasin))
+- Roadmap doc fix for visual mode case switching [\#2866](https://github.com/VSCodeVim/Vim/pull/2866) ([pjlangley](https://github.com/pjlangley))
+- Add whichwrap [\#2864](https://github.com/VSCodeVim/Vim/pull/2864) ([davidmfoley](https://github.com/davidmfoley))
+- docs: add section on debugging remappings [\#2862](https://github.com/VSCodeVim/Vim/pull/2862) ([jpoon](https://github.com/jpoon))
+- Cache mode so that calls to setContext is minimized [\#2861](https://github.com/VSCodeVim/Vim/pull/2861) ([xconverge](https://github.com/xconverge))
+- Workaround surround bug [\#2830](https://github.com/VSCodeVim/Vim/pull/2830) ([reujab](https://github.com/reujab))
+- Add unit test for long user configured chords. [\#2736](https://github.com/VSCodeVim/Vim/pull/2736) ([regiontog](https://github.com/regiontog))
+
 ## [v0.15.3](https://github.com/vscodevim/vim/tree/v0.15.3) (2018-07-20)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.2...v0.15.3)
