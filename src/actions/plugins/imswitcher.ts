@@ -19,7 +19,7 @@ export class InputMethodSwitcher {
     if (configuration.autoSwitchInputMethod.enable !== true) {
       return;
     }
-    if (!this.validateConfiguration()) {
+    if (!this.isConfigurationValid()) {
       this.disableIMSwitch();
       return;
     }
@@ -120,7 +120,7 @@ export class InputMethodSwitcher {
     };
   }
 
-  private validateConfiguration(): boolean {
+  private isConfigurationValid(): boolean {
     let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
     if (!switchIMCmd.includes('{im}')) {
       Message.ShowError(
