@@ -277,7 +277,7 @@ export class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (position.line >= TextEditor.getLineCount() - 1) {
-      return position;
+      return { start: position, stop: position };
     }
     let t: Position | IMovement;
     let tStop: Position;
@@ -318,7 +318,7 @@ class MoveDown extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
-      return new MoveDownFoldFix().execAction(position, vimState);
+      return (<IMovement>await new MoveDownFoldFix().execAction(position, vimState)).stop;
     }
     return position.getDown(vimState.desiredColumn);
   }
@@ -358,7 +358,7 @@ class MoveUp extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
-      return new MoveUpFoldFix().execAction(position, vimState);
+      return (<IMovement>await new MoveUpFoldFix().execAction(position, vimState)).stop;
     }
     return position.getUp(vimState.desiredColumn);
   }
@@ -385,7 +385,7 @@ export class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (position.line === 0) {
-      return position;
+      return { start: position, stop: position };
     }
     let t: Position | IMovement;
     let tStop: Position;
