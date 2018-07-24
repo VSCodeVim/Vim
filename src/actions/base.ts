@@ -21,24 +21,15 @@ export let compareKeypressSequence = function(one: string[] | string[][], two: s
     return false;
   }
 
-  const isSingleNumber = (s: string): boolean => {
-    return s.length === 1 && '1234567890'.indexOf(s) > -1;
-  };
-
   const containsControlKey = (s: string): boolean => {
     // We count anything starting with < (e.g. <c-u>) as a control key, but we
     // exclude the first 3 because it's more convenient to do so.
-
-    return (
-      s.toUpperCase() !== '<BS>' &&
-      s.toUpperCase() !== '<SHIFT+BS>' &&
-      s.toUpperCase() !== '<TAB>' &&
-      s.startsWith('<') &&
-      s.length > 1
-    );
+    s = s.toUpperCase();
+    return s !== '<BS>' && s !== '<SHIFT+BS>' && s !== '<TAB>' && s.startsWith('<') && s.length > 1;
   };
 
-  const singleAlpha: RegExp = /^[a-zA-Z]$/;
+  const isSingleNumber: RegExp = /^[0-9]$/;
+  const isSingleAlpha: RegExp = /^[a-zA-Z]$/;
 
   for (let i = 0, j = 0; i < one.length; i++, j++) {
     const left = one[i],
@@ -51,17 +42,17 @@ export let compareKeypressSequence = function(one: string[] | string[][], two: s
       continue;
     }
 
-    if (left === '<number>' && isSingleNumber(right)) {
+    if (left === '<number>' && isSingleNumber.test(right)) {
       continue;
     }
-    if (right === '<number>' && isSingleNumber(left)) {
+    if (right === '<number>' && isSingleNumber.test(left)) {
       continue;
     }
 
-    if (left === '<alpha>' && singleAlpha.test(right)) {
+    if (left === '<alpha>' && isSingleAlpha.test(right)) {
       continue;
     }
-    if (right === '<alpha>' && singleAlpha.test(left)) {
+    if (right === '<alpha>' && isSingleAlpha.test(left)) {
       continue;
     }
 
@@ -129,9 +120,11 @@ export class BaseAction {
     if (this.modes.indexOf(vimState.currentMode) === -1) {
       return false;
     }
+
     if (!compareKeypressSequence(this.keys, keysPressed)) {
       return false;
     }
+
     if (
       this.mustBeFirstKey &&
       vimState.recordedState.commandWithoutCountPrefix.length - keysPressed.length > 0
@@ -182,6 +175,7 @@ export class Actions {
    */
   public static allActions: { type: typeof BaseAction; action: BaseAction }[] = [];
 
+  public static actionMap = new Map<ModeName, { type: typeof BaseAction; action: BaseAction }[]>();
   /**
    * Gets the action that should be triggered given a key
    * sequence.
@@ -199,13 +193,9 @@ export class Actions {
   ): BaseAction | KeypressState {
     let isPotentialMatch = false;
 
-    for (const thing of Actions.allActions) {
-      const { type, action } = thing!;
-
-      if (action.keys === undefined) {
-        // action that can't be called directly
-        continue;
-      }
+    var possibleActionsForMode = Actions.actionMap.get(vimState.currentMode) || [];
+    for (const possibleAction of possibleActionsForMode) {
+      const { type, action } = possibleAction!;
 
       if (action.doesActionApply(vimState, keysPressed)) {
         const result = new type();
@@ -223,5 +213,19 @@ export class Actions {
 }
 
 export function RegisterAction(action: typeof BaseAction): void {
-  Actions.allActions.push({ type: action, action: new action() });
+  const actionInstance = new action();
+  for (const modeName of actionInstance.modes) {
+    var actions = Actions.actionMap.get(modeName);
+    if (!actions) {
+      actions = [];
+      Actions.actionMap.set(modeName, actions);
+    }
+
+    if (actionInstance.keys === undefined) {
+      // action that can't be called directly
+      continue;
+    }
+
+    actions.push({ type: action, action: actionInstance });
+  }
 }
