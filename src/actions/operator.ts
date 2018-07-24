@@ -129,9 +129,6 @@ export class DeleteOperator extends BaseOperator {
         for (let len = startEndLineDistance + 1; len > 0; len--) {
           const expectedEndWithoutFolds = end.getDown(0);
           end = (<IMovement>await new MoveDownFoldFix().execAction(end, vimState)).stop;
-          // if (expectedEndWithoutFolds.line === end.line) {
-          //   continue;
-          // }
         }
         end = end.getUp(0).getLineEnd();
       }
@@ -283,9 +280,6 @@ export class YankOperator extends BaseOperator {
         for (let len = startEndLineDistance + 1; len > 0; len--) {
           const expectedEndWithoutFolds = end.getDown(0);
           end = (<IMovement>await new MoveDownFoldFix().execAction(end, vimState)).stop;
-          // if (expectedEndWithoutFolds.line === end.line) {
-          //   continue;
-          // }
         }
         end = end.getUp(0).getLineEnd();
       }
