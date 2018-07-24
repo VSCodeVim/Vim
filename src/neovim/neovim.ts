@@ -44,7 +44,7 @@ export class Neovim implements vscode.Disposable {
       await this.nvim.input('<esc>');
     }
 
-    // Check if an error occurred, if no error, then sync buffer back to vscode
+    // Check if an error occurred, then sync buffer back to vscode
     const errMsg = await this.nvim.getVvar('errmsg');
     if (errMsg && errMsg.toString() !== '') {
       StatusBar.SetText(
