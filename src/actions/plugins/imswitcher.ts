@@ -6,6 +6,11 @@ import { logger } from '../../util/logger';
 import { Message } from '../../util/message';
 import { Globals } from '../../globals';
 
+enum ModeCluster {
+  InsertLikeMode,
+  NormalLikeMode,
+}
+
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
   constructor(execute: (cmd: string) => Promise<string> = util.executeShell) {
@@ -24,32 +29,13 @@ export class InputMethodSwitcher {
       return;
     }
     // when you exit from insert-like mode, save origin input method and set it to default
-    if (
-      prevMode === ModeName.Insert ||
-      prevMode === ModeName.SurroundInputMode ||
-      prevMode === ModeName.Replace
-    ) {
-      if (
-        newMode !== ModeName.Insert &&
-        newMode !== ModeName.SurroundInputMode &&
-        newMode !== ModeName.Replace
-      ) {
-        this.switchToDefaultIM();
-        return;
-      }
-    }
-    // when you enter insert-like mode, resume origin input method
-    if (
-      newMode === ModeName.Insert ||
-      newMode === ModeName.SurroundInputMode ||
-      newMode === ModeName.Replace
-    ) {
-      if (
-        prevMode !== ModeName.Insert &&
-        prevMode !== ModeName.SurroundInputMode &&
-        prevMode !== ModeName.Replace
-      ) {
+    const prevModeCluster = this.getModeCluster(prevMode);
+    const newModeCluster = this.getModeCluster(newMode);
+    if (prevModeCluster !== newModeCluster) {
+      if (newModeCluster === ModeCluster.InsertLikeMode) {
         this.resumeIM();
+      } else if (newModeCluster === ModeCluster.NormalLikeMode) {
+        this.switchToDefaultIM();
       }
     }
   }
@@ -99,6 +85,18 @@ export class InputMethodSwitcher {
     } else {
       this.showCmdNotFoundErrorMessage(rawSwitchIMCmd, 'vim.autoSwitchInputMethod.switchIMCmd');
     }
+  }
+
+  private getModeCluster(mode: ModeName): ModeCluster {
+    const insertLikeModes = new Set([
+      ModeName.Insert,
+      ModeName.Replace,
+      ModeName.SurroundInputMode,
+    ]);
+    if (insertLikeModes.has(mode)) {
+      return ModeCluster.InsertLikeMode;
+    }
+    return ModeCluster.NormalLikeMode;
   }
 
   private getRawCmd(cmd: string): string {
