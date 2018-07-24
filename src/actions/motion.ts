@@ -122,16 +122,17 @@ export abstract class BaseMovement extends BaseAction {
       const firstIteration = i === 0;
       const lastIteration = i === count - 1;
 
-      const firstUp = firstIteration && this instanceof MoveUp;
-      const shouldIncludeFoldedRegionBelow =
-        configuration.foldfix && recordedState.operator && firstUp;
-      const temporaryResult = shouldIncludeFoldedRegionBelow
+      const isFirstUp = firstIteration && this instanceof MoveUp;
+      const includeFoldedRegionBelowBeforeUp =
+        configuration.foldfix && recordedState.operator && isFirstUp;
+      const temporaryResult = includeFoldedRegionBelowBeforeUp
         ? <IMovement>await new MoveDownFoldFix().execAction(position, vimState)
         : recordedState.operator && lastIteration
           ? await this.execActionForOperator(position, vimState)
           : await this.execAction(position, vimState);
 
-      if (shouldIncludeFoldedRegionBelow && count <= 99997) {
+      // must undo move down and replace consumed first iteration
+      if (includeFoldedRegionBelowBeforeUp && count <= 99997) {
         count += 2;
       }
 
@@ -150,9 +151,10 @@ export abstract class BaseMovement extends BaseAction {
         result.failed = result.failed || temporaryResult.failed;
 
         if (firstIteration) {
-          if (!shouldIncludeFoldedRegionBelow) {
+          if (!includeFoldedRegionBelowBeforeUp) {
             (result as IMovement).start = temporaryResult.start;
           } else {
+            // exclude line just below folded region added before first up
             (result as IMovement).start = temporaryResult.stop.getUp(vimState.desiredColumn);
           }
         }
