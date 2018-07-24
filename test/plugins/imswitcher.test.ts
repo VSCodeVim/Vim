@@ -9,7 +9,7 @@ suite('Input method plugin', () => {
 
   let savedCmd = '';
 
-  function fakeExecute1(cmd: string): Promise<string> {
+  function fakeExecuteChinese(cmd: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       if (cmd === 'im-select') {
         resolve('chinese');
@@ -20,7 +20,7 @@ suite('Input method plugin', () => {
     });
   }
 
-  function fakeExecute2(cmd: string): Promise<string> {
+  function fakeExecuteDefault(cmd: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       if (cmd === 'im-select') {
         resolve('default');
@@ -44,7 +44,7 @@ suite('Input method plugin', () => {
 
   test('use default im in insert mode', async () => {
     savedCmd = '';
-    const inputMethodSwitcher = new InputMethodSwitcher(fakeExecute2);
+    const inputMethodSwitcher = new InputMethodSwitcher(fakeExecuteDefault);
     await inputMethodSwitcher.switchInputMethod(ModeName.Normal, ModeName.Insert);
     assert.equal('', savedCmd);
     await inputMethodSwitcher.switchInputMethod(ModeName.Insert, ModeName.Normal);
@@ -57,7 +57,7 @@ suite('Input method plugin', () => {
 
   test('use other im in insert mode', async () => {
     savedCmd = '';
-    const inputMethodSwitcher = new InputMethodSwitcher(fakeExecute1);
+    const inputMethodSwitcher = new InputMethodSwitcher(fakeExecuteChinese);
     await inputMethodSwitcher.switchInputMethod(ModeName.Normal, ModeName.Insert);
     assert.equal('', savedCmd);
     await inputMethodSwitcher.switchInputMethod(ModeName.Insert, ModeName.Normal);
