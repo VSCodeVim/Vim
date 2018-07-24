@@ -35,9 +35,9 @@ export class Neovim implements vscode.Disposable {
     command = ':' + command + '\n';
     command = command.replace('<', '<lt>');
 
-    // Clear the previous error code. API does not allow setVvar so do it manually
-    await this.nvim.command('let v:errmsg=""');
-    await this.nvim.command('let v:statusmsg=""');
+    // Clear the previous error and status messages. API does not allow setVvar
+    // so do it manually
+    await this.nvim.command('let v:errmsg="" | let v:statusmsg=""');
 
     // Execute the command
     await this.nvim.input(command);
@@ -45,7 +45,8 @@ export class Neovim implements vscode.Disposable {
       await this.nvim.input('<esc>');
     }
 
-    // Check if an error occurred, then sync buffer back to vscode if command did not return an error
+    // Check if an error occurred, then sync buffer back to vscode if command
+    // did not return an error
     const errMsg = await this.nvim.getVvar('errmsg');
     let statusBarText = '';
     if (errMsg && errMsg.toString() !== '') {
