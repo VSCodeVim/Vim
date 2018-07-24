@@ -121,10 +121,19 @@ export abstract class BaseMovement extends BaseAction {
     for (let i = 0; i < count; i++) {
       const firstIteration = i === 0;
       const lastIteration = i === count - 1;
-      const temporaryResult =
-        recordedState.operator && lastIteration
+
+      const firstUp = firstIteration && this instanceof MoveUp;
+      const shouldIncludeFoldedRegionBelow =
+        configuration.foldfix && recordedState.operator && firstUp;
+      const temporaryResult = shouldIncludeFoldedRegionBelow
+        ? <IMovement>await new MoveDownFoldFix().execAction(position, vimState)
+        : recordedState.operator && lastIteration
           ? await this.execActionForOperator(position, vimState)
           : await this.execAction(position, vimState);
+
+      if (shouldIncludeFoldedRegionBelow && count <= 99997) {
+        count += 2;
+      }
 
       if (temporaryResult instanceof Position) {
         result = temporaryResult;
@@ -141,7 +150,11 @@ export abstract class BaseMovement extends BaseAction {
         result.failed = result.failed || temporaryResult.failed;
 
         if (firstIteration) {
-          (result as IMovement).start = temporaryResult.start;
+          if (!shouldIncludeFoldedRegionBelow) {
+            (result as IMovement).start = temporaryResult.start;
+          } else {
+            (result as IMovement).start = temporaryResult.stop.getUp(vimState.desiredColumn);
+          }
         }
 
         if (lastIteration) {
@@ -354,11 +367,8 @@ class MoveUp extends BaseMovement {
   ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
-      let actionRange = <IMovement>await new MoveUpFoldFix().execAction(position, vimState);
-      // const cursorPos = vimState.cursorPosition;
-      // const stop = (<IMovement>await new MoveUpFoldFix().execAction(position, vimState)).stop;
-      // const start = (<IMovement>await new MoveDownFoldFix().execAction(cursorPos, vimState)).stop;
-      // let actionRange: IMovement = { start: cursorPos.getDown(0), stop: position };
+      const stop = (<IMovement>await new MoveUpFoldFix().execAction(position, vimState)).stop;
+      const actionRange: IMovement = { start: position, stop };
       return actionRange;
     }
     return position.getUp(position.getLineEnd().character);
