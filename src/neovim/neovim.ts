@@ -9,6 +9,7 @@ import { TextEditor } from '../textEditor';
 import { Position } from './../common/motion/position';
 import { VimState } from './../state/vimState';
 import { logger } from '../util/logger';
+import { StatusBar } from '../statusBar';
 
 export class Neovim implements vscode.Disposable {
   private process: ChildProcess;
@@ -39,6 +40,18 @@ export class Neovim implements vscode.Disposable {
       await this.nvim.input('<esc>');
     }
     await this.syncVimToVs(vimState);
+
+    const errMsg = await this.nvim.getVvar('errmsg');
+
+    if (errMsg && errMsg.toString() !== '') {
+      StatusBar.SetText(
+        errMsg.toString(),
+        vimState.currentMode,
+        vimState.isRecordingMacro,
+        true,
+        true
+      );
+    }
 
     return;
   }
