@@ -1,5 +1,13 @@
 # Change Log
 
+## [v0.15.6](https://github.com/vscodevim/vim/tree/v0.15.6) (2018-07-24)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.5...v0.15.6)
+
+**Merged pull requests:**
+
+- Fix regression with setContext in modeHandler [\#2880](https://github.com/VSCodeVim/Vim/pull/2880) ([xconverge](https://github.com/xconverge))
+
 ## [v0.15.5](https://github.com/vscodevim/vim/tree/v0.15.5) (2018-07-24)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.4...v0.15.5)
