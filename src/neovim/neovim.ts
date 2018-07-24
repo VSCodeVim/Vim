@@ -72,9 +72,6 @@ export class Neovim implements vscode.Disposable {
   // Data flows from VS to Vim
   private async syncVSToVim(vimState: VimState) {
     const buf = await this.nvim.getCurrentBuf();
-    if (configuration.expandtab) {
-      await vscode.commands.executeCommand('editor.action.indentationToTabs');
-    }
 
     await this.nvim.setOption('gdefault', configuration.substituteGlobalFlag === true);
     await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
@@ -142,9 +139,6 @@ export class Neovim implements vscode.Disposable {
       new Position(row - 1, character)
     );
 
-    if (configuration.expandtab) {
-      await vscode.commands.executeCommand('editor.action.indentationToSpaces');
-    }
     // We're only syncing back the default register for now, due to the way we could
     // be storing macros in registers.
     const vimRegToVsReg = {
