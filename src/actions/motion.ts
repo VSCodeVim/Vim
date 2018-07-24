@@ -255,7 +255,7 @@ class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintain
   value = 1;
 }
 
-class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
+export class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -265,29 +265,34 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
+    let tStop: Position;
     let prevLine: number = position.line;
     let prevChar: number = position.character;
     const prevDesiredColumn = vimState.desiredColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
       t = <Position | IMovement>await moveDownByScreenLine.execAction(position, vimState);
-      t = t instanceof Position ? t : t.stop;
-      const lineChanged = prevLine !== t.line;
+      tStop = t instanceof Position ? t : t.stop;
+      const lineChanged = prevLine !== tStop.line;
       // wrappedLine movement goes to eol character only when at the last line
       // thus a column change on wrappedLine movement represents a visual last line
-      const colChanged = prevChar !== t.character;
+      const colChanged = prevChar !== tStop.character;
       if (lineChanged || !colChanged) {
         break;
       }
-      prevChar = t.character;
-      prevLine = t.line;
-    } while (t.line === position.line);
+      prevChar = tStop.character;
+      prevLine = tStop.line;
+    } while (tStop.line === position.line);
+
     // fix column change at last line caused by wrappedLine movement
     // causes cursor lag and flicker if a large repeat prefix is given to movement
-    if (t.character !== prevDesiredColumn) {
-      t = new Position(t.line, prevDesiredColumn);
+    if (tStop.character !== prevDesiredColumn) {
+      tStop = new Position(tStop.line, prevDesiredColumn);
     }
-    return t;
+
+    // create and return an `IMovement` to support `execActionForOperator`
+    const tMovement: IMovement = { start: position, stop: tStop };
+    return tMovement;
   }
 }
 
@@ -303,8 +308,19 @@ class MoveDown extends BaseMovement {
     return position.getDown(vimState.desiredColumn);
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionForOperator(
+    position: Position,
+    vimState: VimState
+  ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
+      let actionRange = <IMovement>await new MoveDownFoldFix().execAction(position, vimState);
+      // adjust range to exclude line after wrapped and/or folded block
+      actionRange.stop = actionRange.stop.getUp(vimState.desiredColumn);
+      return actionRange;
+    }
+
     return position.getDown(position.getLineEnd().character);
   }
 }
@@ -332,14 +348,25 @@ class MoveUp extends BaseMovement {
     return position.getUp(vimState.desiredColumn);
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionForOperator(
+    position: Position,
+    vimState: VimState
+  ): Promise<Position | IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
+    if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
+      let actionRange = <IMovement>await new MoveUpFoldFix().execAction(position, vimState);
+      // const cursorPos = vimState.cursorPosition;
+      // const stop = (<IMovement>await new MoveUpFoldFix().execAction(position, vimState)).stop;
+      // const start = (<IMovement>await new MoveDownFoldFix().execAction(cursorPos, vimState)).stop;
+      // let actionRange: IMovement = { start: cursorPos.getDown(0), stop: position };
+      return actionRange;
+    }
     return position.getUp(position.getLineEnd().character);
   }
 }
 
 @RegisterAction
-class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
+export class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -349,18 +376,23 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
+    let tStop: Position;
     const prevDesiredColumn = vimState.desiredColumn;
     const moveUpByScreenLine = new MoveUpByScreenLine();
     do {
       t = <Position | IMovement>await moveUpByScreenLine.execAction(position, vimState);
-      t = t instanceof Position ? t : t.stop;
-    } while (t.line === position.line);
+      tStop = t instanceof Position ? t : t.stop;
+    } while (tStop.line === position.line);
+
     // fix column change at last line caused by wrappedLine movement
     // causes cursor lag and flicker if a large repeat prefix is given to movement
-    if (t.character !== prevDesiredColumn) {
-      t = new Position(t.line, prevDesiredColumn);
+    if (tStop.character !== prevDesiredColumn) {
+      tStop = new Position(tStop.line, prevDesiredColumn);
     }
-    return t;
+
+    // create and return an `IMovement` to support `execActionForOperator`
+    const tMovement: IMovement = { start: position, stop: tStop };
+    return tMovement;
   }
 }
 
