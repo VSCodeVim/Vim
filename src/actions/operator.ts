@@ -10,6 +10,7 @@ import { TextEditor } from './../textEditor';
 import { BaseAction, compareKeypressSequence, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
+import { IMovement, MoveDownFoldFix, MoveUpFoldFix } from './motion';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -121,8 +122,20 @@ export class DeleteOperator extends BaseOperator {
     if (registerMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
+      const isddCommand = vimState.keyHistory.join('').includes('dd');
+      if (configuration.foldfix && isddCommand) {
+        const startEndLineDistance = Math.abs(end.line - start.line);
+        // delete folded lines hidden by every line that is to be deleted
+        for (let len = startEndLineDistance + 1; len > 0; len--) {
+          const expectedEndWithoutFolds = end.getDown(0);
+          end = (<IMovement>await new MoveDownFoldFix().execAction(end, vimState)).stop;
+          // if (expectedEndWithoutFolds.line === end.line) {
+          //   continue;
+          // }
+        }
+        end = end.getUp(0).getLineEnd();
+      }
     }
-
     end = new Position(end.line, end.character + 1);
 
     const isOnLastLine = end.line === TextEditor.getLineCount() - 1;
@@ -263,6 +276,19 @@ export class YankOperator extends BaseOperator {
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
+      const isyyCommand = vimState.keyHistory.join('').includes('yy');
+      if (configuration.foldfix && isyyCommand) {
+        const startEndLineDistance = Math.abs(end.line - start.line);
+        // delete folded lines hidden by every line that is to be deleted
+        for (let len = startEndLineDistance + 1; len > 0; len--) {
+          const expectedEndWithoutFolds = end.getDown(0);
+          end = (<IMovement>await new MoveDownFoldFix().execAction(end, vimState)).stop;
+          // if (expectedEndWithoutFolds.line === end.line) {
+          //   continue;
+          // }
+        }
+        end = end.getUp(0).getLineEnd();
+      }
     }
 
     let text = TextEditor.getText(new vscode.Range(start, end));
