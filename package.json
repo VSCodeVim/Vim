@@ -614,7 +614,7 @@
     "@types/copy-paste": "1.1.30",
     "@types/diff": "3.5.1",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.112",
+    "@types/lodash": "4.14.113",
     "@types/mocha": "5.2.5",
     "@types/node": "9.6.23",
     "gulp": "4.0.0",
