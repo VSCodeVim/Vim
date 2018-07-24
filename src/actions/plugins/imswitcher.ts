@@ -106,7 +106,7 @@ export class InputMethodSwitcher {
   }
 
   private showCmdNotFoundErrorMessage(cmd: string, config: string) {
-    Message.ShowError('Unable to find ' + cmd + '. check your ' + config + ' in VSCode setting.');
+    Message.ShowError(`Unable to find ${cmd}. check your ${config} in VSCode setting.`);
     this.disableIMSwitch();
   }
 
