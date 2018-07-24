@@ -76,7 +76,7 @@ function validateArgs(done) {
 }
 
 function createChangelog(done) {
-  const imageName = 'jpoon/github-changelog-generator';
+  const imageName = 'ferrarimarco/github-changelog-generator';
   const version = require('./package.json').version;
 
   const options = minimist(process.argv.slice(2), releaseOptions);
