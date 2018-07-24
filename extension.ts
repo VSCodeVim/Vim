@@ -58,11 +58,7 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
     }
   } else {
     previousActiveEditorId = activeEditorId;
-    await curHandler.updateView(curHandler.vimState, {
-      drawSelection: false,
-      revealRange: false,
-      forceSetContext: false,
-    });
+    await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
 
   if (prevHandler && curHandler.vimState.focusChanged) {
@@ -242,7 +238,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
-    mh.updateView(mh.vimState, { drawSelection: false, revealRange: false, forceSetContext: true });
+    mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
   // This is called last because getAndUpdateModeHandler() will change cursor
@@ -341,11 +337,7 @@ async function handleActiveEditorChange(): Promise<void> {
     if (vscode.window.activeTextEditor !== undefined) {
       const mh = await getAndUpdateModeHandler();
 
-      mh.updateView(mh.vimState, {
-        drawSelection: false,
-        revealRange: false,
-        forceSetContext: true,
-      });
+      mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
     }
   });
 }
