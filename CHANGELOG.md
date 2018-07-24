@@ -1,5 +1,15 @@
 # Change Log
 
+## [v0.15.5](https://github.com/vscodevim/vim/tree/v0.15.5) (2018-07-24)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.4...v0.15.5)
+
+**Merged pull requests:**
+
+- Neovim integration show errors when using commandline at correct times [\#2877](https://github.com/VSCodeVim/Vim/pull/2877) ([xconverge](https://github.com/xconverge))
+- Improve error reporting with neovim commandline [\#2876](https://github.com/VSCodeVim/Vim/pull/2876) ([xconverge](https://github.com/xconverge))
+- chore\(deps\): update dependency @types/lodash to v4.14.113 [\#2875](https://github.com/VSCodeVim/Vim/pull/2875) ([renovate-bot](https://github.com/renovate-bot))
+
 ## [v0.15.4](https://github.com/vscodevim/vim/tree/v0.15.4) (2018-07-24)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.3...v0.15.4)
