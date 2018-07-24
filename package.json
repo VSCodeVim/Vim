@@ -591,7 +591,7 @@
         },
         "vim.autoSwitchInputMethod.defaultIM": {
           "type": "string",
-          "description": "The input method for your normal mode, find more information here:https://github.com/daipeihust/Vim#2find-your-default-input-method-key",
+          "description": "The input method for your normal mode, find more information here:https://github.com/VSCodeVim/Vim#use-im-select",
           "default": ""
         },
         "vim.autoSwitchInputMethod.switchIMCmd": {
