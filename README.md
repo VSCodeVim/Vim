@@ -624,7 +624,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 ## 📚 F.A.Q.
 
-### None of the vim `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
+### None of the IDE `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
 Set the [`useCtrlKeys` setting](#vimusectrlkeys) to `false`.
 
