@@ -122,9 +122,10 @@ export class DeleteOperator extends BaseOperator {
     if (registerMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
-      const isddCommand = vimState.keyHistory.join('').includes('dd');
+      const isddCommand = vimState.recordedState.commandWithoutCountPrefix === 'dd';
       if (configuration.foldfix && isddCommand) {
         const startEndLineDistance = Math.abs(end.line - start.line);
+        end = new Position(start.line, end.character);
         // delete folded lines hidden by every line that is to be deleted
         for (let len = startEndLineDistance + 1; len > 0; len--) {
           const expectedEndWithoutFolds = end.getDown(0);
@@ -273,9 +274,10 @@ export class YankOperator extends BaseOperator {
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
-      const isyyCommand = vimState.keyHistory.join('').includes('yy');
+      const isyyCommand = vimState.recordedState.commandWithoutCountPrefix === 'yy';
       if (configuration.foldfix && isyyCommand) {
         const startEndLineDistance = Math.abs(end.line - start.line);
+        end = new Position(start.line, end.character);
         // delete folded lines hidden by every line that is to be deleted
         for (let len = startEndLineDistance + 1; len > 0; len--) {
           const expectedEndWithoutFolds = end.getDown(0);
