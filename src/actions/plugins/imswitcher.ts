@@ -6,13 +6,9 @@ import { logger } from '../../util/logger';
 import { Message } from '../../util/message';
 import { Globals } from '../../globals';
 
-enum ModeCluster {
-  InsertLikeMode,
-  NormalLikeMode,
-}
-
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
+
   constructor(execute: (cmd: string) => Promise<string> = util.executeShell) {
     this.execute = execute;
   }
@@ -29,12 +25,12 @@ export class InputMethodSwitcher {
       return;
     }
     // when you exit from insert-like mode, save origin input method and set it to default
-    const prevModeCluster = this.getModeCluster(prevMode);
-    const newModeCluster = this.getModeCluster(newMode);
-    if (prevModeCluster !== newModeCluster) {
-      if (newModeCluster === ModeCluster.InsertLikeMode) {
+    let isPrevModeInsertLike = this.isInsertLikeMode(prevMode);
+    let isNewModeInsertLike = this.isInsertLikeMode(newMode);
+    if (isPrevModeInsertLike !== isNewModeInsertLike) {
+      if (isNewModeInsertLike) {
         this.resumeIM();
-      } else if (newModeCluster === ModeCluster.NormalLikeMode) {
+      } else {
         this.switchToDefaultIM();
       }
     }
@@ -87,16 +83,16 @@ export class InputMethodSwitcher {
     }
   }
 
-  private getModeCluster(mode: ModeName): ModeCluster {
+  private isInsertLikeMode(mode: ModeName): boolean {
     const insertLikeModes = new Set([
       ModeName.Insert,
       ModeName.Replace,
       ModeName.SurroundInputMode,
     ]);
     if (insertLikeModes.has(mode)) {
-      return ModeCluster.InsertLikeMode;
+      return true;
     }
-    return ModeCluster.NormalLikeMode;
+    return false;
   }
 
   private getRawCmd(cmd: string): string {
