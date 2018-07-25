@@ -173,7 +173,8 @@ export class Remapper implements IRemapper {
   }
 
   private _getRemappings(): { [key: string]: IKeyRemapping } {
-    let remappings: { [key: string]: IKeyRemapping } = {};
+    // Create a null object so that there is no __proto__
+    let remappings: { [key: string]: IKeyRemapping } = Object.create(null);
     for (let remapping of configuration[this._configKey] as IKeyRemapping[]) {
       let debugMsg = `before=${remapping.before}. `;
 
