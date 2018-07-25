@@ -3,6 +3,8 @@ import * as path from 'path';
 import { configuration } from '../configuration/configuration';
 import { logger } from '../util/logger';
 
+const mkdirp = require('mkdirp');
+
 export class CommandLineHistory {
   private static readonly _historyFileName = '.cmdline_history';
   private _historyDir: string;
@@ -59,7 +61,7 @@ export class CommandLineHistory {
     return new Promise<void>((resolve, reject) => {
       try {
         if (!fs.existsSync(this._historyDir)) {
-          fs.mkdirSync(this._historyDir, 0o775);
+          mkdirp.sync(this._historyDir, 0o775);
         }
       } catch (err) {
         logger.error(
