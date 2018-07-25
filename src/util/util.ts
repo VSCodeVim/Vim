@@ -41,6 +41,7 @@ export async function getCursorsAfterSync(timeout: number = 0): Promise<Range[]>
 
 export function getExtensionDirPath(): string {
   const dirs = new AppDirectory('VSCodeVim');
+  logger.debug("VSCodeVim Cache Directory: " + dirs.userCache());
 
   return dirs.userCache();
 }
