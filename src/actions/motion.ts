@@ -120,7 +120,7 @@ export abstract class BaseMovement extends BaseAction {
 
     for (let i = 0; i < count; i++) {
       const firstIteration = i === 0;
-      const lastIteration = i === count - 1;
+      let lastIteration = i === count - 1;
 
       const isFirstUp = firstIteration && this instanceof MoveUp;
       const includeFoldedRegionBelowBeforeUp =
@@ -134,6 +134,7 @@ export abstract class BaseMovement extends BaseAction {
       // must undo move down and replace consumed first iteration
       if (includeFoldedRegionBelowBeforeUp && count <= 99997) {
         count += 2;
+        lastIteration = i === count - 1;
       }
 
       if (temporaryResult instanceof Position) {
@@ -160,6 +161,15 @@ export abstract class BaseMovement extends BaseAction {
         }
 
         if (lastIteration) {
+          const lastDownBeforeAction =
+            configuration.foldfix && recordedState.operator && this instanceof MoveDown;
+          // include folded region of last line after action prefixed down motion
+          if (lastDownBeforeAction) {
+            temporaryResult.stop = (<IMovement>(
+              await new MoveDownFoldFix().execAction(position, vimState)
+            )).stop.getUp(vimState.desiredColumn);
+          }
+
           (result as IMovement).stop = temporaryResult.stop;
         } else {
           position = temporaryResult.stop.getRightThroughLineBreaks();
@@ -318,7 +328,12 @@ class MoveDown extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
-      return (<IMovement>await new MoveDownFoldFix().execAction(position, vimState)).stop;
+      if (vimState.currentMode === ModeName.Normal) {
+        return await new MoveDownFoldFix().execAction(position, vimState);
+      } else {
+        // insert and visual modes break given an IMovement
+        return (<IMovement>await new MoveDownFoldFix().execAction(position, vimState)).stop;
+      }
     }
     return position.getDown(vimState.desiredColumn);
   }
@@ -358,7 +373,11 @@ class MoveUp extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
-      return (<IMovement>await new MoveUpFoldFix().execAction(position, vimState)).stop;
+      if (vimState.currentMode === ModeName.Normal) {
+        return await new MoveUpFoldFix().execAction(position, vimState);
+      } else {
+        return (<IMovement>await new MoveUpFoldFix().execAction(position, vimState)).stop;
+      }
     }
     return position.getUp(vimState.desiredColumn);
   }
