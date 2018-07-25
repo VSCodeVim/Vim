@@ -19,6 +19,10 @@ export class Notation {
    * (e.g. <space>, <cr>, <leader>)
    */
   public static NormalizeKey(key: string, leaderKey: string): string {
+    if (typeof key !== 'string') {
+      return key;
+    }
+
     if (!this.isSurroundedByAngleBrackets(key) && key.length > 1) {
       key = `<${key.toLocaleLowerCase()}>`;
     }
