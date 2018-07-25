@@ -1,5 +1,31 @@
 # Change Log
 
+## [v0.15.7](https://github.com/vscodevim/vim/tree/v0.15.7) (2018-07-25)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.6...v0.15.7)
+
+**Enhancements:**
+
+- Please use vscode's config folder for .cmdline\_history [\#2799](https://github.com/VSCodeVim/Vim/issues/2799)
+- Improve neovim command execution status reporting in status bar [\#2878](https://github.com/VSCodeVim/Vim/pull/2878) ([xconverge](https://github.com/xconverge))
+
+**Fixed Bugs:**
+
+- 'r' in insert mode not entered when typed quickly [\#2888](https://github.com/VSCodeVim/Vim/issues/2888)
+- Vim extension stops working [\#2873](https://github.com/VSCodeVim/Vim/issues/2873)
+
+**Closed issues:**
+
+- hjkl keys as arrow keys in intellisense contextual menu do not work [\#2885](https://github.com/VSCodeVim/Vim/issues/2885)
+
+**Merged pull requests:**
+
+- Fix issue with incorrectly finding and triggering certain remappings [\#2890](https://github.com/VSCodeVim/Vim/pull/2890) ([xconverge](https://github.com/xconverge))
+- Move commandline history to XDG\_CACHE\_HOME or %APPDATA% [\#2889](https://github.com/VSCodeVim/Vim/pull/2889) ([xconverge](https://github.com/xconverge))
+- fix: use ferrarimarco's image instead of my fork to generate changelog [\#2884](https://github.com/VSCodeVim/Vim/pull/2884) ([jpoon](https://github.com/jpoon))
+- fix: use map to search for relevant actions. \#2021 [\#2883](https://github.com/VSCodeVim/Vim/pull/2883) ([jpoon](https://github.com/jpoon))
+- fix: handle non-string remapped key. closes \#2873 [\#2881](https://github.com/VSCodeVim/Vim/pull/2881) ([jpoon](https://github.com/jpoon))
+
 ## [v0.15.6](https://github.com/vscodevim/vim/tree/v0.15.6) (2018-07-24)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.5...v0.15.6)
@@ -28,14 +54,13 @@
 
 **Fixed Bugs:**
 
+- Long key chords does not trigger configured action. [\#2735](https://github.com/VSCodeVim/Vim/issues/2735)
 - Cursor jumps erratically before moving vertically [\#2163](https://github.com/VSCodeVim/Vim/issues/2163)
 
 **Closed issues:**
 
-- Vim extension stops working [\#2873](https://github.com/VSCodeVim/Vim/issues/2873)
 - ^f stopped working after 1.25.1 update [\#2865](https://github.com/VSCodeVim/Vim/issues/2865)
 - Switching escape and capslock [\#2859](https://github.com/VSCodeVim/Vim/issues/2859)
-- Long key chords does not trigger configured action. [\#2735](https://github.com/VSCodeVim/Vim/issues/2735)
 
 **Merged pull requests:**
 
