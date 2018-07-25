@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.15.6",
+  "version": "0.15.7",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -620,9 +620,11 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
+    "appdirectory": "0.1.0",
     "clipboardy": "1.2.3",
     "diff-match-patch": "1.0.1",
     "lodash": "4.17.10",
+    "mkdirp": "0.5.1",
     "neovim-client": "2.1.0",
     "promised-neovim-client": "2.0.2",
     "untildify": "3.0.3",
