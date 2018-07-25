@@ -38,5 +38,18 @@ export async function getCursorsAfterSync(timeout: number = 0): Promise<Range[]>
 }
 
 export function getExtensionDirPath(): string {
-  return path.join(os.homedir(), '.VSCodeVim');
+  let homeVar = 'XDG_CACHE_HOME';
+  if (process.platform === 'win32') {
+    homeVar = 'LOCALAPPDATA';
+  }
+
+  // Try to find the directory path
+  let newPath = process.env[homeVar];
+
+  // If path is not found, fallback to homedir
+  if (newPath === undefined || newPath === '') {
+    newPath = os.homedir();
+  }
+
+  return path.join(newPath, '.vscodevim');
 }
