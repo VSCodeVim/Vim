@@ -5,6 +5,8 @@ import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
 import { logger } from './logger';
 
+const AppDirectory = require('appdirectory');
+
 /**
  * This is certainly quite janky! The problem we're trying to solve
  * is that writing editor.selection = new Position() won't immediately
@@ -38,18 +40,7 @@ export async function getCursorsAfterSync(timeout: number = 0): Promise<Range[]>
 }
 
 export function getExtensionDirPath(): string {
-  let homeVar = 'XDG_CACHE_HOME';
-  if (process.platform === 'win32') {
-    homeVar = 'LOCALAPPDATA';
-  }
+  const dirs = new AppDirectory('VSCodeVim');
 
-  // Try to find the directory path
-  let newPath = process.env[homeVar];
-
-  // If path is not found, fallback to homedir
-  if (newPath === undefined || newPath === '') {
-    newPath = os.homedir();
-  }
-
-  return path.join(newPath, '.vscodevim');
+  return dirs.userCache();
 }
