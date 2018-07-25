@@ -45,8 +45,7 @@ export class Neovim implements vscode.Disposable {
       await this.nvim.input('<esc>');
     }
 
-    // Check if an error occurred, then sync buffer back to vscode if command
-    // did not return an error
+    // Check if an error occurred
     const errMsg = await this.nvim.getVvar('errmsg');
     let statusBarText = '';
     if (errMsg && errMsg.toString() !== '') {
@@ -57,9 +56,13 @@ export class Neovim implements vscode.Disposable {
       if (statusMsg && statusMsg.toString() !== '') {
         statusBarText = statusMsg.toString();
       }
-
-      await this.syncVimToVs(vimState);
     }
+
+    // TODO xconverge: only do this if a command was successful, but be mindful
+    // of indentation changes that were made
+
+    // Sync buffer back to vscode
+    await this.syncVimToVs(vimState);
 
     // Lastly update the status bar
     StatusBar.SetText(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true, true);
