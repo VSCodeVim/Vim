@@ -89,10 +89,7 @@ export class InputMethodSwitcher {
       ModeName.Replace,
       ModeName.SurroundInputMode,
     ]);
-    if (insertLikeModes.has(mode)) {
-      return true;
-    }
-    return false;
+    return insertLikeModes.has(mode);
   }
 
   private getRawCmd(cmd: string): string {
