@@ -17,8 +17,9 @@ Globals.mockConfiguration = new Configuration();
 
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
 var testRunner = require('vscode/lib/testrunner');
+// create new RegExp to catch error early, ie before passing it to mocha
 const mochaGrep = new RegExp(process.env.MOCHA_GREP || '');
-const testRunnerConfiguration = {
+const testRunnerConfiguration: MochaSetupOptions = {
   ui: 'tdd',
   useColors: true,
   timeout: 10000,
