@@ -207,23 +207,20 @@ gulp.task('test', function(done) {
       );
     }
 
+    const dockerRunArgs = [
+      'run',
+      '-it',
+      '--env',
+      `MOCHA_GREP=${options.grep}`,
+      '-v',
+      process.cwd() + ':/app',
+      dockerTag,
+    ];
     console.log('Running tests inside container...');
-    var dockerRunCmd = spawn(
-      'docker',
-      [
-        'run',
-        '-it',
-        '--env',
-        `MOCHA_GREP=${options.grep}`,
-        '-v',
-        process.cwd() + ':/app',
-        dockerTag,
-      ],
-      {
-        cwd: process.cwd(),
-        stdio: 'inherit',
-      }
-    );
+    var dockerRunCmd = spawn('docker', dockerRunArgs, {
+      cwd: process.cwd(),
+      stdio: 'inherit',
+    });
 
     dockerRunCmd.on('exit', function(exitCode) {
       done(exitCode);
