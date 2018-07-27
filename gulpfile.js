@@ -178,6 +178,12 @@ gulp.task('forceprettier', function(done) {
 
 // test
 gulp.task('test', function(done) {
+  var knownOptions = {
+    string: 'grep',
+    default: { grep: '' },
+  };
+  var options = minimist(process.argv.slice(2), knownOptions);
+
   var spawn = require('child_process').spawn;
   const dockerTag = 'vscodevim';
 
@@ -201,10 +207,22 @@ gulp.task('test', function(done) {
     }
 
     console.log('Running tests inside container...');
-    var dockerRunCmd = spawn('docker', ['run', '-it', '-v', process.cwd() + ':/app', dockerTag], {
-      cwd: process.cwd(),
-      stdio: 'inherit',
-    });
+    var dockerRunCmd = spawn(
+      'docker',
+      [
+        'run',
+        '-it',
+        '--env',
+        `MOCHA_GREP=${options.grep}`,
+        '-v',
+        process.cwd() + ':/app',
+        dockerTag,
+      ],
+      {
+        cwd: process.cwd(),
+        stdio: 'inherit',
+      }
+    );
 
     dockerRunCmd.on('exit', function(exitCode) {
       done(exitCode);

@@ -17,10 +17,14 @@ Globals.mockConfiguration = new Configuration();
 
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
 var testRunner = require('vscode/lib/testrunner');
-testRunner.configure({
+const mochaGrep = new RegExp(process.env.MOCHA_GREP || '');
+const testRunnerConfiguration = {
   ui: 'tdd',
   useColors: true,
   timeout: 10000,
-});
+  grep: mochaGrep,
+};
+
+testRunner.configure(testRunnerConfiguration);
 
 module.exports = testRunner;
