@@ -198,9 +198,8 @@ export class Actions {
       const { type, action } = possibleAction!;
 
       if (action.doesActionApply(vimState, keysPressed)) {
-        const result = new type();
-        result.keysPressed = vimState.recordedState.actionKeys.slice(0);
-        return result;
+        action.keysPressed = vimState.recordedState.actionKeys.slice(0);
+        return action;
       }
 
       if (action.couldActionApply(vimState, keysPressed)) {
