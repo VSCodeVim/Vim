@@ -12,6 +12,11 @@ export class Notation {
     '\n': ['<cr>', '<enter>'],
   };
 
+  public static IsContainControlKey(key: string): boolean {
+    key = key.toLocaleUpperCase();
+    return this.isSurroundedByAngleBrackets(key) && key !== '<BS>' && key !== '<SHIFT+BS>' && key !== '<TAB>';
+  }
+
   /**
    * Normalizes key to AngleBracketNotation
    * (e.g. <ctrl+x>, Ctrl+x, <c-x> normalized to <C-x>)

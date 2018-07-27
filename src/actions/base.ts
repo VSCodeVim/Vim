@@ -1,10 +1,8 @@
 import { configuration } from './../configuration/configuration';
 import { ModeName } from './../mode/mode';
 import { VimState } from './../state/vimState';
+import { Notation } from '../configuration/notation';
 
-const is2DArray = function<T>(x: any): x is T[][] {
-  return Array.isArray(x[0]);
-};
 
 export class BaseAction {
   /**
@@ -64,7 +62,7 @@ export class BaseAction {
       return false;
     }
 
-    const keys2D = is2DArray(this.keys) ? this.keys : [this.keys];
+    const keys2D = BaseAction.is2DArray(this.keys) ? this.keys : [this.keys];
     const keysSlice = keys2D.map(x => x.slice(0, keysPressed.length));
     if (!BaseAction.CompareKeypressSequence(keysSlice, keysPressed)) {
       return false;
@@ -80,11 +78,11 @@ export class BaseAction {
     return true;
   }
 
-  public static CompareKeypressSequence = function(
+  public static CompareKeypressSequence(
     one: string[] | string[][],
     two: string[]
   ): boolean {
-    if (is2DArray(one)) {
+    if (BaseAction.is2DArray(one)) {
       for (const sequence of one) {
         if (BaseAction.CompareKeypressSequence(sequence, two)) {
           return true;
@@ -97,15 +95,6 @@ export class BaseAction {
     if (one.length !== two.length) {
       return false;
     }
-
-    const containsControlKey = (s: string): boolean => {
-      // We count anything starting with < (e.g. <c-u>) as a control key, but we
-      // exclude the first 3 because it's more convenient to do so.
-      s = s.toUpperCase();
-      return (
-        s !== '<BS>' && s !== '<SHIFT+BS>' && s !== '<TAB>' && s.startsWith('<') && s.length > 1
-      );
-    };
 
     const isSingleNumber: RegExp = /^[0-9]$/;
     const isSingleAlpha: RegExp = /^[a-zA-Z]$/;
@@ -135,10 +124,10 @@ export class BaseAction {
         continue;
       }
 
-      if (left === '<character>' && !containsControlKey(right)) {
+      if (left === '<character>' && !Notation.IsContainControlKey(right)) {
         continue;
       }
-      if (right === '<character>' && !containsControlKey(left)) {
+      if (right === '<character>' && !Notation.IsContainControlKey(left)) {
         continue;
       }
 
@@ -167,6 +156,10 @@ export class BaseAction {
   public toString(): string {
     return this.keys.join('');
   }
+
+  private static is2DArray<T>(x: any): x is T[][] {
+    return Array.isArray(x[0]);
+  };
 }
 
 export enum KeypressState {
