@@ -3010,13 +3010,22 @@ class EvenPaneWidths extends BaseCommand {
 @RegisterAction
 class CommandTabNext extends BaseTabCommand {
   keys = [['g', 't'], ['<C-pagedown>']];
-  runsOnceForEachCountPrefix = true;
+  runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    new TabCommand({
-      tab: Tab.Next,
-      count: vimState.recordedState.count,
-    }).execute();
+    // gt behaves differently than gT and goes to an absolute index tab, it does
+    // NOT iterate over next tabs
+    if (vimState.recordedState.count > 0) {
+      new TabCommand({
+        tab: Tab.Absolute,
+        count: vimState.recordedState.count,
+      }).execute();
+    } else {
+      new TabCommand({
+        tab: Tab.Next,
+        count: 1,
+      }).execute();
+    }
 
     return vimState;
   }
