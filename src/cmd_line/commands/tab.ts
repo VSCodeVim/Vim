@@ -48,46 +48,9 @@ export class TabCommand extends node.CommandBase {
     switch (this._arguments.tab) {
       case Tab.Absolute:
         if (this._arguments.count /** not undefined or 0 */) {
-          // This is ridiculous, but vscode does not currently have an api for
-          // openEditorAtIndex with an argument, so if 1-9, use the "efficient"
-          // call, otherwise compute it by going to tab 1 and move x number of
-          // times
-          switch (this._arguments.count) {
-            case 1:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
-              break;
-            case 2:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex2');
-              break;
-            case 3:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex3');
-              break;
-            case 4:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex4');
-              break;
-            case 5:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex5');
-              break;
-            case 6:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex6');
-              break;
-            case 7:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex7');
-              break;
-            case 8:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex8');
-              break;
-            case 9:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex9');
-              break;
-            default:
-              await vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
-              await this.executeCommandWithCount(
-                this._arguments.count! - 1,
-                'workbench.action.nextEditorInGroup'
-              );
-              break;
-          }
+          await vscode.commands.executeCommand(
+            'workbench.action.openEditorAtIndex' + this._arguments.count
+          );
         }
         break;
       case Tab.Next:
