@@ -171,9 +171,7 @@ export class Actions {
   /**
    * Every Vim action will be added here with the @RegisterAction decorator.
    */
-  public static allActions: { type: typeof BaseAction; action: BaseAction }[] = [];
-
-  public static actionMap = new Map<ModeName, { type: typeof BaseAction; action: BaseAction }[]>();
+  public static actionMap = new Map<ModeName, typeof BaseAction[]>();
   /**
    * Gets the action that should be triggered given a key
    * sequence.
@@ -192,13 +190,11 @@ export class Actions {
     let isPotentialMatch = false;
 
     var possibleActionsForMode = Actions.actionMap.get(vimState.currentMode) || [];
-    for (const possibleAction of possibleActionsForMode) {
-      const { type, action } = possibleAction!;
-
+    for (const actionType of possibleActionsForMode) {
+      const action = new actionType();
       if (action.doesActionApply(vimState, keysPressed)) {
-        const result = new type();
-        result.keysPressed = vimState.recordedState.actionKeys.slice(0);
-        return result;
+        action.keysPressed = vimState.recordedState.actionKeys.slice(0);
+        return action;
       }
 
       if (action.couldActionApply(vimState, keysPressed)) {
@@ -224,6 +220,6 @@ export function RegisterAction(action: typeof BaseAction): void {
       continue;
     }
 
-    actions.push({ type: action, action: actionInstance });
+    actions.push(action);
   }
 }
