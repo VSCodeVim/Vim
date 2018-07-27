@@ -178,6 +178,7 @@ gulp.task('forceprettier', function(done) {
 
 // test
 gulp.task('test', function(done) {
+  // the flag --grep takes js regex as a string and filters by test and test suite names
   var knownOptions = {
     string: 'grep',
     default: { grep: '' },
