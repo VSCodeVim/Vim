@@ -178,6 +178,13 @@ gulp.task('forceprettier', function(done) {
 
 // test
 gulp.task('test', function(done) {
+  // the flag --grep takes js regex as a string and filters by test and test suite names
+  var knownOptions = {
+    string: 'grep',
+    default: { grep: '' },
+  };
+  var options = minimist(process.argv.slice(2), knownOptions);
+
   var spawn = require('child_process').spawn;
   const dockerTag = 'vscodevim';
 
@@ -200,8 +207,17 @@ gulp.task('test', function(done) {
       );
     }
 
+    const dockerRunArgs = [
+      'run',
+      '-it',
+      '--env',
+      `MOCHA_GREP=${options.grep}`,
+      '-v',
+      process.cwd() + ':/app',
+      dockerTag,
+    ];
     console.log('Running tests inside container...');
-    var dockerRunCmd = spawn('docker', ['run', '-it', '-v', process.cwd() + ':/app', dockerTag], {
+    var dockerRunCmd = spawn('docker', dockerRunArgs, {
       cwd: process.cwd(),
       stdio: 'inherit',
     });

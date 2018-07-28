@@ -45,9 +45,10 @@ When submitting a PR, please fill out the template that is presented by GitHub w
     # Or run tests by selecting the appropriate drop down option
 
     # Alternatively, build and run tests through gulp and npm scripts
-    gulp build            # build
-    npm test              # test
-    gulp test             # run tests inside Docker container
+    gulp build                  # build
+    npm test                    # test
+    gulp test                   # run tests inside Docker container
+    gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
     ```
 
 ## Code Architecture
