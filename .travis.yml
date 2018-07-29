@@ -37,9 +37,9 @@ before_install:
 
 script:
 - npm run forceprettier
-- if [[ $(git diff-index HEAD -- *.js *.ts) ]]; then
+- if [[ $(git diff-index HEAD -- *.js *.ts *.md) ]]; then
     git diff;
-    echo "Prettier Failed. Run `gulp` or `gulp forceprettier`";
+    echo "Prettier Failed. Run `gulp forceprettier` and commit changes to resolve.";
     exit 1;
   fi
 - npm run build

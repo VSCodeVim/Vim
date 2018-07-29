@@ -1,7 +1,8 @@
 # Code of Conduct
 
 ## Our Standards
-Be nice. Please. Everybody contributing to open source contributes out of good will in their own free time. 
+
+Be nice. Please. Everybody contributing to open source contributes out of good will in their own free time.
 
 ## Our Responsibilities
 
