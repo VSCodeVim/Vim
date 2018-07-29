@@ -1407,13 +1407,15 @@ export abstract class MoveInsideCharacter extends BaseMovement {
   protected includeSurrounding = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const failure = { start: position, stop: position, failed: true };
     const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
     const closedMatch = text[position.character] === closingChar;
+    const cursorStartPos = vimState.cursorStartPosition;
+    // maintain current selection on failure
+    const failure = { start: cursorStartPos, stop: position, failed: true };
 
     // First, search backwards for the opening character of the sequence
-    let startPos = PairMatcher.nextPairedChar(position, closingChar, closedMatch);
+    let startPos = PairMatcher.nextPairedChar(cursorStartPos, closingChar, closedMatch);
     if (startPos === undefined) {
       return failure;
     }
@@ -1426,7 +1428,7 @@ export abstract class MoveInsideCharacter extends BaseMovement {
       startPlusOne = new Position(startPos.line, startPos.character + 1);
     }
 
-    let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
+    let endPos = PairMatcher.nextPairedChar(position, this.charToMatch, false);
     if (endPos === undefined) {
       return failure;
     }
