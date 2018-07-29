@@ -13,6 +13,8 @@ import {
   MoveAParentheses,
   MoveASingleQuotes,
   MoveASquareBracket,
+  MoveABacktick,
+  MoveAroundTag,
 } from './motion';
 import { ChangeOperator } from './operator';
 
@@ -152,7 +154,7 @@ export class SelectABigWord extends TextObjectMovement {
 /**
  * This is a custom action that I (johnfn) added. It selects procedurally
  * larger blocks. e.g. if you had "blah (foo [bar 'ba|z'])" then it would
- * select 'baz' first. If you pressed az again, it'd then select [bar 'baz'],
+ * select 'baz' first. If you pressed af again, it'd then select [bar 'baz'],
  * and if you did it a third time it would select "(foo [bar 'baz'])".
  */
 @RegisterAction
@@ -164,14 +166,17 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
     const ranges = [
       await new MoveASingleQuotes().execAction(position, vimState),
       await new MoveADoubleQuotes().execAction(position, vimState),
+      await new MoveABacktick().execAction(position, vimState),
       await new MoveAClosingCurlyBrace().execAction(position, vimState),
       await new MoveAParentheses().execAction(position, vimState),
       await new MoveASquareBracket().execAction(position, vimState),
+      await new MoveAroundTag().execAction(position, vimState),
     ];
 
     let smallestRange: Range | undefined = undefined;
 
     for (const iMotion of ranges) {
+      const currentSelectedRange = new Range(vimState.cursorStartPosition, vimState.cursorPosition);
       if (iMotion.failed) {
         continue;
       }
@@ -179,11 +184,16 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
       const range = Range.FromIMovement(iMotion);
       let contender: Range | undefined = undefined;
 
-      if (!smallestRange) {
-        contender = range;
-      } else {
-        if (range.start.isAfter(smallestRange.start) && range.stop.isBefore(smallestRange.stop)) {
+      if (
+        range.start.isBefore(currentSelectedRange.start) &&
+        range.stop.isAfter(currentSelectedRange.stop)
+      ) {
+        if (!smallestRange) {
           contender = range;
+        } else {
+          if (range.start.isAfter(smallestRange.start) && range.stop.isBefore(smallestRange.stop)) {
+            contender = range;
+          }
         }
       }
 
