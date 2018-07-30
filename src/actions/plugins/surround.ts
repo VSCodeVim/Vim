@@ -544,25 +544,27 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     }
 
     if (target === 't') {
+      // `MoveInsideTag` must be run first as otherwise the search will
+      // look for the next enclosing tag after having selected the first
+      let innerTagContent = await new MoveInsideTag().execAction(position, vimState);
       let { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
-      let tagEnd = await new MoveInsideTag().execAction(position, vimState);
 
-      if (failed || tagEnd.failed) {
+      if (failed || innerTagContent.failed) {
         return CommandSurroundAddToReplacement.Finish(vimState);
       }
 
       stop = stop.getRight();
-      tagEnd.stop = tagEnd.stop.getRight();
+      innerTagContent.stop = innerTagContent.stop.getRight();
 
       if (failed) {
         return CommandSurroundAddToReplacement.Finish(vimState);
       }
 
       startReplaceRange = new Range(start, start.getRight());
-      endReplaceRange = new Range(tagEnd.stop, tagEnd.stop.getRight());
+      endReplaceRange = new Range(innerTagContent.stop, innerTagContent.stop.getRight());
 
-      startDeleteRange = new Range(start.getRight(), tagEnd.start);
-      endDeleteRange = new Range(tagEnd.stop.getRight(), stop);
+      startDeleteRange = new Range(start.getRight(), innerTagContent.start);
+      endDeleteRange = new Range(innerTagContent.stop.getRight(), stop);
     }
 
     if (operator === 'change') {
