@@ -37,13 +37,13 @@ export class Configuration implements IConfiguration {
   incsearch = true;
   startInInsertMode = false;
   statusBarColorControl = false;
-  statusBarColors: {
-    normal: '#005f5f';
-    insert: '#5f0000';
-    visual: '#5f00af';
-    visualline: '#005f87';
-    visualblock: '#86592d';
-    replace: '#000000';
+  statusBarColors: IModeSpecificStrings<string> = {
+    normal: '#005f5f',
+    insert: '#5f0000',
+    visual: '#5f00af',
+    visualline: '#005f87',
+    visualblock: '#86592d',
+    replace: '#000000',
   };
   debug: {
     loggingLevel: 'warn';

@@ -7,7 +7,7 @@ import { ModeName } from './../mode/mode';
 import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
-import { BaseAction, compareKeypressSequence, RegisterAction } from './base';
+import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
 
@@ -32,7 +32,7 @@ export class BaseOperator extends BaseAction {
     if (this.modes.indexOf(vimState.currentMode) === -1) {
       return false;
     }
-    if (!compareKeypressSequence(this.keys, keysPressed)) {
+    if (!BaseAction.CompareKeypressSequence(this.keys, keysPressed)) {
       return false;
     }
     if (
@@ -52,7 +52,7 @@ export class BaseOperator extends BaseAction {
     if (this.modes.indexOf(vimState.currentMode) === -1) {
       return false;
     }
-    if (!compareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
+    if (!BaseAction.CompareKeypressSequence(this.keys.slice(0, keysPressed.length), keysPressed)) {
       return false;
     }
     if (
@@ -81,7 +81,7 @@ export class BaseOperator extends BaseAction {
       // The previous action is the same as the one we're testing
       prevAction.constructor === this.constructor &&
       // The key pressed is the same as the previous action's last key.
-      compareKeypressSequence(prevAction.keysPressed.slice(-1), keysPressed)
+      BaseAction.CompareKeypressSequence(prevAction.keysPressed.slice(-1), keysPressed)
     );
   }
 
