@@ -1,4 +1,4 @@
-import { Position } from './../common/motion/position';
+import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { ModeName } from './../mode/mode';
 import { RegisterMode } from './../register/register';
@@ -15,6 +15,7 @@ import {
   MoveASquareBracket,
   MoveABacktick,
   MoveAroundTag,
+  isIMovement,
 } from './motion';
 import { ChangeOperator } from './operator';
 
@@ -163,15 +164,31 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
   modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const ranges = [
-      await new MoveASingleQuotes().execAction(position, vimState),
-      await new MoveADoubleQuotes().execAction(position, vimState),
-      await new MoveABacktick().execAction(position, vimState),
-      await new MoveAClosingCurlyBrace().execAction(position, vimState),
-      await new MoveAParentheses().execAction(position, vimState),
-      await new MoveASquareBracket().execAction(position, vimState),
-      await new MoveAroundTag().execAction(position, vimState),
+    const blocks = [
+      new MoveADoubleQuotes(),
+      new MoveASingleQuotes(),
+      new MoveABacktick(),
+      new MoveAClosingCurlyBrace(),
+      new MoveAParentheses(),
+      new MoveASquareBracket(),
+      new MoveAroundTag(),
     ];
+    // ideally no state would change as we test each of the possible expansions
+    // a deep copy of vimState could work here but may be expensive
+    let ranges: IMovement[] = [];
+    for (const block of blocks) {
+      const cursorPos = new Position(position.line, position.character);
+      const cursorStartPos = new Position(
+        vimState.cursorStartPosition.line,
+        vimState.cursorStartPosition.character
+      );
+      ranges.push(await block.execAction(cursorPos, vimState));
+      vimState.cursorStartPosition = cursorStartPos;
+    }
+
+    ranges = ranges.filter(range => {
+      return !range.failed;
+    });
 
     let smallestRange: Range | undefined = undefined;
 
@@ -209,18 +226,74 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
         }
       }
     }
-
     if (!smallestRange) {
       return {
         start: vimState.cursorStartPosition,
         stop: vimState.cursorPosition,
       };
     } else {
+      // revert relevant state changes
+      vimState.cursorStartPosition = new Position(
+        smallestRange.start.line,
+        smallestRange.start.character
+      );
+      vimState.cursorPosition = new Position(smallestRange.stop.line, smallestRange.stop.character);
+      vimState.recordedState.operatorPositionDiff = undefined;
       return {
         start: smallestRange.start,
         stop: smallestRange.stop,
       };
     }
+  }
+  public async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number
+  ): Promise<Position | IMovement> {
+    let recordedState = vimState.recordedState;
+    let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+
+    if (count < 1) {
+      count = 1;
+    } else if (count > 99999) {
+      count = 99999;
+    }
+
+    for (let i = 0; i < count; i++) {
+      const lastIteration = i === count - 1;
+      const temporaryResult =
+        recordedState.operator && lastIteration
+          ? await this.execActionForOperator(position, vimState)
+          : await this.execAction(position, vimState);
+
+      if (temporaryResult instanceof Position) {
+        result = temporaryResult;
+        position = temporaryResult;
+      } else if (isIMovement(temporaryResult)) {
+        if (result instanceof Position) {
+          result = {
+            start: new Position(0, 0),
+            stop: new Position(0, 0),
+            failed: false,
+          };
+        }
+
+        result.failed = result.failed || temporaryResult.failed;
+
+        // update start every iteration as selection expands
+        (result as IMovement).start = temporaryResult.start;
+
+        if (lastIteration) {
+          (result as IMovement).stop = temporaryResult.stop;
+        } else {
+          position = temporaryResult.stop;
+        }
+
+        result.registerMode = temporaryResult.registerMode;
+      }
+    }
+
+    return result;
   }
 }
 
