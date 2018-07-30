@@ -539,11 +539,38 @@
         },
         "vim.statusBarColorControl": {
           "type": "boolean",
-          "description": "Allow VSCodeVim to change status bar color based on mode"
+          "description": "Allow VSCodeVim to change status bar color based on mode",
+          "default": false
         },
-        "vim.statusBarColors": {
-          "type": "object",
-          "description": "Customize colors per mode when VSCodeVim controls status bar colors"
+        "vim.statusBarColors.normal": {
+          "type": "string",
+          "description": "Status bar color when in Normal mode",
+          "default": "#005f5f"
+        },
+        "vim.statusBarColors.insert": {
+          "type": "string",
+          "description": "Status bar color when in Insert mode",
+          "default": "#5f0000"
+        },
+        "vim.statusBarColors.visual": {
+          "type": "string",
+          "description": "Status bar color when in Visual mode",
+          "default": "#5f00af"
+        },
+        "vim.statusBarColors.visualline": {
+          "type": "string",
+          "description": "Status bar color when in VisualLine mode",
+          "default": "#005f5f"
+        },
+        "vim.statusBarColors.visualblock": {
+          "type": "string",
+          "description": "Status bar color when in VisualBlock mode",
+          "default": "#86592d"
+        },
+        "vim.statusBarColors.replace": {
+          "type": "string",
+          "description": "Status bar color when in Replace mode",
+          "default": "#00000"
         },
         "vim.visualstar": {
           "type": "boolean",
