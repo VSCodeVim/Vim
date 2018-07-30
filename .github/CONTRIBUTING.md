@@ -11,12 +11,12 @@ Thanks for helping us in making VSCodeVim better! :clap:
 The [GitHub issue tracker](https://github.com/VSCodeVim/Vim/issues) is the preferred channel for tracking bugs and enhancement suggestions.
 When creating a new bug report do:
 
-* Search against existing issues to check if somebody else has already reported your problem or requested your idea
-* Fill out the issue template.
+- Search against existing issues to check if somebody else has already reported your problem or requested your idea
+- Fill out the issue template.
 
 ## Submitting Pull Requests
 
-Pull requests are *awesome*.
+Pull requests are _awesome_.
 If you're looking to raise a PR for something which doesn't have an open issue, consider creating an issue first.
 
 When submitting a PR, please fill out the template that is presented by GitHub when a PR is opened.
@@ -24,46 +24,47 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 ## First Time Setup
 
 1. Install prerequisites:
-   * latest [Visual Studio Code](https://code.visualstudio.com/)
-   * [Node.js](https://nodejs.org/) v8.0.0 or higher
+   - latest [Visual Studio Code](https://code.visualstudio.com/)
+   - [Node.js](https://nodejs.org/) v8.0.0 or higher
 1. In a terminal:
 
-    ```bash
-    # fork and clone the repository
-    git clone git@github.com:<YOUR-FORK>/Vim.git
-    cd Vim
+   ```bash
+   # fork and clone the repository
+   git clone git@github.com:<YOUR-FORK>/Vim.git
+   cd Vim
 
-    # Install the dependencies
-    npm install -g gulp-cli
-    npm install
+   # Install the dependencies
+   npm install -g gulp-cli
+   npm install
 
-    # Open in VSCode
-    code .
+   # Open in VSCode
+   code .
 
-    # Choose the "Build, Run Extension" in the dropdown of VSCode's
-    # debug tab to build and run the extension.
-    # Or run tests by selecting the appropriate drop down option
+   # Choose the "Build, Run Extension" in the dropdown of VSCode's
+   # debug tab to build and run the extension.
+   # Or run tests by selecting the appropriate drop down option
 
-    # Alternatively, build and run tests through gulp and npm scripts
-    gulp build            # build
-    npm test              # test
-    gulp test             # run tests inside Docker container
-    ```
+   # Alternatively, build and run tests through gulp and npm scripts
+   gulp build                  # build
+   npm test                    # test
+   gulp test                   # run tests inside Docker container
+   gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
+   ```
 
 ## Code Architecture
 
 The code is split into two parts:
 
-* ModeHandler - Vim state machine
-* Actions - 'actions' which modify the state
+- ModeHandler - Vim state machine
+- Actions - 'actions' which modify the state
 
 ### Actions
 
 Actions are all currently stuffed into actions.ts (sorry!). There are:
 
-* `BaseAction` - the base Action type that all Actions derive from.
-* `BaseMovement` - A movement (e.g.`w`, `h`, `{`, etc.) *ONLY* updates the cursor position or returns an `IMovement`, which indicates a start and stop. This is used for movements like `aw` which may actually start before the cursor.
-* `BaseCommand` - Anything which is not just a movement is a Command. That includes motions which also update the state of Vim in some way, like `*`.
+- `BaseAction` - the base Action type that all Actions derive from.
+- `BaseMovement` - A movement (e.g.`w`, `h`, `{`, etc.) _ONLY_ updates the cursor position or returns an `IMovement`, which indicates a start and stop. This is used for movements like `aw` which may actually start before the cursor.
+- `BaseCommand` - Anything which is not just a movement is a Command. That includes motions which also update the state of Vim in some way, like `*`.
 
 At one point, I wanted to have actions.ts be completely pure (no side effects whatsoever), so commands would just return objects indicating what side effects on the editor they would have. This explains the giant switch in handleCommand in ModeHandler. I now believe this to be a dumb idea and someone should get rid of it.
 
@@ -71,8 +72,8 @@ At one point, I wanted to have actions.ts be completely pure (no side effects wh
 
 Consists of two data structures:
 
-* `VimState` - this is the state of Vim. It's what actions update.
-* `RecordedState` - this is temporary state that will reset at the end of a change.
+- `VimState` - this is the state of Vim. It's what actions update.
+- `RecordedState` - this is temporary state that will reset at the end of a change.
 
 #### How it works
 
@@ -83,7 +84,7 @@ Consists of two data structures:
 
 #### vscode.window.onDidChangeTextEditorSelection
 
-This is my hack to simulate a click event based API in an IDE that doesn't have them (yet?). I check the selection that just came in to see if it's the same as what I thought I previously set the selection to the last time the state machine updated. If it's not, the user *probably* clicked. (But she also could have tab completed!)
+This is my hack to simulate a click event based API in an IDE that doesn't have them (yet?). I check the selection that just came in to see if it's the same as what I thought I previously set the selection to the last time the state machine updated. If it's not, the user _probably_ clicked. (But she also could have tab completed!)
 
 ## Release
 
