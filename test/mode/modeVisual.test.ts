@@ -533,9 +533,57 @@ suite('Mode Visual', () => {
   });
 
   newTest({
+    title: 'Can do vat on multiple matching tags',
+    start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
+    keysPressed: 'vatatd',
+    end: ['one | four'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Can maintain selection on failure with vat on multiple matching tags',
+    start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
+    keysPressed: 'vatatatatd',
+    end: ['one | four'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Can maintain selection on failure with repeat-prefixed vat on multiple matching tags',
+    start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
+    keysPressed: 'v4atd',
+    end: ['one | four'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Repeat-prefixed vat does not bleed below',
+    start: ['<p>', '\t<p>', '\t|test', '\t</p>', '</p>', '', 'do not delete'],
+    keysPressed: 'v8atd',
+    end: ['|', '', 'do not delete'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Failed vat does not expand or move selection, remains in visual mode',
+    start: ['one | two'],
+    keysPressed: 'v4atd',
+    end: ['one |two'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
     title: 'Can do vi) on a matching parenthesis',
     start: ['test(te|st)'],
     keysPressed: 'vi)d',
+    end: ['test(|)'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Can do vi) on multiple matching parens',
+    start: ['test(te(te|st)st)'],
+    keysPressed: 'vi)i)d',
     end: ['test(|)'],
     endMode: ModeName.Normal,
   });
@@ -549,10 +597,42 @@ suite('Mode Visual', () => {
   });
 
   newTest({
+    title: 'Can do va) on multiple matching parens',
+    start: ['test(te(te|st)st);'],
+    keysPressed: 'va)a)d',
+    end: ['test|;'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Failed va) does not expand or move selection, remains in visual mode',
+    start: ['one | two'],
+    keysPressed: 'v4a)d',
+    end: ['one |two'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Repeat-prefixed va) does not bleed below',
+    start: ['(', '\t(', '\t|', '\t)', ')', '', 'do not delete'],
+    keysPressed: 'v8a)d',
+    end: ['|', '', 'do not delete'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
     title: 'Can do va} on a matching bracket as first character',
     start: ['1|{', 'test', '}1'],
     keysPressed: 'va}d',
     end: ['1|1'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Can do va} on multiple matching brackets',
+    start: ['test{te{te|st}st};'],
+    keysPressed: 'va}a}d',
+    end: ['test|;'],
     endMode: ModeName.Normal,
   });
 
@@ -580,6 +660,37 @@ suite('Mode Visual', () => {
     endMode: ModeName.Normal,
   });
 
+  newTest({
+    title: 'Can do va] on multiple matching brackets',
+    start: ['test[te[te|st]st];'],
+    keysPressed: 'va]a]d',
+    end: ['test|;'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Can do repeat-prefixed vaf on multiple matching pairs of different types',
+    start: ['test <div><p>[[{{((|))}}]]</p></div> test;'],
+    keysPressed: 'v8afd',
+    end: ['test | test;'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'Repeat-prefixed vaf does not bleed below',
+    start: ['<p>', '\t(', '\t|', '\t)', '</p>', '', 'do not delete'],
+    keysPressed: 'v8afd',
+    end: ['|', '', 'do not delete'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
+    title: 'vaf only expands to enclosing pairs',
+    start: ['test (f|oo) "hi" test;'],
+    keysPressed: 'vafd',
+    end: ['test | "hi" test;'],
+    endMode: ModeName.Normal,
+  });
   suite('handles replace in visual mode', () => {
     newTest({
       title: 'Can do a single line replace',
