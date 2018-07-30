@@ -1808,12 +1808,13 @@ abstract class MoveTagMatch extends BaseMovement {
     const editorText = TextEditor.getText();
     const offset = TextEditor.getOffsetAt(position);
     const tagMatcher = new TagMatcher(editorText, offset);
+    const cursorStartPos = vimState.cursorStartPosition;
     const start = tagMatcher.findOpening(this.includeTag);
     const end = tagMatcher.findClosing(this.includeTag);
 
     if (start === undefined || end === undefined) {
       return {
-        start: position,
+        start: cursorStartPos,
         stop: position,
         failed: true,
       };

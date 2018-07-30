@@ -1,3 +1,6 @@
+import { TextEditor } from '../../textEditor';
+import { Position } from '../motion/position';
+
 type Tag = { name: string; type: 'close' | 'open'; startPos: number; endPos: number };
 type MatchedTag = {
   tag: string;
@@ -8,7 +11,8 @@ type MatchedTag = {
 };
 
 export class TagMatcher {
-  static TAG_REGEX = /\<(\/)?([^\>\<\s]+)[^\>\<]*?(\/?)\>/g;
+  // see regexr.com/3t585
+  static TAG_REGEX = /\<(\/)?([^\>\<\s\/]+)(?:[^\>\<]*?)(\/)?\>/g;
   static OPEN_FORWARD_SLASH = 1;
   static TAG_NAME = 2;
   static CLOSE_FORWARD_SLASH = 3;
@@ -72,8 +76,11 @@ export class TagMatcher {
       }
     }
 
+    const selection = TextEditor.getSelection();
+    const selectionStart = TextEditor.getOffsetAt(Position.FromVSCodePosition(selection.start));
+    const selectionEnd = TextEditor.getOffsetAt(Position.FromVSCodePosition(selection.end));
     const tagsSurrounding = matchedTags.filter(n => {
-      return position >= n.openingTagStart && position <= n.closingTagEnd;
+      return selectionStart > n.openingTagStart && selectionEnd < n.closingTagEnd;
     });
 
     if (!tagsSurrounding.length) {
