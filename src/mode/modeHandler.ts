@@ -36,7 +36,6 @@ export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _remappers: Remappers;
-  private _prevMode: ModeName;
 
   public vimState: VimState;
 
@@ -257,11 +256,7 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      await this.updateView(this.vimState, {
-        drawSelection: toDraw,
-        revealRange: true,
-        forceSetContext: false,
-      });
+      await this.updateView(this.vimState, { drawSelection: toDraw, revealRange: true });
     }
   }
 
@@ -1184,10 +1179,9 @@ export class ModeHandler implements vscode.Disposable {
 
   public async updateView(
     vimState: VimState,
-    args: { drawSelection: boolean; revealRange: boolean; forceSetContext: boolean } = {
+    args: { drawSelection: boolean; revealRange: boolean } = {
       drawSelection: true,
       revealRange: true,
-      forceSetContext: false,
     }
   ): Promise<void> {
     // Draw selection (or cursor)
@@ -1402,15 +1396,11 @@ export class ModeHandler implements vscode.Disposable {
 
     this._renderStatusBar();
 
-    // Only update the context if the mode has changed for performance reasons
-    if (args.forceSetContext || this._prevMode !== this.vimState.currentMode) {
-      this._prevMode = this.vimState.currentMode;
-      await vscode.commands.executeCommand(
-        'setContext',
-        'vim.mode',
-        ModeName[this.vimState.currentMode]
-      );
-    }
+    await vscode.commands.executeCommand(
+      'setContext',
+      'vim.mode',
+      ModeName[this.vimState.currentMode]
+    );
   }
 
   private _renderStatusBar(): void {

@@ -1,17 +1,17 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import * as base from '../../src/actions/base';
+import { BaseAction } from '../../src/actions/base';
 import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
 
-class TestAction1D extends base.BaseAction {
+class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
   modes = [ModeName.Normal];
 }
 
-class TestAction2D extends base.BaseAction {
+class TestAction2D extends BaseAction {
   keys = [['a', 'b'], ['c', 'd']];
   modes = [ModeName.Normal];
 }
@@ -47,7 +47,7 @@ suite('base action', () => {
         let right = testCases[test][1];
         let expected = testCases[test][2];
 
-        let actual = base.compareKeypressSequence(left, right);
+        let actual = BaseAction.CompareKeypressSequence(left, right);
         assert.equal(actual, expected, `${left}. ${right}.`);
       }
     }
