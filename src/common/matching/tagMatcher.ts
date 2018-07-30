@@ -1,5 +1,5 @@
 import { TextEditor } from '../../textEditor';
-import { Position } from '../motion/position';
+import { VimState } from '../../state/vimState';
 
 type Tag = { name: string; type: 'close' | 'open'; startPos: number; endPos: number };
 type MatchedTag = {
@@ -22,7 +22,7 @@ export class TagMatcher {
   closeStart: number | undefined;
   closeEnd: number | undefined;
 
-  constructor(corpus: string, position: number) {
+  constructor(corpus: string, position: number, vimState: VimState) {
     let match = TagMatcher.TAG_REGEX.exec(corpus);
     const tags: Tag[] = [];
 
@@ -76,11 +76,10 @@ export class TagMatcher {
       }
     }
 
-    const selection = TextEditor.getSelection();
-    const selectionStart = TextEditor.getOffsetAt(Position.FromVSCodePosition(selection.start));
-    const selectionEnd = TextEditor.getOffsetAt(Position.FromVSCodePosition(selection.end));
+    const startPos = TextEditor.getOffsetAt(vimState.cursorStartPosition);
+    const endPos = TextEditor.getOffsetAt(vimState.cursorPosition);
     const tagsSurrounding = matchedTags.filter(n => {
-      return selectionStart > n.openingTagStart && selectionEnd < n.closingTagEnd;
+      return startPos > n.openingTagStart && endPos < n.closingTagEnd;
     });
 
     if (!tagsSurrounding.length) {
