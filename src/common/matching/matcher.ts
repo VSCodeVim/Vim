@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { TextEditor } from './../../textEditor';
 import { Position, PositionDiff } from './../motion/position';
 import { configuration } from '../../configuration/configuration';
+import { VimState } from '../../state/vimState';
 
 /**
  * PairMatcher finds the position matching the given character, respecting nested
@@ -40,15 +41,19 @@ export class PairMatcher {
     charToFind: string,
     charToStack: string,
     stackHeight,
-    isNextMatchForward: boolean
+    isNextMatchForward: boolean,
+    vimState?: VimState
   ): Position | undefined {
     let lineNumber = position.line;
     let linePosition = position.character;
     let lineCount = TextEditor.getLineCount();
     let cursorChar = TextEditor.getCharAt(position);
-    let selection = TextEditor.getSelection();
-    if (selection.start.isEqual(selection.end) && cursorChar === charToFind) {
-      return position;
+    if (vimState) {
+      let startPos = vimState.cursorStartPosition;
+      let endPos = vimState.cursorPosition;
+      if (startPos.isEqual(endPos) && cursorChar === charToFind) {
+        return position;
+      }
     }
 
     while (PairMatcher.keepSearching(lineNumber, lineCount, isNextMatchForward)) {
@@ -113,7 +118,7 @@ export class PairMatcher {
   static nextPairedChar(
     position: Position,
     charToMatch: string,
-    closed: boolean = true
+    vimState?: VimState
   ): Position | undefined {
     /**
      * We do a fairly basic implementation that only tracks the state of the type of
@@ -142,7 +147,8 @@ export class PairMatcher {
       charToFind,
       charToStack,
       stackHeight,
-      pairing.isNextMatchForward
+      pairing.isNextMatchForward,
+      vimState
     );
 
     if (matchedPos) {
