@@ -225,4 +225,6 @@ export interface IConfiguration {
    *  emulate whichwrap
    */
   whichwrap: string;
+
+  cursorStylePerMode: IModeSpecificStrings<string>;
 }

@@ -607,9 +607,29 @@
           "description": "Automatically apply the global flag, /g, to substitute commands. When set to true, use /g to mean only first match should be replaced.",
           "default": false
         },
-        "vim.cursorStylePerMode": {
-          "type": "object",
-          "description": "Customize cursor style per mode"
+        "vim.cursorStylePerMode.normal": {
+          "type": "string",
+          "description": "Cursor style for Normal mode"
+        },
+        "vim.cursorStylePerMode.insert": {
+          "type": "string",
+          "description": "Cursor style for Insert mode"
+        },
+        "vim.cursorStylePerMode.replace": {
+          "type": "string",
+          "description": "Cursor style for Replace mode"
+        },
+        "vim.cursorStylePerMode.visual": {
+          "type": "string",
+          "description": "Cursor style for Visual mode"
+        },
+        "vim.cursorStylePerMode.visualline": {
+          "type": "string",
+          "description": "Cursor style for VisualLine mode"
+        },
+        "vim.cursorStylePerMode.visualblock": {
+          "type": "string",
+          "description": "Cursor style for VisualBlock mode"
         },
         "vim.whichwrap": {
           "type": "string",

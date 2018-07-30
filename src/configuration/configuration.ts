@@ -311,7 +311,7 @@ class Configuration implements IConfiguration {
   whichwrap = '';
   wrapKeys = {};
 
-  private cursorStylePerMode: IModeSpecificStrings<string> = {
+  cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,
     insert: undefined,
     visual: undefined,
