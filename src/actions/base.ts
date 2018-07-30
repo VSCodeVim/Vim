@@ -3,7 +3,6 @@ import { ModeName } from './../mode/mode';
 import { VimState } from './../state/vimState';
 import { Notation } from '../configuration/notation';
 
-
 export class BaseAction {
   /**
    * Can this action be paired with an operator (is it like w in dw)? All
@@ -78,10 +77,7 @@ export class BaseAction {
     return true;
   }
 
-  public static CompareKeypressSequence(
-    one: string[] | string[][],
-    two: string[]
-  ): boolean {
+  public static CompareKeypressSequence(one: string[] | string[][], two: string[]): boolean {
     if (BaseAction.is2DArray(one)) {
       for (const sequence of one) {
         if (BaseAction.CompareKeypressSequence(sequence, two)) {
@@ -124,10 +120,10 @@ export class BaseAction {
         continue;
       }
 
-      if (left === '<character>' && !Notation.IsContainControlKey(right)) {
+      if (left === '<character>' && !Notation.IsControlKey(right)) {
         continue;
       }
-      if (right === '<character>' && !Notation.IsContainControlKey(left)) {
+      if (right === '<character>' && !Notation.IsControlKey(left)) {
         continue;
       }
 
@@ -151,7 +147,7 @@ export class BaseAction {
     }
 
     return true;
-  };
+  }
 
   public toString(): string {
     return this.keys.join('');
@@ -159,7 +155,7 @@ export class BaseAction {
 
   private static is2DArray<T>(x: any): x is T[][] {
     return Array.isArray(x[0]);
-  };
+  }
 }
 
 export enum KeypressState {

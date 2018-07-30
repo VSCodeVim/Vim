@@ -12,9 +12,14 @@ export class Notation {
     '\n': ['<cr>', '<enter>'],
   };
 
-  public static IsContainControlKey(key: string): boolean {
+  public static IsControlKey(key: string): boolean {
     key = key.toLocaleUpperCase();
-    return this.isSurroundedByAngleBrackets(key) && key !== '<BS>' && key !== '<SHIFT+BS>' && key !== '<TAB>';
+    return (
+      this.isSurroundedByAngleBrackets(key) &&
+      key !== '<BS>' &&
+      key !== '<SHIFT+BS>' &&
+      key !== '<TAB>'
+    );
   }
 
   /**
