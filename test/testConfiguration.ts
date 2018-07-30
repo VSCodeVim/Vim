@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 
-import { IConfiguration, IKeyRemapping } from '../src/configuration/iconfiguration';
+import {
+  IConfiguration,
+  IKeyRemapping,
+  IModeSpecificStrings,
+} from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
   useSystemClipboard = false;
@@ -58,13 +62,13 @@ export class Configuration implements IConfiguration {
   enableNeovim = false;
   neovimPath = 'nvim';
   substituteGlobalFlag = false;
-  modeToCursorStyleMap = {
-    normal: vscode.TextEditorCursorStyle.Line,
-    insert: vscode.TextEditorCursorStyle.Line,
-    visual: vscode.TextEditorCursorStyle.Line,
-    visualline: vscode.TextEditorCursorStyle.Line,
-    visualblock: vscode.TextEditorCursorStyle.Line,
-    replace: vscode.TextEditorCursorStyle.Line,
+  cursorStylePerMode: IModeSpecificStrings<string> = {
+    normal: 'line',
+    insert: 'block',
+    visual: 'underline',
+    visualline: 'thin-lin',
+    visualblock: 'block-outline',
+    replace: 'underline-thin,',
   };
   insertModeKeyBindings: IKeyRemapping[] = [];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
@@ -74,5 +78,4 @@ export class Configuration implements IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   whichwrap = '';
   wrapKeys = {};
-  cursorStylePerMode;
 }

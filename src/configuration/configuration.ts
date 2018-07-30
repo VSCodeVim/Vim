@@ -320,19 +320,13 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  get modeToCursorStyleMap(): IModeSpecificStrings<vscode.TextEditorCursorStyle> {
-    let map = <IModeSpecificStrings<vscode.TextEditorCursorStyle>>{};
+  getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
+    let cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
+    if (cursorStyle) {
+      return this.cursorStyleFromString(cursorStyle);
+    }
 
-    Object.keys(this.cursorStylePerMode).forEach(k => {
-      let cursor = this.cursorStylePerMode[k];
-      let cursorStyle = this.cursorStyleFromString(cursor);
-      map[k] = cursorStyle;
-    });
-
-    return map;
-  }
-  set modeToCursorStyleMap(val: IModeSpecificStrings<vscode.TextEditorCursorStyle>) {
-    // nop
+    return;
   }
 
   // remappings

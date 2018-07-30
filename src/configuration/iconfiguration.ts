@@ -209,8 +209,6 @@ export interface IConfiguration {
    */
   substituteGlobalFlag: boolean;
 
-  modeToCursorStyleMap: IModeSpecificStrings<vscode.TextEditorCursorStyle>;
-
   /**
    * Keybindings
    */
