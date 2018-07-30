@@ -1480,14 +1480,14 @@ export class ModeHandler implements vscode.Disposable {
 
     if (vimState.currentMode === ModeName.Insert) {
       // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
-      let result = PairMatcher.nextPairedChar(vimState.cursorPosition, key, false);
+      let result = PairMatcher.nextPairedChar(vimState.cursorPosition, key);
       if (result !== undefined) {
         if (vimState.cursorPosition.compareTo(result) === 0) {
           return true;
         }
       }
 
-      result = PairMatcher.nextPairedChar(vimState.cursorPosition.getLeft(), key, true);
+      result = PairMatcher.nextPairedChar(vimState.cursorPosition.getLeft(), key);
       if (result !== undefined) {
         if (vimState.cursorPosition.getLeftByCount(2).compareTo(result) === 0) {
           return true;
