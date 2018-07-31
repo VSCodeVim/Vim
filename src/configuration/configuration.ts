@@ -84,16 +84,17 @@ class Configuration implements IConfiguration {
     for (const option in this) {
       const val = vimConfigs[option] as any;
       if (val !== null && val !== undefined) {
-        this[option] = val;
+        if (val.constructor.name === Object.name) {
+          let val2 = {} as any;
+          for (const option2 in val) {
+            val2[option2] = val[option2];
+          }
+          this[option] = val2;
+        } else {
+          this[option] = val;
+        }
       }
     }
-
-    this.autoSwitchInputMethod = {
-      enable: false,
-      defaultIM: '',
-      obtainIMCmd: '',
-      switchIMCmd: '',
-    };
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
@@ -227,7 +228,12 @@ class Configuration implements IConfiguration {
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
-  autoSwitchInputMethod: IAutoSwitchInputMethod;
+  autoSwitchInputMethod: IAutoSwitchInputMethod = {
+    enable: false,
+    defaultIM: '',
+    obtainIMCmd: '',
+    switchIMCmd: '',
+  };
 
   timeout = 1000;
 
