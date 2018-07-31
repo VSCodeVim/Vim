@@ -1408,13 +1408,24 @@ export abstract class MoveInsideCharacter extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
-    const cursorStartPos = new Position(
+    let cursorStartPos = new Position(
       vimState.cursorStartPosition.line,
       vimState.cursorStartPosition.character
     );
     // maintain current selection on failure
     const failure = { start: cursorStartPos, stop: position, failed: true };
-
+    if (!this.includeSurrounding) {
+      const adjacentPosLeft = cursorStartPos.getLeftThroughLineBreaks();
+      const adjacentPosRight = position.getRightThroughLineBreaks();
+      const adjacentCharLeft = TextEditor.getCharAt(adjacentPosLeft);
+      const adjacentCharRight = TextEditor.getCharAt(adjacentPosRight);
+      if (adjacentCharLeft === this.charToMatch && adjacentCharRight === closingChar) {
+        cursorStartPos = adjacentPosLeft;
+        vimState.cursorStartPosition = adjacentPosLeft;
+        position = adjacentPosRight;
+        vimState.cursorPosition = adjacentPosRight;
+      }
+    }
     // First, search backwards for the opening character of the sequence
     let startPos = PairMatcher.nextPairedChar(cursorStartPos, closingChar, vimState);
     if (startPos === undefined) {
