@@ -524,6 +524,15 @@ suite('Mode Visual', () => {
     });
 
     newTest({
+      title:
+        'Count-prefixed vit alternates expanding selection between inner and outer tag brackets',
+      start: ['<div> one <p> t|wo </p> three </div>'],
+      keysPressed: 'v3itd',
+      end: ['<div>|</div>'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
       title: 'Can do vat on a matching tag',
       start: ['one <blink>he|llo</blink> two'],
       keysPressed: 'vatd',
