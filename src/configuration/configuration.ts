@@ -88,6 +88,13 @@ class Configuration implements IConfiguration {
       }
     }
 
+    this.autoSwitchInputMethod = {
+      enable: false,
+      defaultIM: '',
+      obtainIMCmd: '',
+      switchIMCmd: '',
+    };
+
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
     // normalize remapped keys
@@ -220,12 +227,7 @@ class Configuration implements IConfiguration {
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
-  autoSwitchInputMethod: IAutoSwitchInputMethod = {
-    enable: false,
-    defaultIM: '',
-    switchIMCmd: '',
-    obtainIMCmd: '',
-  };
+  autoSwitchInputMethod: IAutoSwitchInputMethod;
 
   timeout = 1000;
 

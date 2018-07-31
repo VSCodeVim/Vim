@@ -8,7 +8,6 @@ import { Globals } from '../../globals';
 
 // InputMethodSwitcher change input method automatically when mode changed
 export class InputMethodSwitcher {
-
   constructor(execute: (cmd: string) => Promise<string> = util.executeShell) {
     this.execute = execute;
   }
@@ -102,13 +101,7 @@ export class InputMethodSwitcher {
   }
 
   private disableIMSwitch() {
-    const originConfig = configuration.autoSwitchInputMethod;
-    configuration.autoSwitchInputMethod = {
-      enable: false,
-      defaultIM: originConfig.defaultIM,
-      switchIMCmd: originConfig.switchIMCmd,
-      obtainIMCmd: originConfig.obtainIMCmd,
-    };
+    configuration.autoSwitchInputMethod.enable = false;
   }
 
   private isConfigurationValid(): boolean {
