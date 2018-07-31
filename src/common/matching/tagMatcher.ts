@@ -1,5 +1,6 @@
 import { TextEditor } from '../../textEditor';
 import { VimState } from '../../state/vimState';
+import { Position } from 'vscode';
 
 type Tag = { name: string; type: 'close' | 'open'; startPos: number; endPos: number };
 type MatchedTag = {
@@ -77,7 +78,7 @@ export class TagMatcher {
     }
 
     const startPos = TextEditor.getOffsetAt(vimState.cursorStartPosition);
-    const endPos = TextEditor.getOffsetAt(vimState.cursorPosition);
+    const endPos = position;
     const tagsSurrounding = matchedTags.filter(n => {
       return startPos > n.openingTagStart && endPos < n.closingTagEnd;
     });
@@ -90,9 +91,18 @@ export class TagMatcher {
     const nodeSurrounding = tagsSurrounding[0];
 
     this.openStart = nodeSurrounding.openingTagStart;
-    this.openEnd = nodeSurrounding.openingTagEnd;
-    this.closeStart = nodeSurrounding.closingTagStart;
     this.closeEnd = nodeSurrounding.closingTagEnd;
+    // if the inner tag content is already selected, expand to enclose tags with 'it' as in vim
+    if (
+      startPos === nodeSurrounding.openingTagEnd &&
+      endPos + 1 === nodeSurrounding.closingTagStart
+    ) {
+      this.openEnd = this.openStart;
+      this.closeStart = this.closeEnd;
+    } else {
+      this.openEnd = nodeSurrounding.openingTagEnd;
+      this.closeStart = nodeSurrounding.closingTagStart;
+    }
   }
 
   findOpening(inclusive: boolean): number | undefined {
