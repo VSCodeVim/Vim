@@ -82,17 +82,12 @@ class Configuration implements IConfiguration {
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      const val = vimConfigs[option] as any;
+      let val = vimConfigs[option] as any;
       if (val !== null && val !== undefined) {
         if (val.constructor.name === Object.name) {
-          let val2 = {} as any;
-          for (const option2 in val) {
-            val2[option2] = val[option2];
-          }
-          this[option] = val2;
-        } else {
-          this[option] = val;
+          val = this.unproxify(val);
         }
+        this[option] = val;
       }
     }
 
@@ -177,6 +172,17 @@ class Configuration implements IConfiguration {
       'vim.overrideCtrlC',
       this.overrideCopy || this.useCtrlKeys
     );
+  }
+
+  unproxify(obj: Object): Object {
+    let result = {};
+    for (const key in obj) {
+      let val = obj[key] as any;
+      if (val !== null && val !== undefined) {
+        result[key] = val;
+      }
+    }
+    return result;
   }
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
