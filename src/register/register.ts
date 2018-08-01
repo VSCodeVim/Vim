@@ -220,7 +220,11 @@ export class Register {
     vimState: VimState
   ): void {
     if (Register.isClipboardRegister(register)) {
-      Clipboard.Copy(content.toString());
+      if (content instanceof Array) {
+        Clipboard.Copy(content.join('\n'));
+      } else {
+        Clipboard.Copy(content.toString());
+      }
     }
 
     Register.registers[register.toLowerCase()] = {
@@ -373,7 +377,7 @@ export class Register {
           registerText = text;
         }
       } else {
-        registerText = text;
+        registerText = text.split('\n');
       }
 
       Register.registers[lowercaseRegister].text = registerText;
