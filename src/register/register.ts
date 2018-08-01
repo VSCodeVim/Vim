@@ -392,11 +392,7 @@ export class Register {
             registerText = (text as string[]).join('\n');
           }
         } else {
-          if (typeof text === 'object') {
-            registerText = (text as string[]).join('\n');
-          } else {
-            registerText = text;
-          }
+          registerText = text;
         }
       }
 

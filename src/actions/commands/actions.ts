@@ -1331,7 +1331,7 @@ export class PutCommand extends BaseCommand {
         replay: 'keystrokes',
       });
       return vimState;
-    } else if (typeof register.text === 'object' && vimState.currentMode === ModeName.VisualBlock) {
+    } else if (typeof register.text === 'object' && vimState.currentMode === ModeName.Normal) {
       return await this.execVisualBlockPaste(register.text, position, vimState, after);
     }
 
@@ -1478,7 +1478,7 @@ export class PutCommand extends BaseCommand {
     vimState: VimState,
     after: boolean
   ): Promise<VimState> {
-    if (after) {
+    if (!after) {
       position = position.getRight();
     }
 

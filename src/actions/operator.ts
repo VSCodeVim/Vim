@@ -637,13 +637,12 @@ export class YankVisualBlockMode extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    let toCopy: string = '';
-
+    var lines = new Array();
     for (const { line } of Position.IterateLine(vimState)) {
-      toCopy += line + '\n';
+      lines.push(line);
     }
 
-    Register.put(toCopy, vimState, this.multicursorIndex);
+    Register.put(lines, vimState, this.multicursorIndex);
 
     vimState.currentMode = ModeName.Normal;
     vimState.cursorPosition = start;
