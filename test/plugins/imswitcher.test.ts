@@ -4,9 +4,7 @@ import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { InputMethodSwitcher } from '../../src/actions/plugins/imswitcher';
 import { ModeName } from '../../src/mode/mode';
 
-
 suite('Input method plugin', () => {
-
   let savedCmd = '';
 
   function fakeExecuteChinese(cmd: string): Promise<string> {
