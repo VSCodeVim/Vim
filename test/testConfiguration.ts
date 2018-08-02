@@ -37,20 +37,20 @@ export class Configuration implements IConfiguration {
   incsearch = true;
   startInInsertMode = false;
   statusBarColorControl = false;
-  statusBarColors: IModeSpecificStrings<string> = {
-    normal: '#005f5f',
-    insert: '#5f0000',
-    visual: '#5f00af',
-    visualline: '#005f87',
-    visualblock: '#86592d',
-    replace: '#000000',
+  statusBarColors: IModeSpecificStrings<string | string[]> = {
+    normal: ["#8FBCBB", "#434C5E"],
+    insert: "#BF616A",
+    visual: "#B48EAD",
+    visualline: "#B48EAD",
+    visualblock: "#A3BE8C",
+    replace: "#D08770"
   };
   debug: {
     loggingLevel: 'warn';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   tabstop = 2;
-  userCursor = vscode.TextEditorCursorStyle.Line;
+  editorCursorStyle = vscode.TextEditorCursorStyle.Line;
   expandtab = true;
   number = true;
   relativenumber = false;

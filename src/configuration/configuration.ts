@@ -235,7 +235,7 @@ class Configuration implements IConfiguration {
 
   statusBarColorControl = false;
 
-  statusBarColors: IModeSpecificStrings<string> = {
+  statusBarColors: IModeSpecificStrings<string | string[]> = {
     normal: '#005f5f',
     insert: '#5f0000',
     visual: '#5f00af',
@@ -254,12 +254,12 @@ class Configuration implements IConfiguration {
   tabstop: number;
 
   @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
-  private userCursorString: string;
+  private editorCursorStyleRaw: string;
 
-  get userCursor(): vscode.TextEditorCursorStyle | undefined {
-    return this.cursorStyleFromString(this.userCursorString);
+  get editorCursorStyle(): vscode.TextEditorCursorStyle | undefined {
+    return this.cursorStyleFromString(this.editorCursorStyleRaw);
   }
-  set userCursor(val: vscode.TextEditorCursorStyle | undefined) {
+  set editorCursorStyle(val: vscode.TextEditorCursorStyle | undefined) {
     // nop
   }
 
