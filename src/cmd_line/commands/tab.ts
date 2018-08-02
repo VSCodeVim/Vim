@@ -88,7 +88,7 @@ export class TabCommand extends node.CommandBase {
         await vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
         break;
       case Tab.Last:
-        await vscode.commands.executeCommand('workbench.action.openLastEditorInGroup');
+        await vscode.commands.executeCommand('workbench.action.lastEditorInGroup');
         break;
       case Tab.New: {
         const hasFile = !(this.arguments.file === undefined || this.arguments.file === '');
