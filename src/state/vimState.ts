@@ -12,6 +12,7 @@ import { GlobalState } from './../state/globalState';
 import { ReplaceState } from './../state/replaceState';
 import { RecordedState } from './recordedState';
 import { Neovim } from '../neovim/neovim';
+import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { logger } from '../util/logger';
 
 /**
@@ -40,6 +41,8 @@ export class VimState implements vscode.Disposable {
   public identity: EditorIdentity;
 
   public editor: vscode.TextEditor;
+
+  private _inputMethodSwitcher: InputMethodSwitcher;
 
   /**
    * For timing out remapped keys like jj to esc.
@@ -191,6 +194,7 @@ export class VimState implements vscode.Disposable {
   }
 
   public set currentMode(value: number) {
+    this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
     this._currentMode = value;
   }
 
@@ -233,6 +237,7 @@ export class VimState implements vscode.Disposable {
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
+    this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 
   dispose() {

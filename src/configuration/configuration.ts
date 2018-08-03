@@ -7,6 +7,7 @@ import {
   IConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
+  IAutoSwitchInputMethod,
   IDebugConfiguration,
 } from './iconfiguration';
 
@@ -81,8 +82,11 @@ class Configuration implements IConfiguration {
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      const val = vimConfigs[option] as any;
+      let val = vimConfigs[option] as any;
       if (val !== null && val !== undefined) {
+        if (val.constructor.name === Object.name) {
+          val = this.unproxify(val);
+        }
         this[option] = val;
       }
     }
@@ -170,6 +174,17 @@ class Configuration implements IConfiguration {
     );
   }
 
+  unproxify(obj: Object): Object {
+    let result = {};
+    for (const key in obj) {
+      let val = obj[key] as any;
+      if (val !== null && val !== undefined) {
+        result[key] = val;
+      }
+    }
+    return result;
+  }
+
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
     let resource: vscode.Uri | undefined = undefined;
     let activeTextEditor = vscode.window.activeTextEditor;
@@ -219,6 +234,13 @@ class Configuration implements IConfiguration {
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
 
+  autoSwitchInputMethod: IAutoSwitchInputMethod = {
+    enable: false,
+    defaultIM: '',
+    obtainIMCmd: '',
+    switchIMCmd: '',
+  };
+
   timeout = 1000;
 
   showcmd = true;
@@ -235,7 +257,7 @@ class Configuration implements IConfiguration {
 
   statusBarColorControl = false;
 
-  statusBarColors: IModeSpecificStrings<string> = {
+  statusBarColors: IModeSpecificStrings<string | string[]> = {
     normal: '#005f5f',
     insert: '#5f0000',
     visual: '#5f00af',
@@ -254,12 +276,12 @@ class Configuration implements IConfiguration {
   tabstop: number;
 
   @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
-  private userCursorString: string;
+  private editorCursorStyleRaw: string;
 
-  get userCursor(): vscode.TextEditorCursorStyle | undefined {
-    return this.cursorStyleFromString(this.userCursorString);
+  get editorCursorStyle(): vscode.TextEditorCursorStyle | undefined {
+    return this.cursorStyleFromString(this.editorCursorStyleRaw);
   }
-  set userCursor(val: vscode.TextEditorCursorStyle | undefined) {
+  set editorCursorStyle(val: vscode.TextEditorCursorStyle | undefined) {
     // nop
   }
 
@@ -311,7 +333,7 @@ class Configuration implements IConfiguration {
   whichwrap = '';
   wrapKeys = {};
 
-  private cursorStylePerMode: IModeSpecificStrings<string> = {
+  cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,
     insert: undefined,
     visual: undefined,
@@ -320,19 +342,13 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  get modeToCursorStyleMap(): IModeSpecificStrings<vscode.TextEditorCursorStyle> {
-    let map = <IModeSpecificStrings<vscode.TextEditorCursorStyle>>{};
+  getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
+    let cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
+    if (cursorStyle) {
+      return this.cursorStyleFromString(cursorStyle);
+    }
 
-    Object.keys(this.cursorStylePerMode).forEach(k => {
-      let cursor = this.cursorStylePerMode[k];
-      let cursorStyle = this.cursorStyleFromString(cursor);
-      map[k] = cursorStyle;
-    });
-
-    return map;
-  }
-  set modeToCursorStyleMap(val: IModeSpecificStrings<vscode.TextEditorCursorStyle>) {
-    // nop
+    return;
   }
 
   // remappings
