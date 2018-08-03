@@ -148,7 +148,7 @@ export interface IConfiguration {
   /**
    * Status bar colors to change to based on mode
    */
-  statusBarColors: IModeSpecificStrings<string>;
+  statusBarColors: IModeSpecificStrings<string | string[]>;
 
   /**
    * Extension debugging settings
@@ -168,7 +168,7 @@ export interface IConfiguration {
   /**
    * Type of cursor user is using native to vscode
    */
-  userCursor: vscode.TextEditorCursorStyle | undefined;
+  editorCursorStyle: vscode.TextEditorCursorStyle | undefined;
 
   /**
    * Use spaces when the user presses tab?
@@ -215,8 +215,6 @@ export interface IConfiguration {
    */
   substituteGlobalFlag: boolean;
 
-  modeToCursorStyleMap: IModeSpecificStrings<vscode.TextEditorCursorStyle>;
-
   /**
    * InputMethodSwicher
    */
@@ -236,4 +234,6 @@ export interface IConfiguration {
    *  emulate whichwrap
    */
   whichwrap: string;
+
+  cursorStylePerMode: IModeSpecificStrings<string>;
 }

@@ -176,7 +176,6 @@ These settings are specific to VSCodeVim.
 #### `"vim.cursorStylePerMode"`
 
 - Configure a specific cursor style per mode; omitted modes will use default cursor type
-- Supported modes: normal, insert, replace, visual, visualline, and visualblock
 - Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin
 
 ```json

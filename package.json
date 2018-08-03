@@ -539,11 +539,38 @@
         },
         "vim.statusBarColorControl": {
           "type": "boolean",
-          "description": "Allow VSCodeVim to change status bar color based on mode"
+          "description": "Allow VSCodeVim to change status bar color based on mode",
+          "default": false
         },
-        "vim.statusBarColors": {
-          "type": "object",
-          "description": "Customize colors per mode when VSCodeVim controls status bar colors"
+        "vim.statusBarColors.normal": {
+          "type": "string",
+          "description": "Status bar color when in Normal mode",
+          "default": "#005f5f"
+        },
+        "vim.statusBarColors.insert": {
+          "type": "string",
+          "description": "Status bar color when in Insert mode",
+          "default": "#5f0000"
+        },
+        "vim.statusBarColors.visual": {
+          "type": "string",
+          "description": "Status bar color when in Visual mode",
+          "default": "#5f00af"
+        },
+        "vim.statusBarColors.visualline": {
+          "type": "string",
+          "description": "Status bar color when in VisualLine mode",
+          "default": "#005f5f"
+        },
+        "vim.statusBarColors.visualblock": {
+          "type": "string",
+          "description": "Status bar color when in VisualBlock mode",
+          "default": "#86592d"
+        },
+        "vim.statusBarColors.replace": {
+          "type": "string",
+          "description": "Status bar color when in Replace mode",
+          "default": "#00000"
         },
         "vim.visualstar": {
           "type": "boolean",
@@ -580,9 +607,29 @@
           "description": "Automatically apply the global flag, /g, to substitute commands. When set to true, use /g to mean only first match should be replaced.",
           "default": false
         },
-        "vim.cursorStylePerMode": {
-          "type": "object",
-          "description": "Customize cursor style per mode"
+        "vim.cursorStylePerMode.normal": {
+          "type": "string",
+          "description": "Cursor style for Normal mode"
+        },
+        "vim.cursorStylePerMode.insert": {
+          "type": "string",
+          "description": "Cursor style for Insert mode"
+        },
+        "vim.cursorStylePerMode.replace": {
+          "type": "string",
+          "description": "Cursor style for Replace mode"
+        },
+        "vim.cursorStylePerMode.visual": {
+          "type": "string",
+          "description": "Cursor style for Visual mode"
+        },
+        "vim.cursorStylePerMode.visualline": {
+          "type": "string",
+          "description": "Cursor style for VisualLine mode"
+        },
+        "vim.cursorStylePerMode.visualblock": {
+          "type": "string",
+          "description": "Cursor style for VisualBlock mode"
         },
         "vim.autoSwitchInputMethod.enable": {
           "type": "boolean",

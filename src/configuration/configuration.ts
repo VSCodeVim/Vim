@@ -257,7 +257,7 @@ class Configuration implements IConfiguration {
 
   statusBarColorControl = false;
 
-  statusBarColors: IModeSpecificStrings<string> = {
+  statusBarColors: IModeSpecificStrings<string | string[]> = {
     normal: '#005f5f',
     insert: '#5f0000',
     visual: '#5f00af',
@@ -276,12 +276,12 @@ class Configuration implements IConfiguration {
   tabstop: number;
 
   @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
-  private userCursorString: string;
+  private editorCursorStyleRaw: string;
 
-  get userCursor(): vscode.TextEditorCursorStyle | undefined {
-    return this.cursorStyleFromString(this.userCursorString);
+  get editorCursorStyle(): vscode.TextEditorCursorStyle | undefined {
+    return this.cursorStyleFromString(this.editorCursorStyleRaw);
   }
-  set userCursor(val: vscode.TextEditorCursorStyle | undefined) {
+  set editorCursorStyle(val: vscode.TextEditorCursorStyle | undefined) {
     // nop
   }
 
@@ -333,7 +333,7 @@ class Configuration implements IConfiguration {
   whichwrap = '';
   wrapKeys = {};
 
-  private cursorStylePerMode: IModeSpecificStrings<string> = {
+  cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,
     insert: undefined,
     visual: undefined,
@@ -342,19 +342,13 @@ class Configuration implements IConfiguration {
     replace: undefined,
   };
 
-  get modeToCursorStyleMap(): IModeSpecificStrings<vscode.TextEditorCursorStyle> {
-    let map = <IModeSpecificStrings<vscode.TextEditorCursorStyle>>{};
+  getCursorStyleForMode(modeName: string): vscode.TextEditorCursorStyle | undefined {
+    let cursorStyle = this.cursorStylePerMode[modeName.toLowerCase()];
+    if (cursorStyle) {
+      return this.cursorStyleFromString(cursorStyle);
+    }
 
-    Object.keys(this.cursorStylePerMode).forEach(k => {
-      let cursor = this.cursorStylePerMode[k];
-      let cursorStyle = this.cursorStyleFromString(cursor);
-      map[k] = cursorStyle;
-    });
-
-    return map;
-  }
-  set modeToCursorStyleMap(val: IModeSpecificStrings<vscode.TextEditorCursorStyle>) {
-    // nop
+    return;
   }
 
   // remappings
