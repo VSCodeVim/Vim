@@ -32,6 +32,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [vim-commentary](#vim-commentary)
   - [vim-indent-object](#vim-indent-object)
   - [vim-sneak](#vim-sneak)
+  - [Input Method](#input-method)
 - [VSCodeVim tricks](#-vscodevim-tricks)
 - [F.A.Q / Troubleshooting](#-faq)
 - [Contributing](#️-contributing)
@@ -40,31 +41,31 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 
 ## 💾 Installation
 
-VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and the reloading of VSCode.
+VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and reloading of VSCode.
 
 ### Vim Compatibility
 
-Vimscript is _not_ supported, so we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
+Vimscript is _not_ supported, therefore we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
 
 ### Mac Setup
 
-If key repeating isn't working for you, execute this in your Terminal, then restart VS Code.
+To enable key-repeating execute the following in your Terminal and restart VS Code.
 
 ```sh
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
-defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
+$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
+$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
+$ defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
 ```
 
-We also recommend going into _System Preferences -> Keyboard_ and increasing the Key Repeat and Delay Until Repeat settings to improve your speed.
+We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Preferences -> Keyboard_.
 
 ### Windows Setup
 
-VSCodeVim will take over your control keys, just like real vim, so you get the _full_ vim experience. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
+Like real vim, VSCodeVim will take over your control keys. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
 
 ### Linux Setup
 
-If you have configured `vim.useSystemClipboard: "true"`, we rely on [clipboardy](https://github.com/sindresorhus/clipboardy) for cross-platform copy/paste operations. This library is dependent on `xsel`:
+If you have configured `vim.useSystemClipboard: "true"`, we rely on [clipboardy](https://github.com/sindresorhus/clipboardy) which is dependent on `xsel`:
 
 ```sh
 apt install xsel
@@ -72,9 +73,11 @@ apt install xsel
 
 ## ⚙️ Settings
 
+The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab in the extensions menu of VSCode.
+
 ### Quick Example
 
-Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file for VSCode settings applicable to this extension:
+Below is an example of a [settings.json](https://code.visualstudio.com/Docs/customization/userandworkspace) file with settings relevant to VSCodeVim:
 
 ```json
 {
@@ -108,21 +111,18 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 }
 ```
 
-The following is a subset of the supported settings; the full list is described in the `Contributions` tab in the extensions menu of VSCode.
-
 ### VSCodeVim settings
 
 These settings are specific to VSCodeVim.
 
 #### `"vim.startInInsertMode"`
 
-- Have VSCodeVim start in Insert Mode rather than Normal Mode.
-- We would be remiss in our duties as Vim users not to say that you should really be staying in Normal mode as much as you can, but hey, who are we to stop you?
+- Start in Insert mode instead of Normal ModeHave VSCodeVim start in Insert Mode rather than Normal Mode.
+- Type: Boolean (Default: `false`)
 
 #### `"vim.overrideCopy"`
 
-- Override VSCode's copy command with our own, which works correctly with VSCodeVim.
-- If cmd-c or ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).
+- Override VSCode's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).
 - Type: Boolean (Default: `true`)
 
 #### `"vim.useSystemClipboard"`
@@ -176,7 +176,6 @@ These settings are specific to VSCodeVim.
 #### `"vim.cursorStylePerMode"`
 
 - Configure a specific cursor style per mode; omitted modes will use default cursor type
-- Supported modes: normal, insert, replace, visual, visualline, and visualblock
 - Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin
 
 ```json
@@ -205,8 +204,8 @@ These settings are specific to VSCodeVim.
 
 You can leverage neovim for Ex-commands. To enable:
 
-1. Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
-2. Add the following configurations:
+1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
+2.  Add the following configurations:
 
 ```json
 "vim.enableNeovim": true
@@ -374,41 +373,41 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-### Debugging Remappings
+#### Debugging Remappings
 
-1. Are your configurations correct?
+1.  Are your configurations correct?
 
-   Adjust the extension's [logging level](#vimdebuglogginglevel) to 'debug', restart VSCode. In the Developer Tools console, do you see any errors?
+    Adjust the extension's [logging level](#vimdebuglogginglevel) to 'debug', restart VSCode. In the Developer Tools console, do you see any errors?
 
-   ```console
-   debug: Remapper: normalModeKeyBindingsNonRecursive. before=0. after=^.
-   debug: Remapper: insertModeKeyBindings. before=j,j. after=<Esc>.
-   error: Remapper: insertModeKeyBindings. Invalid configuration. Missing 'after' key or 'command'. before=j,k.
-   ```
+    ```console
+    debug: Remapper: normalModeKeyBindingsNonRecursive. before=0. after=^.
+    debug: Remapper: insertModeKeyBindings. before=j,j. after=<Esc>.
+    error: Remapper: insertModeKeyBindings. Invalid configuration. Missing 'after' key or 'command'. before=j,k.
+    ```
 
-   As each remapped configuration is loaded, it is outputted to console. Misconfigured configurations are ignored.
+    As each remapped configuration is loaded, it is outputted to console. Misconfigured configurations are ignored.
 
-2. Does the extension handle the keys you are trying to remap?
+2.  Does the extension handle the keys you are trying to remap?
 
-   VSCodeVim explicitly instructs VSCode which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/1a5f358a1a57c62d5079093ad0dd12c2bf018bba/package.json#L53). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. With [logging level](#vimdebuglogginglevel) adjusted to 'debug', as you press keys, you should see output similar to:
+    VSCodeVim explicitly instructs VSCode which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/1a5f358a1a57c62d5079093ad0dd12c2bf018bba/package.json#L53). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. With [logging level](#vimdebuglogginglevel) adjusted to 'debug', as you press keys, you should see output similar to:
 
-   ```console
-   debug: ModeHandler: handling key=A.
-   debug: ModeHandler: handling key=l.
-   debug: ModeHandler: handling key=<BS>.
-   debug: ModeHandler: handling key=<C-a>.
-   ```
+    ```console
+    debug: ModeHandler: handling key=A.
+    debug: ModeHandler: handling key=l.
+    debug: ModeHandler: handling key=<BS>.
+    debug: ModeHandler: handling key=<C-a>.
+    ```
 
-   As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events.
+    As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events.
 
 ### Vim settings
 
 Configuration settings that have been copied from vim. Vim settings are loaded in the following sequence:
 
-1. `:set {setting}`
-2. `vim.{setting}` from user/workspace settings.
-3. VSCode settings
-4. VSCodeVim default values
+1.  `:set {setting}`
+2.  `vim.{setting}` from user/workspace settings.
+3.  VSCode settings
+4.  VSCodeVim default values
 
 #### `"vim.ignorecase"`
 
@@ -608,6 +607,75 @@ Once sneak is active, initiate motions using the following commands. For operato
 | `S<char><char>`           | Move backward to the first occurence of `<char><char>`                 |
 | `<operator>z<char><char>` | Perform `<operator>` forward to the first occurence of `<char><char>`  |
 | `<operator>Z<char><char>` | Perform `<operator>` backward to the first occurence of `<char><char>` |
+
+### Input Method
+
+Disable input method when exiting Insert Mode.
+
+| Setting                                 | Description                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `vim.autoSwitchInputMethod.enable`      | Boolean denoting whether autoSwitchInputMethod is on/off.                                        |
+| `vim.autoSwitchInputMethod.defaultIM`   | Default input method.                                                                            |
+| `vim.autoSwitchInputMethod.obtainIMCmd` | The full path to command to retrieve the current input method key.                               |
+| `vim.autoSwitchInputMethod.switchIMCmd` | The full path to command to switch input method, with `{im}` a placeholder for input method key. |
+
+You can use any third-party program to switch input methods. We recommend [im-select](https://github.com/daipeihust/im-select), and the following will walkthrough installation and configuration for im-select.
+
+1.  Install im-select
+
+    Follow the [installation guide](https://github.com/daipeihust/im-select#installation) to install im-select
+
+1.  Find your default input method key
+
+    - MacOS:
+
+      Switch your input method to English, and run the following in your terminal:
+
+      ```shell
+      $ /usr/local/bin/im-select
+      ```
+
+      the program will output your default input method (eg. `com.apple.keyload.US`). The table below is a list of common English key layouts for MacOS.
+
+      | Key                            | Description |
+      | ------------------------------ | ----------- |
+      | com.apple.keylayout.US         | U.S.        |
+      | com.apple.keylayout.ABC        | ABC         |
+      | com.apple.keylayout.British    | British     |
+      | com.apple.keylayout.Irish      | Irish       |
+      | com.apple.keylayout.Australian | Australian  |
+      | com.apple.keylayout.Dvorak     | Dvorak      |
+      | com.apple.keylayout.Colemak    | Colemak     |
+
+    * Windows:
+
+      For most people, their default input method key is 1033, the locale ID of en_US. But if your default keyboard layout is not en_US, you can use im-select.exe to find out, the guide is [here](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale). You can also find your locale ID in [this page](https://www.science.co.il/language/Locale-codes.php), the `LCID Decimal` column is the locale ID.
+
+1.  Configure `vim.autoSwitchInputMethod`.
+
+    - MacOS:
+
+      Given default input method key of `com.apple.keylayout.US` and `im-select` saved to the default location. The configuration is:
+
+      ```json
+      "vim.autoSwitchInputMethod.enable": true,
+      "vim.autoSwitchInputMethod.defaultIM": "com.apple.keylayout.US",
+      "vim.autoSwitchInputMethod.obtainIMCmd": "/usr/local/bin/im-select",
+      "vim.autoSwitchInputMethod.switchIMCmd": "/usr/local/bin/im-select {im}"
+      ```
+
+    - Windows:
+
+      Given default input method key of `1033`(en_US) and your `im-select.exe` is located at `D:/bin`. The configuration is:
+
+      ```json
+      "vim.autoSwitchInputMethod.enable": true,
+      "vim.autoSwitchInputMethod.defaultIM": "1033",
+      "vim.autoSwitchInputMethod.obtainIMCmd": "D:\\bin\\im-select.exe",
+      "vim.autoSwitchInputMethod.switchIMCmd": "D:\\bin\\im-select.exe {im}"
+      ```
+
+If using an alternative program to switch input methods and it requires a command-line options to switch or get the input method, you should add the options to the configuration. For example, if your program's usage is `my-program -s imKey` to switch input method, your `vim.autoSwitchInputMethod.switchIMCmd` should be `/path/to/my-program -s {im}`.
 
 ## 🎩 VSCodeVim tricks!
 

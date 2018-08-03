@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 
-import { IConfiguration, IKeyRemapping } from '../src/configuration/iconfiguration';
+import {
+  IConfiguration,
+  IKeyRemapping,
+  IModeSpecificStrings,
+} from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
   useSystemClipboard = false;
@@ -25,6 +29,12 @@ export class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'normal';
   easymotionMarkerYOffset = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
+  autoSwitchInputMethod = {
+    enable: false,
+    defaultIM: '',
+    switchIMCmd: '',
+    obtainIMCmd: '',
+  };
   timeout = 1000;
   showcmd = true;
   showmodename = true;
@@ -33,20 +43,20 @@ export class Configuration implements IConfiguration {
   incsearch = true;
   startInInsertMode = false;
   statusBarColorControl = false;
-  statusBarColors: {
-    normal: '#005f5f';
-    insert: '#5f0000';
-    visual: '#5f00af';
-    visualline: '#005f87';
-    visualblock: '#86592d';
-    replace: '#000000';
+  statusBarColors: IModeSpecificStrings<string | string[]> = {
+    normal: ["#8FBCBB", "#434C5E"],
+    insert: "#BF616A",
+    visual: "#B48EAD",
+    visualline: "#B48EAD",
+    visualblock: "#A3BE8C",
+    replace: "#D08770"
   };
   debug: {
     loggingLevel: 'warn';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   tabstop = 2;
-  userCursor = vscode.TextEditorCursorStyle.Line;
+  editorCursorStyle = vscode.TextEditorCursorStyle.Line;
   expandtab = true;
   number = true;
   relativenumber = false;
@@ -58,13 +68,13 @@ export class Configuration implements IConfiguration {
   enableNeovim = false;
   neovimPath = 'nvim';
   substituteGlobalFlag = false;
-  modeToCursorStyleMap = {
-    normal: vscode.TextEditorCursorStyle.Line,
-    insert: vscode.TextEditorCursorStyle.Line,
-    visual: vscode.TextEditorCursorStyle.Line,
-    visualline: vscode.TextEditorCursorStyle.Line,
-    visualblock: vscode.TextEditorCursorStyle.Line,
-    replace: vscode.TextEditorCursorStyle.Line,
+  cursorStylePerMode: IModeSpecificStrings<string> = {
+    normal: 'line',
+    insert: 'block',
+    visual: 'underline',
+    visualline: 'thin-lin',
+    visualblock: 'block-outline',
+    replace: 'underline-thin,',
   };
   insertModeKeyBindings: IKeyRemapping[] = [];
   insertModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
