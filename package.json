@@ -631,6 +631,26 @@
           "type": "string",
           "description": "Cursor style for VisualBlock mode"
         },
+        "vim.autoSwitchInputMethod.enable": {
+          "type": "boolean",
+          "description": "Switch input method automatically when mode changed",
+          "default": false
+        },
+        "vim.autoSwitchInputMethod.defaultIM": {
+          "type": "string",
+          "description": "The input method for your normal mode, find more information here:https://github.com/VSCodeVim/Vim#use-im-select",
+          "default": ""
+        },
+        "vim.autoSwitchInputMethod.switchIMCmd": {
+          "type": "string",
+          "description": "The shell command to switch input method",
+          "default": "/path/to/im-select {im}"
+        },
+        "vim.autoSwitchInputMethod.obtainIMCmd": {
+          "type": "string",
+          "description": "The shell command to get current input method",
+          "default": "/path/to/im-select"
+        },
         "vim.whichwrap": {
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",

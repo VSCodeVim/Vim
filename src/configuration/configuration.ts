@@ -7,6 +7,7 @@ import {
   IConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
+  IAutoSwitchInputMethod,
   IDebugConfiguration,
 } from './iconfiguration';
 
@@ -81,8 +82,11 @@ class Configuration implements IConfiguration {
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
     for (const option in this) {
-      const val = vimConfigs[option] as any;
+      let val = vimConfigs[option] as any;
       if (val !== null && val !== undefined) {
+        if (val.constructor.name === Object.name) {
+          val = this.unproxify(val);
+        }
         this[option] = val;
       }
     }
@@ -170,6 +174,17 @@ class Configuration implements IConfiguration {
     );
   }
 
+  unproxify(obj: Object): Object {
+    let result = {};
+    for (const key in obj) {
+      let val = obj[key] as any;
+      if (val !== null && val !== undefined) {
+        result[key] = val;
+      }
+    }
+    return result;
+  }
+
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
     let resource: vscode.Uri | undefined = undefined;
     let activeTextEditor = vscode.window.activeTextEditor;
@@ -218,6 +233,13 @@ class Configuration implements IConfiguration {
   easymotionMarkerYOffset = 0;
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
+
+  autoSwitchInputMethod: IAutoSwitchInputMethod = {
+    enable: false,
+    defaultIM: '',
+    obtainIMCmd: '',
+    switchIMCmd: '',
+  };
 
   timeout = 1000;
 

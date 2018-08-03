@@ -15,6 +15,12 @@ export interface IKeyRemapping {
   commands?: ({ command: string; args: any[] } | string)[];
 }
 
+export interface IAutoSwitchInputMethod {
+  enable: boolean;
+  defaultIM: string;
+  switchIMCmd: string;
+  obtainIMCmd: string;
+}
 export interface IDebugConfiguration {
   /**
    * Maximum level of messages to log.
@@ -208,6 +214,11 @@ export interface IConfiguration {
    * Automatically apply the /g flag to substitute commands.
    */
   substituteGlobalFlag: boolean;
+
+  /**
+   * InputMethodSwicher
+   */
+  autoSwitchInputMethod: IAutoSwitchInputMethod;
 
   /**
    * Keybindings
