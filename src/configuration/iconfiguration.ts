@@ -15,6 +15,12 @@ export interface IKeyRemapping {
   commands?: ({ command: string; args: any[] } | string)[];
 }
 
+export interface IAutoSwitchInputMethod {
+  enable: boolean;
+  defaultIM: string;
+  switchIMCmd: string;
+  obtainIMCmd: string;
+}
 export interface IDebugConfiguration {
   /**
    * Maximum level of messages to log.
@@ -210,6 +216,11 @@ export interface IConfiguration {
   substituteGlobalFlag: boolean;
 
   modeToCursorStyleMap: IModeSpecificStrings<vscode.TextEditorCursorStyle>;
+
+  /**
+   * InputMethodSwicher
+   */
+  autoSwitchInputMethod: IAutoSwitchInputMethod;
 
   /**
    * Keybindings
