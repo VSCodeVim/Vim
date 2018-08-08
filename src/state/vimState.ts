@@ -42,8 +42,6 @@ export class VimState implements vscode.Disposable {
 
   public editor: vscode.TextEditor;
 
-  private _inputMethodSwitcher: InputMethodSwitcher;
-
   /**
    * For timing out remapped keys like jj to esc.
    */
@@ -231,6 +229,8 @@ export class VimState implements vscode.Disposable {
   public prevSelection: vscode.Selection;
 
   public nvim: Neovim;
+
+  private _inputMethodSwitcher: InputMethodSwitcher;
 
   public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
