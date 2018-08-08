@@ -132,15 +132,15 @@ These settings are specific to VSCodeVim.
 
 > :warning: Experimental feature. Please leave feedback on neovim integration [here](https://github.com/VSCodeVim/Vim/issues/1735).
 
-You can leverage neovim for Ex-commands. To enable:
+To leverage neovim for Ex-commands,
 
 1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
-2.  Add the following configurations:
+2.  Modify the following configurations:
 
-```json
-"vim.enableNeovim": true
-"vim.neovimPath": <path to neovim>
-```
+| Setting          | Description                    | Type    | Default Value |
+| ---------------- | ------------------------------ | ------- | ------------- |
+| vim.enableNeovim | Enable Neovim                  | Boolean | false         |
+| vim.neovimPath   | Full path to neovim executable | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
 
