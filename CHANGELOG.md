@@ -1,5 +1,50 @@
 # Change Log
 
+## [v0.16.0](https://github.com/vscodevim/vim/tree/v0.16.0) (2018-08-09)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.7...v0.16.0)
+
+**Enhancements:**
+
+- Reenable change that minimized the calls to setContext [\#2900](https://github.com/VSCodeVim/Vim/pull/2900) ([xconverge](https://github.com/xconverge))
+
+**Fixed Bugs:**
+
+- Cannot create files with extensions using :e\[dit\] {file} [\#2923](https://github.com/VSCodeVim/Vim/issues/2923)
+- :tablast broken with vscode 1.25.0 [\#2813](https://github.com/VSCodeVim/Vim/issues/2813)
+- 2gt not goes to the right tab [\#2789](https://github.com/VSCodeVim/Vim/issues/2789)
+
+**Closed issues:**
+
+- "commandlineinprogress": "underline" causes issues [\#2896](https://github.com/VSCodeVim/Vim/issues/2896)
+- Quote macro sometimes doubling in Python [\#2662](https://github.com/VSCodeVim/Vim/issues/2662)
+- easy motion mapping key problem [\#1894](https://github.com/VSCodeVim/Vim/issues/1894)
+
+**Merged pull requests:**
+
+- docs: move configs to tables for readability [\#2941](https://github.com/VSCodeVim/Vim/pull/2941) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/node to v9.6.26 [\#2940](https://github.com/VSCodeVim/Vim/pull/2940) ([renovate-bot](https://github.com/renovate-bot))
+- docs: clean-up readme [\#2931](https://github.com/VSCodeVim/Vim/pull/2931) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/lodash to v4.14.116 [\#2930](https://github.com/VSCodeVim/Vim/pull/2930) ([renovate-bot](https://github.com/renovate-bot))
+- fix: files with extensions not being auto-created. closes \#2923. [\#2928](https://github.com/VSCodeVim/Vim/pull/2928) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/node to v9.6.25 [\#2927](https://github.com/VSCodeVim/Vim/pull/2927) ([renovate-bot](https://github.com/renovate-bot))
+- Fix :tablast breaking in vscode 1.25 \#2813 [\#2926](https://github.com/VSCodeVim/Vim/pull/2926) ([Roshanjossey](https://github.com/Roshanjossey))
+- chore\(deps\): update dependency typescript to v3 [\#2920](https://github.com/VSCodeVim/Vim/pull/2920) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency gulp-git to v2.8.0 [\#2919](https://github.com/VSCodeVim/Vim/pull/2919) ([renovate-bot](https://github.com/renovate-bot))
+- Fix Emulated Plugins TOC link in README [\#2918](https://github.com/VSCodeVim/Vim/pull/2918) ([jjt](https://github.com/jjt))
+- fix: use full path for configs [\#2915](https://github.com/VSCodeVim/Vim/pull/2915) ([jpoon](https://github.com/jpoon))
+- fix: enable prettier for md [\#2909](https://github.com/VSCodeVim/Vim/pull/2909) ([jpoon](https://github.com/jpoon))
+- Update dependency prettier to v1.14.0 [\#2908](https://github.com/VSCodeVim/Vim/pull/2908) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.24 [\#2906](https://github.com/VSCodeVim/Vim/pull/2906) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/lodash to v4.14.115 [\#2905](https://github.com/VSCodeVim/Vim/pull/2905) ([renovate-bot](https://github.com/renovate-bot))
+- Add --grep flag to gulp test [\#2904](https://github.com/VSCodeVim/Vim/pull/2904) ([xmbhasin](https://github.com/xmbhasin))
+- Update dependency @types/lodash to v4.14.114 [\#2901](https://github.com/VSCodeVim/Vim/pull/2901) ([renovate-bot](https://github.com/renovate-bot))
+- Fix gt tab navigation with count prefix [\#2899](https://github.com/VSCodeVim/Vim/pull/2899) ([xconverge](https://github.com/xconverge))
+- Updating README FAQ [\#2894](https://github.com/VSCodeVim/Vim/pull/2894) ([augustnmonteiro](https://github.com/augustnmonteiro))
+- refactor baseaction [\#2892](https://github.com/VSCodeVim/Vim/pull/2892) ([jpoon](https://github.com/jpoon))
+- Revert "fix: use ferrarimarco's image instead of my fork to generate changelog" [\#2891](https://github.com/VSCodeVim/Vim/pull/2891) ([jpoon](https://github.com/jpoon))
+- Integrate SmartIM to VSCodeVim [\#2643](https://github.com/VSCodeVim/Vim/pull/2643) ([daipeihust](https://github.com/daipeihust))
+
 ## [v0.15.7](https://github.com/vscodevim/vim/tree/v0.15.7) (2018-07-25)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.6...v0.15.7)
