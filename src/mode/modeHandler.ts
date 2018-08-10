@@ -1305,22 +1305,22 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    let cursorStyle = Mode.translateCursor(this.currentMode.cursorType);
-    if (
-      this.currentMode.cursorType === VSCodeVimCursorType.Native &&
-      configuration.userCursor !== undefined
-    ) {
-      cursorStyle = configuration.userCursor;
+    // cursor style
+    let cursorStyle = configuration.getCursorStyleForMode(this.currentMode.friendlyName);
+    if (!cursorStyle) {
+      let currentCursor = this.currentMode.cursorType;
+      cursorStyle = Mode.translateCursor(currentCursor);
+      if (
+        currentCursor === VSCodeVimCursorType.Native &&
+        configuration.editorCursorStyle !== undefined
+      ) {
+        cursorStyle = configuration.editorCursorStyle;
+      }
     }
 
-    cursorStyle =
-      configuration.modeToCursorStyleMap[this.currentMode.friendlyName.toLowerCase()] ||
-      cursorStyle;
+    this.vimState.editor.options.cursorStyle = cursorStyle;
 
-    let options = this.vimState.editor.options;
-    options.cursorStyle = cursorStyle;
-    this.vimState.editor.options = options;
-
+    // cursor block
     let cursorRange: vscode.Range[] = [];
     if (
       this.currentMode.cursorType === VSCodeVimCursorType.TextDecoration &&

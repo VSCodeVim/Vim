@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import { logger } from './util/logger';
 
 interface IEnqueuedTask {
   promise: () => Promise<void>;

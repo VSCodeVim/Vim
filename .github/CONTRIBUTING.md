@@ -23,33 +23,33 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
 ## First Time Setup
 
-1. Install prerequisites:
-   - latest [Visual Studio Code](https://code.visualstudio.com/)
-   - [Node.js](https://nodejs.org/) v8.0.0 or higher
-1. In a terminal:
+1.  Install prerequisites:
+    - latest [Visual Studio Code](https://code.visualstudio.com/)
+    - [Node.js](https://nodejs.org/) v8.0.0 or higher
+1.  In a terminal:
 
-   ```bash
-   # fork and clone the repository
-   git clone git@github.com:<YOUR-FORK>/Vim.git
-   cd Vim
+    ```bash
+    # fork and clone the repository
+    git clone git@github.com:<YOUR-FORK>/Vim.git
+    cd Vim
 
-   # Install the dependencies
-   npm install -g gulp-cli
-   npm install
+    # Install the dependencies
+    npm install -g gulp-cli
+    npm install
 
-   # Open in VSCode
-   code .
+    # Open in VSCode
+    code .
 
-   # Choose the "Build, Run Extension" in the dropdown of VSCode's
-   # debug tab to build and run the extension.
-   # Or run tests by selecting the appropriate drop down option
+    # Choose the "Build, Run Extension" in the dropdown of VSCode's
+    # debug tab to build and run the extension.
+    # Or run tests by selecting the appropriate drop down option
 
-   # Alternatively, build and run tests through gulp and npm scripts
-   gulp build                  # build
-   npm test                    # test
-   gulp test                   # run tests inside Docker container
-   gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
-   ```
+    # Alternatively, build and run tests through gulp and npm scripts
+    gulp build                  # build
+    npm test                    # test
+    gulp test                   # run tests inside Docker container
+    gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
+    ```
 
 ## Code Architecture
 
@@ -77,10 +77,10 @@ Consists of two data structures:
 
 #### How it works
 
-1. `handleKeyEventHelper` is called with the most recent keypress.
-2. `Actions.getRelevantAction` determines if all the keys pressed so far uniquely specify any action in actions.ts. If not, we continue waiting for keypresses.
-3. `runAction` runs the action that was matched. Movements, Commands and Operators all have separate functions that dictate how to run them - `executeMovement`, `handleCommand`, and `executeOperator` respectively.
-4. Now that we've updated VimState, we run `updateView` with the new VimState to "redraw" VSCode to the new state.
+1.  `handleKeyEventHelper` is called with the most recent keypress.
+2.  `Actions.getRelevantAction` determines if all the keys pressed so far uniquely specify any action in actions.ts. If not, we continue waiting for keypresses.
+3.  `runAction` runs the action that was matched. Movements, Commands and Operators all have separate functions that dictate how to run them - `executeMovement`, `handleCommand`, and `executeOperator` respectively.
+4.  Now that we've updated VimState, we run `updateView` with the new VimState to "redraw" VSCode to the new state.
 
 #### vscode.window.onDidChangeTextEditorSelection
 
@@ -97,10 +97,10 @@ git push --follow-tags
 
 The above Gulp command will:
 
-1. Bump the package version based off the semver supplied. Supported values: patch, minor, major).
-2. Create a changelog using [github-changelog-generator](https://github.com/github-changelog-generator/github-changelog-generator).
-3. Create a Git commit with the above changes.
-4. Create a Git tag using the new package version.
+1.  Bump the package version based off the semver supplied. Supported values: patch, minor, major).
+2.  Create a changelog using [github-changelog-generator](https://github.com/github-changelog-generator/github-changelog-generator).
+3.  Create a Git commit with the above changes.
+4.  Create a Git tag using the new package version.
 
 In addition to building and testing the extension, when a tag is applied to the commit, the CI server will also create a GitHub release and publish the new version to the Visual Studio marketplace.
 
