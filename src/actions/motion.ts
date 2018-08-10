@@ -67,6 +67,7 @@ export abstract class BaseMovement extends BaseAction {
 
   protected minCount = 1;
   protected maxCount = 99999;
+  protected bidirectionalSelectionExpansion = false;
 
   constructor(keysPressed?: string[], isRepeat?: boolean) {
     super();
@@ -115,10 +116,12 @@ export abstract class BaseMovement extends BaseAction {
   ): Promise<Position | IMovement> {
     let recordedState = vimState.recordedState;
     let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+    let firstMovementStart: Position = new Position(position.line, position.character);
 
     count = this.clampCount(count);
 
     for (let i = 0; i < count; i++) {
+      const firstIteration = i === 0;
       const lastIteration = i === count - 1;
       result = await this.createMovementResult(position, vimState, recordedState, lastIteration);
 
@@ -129,9 +132,18 @@ export abstract class BaseMovement extends BaseAction {
           return result;
         }
 
+        if (firstIteration) {
+          firstMovementStart = new Position(result.start.line, result.start.character);
+        }
+
         position = this.adjustPosition(position, result, lastIteration);
       }
     }
+
+    if (!this.bidirectionalSelectionExpansion && isIMovement(result)) {
+      result.start = firstMovementStart;
+    }
+
     return result;
   }
 
@@ -156,6 +168,17 @@ export abstract class BaseMovement extends BaseAction {
   protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
     if (!lastIteration) {
       position = result.stop.getRightThroughLineBreaks();
+    }
+    return position;
+  }
+}
+
+export abstract class BidirectionalExpandingSelection extends BaseMovement {
+  protected bidirectionalSelectionExpansion = true;
+
+  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
+    if (!lastIteration) {
+      position = result.stop;
     }
     return position;
   }
@@ -1404,7 +1427,7 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-export abstract class MoveInsideCharacter extends BaseMovement {
+export abstract class MoveInsideCharacter extends BidirectionalExpandingSelection {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
@@ -1476,12 +1499,6 @@ export abstract class MoveInsideCharacter extends BaseMovement {
       stop: endPos,
       diff: new PositionDiff(0, startPos === position ? 1 : 0),
     };
-  }
-  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
-    if (!lastIteration) {
-      position = result.stop;
-    }
-    return position;
   }
 }
 
@@ -1793,7 +1810,7 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
   }
 }
 
-abstract class MoveTagMatch extends BaseMovement {
+abstract class MoveTagMatch extends BidirectionalExpandingSelection {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected includeTag = false;
 
@@ -1818,6 +1835,9 @@ abstract class MoveTagMatch extends BaseMovement {
 
     let startPosition = start >= 0 ? TextEditor.getPositionAt(start) : cursorStartPos;
     let endPosition = end >= 0 ? TextEditor.getPositionAt(end) : position;
+    if (vimState.currentMode === ModeName.Visual) {
+      endPosition = endPosition.getLeftThroughLineBreaks(true);
+    }
 
     if (position.isAfter(endPosition)) {
       vimState.recordedState.transformations.push({
@@ -1843,15 +1863,8 @@ abstract class MoveTagMatch extends BaseMovement {
     vimState.cursorStartPosition = startPosition;
     return {
       start: startPosition,
-      stop: endPosition.getLeftThroughLineBreaks(true),
+      stop: endPosition,
     };
-  }
-
-  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
-    if (!lastIteration) {
-      position = result.stop;
-    }
-    return position;
   }
 }
 

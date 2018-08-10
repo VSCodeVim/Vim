@@ -16,6 +16,7 @@ import {
   MoveABacktick,
   MoveAroundTag,
   isIMovement,
+  BidirectionalExpandingSelection,
 } from './motion';
 import { ChangeOperator } from './operator';
 
@@ -40,7 +41,7 @@ export class SelectWord extends TextObjectMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     let start: Position;
     let stop: Position;
-    const currentChar = TextEditor.getLineAt(position).text[position.character];
+    const currentChar = TextEditor.getCharAt(position);
 
     if (/\s/.test(currentChar)) {
       start = position.getLastWordEnd().getRight();
@@ -159,7 +160,7 @@ export class SelectABigWord extends TextObjectMovement {
  * and if you did it a third time it would select "(foo [bar 'baz'])".
  */
 @RegisterAction
-export class SelectAnExpandingBlock extends TextObjectMovement {
+export class SelectAnExpandingBlock extends BidirectionalExpandingSelection {
   keys = ['a', 'f'];
   modes = [ModeName.Visual, ModeName.VisualLine];
 
@@ -244,13 +245,6 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
         stop: smallestRange.stop,
       };
     }
-  }
-
-  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
-    if (!lastIteration) {
-      position = result.stop;
-    }
-    return position;
   }
 }
 
