@@ -125,7 +125,11 @@ export abstract class BaseMovement extends BaseAction {
       if (result instanceof Position) {
         position = result;
       } else if (isIMovement(result)) {
-        this.adjustPosition(position, result, lastIteration);
+        if (result.failed) {
+          return result;
+        }
+
+        position = this.adjustPosition(position, result, lastIteration);
       }
     }
     return result;
@@ -143,16 +147,17 @@ export abstract class BaseMovement extends BaseAction {
     recordedState: RecordedState,
     lastIteration: boolean
   ): Promise<Position | IMovement> {
-    const temporaryResult =
+    const result =
       recordedState.operator && lastIteration
         ? await this.execActionForOperator(position, vimState)
         : await this.execAction(position, vimState);
-    return temporaryResult;
+    return result;
   }
   protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
     if (!lastIteration) {
       position = result.stop.getRightThroughLineBreaks();
     }
+    return position;
   }
 }
 
@@ -1476,6 +1481,7 @@ export abstract class MoveInsideCharacter extends BaseMovement {
     if (!lastIteration) {
       position = result.stop;
     }
+    return position;
   }
 }
 
@@ -1845,6 +1851,7 @@ abstract class MoveTagMatch extends BaseMovement {
     if (!lastIteration) {
       position = result.stop;
     }
+    return position;
   }
 }
 

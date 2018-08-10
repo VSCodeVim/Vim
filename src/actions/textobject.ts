@@ -250,6 +250,7 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
     if (!lastIteration) {
       position = result.stop;
     }
+    return position;
   }
 }
 
