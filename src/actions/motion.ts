@@ -125,9 +125,7 @@ export abstract class BaseMovement extends BaseAction {
       if (result instanceof Position) {
         position = result;
       } else if (isIMovement(result)) {
-        if (!lastIteration) {
-          position = result.stop.getRightThroughLineBreaks();
-        }
+        this.adjustPosition(position, result, lastIteration);
       }
     }
     return result;
@@ -150,6 +148,11 @@ export abstract class BaseMovement extends BaseAction {
         ? await this.execActionForOperator(position, vimState)
         : await this.execAction(position, vimState);
     return temporaryResult;
+  }
+  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
+    if (!lastIteration) {
+      position = result.stop.getRightThroughLineBreaks();
+    }
   }
 }
 
@@ -1469,6 +1472,11 @@ export abstract class MoveInsideCharacter extends BaseMovement {
       diff: new PositionDiff(0, startPos === position ? 1 : 0),
     };
   }
+  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
+    if (!lastIteration) {
+      position = result.stop;
+    }
+  }
 }
 
 @RegisterAction
@@ -1831,6 +1839,12 @@ abstract class MoveTagMatch extends BaseMovement {
       start: startPosition,
       stop: endPosition.getLeftThroughLineBreaks(true),
     };
+  }
+
+  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
+    if (!lastIteration) {
+      position = result.stop;
+    }
   }
 }
 

@@ -245,6 +245,12 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
       };
     }
   }
+
+  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
+    if (!lastIteration) {
+      position = result.stop;
+    }
+  }
 }
 
 @RegisterAction
