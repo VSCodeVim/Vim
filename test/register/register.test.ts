@@ -30,14 +30,14 @@ suite('register', () => {
       title: "Can access '*' (clipboard) register",
       start: ['|one'],
       keysPressed: '"*P',
-      end: ['1234|5one'],
+      end: ['|12345one'],
     });
 
     newTest({
       title: "Can access '+' (clipboard) register",
       start: ['|one'],
       keysPressed: '"+P',
-      end: ['1234|5one'],
+      end: ['|12345one'],
     });
   });
 
@@ -70,7 +70,7 @@ suite('register', () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
     // Paste from our paste handler
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '"', '*', 'P', 'a']);
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '"', '*', 'P', 'i']);
     assertEqualLines([testString]);
 
     // Now try the built in vscode paste
