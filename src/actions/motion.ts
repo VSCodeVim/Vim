@@ -14,6 +14,7 @@ import { BaseAction } from './base';
 import { RegisterAction } from './base';
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { shouldWrapKey } from './wrapping';
+import { RecordedState } from '../state/recordedState';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -64,6 +65,9 @@ export abstract class BaseMovement extends BaseAction {
    */
   public setsDesiredColumnToEOL = false;
 
+  protected minCount = 1;
+  protected maxCount = 99999;
+
   constructor(keysPressed?: string[], isRepeat?: boolean) {
     super();
 
@@ -112,49 +116,83 @@ export abstract class BaseMovement extends BaseAction {
     let recordedState = vimState.recordedState;
     let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
 
-    if (count < 1) {
-      count = 1;
-    } else if (count > 99999) {
-      count = 99999;
-    }
+    count = this.clampCount(count);
 
     for (let i = 0; i < count; i++) {
       const firstIteration = i === 0;
       const lastIteration = i === count - 1;
-      const temporaryResult =
-        recordedState.operator && lastIteration
-          ? await this.execActionForOperator(position, vimState)
-          : await this.execAction(position, vimState);
+      const temporaryResult = await this.createTemporaryResult(
+        position,
+        vimState,
+        recordedState,
+        lastIteration
+      );
 
       if (temporaryResult instanceof Position) {
         result = temporaryResult;
         position = temporaryResult;
       } else if (isIMovement(temporaryResult)) {
+        if ((<IMovement>temporaryResult).failed) {
+          return temporaryResult;
+        }
+
         if (result instanceof Position) {
           result = {
             start: new Position(0, 0),
             stop: new Position(0, 0),
-            failed: false,
           };
         }
 
-        result.failed = result.failed || temporaryResult.failed;
-
-        if (firstIteration) {
-          (result as IMovement).start = temporaryResult.start;
-        }
-
-        if (lastIteration) {
-          (result as IMovement).stop = temporaryResult.stop;
-        } else {
-          position = temporaryResult.stop.getRightThroughLineBreaks();
-        }
-
-        result.registerMode = temporaryResult.registerMode;
+        this.adjustResultAndPosition(
+          result,
+          position,
+          temporaryResult,
+          firstIteration,
+          lastIteration
+        );
       }
     }
-
     return result;
+  }
+
+  protected clampCount(count: number) {
+    count = Math.max(count, this.minCount);
+    count = Math.min(count, this.maxCount);
+    return count;
+  }
+
+  protected async createTemporaryResult(
+    position: Position,
+    vimState: VimState,
+    recordedState: RecordedState,
+    lastIteration: boolean
+  ): Promise<Position | IMovement> {
+    const temporaryResult =
+      recordedState.operator && lastIteration
+        ? await this.execActionForOperator(position, vimState)
+        : await this.execAction(position, vimState);
+    return temporaryResult;
+  }
+  protected adjustResultAndPosition(
+    result: IMovement,
+    position: Position,
+    temporaryResult: IMovement,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ) {
+    result.failed = false || temporaryResult.failed;
+
+    if (firstIteration) {
+      result.start = temporaryResult.start;
+    }
+
+    if (lastIteration) {
+      result.stop = temporaryResult.stop;
+    } else {
+      position = temporaryResult.stop.getRightThroughLineBreaks();
+    }
+
+    result.registerMode = temporaryResult.registerMode;
   }
 }
 
@@ -1475,62 +1513,25 @@ export abstract class MoveInsideCharacter extends BaseMovement {
     };
   }
 
-  public async execActionWithCount(
+  protected adjustResultAndPosition(
+    result: IMovement,
     position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    let recordedState = vimState.recordedState;
-    let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+    temporaryResult: IMovement,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ) {
+    result.failed = false || temporaryResult.failed;
 
-    if (count < 1) {
-      count = 1;
-    } else if (count > 99999) {
-      count = 99999;
+    // update start every iteration as selection expands
+    result.start = temporaryResult.start;
+
+    if (lastIteration) {
+      result.stop = temporaryResult.stop;
+    } else {
+      position = temporaryResult.stop.getRightThroughLineBreaks();
     }
 
-    for (let i = 0; i < count; i++) {
-      const lastIteration = i === count - 1;
-      const temporaryResult =
-        recordedState.operator && lastIteration
-          ? await this.execActionForOperator(position, vimState)
-          : await this.execAction(position, vimState);
-
-      // return failure result when repeat prefixing
-      if (isIMovement(temporaryResult)) {
-        if ((<IMovement>temporaryResult).failed) {
-          return temporaryResult;
-        }
-      }
-
-      if (temporaryResult instanceof Position) {
-        result = temporaryResult;
-        position = temporaryResult;
-      } else if (isIMovement(temporaryResult)) {
-        if (result instanceof Position) {
-          result = {
-            start: new Position(0, 0),
-            stop: new Position(0, 0),
-            failed: false,
-          };
-        }
-
-        result.failed = result.failed || temporaryResult.failed;
-
-        // update start every iteration as selection expands
-        (result as IMovement).start = temporaryResult.start;
-
-        if (lastIteration) {
-          (result as IMovement).stop = temporaryResult.stop;
-        } else {
-          position = temporaryResult.stop;
-        }
-
-        result.registerMode = temporaryResult.registerMode;
-      }
-    }
-
-    return result;
+    result.registerMode = temporaryResult.registerMode;
   }
 
   public async execActionForOperator(
@@ -1910,62 +1911,25 @@ abstract class MoveTagMatch extends BaseMovement {
     };
   }
 
-  public async execActionWithCount(
+  protected adjustResultAndPosition(
+    result: IMovement,
     position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    let recordedState = vimState.recordedState;
-    let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+    temporaryResult: IMovement,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ) {
+    result.failed = false || temporaryResult.failed;
 
-    if (count < 1) {
-      count = 1;
-    } else if (count > 99999) {
-      count = 99999;
+    // update start every iteration as selection expands
+    result.start = temporaryResult.start;
+
+    if (lastIteration) {
+      result.stop = temporaryResult.stop;
+    } else {
+      position = temporaryResult.stop.getRightThroughLineBreaks();
     }
 
-    for (let i = 0; i < count; i++) {
-      const lastIteration = i === count - 1;
-      const temporaryResult =
-        recordedState.operator && lastIteration
-          ? await this.execActionForOperator(position, vimState)
-          : await this.execAction(position, vimState);
-
-      // return failure result when repeat prefixing
-      if (isIMovement(temporaryResult)) {
-        if ((<IMovement>temporaryResult).failed) {
-          return temporaryResult;
-        }
-      }
-
-      if (temporaryResult instanceof Position) {
-        result = temporaryResult;
-        position = temporaryResult;
-      } else if (isIMovement(temporaryResult)) {
-        if (result instanceof Position) {
-          result = {
-            start: new Position(0, 0),
-            stop: new Position(0, 0),
-            failed: false,
-          };
-        }
-
-        result.failed = result.failed || temporaryResult.failed;
-
-        // update start every iteration as selection expands
-        (result as IMovement).start = temporaryResult.start;
-
-        if (lastIteration) {
-          (result as IMovement).stop = temporaryResult.stop;
-        } else {
-          position = temporaryResult.stop;
-        }
-
-        result.registerMode = temporaryResult.registerMode;
-      }
-    }
-
-    return result;
+    result.registerMode = temporaryResult.registerMode;
   }
 
   public async execActionForOperator(

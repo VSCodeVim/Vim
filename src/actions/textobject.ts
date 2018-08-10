@@ -245,55 +245,26 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
       };
     }
   }
-  public async execActionWithCount(
+
+  protected adjustResultAndPosition(
+    result: IMovement,
     position: Position,
-    vimState: VimState,
-    count: number
-  ): Promise<Position | IMovement> {
-    let recordedState = vimState.recordedState;
-    let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+    temporaryResult: IMovement,
+    firstIteration: boolean,
+    lastIteration: boolean
+  ) {
+    result.failed = false || temporaryResult.failed;
 
-    if (count < 1) {
-      count = 1;
-    } else if (count > 99999) {
-      count = 99999;
+    // update start every iteration as selection expands
+    result.start = temporaryResult.start;
+
+    if (lastIteration) {
+      result.stop = temporaryResult.stop;
+    } else {
+      position = temporaryResult.stop.getRightThroughLineBreaks();
     }
 
-    for (let i = 0; i < count; i++) {
-      const lastIteration = i === count - 1;
-      const temporaryResult =
-        recordedState.operator && lastIteration
-          ? await this.execActionForOperator(position, vimState)
-          : await this.execAction(position, vimState);
-
-      if (temporaryResult instanceof Position) {
-        result = temporaryResult;
-        position = temporaryResult;
-      } else if (isIMovement(temporaryResult)) {
-        if (result instanceof Position) {
-          result = {
-            start: new Position(0, 0),
-            stop: new Position(0, 0),
-            failed: false,
-          };
-        }
-
-        result.failed = result.failed || temporaryResult.failed;
-
-        // update start every iteration as selection expands
-        (result as IMovement).start = temporaryResult.start;
-
-        if (lastIteration) {
-          (result as IMovement).stop = temporaryResult.stop;
-        } else {
-          position = temporaryResult.stop;
-        }
-
-        result.registerMode = temporaryResult.registerMode;
-      }
-    }
-
-    return result;
+    result.registerMode = temporaryResult.registerMode;
   }
 }
 
