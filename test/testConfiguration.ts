@@ -44,12 +44,12 @@ export class Configuration implements IConfiguration {
   startInInsertMode = false;
   statusBarColorControl = false;
   statusBarColors: IModeSpecificStrings<string | string[]> = {
-    normal: ["#8FBCBB", "#434C5E"],
-    insert: "#BF616A",
-    visual: "#B48EAD",
-    visualline: "#B48EAD",
-    visualblock: "#A3BE8C",
-    replace: "#D08770"
+    normal: ['#8FBCBB', '#434C5E'],
+    insert: '#BF616A',
+    visual: '#B48EAD',
+    visualline: '#B48EAD',
+    visualblock: '#A3BE8C',
+    replace: '#D08770',
   };
   debug: {
     loggingLevel: 'warn';
