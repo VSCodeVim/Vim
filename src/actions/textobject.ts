@@ -245,27 +245,6 @@ export class SelectAnExpandingBlock extends TextObjectMovement {
       };
     }
   }
-
-  protected adjustResultAndPosition(
-    result: IMovement,
-    position: Position,
-    temporaryResult: IMovement,
-    firstIteration: boolean,
-    lastIteration: boolean
-  ) {
-    result.failed = false || temporaryResult.failed;
-
-    // update start every iteration as selection expands
-    result.start = temporaryResult.start;
-
-    if (lastIteration) {
-      result.stop = temporaryResult.stop;
-    } else {
-      position = temporaryResult.stop.getRightThroughLineBreaks();
-    }
-
-    result.registerMode = temporaryResult.registerMode;
-  }
 }
 
 @RegisterAction
