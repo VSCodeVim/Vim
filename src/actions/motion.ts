@@ -1442,9 +1442,15 @@ export abstract class MoveInsideCharacter extends BidirectionalExpandingSelectio
     );
     // maintain current selection on failure
     const failure = { start: cursorStartPos, stop: position, failed: true };
+
+    // when matching inside content of a pair, search for the next pair if
+    // the inner content is already selected in full
     if (!this.includeSurrounding) {
       const adjacentPosLeft = cursorStartPos.getLeftThroughLineBreaks();
-      const adjacentPosRight = position.getRightThroughLineBreaks();
+      let adjacentPosRight = position.getRightThroughLineBreaks();
+      if (vimState.recordedState.operator) {
+        adjacentPosRight = adjacentPosRight.getLeftThroughLineBreaks();
+      }
       const adjacentCharLeft = TextEditor.getCharAt(adjacentPosLeft);
       const adjacentCharRight = TextEditor.getCharAt(adjacentPosRight);
       if (adjacentCharLeft === this.charToMatch && adjacentCharRight === closingChar) {
