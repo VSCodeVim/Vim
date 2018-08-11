@@ -116,6 +116,7 @@ export abstract class BaseMovement extends BaseAction {
   ): Promise<Position | IMovement> {
     let recordedState = vimState.recordedState;
     let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+    let prevResult: IMovement | undefined = undefined;
     let firstMovementStart: Position = new Position(position.line, position.character);
 
     count = this.clampCount(count);
@@ -128,8 +129,8 @@ export abstract class BaseMovement extends BaseAction {
       if (result instanceof Position) {
         position = result;
       } else if (isIMovement(result)) {
-        if (result.failed) {
-          return result;
+        if (prevResult && result.failed) {
+          return prevResult;
         }
 
         if (firstIteration) {
@@ -137,6 +138,7 @@ export abstract class BaseMovement extends BaseAction {
         }
 
         position = this.adjustPosition(position, result, lastIteration);
+        prevResult = result;
       }
     }
 
@@ -1835,8 +1837,11 @@ abstract class MoveTagMatch extends BidirectionalExpandingSelection {
 
     let startPosition = start >= 0 ? TextEditor.getPositionAt(start) : cursorStartPos;
     let endPosition = end >= 0 ? TextEditor.getPositionAt(end) : position;
-    if (vimState.currentMode === ModeName.Visual) {
-      endPosition = endPosition.getLeftThroughLineBreaks(true);
+    if (
+      vimState.currentMode === ModeName.Visual ||
+      vimState.currentMode === ModeName.SurroundInputMode
+    ) {
+      endPosition = endPosition.getLeftThroughLineBreaks();
     }
 
     if (position.isAfter(endPosition)) {
@@ -1850,16 +1855,16 @@ abstract class MoveTagMatch extends BidirectionalExpandingSelection {
         diff: startPosition.subtract(position),
       });
     }
-    if (start === end) {
-      if (vimState.recordedState.operator instanceof ChangeOperator) {
-        vimState.currentMode = ModeName.Insert;
-      }
-      return {
-        start: startPosition,
-        stop: startPosition,
-        failed: true,
-      };
-    }
+    // if (start === end) {
+    //   if (vimState.recordedState.operator instanceof ChangeOperator) {
+    //     vimState.currentMode = ModeName.Insert;
+    //   }
+    //   return {
+    //     start: startPosition,
+    //     stop: startPosition,
+    //     failed: true,
+    //   };
+    // }
     vimState.cursorStartPosition = startPosition;
     return {
       start: startPosition,
