@@ -77,10 +77,10 @@ export class BaseAction {
     return true;
   }
 
-  public static CompareKeypressSequence(one: string[] | string[][], two: string[]): boolean {
-    if (BaseAction.is2DArray(one)) {
-      for (const sequence of one) {
-        if (BaseAction.CompareKeypressSequence(sequence, two)) {
+  public static CompareKeypressSequence(a: string[] | string[][], b: string[]): boolean {
+    if (BaseAction.is2DArray(a)) {
+      for (const sequence of a) {
+        if (BaseAction.CompareKeypressSequence(sequence, b)) {
           return true;
         }
       }
@@ -88,57 +88,51 @@ export class BaseAction {
       return false;
     }
 
-    if (one.length !== two.length) {
+    if (a.length !== b.length) {
       return false;
     }
 
     const isSingleNumber: RegExp = /^[0-9]$/;
     const isSingleAlpha: RegExp = /^[a-zA-Z]$/;
 
-    for (let i = 0, j = 0; i < one.length; i++, j++) {
-      const left = one[i],
-        right = two[j];
+    for (let i = 0; i < a.length; i++) {
+      const left = a[i],
+        right = b[i];
 
-      if (left === '<any>') {
-        continue;
-      }
-      if (right === '<any>') {
+      if (left === right) {
         continue;
       }
 
-      if (left === '<number>' && isSingleNumber.test(right)) {
-        continue;
-      }
-      if (right === '<number>' && isSingleNumber.test(left)) {
+      if (left === '<any>' || right === '<any>') {
         continue;
       }
 
-      if (left === '<alpha>' && isSingleAlpha.test(right)) {
-        continue;
-      }
-      if (right === '<alpha>' && isSingleAlpha.test(left)) {
-        continue;
-      }
-
-      if (left === '<character>' && !Notation.IsControlKey(right)) {
-        continue;
-      }
-      if (right === '<character>' && !Notation.IsControlKey(left)) {
+      if (
+        (left === '<number>' && isSingleNumber.test(right)) ||
+        (right === '<number>' && isSingleNumber.test(left))
+      ) {
         continue;
       }
 
-      if (left === '<leader>' && right === configuration.leader) {
-        continue;
-      }
-      if (right === '<leader>' && left === configuration.leader) {
+      if (
+        (left === '<alpha>' && isSingleAlpha.test(right)) ||
+        (right === '<alpha>' && isSingleAlpha.test(left))
+      ) {
         continue;
       }
 
-      if (left === configuration.leader) {
-        return false;
+      if (
+        (left === '<character>' && !Notation.IsControlKey(right)) ||
+        (right === '<character>' && !Notation.IsControlKey(left))
+      ) {
+        continue;
       }
-      if (right === configuration.leader) {
-        return false;
+
+      if (
+        (left === '<leader>' && right === configuration.leader) ||
+        (right === '<leader>' && left === configuration.leader)
+      ) {
+        continue;
       }
 
       if (left !== right) {
