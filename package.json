@@ -685,7 +685,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.116",
     "@types/mocha": "5.2.5",
-    "@types/node": "9.6.26",
+    "@types/node": "9.6.28",
     "gulp": "4.0.0",
     "gulp-bump": "3.1.1",
     "gulp-git": "2.8.0",
