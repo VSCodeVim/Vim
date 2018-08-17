@@ -70,7 +70,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | Status             | Command   | Description                                                                               |
 | ------------------ | --------- | ----------------------------------------------------------------------------------------- |
 | :white_check_mark: | :1234: k  | up N lines (also: CTRL-P and Up)                                                          |
-| :white_check_mark: | :1234: j  | up N lidown N lines (also: CTRL-J, CTRL-N, NL, and Down)                                  |
+| :white_check_mark: | :1234: j  | down N lines (also: CTRL-J, CTRL-N, NL, and Down)                                         |
 | :white_check_mark: | :1234: -  | up N lines, on the first non-blank character                                              |
 | :white_check_mark: | :1234: +  | down N lines, on the first non-blank character (also: CTRL-M and CR)                      |
 | :white_check_mark: | :1234: \_ | down N-1 lines, on the first non-blank character                                          |
