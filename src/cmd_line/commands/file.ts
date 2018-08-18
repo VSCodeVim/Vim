@@ -112,11 +112,13 @@ export class FileCommand extends node.CommandBase {
     }
 
     // create file
-    if (this.arguments.createFileIfNotExists) {
-      fs.closeSync(fs.openSync(filePath, 'w'));
-    } else {
-      Message.ShowError('The file ' + filePath + ' does not exist.');
-      return;
+    if (!fs.existsSync(filePath)) {
+      if (this.arguments.createFileIfNotExists) {
+        fs.closeSync(fs.openSync(filePath, 'w'));
+      } else {
+        Message.ShowError('The file ' + filePath + ' does not exist.');
+        return;
+      }
     }
 
     let folder = vscode.Uri.file(filePath);
