@@ -40,6 +40,11 @@ export interface IMovement {
   registerMode?: RegisterMode;
 }
 
+enum SelectionType {
+  Concatenating, // selections that concatenate repeated movements
+  Expanding, // selections that expand the start and end of the previous selection
+}
+
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
  */
@@ -67,7 +72,7 @@ export abstract class BaseMovement extends BaseAction {
 
   protected minCount = 1;
   protected maxCount = 99999;
-  protected bidirectionalSelectionExpansion = false;
+  protected selectionType = SelectionType.Concatenating;
 
   constructor(keysPressed?: string[], isRepeat?: boolean) {
     super();
@@ -142,7 +147,7 @@ export abstract class BaseMovement extends BaseAction {
       }
     }
 
-    if (!this.bidirectionalSelectionExpansion && isIMovement(result)) {
+    if (this.selectionType === SelectionType.Expanding && isIMovement(result)) {
       result.start = firstMovementStart;
     }
 
@@ -175,8 +180,8 @@ export abstract class BaseMovement extends BaseAction {
   }
 }
 
-export abstract class BidirectionalExpandingSelection extends BaseMovement {
-  protected bidirectionalSelectionExpansion = true;
+export abstract class ExpandingSelection extends BaseMovement {
+  protected selectionType = SelectionType.Expanding;
 
   protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
     if (!lastIteration) {
@@ -1429,7 +1434,7 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-export abstract class MoveInsideCharacter extends BidirectionalExpandingSelection {
+export abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
@@ -1818,7 +1823,7 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
   }
 }
 
-abstract class MoveTagMatch extends BidirectionalExpandingSelection {
+abstract class MoveTagMatch extends ExpandingSelection {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected includeTag = false;
 

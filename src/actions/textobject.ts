@@ -1,4 +1,4 @@
-import { Position, PositionDiff } from './../common/motion/position';
+import { Position } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { ModeName } from './../mode/mode';
 import { RegisterMode } from './../register/register';
@@ -15,8 +15,7 @@ import {
   MoveASquareBracket,
   MoveABacktick,
   MoveAroundTag,
-  isIMovement,
-  BidirectionalExpandingSelection,
+  ExpandingSelection,
 } from './motion';
 import { ChangeOperator } from './operator';
 
@@ -160,7 +159,7 @@ export class SelectABigWord extends TextObjectMovement {
  * and if you did it a third time it would select "(foo [bar 'baz'])".
  */
 @RegisterAction
-export class SelectAnExpandingBlock extends BidirectionalExpandingSelection {
+export class SelectAnExpandingBlock extends ExpandingSelection {
   keys = ['a', 'f'];
   modes = [ModeName.Visual, ModeName.VisualLine];
 
