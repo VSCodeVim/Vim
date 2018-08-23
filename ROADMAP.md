@@ -70,7 +70,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | Status             | Command   | Description                                                                               |
 | ------------------ | --------- | ----------------------------------------------------------------------------------------- |
 | :white_check_mark: | :1234: k  | up N lines (also: CTRL-P and Up)                                                          |
-| :white_check_mark: | :1234: j  | up N lidown N lines (also: CTRL-J, CTRL-N, NL, and Down)                                  |
+| :white_check_mark: | :1234: j  | down N lines (also: CTRL-J, CTRL-N, NL, and Down)                                         |
 | :white_check_mark: | :1234: -  | up N lines, on the first non-blank character                                              |
 | :white_check_mark: | :1234: +  | down N lines, on the first non-blank character (also: CTRL-M and CR)                      |
 | :white_check_mark: | :1234: \_ | down N-1 lines, on the first non-blank character                                          |
@@ -78,7 +78,7 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | :1234: gg | goto line N (default: first line), on the first non-blank character                       |
 | :white_check_mark: | :1234: %  | goto line N percentage down in the file; N must be given, otherwise it is the `%` command |
 | :white_check_mark: | :1234: gk | up N screen lines (differs from "k" when line wraps)                                      |
-| :white_check_mark: | :1234: gj | own N screen lines (differs from "j" when line wraps)                                     |
+| :white_check_mark: | :1234: gj | down N screen lines (differs from "j" when line wraps)                                    |
 
 ## Text object motions
 
