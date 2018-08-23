@@ -147,7 +147,7 @@ export abstract class BaseMovement extends BaseAction {
       }
     }
 
-    if (this.selectionType === SelectionType.Expanding && isIMovement(result)) {
+    if (this.selectionType === SelectionType.Concatenating && isIMovement(result)) {
       result.start = firstMovementStart;
     }
 
