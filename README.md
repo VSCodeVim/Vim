@@ -45,7 +45,7 @@ VSCodeVim is automatically enabled following [installation](https://marketplace.
 
 ### Vim Compatibility
 
-Vimscript is _not_ supported, therefore we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
+Vimscript is _not_ supported, therefore we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#-emulated-plugins).
 
 ### Mac Setup
 

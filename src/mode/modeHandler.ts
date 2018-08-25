@@ -31,6 +31,7 @@ import {
 } from './../transformations/transformations';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { logger } from '../util/logger';
+import { Neovim } from '../neovim/neovim';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -60,7 +61,7 @@ export class ModeHandler implements vscode.Disposable {
       new modes.DisabledMode(),
     ];
 
-    this.vimState = new VimState(vscode.window.activeTextEditor!);
+    this.vimState = new VimState(vscode.window.activeTextEditor!, configuration.enableNeovim);
     this.setCurrentMode(configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal);
 
     // Sometimes, Visual Studio Code will start the cursor in a position which
@@ -1296,13 +1297,15 @@ export class ModeHandler implements vscode.Disposable {
         vimState.cursorPosition
       ).pos;
 
-      this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch));
-    } else {
-      if (args.revealRange) {
-        this.vimState.editor.revealRange(
-          new vscode.Range(vimState.cursorPosition, vimState.cursorPosition)
-        );
-      }
+      this.vimState.editor.revealRange(
+        new vscode.Range(nextMatch, nextMatch),
+        vscode.TextEditorRevealType.InCenterIfOutsideViewport
+      );
+    } else if (args.revealRange) {
+      this.vimState.editor.revealRange(
+        new vscode.Range(vimState.cursorPosition, vimState.cursorPosition),
+        vscode.TextEditorRevealType.InCenterIfOutsideViewport
+      );
     }
 
     // cursor style
