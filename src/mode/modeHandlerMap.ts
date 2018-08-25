@@ -1,5 +1,3 @@
-import * as vscode from 'vscode';
-import { EditorIdentity } from '../editorIdentity';
 import { ModeHandler } from './modeHandler';
 
 class ModeHandlerMapImpl {

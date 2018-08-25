@@ -1,6 +1,5 @@
 import { CommandLineHistory } from '../../src/cmd_line/commandLineHistory';
 import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
-import { Configuration } from '../testConfiguration';
 import { configuration } from '../../src/configuration/configuration';
 import * as path from 'path';
 import * as os from 'os';
@@ -27,7 +26,7 @@ suite('command-line history', () => {
   const filePath = path.join(os.tmpdir(), rndName());
 
   setup(async () => {
-    await setupWorkspace(new Configuration());
+    await setupWorkspace();
 
     run_cmds = [];
     for (let i = 0; i < configuration.history; i++) {
