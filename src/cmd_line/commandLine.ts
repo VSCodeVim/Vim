@@ -54,7 +54,14 @@ class CommandLine {
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
 
       if (useNeovim) {
-        await vimState.nvim.run(vimState, command);
+        var statusBarText = await vimState.nvim.run(vimState, command);
+        StatusBar.SetText(
+          statusBarText,
+          vimState.currentMode,
+          vimState.isRecordingMacro,
+          true,
+          true
+        );
       } else {
         await cmd.execute(vimState.editor, vimState);
       }
