@@ -1176,4 +1176,50 @@ suite('Mode Visual', () => {
       assertEqual(selection.end.line, 2);
     });
   });
+
+  suite('can prepend text with I', () => {
+    newTest({
+      title: 'multiline insert from bottom up selection',
+      start: ['111', '222', '333', '4|44', '555'],
+      keysPressed: 'vkkI_',
+      end: ['111', '2_|22', '_333', '_444', '555'],
+    });
+
+    newTest({
+      title: 'multiline insert from top down selection',
+      start: ['111', '2|22', '333', '444', '555'],
+      keysPressed: 'vjjI_',
+      end: ['111', '2_|22', '_333', '_444', '555'],
+    });
+
+    newTest({
+      title: 'skips blank lines',
+      start: ['111', '2|22', ' ', '444', '555'],
+      keysPressed: 'vjjI_',
+      end: ['111', '2_|22', ' ', '_444', '555'],
+    });
+  });
+
+  suite('can append text with A', () => {
+    newTest({
+      title: 'multiline append from bottom up selection',
+      start: ['111', '222', '333', '4|44', '555'],
+      keysPressed: 'vkkA_',
+      end: ['111', '222_|', '333_', '44_4', '555'],
+    });
+
+    newTest({
+      title: 'multiline append from top down selection',
+      start: ['111', '2|22', '333', '444', '555'],
+      keysPressed: 'vjjA_',
+      end: ['111', '222_|', '333_', '44_4', '555'],
+    });
+
+    newTest({
+      title: 'skips blank lines',
+      start: ['111', '2|22', ' ', '444', '555'],
+      keysPressed: 'vjjA_',
+      end: ['111', '222_|', ' ', '44_4', '555'],
+    });
+  });
 });
