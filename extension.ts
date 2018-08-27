@@ -16,11 +16,13 @@ import { Globals } from './src/globals';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { Notation } from './src/configuration/notation';
+import { RecordedState } from './src/state/recordedState';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { logger } from './src/util/logger';
 import { CompositionState } from './src/state/compositionState';
+import { Jump } from './src/state/globalState';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
@@ -139,9 +141,28 @@ export async function activate(context: vscode.ExtensionContext) {
 
     taskQueue.enqueueTask(async () => {
       if (vscode.window.activeTextEditor !== undefined) {
+        if (previousActiveEditorId) {
+          const prevHandler = ModeHandlerMap.get(previousActiveEditorId.toString());
+          if (prevHandler) {
+            prevHandler.vimState.globalState.jumpHistory.push(
+              new Jump({
+                fileName: prevHandler.vimState.editor.document.fileName,
+                position: prevHandler.vimState.cursorPosition,
+              })
+            );
+          }
+        }
+
         const mh = await getAndUpdateModeHandler();
 
-        mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+        await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+
+        mh.vimState.globalState.jumpHistory.push(
+          new Jump({
+            fileName: mh.vimState.editor.document.fileName,
+            position: mh.vimState.cursorPosition,
+          })
+        );
       }
     });
   });

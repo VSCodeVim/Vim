@@ -295,6 +295,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 class MoveDown extends BaseMovement {
   keys = ['j'];
   doesntChangeDesiredColumn = true;
+  isJump = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
@@ -324,6 +325,7 @@ class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDe
 class MoveUp extends BaseMovement {
   keys = ['k'];
   doesntChangeDesiredColumn = true;
+  isJump = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {

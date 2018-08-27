@@ -1,7 +1,7 @@
 {
 	"files.trimTrailingWhitespace": true,
 	"files.exclude": {
-		"out": false // set this to true to hide the "out" folder with the compiled JS files
+		"out": false
 	},
 	"search.exclude": {
 		"out": true // set this to false to include "out" folder in search results

@@ -23,6 +23,7 @@ import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
+import { Jump } from '../../state/globalState';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -155,6 +156,11 @@ export abstract class BaseCommand extends BaseAction {
    */
   isCompleteAction = true;
 
+  /**
+   * If isJump is true, then the action will be added to the jump list on completion.
+   */
+  isJump = true;
+
   multicursorIndex: number | undefined = undefined;
 
   /**
@@ -280,6 +286,7 @@ export class CommandNumber extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['<number>'];
   isCompleteAction = false;
+  isJump = false;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -2788,45 +2795,62 @@ class CommandInsertNewLineBefore extends BaseCommand {
   }
 }
 
-@RegisterAction
-class CommandNavigateBack extends BaseCommand {
-  modes = [ModeName.Normal];
-  keys = [['<C-o>'], ['<C-t>']];
+abstract class ActionNavigateCommand extends BaseCommand {
   runsOnceForEveryCursor() {
     return false;
   }
 
+  abstract getJumpToNavigate(position: Position, vimState: VimState): Jump;
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const oldActiveEditor = vimState.editor;
+    const jump = this.getJumpToNavigate(position, vimState);
 
-    await vscode.commands.executeCommand('workbench.action.navigateBack');
-
-    if (oldActiveEditor === vimState.editor) {
-      vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    if (!jump) {
+      return vimState;
     }
 
+    if (jump.fileName !== vimState.editor.document.fileName) {
+      const fileCommand = new FileCommand({
+        name: jump.fileName,
+        lineNumber: jump.position.line,
+        createFileIfNotExists: false,
+      });
+      fileCommand.execute();
+      return vimState;
+    }
+
+    vimState.cursorPosition = jump.position;
     return vimState;
   }
 }
 
 @RegisterAction
-class CommandNavigateForward extends BaseCommand {
+class CommandNavigateBack extends ActionNavigateCommand {
   modes = [ModeName.Normal];
-  keys = ['<C-i>'];
+  keys = [['<C-o>'], ['<C-t>']];
+  isJump = false;
+
   runsOnceForEveryCursor() {
     return false;
   }
 
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const oldActiveEditor = vimState.editor;
+  getJumpToNavigate(position: Position, vimState: VimState) {
+    return vimState.globalState.jumpHistory.back();
+  }
+}
 
-    await vscode.commands.executeCommand('workbench.action.navigateForward');
+@RegisterAction
+class CommandNavigateForward extends ActionNavigateCommand {
+  modes = [ModeName.Normal];
+  keys = ['<C-i>'];
+  isJump = false;
 
-    if (oldActiveEditor === vimState.editor) {
-      vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-    }
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
-    return vimState;
+  getJumpToNavigate(position: Position, vimState: VimState) {
+    return vimState.globalState.jumpHistory.forward();
   }
 }
 

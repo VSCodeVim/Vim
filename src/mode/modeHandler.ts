@@ -32,6 +32,7 @@ import {
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { logger } from '../util/logger';
 import { Neovim } from '../neovim/neovim';
+import { Jump } from '../state/globalState';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -75,40 +76,81 @@ export class ModeHandler implements vscode.Disposable {
     this.syncCursors();
 
     // Handle scenarios where mouse used to change current position.
-    const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(e => {
-      if (configuration.disableExt) {
-        return;
-      }
+    const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(
+      (e: vscode.TextEditorSelectionChangeEvent) => {
+        // console.log('CHANGED SELECTION', e.kind);
+        // const editor: vscode.TextEditor = vscode.window.
+        // vscode.
 
-      if (Globals.isTesting) {
-        return;
-      }
+        if (configuration.disableExt) {
+          return;
+        }
 
-      if (e.textEditor !== this.vimState.editor) {
-        return;
-      }
+        if (Globals.isTesting) {
+          return;
+        }
 
-      if (this.vimState.focusChanged) {
-        this.vimState.focusChanged = false;
-        return;
-      }
+        if (e.textEditor !== this.vimState.editor) {
+          return;
+        }
 
-      if (this.currentMode.name === ModeName.EasyMotionMode) {
-        return;
-      }
+        if (this.vimState.focusChanged) {
+          this.vimState.focusChanged = false;
+          return;
+        }
 
-      taskQueue.enqueueTask(
-        () => this.handleSelectionChange(e),
-        undefined,
-        /**
-         * We don't want these to become backlogged! If they do, we'll update
-         * the selection to an incorrect value and see a jittering cursor.
-         */
-        true
-      );
-    });
+        if (this.currentMode.name === ModeName.EasyMotionMode) {
+          return;
+        }
+
+        taskQueue.enqueueTask(
+          () => this.handleSelectionChange(e),
+          undefined,
+          /**
+           * We don't want these to become backlogged! If they do, we'll update
+           * the selection to an incorrect value and see a jittering cursor.
+           */
+          true
+        );
+      }
+    );
+
+    // const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(
+    //   (textEditor: vscode.TextEditor | undefined) => {
+    //     if (configuration.disableExt) {
+    //       return;
+    //     }
+
+    //     if (Globals.isTesting) {
+    //       return;
+    //     }
+
+    //     if (!textEditor) {
+    //       return;
+    //     }
+
+    //     if (textEditor !== this.vimState.editor) {
+    //       return;
+    //     }
+
+    //     if (this.vimState.focusChanged) {
+    //       return;
+    //     }
+
+    //     if (this.currentMode.name === ModeName.EasyMotionMode) {
+    //       return;
+    //     }
+
+    //     this.vimState.globalState.jumpHistory.push({
+    //       fileName: this.vimState.editor.document.fileName,
+    //       position: this.vimState.cursorPosition,
+    //       recordedState: new RecordedState(), // TODO - can we record something meaningful?
+    //     });
+    //   }
+    // );
 
     this._disposables.push(onChangeTextEditorSelection);
+    // this._disposables.push(onDidChangeActiveTextEditor);
     this._disposables.push(this.vimState);
   }
 
@@ -355,6 +397,7 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     recordedState.actionKeys.push(key);
+
     vimState.keyHistory.push(key);
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
@@ -430,6 +473,16 @@ export class ModeHandler implements vscode.Disposable {
 
     // Update view
     await this.updateView(vimState);
+
+    if (action.isJump) {
+      vimState.globalState.jumpHistory.push(
+        new Jump({
+          fileName: this.vimState.editor.document.fileName,
+          position: vimState.cursorPosition,
+          recordedState,
+        })
+      );
+    }
 
     return vimState;
   }
