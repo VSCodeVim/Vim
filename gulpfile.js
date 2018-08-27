@@ -232,6 +232,13 @@ gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint')));
 gulp.task('changelog', gulp.series(validateArgs, createChangelog));
 gulp.task(
   'release',
-  gulp.series(validateArgs, updateVersion, createChangelog, createGitCommit, createGitTag)
+  gulp.series(
+    validateArgs,
+    updateVersion,
+    createChangelog,
+    'prettier',
+    createGitCommit,
+    createGitTag
+  )
 );
 gulp.task('default', gulp.series('build', 'test'));

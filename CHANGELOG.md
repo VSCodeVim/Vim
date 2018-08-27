@@ -1,5 +1,37 @@
 # Change Log
 
+## [v0.16.1](https://github.com/vscodevim/vim/tree/v0.16.1) (2018-08-27)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.0...v0.16.1)
+
+**Fixed Bugs:**
+
+- `:vsp file\_name` cannot open file_name, although this file does exist [\#2983](https://github.com/VSCodeVim/Vim/issues/2983)
+- `gf` \(go to file under cursor\) produces the "Vim: The file ... does not exist." error, even though file clearly exists [\#2966](https://github.com/VSCodeVim/Vim/issues/2966)
+- Open File with :e deletes file content [\#2963](https://github.com/VSCodeVim/Vim/issues/2963)
+- Moving the cursor to somewhere outside of the viewport should center the cursor vertically [\#2960](https://github.com/VSCodeVim/Vim/issues/2960)
+
+**Closed issues:**
+
+- "before": \["\<C-x\>", "C-s\>"\] not work. [\#2949](https://github.com/VSCodeVim/Vim/issues/2949)
+- VSCodeVim airline affecting color scheme [\#2948](https://github.com/VSCodeVim/Vim/issues/2948)
+- \[Feature Request\] : ReplaceWithRegister [\#2937](https://github.com/VSCodeVim/Vim/issues/2937)
+- % should match on strings & chars [\#2935](https://github.com/VSCodeVim/Vim/issues/2935)
+- Throw away the mouse [\#2922](https://github.com/VSCodeVim/Vim/issues/2922)
+- Wried cursor behavior with INSERT MULTI CURSOR mode [\#2910](https://github.com/VSCodeVim/Vim/issues/2910)
+
+**Merged pull requests:**
+
+- Lazy Load Neovim [\#2992](https://github.com/VSCodeVim/Vim/pull/2992) ([jpoon](https://github.com/jpoon))
+- Update dependency @types/node to v9.6.30 [\#2987](https://github.com/VSCodeVim/Vim/pull/2987) ([renovate-bot](https://github.com/renovate-bot))
+- Fix type in ROADMAP.md [\#2980](https://github.com/VSCodeVim/Vim/pull/2980) ([nickebbitt](https://github.com/nickebbitt))
+- Fix emulated plugins link in README [\#2977](https://github.com/VSCodeVim/Vim/pull/2977) ([jjt](https://github.com/jjt))
+- Fix `gf` showing error for files which exist [\#2969](https://github.com/VSCodeVim/Vim/pull/2969) ([arussellk](https://github.com/arussellk))
+- Fix Typo in ROADMAP [\#2967](https://github.com/VSCodeVim/Vim/pull/2967) ([AdrieanKhisbe](https://github.com/AdrieanKhisbe))
+- Center cursor vertically on movement out of viewport [\#2962](https://github.com/VSCodeVim/Vim/pull/2962) ([hhu94](https://github.com/hhu94))
+- chore\(deps\): update dependency vscode to v1.1.21 [\#2958](https://github.com/VSCodeVim/Vim/pull/2958) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/node to v9.6.28 [\#2952](https://github.com/VSCodeVim/Vim/pull/2952) ([renovate-bot](https://github.com/renovate-bot))
+
 ## [v0.16.0](https://github.com/vscodevim/vim/tree/v0.16.0) (2018-08-09)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.7...v0.16.0)
@@ -22,6 +54,8 @@
 
 **Merged pull requests:**
 
+- bump version [\#2946](https://github.com/VSCodeVim/Vim/pull/2946) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency prettier to v1.14.2 [\#2943](https://github.com/VSCodeVim/Vim/pull/2943) ([renovate-bot](https://github.com/renovate-bot))
 - docs: move configs to tables for readability [\#2941](https://github.com/VSCodeVim/Vim/pull/2941) ([jpoon](https://github.com/jpoon))
 - chore\(deps\): update dependency @types/node to v9.6.26 [\#2940](https://github.com/VSCodeVim/Vim/pull/2940) ([renovate-bot](https://github.com/renovate-bot))
 - docs: clean-up readme [\#2931](https://github.com/VSCodeVim/Vim/pull/2931) ([jpoon](https://github.com/jpoon))
