@@ -1059,6 +1059,7 @@ class MoveNextLineNonBlank extends BaseMovement {
 @RegisterAction
 class MoveNonBlankFirst extends BaseMovement {
   keys = ['g', 'g'];
+  isJump = true;
 
   public async execActionWithCount(
     position: Position,
@@ -1076,6 +1077,7 @@ class MoveNonBlankFirst extends BaseMovement {
 @RegisterAction
 class MoveNonBlankLast extends BaseMovement {
   keys = ['G'];
+  isJump = true;
 
   public async execActionWithCount(
     position: Position,
