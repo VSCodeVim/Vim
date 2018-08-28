@@ -1,17 +1,22 @@
+import * as vscode from 'vscode';
+
 import { Position } from '../common/motion/position';
 import { RecordedState } from './../state/recordedState';
 import { SearchState } from './searchState';
 
 export class Jump {
+  public editor: vscode.TextEditor;
   public fileName: string;
   public position: Position;
   public recordedState?: RecordedState;
 
   constructor({
+    editor,
     fileName,
     position,
     recordedState,
   }: {
+    editor: vscode.TextEditor;
     fileName: string;
     position: Position;
     recordedState?: RecordedState;
@@ -22,6 +27,8 @@ export class Jump {
     if (!position) {
       throw new Error('position is required for Jumps');
     }
+    this.editor = editor;
+    // TODO - can we just always require editor and get filename from it?
     this.fileName = fileName;
     this.position = position;
     this.recordedState = recordedState;
@@ -38,11 +45,15 @@ export class JumpHistory {
   private jumps: Jump[] = [];
   private currentPosition = 0;
 
-  public jumpFiles(from: Jump, to: Jump) {
+  public jumpFiles(from: Jump | null, to: Jump) {
     console.log('jumpFiles------------');
     const currentJump = this.jumps[this.currentPosition];
     if (this.isJumpingFiles) {
       this.isJumpingFiles = false;
+      return;
+    }
+
+    if (from && from.fileName === to.fileName) {
       return;
     }
 

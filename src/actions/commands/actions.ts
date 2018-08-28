@@ -2826,21 +2826,27 @@ abstract class ActionNavigateCommand extends BaseCommand {
     }
 
     if (jump.fileName !== vimState.editor.document.fileName) {
-      // TODO - what about newly created files?
-      if (existsSync(jump.fileName)) {
-        vimState.globalState.jumpHistory.isJumpingFiles = true;
+      vimState.globalState.jumpHistory.isJumpingFiles = true;
 
-        const fileCommand = new FileCommand({
+      // TODO: Check for editor closed also, probably won't work if it is closed
+      if (jump.editor) {
+        vscode.window.showTextDocument(jump.editor.document);
+      } else if (existsSync(jump.fileName)) {
+        new FileCommand({
           name: jump.fileName,
           lineNumber: jump.position.line,
           createFileIfNotExists: false,
-        });
-        fileCommand.execute();
-        return vimState;
+        }).execute();
       } else {
-        // Skip to next jump
-        await this.exec(position, vimState);
+        const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
+          e => e.document.fileName === jump.fileName
+        )[0];
+
+        if (editor) {
+          vscode.window.showTextDocument(editor.document, jump.position.character, false);
+        }
       }
+      return vimState;
     }
 
     vimState.cursorPosition = jump.position;

@@ -477,6 +477,7 @@ export class ModeHandler implements vscode.Disposable {
     if (action.isJump) {
       vimState.globalState.jumpHistory.push(
         new Jump({
+          editor: this.vimState.editor,
           fileName: this.vimState.editor.document.fileName,
           position: vimState.cursorPosition,
           recordedState,

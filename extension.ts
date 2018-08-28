@@ -129,18 +129,20 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  const recordFileJump = (prevHandler, mh) => {
-    const from = prevHandler
+  const recordFileJump = (fromHandler: ModeHandler | null, toHandler: ModeHandler) => {
+    const from = fromHandler
       ? new Jump({
-          fileName: prevHandler.vimState.editor.document.fileName,
-          position: prevHandler.vimState.cursorPosition,
+          editor: fromHandler.vimState.editor,
+          fileName: fromHandler.vimState.editor.document.fileName,
+          position: fromHandler.vimState.cursorPosition,
         })
       : null;
     const to = new Jump({
-      fileName: mh.vimState.editor.document.fileName,
-      position: mh.vimState.cursorPosition,
+      editor: toHandler.vimState.editor,
+      fileName: toHandler.vimState.editor.document.fileName,
+      position: toHandler.vimState.cursorPosition,
     });
-    mh.vimState.globalState.jumpHistory.jumpFiles(from, to);
+    toHandler.vimState.globalState.jumpHistory.jumpFiles(from, to);
   };
 
   // window events
