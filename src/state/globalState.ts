@@ -46,10 +46,16 @@ export class JumpHistory {
   private currentPosition = 0;
 
   public jumpFiles(from: Jump | null, to: Jump) {
-    console.log('jumpFiles------------');
     const currentJump = this.jumps[this.currentPosition];
     if (this.isJumpingFiles) {
       this.isJumpingFiles = false;
+      return;
+    }
+
+    if (to.editor.document.isClosed) {
+      // Wallaby.js seemed to be adding an extra file jump, named e.g. extension-output-#4
+      // It was marked closed when jumping to it. Hopefully we can rely on checking isClosed
+      // when extensions get all weird on us.
       return;
     }
 
@@ -58,59 +64,39 @@ export class JumpHistory {
     }
 
     if (this.currentPosition < this.jumps.length - 1) {
-      console.log('Removing following jumps jumping files');
       this.jumps.splice(this.currentPosition + 1, this.jumps.length);
     }
 
-    console.log('Jumping to file', to.fileName, to.position.line);
-
     if (from) {
-      if (currentJump && currentJump.equals(from)) {
-        console.log('On from');
-      } else {
-        console.log('Jumped From', from.fileName);
-        this.jumps.push(from);
-      }
+      this.jumps.push(from);
     }
-    if (currentJump && currentJump.equals(to)) {
-      console.log('On to');
-    } else {
-      console.log('Jumped To', to.fileName);
-      this.jumps.push(to);
-    }
+    this.jumps.push(to);
     this.currentPosition = this.jumps.length - 1;
   }
 
   public push(jump: Jump) {
-    console.log('push------------');
-
     const previousJump = this.jumps[this.currentPosition - 1];
     const currentJump = this.jumps[this.currentPosition];
     const nextJump = this.jumps[this.currentPosition + 1];
 
     if (previousJump && previousJump.equals(jump)) {
       this.currentPosition -= 1;
-      console.log('On previous jump', this.currentPosition);
       return;
     }
 
     if (currentJump && currentJump.equals(jump)) {
-      console.log('On current jump', this.currentPosition);
       return;
     }
 
     if (nextJump && nextJump.equals(jump)) {
       this.currentPosition += 1;
-      console.log('On next jump', this.currentPosition);
       return;
     }
 
     if (this.currentPosition < this.jumps.length - 1) {
       this.jumps.splice(this.currentPosition + 1, this.jumps.length);
-      console.log('Removing following jumps');
     }
 
-    console.log('Added new jump', jump.fileName, jump.position.line);
     this.jumps.push(jump);
     this.currentPosition = this.jumps.length - 1;
   }
