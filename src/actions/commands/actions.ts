@@ -848,6 +848,8 @@ class CommandReplaceInReplaceMode extends BaseCommand {
 class CommandInsertInSearchMode extends BaseCommand {
   modes = [ModeName.SearchInProgressMode];
   keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
+  isJump = true;
+
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
