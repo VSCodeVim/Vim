@@ -24,6 +24,7 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../state/globalState';
+import { existsSync } from 'fs';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -2825,15 +2826,21 @@ abstract class ActionNavigateCommand extends BaseCommand {
     }
 
     if (jump.fileName !== vimState.editor.document.fileName) {
-      vimState.globalState.jumpHistory.isJumpingFiles = true;
+      // TODO - what about newly created files?
+      if (existsSync(jump.fileName)) {
+        vimState.globalState.jumpHistory.isJumpingFiles = true;
 
-      const fileCommand = new FileCommand({
-        name: jump.fileName,
-        lineNumber: jump.position.line,
-        createFileIfNotExists: false,
-      });
-      fileCommand.execute();
-      return vimState;
+        const fileCommand = new FileCommand({
+          name: jump.fileName,
+          lineNumber: jump.position.line,
+          createFileIfNotExists: false,
+        });
+        fileCommand.execute();
+        return vimState;
+      } else {
+        // Skip to next jump
+        await this.exec(position, vimState);
+      }
     }
 
     vimState.cursorPosition = jump.position;
