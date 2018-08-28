@@ -34,8 +34,10 @@ export class Jump {
     this.recordedState = recordedState;
   }
 
-  public equals(other: Jump): boolean {
-    return this.fileName === other.fileName && this.position.line === other.position.line;
+  public onSameLine(other: Jump | null | undefined): boolean {
+    return (
+      !other || (this.fileName === other.fileName && this.position.line === other.position.line)
+    );
   }
 }
 
@@ -64,7 +66,7 @@ export class JumpHistory {
     }
 
     if (this.currentPosition < this.jumps.length - 1) {
-      this.jumps.splice(this.currentPosition + 1, this.jumps.length);
+      this.clearJumpsAfterCurrentPosition();
     }
 
     if (from) {
@@ -74,31 +76,43 @@ export class JumpHistory {
     this.currentPosition = this.jumps.length - 1;
   }
 
-  public push(jump: Jump) {
+  public jump(from: Jump | null, to: Jump) {
     const previousJump = this.jumps[this.currentPosition - 1];
     const currentJump = this.jumps[this.currentPosition];
     const nextJump = this.jumps[this.currentPosition + 1];
 
-    if (previousJump && previousJump.equals(jump)) {
+    if (previousJump && previousJump.onSameLine(to)) {
       this.currentPosition -= 1;
       return;
     }
 
-    if (currentJump && currentJump.equals(jump)) {
+    if (currentJump && currentJump.onSameLine(to)) {
+      this.replaceCurrentJump(to);
       return;
     }
 
-    if (nextJump && nextJump.equals(jump)) {
+    if (nextJump && nextJump.onSameLine(to)) {
       this.currentPosition += 1;
       return;
     }
 
     if (this.currentPosition < this.jumps.length - 1) {
-      this.jumps.splice(this.currentPosition + 1, this.jumps.length);
+      this.clearJumpsAfterCurrentPosition();
     }
 
-    this.jumps.push(jump);
+    if (from && !from.onSameLine(currentJump) && !from.onSameLine(to)) {
+      this.jumps.push(from);
+    }
+    this.jumps.push(to);
     this.currentPosition = this.jumps.length - 1;
+  }
+
+  clearJumpsAfterCurrentPosition(): any {
+    this.jumps.splice(this.currentPosition + 1, this.jumps.length);
+  }
+
+  replaceCurrentJump(to: Jump): any {
+    this.jumps.splice(this.currentPosition, this.jumps.length, to);
   }
 
   public back(): Jump {

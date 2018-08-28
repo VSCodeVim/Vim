@@ -115,42 +115,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     );
 
-    // const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(
-    //   (textEditor: vscode.TextEditor | undefined) => {
-    //     if (configuration.disableExt) {
-    //       return;
-    //     }
-
-    //     if (Globals.isTesting) {
-    //       return;
-    //     }
-
-    //     if (!textEditor) {
-    //       return;
-    //     }
-
-    //     if (textEditor !== this.vimState.editor) {
-    //       return;
-    //     }
-
-    //     if (this.vimState.focusChanged) {
-    //       return;
-    //     }
-
-    //     if (this.currentMode.name === ModeName.EasyMotionMode) {
-    //       return;
-    //     }
-
-    //     this.vimState.globalState.jumpHistory.push({
-    //       fileName: this.vimState.editor.document.fileName,
-    //       position: this.vimState.cursorPosition,
-    //       recordedState: new RecordedState(), // TODO - can we record something meaningful?
-    //     });
-    //   }
-    // );
-
     this._disposables.push(onChangeTextEditorSelection);
-    // this._disposables.push(onDidChangeActiveTextEditor);
     this._disposables.push(this.vimState);
   }
 
@@ -414,6 +379,12 @@ export class ModeHandler implements vscode.Disposable {
 
     let action = result as BaseAction;
     let actionToRecord: BaseAction | undefined = action;
+    let originalLocation = new Jump({
+      editor: this.vimState.editor,
+      fileName: this.vimState.editor.document.fileName,
+      position: vimState.cursorPosition,
+      recordedState,
+    });
 
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
@@ -475,7 +446,9 @@ export class ModeHandler implements vscode.Disposable {
     await this.updateView(vimState);
 
     if (action.isJump) {
-      vimState.globalState.jumpHistory.push(
+      vimState.globalState.jumpHistory.jump(
+        // vimState.globalState.jumpHistory.jumpFiles(
+        originalLocation,
         new Jump({
           editor: this.vimState.editor,
           fileName: this.vimState.editor.document.fileName,
