@@ -428,6 +428,7 @@ class RightArrowInReplaceMode extends ArrowsInReplaceMode {
 @RegisterAction
 class CommandNextSearchMatch extends BaseMovement {
   keys = ['n'];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const searchState = vimState.globalState.searchState;
@@ -451,6 +452,7 @@ class CommandNextSearchMatch extends BaseMovement {
 @RegisterAction
 class CommandPreviousSearchMatch extends BaseMovement {
   keys = ['N'];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const searchState = vimState.globalState.searchState;
