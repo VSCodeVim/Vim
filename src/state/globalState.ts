@@ -16,21 +16,63 @@ export class Jump {
     position: Position;
     recordedState?: RecordedState;
   }) {
+    if (!fileName) {
+      throw new Error('fileName is required for Jumps');
+    }
+    if (!position) {
+      throw new Error('position is required for Jumps');
+    }
     this.fileName = fileName;
     this.position = position;
     this.recordedState = recordedState;
   }
 
   public equals(other: Jump): boolean {
-    return this.fileName === other.fileName && this.position.isEqual(other.position);
+    return this.fileName === other.fileName && this.position.line === other.position.line;
   }
 }
 
 export class JumpHistory {
+  public isJumpingFiles = false;
+
   private jumps: Jump[] = [];
   private currentPosition = 0;
 
+  public jumpFiles(from: Jump, to: Jump) {
+    console.log('jumpFiles------------');
+    const currentJump = this.jumps[this.currentPosition];
+    if (this.isJumpingFiles) {
+      this.isJumpingFiles = false;
+      return;
+    }
+
+    if (this.currentPosition < this.jumps.length - 1) {
+      console.log('Removing following jumps jumping files');
+      this.jumps.splice(this.currentPosition + 1, this.jumps.length);
+    }
+
+    console.log('Jumping to file', to.fileName, to.position.line);
+
+    if (from) {
+      if (currentJump && currentJump.equals(from)) {
+        console.log('On from');
+      } else {
+        console.log('Jumped From', from.fileName);
+        this.jumps.push(from);
+      }
+    }
+    if (currentJump && currentJump.equals(to)) {
+      console.log('On to');
+    } else {
+      console.log('Jumped To', to.fileName);
+      this.jumps.push(to);
+    }
+    this.currentPosition = this.jumps.length - 1;
+  }
+
   public push(jump: Jump) {
+    console.log('push------------');
+
     const previousJump = this.jumps[this.currentPosition - 1];
     const currentJump = this.jumps[this.currentPosition];
     const nextJump = this.jumps[this.currentPosition + 1];
@@ -46,12 +88,6 @@ export class JumpHistory {
       return;
     }
 
-    if (previousJump && previousJump.equals(jump)) {
-      this.currentPosition -= 1;
-      console.log('On previous jump', this.currentPosition);
-      return;
-    }
-
     if (nextJump && nextJump.equals(jump)) {
       this.currentPosition += 1;
       console.log('On next jump', this.currentPosition);
@@ -62,11 +98,9 @@ export class JumpHistory {
       this.jumps.splice(this.currentPosition + 1, this.jumps.length);
       console.log('Removing following jumps');
     }
-    const last = this.jumps[this.jumps.length - 1];
-    if (!last || !last.position.isEqual(jump.position)) {
-      console.log('Added new jump', jump.fileName, jump.position.line);
-      this.jumps.push(jump);
-    }
+
+    console.log('Added new jump', jump.fileName, jump.position.line);
+    this.jumps.push(jump);
     this.currentPosition = this.jumps.length - 1;
   }
 

@@ -48,6 +48,13 @@ export abstract class BaseMovement extends BaseAction {
   isMotion = true;
 
   /**
+   * If isJump is true, then the action will be added to the jump list on completion.
+   *
+   * Default to false, as many motions operate on a single line and do not count as a jump.
+   */
+  isJump = false;
+
+  /**
    * If movement can be repeated with semicolon or comma this will be true when
    * running the repetition.
    */
@@ -295,7 +302,6 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 class MoveDown extends BaseMovement {
   keys = ['j'];
   doesntChangeDesiredColumn = true;
-  isJump = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
@@ -325,7 +331,6 @@ class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDe
 class MoveUp extends BaseMovement {
   keys = ['k'];
   doesntChangeDesiredColumn = true;
-  isJump = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (configuration.foldfix && vimState.currentMode !== ModeName.VisualBlock) {
@@ -1238,6 +1243,7 @@ class MoveBeginningFullWord extends BaseMovement {
 @RegisterAction
 class MovePreviousSentenceBegin extends BaseMovement {
   keys = ['('];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getSentenceBegin({ forward: false });
@@ -1247,6 +1253,7 @@ class MovePreviousSentenceBegin extends BaseMovement {
 @RegisterAction
 class MoveNextSentenceBegin extends BaseMovement {
   keys = [')'];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getSentenceBegin({ forward: true });
@@ -1256,6 +1263,7 @@ class MoveNextSentenceBegin extends BaseMovement {
 @RegisterAction
 class MoveParagraphEnd extends BaseMovement {
   keys = ['}'];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const isLineWise =
@@ -1273,6 +1281,7 @@ class MoveParagraphEnd extends BaseMovement {
 @RegisterAction
 class MoveParagraphBegin extends BaseMovement {
   keys = ['{'];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCurrentParagraphBeginning();
@@ -1283,6 +1292,7 @@ abstract class MoveSectionBoundary extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   boundary: string;
   forward: boolean;
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getSectionBoundary({
@@ -1323,6 +1333,7 @@ class MovePreviousSectionEnd extends MoveSectionBoundary {
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   keys = ['%'];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     position = position.getLeftIfEOL();
@@ -1407,6 +1418,7 @@ export abstract class MoveInsideCharacter extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const failure = { start: position, stop: position, failed: true };
@@ -1610,6 +1622,7 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const text = TextEditor.getLineAt(position).text;
@@ -1803,6 +1816,7 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
 abstract class MoveTagMatch extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected includeTag = false;
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const editorText = TextEditor.getText();

@@ -129,6 +129,20 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  const recordFileJump = (prevHandler, mh) => {
+    const from = prevHandler
+      ? new Jump({
+          fileName: prevHandler.vimState.editor.document.fileName,
+          position: prevHandler.vimState.cursorPosition,
+        })
+      : null;
+    const to = new Jump({
+      fileName: mh.vimState.editor.document.fileName,
+      position: mh.vimState.cursorPosition,
+    });
+    mh.vimState.globalState.jumpHistory.jumpFiles(from, to);
+  };
+
   // window events
   vscode.window.onDidChangeActiveTextEditor(async () => {
     if (configuration.disableExt) {
@@ -141,28 +155,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     taskQueue.enqueueTask(async () => {
       if (vscode.window.activeTextEditor !== undefined) {
-        if (previousActiveEditorId) {
-          const prevHandler = ModeHandlerMap.get(previousActiveEditorId.toString());
-          if (prevHandler) {
-            prevHandler.vimState.globalState.jumpHistory.push(
-              new Jump({
-                fileName: prevHandler.vimState.editor.document.fileName,
-                position: prevHandler.vimState.cursorPosition,
-              })
-            );
-          }
-        }
+        const prevHandler = previousActiveEditorId
+          ? ModeHandlerMap.get(previousActiveEditorId.toString())
+          : null;
 
         const mh = await getAndUpdateModeHandler();
 
         await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
-
-        mh.vimState.globalState.jumpHistory.push(
-          new Jump({
-            fileName: mh.vimState.editor.document.fileName,
-            position: mh.vimState.cursorPosition,
-          })
-        );
+        recordFileJump(prevHandler, mh);
       }
     });
   });

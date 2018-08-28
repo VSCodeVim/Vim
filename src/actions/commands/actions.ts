@@ -159,7 +159,7 @@ export abstract class BaseCommand extends BaseAction {
   /**
    * If isJump is true, then the action will be added to the jump list on completion.
    */
-  isJump = true;
+  isJump = false;
 
   multicursorIndex: number | undefined = undefined;
 
@@ -286,7 +286,6 @@ export class CommandNumber extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['<number>'];
   isCompleteAction = false;
-  isJump = false;
   runsOnceForEveryCursor() {
     return false;
   }
@@ -444,6 +443,7 @@ class CommandExecuteMacro extends BaseCommand {
   keys = ['@', '<character>'];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];
@@ -479,6 +479,7 @@ class CommandExecuteLastMacro extends BaseCommand {
   keys = ['@', '@'];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let lastInvokedMacro = vimState.historyTracker.lastInvokedMacro;
@@ -1145,6 +1146,7 @@ class CommandSearchCurrentWordExactForward extends BaseCommand {
   keys = ['*'];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return searchCurrentWord(position, vimState, SearchDirection.Forward, true);
@@ -1157,6 +1159,7 @@ class CommandSearchCurrentWordForward extends BaseCommand {
   keys = ['g', '*'];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return searchCurrentWord(position, vimState, SearchDirection.Forward, false);
@@ -1169,6 +1172,7 @@ class CommandSearchVisualForward extends BaseCommand {
   keys = ['*'];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (configuration.visualstar) {
@@ -1185,6 +1189,7 @@ class CommandSearchCurrentWordExactBackward extends BaseCommand {
   keys = ['#'];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return searchCurrentWord(position, vimState, SearchDirection.Backward, true);
@@ -1197,6 +1202,7 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
   keys = ['g', '#'];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return searchCurrentWord(position, vimState, SearchDirection.Backward, false);
@@ -1209,6 +1215,7 @@ class CommandSearchVisualBackward extends BaseCommand {
   keys = ['#'];
   isMotion = true;
   runsOnceForEachCountPrefix = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (configuration.visualstar) {
@@ -1224,6 +1231,7 @@ export class CommandSearchForwards extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['/'];
   isMotion = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.globalState.searchState = new SearchState(
@@ -1249,6 +1257,7 @@ export class CommandSearchBackwards extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['?'];
   isMotion = true;
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.globalState.searchState = new SearchState(
@@ -2193,6 +2202,7 @@ class CommandBottomScrollFirstChar extends BaseCommand {
 class CommandGoToOtherEndOfHighlightedText extends BaseCommand {
   modes = [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   keys = ['o'];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     [vimState.cursorStartPosition, vimState.cursorPosition] = [
@@ -2522,6 +2532,7 @@ class CommandExitVisualLineMode extends BaseCommand {
 class CommandOpenFile extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual];
   keys = ['g', 'f'];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     let fullFilePath: string = '';
@@ -2557,6 +2568,7 @@ class CommandOpenFile extends BaseCommand {
 class CommandGoToDefinition extends BaseCommand {
   modes = [ModeName.Normal];
   keys = [['g', 'd'], ['<C-]>']];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const oldActiveEditor = vimState.editor;
@@ -2575,6 +2587,7 @@ class CommandGoToDefinition extends BaseCommand {
 class CommandGoBackInChangelist extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['g', ';'];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
@@ -2596,6 +2609,7 @@ class CommandGoBackInChangelist extends BaseCommand {
 class CommandGoForwardInChangelist extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['g', ','];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const originalIndex = vimState.historyTracker.changelistIndex;
@@ -2617,6 +2631,7 @@ class CommandGoForwardInChangelist extends BaseCommand {
 class CommandGoLastChange extends BaseCommand {
   modes = [ModeName.Normal];
   keys = [['`', '.'], ["'", '.']];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const lastPos = vimState.historyTracker.getLastHistoryStartPosition();
@@ -2810,6 +2825,8 @@ abstract class ActionNavigateCommand extends BaseCommand {
     }
 
     if (jump.fileName !== vimState.editor.document.fileName) {
+      vimState.globalState.jumpHistory.isJumpingFiles = true;
+
       const fileCommand = new FileCommand({
         name: jump.fileName,
         lineNumber: jump.position.line,
@@ -2828,7 +2845,6 @@ abstract class ActionNavigateCommand extends BaseCommand {
 class CommandNavigateBack extends ActionNavigateCommand {
   modes = [ModeName.Normal];
   keys = [['<C-o>'], ['<C-t>']];
-  isJump = false;
 
   runsOnceForEveryCursor() {
     return false;
@@ -2843,7 +2859,6 @@ class CommandNavigateBack extends ActionNavigateCommand {
 class CommandNavigateForward extends ActionNavigateCommand {
   modes = [ModeName.Normal];
   keys = ['<C-i>'];
-  isJump = false;
 
   runsOnceForEveryCursor() {
     return false;
@@ -2861,6 +2876,7 @@ class CommandNavigateLast extends BaseCommand {
   runsOnceForEveryCursor() {
     return false;
   }
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const oldActiveEditor = vimState.editor;
@@ -2882,6 +2898,7 @@ class CommandNavigateLastBOL extends BaseCommand {
   runsOnceForEveryCursor() {
     return false;
   }
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const oldActiveEditor = vimState.editor;
@@ -2925,6 +2942,7 @@ class CommandOnly extends BaseCommand {
 class MoveToRightPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [['<C-w>', 'l'], ['<C-w>', '<right>'], ['<C-w l>'], ['<C-w>', '<C-l>']];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2940,6 +2958,7 @@ class MoveToRightPane extends BaseCommand {
 class MoveToLowerPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [['<C-w>', 'j'], ['<C-w>', '<down>'], ['<C-w j>'], ['<C-w>', '<C-j>']];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2955,6 +2974,7 @@ class MoveToLowerPane extends BaseCommand {
 class MoveToUpperPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [['<C-w>', 'k'], ['<C-w>', '<up>'], ['<C-w k>'], ['<C-w>', '<C-k>']];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2970,6 +2990,7 @@ class MoveToUpperPane extends BaseCommand {
 class MoveToLeftPane extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [['<C-w>', 'h'], ['<C-w>', '<left>'], ['<C-w h>'], ['<C-w>', '<C-h>']];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
@@ -2985,6 +3006,7 @@ class MoveToLeftPane extends BaseCommand {
 class CycleThroughPanes extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = [['<C-w>', '<C-w>'], ['<C-w>', 'w']];
+  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
