@@ -1,14 +1,21 @@
-import { Jump } from "./jump";
+import { Jump } from './jump';
 
 /**
  * JumpTracker is a handrolled version of vscode's TextEditorState
  * in relation to the 'workbench.action.navigateBack' command.
  */
 export class JumpTracker {
-  public isJumpingFiles = false;
-
   private jumps: Jump[] = [];
   private currentJumpIndex = 0;
+
+  /**
+   * When receiving vscode.window.onDidChangeActiveTextEditor messages,
+   * don't record the jump if we initiated the command.
+   *
+   * Either the jump was added, or it was traversing jump history
+   * and shouldn't count as a new jump.
+   * */
+  public isJumpingFiles = false;
 
   /**
    * Record that a jump occurred from one file to another.
@@ -39,16 +46,7 @@ export class JumpTracker {
       return;
     }
 
-    if (this.currentJumpIndex < this.jumps.length - 1) {
-      this.clearJumpsAftercurrentJumpIndex();
-    }
-
-    if (from) {
-      this.jumps.push(from);
-    }
-    this.jumps.push(to);
-
-    this.currentJumpIndex = this.jumps.length - 1;
+    this.recordJump(from, to);
   }
 
   /**
@@ -61,27 +59,15 @@ export class JumpTracker {
    * @param to - File/position jumped to
    */
   public recordJump(from: Jump | null, to: Jump) {
-    const previousJump = this.jumps[this.currentJumpIndex - 1];
     const currentJump = this.jumps[this.currentJumpIndex];
-    const nextJump = this.jumps[this.currentJumpIndex + 1];
-
-    if (previousJump && previousJump.onSameLine(to)) {
-      this.currentJumpIndex -= 1;
-      return;
-    }
 
     if (currentJump && currentJump.onSameLine(to)) {
-      this.replaceCurrentJump(to);
-      return;
-    }
-
-    if (nextJump && nextJump.onSameLine(to)) {
-      this.currentJumpIndex += 1;
+      this.updateCurrentJumpColumn(to);
       return;
     }
 
     if (this.currentJumpIndex < this.jumps.length - 1) {
-      this.clearJumpsAftercurrentJumpIndex();
+      this.clearJumpsAfterCurrentJumpIndex();
     }
 
     if (from && !from.onSameLine(currentJump) && !from.onSameLine(to)) {
@@ -135,7 +121,7 @@ export class JumpTracker {
     return jump;
   }
 
-  clearJumpsAftercurrentJumpIndex(): any {
+  clearJumpsAfterCurrentJumpIndex(): any {
     this.jumps.splice(this.currentJumpIndex + 1, this.jumps.length);
   }
 
@@ -143,7 +129,7 @@ export class JumpTracker {
     this.jumps.splice(this.currentJumpIndex, 1);
   }
 
-  replaceCurrentJump(to: Jump): any {
+  updateCurrentJumpColumn(to: Jump): any {
     this.jumps.splice(this.currentJumpIndex, 1, to);
   }
 }
