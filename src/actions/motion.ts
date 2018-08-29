@@ -471,6 +471,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
 @RegisterAction
 export class MarkMovementBOL extends BaseMovement {
   keys = ["'", '<character>'];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const markName = this.keysPressed[1];
@@ -485,6 +486,7 @@ export class MarkMovementBOL extends BaseMovement {
 @RegisterAction
 export class MarkMovement extends BaseMovement {
   keys = ['`', '<character>'];
+  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const markName = this.keysPressed[1];
