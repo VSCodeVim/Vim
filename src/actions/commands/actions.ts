@@ -23,8 +23,8 @@ import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
-import { Jump } from '../../state/globalState';
 import { existsSync } from 'fs';
+import { Jump } from '../../jumps/jump';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -2828,7 +2828,7 @@ abstract class ActionNavigateCommand extends BaseCommand {
     }
 
     if (jump.fileName !== vimState.editor.document.fileName) {
-      vimState.globalState.jumpHistory.isJumpingFiles = true;
+      vimState.globalState.jumpTracker.isJumpingFiles = true;
 
       // TODO: Check for editor closed also, probably won't work if it is closed
       if (jump.editor) {
@@ -2866,7 +2866,7 @@ class CommandNavigateBack extends ActionNavigateCommand {
   }
 
   getJumpToNavigate(position: Position, vimState: VimState) {
-    return vimState.globalState.jumpHistory.back(
+    return vimState.globalState.jumpTracker.back(
       new Jump({
         editor: vimState.editor,
         fileName: vimState.editor.document.fileName,
@@ -2886,7 +2886,7 @@ class CommandNavigateForward extends ActionNavigateCommand {
   }
 
   getJumpToNavigate(position: Position, vimState: VimState) {
-    return vimState.globalState.jumpHistory.forward(
+    return vimState.globalState.jumpTracker.forward(
       new Jump({
         editor: vimState.editor,
         fileName: vimState.editor.document.fileName,

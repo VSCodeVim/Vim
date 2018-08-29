@@ -13,6 +13,7 @@ import { commandLine } from './src/cmd_line/commandLine';
 import { Position } from './src/common/motion/position';
 import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
+import { Jump } from './src/jumps/jump';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { Notation } from './src/configuration/notation';
@@ -22,7 +23,6 @@ import { taskQueue } from './src/taskQueue';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { logger } from './src/util/logger';
 import { CompositionState } from './src/state/compositionState';
-import { Jump } from './src/state/globalState';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
@@ -142,7 +142,7 @@ export async function activate(context: vscode.ExtensionContext) {
       fileName: toHandler.vimState.editor.document.fileName,
       position: toHandler.vimState.cursorPosition,
     });
-    toHandler.vimState.globalState.jumpHistory.jumpFiles(from, to);
+    toHandler.vimState.globalState.jumpTracker.recordFileJump(from, to);
   };
 
   // window events

@@ -1,167 +1,18 @@
-import * as vscode from 'vscode';
-
-import { Position } from '../common/motion/position';
+import { JumpTracker } from '../jumps/jumpTracker';
 import { RecordedState } from './../state/recordedState';
 import { SearchState } from './searchState';
-
-export class Jump {
-  public editor: vscode.TextEditor;
-  public fileName: string;
-  public position: Position;
-  public recordedState?: RecordedState;
-
-  constructor({
-    editor,
-    fileName,
-    position,
-    recordedState,
-  }: {
-    editor: vscode.TextEditor;
-    fileName: string;
-    position: Position;
-    recordedState?: RecordedState;
-  }) {
-    if (!fileName) {
-      throw new Error('fileName is required for Jumps');
-    }
-    if (!position) {
-      throw new Error('position is required for Jumps');
-    }
-    this.editor = editor;
-    // TODO - can we just always require editor and get filename from it?
-    this.fileName = fileName;
-    this.position = position;
-    this.recordedState = recordedState;
-  }
-
-  public onSameLine(other: Jump | null | undefined): boolean {
-    return (
-      !other || (this.fileName === other.fileName && this.position.line === other.position.line)
-    );
-  }
-}
-
-export class JumpHistory {
-  public isJumpingFiles = false;
-
-  private jumps: Jump[] = [];
-  private currentPosition = 0;
-
-  public jumpFiles(from: Jump | null, to: Jump) {
-    const currentJump = this.jumps[this.currentPosition];
-    if (this.isJumpingFiles) {
-      this.isJumpingFiles = false;
-      return;
-    }
-
-    if (to.editor.document.isClosed) {
-      // Wallaby.js seemed to be adding an extra file jump, named e.g. extension-output-#4
-      // It was marked closed when jumping to it. Hopefully we can rely on checking isClosed
-      // when extensions get all weird on us.
-      return;
-    }
-
-    if (from && from.fileName === to.fileName) {
-      return;
-    }
-
-    if (this.currentPosition < this.jumps.length - 1) {
-      this.clearJumpsAfterCurrentPosition();
-    }
-
-    if (from) {
-      this.jumps.push(from);
-    }
-    this.jumps.push(to);
-    this.currentPosition = this.jumps.length - 1;
-  }
-
-  public jump(from: Jump | null, to: Jump) {
-    const previousJump = this.jumps[this.currentPosition - 1];
-    const currentJump = this.jumps[this.currentPosition];
-    const nextJump = this.jumps[this.currentPosition + 1];
-
-    if (previousJump && previousJump.onSameLine(to)) {
-      this.currentPosition -= 1;
-      return;
-    }
-
-    if (currentJump && currentJump.onSameLine(to)) {
-      this.replaceCurrentJump(to);
-      return;
-    }
-
-    if (nextJump && nextJump.onSameLine(to)) {
-      this.currentPosition += 1;
-      return;
-    }
-
-    if (this.currentPosition < this.jumps.length - 1) {
-      this.clearJumpsAfterCurrentPosition();
-    }
-
-    if (from && !from.onSameLine(currentJump) && !from.onSameLine(to)) {
-      this.jumps.push(from);
-    }
-    this.jumps.push(to);
-    this.currentPosition = this.jumps.length - 1;
-  }
-
-  public back(from: Jump): Jump {
-    if (this.currentPosition <= 0) {
-      return this.jumps[0];
-    }
-
-    this.currentPosition = this.currentPosition - 1;
-    const jump = this.jumps[this.currentPosition];
-
-    if (jump && jump.onSameLine(from)) {
-      this.removeCurrentJump();
-      return this.back(from);
-    }
-    return jump;
-  }
-
-  public forward(from: Jump): Jump {
-    if (this.currentPosition >= this.jumps.length - 1) {
-      return this.jumps[this.jumps.length - 1];
-    }
-
-    this.currentPosition = Math.min(this.currentPosition + 1, this.jumps.length - 1);
-    const jump = this.jumps[this.currentPosition];
-
-    if (jump && jump.onSameLine(from)) {
-      this.removeCurrentJump();
-      this.currentPosition -= 1;
-      return this.forward(from);
-    }
-    return jump;
-  }
-
-  clearJumpsAfterCurrentPosition(): any {
-    this.jumps.splice(this.currentPosition + 1, this.jumps.length);
-  }
-
-  removeCurrentJump(): any {
-    this.jumps.splice(this.currentPosition, 1);
-  }
-
-  replaceCurrentJump(to: Jump): any {
-    this.jumps.splice(this.currentPosition, 1, to);
-  }
-}
 
 /**
  * State which stores global state (across editors)
  */
 export class GlobalState {
-  private static _jumpHistory: JumpHistory = new JumpHistory();
+  private static _jumpTracker: JumpTracker = new JumpTracker();
 
   /**
    * Getters and setters for changing global state
    */
-  public get jumpHistory(): JumpHistory {
-    return GlobalState._jumpHistory;
+  public get jumpTracker(): JumpTracker {
+    return GlobalState._jumpTracker;
   }
 
   /**

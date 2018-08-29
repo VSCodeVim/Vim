@@ -32,7 +32,7 @@ import {
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { logger } from '../util/logger';
 import { Neovim } from '../neovim/neovim';
-import { Jump } from '../state/globalState';
+import { Jump } from '../jumps/jump';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
@@ -383,7 +383,6 @@ export class ModeHandler implements vscode.Disposable {
       editor: this.vimState.editor,
       fileName: this.vimState.editor.document.fileName,
       position: vimState.cursorPosition,
-      recordedState,
     });
 
     if (recordedState.actionsRun.length === 0) {
@@ -446,14 +445,12 @@ export class ModeHandler implements vscode.Disposable {
     await this.updateView(vimState);
 
     if (action.isJump) {
-      vimState.globalState.jumpHistory.jump(
-        // vimState.globalState.jumpHistory.jumpFiles(
+      vimState.globalState.jumpTracker.recordJump(
         originalLocation,
         new Jump({
           editor: this.vimState.editor,
           fileName: this.vimState.editor.document.fileName,
           position: vimState.cursorPosition,
-          recordedState,
         })
       );
     }
