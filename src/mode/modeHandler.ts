@@ -445,14 +445,7 @@ export class ModeHandler implements vscode.Disposable {
     await this.updateView(vimState);
 
     if (action.isJump) {
-      vimState.globalState.jumpTracker.recordJump(
-        originalLocation,
-        new Jump({
-          editor: this.vimState.editor,
-          fileName: this.vimState.editor.document.fileName,
-          position: vimState.cursorPosition,
-        })
-      );
+      vimState.globalState.jumpTracker.recordJump(originalLocation, Jump.fromState(vimState));
     }
 
     return vimState;

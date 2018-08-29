@@ -1,6 +1,7 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
-import { Position } from "../common/motion/position";
+import { Position } from '../common/motion/position';
+import { VimState } from '../state/vimState';
 
 /**
  * Represents a Jump in the JumpTracker.
@@ -29,12 +30,24 @@ export class Jump {
     position: Position;
   }) {
     if (!fileName) {
-      throw new Error("fileName is required for Jumps");
+      throw new Error('fileName is required for Jumps');
     }
     this.editor = editor;
     // TODO - can we just always require editor and get filename from it?
     this.fileName = fileName;
     this.position = position;
+  }
+
+  /**
+   * Factory method for creating a Jump from a VimState.
+   * @param vimState - State that contains the fileName and position for the jump
+   */
+  static fromState(vimState: VimState) {
+    return new Jump({
+      editor: vimState.editor,
+      fileName: vimState.editor.document.fileName,
+      position: vimState.cursorPosition,
+    });
   }
 
   /**
@@ -45,9 +58,7 @@ export class Jump {
    */
   public onSameLine(other: Jump | null | undefined): boolean {
     return (
-      !other ||
-      (this.fileName === other.fileName &&
-        this.position.line === other.position.line)
+      !other || (this.fileName === other.fileName && this.position.line === other.position.line)
     );
   }
 }
