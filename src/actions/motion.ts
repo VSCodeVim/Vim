@@ -981,6 +981,7 @@ class MoveScreenToLeftHalf extends MoveByScreenLine {
   movementType: CursorMovePosition = 'left';
   by: CursorMoveByUnit = 'halfLine';
   value = 1;
+  isJump = true;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -996,6 +997,7 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
   movementType: CursorMovePosition = 'viewPortTop';
   by: CursorMoveByUnit = 'line';
   value = 1;
+  isJump = true;
 
   public async execActionWithCount(
     position: Position,
@@ -1013,6 +1015,7 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
   movementType: CursorMovePosition = 'viewPortBottom';
   by: CursorMoveByUnit = 'line';
   value = 1;
+  isJump = true;
 
   public async execActionWithCount(
     position: Position,
@@ -1029,6 +1032,7 @@ class MoveToMiddleLineInViewPort extends MoveByScreenLine {
   keys = ['M'];
   movementType: CursorMovePosition = 'viewPortCenter';
   by: CursorMoveByUnit = 'line';
+  isJump = true;
 }
 
 @RegisterAction
