@@ -2866,7 +2866,13 @@ class CommandNavigateBack extends ActionNavigateCommand {
   }
 
   getJumpToNavigate(position: Position, vimState: VimState) {
-    return vimState.globalState.jumpHistory.back();
+    return vimState.globalState.jumpHistory.back(
+      new Jump({
+        editor: vimState.editor,
+        fileName: vimState.editor.document.fileName,
+        position: vimState.cursorPosition,
+      })
+    );
   }
 }
 
@@ -2880,7 +2886,13 @@ class CommandNavigateForward extends ActionNavigateCommand {
   }
 
   getJumpToNavigate(position: Position, vimState: VimState) {
-    return vimState.globalState.jumpHistory.forward();
+    return vimState.globalState.jumpHistory.forward(
+      new Jump({
+        editor: vimState.editor,
+        fileName: vimState.editor.document.fileName,
+        position: vimState.cursorPosition,
+      })
+    );
   }
 }
 

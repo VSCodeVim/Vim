@@ -107,22 +107,47 @@ export class JumpHistory {
     this.currentPosition = this.jumps.length - 1;
   }
 
+  public back(from: Jump): Jump {
+    if (this.currentPosition <= 0) {
+      return this.jumps[0];
+    }
+
+    this.currentPosition = this.currentPosition - 1;
+    const jump = this.jumps[this.currentPosition];
+
+    if (jump && jump.onSameLine(from)) {
+      this.removeCurrentJump();
+      return this.back(from);
+    }
+    return jump;
+  }
+
+  public forward(from: Jump): Jump {
+    if (this.currentPosition >= this.jumps.length - 1) {
+      return this.jumps[this.jumps.length - 1];
+    }
+
+    this.currentPosition = Math.min(this.currentPosition + 1, this.jumps.length - 1);
+    const jump = this.jumps[this.currentPosition];
+
+    if (jump && jump.onSameLine(from)) {
+      this.removeCurrentJump();
+      this.currentPosition -= 1;
+      return this.forward(from);
+    }
+    return jump;
+  }
+
   clearJumpsAfterCurrentPosition(): any {
     this.jumps.splice(this.currentPosition + 1, this.jumps.length);
   }
 
+  removeCurrentJump(): any {
+    this.jumps.splice(this.currentPosition, 1);
+  }
+
   replaceCurrentJump(to: Jump): any {
-    this.jumps.splice(this.currentPosition, this.jumps.length, to);
-  }
-
-  public back(): Jump {
-    this.currentPosition = Math.max(this.currentPosition - 1, 0);
-    return this.jumps[this.currentPosition];
-  }
-
-  public forward(): Jump {
-    this.currentPosition = Math.min(this.currentPosition + 1, this.jumps.length - 1);
-    return this.jumps[this.currentPosition];
+    this.jumps.splice(this.currentPosition, 1, to);
   }
 }
 
