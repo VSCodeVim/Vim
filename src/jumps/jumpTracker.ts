@@ -14,7 +14,7 @@ export class JumpTracker {
    *
    * Either the jump was added, or it was traversing jump history
    * and shouldn't count as a new jump.
-   * */
+   */
   public isJumpingFiles = false;
 
   /**
