@@ -1,5 +1,21 @@
 # Change Log
 
+## [v0.16.2](https://github.com/vscodevim/vim/tree/v0.16.2) (2018-08-30)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.1...v0.16.2)
+
+**Closed issues:**
+
+- Page scrolls half down when cursor hits top / bottom of page [\#3000](https://github.com/VSCodeVim/Vim/issues/3000)
+- Intermediate cursor shape to show that a command is being entered [\#2999](https://github.com/VSCodeVim/Vim/issues/2999)
+
+**Merged pull requests:**
+
+- Revert "Center cursor vertically on movement out of viewport" [\#3009](https://github.com/VSCodeVim/Vim/pull/3009) ([hhu94](https://github.com/hhu94))
+- Update dependency typescript to v3.0.3 [\#3008](https://github.com/VSCodeVim/Vim/pull/3008) ([renovate-bot](https://github.com/renovate-bot))
+- Update vim.searchHighlightColor in README.md [\#3007](https://github.com/VSCodeVim/Vim/pull/3007) ([ytang](https://github.com/ytang))
+- v0.16.1 [\#2997](https://github.com/VSCodeVim/Vim/pull/2997) ([jpoon](https://github.com/jpoon))
+
 ## [v0.16.1](https://github.com/vscodevim/vim/tree/v0.16.1) (2018-08-27)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.0...v0.16.1)
