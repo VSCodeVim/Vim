@@ -5,6 +5,7 @@ import { BaseAction } from '../../src/actions/base';
 import { VimState } from '../../src/state/vimState';
 import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
 import { ModeName } from '../../src/mode/mode';
+import { Configuration } from '../testConfiguration';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
@@ -17,12 +18,16 @@ class TestAction2D extends BaseAction {
 }
 
 suite('base action', () => {
+  const leaderKey = '/';
   const action1D = new TestAction1D();
   const action2D = new TestAction2D();
   let vimState: VimState;
 
   suiteSetup(async () => {
-    await setupWorkspace();
+    let configuration = new Configuration();
+    configuration.leader = leaderKey;
+
+    await setupWorkspace(configuration);
     vimState = new VimState(vscode.window.activeTextEditor!);
   });
 
@@ -31,6 +36,9 @@ suite('base action', () => {
   test('compare key presses', () => {
     let testCases: Array<[string[] | string[][], string[], boolean]> = [
       [['a'], ['a'], true],
+      [['1'], ['<number>'], true],
+      [['<leader>'], [leaderKey], true],
+      [['A'], ['<alpha>'], true],
       [[['a']], ['a'], true],
       [[['a'], ['b']], ['b'], true],
       [[['a'], ['b']], ['c'], false],
