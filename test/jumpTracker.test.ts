@@ -134,31 +134,47 @@ b2
 }
 end`;
 
-    setup(async () => {
-      await setupWorkspace();
-      await setupTestsWithText(text);
+    suite('Can track basic jumps', () => {
+      setup(async () => {
+        await setupWorkspace();
+        await setupTestsWithText(text);
+      });
+
+      teardown(() => {
+        jumpTracker.clearJumps();
+        cleanUpWorkspace();
+      });
+
+      testJumps(['G', 'gg'], [start, end], end);
+      testJumps(['G', 'gg', 'G'], [end, start], start);
+      testJumps(['G', 'gg', 'G', 'gg'], [start, end], end);
+      testJumps(['/b\n', 'n'], [start, b1], b1);
+      testJumps(['G', '?b\n', 'gg', 'G'], [end, b2, start], start);
+      testJumps(['j', '%', '%'], [open, close], close);
     });
 
-    teardown(() => {
-      jumpTracker.clearJumps();
-      cleanUpWorkspace();
-    });
+    suite('Can track jumps with back/forward', () => {
+      setup(async () => {
+        await setupWorkspace();
+        await setupTestsWithText(text);
+      });
 
-    testJumps(['G', 'gg'], [start, end], end);
-    testJumps(['G', 'gg', 'G'], [end, start], start);
-    testJumps(['G', 'gg', 'G', 'gg'], [start, end], end);
-    testJumps(['/b\n', 'n'], [start, b1], b1);
-    testJumps(['G', '?b\n', 'gg', 'G'], [end, b2, start], start);
-    testJumps(['j', '%', '%'], [open, close], close);
-    testJumps(['j', '%', '%', '<C-o>'], [close, open], close);
-    testJumps(['j', '%', '%', '<C-o>', '<C-i>'], [close, open], open);
-    testJumps(['j', '%', '%', '<C-o>', '%'], [open, close], close);
-    testJumps(['j', '%', '%', '<C-o>', 'gg'], [open, close], close);
-    testJumps(['j', '%', '%', '<C-o>', '<C-o>', 'gg'], [open, close], close);
-    testJumps(
-      ['/^\n', 'nnn', '<C-o>', '<C-o>', '<C-o>', '<C-i>', 'gg'],
-      [start, open, b1, a2, a1],
-      a1
-    );
+      teardown(() => {
+        jumpTracker.clearJumps();
+        cleanUpWorkspace();
+      });
+
+      testJumps(['j', '%', '%', '<C-o>'], [close, open], close);
+      testJumps(['j', '%', '%', '<C-o>', '<C-i>'], [close, open], open);
+      testJumps(['j', '%', '%', '<C-o>', '%'], [open, close], close);
+      testJumps(['j', '%', '%', '<C-o>', 'gg'], [open, close], close);
+      testJumps(['j', '%', '%', '<C-o>', '<C-o>', 'gg'], [open, close], close);
+      testJumps(
+        ['/^\n', 'nnn', '<C-o>', '<C-o>', '<C-o>', '<C-i>', 'gg'],
+        [start, open, b1, a2, a1],
+        a1
+      );
+      testJumps(['/^\n', 'nnn', '3', '<C-o>', '<C-i>', 'gg'], [start, open, b1, a2, a1], a1);
+    });
   });
 });

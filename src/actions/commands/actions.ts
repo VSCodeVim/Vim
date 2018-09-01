@@ -2846,7 +2846,16 @@ abstract class ActionNavigateCommand extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const jump = this.getJumpToNavigate(position, vimState);
+    let jump = new Jump({
+      editor: vimState.editor,
+      fileName: vimState.editor.document.fileName,
+      position,
+    });
+
+    const iterations = vimState.recordedState.count || 1;
+    for (var i = 0; i < iterations; i++) {
+      jump = this.getJumpToNavigate(position, vimState);
+    }
 
     if (!jump) {
       return vimState;
