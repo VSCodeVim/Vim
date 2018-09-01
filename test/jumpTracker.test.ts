@@ -22,15 +22,6 @@ suite('Jump Tracker', () => {
       position: new Position(lineNumber, columnNumber),
     });
 
-  const start = jump(0, 0);
-  const open = jump(1, 0);
-  const a1 = jump(2, 0);
-  const b1 = jump(3, 0);
-  const a2 = jump(4, 0);
-  const b2 = jump(5, 0);
-  const close = jump(6, 0);
-  const end = jump(7, 0);
-
   const range = (n: number) => Array.from(Array(n).keys());
   const fixLineEndings = (t: string): string =>
     process.platform === 'win32' ? t.replace(/\\n/g, '\\r\\n') : t;
@@ -133,6 +124,14 @@ a2
 b2
 }
 end`;
+    const start = jump(0, 0);
+    const open = jump(1, 0);
+    const a1 = jump(2, 0);
+    const b1 = jump(3, 0);
+    const a2 = jump(4, 0);
+    const b2 = jump(5, 0);
+    const close = jump(6, 0);
+    const end = jump(7, 0);
 
     suite('Can track basic jumps', () => {
       setup(async () => {
@@ -174,7 +173,21 @@ end`;
         [start, open, b1, a2, a1],
         a1
       );
+    });
+
+    suite('Can handle count prefixes when jumping back and forward', () => {
+      setup(async () => {
+        await setupWorkspace();
+        await setupTestsWithText(text);
+      });
+
+      teardown(() => {
+        jumpTracker.clearJumps();
+        cleanUpWorkspace();
+      });
+
       testJumps(['/^\n', 'nnn', '3', '<C-o>', '<C-i>', 'gg'], [start, open, b1, a2, a1], a1);
+      testJumps(['/^\n', 'nnnn', '3', '<C-o>', '2', '<C-i>'], [start, open, a1, b1, a2, b2], a2);
     });
   });
 });
