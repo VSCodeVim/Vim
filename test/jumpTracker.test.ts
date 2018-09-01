@@ -15,15 +15,6 @@ suite('Jump Tracker', () => {
   let modeHandler: ModeHandler;
   let editor: vscode.TextEditor;
 
-  const text = `start
-{
-a1
-b1
-a2
-b2
-}
-end`;
-
   const jump = (lineNumber, columnNumber) =>
     new Jump({
       editor,
@@ -40,28 +31,7 @@ end`;
   const close = jump(6, 0);
   const end = jump(7, 0);
 
-  setup(async () => {
-    await setupWorkspace();
-    modeHandler = await getAndUpdateModeHandler();
-    editor = modeHandler.vimState.editor!;
-
-    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
-    (modeHandler as any).vimState.cursorPosition = new Position(0, 0);
-
-    await TextEditor.insert(text);
-    await waitForCursorSync();
-
-    jumpTracker = modeHandler.vimState.globalState.jumpTracker;
-    await modeHandler.handleMultipleKeyEvents(['gg']);
-    await waitForCursorSync();
-    jumpTracker.clearJumps();
-  });
-
-  teardown(() => {
-    jumpTracker.clearJumps();
-    cleanUpWorkspace();
-  });
-
+  const range = (n: number) => Array.from(Array(n).keys());
   const fixLineEndings = (t: string): string =>
     process.platform === 'win32' ? t.replace(/\\n/g, '\\r\\n') : t;
   const flatten = list => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
@@ -92,6 +62,22 @@ end`;
       'Current jump is incorrect'
     );
 
+  const setupTestsWithText = async (textEditorText: string) => {
+    modeHandler = await getAndUpdateModeHandler();
+    editor = modeHandler.vimState.editor!;
+
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+    (modeHandler as any).vimState.cursorPosition = new Position(0, 0);
+
+    await TextEditor.insert(textEditorText);
+    await waitForCursorSync();
+
+    jumpTracker = modeHandler.vimState.globalState.jumpTracker;
+    await modeHandler.handleMultipleKeyEvents(['gg']);
+    await waitForCursorSync();
+    jumpTracker.clearJumps();
+  };
+
   /**
    * Create a test that checks both recorded jumps and final jump position.
    *
@@ -113,20 +99,66 @@ end`;
     });
   };
 
-  testJumps(['G', 'gg'], [start, end], end);
-  testJumps(['G', 'gg', 'G'], [end, start], start);
-  testJumps(['G', 'gg', 'G', 'gg'], [start, end], end);
-  testJumps(['/b\n', 'n'], [start, b1], b1);
-  testJumps(['G', '?b\n', 'gg', 'G'], [end, b2, start], start);
-  testJumps(['j', '%', '%'], [open, close], close);
-  testJumps(['j', '%', '%', '<C-o>'], [close, open], close);
-  testJumps(['j', '%', '%', '<C-o>', '<C-i>'], [close, open], open);
-  testJumps(['j', '%', '%', '<C-o>', '%'], [open, close], close);
-  testJumps(['j', '%', '%', '<C-o>', 'gg'], [open, close], close);
-  testJumps(['j', '%', '%', '<C-o>', '<C-o>', 'gg'], [open, close], close);
-  testJumps(
-    ['/^\n', 'nnn', '<C-o>', '<C-o>', '<C-o>', '<C-i>', 'gg'],
-    [start, open, b1, a2, a1],
-    a1
-  );
+  suite('Jump Tracker unit tests', () => {
+    setup(async () => {
+      await setupWorkspace();
+      await setupTestsWithText(range(102).join('\n'));
+    });
+
+    teardown(() => {
+      jumpTracker.clearJumps();
+      cleanUpWorkspace();
+    });
+
+    test('Records up to 100 jumps, the fixed length in vanilla Vim', async () => {
+      range(102).forEach((iteration: number) => {
+        jumpTracker.recordJump(jump(iteration, 0), jump(iteration + 1, 0));
+      });
+
+      assert.equal(jumpTracker.jumps.length, 100, 'Jump tracker should cut off jumps at 100');
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => j.position.line),
+        range(102).slice(2, 102),
+        "Jump tracker doesn't contain the expected jumps after removing old jumps"
+      );
+    });
+  });
+
+  suite('Can record jumps for actions the same as vanilla Vim', () => {
+    const text = `start
+{
+a1
+b1
+a2
+b2
+}
+end`;
+
+    setup(async () => {
+      await setupWorkspace();
+      await setupTestsWithText(text);
+    });
+
+    teardown(() => {
+      jumpTracker.clearJumps();
+      cleanUpWorkspace();
+    });
+
+    testJumps(['G', 'gg'], [start, end], end);
+    testJumps(['G', 'gg', 'G'], [end, start], start);
+    testJumps(['G', 'gg', 'G', 'gg'], [start, end], end);
+    testJumps(['/b\n', 'n'], [start, b1], b1);
+    testJumps(['G', '?b\n', 'gg', 'G'], [end, b2, start], start);
+    testJumps(['j', '%', '%'], [open, close], close);
+    testJumps(['j', '%', '%', '<C-o>'], [close, open], close);
+    testJumps(['j', '%', '%', '<C-o>', '<C-i>'], [close, open], open);
+    testJumps(['j', '%', '%', '<C-o>', '%'], [open, close], close);
+    testJumps(['j', '%', '%', '<C-o>', 'gg'], [open, close], close);
+    testJumps(['j', '%', '%', '<C-o>', '<C-o>', 'gg'], [open, close], close);
+    testJumps(
+      ['/^\n', 'nnn', '<C-o>', '<C-o>', '<C-o>', '<C-i>', 'gg'],
+      [start, open, b1, a2, a1],
+      a1
+    );
+  });
 });

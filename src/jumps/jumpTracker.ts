@@ -83,6 +83,8 @@ export class JumpTracker {
     }
 
     this._currentJumpIndex = this._jumps.length;
+
+    this.clearOldJumps();
   }
 
   /**
@@ -174,6 +176,12 @@ export class JumpTracker {
 
   clearJumps(): void {
     this._jumps.splice(0, this._jumps.length);
+  }
+
+  clearOldJumps(): void {
+    if (this._jumps.length > 100) {
+      this._jumps.splice(0, this._jumps.length - 100);
+    }
   }
 
   clearJumpsAfterCurrentJumpIndex(): void {
