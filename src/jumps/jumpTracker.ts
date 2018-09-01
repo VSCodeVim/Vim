@@ -25,6 +25,67 @@ export class JumpTracker {
   }
 
   /**
+   * Current position in the list of jumps.
+   * This will be past last index if not traveling through history.
+   */
+  public get currentJumpIndex(): number {
+    return this._currentJumpIndex;
+  }
+
+  /**
+   * Current jump in the list of jumps
+   */
+  public get currentJump(): Jump {
+    return this._jumps[this._currentJumpIndex];
+  }
+
+  /**
+   * Current jump in the list of jumps
+   */
+  public get hasJumps(): boolean {
+    return this._jumps.length > 0;
+  }
+
+  /**
+   * Last jump in list of jumps
+   */
+  public get end(): Jump | null {
+    return this._jumps[this._jumps.length - 1];
+  }
+
+  /**
+   * First jump in list of jumps
+   */
+  public get start(): Jump | null {
+    return this._jumps[0];
+  }
+
+  /**
+   * Record that a jump occurred.
+   *
+   * If the current position is back in history,
+   * jumps after this position will be removed.
+   *
+   * @param from - File/position jumped from
+   * @param to - File/position jumped to
+   */
+  public recordJump(from: Jump, to?: Jump | null) {
+    const currentJump = this._jumps[this._currentJumpIndex];
+
+    if (to && from.onSameLine(to)) {
+      return;
+    }
+
+    this.clearJumpsOnSameLine(from);
+
+    if (from && !from.onSameLine(to)) {
+      this._jumps.push(from);
+    }
+
+    this._currentJumpIndex = this._jumps.length;
+  }
+
+  /**
    * Record that a jump occurred from one file to another.
    * This is likely only needed on a handler for
    * vscode.window.onDidChangeActiveTextEditor
@@ -57,54 +118,32 @@ export class JumpTracker {
   }
 
   /**
-   * Record that a jump occurred.
-   *
-   * If the current position is back in history,
-   * jumps after this position will be removed.
-   *
-   * @param from - File/position jumped from
-   * @param to - File/position jumped to
-   */
-  public recordJump(from: Jump, to?: Jump | null) {
-    const currentJump = this._jumps[this._currentJumpIndex];
-
-    if (to && from.onSameLine(to)) {
-      return;
-    }
-
-    if (currentJump && currentJump.onSameLine(from)) {
-      this.updateCurrentJumpColumn(from);
-      return;
-    }
-
-    this.clearJumpsOnSameLine(from);
-
-    if (from && !from.onSameLine(to)) {
-      this._jumps.push(from);
-    }
-
-    this._currentJumpIndex = this._jumps.length - 1;
-  }
-
-  /**
    * Get the previous jump in history.
    * Continues further back if the current line is on the same line.
    *
    * @param from - File/position jumped from
    */
   public back(from: Jump): Jump {
+    if (!this.hasJumps) {
+      return from;
+    }
+
     if (this._currentJumpIndex <= 0) {
       return this._jumps[0];
     }
 
-    this._currentJumpIndex = this._currentJumpIndex - 1;
-    const jump = this._jumps[this._currentJumpIndex];
+    let to: Jump;
 
-    if (jump && jump.onSameLine(from)) {
-      this.removeCurrentJump();
-      return this.back(from);
+    if (this._currentJumpIndex === this._jumps.length) {
+      to = this._jumps[this._currentJumpIndex - 1];
+      this.recordJump(from, to);
+      this._currentJumpIndex = this._currentJumpIndex - 2;
+    } else {
+      to = this._jumps[this._currentJumpIndex - 1];
+      this._currentJumpIndex = this._currentJumpIndex - 1;
     }
-    return jump;
+
+    return to;
   }
 
   /**
@@ -114,18 +153,22 @@ export class JumpTracker {
    * @param from - File/position jumped from
    */
   public forward(from: Jump): Jump {
-    if (this._currentJumpIndex >= this._jumps.length - 1) {
-      return this._jumps[this._jumps.length - 1];
+    if (!this.hasJumps) {
+      return from;
+    }
+
+    if (this._currentJumpIndex >= this._jumps.length) {
+      return from;
     }
 
     this._currentJumpIndex = Math.min(this._currentJumpIndex + 1, this._jumps.length - 1);
     const jump = this._jumps[this._currentJumpIndex];
 
-    if (jump && jump.onSameLine(from)) {
-      this.removeCurrentJump();
-      this._currentJumpIndex -= 1;
-      return this.forward(from);
-    }
+    // if (jump && jump.onSameLine(from)) {
+    //   this.removeCurrentJump();
+    //   this._currentJumpIndex -= 1;
+    //   return this.forward(from);
+    // }
     return jump;
   }
 

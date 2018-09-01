@@ -24,11 +24,11 @@ b2
 }
 end`;
 
-  const jump = (line, character) =>
+  const jump = (lineNumber, columnNumber) =>
     new Jump({
       editor,
       fileName: 'Untitled',
-      position: new Position(line, character),
+      position: new Position(lineNumber, columnNumber),
     });
 
   const start = jump(0, 0);
@@ -52,6 +52,8 @@ end`;
     await waitForCursorSync();
 
     jumpTracker = modeHandler.vimState.globalState.jumpTracker;
+    await modeHandler.handleMultipleKeyEvents(['gg']);
+    await waitForCursorSync();
     jumpTracker.clearJumps();
   });
 
@@ -60,15 +62,12 @@ end`;
     cleanUpWorkspace();
   });
 
-  const assertJumpsEqual = (leftJumps, rightJumps) => {
-    const position = j => [j.position.line, j.position.character];
-
-    assert.deepEqual(leftJumps.map(position), rightJumps.map(position));
-  };
-
-  const fixLineEndings = t => (process.platform === 'win32' ? t.replace(/\\n/g, '\\r\\n') : t);
-  const tokenize = t => t.split('');
-  const sendKeys = async keys => {
+  const fixLineEndings = (t: string): string =>
+    process.platform === 'win32' ? t.replace(/\\n/g, '\\r\\n') : t;
+  const flatten = list => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
+  const hasPrefix = (t: string): boolean => t.startsWith('<') && t.endsWith('>');
+  const tokenize = (t: string): string[] => (hasPrefix(t) ? [t] : t.split(''));
+  const sendKeys = async (keys: string[]) => {
     for (var i = 0; i < keys.length; i++) {
       const key = keys[i];
       await modeHandler.handleKeyEvent(key);
@@ -76,17 +75,42 @@ end`;
     }
   };
 
-  const testJumps = async (keys: string, jumps: Jump[]) => {
-    test(`Can record jumps for key events: ${keys.replace('\n', '\\n')}`, async () => {
-      await sendKeys(tokenize(fixLineEndings(keys)));
-      assertJumpsEqual(jumpTracker.jumps, jumps);
+  const position = j => [j.position.line, j.position.character];
+  const line = j => j.position.line;
+
+  const assertJumps = (expectedJumps: Jump[]) => {
+    assert.deepEqual(
+      jumpTracker.jumps.map(line),
+      expectedJumps.map(line),
+      'Jumps are not in the correct order or the jumps are for the wrong lines'
+    );
+  };
+  const assertCurrentJump = (expectedCurrentJump: Jump) =>
+    assert.deepEqual(
+      position(jumpTracker.currentJump || jumpTracker.end),
+      position(expectedCurrentJump),
+      'Current jump is incorrect'
+    );
+
+  const testJumps = async (keys: string[], jumps: Jump[], currentJump?: Jump) => {
+    test(`Can record jumps for key events: ${keys.map(k => k.replace('\n', '\\n'))}`, async () => {
+      await sendKeys(flatten(keys.map(fixLineEndings).map(tokenize)));
+
+      assertJumps(jumps);
+      assertCurrentJump(currentJump || jumpTracker.jumps[jumpTracker.jumps.length - 1]);
     });
   };
 
-  testJumps('Ggg', [start, end]);
-  testJumps('GggG', [end, start]);
-  testJumps('GggGgg', [start, end]);
-  testJumps('/b\nn', [start, b1]);
-  testJumps('G?b\nggG', [end, b2, start]);
-  testJumps('j%%', [open, close]);
+  testJumps(['G', 'gg'], [start, end]);
+  testJumps(['G', 'gg', 'G'], [end, start]);
+  testJumps(['G', 'gg', 'G', 'gg'], [start, end]);
+  testJumps(['/b\n', 'n'], [start, b1]);
+  testJumps(['G', '?b\n', 'gg', 'G'], [end, b2, start]);
+  testJumps(['j', '%', '%'], [open, close]);
+
+  testJumps(['j', '%', '%'], [open, close], close);
+  testJumps(['j', '%', '%', '<C-o>'], [close, open], close);
+  testJumps(['j', '%', '%', '<C-o>', '<C-i>'], [close, open], open);
+  testJumps(['j', '%', '%', '<C-o>', '%'], [open, close], close);
+  testJumps(['j', '%', '%', '<C-o>', 'gg'], [open, close], close);
 });

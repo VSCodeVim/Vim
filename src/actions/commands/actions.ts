@@ -2820,6 +2820,31 @@ abstract class ActionNavigateCommand extends BaseCommand {
 
   abstract getJumpToNavigate(position: Position, vimState: VimState): Jump;
 
+  async handleFileJump(jump: Jump, vimState: VimState) {
+    vimState.globalState.jumpTracker.isJumpingFiles = true;
+
+    // TODO: Check for editor closed also, probably won't work if it is closed
+    if (jump.editor) {
+      await vscode.window.showTextDocument(jump.editor.document);
+    } else if (existsSync(jump.fileName)) {
+      await new FileCommand({
+        name: jump.fileName,
+        lineNumber: jump.position.line,
+        createFileIfNotExists: false,
+      }).execute();
+    } else {
+      const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
+        e => e.document.fileName === jump.fileName
+      )[0];
+
+      if (editor) {
+        await vscode.window.showTextDocument(editor.document, jump.position.character, false);
+      }
+    }
+
+    return vimState;
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const jump = this.getJumpToNavigate(position, vimState);
 
@@ -2827,31 +2852,14 @@ abstract class ActionNavigateCommand extends BaseCommand {
       return vimState;
     }
 
-    if (jump.fileName !== vimState.editor.document.fileName) {
-      vimState.globalState.jumpTracker.isJumpingFiles = true;
+    const jumpedFiles = jump.fileName !== vimState.editor.document.fileName;
 
-      // TODO: Check for editor closed also, probably won't work if it is closed
-      if (jump.editor) {
-        vscode.window.showTextDocument(jump.editor.document);
-      } else if (existsSync(jump.fileName)) {
-        new FileCommand({
-          name: jump.fileName,
-          lineNumber: jump.position.line,
-          createFileIfNotExists: false,
-        }).execute();
-      } else {
-        const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
-          e => e.document.fileName === jump.fileName
-        )[0];
-
-        if (editor) {
-          vscode.window.showTextDocument(editor.document, jump.position.character, false);
-        }
-      }
-      return vimState;
+    if (jumpedFiles) {
+      await this.handleFileJump(jump, vimState);
+    } else {
+      vimState.cursorPosition = jump.position;
     }
 
-    vimState.cursorPosition = jump.position;
     return vimState;
   }
 }
