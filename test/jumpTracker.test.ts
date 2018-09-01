@@ -16,26 +16,29 @@ suite('Jump Tracker', () => {
   let editor: vscode.TextEditor;
 
   const text = `start
+{
 a1
 b1
-c1
+a2
 b2
-d1
-b3
-e1
+}
 end`;
 
-  const jump = (line, character) => new Jump({
-    editor,
-    fileName: 'Untitled',
-    position: new Position(line, character),
-  });
+  const jump = (line, character) =>
+    new Jump({
+      editor,
+      fileName: 'Untitled',
+      position: new Position(line, character),
+    });
 
   const start = jump(0, 0);
-  const b1 = jump(2, 0);
-  const b3 = jump(6, 0);
-  const end = jump(8, 0);
-
+  const open = jump(1, 0);
+  const a1 = jump(2, 0);
+  const b1 = jump(3, 0);
+  const a2 = jump(4, 0);
+  const b2 = jump(5, 0);
+  const close = jump(6, 0);
+  const end = jump(7, 0);
 
   setup(async () => {
     await setupWorkspace();
@@ -58,28 +61,32 @@ end`;
   });
 
   const assertJumpsEqual = (leftJumps, rightJumps) => {
-    const position = j => ([j.position.line, j.position.character]);
+    const position = j => [j.position.line, j.position.character];
 
-    assert.deepEqual(
-      leftJumps.map(position),
-      rightJumps.map(position),
-    );
+    assert.deepEqual(leftJumps.map(position), rightJumps.map(position));
   };
 
-  const testJumps = async (keys, jumps) => {
-    test(`jumpTracker records: ${keys.join('').replace('\n', '<CR>')}`, async () => {
-      for (var i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        await modeHandler.handleKeyEvent(key);
-        await waitForCursorSync();
-      }
+  const fixLineEndings = t => (process.platform === 'win32' ? t.replace(/\\n/g, '\\r\\n') : t);
+  const tokenize = t => t.split('');
+  const sendKeys = async keys => {
+    for (var i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      await modeHandler.handleKeyEvent(key);
+      await waitForCursorSync();
+    }
+  };
+
+  const testJumps = async (keys: string, jumps: Jump[]) => {
+    test(`Can record jumps for key events: ${keys.replace('\n', '\\n')}`, async () => {
+      await sendKeys(tokenize(fixLineEndings(keys)));
       assertJumpsEqual(jumpTracker.jumps, jumps);
     });
   };
 
-  testJumps(['G', 'g', 'g'], [start, end]);
-  testJumps(['G', 'g', 'g', 'G'], [end, start]);
-  testJumps(['G', 'g', 'g', 'G', 'g', 'g'], [start, end]);
-  testJumps(['/', 'b', '\n', 'n'], [start, b1]);
-  testJumps(['G', '?', 'b', '\n', 'g', 'g', 'G'], [end, b3, start]);
+  testJumps('Ggg', [start, end]);
+  testJumps('GggG', [end, start]);
+  testJumps('GggGgg', [start, end]);
+  testJumps('/b\nn', [start, b1]);
+  testJumps('G?b\nggG', [end, b2, start]);
+  testJumps('j%%', [open, close]);
 });
