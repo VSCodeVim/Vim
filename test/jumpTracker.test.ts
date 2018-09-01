@@ -116,14 +116,7 @@ suite('Jump Tracker', () => {
   });
 
   suite('Can record jumps for actions the same as vanilla Vim', () => {
-    const text = `start
-{
-a1
-b1
-a2
-b2
-}
-end`;
+    const text = ['start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'].join('\n');
     const start = jump(0, 0);
     const open = jump(1, 0);
     const a1 = jump(2, 0);
