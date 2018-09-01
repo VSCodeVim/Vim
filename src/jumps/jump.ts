@@ -9,7 +9,7 @@ import { VimState } from '../state/vimState';
  * be able to open the related file.
  */
 export class Jump {
-  public editor: vscode.TextEditor;
+  public editor: vscode.TextEditor | null;
   public fileName: string;
   public position: Position;
 
@@ -25,15 +25,11 @@ export class Jump {
     fileName,
     position,
   }: {
-    editor: vscode.TextEditor;
+    editor: vscode.TextEditor | null;
     fileName: string;
     position: Position;
   }) {
-    if (!fileName) {
-      throw new Error('fileName is required for Jumps');
-    }
     this.editor = editor;
-    // TODO - can we just always require editor and get filename from it?
     this.fileName = fileName;
     this.position = position;
   }

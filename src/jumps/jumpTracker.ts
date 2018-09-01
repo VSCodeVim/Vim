@@ -5,8 +5,8 @@ import { Jump } from './jump';
  * in relation to the 'workbench.action.navigateBack' command.
  */
 export class JumpTracker {
-  private jumps: Jump[] = [];
-  private currentJumpIndex = 0;
+  private _jumps: Jump[] = [];
+  private _currentJumpIndex = 0;
 
   /**
    * When receiving vscode.window.onDidChangeActiveTextEditor messages,
@@ -16,6 +16,13 @@ export class JumpTracker {
    * and shouldn't count as a new jump.
    */
   public isJumpingFiles = false;
+
+  /**
+   * All recorded jumps, in the order of occurrence.
+   */
+  public get jumps(): Jump[] {
+    return this._jumps;
+  }
 
   /**
    * Record that a jump occurred from one file to another.
@@ -35,14 +42,14 @@ export class JumpTracker {
       return;
     }
 
-    if (to.editor.document.isClosed) {
+    if (to.editor && to.editor.document && to.editor.document.isClosed) {
       // Wallaby.js seemed to be adding an extra file jump, named e.g. extension-output-#4
       // It was marked closed when jumping to it. Hopefully we can rely on checking isClosed
       // when extensions get all weird on us.
       return;
     }
 
-    if (from && from.fileName === to.fileName) {
+    if (!from || from.fileName === to.fileName) {
       return;
     }
 
@@ -58,24 +65,25 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public recordJump(from: Jump | null, to: Jump) {
-    const currentJump = this.jumps[this.currentJumpIndex];
+  public recordJump(from: Jump, to?: Jump | null) {
+    const currentJump = this._jumps[this._currentJumpIndex];
 
-    if (currentJump && currentJump.onSameLine(to)) {
-      this.updateCurrentJumpColumn(to);
+    if (to && from.onSameLine(to)) {
       return;
     }
 
-    if (this.currentJumpIndex < this.jumps.length - 1) {
-      this.clearJumpsAfterCurrentJumpIndex();
+    if (currentJump && currentJump.onSameLine(from)) {
+      this.updateCurrentJumpColumn(from);
+      return;
     }
 
-    if (from && !from.onSameLine(currentJump) && !from.onSameLine(to)) {
-      this.jumps.push(from);
-    }
-    this.jumps.push(to);
+    this.clearJumpsOnSameLine(from);
 
-    this.currentJumpIndex = this.jumps.length - 1;
+    if (from && !from.onSameLine(to)) {
+      this._jumps.push(from);
+    }
+
+    this._currentJumpIndex = this._jumps.length - 1;
   }
 
   /**
@@ -85,12 +93,12 @@ export class JumpTracker {
    * @param from - File/position jumped from
    */
   public back(from: Jump): Jump {
-    if (this.currentJumpIndex <= 0) {
-      return this.jumps[0];
+    if (this._currentJumpIndex <= 0) {
+      return this._jumps[0];
     }
 
-    this.currentJumpIndex = this.currentJumpIndex - 1;
-    const jump = this.jumps[this.currentJumpIndex];
+    this._currentJumpIndex = this._currentJumpIndex - 1;
+    const jump = this._jumps[this._currentJumpIndex];
 
     if (jump && jump.onSameLine(from)) {
       this.removeCurrentJump();
@@ -106,30 +114,38 @@ export class JumpTracker {
    * @param from - File/position jumped from
    */
   public forward(from: Jump): Jump {
-    if (this.currentJumpIndex >= this.jumps.length - 1) {
-      return this.jumps[this.jumps.length - 1];
+    if (this._currentJumpIndex >= this._jumps.length - 1) {
+      return this._jumps[this._jumps.length - 1];
     }
 
-    this.currentJumpIndex = Math.min(this.currentJumpIndex + 1, this.jumps.length - 1);
-    const jump = this.jumps[this.currentJumpIndex];
+    this._currentJumpIndex = Math.min(this._currentJumpIndex + 1, this._jumps.length - 1);
+    const jump = this._jumps[this._currentJumpIndex];
 
     if (jump && jump.onSameLine(from)) {
       this.removeCurrentJump();
-      this.currentJumpIndex -= 1;
+      this._currentJumpIndex -= 1;
       return this.forward(from);
     }
     return jump;
   }
 
-  clearJumpsAfterCurrentJumpIndex(): any {
-    this.jumps.splice(this.currentJumpIndex + 1, this.jumps.length);
+  clearJumps(): void {
+    this._jumps.splice(0, this._jumps.length);
   }
 
-  removeCurrentJump(): any {
-    this.jumps.splice(this.currentJumpIndex, 1);
+  clearJumpsAfterCurrentJumpIndex(): void {
+    this._jumps.splice(this._currentJumpIndex + 1, this._jumps.length);
   }
 
-  updateCurrentJumpColumn(to: Jump): any {
-    this.jumps.splice(this.currentJumpIndex, 1, to);
+  clearJumpsOnSameLine(jump: Jump): void {
+    this._jumps = this._jumps.filter(j => !j.onSameLine(jump));
+  }
+
+  removeCurrentJump(): void {
+    this._jumps.splice(this._currentJumpIndex, 1);
+  }
+
+  updateCurrentJumpColumn(to: Jump): void {
+    this._jumps.splice(this._currentJumpIndex, 1, to);
   }
 }

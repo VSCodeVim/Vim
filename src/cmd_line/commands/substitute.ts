@@ -129,7 +129,6 @@ export class SubstituteCommand extends node.CommandBase {
           );
 
           vimState.globalState.jumpTracker.recordJump(
-            null,
             new Jump({
               editor: vimState.editor,
               fileName: vimState.editor.document.fileName,
@@ -146,7 +145,6 @@ export class SubstituteCommand extends node.CommandBase {
       );
 
       vimState.globalState.jumpTracker.recordJump(
-        null,
         new Jump({
           editor: vimState.editor,
           fileName: vimState.editor.document.fileName,

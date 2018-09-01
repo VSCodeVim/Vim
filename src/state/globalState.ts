@@ -6,14 +6,9 @@ import { SearchState } from './searchState';
  * State which stores global state (across editors)
  */
 export class GlobalState {
-  private static _jumpTracker: JumpTracker = new JumpTracker();
-
   /**
    * Getters and setters for changing global state
    */
-  public get jumpTracker(): JumpTracker {
-    return GlobalState._jumpTracker;
-  }
 
   /**
    * The keystroke sequence that made up our last complete action (that can be
@@ -40,6 +35,11 @@ export class GlobalState {
    * Used internally for nohl.
    */
   private static _hl = true;
+
+  /**
+   * Track jumps, and traverse jump history
+   */
+  private static _jumpTracker: JumpTracker = new JumpTracker();
 
   /**
    * Getters and setters for changing global state
@@ -82,5 +82,9 @@ export class GlobalState {
 
   public set hl(enabled: boolean) {
     GlobalState._hl = enabled;
+  }
+
+  public get jumpTracker(): JumpTracker {
+    return GlobalState._jumpTracker;
   }
 }
