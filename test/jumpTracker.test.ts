@@ -28,6 +28,31 @@ suite('Record and navigate jumps', () => {
     });
   };
 
+  suite('Jump Tracker unit tests', () => {
+    test('Records up to 100 jumps, the fixed length in vanilla Vim', async () => {
+      const jumpTracker = new JumpTracker();
+
+      const range = (n: number) => Array.from(Array(n).keys());
+      const jump = (lineNumber, columnNumber) =>
+        new Jump({
+          editor: null,
+          fileName: 'Untitled',
+          position: new Position(lineNumber, columnNumber),
+        });
+
+      range(102).forEach((iteration: number) => {
+        jumpTracker.recordJump(jump(iteration, 0), jump(iteration + 1, 0));
+      });
+
+      assert.equal(jumpTracker.jumps.length, 100, 'Jump tracker should cut off jumps at 100');
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => j.position.line),
+        range(102).slice(2, 102),
+        "Jump tracker doesn't contain the expected jumps after removing old jumps"
+      );
+    });
+  });
+
   suite('Can record jumps for actions the same as vanilla Vim', () => {
     suite('Can track basic jumps', () => {
       newJumpTest({
