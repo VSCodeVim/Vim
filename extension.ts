@@ -13,6 +13,7 @@ import { commandLine } from './src/cmd_line/commandLine';
 import { Position } from './src/common/motion/position';
 import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
+import { GlobalState } from './src/state/globalState';
 import { Jump } from './src/jumps/jump';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
@@ -24,6 +25,7 @@ import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { logger } from './src/util/logger';
 import { CompositionState } from './src/state/compositionState';
 
+const globalState = new GlobalState();
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
 
@@ -75,15 +77,29 @@ export async function activate(context: vscode.ExtensionContext) {
     configuration.reload();
   });
 
-  vscode.workspace.onDidChangeTextDocument(event => {
+  vscode.workspace.onDidChangeTextDocument(async event => {
     if (configuration.disableExt) {
       return;
+    }
+
+    if (
+      event.contentChanges.length === 1 &&
+      event.contentChanges[0].text === '' &&
+      event.contentChanges[0].range.start.line !== event.contentChanges[0].range.end.line
+    ) {
+      // This generally means content was deleted at the range provided.
+      globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
     }
 
     // Change from vscode editor should set document.isDirty to true but they initially don't!
     // There is a timing issue in vscode codebase between when the isDirty flag is set and
     // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
     let contentChangeHandler = (modeHandler: ModeHandler) => {
+      if (!modeHandler) {
+        // This can happen in tests if you don't set Globals.mockModeHandler;
+        console.warn('No mode handler found');
+        return;
+      }
       if (modeHandler.vimState.currentMode === ModeName.Insert) {
         if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
           modeHandler.vimState.historyTracker.currentContentChanges = [];
@@ -112,7 +128,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }, 0);
   });
 
-  vscode.workspace.onDidCloseTextDocument(async () => {
+  vscode.workspace.onDidCloseTextDocument(async event => {
     const documents = vscode.workspace.textDocuments;
 
     // Delete modehandler once all tabs of this document have been closed
@@ -142,7 +158,8 @@ export async function activate(context: vscode.ExtensionContext) {
       fileName: toHandler.vimState.editor.document.fileName,
       position: toHandler.vimState.cursorPosition,
     });
-    toHandler.vimState.globalState.jumpTracker.recordFileJump(from, to);
+
+    globalState.jumpTracker.recordFileJump(from, to);
   };
 
   // window events
@@ -282,6 +299,11 @@ export async function activate(context: vscode.ExtensionContext) {
  */
 async function toggleExtension(isDisabled: boolean, compositionState: CompositionState) {
   await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
+  if (!vscode.window.activeTextEditor) {
+    // This was happening in unit tests.
+    // If activate was called and no editor window is open, we can't properly initialize.
+    return;
+  }
   let mh = await getAndUpdateModeHandler();
   if (isDisabled) {
     await mh.handleKeyEvent('<ExtensionDisable>');
@@ -354,4 +376,6 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
 
 process.on('unhandledRejection', function(reason: any, p: any) {
   logger.error(`Unhandled Rejection at: Promise ${p}. Reason: ${reason}.`);
+  // TODO: remove
+  throw reason;
 });

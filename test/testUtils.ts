@@ -4,10 +4,11 @@ import * as os from 'os';
 import { join } from 'path';
 import * as vscode from 'vscode';
 
-import { IConfiguration } from '../src/configuration/iconfiguration';
-import { Globals } from '../src/globals';
-import { TextEditor } from '../src/textEditor';
 import { Configuration } from './testConfiguration';
+import { Globals } from '../src/globals';
+import { IConfiguration } from '../src/configuration/iconfiguration';
+import { TextEditor } from '../src/textEditor';
+import { getAndUpdateModeHandler } from '../extension';
 
 function rndName() {
   return Math.random()
@@ -89,6 +90,15 @@ export async function setupWorkspace(
 
   activeTextEditor!.options.tabSize = config.tabstop;
   activeTextEditor!.options.insertSpaces = config.expandtab;
+
+  if (!vscode.window.activeTextEditor) {
+    console.warn('Unable to enable extension. Active Text Editor was not found');
+    return;
+  }
+  await vscode.commands.executeCommand('setContext', 'vim.active', true);
+  const mh = await getAndUpdateModeHandler();
+  Globals.mockModeHandler = mh;
+  await mh.handleKeyEvent('<ExtensionEnable>');
 }
 
 export async function cleanUpWorkspace(): Promise<any> {

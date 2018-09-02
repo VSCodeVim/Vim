@@ -1,4 +1,7 @@
+import * as vscode from 'vscode';
+
 import { Jump } from './jump';
+import { Position } from './../common/motion/position';
 
 /**
  * JumpTracker is a handrolled version of vscode's TextEditorState
@@ -165,13 +168,38 @@ export class JumpTracker {
 
     this._currentJumpIndex = Math.min(this._currentJumpIndex + 1, this._jumps.length - 1);
     const jump = this._jumps[this._currentJumpIndex];
-
-    // if (jump && jump.onSameLine(from)) {
-    //   this.removeCurrentJump();
-    //   this._currentJumpIndex -= 1;
-    //   return this.forward(from);
-    // }
     return jump;
+  }
+
+  public handleTextDeleted(document: vscode.TextDocument, range: vscode.Range): void {
+    const distance = range.end.line - range.start.line;
+
+    for (let i = this._jumps.length - 1; i >= 0; i--) {
+      const jump = this._jumps[i];
+      if (jump.fileName === document.fileName && jump.position.line >= range.start.line) {
+        const newPosition = new Position(
+          jump.position.line - Math.min(jump.position.line - range.start.line, distance),
+          jump.position.character
+        );
+
+        const existingJumpIndexAtPosition = this._jumps.findIndex(
+          j => j.position.line === newPosition.line
+        );
+        if (existingJumpIndexAtPosition >= 0) {
+          this._jumps.splice(existingJumpIndexAtPosition, 1);
+        }
+
+        this._jumps.splice(
+          i,
+          1,
+          new Jump({
+            editor: jump.editor,
+            fileName: jump.fileName,
+            position: newPosition,
+          })
+        );
+      }
+    }
   }
 
   clearJumps(): void {
