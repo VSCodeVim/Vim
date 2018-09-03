@@ -9,7 +9,7 @@ import { Position } from './../common/motion/position';
  */
 export class JumpTracker {
   private _jumps: Jump[] = [];
-  private _currentJumpIndex = 0;
+  private _currentJumpNumber = 0;
 
   /**
    * When receiving vscode.window.onDidChangeActiveTextEditor messages,
@@ -31,15 +31,15 @@ export class JumpTracker {
    * Current position in the list of jumps.
    * This will be past last index if not traveling through history.
    */
-  public get currentJumpIndex(): number {
-    return this._currentJumpIndex;
+  public get currentJumpNumber(): number {
+    return this._currentJumpNumber;
   }
 
   /**
    * Current jump in the list of jumps
    */
   public get currentJump(): Jump {
-    return this._jumps[this._currentJumpIndex];
+    return this._jumps[this._currentJumpNumber];
   }
 
   /**
@@ -73,7 +73,7 @@ export class JumpTracker {
    * @param to - File/position jumped to
    */
   public recordJump(from: Jump, to?: Jump | null) {
-    const currentJump = this._jumps[this._currentJumpIndex];
+    const currentJump = this._jumps[this._currentJumpNumber];
 
     if (to && from.onSameLine(to)) {
       return;
@@ -85,7 +85,7 @@ export class JumpTracker {
       this._jumps.push(from);
     }
 
-    this._currentJumpIndex = this._jumps.length;
+    this._currentJumpNumber = this._jumps.length;
 
     this.clearOldJumps();
   }
@@ -133,19 +133,19 @@ export class JumpTracker {
       return from;
     }
 
-    if (this._currentJumpIndex <= 0) {
+    if (this._currentJumpNumber <= 0) {
       return this._jumps[0];
     }
 
     let to: Jump;
 
-    if (this._currentJumpIndex === this._jumps.length) {
-      to = this._jumps[this._currentJumpIndex - 1];
+    if (this._currentJumpNumber === this._jumps.length) {
+      to = this._jumps[this._currentJumpNumber - 1];
       this.recordJump(from, to);
-      this._currentJumpIndex = this._currentJumpIndex - 2;
+      this._currentJumpNumber = this._currentJumpNumber - 2;
     } else {
-      to = this._jumps[this._currentJumpIndex - 1];
-      this._currentJumpIndex = this._currentJumpIndex - 1;
+      to = this._jumps[this._currentJumpNumber - 1];
+      this._currentJumpNumber = this._currentJumpNumber - 1;
     }
 
     return to;
@@ -162,13 +162,29 @@ export class JumpTracker {
       return from;
     }
 
-    if (this._currentJumpIndex >= this._jumps.length) {
+    if (this._currentJumpNumber >= this._jumps.length) {
       return from;
     }
 
-    this._currentJumpIndex = Math.min(this._currentJumpIndex + 1, this._jumps.length - 1);
-    const jump = this._jumps[this._currentJumpIndex];
+    this._currentJumpNumber = Math.min(this._currentJumpNumber + 1, this._jumps.length - 1);
+    const jump = this._jumps[this._currentJumpNumber];
     return jump;
+  }
+
+  public handleTextAdded(document: vscode.TextDocument, range: vscode.Range, text: string): void {
+    const distance = text.split('').filter(c => c === '\n').length;
+
+    for (let i = this._jumps.length - 1; i >= 0; i--) {
+      const jump = this._jumps[i];
+      const jumpIsAfterAddedText =
+        jump.fileName === document.fileName && jump.position.line > range.start.line;
+
+      if (jumpIsAfterAddedText) {
+        const newPosition = new Position(jump.position.line + distance, jump.position.character);
+
+        this.changePositionForJumpNumber(i, jump, newPosition);
+      }
+    }
   }
 
   public handleTextDeleted(document: vscode.TextDocument, range: vscode.Range): void {
@@ -176,30 +192,31 @@ export class JumpTracker {
 
     for (let i = this._jumps.length - 1; i >= 0; i--) {
       const jump = this._jumps[i];
-      if (jump.fileName === document.fileName && jump.position.line >= range.start.line) {
-        const newPosition = new Position(
-          jump.position.line - Math.min(jump.position.line - range.start.line, distance),
-          jump.position.character
-        );
+      const jumpIsAfterDeletedText =
+        jump.fileName === document.fileName && jump.position.line >= range.start.line;
 
-        const existingJumpIndexAtPosition = this._jumps.findIndex(
-          j => j.position.line === newPosition.line
-        );
-        if (existingJumpIndexAtPosition >= 0) {
-          this._jumps.splice(existingJumpIndexAtPosition, 1);
-        }
+      if (jumpIsAfterDeletedText) {
+        const newLineShiftedUp =
+          jump.position.line - Math.min(jump.position.line - range.start.line, distance);
+        const newPosition = new Position(newLineShiftedUp, jump.position.character);
 
-        this._jumps.splice(
-          i,
-          1,
-          new Jump({
-            editor: jump.editor,
-            fileName: jump.fileName,
-            position: newPosition,
-          })
-        );
+        this.changePositionForJumpNumber(i, jump, newPosition);
       }
     }
+
+    this.removeDuplicateJumps();
+  }
+
+  changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
+    this._jumps.splice(
+      index,
+      1,
+      new Jump({
+        editor: jump.editor,
+        fileName: jump.fileName,
+        position: newPosition,
+      })
+    );
   }
 
   clearJumps(): void {
@@ -213,18 +230,33 @@ export class JumpTracker {
   }
 
   clearJumpsAfterCurrentJumpIndex(): void {
-    this._jumps.splice(this._currentJumpIndex + 1, this._jumps.length);
+    this._jumps.splice(this._currentJumpNumber + 1, this._jumps.length);
   }
 
   clearJumpsOnSameLine(jump: Jump): void {
-    this._jumps = this._jumps.filter(j => !j.onSameLine(jump));
+    this._jumps = this._jumps.filter(j => j === jump || !j.onSameLine(jump));
+  }
+
+  removeDuplicateJumps() {
+    for (let i = 0; i < this._jumps.length; i++) {
+      const jump = this._jumps[i];
+      this.clearJumpsOnSameLine(jump);
+    }
+  }
+
+  removeJumpNumber(index: number): void {
+    this._jumps.splice(index, 1);
   }
 
   removeCurrentJump(): void {
-    this._jumps.splice(this._currentJumpIndex, 1);
+    this.removeJumpNumber(this._currentJumpNumber);
+  }
+
+  getJumpNumberOfLine(line: number) {
+    return this._jumps.findIndex(j => j.position.line === line);
   }
 
   updateCurrentJumpColumn(to: Jump): void {
-    this._jumps.splice(this._currentJumpIndex, 1, to);
+    this._jumps.splice(this._currentJumpNumber, 1, to);
   }
 }

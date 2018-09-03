@@ -132,7 +132,7 @@ suite('Record and navigate jumps', () => {
       });
     });
 
-    suite('Can handle deleted lines', () => {
+    suite('Can shifts jump lines up after deleting a line', () => {
       newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkkdd',
@@ -147,8 +147,41 @@ suite('Record and navigate jumps', () => {
       });
       newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
+        keysPressed: '/^\nnnnnn<C-o><C-o><C-o><C-o>dd',
+        end: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
+        jumps: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
+      });
+      newJumpTest({
+        start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/a4\n/a5\nkkkdd',
         end: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
+        jumps: ['start', 'a4'],
+      });
+    });
+
+    suite('Can shift jump lines down after inserting a line', () => {
+      newJumpTest({
+        start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
+        keysPressed: '/^\nnnnkkoINSERTED<Esc>0',
+        end: ['start', 'a1', 'a2', '|INSERTED', 'a3', 'a4', 'a5', 'end'],
+        jumps: ['start', 'a1', 'a2', 'a3'],
+      });
+      newJumpTest({
+        start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
+        keysPressed: '/^\nnnnkoINSERTED<Esc>0',
+        end: ['start', 'a1', 'a2', 'a3', '|INSERTED', 'a4', 'a5', 'end'],
+        jumps: ['start', 'a1', 'a2', 'a3'],
+      });
+      newJumpTest({
+        start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
+        keysPressed: '/^\nnnnkOINSERTED<Esc>0',
+        end: ['start', 'a1', 'a2', '|INSERTED', 'a3', 'a4', 'a5', 'end'],
+        jumps: ['start', 'a1', 'a2', 'a3'],
+      });
+      newJumpTest({
+        start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
+        keysPressed: '/a4\n/a5\nkkkoINSERTED<Esc>0',
+        end: ['start', 'a1', 'a2', '|INSERTED', 'a3', 'a4', 'a5', 'end'],
         jumps: ['start', 'a4'],
       });
     });

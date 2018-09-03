@@ -87,8 +87,17 @@ export async function activate(context: vscode.ExtensionContext) {
       event.contentChanges[0].text === '' &&
       event.contentChanges[0].range.start.line !== event.contentChanges[0].range.end.line
     ) {
-      // This generally means content was deleted at the range provided.
       globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
+    } else if (
+      event.contentChanges.length === 1 &&
+      (event.contentChanges[0].text === '\n' || event.contentChanges[0].text === '\r\n') &&
+      event.contentChanges[0].range.start.line === event.contentChanges[0].range.end.line
+    ) {
+      globalState.jumpTracker.handleTextAdded(
+        event.document,
+        event.contentChanges[0].range,
+        event.contentChanges[0].text
+      );
     }
 
     // Change from vscode editor should set document.isDirty to true but they initially don't!
