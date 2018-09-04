@@ -18,10 +18,6 @@ const packagejson: {
 } = require('../../../package.json');
 
 type OptionValue = number | string | boolean;
-type ValueMapping = {
-  [key: number]: number | string | boolean;
-  [key: string]: number | string | boolean;
-};
 
 interface VSCodeKeybinding {
   key: string;
@@ -272,10 +268,10 @@ class Configuration implements IConfiguration {
 
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
 
-  @overlapSetting({ codeName: 'tabSize', default: 8 })
+  @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
   tabstop: number;
 
-  @overlapSetting({ codeName: 'cursorStyle', default: 'line' })
+  @overlapSetting({ settingName: 'cursorStyle', defaultValue: 'line' })
   private editorCursorStyleRaw: string;
 
   get editorCursorStyle(): vscode.TextEditorCursorStyle | undefined {
@@ -285,20 +281,30 @@ class Configuration implements IConfiguration {
     // nop
   }
 
-  @overlapSetting({ codeName: 'insertSpaces', default: false })
+  @overlapSetting({ settingName: 'insertSpaces', defaultValue: false })
   expandtab: boolean;
 
   @overlapSetting({
-    codeName: 'lineNumbers',
-    default: true,
-    codeValueMapping: { true: 'on', false: 'off' },
+    settingName: 'lineNumbers',
+    defaultValue: true,
+    map: new Map([
+      ['on', true],
+      ['off', false],
+      ['relative', false],
+      ['interval', false],
+    ]),
   })
   number: boolean;
 
   @overlapSetting({
-    codeName: 'lineNumbers',
-    default: false,
-    codeValueMapping: { true: 'relative', false: 'off' },
+    settingName: 'lineNumbers',
+    defaultValue: false,
+    map: new Map([
+      ['on', false],
+      ['off', false],
+      ['relative', true],
+      ['interval', false],
+    ]),
   })
   relativenumber: boolean;
 
@@ -360,26 +366,27 @@ class Configuration implements IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 }
 
+// handle mapped settings between vscode to vim
 function overlapSetting(args: {
-  codeName: string;
-  default: OptionValue;
-  codeValueMapping?: ValueMapping;
+  settingName: string;
+  defaultValue: OptionValue;
+  map?: Map<string | number | boolean, string | number | boolean>;
 }) {
-  return function(target: any, propertyKey: string) {
+  return function (target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
-      get: function() {
+      get: function () {
         if (this['_' + propertyKey] !== undefined) {
           return this['_' + propertyKey];
         }
 
-        let val = this.getConfiguration('editor').get(args.codeName, args.default);
-        if (args.codeValueMapping && val !== undefined) {
-          val = args.codeValueMapping[val as string];
+        let val = this.getConfiguration('editor').get(args.settingName, args.defaultValue);
+        if (args.map && val !== undefined) {
+          val = args.map.get(val);
         }
 
         return val;
       },
-      set: function(value) {
+      set: function (value) {
         this['_' + propertyKey] = value;
 
         if (value === undefined || Globals.isTesting) {
@@ -387,12 +394,17 @@ function overlapSetting(args: {
         }
 
         taskQueue.enqueueTask(async () => {
-          if (args.codeValueMapping) {
-            value = args.codeValueMapping[value];
+          if (args.map) {
+            for (let [vscodeSetting, vimSetting] of args.map.entries()) {
+              if (value === vimSetting) {
+                value = vscodeSetting;
+                break;
+              }
+            }
           }
 
           await this.getConfiguration('editor').update(
-            args.codeName,
+            args.settingName,
             value,
             vscode.ConfigurationTarget.Global
           );
