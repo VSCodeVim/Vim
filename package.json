@@ -31,7 +31,8 @@
     "Keymaps"
   ],
   "activationEvents": [
-    "*"
+    "*",
+    "onCommand:type"
   ],
   "qna": "https://vscodevim-slackin.azurewebsites.net/",
   "main": "./out/extension",
