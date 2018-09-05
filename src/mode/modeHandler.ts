@@ -970,12 +970,23 @@ export class ModeHandler implements vscode.Disposable {
           if (command.replay === 'contentChange') {
             vimState = await this.runMacro(vimState, recordedMacro);
           } else {
-            let keyStrokes: string[] = [];
-            for (let action of recordedMacro.actionsRun) {
-              keyStrokes = keyStrokes.concat(action.keysPressed);
-            }
             this.vimState.recordedState = new RecordedState();
-            await this.handleMultipleKeyEvents(keyStrokes);
+            for (let action of recordedMacro.actionsRun) {
+              let originalLocation = new Jump({
+                editor: this.vimState.editor,
+                fileName: this.vimState.editor.document.fileName,
+                position: vimState.cursorPosition,
+              });
+
+              await this.handleMultipleKeyEvents(action.keysPressed);
+
+              if (action.isJump) {
+                vimState.globalState.jumpTracker.recordJump(
+                  originalLocation,
+                  Jump.fromState(vimState)
+                );
+              }
+            }
           }
 
           vimState.isReplayingMacro = false;
@@ -1168,6 +1179,12 @@ export class ModeHandler implements vscode.Disposable {
     vimState.isRunningDotCommand = true;
 
     for (let action of actions) {
+      let originalLocation = new Jump({
+        editor: this.vimState.editor,
+        fileName: this.vimState.editor.document.fileName,
+        position: vimState.cursorPosition,
+      });
+
       recordedState.actionsRun.push(action);
       vimState.keyHistory = vimState.keyHistory.concat(action.keysPressed);
 
@@ -1184,6 +1201,10 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       await this.updateView(vimState);
+
+      if (action.isJump) {
+        vimState.globalState.jumpTracker.recordJump(originalLocation, Jump.fromState(vimState));
+      }
     }
 
     vimState.isRunningDotCommand = false;

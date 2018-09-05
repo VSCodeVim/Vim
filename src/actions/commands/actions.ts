@@ -444,7 +444,6 @@ class CommandExecuteMacro extends BaseCommand {
   keys = ['@', '<character>'];
   runsOnceForEachCountPrefix = true;
   canBeRepeatedWithDot = true;
-  isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const register = this.keysPressed[1];

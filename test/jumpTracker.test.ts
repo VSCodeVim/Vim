@@ -193,5 +193,14 @@ suite('Record and navigate jumps', () => {
         jumps: ['start', 'a4'],
       });
     });
+
+    suite('Can track jumps from macros', () => {
+      newJumpTest({
+        start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'end'],
+        keysPressed: 'qq/^\nnq@q@q<C-o><C-o>',
+        end: ['start', 'a1', 'a2', 'a3', '|a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'end'],
+        jumps: ['start', 'a1', 'a2', 'a3', '|a4', 'a5', 'a6'],
+      });
+    });
   });
 });
