@@ -365,6 +365,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle count prefixed 'ci)'",
+    start: [' b(l(baz(f|oo)baz)a)h '],
+    keysPressed: 'c3i)',
+    end: [' b(|)h '],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
+    title: "Can handle count prefixed 'ca)'",
+    start: [' b(l(baz(f|oo)baz)a)h '],
+    keysPressed: 'c3a)',
+    end: [' b|h '],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
     title: "Can handle 'ca(' spanning multiple lines",
     start: ['call(', '  |arg1)'],
     keysPressed: 'ca(',

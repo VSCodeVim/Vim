@@ -14,6 +14,7 @@ import { BaseAction } from './base';
 import { RegisterAction } from './base';
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { shouldWrapKey } from './wrapping';
+import { RecordedState } from '../state/recordedState';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -37,6 +38,11 @@ export interface IMovement {
 
   // It /so/ annoys me that I have to put this here.
   registerMode?: RegisterMode;
+}
+
+enum SelectionType {
+  Concatenating, // selections that concatenate repeated movements
+  Expanding, // selections that expand the start and end of the previous selection
 }
 
 /**
@@ -70,6 +76,10 @@ export abstract class BaseMovement extends BaseAction {
    * the end of even the longest line.
    */
   public setsDesiredColumnToEOL = false;
+
+  protected minCount = 1;
+  protected maxCount = 99999;
+  protected selectionType = SelectionType.Concatenating;
 
   constructor(keysPressed?: string[], isRepeat?: boolean) {
     super();
@@ -118,50 +128,73 @@ export abstract class BaseMovement extends BaseAction {
   ): Promise<Position | IMovement> {
     let recordedState = vimState.recordedState;
     let result: Position | IMovement = new Position(0, 0); // bogus init to satisfy typechecker
+    let prevResult: IMovement | undefined = undefined;
+    let firstMovementStart: Position = new Position(position.line, position.character);
 
-    if (count < 1) {
-      count = 1;
-    } else if (count > 99999) {
-      count = 99999;
-    }
+    count = this.clampCount(count);
 
     for (let i = 0; i < count; i++) {
       const firstIteration = i === 0;
       const lastIteration = i === count - 1;
-      const temporaryResult =
-        recordedState.operator && lastIteration
-          ? await this.execActionForOperator(position, vimState)
-          : await this.execAction(position, vimState);
+      result = await this.createMovementResult(position, vimState, recordedState, lastIteration);
 
-      if (temporaryResult instanceof Position) {
-        result = temporaryResult;
-        position = temporaryResult;
-      } else if (isIMovement(temporaryResult)) {
-        if (result instanceof Position) {
-          result = {
-            start: new Position(0, 0),
-            stop: new Position(0, 0),
-            failed: false,
-          };
+      if (result instanceof Position) {
+        position = result;
+      } else if (isIMovement(result)) {
+        if (prevResult && result.failed) {
+          return prevResult;
         }
-
-        result.failed = result.failed || temporaryResult.failed;
 
         if (firstIteration) {
-          (result as IMovement).start = temporaryResult.start;
+          firstMovementStart = new Position(result.start.line, result.start.character);
         }
 
-        if (lastIteration) {
-          (result as IMovement).stop = temporaryResult.stop;
-        } else {
-          position = temporaryResult.stop.getRightThroughLineBreaks();
-        }
-
-        result.registerMode = temporaryResult.registerMode;
+        position = this.adjustPosition(position, result, lastIteration);
+        prevResult = result;
       }
     }
 
+    if (this.selectionType === SelectionType.Concatenating && isIMovement(result)) {
+      result.start = firstMovementStart;
+    }
+
     return result;
+  }
+
+  protected clampCount(count: number) {
+    count = Math.max(count, this.minCount);
+    count = Math.min(count, this.maxCount);
+    return count;
+  }
+
+  protected async createMovementResult(
+    position: Position,
+    vimState: VimState,
+    recordedState: RecordedState,
+    lastIteration: boolean
+  ): Promise<Position | IMovement> {
+    const result =
+      recordedState.operator && lastIteration
+        ? await this.execActionForOperator(position, vimState)
+        : await this.execAction(position, vimState);
+    return result;
+  }
+  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
+    if (!lastIteration) {
+      position = result.stop.getRightThroughLineBreaks();
+    }
+    return position;
+  }
+}
+
+export abstract class ExpandingSelection extends BaseMovement {
+  protected selectionType = SelectionType.Expanding;
+
+  protected adjustPosition(position: Position, result: IMovement, lastIteration: boolean) {
+    if (!lastIteration) {
+      position = result.stop;
+    }
+    return position;
   }
 }
 
@@ -1361,14 +1394,14 @@ class MoveToMatchingBracket extends BaseMovement {
         if (PairMatcher.pairings[text[i]]) {
           // We found an opening char, now move to the matching closing char
           const openPosition = new Position(position.line, i);
-          return PairMatcher.nextPairedChar(openPosition, text[i], true) || failure;
+          return PairMatcher.nextPairedChar(openPosition, text[i]) || failure;
         }
       }
 
       return failure;
     }
 
-    return PairMatcher.nextPairedChar(position, charToMatch, true) || failure;
+    return PairMatcher.nextPairedChar(position, charToMatch) || failure;
   }
 
   public async execActionForOperator(
@@ -1424,20 +1457,40 @@ class MoveToMatchingBracket extends BaseMovement {
   }
 }
 
-export abstract class MoveInsideCharacter extends BaseMovement {
+export abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
   isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    const failure = { start: position, stop: position, failed: true };
-    const text = TextEditor.getLineAt(position).text;
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
-    const closedMatch = text[position.character] === closingChar;
+    let cursorStartPos = new Position(
+      vimState.cursorStartPosition.line,
+      vimState.cursorStartPosition.character
+    );
+    // maintain current selection on failure
+    const failure = { start: cursorStartPos, stop: position, failed: true };
 
+    // when matching inside content of a pair, search for the next pair if
+    // the inner content is already selected in full
+    if (!this.includeSurrounding) {
+      const adjacentPosLeft = cursorStartPos.getLeftThroughLineBreaks();
+      let adjacentPosRight = position.getRightThroughLineBreaks();
+      if (vimState.recordedState.operator) {
+        adjacentPosRight = adjacentPosRight.getLeftThroughLineBreaks();
+      }
+      const adjacentCharLeft = TextEditor.getCharAt(adjacentPosLeft);
+      const adjacentCharRight = TextEditor.getCharAt(adjacentPosRight);
+      if (adjacentCharLeft === this.charToMatch && adjacentCharRight === closingChar) {
+        cursorStartPos = adjacentPosLeft;
+        vimState.cursorStartPosition = adjacentPosLeft;
+        position = adjacentPosRight;
+        vimState.cursorPosition = adjacentPosRight;
+      }
+    }
     // First, search backwards for the opening character of the sequence
-    let startPos = PairMatcher.nextPairedChar(position, closingChar, closedMatch);
+    let startPos = PairMatcher.nextPairedChar(cursorStartPos, closingChar, vimState);
     if (startPos === undefined) {
       return failure;
     }
@@ -1450,7 +1503,8 @@ export abstract class MoveInsideCharacter extends BaseMovement {
       startPlusOne = new Position(startPos.line, startPos.character + 1);
     }
 
-    let endPos = PairMatcher.nextPairedChar(startPlusOne, this.charToMatch, false);
+    let endPos = PairMatcher.nextPairedChar(position, this.charToMatch, vimState);
+
     if (endPos === undefined) {
       return failure;
     }
@@ -1476,25 +1530,12 @@ export abstract class MoveInsideCharacter extends BaseMovement {
       vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
     }
 
+    vimState.cursorStartPosition = startPos;
     return {
       start: startPos,
       stop: endPos,
       diff: new PositionDiff(0, startPos === position ? 1 : 0),
     };
-  }
-
-  public async execActionForOperator(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
-    const result = await this.execAction(position, vimState);
-    if (isIMovement(result)) {
-      if (result.failed) {
-        vimState.recordedState.hasRunOperator = false;
-        vimState.recordedState.actionsRun = [];
-      }
-    }
-    return result;
   }
 }
 
@@ -1732,11 +1773,7 @@ class MoveToUnclosedRoundBracketBackward extends MoveToMatchingBracket {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };
     const charToMatch = ')';
-    const result = PairMatcher.nextPairedChar(
-      position.getLeftThroughLineBreaks(),
-      charToMatch,
-      false
-    );
+    const result = PairMatcher.nextPairedChar(position, charToMatch);
 
     if (!result) {
       return failure;
@@ -1752,11 +1789,7 @@ class MoveToUnclosedRoundBracketForward extends MoveToMatchingBracket {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };
     const charToMatch = '(';
-    const result = PairMatcher.nextPairedChar(
-      position.getRightThroughLineBreaks(),
-      charToMatch,
-      false
-    );
+    const result = PairMatcher.nextPairedChar(position, charToMatch);
 
     if (!result) {
       return failure;
@@ -1781,11 +1814,7 @@ class MoveToUnclosedCurlyBracketBackward extends MoveToMatchingBracket {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };
     const charToMatch = '}';
-    const result = PairMatcher.nextPairedChar(
-      position.getLeftThroughLineBreaks(),
-      charToMatch,
-      false
-    );
+    const result = PairMatcher.nextPairedChar(position, charToMatch);
 
     if (!result) {
       return failure;
@@ -1801,11 +1830,7 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     const failure = { start: position, stop: position, failed: true };
     const charToMatch = '{';
-    const result = PairMatcher.nextPairedChar(
-      position.getRightThroughLineBreaks(),
-      charToMatch,
-      false
-    );
+    const result = PairMatcher.nextPairedChar(position, charToMatch);
 
     if (!result) {
       return failure;
@@ -1823,7 +1848,7 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
   }
 }
 
-abstract class MoveTagMatch extends BaseMovement {
+abstract class MoveTagMatch extends ExpandingSelection {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected includeTag = false;
   isJump = true;
@@ -1831,20 +1856,30 @@ abstract class MoveTagMatch extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const editorText = TextEditor.getText();
     const offset = TextEditor.getOffsetAt(position);
-    const tagMatcher = new TagMatcher(editorText, offset);
+    const tagMatcher = new TagMatcher(editorText, offset, vimState);
+    const cursorStartPos = new Position(
+      vimState.cursorStartPosition.line,
+      vimState.cursorStartPosition.character
+    );
     const start = tagMatcher.findOpening(this.includeTag);
     const end = tagMatcher.findClosing(this.includeTag);
 
     if (start === undefined || end === undefined) {
       return {
-        start: position,
+        start: cursorStartPos,
         stop: position,
         failed: true,
       };
     }
 
-    let startPosition = start ? TextEditor.getPositionAt(start) : position;
-    let endPosition = end ? TextEditor.getPositionAt(end) : position;
+    let startPosition = start >= 0 ? TextEditor.getPositionAt(start) : cursorStartPos;
+    let endPosition = end >= 0 ? TextEditor.getPositionAt(end) : position;
+    if (
+      vimState.currentMode === ModeName.Visual ||
+      vimState.currentMode === ModeName.SurroundInputMode
+    ) {
+      endPosition = endPosition.getLeftThroughLineBreaks();
+    }
 
     if (position.isAfter(endPosition)) {
       vimState.recordedState.transformations.push({
@@ -1857,36 +1892,21 @@ abstract class MoveTagMatch extends BaseMovement {
         diff: startPosition.subtract(position),
       });
     }
-    if (start === end) {
-      if (vimState.recordedState.operator instanceof ChangeOperator) {
-        vimState.currentMode = ModeName.Insert;
-      }
-      return {
-        start: startPosition,
-        stop: startPosition,
-        failed: true,
-      };
-    }
+    // if (start === end) {
+    //   if (vimState.recordedState.operator instanceof ChangeOperator) {
+    //     vimState.currentMode = ModeName.Insert;
+    //   }
+    //   return {
+    //     start: startPosition,
+    //     stop: startPosition,
+    //     failed: true,
+    //   };
+    // }
+    vimState.cursorStartPosition = startPosition;
     return {
       start: startPosition,
-      stop: endPosition.getLeftThroughLineBreaks(true),
+      stop: endPosition,
     };
-  }
-
-  public async execActionForOperator(
-    position: Position,
-    vimState: VimState
-  ): Promise<Position | IMovement> {
-    const result = await this.execAction(position, vimState);
-    if (isIMovement(result)) {
-      if (result.failed) {
-        vimState.recordedState.hasRunOperator = false;
-        vimState.recordedState.actionsRun = [];
-      } else {
-        result.stop = result.stop.getRight();
-      }
-    }
-    return result;
   }
 }
 

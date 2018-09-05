@@ -533,11 +533,12 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (recordedState.operatorReadyToExecute(vimState.currentMode)) {
-      vimState = await this.executeOperator(vimState);
-
-      vimState.recordedState.hasRunOperator = true;
-      ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
-      ranAction = true;
+      if (vimState.recordedState.operator) {
+        vimState = await this.executeOperator(vimState);
+        vimState.recordedState.hasRunOperator = true;
+        ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
+        ranAction = true;
+      }
     }
 
     if (vimState.currentMode === ModeName.Visual) {
@@ -769,7 +770,8 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     if (!recordedState.operator) {
-      throw new Error("what in god's name");
+      console.error('recordedState.operator: ' + recordedState.operator);
+      throw new Error("what in god's name. recordedState.operator is falsy.");
     }
 
     let resultVimState = vimState;
@@ -1494,14 +1496,14 @@ export class ModeHandler implements vscode.Disposable {
 
     if (vimState.currentMode === ModeName.Insert) {
       // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
-      let result = PairMatcher.nextPairedChar(vimState.cursorPosition, key, false);
+      let result = PairMatcher.nextPairedChar(vimState.cursorPosition, key);
       if (result !== undefined) {
         if (vimState.cursorPosition.compareTo(result) === 0) {
           return true;
         }
       }
 
-      result = PairMatcher.nextPairedChar(vimState.cursorPosition.getLeft(), key, true);
+      result = PairMatcher.nextPairedChar(vimState.cursorPosition.getLeft(), key);
       if (result !== undefined) {
         if (vimState.cursorPosition.getLeftByCount(2).compareTo(result) === 0) {
           return true;

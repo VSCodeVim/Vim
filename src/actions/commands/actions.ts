@@ -3896,7 +3896,7 @@ class ActionChangeChar extends BaseCommand {
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     return (
-      super.doesActionApply(vimState, keysPressed) &&
+      super.couldActionApply(vimState, keysPressed) &&
       !configuration.sneak &&
       !vimState.recordedState.operator
     );
