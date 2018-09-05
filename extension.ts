@@ -375,6 +375,4 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
 
 process.on('unhandledRejection', function(reason: any, p: any) {
   logger.error(`Unhandled Rejection at: Promise ${p}. Reason: ${reason}.`);
-  // TODO: remove
-  throw reason;
 });
