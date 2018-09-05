@@ -2822,16 +2822,18 @@ abstract class ActionNavigateCommand extends BaseCommand {
   async handleFileJump(jump: Jump, vimState: VimState) {
     vimState.globalState.jumpTracker.isJumpingFiles = true;
 
-    // TODO: Check for editor closed also, probably won't work if it is closed
     if (jump.editor) {
+      // Open jump file from stored editor
       await vscode.window.showTextDocument(jump.editor.document);
     } else if (existsSync(jump.fileName)) {
+      // Open jump file from disk
       await new FileCommand({
         name: jump.fileName,
         lineNumber: jump.position.line,
         createFileIfNotExists: false,
       }).execute();
     } else {
+      // Get jump file from visible editors
       const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
         e => e.document.fileName === jump.fileName
       )[0];
