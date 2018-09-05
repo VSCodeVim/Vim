@@ -130,6 +130,14 @@ suite('Record and navigate jumps', () => {
         end: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         jumps: ['start', '{', 'b1', 'a2', 'a1'],
       });
+
+      newJumpTest({
+        title: 'Can enter number to jump back multiple times',
+        start: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
+        keysPressed: 'Gggj%2<C-o>',
+        end: ['start', '{', 'a1', 'b1', 'a2', 'b2', '}', '|end'],
+        jumps: ['start', '|end', '{', '}'],
+      });
     });
 
     suite('Can shifts jump lines up after deleting a line', () => {
