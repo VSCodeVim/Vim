@@ -133,7 +133,8 @@ export class SubstituteCommand extends node.CommandBase {
               editor: vimState.editor,
               fileName: vimState.editor.document.fileName,
               position: new Position(line, 0),
-            })
+            }),
+            Jump.fromStateNow(vimState)
           );
         }
         matchPos += match.length;
@@ -149,7 +150,8 @@ export class SubstituteCommand extends node.CommandBase {
           editor: vimState.editor,
           fileName: vimState.editor.document.fileName,
           position: new Position(line, 0),
-        })
+        }),
+        Jump.fromStateNow(vimState)
       );
     }
   }

@@ -194,6 +194,15 @@ suite('Record and navigate jumps', () => {
       });
     });
 
+    suite('Can track jumps from substitutes', () => {
+      newJumpTest({
+        start: ['|a1', 'a2', 'a3'],
+        keysPressed: ':%s/a/b\n',
+        end: ['|b1', 'b2', 'b3'],
+        jumps: ['b2', 'b3'],
+      });
+    });
+
     suite('Can track jumps from macros', () => {
       newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'end'],
