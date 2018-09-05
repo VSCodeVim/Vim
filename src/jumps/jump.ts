@@ -35,14 +35,27 @@ export class Jump {
   }
 
   /**
-   * Factory method for creating a Jump from a VimState.
+   * Factory method for creating a Jump from a VimState's current cursor position.
    * @param vimState - State that contains the fileName and position for the jump
    */
-  static fromState(vimState: VimState) {
+  static fromStateNow(vimState: VimState) {
     return new Jump({
       editor: vimState.editor,
       fileName: vimState.editor.document.fileName,
       position: vimState.cursorPosition,
+    });
+  }
+
+  /**
+   * Factory method for creating a Jump from a VimState's cursor position,
+   * before any actions or commands were performed.
+   * @param vimState - State that contains the fileName and prior position for the jump
+   */
+  static fromStateBefore(vimState: VimState) {
+    return new Jump({
+      editor: vimState.editor,
+      fileName: vimState.editor.document.fileName,
+      position: vimState.cursorPositionJustBeforeAnythingHappened[0],
     });
   }
 

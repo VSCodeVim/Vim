@@ -375,11 +375,7 @@ export class ModeHandler implements vscode.Disposable {
 
     let action = result as BaseAction;
     let actionToRecord: BaseAction | undefined = action;
-    let originalLocation = new Jump({
-      editor: this.vimState.editor,
-      fileName: this.vimState.editor.document.fileName,
-      position: vimState.cursorPosition,
-    });
+    let originalLocation = Jump.fromStateNow(vimState);
 
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
@@ -441,7 +437,10 @@ export class ModeHandler implements vscode.Disposable {
     await this.updateView(vimState);
 
     if (action.isJump) {
-      vimState.globalState.jumpTracker.recordJump(originalLocation, Jump.fromState(vimState));
+      vimState.globalState.jumpTracker.recordJump(
+        Jump.fromStateBefore(vimState),
+        Jump.fromStateNow(vimState)
+      );
     }
 
     return vimState;
@@ -972,18 +971,12 @@ export class ModeHandler implements vscode.Disposable {
           } else {
             this.vimState.recordedState = new RecordedState();
             for (let action of recordedMacro.actionsRun) {
-              let originalLocation = new Jump({
-                editor: this.vimState.editor,
-                fileName: this.vimState.editor.document.fileName,
-                position: vimState.cursorPosition,
-              });
-
               await this.handleMultipleKeyEvents(action.keysPressed);
 
               if (action.isJump) {
                 vimState.globalState.jumpTracker.recordJump(
-                  originalLocation,
-                  Jump.fromState(vimState)
+                  Jump.fromStateBefore(vimState),
+                  Jump.fromStateNow(vimState)
                 );
               }
             }
@@ -1179,11 +1172,7 @@ export class ModeHandler implements vscode.Disposable {
     vimState.isRunningDotCommand = true;
 
     for (let action of actions) {
-      let originalLocation = new Jump({
-        editor: this.vimState.editor,
-        fileName: this.vimState.editor.document.fileName,
-        position: vimState.cursorPosition,
-      });
+      let originalLocation = Jump.fromStateNow(vimState);
 
       recordedState.actionsRun.push(action);
       vimState.keyHistory = vimState.keyHistory.concat(action.keysPressed);
@@ -1203,7 +1192,7 @@ export class ModeHandler implements vscode.Disposable {
       await this.updateView(vimState);
 
       if (action.isJump) {
-        vimState.globalState.jumpTracker.recordJump(originalLocation, Jump.fromState(vimState));
+        vimState.globalState.jumpTracker.recordJump(originalLocation, Jump.fromStateNow(vimState));
       }
     }
 

@@ -155,18 +155,8 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   const recordFileJump = (fromHandler: ModeHandler | null, toHandler: ModeHandler) => {
-    const from = fromHandler
-      ? new Jump({
-          editor: fromHandler.vimState.editor,
-          fileName: fromHandler.vimState.editor.document.fileName,
-          position: fromHandler.vimState.cursorPosition,
-        })
-      : null;
-    const to = new Jump({
-      editor: toHandler.vimState.editor,
-      fileName: toHandler.vimState.editor.document.fileName,
-      position: toHandler.vimState.cursorPosition,
-    });
+    const from = fromHandler ? Jump.fromStateNow(fromHandler.vimState) : null;
+    const to = Jump.fromStateNow(toHandler.vimState);
 
     globalState.jumpTracker.recordFileJump(from, to);
   };
