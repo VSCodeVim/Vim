@@ -1,5 +1,28 @@
 # Change Log
 
+## [v0.16.3](https://github.com/vscodevim/vim/tree/v0.16.3) (2018-09-05)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.2...v0.16.3)
+
+**Enhancements:**
+
+- Support smart relative line numbers [\#3020](https://github.com/VSCodeVim/Vim/issues/3020)
+- Add activationEvent 'onCommand:type' to avoid missing keystrokes [\#3016](https://github.com/VSCodeVim/Vim/issues/3016)
+- va{a{ doesn't work [\#2506](https://github.com/VSCodeVim/Vim/issues/2506)
+
+**Closed issues:**
+
+- Expand selection with inner tag selection command [\#2907](https://github.com/VSCodeVim/Vim/issues/2907)
+
+**Merged pull requests:**
+
+- fix: re-enable relativelinenumbers. closes \#3020 [\#3025](https://github.com/VSCodeVim/Vim/pull/3025) ([jpoon](https://github.com/jpoon))
+- fix: add activationevent onCommand type. closes \#3016 [\#3023](https://github.com/VSCodeVim/Vim/pull/3023) ([jpoon](https://github.com/jpoon))
+- Update dependency winston to v3.1.0 [\#3021](https://github.com/VSCodeVim/Vim/pull/3021) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency diff-match-patch to v1.0.4 [\#3018](https://github.com/VSCodeVim/Vim/pull/3018) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.31 [\#3011](https://github.com/VSCodeVim/Vim/pull/3011) ([renovate-bot](https://github.com/renovate-bot))
+- Fix multiple issues with expand selection commands and pair/block movement [\#2921](https://github.com/VSCodeVim/Vim/pull/2921) ([xmbhasin](https://github.com/xmbhasin))
+
 ## [v0.16.2](https://github.com/vscodevim/vim/tree/v0.16.2) (2018-08-30)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.1...v0.16.2)
