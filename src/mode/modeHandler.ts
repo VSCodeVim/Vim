@@ -1299,15 +1299,13 @@ export class ModeHandler implements vscode.Disposable {
         vimState.cursorPosition
       ).pos;
 
-      this.vimState.editor.revealRange(
-        new vscode.Range(nextMatch, nextMatch),
-        vscode.TextEditorRevealType.InCenterIfOutsideViewport
-      );
-    } else if (args.revealRange) {
-      this.vimState.editor.revealRange(
-        new vscode.Range(vimState.cursorPosition, vimState.cursorPosition),
-        vscode.TextEditorRevealType.InCenterIfOutsideViewport
-      );
+      this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch));
+    } else {
+      if (args.revealRange) {
+        this.vimState.editor.revealRange(
+          new vscode.Range(vimState.cursorPosition, vimState.cursorPosition)
+        );
+      }
     }
 
     // cursor style
