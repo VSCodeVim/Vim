@@ -202,5 +202,14 @@ suite('Record and navigate jumps', () => {
         jumps: ['start', 'a1', 'a2', 'a3', '|a4', 'a5', 'a6'],
       });
     });
+
+    suite('Can track jumps from marks', () => {
+      newJumpTest({
+        start: ['|start', 'a1', 'a2', 'a3', 'end'],
+        keysPressed: 'maG`a',
+        end: ['|start', 'a1', 'a2', 'a3', 'end'],
+        jumps: ['start', 'end'],
+      });
+    });
   });
 });
