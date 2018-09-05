@@ -174,8 +174,7 @@ export class JumpTracker {
   public handleTextAdded(document: vscode.TextDocument, range: vscode.Range, text: string): void {
     const distance = text.split('').filter(c => c === '\n').length;
 
-    for (let i = this._jumps.length - 1; i >= 0; i--) {
-      const jump = this._jumps[i];
+    this._jumps.forEach((jump, i) => {
       const jumpIsAfterAddedText =
         jump.fileName === document.fileName && jump.position.line > range.start.line;
 
@@ -184,14 +183,13 @@ export class JumpTracker {
 
         this.changePositionForJumpNumber(i, jump, newPosition);
       }
-    }
+    });
   }
 
   public handleTextDeleted(document: vscode.TextDocument, range: vscode.Range): void {
     const distance = range.end.line - range.start.line;
 
-    for (let i = this._jumps.length - 1; i >= 0; i--) {
-      const jump = this._jumps[i];
+    this._jumps.forEach((jump, i) => {
       const jumpIsAfterDeletedText =
         jump.fileName === document.fileName && jump.position.line >= range.start.line;
 
@@ -202,7 +200,7 @@ export class JumpTracker {
 
         this.changePositionForJumpNumber(i, jump, newPosition);
       }
-    }
+    });
 
     this.removeDuplicateJumps();
   }
