@@ -2884,7 +2884,7 @@ class CommandNavigateBack extends ActionNavigateCommand {
   }
 
   getJumpToNavigate(position: Position, vimState: VimState) {
-    return vimState.globalState.jumpTracker.back(Jump.fromStateNow(vimState));
+    return vimState.globalState.jumpTracker.jumpBack(Jump.fromStateNow(vimState));
   }
 }
 
@@ -2898,7 +2898,7 @@ class CommandNavigateForward extends ActionNavigateCommand {
   }
 
   getJumpToNavigate(position: Position, vimState: VimState) {
-    return vimState.globalState.jumpTracker.forward(Jump.fromStateNow(vimState));
+    return vimState.globalState.jumpTracker.jumpForward(Jump.fromStateNow(vimState));
   }
 }
 

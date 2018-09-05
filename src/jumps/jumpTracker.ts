@@ -128,7 +128,7 @@ export class JumpTracker {
    *
    * @param from - File/position jumped from
    */
-  public back(from: Jump): Jump {
+  public jumpBack(from: Jump): Jump {
     if (!this.hasJumps) {
       return from;
     }
@@ -157,7 +157,7 @@ export class JumpTracker {
    *
    * @param from - File/position jumped from
    */
-  public forward(from: Jump): Jump {
+  public jumpForward(from: Jump): Jump {
     if (!this.hasJumps) {
       return from;
     }
