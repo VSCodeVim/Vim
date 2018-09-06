@@ -158,7 +158,7 @@ export abstract class BaseCommand extends BaseAction {
   isCompleteAction = true;
 
   /**
-   * If isJump is true, then the action will be added to the jump list on completion.
+   * If isJump is true, then the cursor position will be added to the jump list on completion.
    */
   isJump = false;
 

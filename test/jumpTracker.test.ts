@@ -69,7 +69,7 @@ suite('Record and navigate jumps', () => {
 
       assert.deepEqual(
         jumpTracker.jumps.map(j => j.fileName),
-        ['file1', 'file3', 'file2'],
+        ['file1', 'file2', 'file3', 'file2'],
         'Unexpected jumps found'
       );
       assert.equal(jumpTracker.currentJump, null, 'Unexpected current jump found');

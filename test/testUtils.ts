@@ -91,6 +91,10 @@ export async function setupWorkspace(
   activeTextEditor!.options.tabSize = config.tabstop;
   activeTextEditor!.options.insertSpaces = config.expandtab;
 
+  mockAndEnable();
+}
+
+const mockAndEnable = async () => {
   if (!vscode.window.activeTextEditor) {
     console.warn('Unable to enable extension. Active Text Editor was not found');
     return;
@@ -99,7 +103,7 @@ export async function setupWorkspace(
   const mh = await getAndUpdateModeHandler();
   Globals.mockModeHandler = mh;
   await mh.handleKeyEvent('<ExtensionEnable>');
-}
+};
 
 export async function cleanUpWorkspace(): Promise<any> {
   return new Promise((c, e) => {

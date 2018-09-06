@@ -7,10 +7,6 @@ import { SearchState } from './searchState';
  */
 export class GlobalState {
   /**
-   * Getters and setters for changing global state
-   */
-
-  /**
    * The keystroke sequence that made up our last complete action (that can be
    * repeated with '.').
    */

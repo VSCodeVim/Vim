@@ -36,28 +36,28 @@ export class JumpTracker {
   }
 
   /**
-   * Current jump in the list of jumps
+   * Current jump in the list of jumps.
    */
   public get currentJump(): Jump {
     return this._jumps[this._currentJumpNumber] || null;
   }
 
   /**
-   * Current jump in the list of jumps
+   * Current jump in the list of jumps.
    */
   public get hasJumps(): boolean {
     return this._jumps.length > 0;
   }
 
   /**
-   * Last jump in list of jumps
+   * Last jump in list of jumps.
    */
   public get end(): Jump | null {
     return this._jumps[this._jumps.length - 1];
   }
 
   /**
-   * First jump in list of jumps
+   * First jump in list of jumps.
    */
   public get start(): Jump | null {
     return this._jumps[0];
@@ -93,7 +93,7 @@ export class JumpTracker {
   /**
    * Record that a jump occurred from one file to another.
    * This is likely only needed on a handler for
-   * vscode.window.onDidChangeActiveTextEditor
+   * vscode.window.onDidChangeActiveTextEditor.
    *
    * File jumps have extra checks in place, keeping in mind
    * whether this plugin initiated the jump, whether the new file is
@@ -179,6 +179,13 @@ export class JumpTracker {
     return jump;
   }
 
+  /**
+   * Update existing jumps when lines were added to a document.
+   *
+   * @param document - Document that was changed.
+   * @param range - Location where the text was added.
+   * @param text - Text containing one or more newline characters.
+   */
   public handleTextAdded(document: vscode.TextDocument, range: vscode.Range, text: string): void {
     const distance = text.split('').filter(c => c === '\n').length;
 
@@ -194,6 +201,12 @@ export class JumpTracker {
     });
   }
 
+  /**
+   * Update existing jumps when lines were removed from a document.
+   *
+   * @param document - Document that was changed.
+   * @param range - Location where the text was removed.
+   */
   public handleTextDeleted(document: vscode.TextDocument, range: vscode.Range): void {
     const distance = range.end.line - range.start.line;
 
@@ -213,6 +226,14 @@ export class JumpTracker {
     this.removeDuplicateJumps();
   }
 
+  /**
+   * Clear existing jumps and reset jump position.
+   */
+  public clearJumps(): void {
+    this._jumps.splice(0, this._jumps.length);
+    this._currentJumpNumber = 0;
+  }
+
   changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
     this._jumps.splice(
       index,
@@ -225,18 +246,10 @@ export class JumpTracker {
     );
   }
 
-  clearJumps(): void {
-    this._jumps.splice(0, this._jumps.length);
-  }
-
   clearOldJumps(): void {
     if (this._jumps.length > 100) {
       this._jumps.splice(0, this._jumps.length - 100);
     }
-  }
-
-  clearJumpsAfterCurrentJumpIndex(): void {
-    this._jumps.splice(this._currentJumpNumber + 1, this._jumps.length);
   }
 
   clearJumpsOnSameLine(jump: Jump): void {
@@ -248,21 +261,5 @@ export class JumpTracker {
       const jump = this._jumps[i];
       this.clearJumpsOnSameLine(jump);
     }
-  }
-
-  removeJumpNumber(index: number): void {
-    this._jumps.splice(index, 1);
-  }
-
-  removeCurrentJump(): void {
-    this.removeJumpNumber(this._currentJumpNumber);
-  }
-
-  getJumpNumberOfLine(line: number) {
-    return this._jumps.findIndex(j => j.position.line === line);
-  }
-
-  updateCurrentJumpColumn(to: Jump): void {
-    this._jumps.splice(this._currentJumpNumber, 1, to);
   }
 }

@@ -212,95 +212,90 @@ function tokenizeKeySequence(sequence: string): string[] {
 }
 
 async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<void> {
-  try {
-    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+  modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
-    let helper = new TestObjectHelper(testObj);
-    const jumpTracker = modeHandler.vimState.globalState.jumpTracker;
+  let helper = new TestObjectHelper(testObj);
+  const jumpTracker = modeHandler.vimState.globalState.jumpTracker;
 
-    // Don't try this at home, kids.
-    (modeHandler as any).vimState.cursorPosition = new Position(0, 0);
+  // Don't try this at home, kids.
+  (modeHandler as any).vimState.cursorPosition = new Position(0, 0);
 
-    await modeHandler.handleKeyEvent('<Esc>');
+  await modeHandler.handleKeyEvent('<Esc>');
 
-    // Insert all the text as a single action.
-    await modeHandler.vimState.editor.edit(builder => {
-      builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
-    });
+  // Insert all the text as a single action.
+  await modeHandler.vimState.editor.edit(builder => {
+    builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
+  });
 
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+  await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
 
-    await waitForCursorSync();
+  await waitForCursorSync();
 
-    // Since we bypassed VSCodeVim to add text,
-    // we need to tell the history tracker that we added it.
-    modeHandler.vimState.historyTracker.addChange();
-    modeHandler.vimState.historyTracker.finishCurrentStep();
+  // Since we bypassed VSCodeVim to add text,
+  // we need to tell the history tracker that we added it.
+  modeHandler.vimState.historyTracker.addChange();
+  modeHandler.vimState.historyTracker.finishCurrentStep();
 
-    // move cursor to start position using 'hjkl'
-    await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
+  // move cursor to start position using 'hjkl'
+  await modeHandler.handleMultipleKeyEvents(helper.getKeyPressesToMoveToStartPosition());
 
-    await waitForCursorSync();
+  await waitForCursorSync();
 
-    Globals.mockModeHandler = modeHandler;
+  Globals.mockModeHandler = modeHandler;
 
-    let keysPressed = testObj.keysPressed;
-    if (process.platform === 'win32') {
-      keysPressed = keysPressed.replace(/\\n/g, '\\r\\n');
-    }
+  let keysPressed = testObj.keysPressed;
+  if (process.platform === 'win32') {
+    keysPressed = keysPressed.replace(/\\n/g, '\\r\\n');
+  }
 
-    jumpTracker.clearJumps();
+  jumpTracker.clearJumps();
 
-    // assumes key presses are single characters for nowkA
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
+  // assumes key presses are single characters for nowkA
+  await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
 
-    // Check valid test object input
-    assert(helper.isValid, "Missing '|' in test object.");
+  // Check valid test object input
+  assert(helper.isValid, "Missing '|' in test object.");
 
-    // end: check given end output is correct
-    //
-    const lines = helper.asVimOutputText();
-    assertEqualLines(lines);
-    // Check final cursor position
-    //
-    let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
-    let expectedPosition = helper.endPosition;
-    assert.equal(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
-    assert.equal(
-      actualPosition.character,
-      expectedPosition.character,
-      'Cursor CHARACTER position is wrong.'
+  // end: check given end output is correct
+  //
+  const lines = helper.asVimOutputText();
+  assertEqualLines(lines);
+  // Check final cursor position
+  //
+  let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
+  let expectedPosition = helper.endPosition;
+  assert.equal(actualPosition.line, expectedPosition.line, 'Cursor LINE position is wrong.');
+  assert.equal(
+    actualPosition.character,
+    expectedPosition.character,
+    'Cursor CHARACTER position is wrong.'
+  );
+
+  // endMode: check end mode is correct if given
+  if (typeof testObj.endMode !== 'undefined') {
+    let actualMode = ModeName[modeHandler.currentMode.name].toUpperCase();
+    let expectedMode = ModeName[testObj.endMode].toUpperCase();
+    assert.equal(actualMode, expectedMode, "Didn't enter correct mode.");
+  }
+
+  // jumps: check jumps are correct if given
+  if (typeof testObj.jumps !== 'undefined') {
+    assert.deepEqual(
+      jumpTracker.jumps.map(j => lines[j.position.line] || '<MISSING>'),
+      testObj.jumps.map(t => t.replace('|', '')),
+      'Incorrect jumps found'
     );
 
-    // endMode: check end mode is correct if given
-    if (typeof testObj.endMode !== 'undefined') {
-      let actualMode = ModeName[modeHandler.currentMode.name].toUpperCase();
-      let expectedMode = ModeName[testObj.endMode].toUpperCase();
-      assert.equal(actualMode, expectedMode, "Didn't enter correct mode.");
-    }
+    const stripBar = text => (text ? text.replace('|', '') : text);
+    const actualJumpPosition =
+      (jumpTracker.currentJump && lines[jumpTracker.currentJump.position.line]) || '<FRONT>';
+    const expectedJumpPosition = stripBar(testObj.jumps.find(t => t.includes('|'))) || '<FRONT>';
 
-    // jumps: check jumps are correct if given
-    if (typeof testObj.jumps !== 'undefined') {
-      assert.deepEqual(
-        jumpTracker.jumps.map(j => lines[j.position.line] || '<MISSING>'),
-        testObj.jumps.map(t => t.replace('|', '')),
-        'Incorrect jumps found'
-      );
-
-      const stripBar = text => (text ? text.replace('|', '') : text);
-      const actualJumpPosition =
-        (jumpTracker.currentJump && lines[jumpTracker.currentJump.position.line]) || '<FRONT>';
-      const expectedJumpPosition = stripBar(testObj.jumps.find(t => t.includes('|'))) || '<FRONT>';
-
-      assert.deepEqual(
-        actualJumpPosition.toString(),
-        expectedJumpPosition.toString(),
-        'Incorrect jump position found'
-      );
-    }
-  } catch (err) {
-    console.error(err);
-    throw err;
+    assert.deepEqual(
+      actualJumpPosition.toString(),
+      expectedJumpPosition.toString(),
+      'Incorrect jump position found'
+    );
   }
 }
 

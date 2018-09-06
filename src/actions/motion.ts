@@ -54,7 +54,7 @@ export abstract class BaseMovement extends BaseAction {
   isMotion = true;
 
   /**
-   * If isJump is true, then the action will be added to the jump list on completion.
+   * If isJump is true, then the cursor position will be added to the jump list on completion.
    *
    * Default to false, as many motions operate on a single line and do not count as a jump.
    */

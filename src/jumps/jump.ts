@@ -5,8 +5,8 @@ import { VimState } from '../state/vimState';
 
 /**
  * Represents a Jump in the JumpTracker.
- * Includes information necessary to determine jump actions, and to
- * be able to open the related file.
+ * Includes information necessary to determine jump actions,
+ * and to be able to open the related file.
  */
 export class Jump {
   public editor: vscode.TextEditor | null;
