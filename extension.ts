@@ -18,7 +18,6 @@ import { Jump } from './src/jumps/jump';
 import { ModeName } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { Notation } from './src/configuration/notation';
-import { RecordedState } from './src/state/recordedState';
 import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
@@ -77,22 +76,24 @@ export async function activate(context: vscode.ExtensionContext) {
     configuration.reload();
   });
 
+  const textWasDeleted = event =>
+    event.contentChanges.length === 1 &&
+    event.contentChanges[0].text === '' &&
+    event.contentChanges[0].range.start.line !== event.contentChanges[0].range.end.line;
+
+  const textWasAdded = event =>
+    event.contentChanges.length === 1 &&
+    (event.contentChanges[0].text === '\n' || event.contentChanges[0].text === '\r\n') &&
+    event.contentChanges[0].range.start.line === event.contentChanges[0].range.end.line;
+
   vscode.workspace.onDidChangeTextDocument(async event => {
     if (configuration.disableExt) {
       return;
     }
 
-    if (
-      event.contentChanges.length === 1 &&
-      event.contentChanges[0].text === '' &&
-      event.contentChanges[0].range.start.line !== event.contentChanges[0].range.end.line
-    ) {
+    if (textWasDeleted(event)) {
       globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
-    } else if (
-      event.contentChanges.length === 1 &&
-      (event.contentChanges[0].text === '\n' || event.contentChanges[0].text === '\r\n') &&
-      event.contentChanges[0].range.start.line === event.contentChanges[0].range.end.line
-    ) {
+    } else if (textWasAdded(event)) {
       globalState.jumpTracker.handleTextAdded(
         event.document,
         event.contentChanges[0].range,
@@ -109,6 +110,7 @@ export async function activate(context: vscode.ExtensionContext) {
         console.warn('No mode handler found');
         return;
       }
+
       if (modeHandler.vimState.currentMode === ModeName.Insert) {
         if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
           modeHandler.vimState.historyTracker.currentContentChanges = [];
@@ -137,7 +139,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }, 0);
   });
 
-  vscode.workspace.onDidCloseTextDocument(async event => {
+  vscode.workspace.onDidCloseTextDocument(async () => {
     const documents = vscode.workspace.textDocuments;
 
     // Delete modehandler once all tabs of this document have been closed
@@ -154,13 +156,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  const recordFileJump = (fromHandler: ModeHandler | null, toHandler: ModeHandler) => {
-    const from = fromHandler ? Jump.fromStateNow(fromHandler.vimState) : null;
-    const to = Jump.fromStateNow(toHandler.vimState);
-
-    globalState.jumpTracker.recordFileJump(from, to);
-  };
-
   // window events
   vscode.window.onDidChangeActiveTextEditor(async () => {
     if (configuration.disableExt) {
@@ -173,14 +168,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
     taskQueue.enqueueTask(async () => {
       if (vscode.window.activeTextEditor !== undefined) {
-        const prevHandler = previousActiveEditorId
+        const mhPrevious: ModeHandler | null = previousActiveEditorId
           ? ModeHandlerMap.get(previousActiveEditorId.toString())
           : null;
 
-        const mh = await getAndUpdateModeHandler();
+        const mh: ModeHandler = await getAndUpdateModeHandler();
 
         await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
-        recordFileJump(prevHandler, mh);
+
+        globalState.jumpTracker.recordFileJump(
+          mhPrevious ? Jump.fromStateNow(mhPrevious.vimState) : null,
+          Jump.fromStateNow(mh.vimState)
+        );
       }
     });
   });
