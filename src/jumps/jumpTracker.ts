@@ -39,7 +39,7 @@ export class JumpTracker {
    * Current jump in the list of jumps
    */
   public get currentJump(): Jump {
-    return this._jumps[this._currentJumpNumber];
+    return this._jumps[this._currentJumpNumber] || null;
   }
 
   /**
@@ -72,14 +72,14 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public recordJump(from: Jump, to?: Jump | null) {
-    const currentJump = this._jumps[this._currentJumpNumber];
-
-    if (to && from.onSameLine(to)) {
+  public recordJump(from: Jump | null, to?: Jump | null) {
+    if (from && to && from.onSameLine(to)) {
       return;
     }
 
-    this.clearJumpsOnSameLine(from);
+    if (from) {
+      this.clearJumpsOnSameLine(from);
+    }
 
     if (from && !from.onSameLine(to)) {
       this._jumps.push(from);
@@ -115,11 +115,21 @@ export class JumpTracker {
       return;
     }
 
-    if (!from || from.fileName === to.fileName) {
+    if (from && from.fileName === to.fileName) {
       return;
     }
 
-    this.recordJump(from, to);
+    if (from) {
+      this.clearJumpsOnSameLine(from);
+    }
+
+    if (from && !from.onSameLine(to)) {
+      this._jumps.push(from);
+    }
+
+    this._currentJumpNumber = this._jumps.length;
+
+    this.clearOldJumps();
   }
 
   /**
@@ -137,14 +147,12 @@ export class JumpTracker {
       return this._jumps[0];
     }
 
-    let to: Jump;
+    const to: Jump = this._jumps[this._currentJumpNumber - 1];
 
     if (this._currentJumpNumber === this._jumps.length) {
-      to = this._jumps[this._currentJumpNumber - 1];
       this.recordJump(from, to);
       this._currentJumpNumber = this._currentJumpNumber - 2;
     } else {
-      to = this._jumps[this._currentJumpNumber - 1];
       this._currentJumpNumber = this._currentJumpNumber - 1;
     }
 

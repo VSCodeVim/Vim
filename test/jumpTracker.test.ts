@@ -29,16 +29,70 @@ suite('Record and navigate jumps', () => {
   };
 
   suite('Jump Tracker unit tests', () => {
-    test('Records up to 100 jumps, the fixed length in vanilla Vim', async () => {
+    const jump = (lineNumber, columnNumber, fileName?) =>
+      new Jump({
+        editor: null,
+        fileName: fileName || 'Untitled',
+        position: new Position(lineNumber, columnNumber),
+      });
+    const file1 = jump(0, 0, 'file1');
+    const file2 = jump(0, 0, 'file2');
+    const file3 = jump(0, 0, 'file3');
+    const file4 = jump(0, 0, 'file4');
+    const range = (n: number) => Array.from(Array(n).keys());
+
+    test('Can record jumps between files', async () => {
       const jumpTracker = new JumpTracker();
 
-      const range = (n: number) => Array.from(Array(n).keys());
-      const jump = (lineNumber, columnNumber) =>
-        new Jump({
-          editor: null,
-          fileName: 'Untitled',
-          position: new Position(lineNumber, columnNumber),
-        });
+      jumpTracker.recordFileJump(null, file1);
+      jumpTracker.recordFileJump(file1, file2);
+      jumpTracker.recordFileJump(file2, file3);
+      jumpTracker.jumpBack(file3);
+      jumpTracker.jumpBack(file2);
+
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => j.fileName),
+        ['file1', 'file2', 'file3'],
+        'Unexpected jumps found'
+      );
+      assert.equal(jumpTracker.currentJump.fileName, 'file1', 'Unexpected current jump found');
+    });
+
+    test('Can record jumps between files after switching files', async () => {
+      const jumpTracker = new JumpTracker();
+
+      jumpTracker.recordFileJump(null, file1);
+      jumpTracker.recordFileJump(file1, file2);
+      jumpTracker.recordFileJump(file2, file3);
+      jumpTracker.jumpBack(file3);
+      jumpTracker.recordFileJump(file2, file4);
+
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => j.fileName),
+        ['file1', 'file3', 'file2'],
+        'Unexpected jumps found'
+      );
+      assert.equal(jumpTracker.currentJump, null, 'Unexpected current jump found');
+    });
+
+    test('Can handle jumps to the same file multiple times', async () => {
+      const jumpTracker = new JumpTracker();
+
+      jumpTracker.recordFileJump(null, file1);
+      jumpTracker.recordFileJump(file1, file2);
+      jumpTracker.recordFileJump(file2, file3);
+      jumpTracker.recordFileJump(file3, file2);
+
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => j.fileName),
+        ['file1', 'file2', 'file3'],
+        'Unexpected jumps found'
+      );
+      assert.equal(jumpTracker.currentJump, null, 'Unexpected current jump found');
+    });
+
+    test('Can record up to 100 jumps, the fixed length in vanilla Vim', async () => {
+      const jumpTracker = new JumpTracker();
 
       range(102).forEach((iteration: number) => {
         jumpTracker.recordJump(jump(iteration, 0), jump(iteration + 1, 0));
