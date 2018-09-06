@@ -91,14 +91,10 @@ export async function setupWorkspace(
   activeTextEditor!.options.tabSize = config.tabstop;
   activeTextEditor!.options.insertSpaces = config.expandtab;
 
-  mockAndEnable();
+  await mockAndEnable();
 }
 
 const mockAndEnable = async () => {
-  if (!vscode.window.activeTextEditor) {
-    console.warn('Unable to enable extension. Active Text Editor was not found');
-    return;
-  }
   await vscode.commands.executeCommand('setContext', 'vim.active', true);
   const mh = await getAndUpdateModeHandler();
   Globals.mockModeHandler = mh;
