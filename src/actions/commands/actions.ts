@@ -2641,7 +2641,7 @@ class CommandInsertAtLastChange extends BaseCommand {
 
 @RegisterAction
 export class CommandInsertAtFirstCharacter extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [ModeName.Normal];
   keys = ['I'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -2698,7 +2698,7 @@ export class CommandInsertAfterCursor extends BaseCommand {
 
 @RegisterAction
 export class CommandInsertAtLineEnd extends BaseCommand {
-  modes = [ModeName.Normal, ModeName.Visual];
+  modes = [ModeName.Normal];
   keys = ['A'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
@@ -3710,6 +3710,102 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
     vimState.allCursors = vimState.allCursors.slice(1);
 
     return vimState;
+  }
+}
+
+abstract class ActionGoToInsertVisualLineModeCommand extends BaseCommand {
+  runsOnceForEveryCursor() {
+    return false;
+  }
+
+  abstract getCursorRangeForLine(
+    line: vscode.TextLine,
+    selectionStart: Position,
+    selectionEnd: Position
+  ): Range;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.currentMode = ModeName.Insert;
+    vimState.isMultiCursor = true;
+    vimState.isFakeMultiCursor = true;
+
+    let start = Position.FromVSCodePosition(vimState.editor.selection.start);
+    let end = Position.FromVSCodePosition(vimState.editor.selection.end);
+
+    if (start.isAfter(end)) {
+      [start, end] = [end, start];
+    }
+
+    vimState.allCursors = [];
+    for (let i = start.line; i <= end.line; i++) {
+      const line = TextEditor.getLineAt(new Position(i, 0));
+
+      if (line.text.trim() !== '') {
+        vimState.allCursors.push(this.getCursorRangeForLine(line, start, end));
+      }
+    }
+    return vimState;
+  }
+}
+
+@RegisterAction
+export class ActionGoToInsertVisualLineMode extends ActionGoToInsertVisualLineModeCommand {
+  modes = [ModeName.VisualLine];
+  keys = ['I'];
+
+  getCursorRangeForLine(line: vscode.TextLine): Range {
+    const startCharacterPosition = new Position(
+      line.lineNumber,
+      line.firstNonWhitespaceCharacterIndex
+    );
+    return new Range(startCharacterPosition, startCharacterPosition);
+  }
+}
+
+@RegisterAction
+export class ActionGoToInsertVisualLineModeAppend extends ActionGoToInsertVisualLineModeCommand {
+  modes = [ModeName.VisualLine];
+  keys = ['A'];
+
+  getCursorRangeForLine(line: vscode.TextLine): Range {
+    const endCharacterPosition = new Position(line.lineNumber, line.range.end.character);
+    return new Range(endCharacterPosition, endCharacterPosition);
+  }
+}
+
+@RegisterAction
+export class ActionGoToInsertVisualMode extends ActionGoToInsertVisualLineModeCommand {
+  modes = [ModeName.Visual];
+  keys = ['I'];
+
+  getCursorRangeForLine(
+    line: vscode.TextLine,
+    selectionStart: Position,
+    selectionEnd: Position
+  ): Range {
+    const startCharacterPosition =
+      line.lineNumber === selectionStart.line
+        ? selectionStart
+        : new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
+    return new Range(startCharacterPosition, startCharacterPosition);
+  }
+}
+
+@RegisterAction
+export class ActionGoToInsertVisualModeAppend extends ActionGoToInsertVisualLineModeCommand {
+  modes = [ModeName.Visual];
+  keys = ['A'];
+
+  getCursorRangeForLine(
+    line: vscode.TextLine,
+    selectionStart: Position,
+    selectionEnd: Position
+  ): Range {
+    const endCharacterPosition =
+      line.lineNumber === selectionEnd.line
+        ? selectionEnd
+        : new Position(line.lineNumber, line.range.end.character);
+    return new Range(endCharacterPosition, endCharacterPosition);
   }
 }
 
