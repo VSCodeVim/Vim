@@ -1,14 +1,14 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from "../../extension";
-import { ModeHandler } from "../mode/modeHandler";
-import { TextEditor } from "./../textEditor";
+import { getAndUpdateModeHandler } from '../../extension';
+import { ModeHandler } from '../mode/modeHandler';
+import { TextEditor } from './../textEditor';
 
 const documents = v => {
   return v.workspace.textDocuments;
 };
 const lines = document => {
-  return document.getText().split("\n");
+  return document.getText().split('\n');
 };
 const getMatchingText = (text: string): string[] | null => {
   const matchedLines: string[] = [];
@@ -29,7 +29,7 @@ export const lineCompletionProvider = {
     document,
     position,
     token,
-    myContext,
+    myContext
   ): Thenable<vscode.CompletionItem[] | vscode.CompletionList> => {
     return new Promise(async (resolve, reject) => {
       const mh: ModeHandler = await getAndUpdateModeHandler();
@@ -37,8 +37,8 @@ export const lineCompletionProvider = {
       const currentLineText = TextEditor.getText(
         new vscode.Range(
           new vscode.Position(mh.vimState.cursorPosition.line, 0),
-          mh.vimState.cursorPosition,
-        ),
+          mh.vimState.cursorPosition
+        )
       );
 
       const matchingText: string[] | null = getMatchingText(currentLineText);
@@ -47,18 +47,17 @@ export const lineCompletionProvider = {
         return reject({ items: [] });
       }
 
-      const completionItems: vscode.CompletionItem[] = matchingText.map(
-        text => {
-          let completionItem = new vscode.CompletionItem(text);
-          completionItem.detail = text;
-          completionItem.documentation = text;
-          completionItem.filterText = text;
-          completionItem.insertText = text.replace(/^[ ]*/, '');
-          completionItem.label = text;
-          completionItem.kind = vscode.CompletionItemKind.Text;
-          return completionItem;
-        },
-      );
+      const completionItems: vscode.CompletionItem[] = matchingText.map(text => {
+        let completionItem = new vscode.CompletionItem(text);
+        const description = text.replace(/^[ ]*/, '');
+        completionItem.detail = description;
+        completionItem.documentation = description;
+        completionItem.filterText = text;
+        completionItem.insertText = text.replace(currentLineText, '');
+        completionItem.label = description;
+        completionItem.kind = vscode.CompletionItemKind.Text;
+        return completionItem;
+      });
 
       return resolve({ items: completionItems });
     });
