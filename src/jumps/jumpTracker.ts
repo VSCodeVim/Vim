@@ -182,11 +182,14 @@ export class JumpTracker {
   /**
    * Update existing jumps when lines were added to a document.
    *
-   * @param document - Document that was changed.
+   * @param document - Document that was changed, typically a vscode.TextDocument.
    * @param range - Location where the text was added.
    * @param text - Text containing one or more newline characters.
    */
-  public handleTextAdded(document: vscode.TextDocument, range: vscode.Range, text: string): void {
+  public handleTextAdded(document: { fileName: string }, range: vscode.Range, text: string): void {
+    // Get distance from newlines in the text added.
+    // Unlike handleTextDeleted, the range parameter distance between start/end is generally zero,
+    // just showing where the text was added.
     const distance = text.split('').filter(c => c === '\n').length;
 
     this._jumps.forEach((jump, i) => {
@@ -204,15 +207,31 @@ export class JumpTracker {
   /**
    * Update existing jumps when lines were removed from a document.
    *
-   * @param document - Document that was changed.
+   * Vim doesn't actually remove deleted lines. Instead, it seems to shift line numbers down
+   * for any jumps after the deleted text, and preserves position for jumps on deleted lines or
+   * lines above the deleted lines. After lines are shifted, if there are multiple jumps on a line,
+   * the duplicates are removed, preserving the newest jumps (preserving latest column number).
+   *
+   * Lines are shifted based on number of lines deleted before the jump. So if e.g. the jump is on
+   * a middle line #6, where the jump above and below it were also deleted, the jump position would
+   * move down just one so it is now line #5, based on the line above it being deleted.
+   *
+   * @param document - Document that was changed, typically a vscode.TextDocument.
    * @param range - Location where the text was removed.
    */
-  public handleTextDeleted(document: vscode.TextDocument, range: vscode.Range): void {
+  public handleTextDeleted(document: { fileName: string }, range: vscode.Range): void {
+    // Note that this is like Array.slice, such that range.end.line is one line AFTER a deleted line,
+    // so distance is expected to be at least 1.
     const distance = range.end.line - range.start.line;
 
-    this._jumps.forEach((jump, i) => {
-      const jumpIsAfterDeletedText =
-        jump.fileName === document.fileName && jump.position.line >= range.start.line;
+    for (let i = this._jumps.length - 1; i >= 0; i--) {
+      const jump = this._jumps[i];
+
+      if (jump.fileName !== document.fileName) {
+        continue;
+      }
+
+      const jumpIsAfterDeletedText = jump.position.line > range.start.line;
 
       if (jumpIsAfterDeletedText) {
         const newLineShiftedUp =
@@ -221,7 +240,7 @@ export class JumpTracker {
 
         this.changePositionForJumpNumber(i, jump, newPosition);
       }
-    });
+    }
 
     this.removeDuplicateJumps();
   }
@@ -232,6 +251,10 @@ export class JumpTracker {
   public clearJumps(): void {
     this._jumps.splice(0, this._jumps.length);
     this._currentJumpNumber = 0;
+  }
+
+  removeJump(index: number) {
+    this._jumps.splice(index, 1);
   }
 
   changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
@@ -257,9 +280,19 @@ export class JumpTracker {
   }
 
   removeDuplicateJumps() {
-    for (let i = 0; i < this._jumps.length; i++) {
+    const linesSeenPerFile = {};
+    for (let i = this._jumps.length - 1; i >= 0; i--) {
       const jump = this._jumps[i];
-      this.clearJumpsOnSameLine(jump);
+
+      if (!linesSeenPerFile[jump.fileName]) {
+        linesSeenPerFile[jump.fileName] = [];
+      }
+
+      if (linesSeenPerFile[jump.fileName].indexOf(jump.position.line) >= 0) {
+        this._jumps.splice(i, 1);
+      } else {
+        linesSeenPerFile[jump.fileName].push(jump.position.line);
+      }
     }
   }
 }

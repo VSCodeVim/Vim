@@ -105,6 +105,71 @@ suite('Record and navigate jumps', () => {
         "Jump tracker doesn't contain the expected jumps after removing old jumps"
       );
     });
+
+    test('Can handle text deleted from a file', async () => {
+      const jumpTracker = new JumpTracker();
+
+      jumpTracker.recordJump(jump(0, 0, 'file2'), jump(5, 0, 'file2'));
+      jumpTracker.recordJump(jump(5, 0, 'file2'), jump(0, 0, 'file1'));
+      jumpTracker.recordJump(jump(0, 0, 'file1'), jump(3, 0, 'file1'));
+      jumpTracker.recordJump(jump(3, 0, 'file1'), jump(5, 0, 'file1'));
+      jumpTracker.recordJump(jump(5, 5, 'file1'), jump(6, 0, 'file1'));
+      jumpTracker.recordJump(jump(6, 0, 'file1'), jump(2, 0, 'file1'));
+
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => [j.position.line, j.position.character, j.fileName]),
+        [
+          [0, 0, 'file2'],
+          [5, 0, 'file2'],
+          [0, 0, 'file1'],
+          [3, 0, 'file1'],
+          [5, 5, 'file1'],
+          [6, 0, 'file1'],
+        ],
+        `Jump tracker doesn't contain the expected jumps before handling deleted text`
+      );
+
+      // Note that this is just deleting lines 3 and 4.
+      // vscode sends us a range where the end position is just AFTER the deleted text,
+      // kind of like Array.slice.
+      jumpTracker.handleTextDeleted(
+        { fileName: 'file1' },
+        new vscode.Range(new vscode.Position(3, 0), new vscode.Position(5, 0))
+      );
+
+      // Vim doesn't delete jumps at the deleted line, it just shifts other lines down
+      // Note the column number was preserved for newer jump when it found duplicates on a line.
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => [j.position.line, j.position.character, j.fileName]),
+        [[0, 0, 'file2'], [5, 0, 'file2'], [0, 0, 'file1'], [3, 5, 'file1'], [4, 0, 'file1']],
+        `Jump tracker doesn't contain the expected jumps after deleting two lines`
+      );
+
+      jumpTracker.handleTextDeleted(
+        { fileName: 'file1' },
+        new vscode.Range(new vscode.Position(3, 0), new vscode.Position(4, 0))
+      );
+
+      // If that results in multiple jumps on a line, though the duplicate is deleted
+      // Preserve the newest jump in that case
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => [j.position.line, j.position.character, j.fileName]),
+        [[0, 0, 'file2'], [5, 0, 'file2'], [0, 0, 'file1'], [3, 0, 'file1']],
+        `Jump tracker doesn't contain the expected jumps after deleting another line`
+      );
+
+      jumpTracker.handleTextDeleted(
+        { fileName: 'file1' },
+        new vscode.Range(new vscode.Position(0, 0), new vscode.Position(3, 0))
+      );
+
+      // If you delete lines such that jumps are past EOF, delete the jumps
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => [j.position.line, j.position.character, j.fileName]),
+        [[0, 0, 'file2'], [5, 0, 'file2'], [0, 0, 'file1']],
+        `Jump tracker doesn't contain the expected jumps after deleting all lines in file`
+      );
+    });
   });
 
   suite('Can record jumps for actions the same as vanilla Vim', () => {
