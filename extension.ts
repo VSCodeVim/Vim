@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 
 import { configuration } from './src/configuration/configuration';
 import { commandLine } from './src/cmd_line/commandLine';
+import { lineCompletionProvider } from './src/completion/lineCompletionProvider';
 import { Position } from './src/common/motion/position';
 import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
@@ -284,6 +285,12 @@ export async function activate(context: vscode.ExtensionContext) {
     let mh = await getAndUpdateModeHandler();
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
+
+  vscode.languages.registerCompletionItemProvider(
+    [{ pattern: '**/*' }],
+    lineCompletionProvider,
+    ...['.']
+  );
 
   // This is called last because getAndUpdateModeHandler() will change cursor
   toggleExtension(configuration.disableExt, compositionState);
