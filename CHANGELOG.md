@@ -1,5 +1,76 @@
 # Change Log
 
+## [v0.16.3](https://github.com/vscodevim/vim/tree/v0.16.3) (2018-09-05)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.2...v0.16.3)
+
+**Enhancements:**
+
+- Support smart relative line numbers [\#3020](https://github.com/VSCodeVim/Vim/issues/3020)
+- Add activationEvent 'onCommand:type' to avoid missing keystrokes [\#3016](https://github.com/VSCodeVim/Vim/issues/3016)
+- va{a{ doesn't work [\#2506](https://github.com/VSCodeVim/Vim/issues/2506)
+
+**Closed issues:**
+
+- Expand selection with inner tag selection command [\#2907](https://github.com/VSCodeVim/Vim/issues/2907)
+
+**Merged pull requests:**
+
+- fix: re-enable relativelinenumbers. closes \#3020 [\#3025](https://github.com/VSCodeVim/Vim/pull/3025) ([jpoon](https://github.com/jpoon))
+- fix: add activationevent onCommand type. closes \#3016 [\#3023](https://github.com/VSCodeVim/Vim/pull/3023) ([jpoon](https://github.com/jpoon))
+- Update dependency winston to v3.1.0 [\#3021](https://github.com/VSCodeVim/Vim/pull/3021) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency diff-match-patch to v1.0.4 [\#3018](https://github.com/VSCodeVim/Vim/pull/3018) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.31 [\#3011](https://github.com/VSCodeVim/Vim/pull/3011) ([renovate-bot](https://github.com/renovate-bot))
+- Fix multiple issues with expand selection commands and pair/block movement [\#2921](https://github.com/VSCodeVim/Vim/pull/2921) ([xmbhasin](https://github.com/xmbhasin))
+
+## [v0.16.2](https://github.com/vscodevim/vim/tree/v0.16.2) (2018-08-30)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.1...v0.16.2)
+
+**Closed issues:**
+
+- Page scrolls half down when cursor hits top / bottom of page [\#3000](https://github.com/VSCodeVim/Vim/issues/3000)
+- Intermediate cursor shape to show that a command is being entered [\#2999](https://github.com/VSCodeVim/Vim/issues/2999)
+
+**Merged pull requests:**
+
+- Revert "Center cursor vertically on movement out of viewport" [\#3009](https://github.com/VSCodeVim/Vim/pull/3009) ([hhu94](https://github.com/hhu94))
+- Update dependency typescript to v3.0.3 [\#3008](https://github.com/VSCodeVim/Vim/pull/3008) ([renovate-bot](https://github.com/renovate-bot))
+- Update vim.searchHighlightColor in README.md [\#3007](https://github.com/VSCodeVim/Vim/pull/3007) ([ytang](https://github.com/ytang))
+- v0.16.1 [\#2997](https://github.com/VSCodeVim/Vim/pull/2997) ([jpoon](https://github.com/jpoon))
+
+## [v0.16.1](https://github.com/vscodevim/vim/tree/v0.16.1) (2018-08-27)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.0...v0.16.1)
+
+**Fixed Bugs:**
+
+- `:vsp file\_name` cannot open file_name, although this file does exist [\#2983](https://github.com/VSCodeVim/Vim/issues/2983)
+- `gf` \(go to file under cursor\) produces the "Vim: The file ... does not exist." error, even though file clearly exists [\#2966](https://github.com/VSCodeVim/Vim/issues/2966)
+- Open File with :e deletes file content [\#2963](https://github.com/VSCodeVim/Vim/issues/2963)
+- Moving the cursor to somewhere outside of the viewport should center the cursor vertically [\#2960](https://github.com/VSCodeVim/Vim/issues/2960)
+
+**Closed issues:**
+
+- "before": \["\<C-x\>", "C-s\>"\] not work. [\#2949](https://github.com/VSCodeVim/Vim/issues/2949)
+- VSCodeVim airline affecting color scheme [\#2948](https://github.com/VSCodeVim/Vim/issues/2948)
+- \[Feature Request\] : ReplaceWithRegister [\#2937](https://github.com/VSCodeVim/Vim/issues/2937)
+- % should match on strings & chars [\#2935](https://github.com/VSCodeVim/Vim/issues/2935)
+- Throw away the mouse [\#2922](https://github.com/VSCodeVim/Vim/issues/2922)
+- Wried cursor behavior with INSERT MULTI CURSOR mode [\#2910](https://github.com/VSCodeVim/Vim/issues/2910)
+
+**Merged pull requests:**
+
+- Lazy Load Neovim [\#2992](https://github.com/VSCodeVim/Vim/pull/2992) ([jpoon](https://github.com/jpoon))
+- Update dependency @types/node to v9.6.30 [\#2987](https://github.com/VSCodeVim/Vim/pull/2987) ([renovate-bot](https://github.com/renovate-bot))
+- Fix type in ROADMAP.md [\#2980](https://github.com/VSCodeVim/Vim/pull/2980) ([nickebbitt](https://github.com/nickebbitt))
+- Fix emulated plugins link in README [\#2977](https://github.com/VSCodeVim/Vim/pull/2977) ([jjt](https://github.com/jjt))
+- Fix `gf` showing error for files which exist [\#2969](https://github.com/VSCodeVim/Vim/pull/2969) ([arussellk](https://github.com/arussellk))
+- Fix Typo in ROADMAP [\#2967](https://github.com/VSCodeVim/Vim/pull/2967) ([AdrieanKhisbe](https://github.com/AdrieanKhisbe))
+- Center cursor vertically on movement out of viewport [\#2962](https://github.com/VSCodeVim/Vim/pull/2962) ([hhu94](https://github.com/hhu94))
+- chore\(deps\): update dependency vscode to v1.1.21 [\#2958](https://github.com/VSCodeVim/Vim/pull/2958) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/node to v9.6.28 [\#2952](https://github.com/VSCodeVim/Vim/pull/2952) ([renovate-bot](https://github.com/renovate-bot))
+
 ## [v0.16.0](https://github.com/vscodevim/vim/tree/v0.16.0) (2018-08-09)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.15.7...v0.16.0)
@@ -22,6 +93,8 @@
 
 **Merged pull requests:**
 
+- bump version [\#2946](https://github.com/VSCodeVim/Vim/pull/2946) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency prettier to v1.14.2 [\#2943](https://github.com/VSCodeVim/Vim/pull/2943) ([renovate-bot](https://github.com/renovate-bot))
 - docs: move configs to tables for readability [\#2941](https://github.com/VSCodeVim/Vim/pull/2941) ([jpoon](https://github.com/jpoon))
 - chore\(deps\): update dependency @types/node to v9.6.26 [\#2940](https://github.com/VSCodeVim/Vim/pull/2940) ([renovate-bot](https://github.com/renovate-bot))
 - docs: clean-up readme [\#2931](https://github.com/VSCodeVim/Vim/pull/2931) ([jpoon](https://github.com/jpoon))

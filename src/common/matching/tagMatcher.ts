@@ -1,3 +1,7 @@
+import { TextEditor } from '../../textEditor';
+import { VimState } from '../../state/vimState';
+import { Position } from 'vscode';
+
 type Tag = { name: string; type: 'close' | 'open'; startPos: number; endPos: number };
 type MatchedTag = {
   tag: string;
@@ -8,7 +12,8 @@ type MatchedTag = {
 };
 
 export class TagMatcher {
-  static TAG_REGEX = /\<(\/)?([^\>\<\s]+)[^\>\<]*?(\/?)\>/g;
+  // see regexr.com/3t585
+  static TAG_REGEX = /\<(\/)?([^\>\<\s\/]+)(?:[^\>\<]*?)(\/)?\>/g;
   static OPEN_FORWARD_SLASH = 1;
   static TAG_NAME = 2;
   static CLOSE_FORWARD_SLASH = 3;
@@ -18,7 +23,7 @@ export class TagMatcher {
   closeStart: number | undefined;
   closeEnd: number | undefined;
 
-  constructor(corpus: string, position: number) {
+  constructor(corpus: string, position: number, vimState: VimState) {
     let match = TagMatcher.TAG_REGEX.exec(corpus);
     const tags: Tag[] = [];
 
@@ -72,8 +77,10 @@ export class TagMatcher {
       }
     }
 
+    const startPos = TextEditor.getOffsetAt(vimState.cursorStartPosition);
+    const endPos = position;
     const tagsSurrounding = matchedTags.filter(n => {
-      return position >= n.openingTagStart && position <= n.closingTagEnd;
+      return startPos > n.openingTagStart && endPos < n.closingTagEnd;
     });
 
     if (!tagsSurrounding.length) {
@@ -84,9 +91,18 @@ export class TagMatcher {
     const nodeSurrounding = tagsSurrounding[0];
 
     this.openStart = nodeSurrounding.openingTagStart;
-    this.openEnd = nodeSurrounding.openingTagEnd;
-    this.closeStart = nodeSurrounding.closingTagStart;
     this.closeEnd = nodeSurrounding.closingTagEnd;
+    // if the inner tag content is already selected, expand to enclose tags with 'it' as in vim
+    if (
+      startPos === nodeSurrounding.openingTagEnd &&
+      endPos + 1 === nodeSurrounding.closingTagStart
+    ) {
+      this.openEnd = this.openStart;
+      this.closeStart = this.closeEnd;
+    } else {
+      this.openEnd = nodeSurrounding.openingTagEnd;
+      this.closeStart = nodeSurrounding.closingTagStart;
+    }
   }
 
   findOpening(inclusive: boolean): number | undefined {

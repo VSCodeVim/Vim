@@ -11,10 +11,6 @@ export class EditorIdentity {
     return this._fileName;
   }
 
-  public hasSameBuffer(identity: EditorIdentity): boolean {
-    return this.fileName === identity.fileName;
-  }
-
   public isEqual(other: EditorIdentity): boolean {
     return this.fileName === other.fileName;
   }
