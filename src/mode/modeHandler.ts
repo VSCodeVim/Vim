@@ -971,17 +971,12 @@ export class ModeHandler implements vscode.Disposable {
           if (command.replay === 'contentChange') {
             vimState = await this.runMacro(vimState, recordedMacro);
           } else {
-            this.vimState.recordedState = new RecordedState();
+            let keyStrokes: string[] = [];
             for (let action of recordedMacro.actionsRun) {
-              await this.handleMultipleKeyEvents(action.keysPressed);
-
-              if (action.isJump) {
-                vimState.globalState.jumpTracker.recordJump(
-                  Jump.fromStateBefore(vimState),
-                  Jump.fromStateNow(vimState)
-                );
-              }
+              keyStrokes = keyStrokes.concat(action.keysPressed);
             }
+            this.vimState.recordedState = new RecordedState();
+            await this.handleMultipleKeyEvents(keyStrokes);
           }
 
           vimState.isReplayingMacro = false;
