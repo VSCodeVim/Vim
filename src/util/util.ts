@@ -4,6 +4,7 @@ import * as path from 'path';
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
 import { logger } from './logger';
+import { exec } from 'child_process';
 
 const AppDirectory = require('appdirectory');
 
@@ -41,7 +42,26 @@ export async function getCursorsAfterSync(timeout: number = 0): Promise<Range[]>
 
 export function getExtensionDirPath(): string {
   const dirs = new AppDirectory('VSCodeVim');
-  logger.debug("VSCodeVim Cache Directory: " + dirs.userCache());
+  logger.debug('VSCodeVim Cache Directory: ' + dirs.userCache());
 
   return dirs.userCache();
+}
+
+/**
+ * This function execute a shell command and return the standard output as string.
+ */
+export function executeShell(cmd: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    try {
+      exec(cmd, (err, stdout, stderr) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(stdout);
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
 }

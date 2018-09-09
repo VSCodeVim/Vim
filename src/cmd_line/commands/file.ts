@@ -65,6 +65,7 @@ export class FileCommand extends node.CommandBase {
       await vscode.commands.executeCommand('workbench.action.files.revert');
       return;
     }
+
     if (this._arguments.name === undefined) {
       // Open an empty file
       if (this._arguments.position === FilePosition.CurrentWindow) {
@@ -75,11 +76,14 @@ export class FileCommand extends node.CommandBase {
         await vscode.commands.executeCommand('workbench.action.closeOtherEditors');
       }
       return;
-    } else if (this._arguments.name === '') {
+    }
+
+    if (this._arguments.name === '') {
       if (this._arguments.position === FilePosition.NewWindow) {
         await vscode.commands.executeCommand('workbench.action.splitEditor');
         return;
       }
+
       const fileList = await vscode.window.showOpenDialog({});
       if (fileList) {
         const doc = await vscode.workspace.openTextDocument(fileList[0]);
@@ -88,49 +92,51 @@ export class FileCommand extends node.CommandBase {
       return;
     }
 
-    let editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
     this._arguments.name = <string>untildify(this._arguments.name);
-    let filePath = path.isAbsolute(this._arguments.name)
-      ? this._arguments.name
-      : path.join(path.dirname(editorFilePath), this._arguments.name);
 
-    if (filePath !== editorFilePath) {
+    let filePath = this._arguments.name;
+    if (!path.isAbsolute(this._arguments.name)) {
+      let curFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
+      filePath = path.join(path.dirname(curFilePath), this._arguments.name);
+
       if (!fs.existsSync(filePath)) {
         // if file does not exist and does not have an extension
         // try to find it with the same extension
         if (path.extname(filePath) === '') {
-          const pathWithExt = filePath + path.extname(editorFilePath);
+          const pathWithExt = filePath + path.extname(curFilePath);
           if (fs.existsSync(pathWithExt)) {
             filePath = pathWithExt;
-          } else {
-            // create file
-            if (this.arguments.createFileIfNotExists) {
-              fs.closeSync(fs.openSync(filePath, 'w'));
-            } else {
-              Message.ShowError('The file ' + filePath + ' does not exist.');
-              return;
-            }
           }
         }
       }
+    }
 
-      let folder = vscode.Uri.file(filePath);
-      await vscode.commands.executeCommand(
-        'vscode.open',
-        folder,
-        this._arguments.position === FilePosition.NewWindow
-          ? this.getViewColumnToRight()
-          : this.getActiveViewColumn()
-      );
-
-      if (this.arguments.lineNumber) {
-        vscode.window.activeTextEditor!.revealRange(
-          new vscode.Range(
-            new vscode.Position(this.arguments.lineNumber, 0),
-            new vscode.Position(this.arguments.lineNumber, 0)
-          )
-        );
+    // create file
+    if (!fs.existsSync(filePath)) {
+      if (this.arguments.createFileIfNotExists) {
+        fs.closeSync(fs.openSync(filePath, 'w'));
+      } else {
+        Message.ShowError('The file ' + filePath + ' does not exist.');
+        return;
       }
+    }
+
+    let folder = vscode.Uri.file(filePath);
+    await vscode.commands.executeCommand(
+      'vscode.open',
+      folder,
+      this._arguments.position === FilePosition.NewWindow
+        ? this.getViewColumnToRight()
+        : this.getActiveViewColumn()
+    );
+
+    if (this.arguments.lineNumber) {
+      vscode.window.activeTextEditor!.revealRange(
+        new vscode.Range(
+          new vscode.Position(this.arguments.lineNumber, 0),
+          new vscode.Position(this.arguments.lineNumber, 0)
+        )
+      );
     }
   }
 }
