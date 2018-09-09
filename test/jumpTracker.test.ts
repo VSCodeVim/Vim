@@ -259,7 +259,7 @@ suite('Record and navigate jumps', () => {
       });
     });
 
-    suite('Can shifts jump lines up after deleting a line', () => {
+    suite('Can shifts jump lines up after deleting a line with Visual Line Mode', () => {
       newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkkdd',
@@ -283,6 +283,15 @@ suite('Record and navigate jumps', () => {
         keysPressed: '/a4\n/a5\nkkkdd',
         end: ['start', 'a1', '|a3', 'a4', 'a5', 'end'],
         jumps: ['start', 'a4'],
+      });
+    });
+
+    suite('Can shifts jump lines up after deleting a line with Visual Mode', () => {
+      newJumpTest({
+        start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
+        keysPressed: '/^\nnnnkklvjjhx',
+        end: ['start', 'a1', 'a|4', 'a5', 'end'],
+        jumps: ['start', 'a1', 'a4'],
       });
     });
 
