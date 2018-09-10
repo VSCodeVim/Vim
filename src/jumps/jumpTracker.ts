@@ -1,7 +1,12 @@
 import * as vscode from 'vscode';
 
-import { Jump } from './jump';
+import { existsSync } from 'fs';
+
+import { FileCommand } from './../cmd_line/commands/file';
 import { Position } from './../common/motion/position';
+import { VimState } from '../state/vimState';
+
+import { Jump } from './jump';
 
 /**
  * JumpTracker is a handrolled version of vscode's TextEditorState
@@ -18,7 +23,7 @@ export class JumpTracker {
    * Either the jump was added, or it was traversing jump history
    * and shouldn't count as a new jump.
    */
-  public isJumpingFiles = false;
+  public isJumpingThroughHistory = false;
 
   /**
    * All recorded jumps, in the order of occurrence.
@@ -77,17 +82,7 @@ export class JumpTracker {
       return;
     }
 
-    if (from) {
-      this.clearJumpsOnSameLine(from);
-    }
-
-    if (from && !from.onSameLine(to)) {
-      this._jumps.push(from);
-    }
-
-    this._currentJumpNumber = this._jumps.length;
-
-    this.clearOldJumps();
+    this.pushJump(from, to);
   }
 
   /**
@@ -102,9 +97,9 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public recordFileJump(from: Jump | null, to: Jump) {
-    if (this.isJumpingFiles) {
-      this.isJumpingFiles = false;
+  public handleFileJump(from: Jump | null, to: Jump) {
+    if (this.isJumpingThroughHistory) {
+      this.isJumpingThroughHistory = false;
       return;
     }
 
@@ -115,21 +110,84 @@ export class JumpTracker {
       return;
     }
 
-    if (from && from.fileName === to.fileName) {
-      return;
+    this.pushJump(from, to);
+  }
+
+  async performFileJump(jump: Jump, vimState: VimState) {
+    this.isJumpingThroughHistory = true;
+
+    if (jump.editor) {
+      // Open jump file from stored editor
+      await vscode.window.showTextDocument(jump.editor.document);
+    } else if (existsSync(jump.fileName)) {
+      // Open jump file from disk
+      await new FileCommand({
+        name: jump.fileName,
+        lineNumber: jump.position.line,
+        createFileIfNotExists: false,
+      }).execute();
+    } else {
+      // Get jump file from visible editors
+      const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
+        e => e.document.fileName === jump.fileName
+      )[0];
+
+      if (editor) {
+        await vscode.window.showTextDocument(editor.document, jump.position.character, false);
+      }
     }
 
-    if (from) {
-      this.clearJumpsOnSameLine(from);
+    return vimState;
+  }
+
+  /**
+   * Jump forward, possibly resulting in a file jump
+   */
+  public async jumpForward(position: Position, vimState?: VimState): Promise<VimState> {
+    return this.jumpThroughHistory(this.recordJumpForward.bind(this), position, vimState);
+  }
+
+  /**
+   * Jump back, possibly resulting in a file jump
+   */
+  public async jumpBack(position: Position, vimState?: VimState): Promise<VimState> {
+    return this.jumpThroughHistory(this.recordJumpBack.bind(this), position, vimState);
+  }
+
+  async jumpThroughHistory(
+    getJump: (Jump) => Jump,
+    position: Position,
+    vimState?: VimState
+  ): Promise<VimState> {
+    if (!vimState) {
+      // Disposed? Don't attempt anything, but return whatever falsy value was given.
+      return vimState!;
     }
 
-    if (from && !from.onSameLine(to)) {
-      this._jumps.push(from);
+    let jump = new Jump({
+      editor: vimState.editor,
+      fileName: vimState.editor.document.fileName,
+      position,
+    });
+
+    const iterations = vimState.recordedState.count || 1;
+    for (var i = 0; i < iterations; i++) {
+      jump = getJump(Jump.fromStateNow(vimState));
     }
 
-    this._currentJumpNumber = this._jumps.length;
+    if (!jump) {
+      return vimState;
+    }
 
-    this.clearOldJumps();
+    const jumpedFiles = jump.fileName !== vimState.editor.document.fileName;
+
+    if (jumpedFiles) {
+      await this.performFileJump(jump, vimState);
+    } else {
+      vimState.cursorPosition = jump.position;
+    }
+
+    return vimState;
   }
 
   /**
@@ -138,7 +196,7 @@ export class JumpTracker {
    *
    * @param from - File/position jumped from
    */
-  public jumpBack(from: Jump): Jump {
+  recordJumpBack(from: Jump): Jump {
     if (!this.hasJumps) {
       return from;
     }
@@ -165,7 +223,7 @@ export class JumpTracker {
    *
    * @param from - File/position jumped from
    */
-  public jumpForward(from: Jump): Jump {
+  recordJumpForward(from: Jump): Jump {
     if (!this.hasJumps) {
       return from;
     }
@@ -251,6 +309,20 @@ export class JumpTracker {
   public clearJumps(): void {
     this._jumps.splice(0, this._jumps.length);
     this._currentJumpNumber = 0;
+  }
+
+  pushJump(from: Jump | null, to?: Jump | null) {
+    if (from) {
+      this.clearJumpsOnSameLine(from);
+    }
+
+    if (from && !from.onSameLine(to)) {
+      this._jumps.push(from);
+    }
+
+    this._currentJumpNumber = this._jumps.length;
+
+    this.clearOldJumps();
   }
 
   removeJump(index: number) {

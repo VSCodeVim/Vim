@@ -23,8 +23,6 @@ import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
-import { existsSync } from 'fs';
-import { Jump } from '../../jumps/jump';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -2812,70 +2810,8 @@ class CommandInsertNewLineBefore extends BaseCommand {
   }
 }
 
-abstract class ActionNavigateCommand extends BaseCommand {
-  runsOnceForEveryCursor() {
-    return false;
-  }
-
-  abstract getJumpToNavigate(position: Position, vimState: VimState): Jump;
-
-  async handleFileJump(jump: Jump, vimState: VimState) {
-    vimState.globalState.jumpTracker.isJumpingFiles = true;
-
-    if (jump.editor) {
-      // Open jump file from stored editor
-      await vscode.window.showTextDocument(jump.editor.document);
-    } else if (existsSync(jump.fileName)) {
-      // Open jump file from disk
-      await new FileCommand({
-        name: jump.fileName,
-        lineNumber: jump.position.line,
-        createFileIfNotExists: false,
-      }).execute();
-    } else {
-      // Get jump file from visible editors
-      const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
-        e => e.document.fileName === jump.fileName
-      )[0];
-
-      if (editor) {
-        await vscode.window.showTextDocument(editor.document, jump.position.character, false);
-      }
-    }
-
-    return vimState;
-  }
-
-  public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let jump = new Jump({
-      editor: vimState.editor,
-      fileName: vimState.editor.document.fileName,
-      position,
-    });
-
-    const iterations = vimState.recordedState.count || 1;
-    for (var i = 0; i < iterations; i++) {
-      jump = this.getJumpToNavigate(position, vimState);
-    }
-
-    if (!jump) {
-      return vimState;
-    }
-
-    const jumpedFiles = jump.fileName !== vimState.editor.document.fileName;
-
-    if (jumpedFiles) {
-      await this.handleFileJump(jump, vimState);
-    } else {
-      vimState.cursorPosition = jump.position;
-    }
-
-    return vimState;
-  }
-}
-
 @RegisterAction
-class CommandNavigateBack extends ActionNavigateCommand {
+class CommandNavigateBack extends BaseCommand {
   modes = [ModeName.Normal];
   keys = [['<C-o>'], ['<C-t>']];
 
@@ -2883,13 +2819,13 @@ class CommandNavigateBack extends ActionNavigateCommand {
     return false;
   }
 
-  getJumpToNavigate(position: Position, vimState: VimState) {
-    return vimState.globalState.jumpTracker.jumpBack(Jump.fromStateNow(vimState));
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return vimState.globalState.jumpTracker.jumpBack(position, vimState);
   }
 }
 
 @RegisterAction
-class CommandNavigateForward extends ActionNavigateCommand {
+class CommandNavigateForward extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['<C-i>'];
 
@@ -2897,8 +2833,8 @@ class CommandNavigateForward extends ActionNavigateCommand {
     return false;
   }
 
-  getJumpToNavigate(position: Position, vimState: VimState) {
-    return vimState.globalState.jumpTracker.jumpForward(Jump.fromStateNow(vimState));
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    return vimState.globalState.jumpTracker.jumpForward(position, vimState);
   }
 }
 

@@ -44,11 +44,11 @@ suite('Record and navigate jumps', () => {
     test('Can record jumps between files', async () => {
       const jumpTracker = new JumpTracker();
 
-      jumpTracker.recordFileJump(null, file1);
-      jumpTracker.recordFileJump(file1, file2);
-      jumpTracker.recordFileJump(file2, file3);
-      jumpTracker.jumpBack(file3);
-      jumpTracker.jumpBack(file2);
+      jumpTracker.handleFileJump(null, file1);
+      jumpTracker.handleFileJump(file1, file2);
+      jumpTracker.handleFileJump(file2, file3);
+      jumpTracker.recordJumpBack(file3);
+      jumpTracker.recordJumpBack(file2);
 
       assert.deepEqual(
         jumpTracker.jumps.map(j => j.fileName),
@@ -56,16 +56,42 @@ suite('Record and navigate jumps', () => {
         'Unexpected jumps found'
       );
       assert.equal(jumpTracker.currentJump.fileName, 'file1', 'Unexpected current jump found');
+      assert.equal(jumpTracker.currentJumpNumber, 0, 'Unexpected current jump number found');
+    });
+
+    test('Can handle file jump events sent by vscode in response to recordJumpBack', async () => {
+      const jumpTracker = new JumpTracker();
+
+      jumpTracker.handleFileJump(null, file1);
+      jumpTracker.handleFileJump(file1, file2);
+      jumpTracker.handleFileJump(file2, file3);
+      jumpTracker.handleFileJump(file3, file4);
+
+      jumpTracker.isJumpingThroughHistory = true;
+      jumpTracker.recordJumpBack(file4);
+      jumpTracker.handleFileJump(file4, file3);
+
+      jumpTracker.isJumpingThroughHistory = true;
+      jumpTracker.recordJumpBack(file3);
+      jumpTracker.handleFileJump(file3, file2);
+
+      assert.deepEqual(
+        jumpTracker.jumps.map(j => j.fileName),
+        ['file1', 'file2', 'file3', 'file4'],
+        'Unexpected jumps found'
+      );
+      assert.equal(jumpTracker.currentJump.fileName, 'file2', 'Unexpected current jump found');
+      assert.equal(jumpTracker.currentJumpNumber, 1, 'Unexpected current jump number found');
     });
 
     test('Can record jumps between files after switching files', async () => {
       const jumpTracker = new JumpTracker();
 
-      jumpTracker.recordFileJump(null, file1);
-      jumpTracker.recordFileJump(file1, file2);
-      jumpTracker.recordFileJump(file2, file3);
-      jumpTracker.jumpBack(file3);
-      jumpTracker.recordFileJump(file2, file4);
+      jumpTracker.handleFileJump(null, file1);
+      jumpTracker.handleFileJump(file1, file2);
+      jumpTracker.handleFileJump(file2, file3);
+      jumpTracker.recordJumpBack(file3);
+      jumpTracker.handleFileJump(file2, file4);
 
       assert.deepEqual(
         jumpTracker.jumps.map(j => j.fileName),
@@ -78,10 +104,10 @@ suite('Record and navigate jumps', () => {
     test('Can handle jumps to the same file multiple times', async () => {
       const jumpTracker = new JumpTracker();
 
-      jumpTracker.recordFileJump(null, file1);
-      jumpTracker.recordFileJump(file1, file2);
-      jumpTracker.recordFileJump(file2, file3);
-      jumpTracker.recordFileJump(file3, file2);
+      jumpTracker.handleFileJump(null, file1);
+      jumpTracker.handleFileJump(file1, file2);
+      jumpTracker.handleFileJump(file2, file3);
+      jumpTracker.handleFileJump(file3, file2);
 
       assert.deepEqual(
         jumpTracker.jumps.map(j => j.fileName),

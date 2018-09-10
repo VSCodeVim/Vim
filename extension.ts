@@ -176,7 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
 
-        globalState.jumpTracker.recordFileJump(
+        globalState.jumpTracker.handleFileJump(
           mhPrevious ? Jump.fromStateNow(mhPrevious.vimState) : null,
           Jump.fromStateNow(mh.vimState)
         );
