@@ -61,6 +61,7 @@ interface ITestObject {
   keysPressed: string;
   end: string[];
   endMode?: ModeName;
+  jumps?: string[];
 }
 
 class TestObjectHelper {
@@ -214,6 +215,7 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
   modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
   let helper = new TestObjectHelper(testObj);
+  const jumpTracker = modeHandler.vimState.globalState.jumpTracker;
 
   // Don't try this at home, kids.
   (modeHandler as any).vimState.cursorPosition = new Position(0, 0);
@@ -246,6 +248,8 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
     keysPressed = keysPressed.replace(/\\n/g, '\\r\\n');
   }
 
+  jumpTracker.clearJumps();
+
   // assumes key presses are single characters for nowkA
   await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(keysPressed));
 
@@ -254,7 +258,8 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
 
   // end: check given end output is correct
   //
-  assertEqualLines(helper.asVimOutputText());
+  const lines = helper.asVimOutputText();
+  assertEqualLines(lines);
   // Check final cursor position
   //
   let actualPosition = Position.FromVSCodePosition(TextEditor.getSelection().start);
@@ -271,6 +276,26 @@ async function testIt(modeHandler: ModeHandler, testObj: ITestObject): Promise<v
     let actualMode = ModeName[modeHandler.currentMode.name].toUpperCase();
     let expectedMode = ModeName[testObj.endMode].toUpperCase();
     assert.equal(actualMode, expectedMode, "Didn't enter correct mode.");
+  }
+
+  // jumps: check jumps are correct if given
+  if (typeof testObj.jumps !== 'undefined') {
+    assert.deepEqual(
+      jumpTracker.jumps.map(j => lines[j.position.line] || '<MISSING>'),
+      testObj.jumps.map(t => t.replace('|', '')),
+      'Incorrect jumps found'
+    );
+
+    const stripBar = text => (text ? text.replace('|', '') : text);
+    const actualJumpPosition =
+      (jumpTracker.currentJump && lines[jumpTracker.currentJump.position.line]) || '<FRONT>';
+    const expectedJumpPosition = stripBar(testObj.jumps.find(t => t.includes('|'))) || '<FRONT>';
+
+    assert.deepEqual(
+      actualJumpPosition.toString(),
+      expectedJumpPosition.toString(),
+      'Incorrect jump position found'
+    );
   }
 }
 

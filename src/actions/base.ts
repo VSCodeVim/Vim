@@ -10,6 +10,11 @@ export class BaseAction {
    */
   public isMotion = false;
 
+  /**
+   * If isJump is true, then the cursor position will be added to the jump list on completion.
+   */
+  public isJump = false;
+
   public canBeRepeatedWithDot = false;
 
   /**
