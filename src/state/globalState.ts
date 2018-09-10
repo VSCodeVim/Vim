@@ -1,3 +1,4 @@
+import { JumpTracker } from '../jumps/jumpTracker';
 import { RecordedState } from './../state/recordedState';
 import { SearchState } from './searchState';
 
@@ -30,6 +31,11 @@ export class GlobalState {
    * Used internally for nohl.
    */
   private static _hl = true;
+
+  /**
+   * Track jumps, and traverse jump history
+   */
+  private static _jumpTracker: JumpTracker = new JumpTracker();
 
   /**
    * Getters and setters for changing global state
@@ -72,5 +78,9 @@ export class GlobalState {
 
   public set hl(enabled: boolean) {
     GlobalState._hl = enabled;
+  }
+
+  public get jumpTracker(): JumpTracker {
+    return GlobalState._jumpTracker;
   }
 }
