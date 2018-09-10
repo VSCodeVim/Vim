@@ -1856,7 +1856,7 @@ class CommandInsertInCommandline extends BaseCommand {
 @RegisterAction
 class CommandEscInCommandline extends BaseCommand {
   modes = [ModeName.CommandlineInProgress];
-  keys = ['<Esc>'];
+  keys = [['<Esc>'], ['<C-c>'], ['<C-[>']];;
   runsOnceForEveryCursor() {
     return this.keysPressed[0] === '\n';
   }
