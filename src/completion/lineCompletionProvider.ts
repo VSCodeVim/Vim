@@ -25,13 +25,25 @@ const getMatchingText = (text: string): string[] | null => {
 };
 
 export const lineCompletionProvider = {
+  _enabled: false,
+
+  showLineCompletions: async (): Promise<void> => {
+    this._enabled = true;
+
+    await vscode.commands.executeCommand('editor.action.triggerSuggest');
+  },
+
   provideCompletionItems: (
     document,
-    position,
+    position: vscode.Position,
     token,
     myContext
   ): Thenable<vscode.CompletionItem[] | vscode.CompletionList> => {
     return new Promise(async (resolve, reject) => {
+      if (!this._enabled) {
+        return reject({ items: [] });
+      }
+
       const mh: ModeHandler = await getAndUpdateModeHandler();
 
       const currentLineText = TextEditor.getText(
@@ -52,12 +64,20 @@ export const lineCompletionProvider = {
         const description = text.replace(/^[ ]*/, '');
         completionItem.detail = description;
         completionItem.documentation = description;
-        completionItem.filterText = text;
-        completionItem.insertText = text.replace(currentLineText, '');
+        // completionItem.filterText = text;
+        // completionItem.insertText = text;
         completionItem.label = description;
-        completionItem.kind = vscode.CompletionItemKind.Text;
+        completionItem.kind = vscode.CompletionItemKind.Snippet;
+        completionItem.preselect = true;
+        completionItem.sortText = '00000';
+        completionItem.range = new vscode.Range(
+          new vscode.Position(mh.vimState.cursorPosition.line, 0),
+          position
+        );
         return completionItem;
       });
+
+      this._enabled = false;
 
       return resolve({ items: completionItems });
     });
