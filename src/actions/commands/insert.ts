@@ -1,4 +1,3 @@
-import { InputBoxOptions } from './../../../.vscode-test/stable/Visual Studio Code.app/Contents/Resources/app/out/vs/vscode.d';
 import * as vscode from 'vscode';
 
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
@@ -530,9 +529,12 @@ class CommandCtrlVInInsertMode extends BaseCommand {
 class CommandShowLineAutocomplete extends BaseCommand {
   modes = [ModeName.Insert];
   keys = ['<C-x>', '<C-l>'];
+  runsOnceForEveryCursor() {
+    return false;
+  }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await lineCompletionProvider.showLineCompletions();
+    await lineCompletionProvider.showLineCompletionsQuickPick(position, vimState);
     return vimState;
   }
 }
