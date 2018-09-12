@@ -27,6 +27,7 @@ import { CompositionState } from './src/state/compositionState';
 const globalState = new GlobalState();
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
+let lastClosedModeHandler: ModeHandler | null = null;
 
 interface ICodeKeybinding {
   after?: string[];
@@ -166,18 +167,30 @@ export async function activate(context: vscode.ExtensionContext) {
       return;
     }
 
+    const mhPrevious: ModeHandler | null = previousActiveEditorId
+      ? ModeHandlerMap.get(previousActiveEditorId.toString())
+      : null;
+    // Track the closed editor so we can use it the next time an open event occurs.
+    // When vscode changes away from a temporary file, onDidChangeActiveTextEditor first twice.
+    // First it fires when leaving the closed editor. Then onDidCloseTextDocument first, and we delete
+    // the old ModeHandler. Then a new editor opens.
+    //
+    // This also applies to files that are merely closed, which allows you to jump back to that file similarly
+    // once a new file is opened.
+    lastClosedModeHandler = mhPrevious || lastClosedModeHandler;
+
+    if (vscode.window.activeTextEditor === undefined) {
+      return;
+    }
+
     taskQueue.enqueueTask(async () => {
       if (vscode.window.activeTextEditor !== undefined) {
-        const mhPrevious: ModeHandler | null = previousActiveEditorId
-          ? ModeHandlerMap.get(previousActiveEditorId.toString())
-          : null;
-
         const mh: ModeHandler = await getAndUpdateModeHandler();
 
         await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
 
         globalState.jumpTracker.handleFileJump(
-          mhPrevious ? Jump.fromStateNow(mhPrevious.vimState) : null,
+          lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
           Jump.fromStateNow(mh.vimState)
         );
       }
