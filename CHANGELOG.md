@@ -1,12 +1,30 @@
 # Change Log
 
+## [v0.16.4](https://github.com/vscodevim/vim/tree/v0.16.4) (2018-09-10)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.3...v0.16.4)
+
+**Enhancements:**
+
+- \[FEATURE REQUEST\]visual line mode support A or I [\#2167](https://github.com/VSCodeVim/Vim/issues/2167)
+
+**Closed issues:**
+
+- Moving out of viewport centers the viewport when it shouldn't [\#2998](https://github.com/VSCodeVim/Vim/issues/2998)
+- docs: all-contributors [\#2645](https://github.com/VSCodeVim/Vim/issues/2645)
+- Make small movement command not registered to Ctrl+o [\#1933](https://github.com/VSCodeVim/Vim/issues/1933)
+
+**Merged pull requests:**
+
+- Feature/improved jump list [\#3028](https://github.com/VSCodeVim/Vim/pull/3028) ([shawnaxsom](https://github.com/shawnaxsom))
+- I or A in visual/visual line mode creates multiple cursors \#2167 [\#2993](https://github.com/VSCodeVim/Vim/pull/2993) ([shawnaxsom](https://github.com/shawnaxsom))
+
 ## [v0.16.3](https://github.com/vscodevim/vim/tree/v0.16.3) (2018-09-05)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.2...v0.16.3)
 
 **Enhancements:**
 
-- Support smart relative line numbers [\#3020](https://github.com/VSCodeVim/Vim/issues/3020)
 - Add activationEvent 'onCommand:type' to avoid missing keystrokes [\#3016](https://github.com/VSCodeVim/Vim/issues/3016)
 - va{a{ doesn't work [\#2506](https://github.com/VSCodeVim/Vim/issues/2506)
 
@@ -29,7 +47,6 @@
 
 **Closed issues:**
 
-- Page scrolls half down when cursor hits top / bottom of page [\#3000](https://github.com/VSCodeVim/Vim/issues/3000)
 - Intermediate cursor shape to show that a command is being entered [\#2999](https://github.com/VSCodeVim/Vim/issues/2999)
 
 **Merged pull requests:**
@@ -48,7 +65,6 @@
 - `:vsp file\_name` cannot open file_name, although this file does exist [\#2983](https://github.com/VSCodeVim/Vim/issues/2983)
 - `gf` \(go to file under cursor\) produces the "Vim: The file ... does not exist." error, even though file clearly exists [\#2966](https://github.com/VSCodeVim/Vim/issues/2966)
 - Open File with :e deletes file content [\#2963](https://github.com/VSCodeVim/Vim/issues/2963)
-- Moving the cursor to somewhere outside of the viewport should center the cursor vertically [\#2960](https://github.com/VSCodeVim/Vim/issues/2960)
 
 **Closed issues:**
 
