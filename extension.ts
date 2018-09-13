@@ -10,7 +10,6 @@ import * as vscode from 'vscode';
 
 import { configuration } from './src/configuration/configuration';
 import { commandLine } from './src/cmd_line/commandLine';
-import { lineCompletionProvider } from './src/completion/lineCompletionProvider';
 import { Position } from './src/common/motion/position';
 import { EditorIdentity } from './src/editorIdentity';
 import { Globals } from './src/globals';
@@ -286,12 +285,6 @@ export async function activate(context: vscode.ExtensionContext) {
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
-  vscode.languages.registerCompletionItemProvider(
-    [{ pattern: '**/*' }],
-    lineCompletionProvider,
-    ...['.']
-  );
-
   // This is called last because getAndUpdateModeHandler() will change cursor
   toggleExtension(configuration.disableExt, compositionState);
 }
@@ -379,6 +372,6 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
   });
 }
 
-process.on('unhandledRejection', function(reason: any, p: any) {
+process.on('unhandledRejection', function (reason: any, p: any) {
   logger.error(`Unhandled Rejection at: Promise ${p}. Reason: ${reason}.`);
 });

@@ -1,16 +1,12 @@
 import * as vscode from 'vscode';
 
-import { configuration } from '../configuration/configuration';
-import { getAndUpdateModeHandler } from '../../extension';
-import { ModeHandler } from '../mode/modeHandler';
-import { ModeName } from '../mode/mode';
 import { Position, PositionDiff } from '../common/motion/position';
 import { TextEditor } from './../textEditor';
 import { VimState } from '../state/vimState';
 import { Range } from '../common/motion/range';
 
-const documentsStartingWith = (startingFileName, v) => {
-  return v.workspace.textDocuments.sort((a, b) => {
+const documentsStartingWith = (startingFileName) => {
+  return vscode.workspace.textDocuments.sort((a, b) => {
     if (a.fileName === startingFileName) {
       return -1;
     } else if (b.fileName === startingFileName) {
@@ -66,7 +62,7 @@ const getCompletionsForText = (
 ): string[] | null => {
   const matchedLines: string[] = [];
 
-  for (const document of documentsStartingWith(currentFileName, vscode)) {
+  for (const document of documentsStartingWith(currentFileName)) {
     let startLine = 0;
     let reverse = false;
 
@@ -99,14 +95,19 @@ const getCompletionsForCurrentLine = (position: Position, vimState: VimState): s
 };
 
 export const lineCompletionProvider = {
-  _enabled: false,
-
+  /**
+   * Here we use Quick Pick, instead of registerCompletionItemProvider
+   * Originally I looked at using a standard completion dropdown using that method,
+   * but it doesn't allow you to limit completions, and it became overwhelming
+   * when e.g. trying to do a line completion when the cursor is positioned after
+   * a space character (such that it shows almost any symbol in the list).
+   *
+   * Quick Pick also allows for searching, which is kind of a nice bonus.
+   */
   showLineCompletionsQuickPick: async (
     position: Position,
     vimState: VimState
   ): Promise<VimState> => {
-    this._enabled = true;
-
     const completions = getCompletionsForCurrentLine(position, vimState);
 
     if (!completions) {
@@ -119,19 +120,6 @@ export const lineCompletionProvider = {
       return vimState;
     }
 
-    const originalText = TextEditor.getLineAt(position).text;
-    const indentationWidth = TextEditor.getIndentationLevel(originalText);
-    const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
-    const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
-
-    // await TextEditor.replaceText(
-    //   vimState,
-    //   selectedCompletion,
-    //   position.getLineBegin(),
-    //   position.getLineEnd(),
-    //   new PositionDiff(0, newIndentationWidth - indentationWidth)
-    // );
-
     vimState.recordedState.transformations.push({
       type: 'deleteRange',
       range: new Range(position.getFirstLineNonBlankChar(), position.getLineEnd()),
@@ -142,73 +130,6 @@ export const lineCompletionProvider = {
       text: selectedCompletion,
     });
 
-    // vimState.recordedState.transformations.push({
-    //   type: 'replaceText',
-    //   text: selectedCompletion,
-    //   start: position.getLineBegin(),
-    //   end: position,
-    // });
-
-    // vimState.recordedState.transformations.push({
-    //   type: 'moveCursor',
-    //   diff: new PositionDiff(0, selectedCompletion.length - originalText.length),
-    // });
-
-    // vimState.currentMode = ModeName.Insert;
-    // vimState.cursorStartPosition = new Position(position.line, selectedCompletion.length);
-    // vimState.cursorPosition = vimState.cursorStartPosition;
-
     return vimState;
-  },
-
-  showLineCompletionsDropdown: async (): Promise<void> => {
-    // TODO: Delete me, if QuickPick works better.
-    //       Using standard completion ends up having too many
-    //       extra completions in the list.
-    this._enabled = true;
-
-    await vscode.commands.executeCommand('editor.action.triggerSuggest');
-  },
-
-  provideCompletionItems: (
-    document,
-    position: vscode.Position,
-    token,
-    myContext
-  ): Thenable<vscode.CompletionItem[] | vscode.CompletionList> => {
-    return new Promise(async (resolve, reject) => {
-      if (!this._enabled) {
-        return reject({ items: [] });
-      }
-
-      const mh: ModeHandler = await getAndUpdateModeHandler();
-      const completions = getCompletionsForCurrentLine(mh.vimState.cursorPosition, mh.vimState);
-
-      if (!completions) {
-        return reject({ items: [] });
-      }
-
-      const completionItems: vscode.CompletionItem[] = completions.map(text => {
-        let completionItem = new vscode.CompletionItem(text);
-        const description = text.replace(/^[ ]*/, '');
-        completionItem.detail = description;
-        completionItem.documentation = description;
-        // completionItem.filterText = text;
-        // completionItem.insertText = text;
-        completionItem.label = description;
-        completionItem.kind = vscode.CompletionItemKind.Snippet;
-        completionItem.preselect = true;
-        completionItem.sortText = '00000';
-        completionItem.range = new vscode.Range(
-          new vscode.Position(mh.vimState.cursorPosition.line, 0),
-          position
-        );
-        return completionItem;
-      });
-
-      this._enabled = false;
-
-      return resolve({ items: completionItems });
-    });
   },
 };
