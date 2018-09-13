@@ -5,7 +5,7 @@ import { TextEditor } from './../textEditor';
 import { VimState } from '../state/vimState';
 import { Range } from '../common/motion/range';
 
-const documentsStartingWith = (startingFileName) => {
+const documentsStartingWith = startingFileName => {
   return vscode.workspace.textDocuments.sort((a, b) => {
     if (a.fileName === startingFileName) {
       return -1;
@@ -86,7 +86,10 @@ const getCompletionsForText = (
   return matchedLines;
 };
 
-const getCompletionsForCurrentLine = (position: Position, vimState: VimState): string[] | null => {
+export const getCompletionsForCurrentLine = (
+  position: Position,
+  vimState: VimState
+): string[] | null => {
   const currentLineText = TextEditor.getText(
     new vscode.Range(position.getFirstLineNonBlankChar(), vimState.cursorPosition)
   );
