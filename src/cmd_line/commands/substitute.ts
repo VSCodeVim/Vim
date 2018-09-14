@@ -8,6 +8,8 @@ import { VimError, ErrorCode } from '../../error';
 import { TextEditor } from '../../textEditor';
 import { configuration } from '../../configuration/configuration';
 import { Decoration } from '../../configuration/decoration';
+import { Jump } from '../../jumps/jump';
+import { Position } from '../../common/motion/position';
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
   pattern: string;
@@ -125,6 +127,15 @@ export class SubstituteCommand extends node.CommandBase {
             new vscode.Range(line, 0, line, originalContent.length),
             newContent
           );
+
+          vimState.globalState.jumpTracker.recordJump(
+            new Jump({
+              editor: vimState.editor,
+              fileName: vimState.editor.document.fileName,
+              position: new Position(line, 0),
+            }),
+            Jump.fromStateNow(vimState)
+          );
         }
         matchPos += match.length;
       }
@@ -132,6 +143,15 @@ export class SubstituteCommand extends node.CommandBase {
       await TextEditor.replace(
         new vscode.Range(line, 0, line, originalContent.length),
         originalContent.replace(regex, this._arguments.replace)
+      );
+
+      vimState.globalState.jumpTracker.recordJump(
+        new Jump({
+          editor: vimState.editor,
+          fileName: vimState.editor.document.fileName,
+          position: new Position(line, 0),
+        }),
+        Jump.fromStateNow(vimState)
       );
     }
   }
