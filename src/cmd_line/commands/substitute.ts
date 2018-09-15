@@ -123,7 +123,9 @@ export class SubstituteCommand extends node.CommandBase {
           (await this.confirmReplacement(regex.source, line, vimState, match, matchPos))
         ) {
           const rangeEnd = newContent.length;
-          newContent = newContent.replace(nonGlobalRegex, this._arguments.replace);
+          newContent =
+            newContent.slice(0, matchPos) +
+            newContent.slice(matchPos).replace(nonGlobalRegex, this._arguments.replace);
           await TextEditor.replace(new vscode.Range(line, 0, line, rangeEnd), newContent);
 
           vimState.globalState.jumpTracker.recordJump(
@@ -135,7 +137,7 @@ export class SubstituteCommand extends node.CommandBase {
             Jump.fromStateNow(vimState)
           );
         }
-        matchPos += match.length;
+        matchPos += this._arguments.replace.length;
       }
     } else {
       await TextEditor.replace(
