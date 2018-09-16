@@ -340,6 +340,7 @@ export class ModeHandler implements vscode.Disposable {
       throw e;
     }
 
+    this.vimState.cursorPositionAfterLastEvent = this.vimState.allCursors.map(x => x.stop);
     this.vimState.lastKeyPressedTimestamp = now;
     this._renderStatusBar();
 
@@ -375,7 +376,6 @@ export class ModeHandler implements vscode.Disposable {
 
     let action = result as BaseAction;
     let actionToRecord: BaseAction | undefined = action;
-    let originalLocation = Jump.fromStateNow(vimState);
 
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
@@ -435,6 +435,8 @@ export class ModeHandler implements vscode.Disposable {
 
     // Update view
     await this.updateView(vimState);
+
+    vimState.cursorPositionAfterLastEvent = vimState.allCursors.map(x => x.stop);
 
     if (action.isJump) {
       vimState.globalState.jumpTracker.recordJump(
@@ -693,6 +695,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vimState.allCursors = resultingList;
+    vimState.cursorPositionAfterLastEvent = vimState.allCursors.map(x => x.stop);
 
     return vimState;
   }
@@ -981,6 +984,7 @@ export class ModeHandler implements vscode.Disposable {
 
           vimState.isReplayingMacro = false;
           vimState.historyTracker.lastInvokedMacro = recordedMacro;
+          vimState.cursorPositionAfterLastEvent = vimState.allCursors.map(x => x.stop);
 
           if (vimState.lastMovementFailed) {
             // movement in last invoked macro failed then we should stop all following repeating macros.
