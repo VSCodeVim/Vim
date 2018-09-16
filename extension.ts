@@ -87,6 +87,30 @@ export async function activate(context: vscode.ExtensionContext) {
     (event.contentChanges[0].text === '\n' || event.contentChanges[0].text === '\r\n') &&
     event.contentChanges[0].range.start.line === event.contentChanges[0].range.end.line;
 
+  vscode.window.onDidChangeTextEditorSelection(
+    async (event: vscode.TextEditorSelectionChangeEvent) => {
+      const editor = event.textEditor;
+      const modeHandler = ModeHandlerMap.get(new EditorIdentity(editor).toString())!;
+      const lastCursorsUpdatedByVim = modeHandler.vimState.cursorPositionAfterLastEvent;
+      const currentPosition = Position.FromVSCodePosition(editor.selection.start);
+
+      const changedByExternalCommand =
+        event.kind === vscode.TextEditorSelectionChangeKind.Command &&
+        !lastCursorsUpdatedByVim.some(c => c.line === currentPosition.line);
+
+      if (changedByExternalCommand) {
+        // This is meant for recording non-Vim commands as jumps,
+        // such as workbench.action.gotoSymbol.
+        globalState.jumpTracker.recordJump(
+          Jump.fromStateAfterLastEvent(modeHandler.vimState),
+          Jump.fromTextEditor(event.textEditor)
+        );
+      }
+
+      modeHandler.vimState.cursorPositionAfterLastEvent = [currentPosition];
+    }
+  );
+
   vscode.workspace.onDidChangeTextDocument(async event => {
     if (configuration.disableExt) {
       return;
