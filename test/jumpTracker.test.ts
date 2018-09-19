@@ -1,19 +1,17 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { Globals } from '../src/globals';
+import { GlobalState } from '../src/state/globalState';
 import { Jump } from './../src/jumps/jump';
 import { JumpTracker } from '../src/jumps/jumpTracker';
-import { ModeHandler } from '../src/mode/modeHandler';
 import { Position } from '../src/common/motion/position';
-import { TextEditor } from '../src/textEditor';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 import { getAndUpdateModeHandler } from '../extension';
 import { getTestingFunctions } from './testSimplifier';
 import { waitForCursorSync } from '../src/util/util';
 
 suite('Record and navigate jumps', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();
@@ -28,13 +26,14 @@ suite('Record and navigate jumps', () => {
     });
   };
 
+  const jump = (lineNumber, columnNumber, fileName?) =>
+    new Jump({
+      editor: null,
+      fileName: fileName || 'Untitled',
+      position: new Position(lineNumber, columnNumber),
+    });
+
   suite('Jump Tracker unit tests', () => {
-    const jump = (lineNumber, columnNumber, fileName?) =>
-      new Jump({
-        editor: null,
-        fileName: fileName || 'Untitled',
-        position: new Position(lineNumber, columnNumber),
-      });
     const file1 = jump(0, 0, 'file1');
     const file2 = jump(0, 0, 'file2');
     const file3 = jump(0, 0, 'file3');
@@ -195,6 +194,69 @@ suite('Record and navigate jumps', () => {
         [[0, 0, 'file2'], [5, 0, 'file2'], [0, 0, 'file1']],
         `Jump tracker doesn't contain the expected jumps after deleting all lines in file`
       );
+    });
+  });
+
+  suite('Jump Tracker integration tests', () => {
+    async function waitFor(predicate: () => boolean, timeout: number = 1000): Promise<void> {
+      await new Promise((resolve, reject) => {
+        let checkJumpsInterval = setInterval(() => {
+          if (predicate()) {
+            resolve();
+            clearInterval(checkJumpsInterval);
+          }
+        }, Math.min(10, timeout));
+
+        let timer = setTimeout(() => {
+          reject(new Error(`Timeout occurred when waiting for: ${predicate}`));
+          clearInterval(checkJumpsInterval);
+        }, timeout);
+      });
+    }
+
+    const setupWithLines = async (
+      lines: string[]
+    ): Promise<{
+      editor: vscode.TextEditor;
+      jumpTracker: JumpTracker;
+    }> => {
+      const modeHandler = await getAndUpdateModeHandler();
+      const vimState = modeHandler.vimState;
+      const editor = vimState.editor;
+      const globalState = new GlobalState();
+      const jumpTracker = globalState.jumpTracker;
+
+      vimState.cursorPosition = new Position(0, 0);
+
+      await modeHandler.handleKeyEvent('<Esc>');
+      await vimState.editor.edit(builder => {
+        builder.insert(new Position(0, 0), lines.join('\n'));
+      });
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+      await waitForCursorSync();
+
+      assert.ok(vimState.cursorPosition.line === 0);
+
+      jumpTracker.clearJumps();
+
+      return { editor, jumpTracker };
+    };
+
+    test('Can record external commands as a jump', async () => {
+      // Changing selection results in a onDidChangeTextEditorSelection
+      // of 'command', so it simulates what a command like
+      // 'workbench.action.gotoSymbol' would result in, which should
+      // now be recorded as a jump in one of our onDidChangeTextEditorSelection
+      // handlers.
+      const lines = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6'];
+      const { editor, jumpTracker } = await setupWithLines(lines);
+
+      editor.selection = new vscode.Selection(new vscode.Position(3, 0), new Position(3, 0));
+      await waitFor(() => jumpTracker.jumps.length >= 1, 5000);
+      editor.selection = new vscode.Selection(new vscode.Position(5, 0), new Position(5, 0));
+      await waitFor(() => jumpTracker.jumps.length >= 2, 5000);
+
+      assert.equal(jumpTracker.jumps.length, 2);
     });
   });
 
