@@ -26,6 +26,7 @@ suite('Record and navigate jumps', () => {
     });
   };
 
+  const line = lineNumber => new vscode.Position(lineNumber, 0);
   const jump = (lineNumber, columnNumber, fileName?) =>
     new Jump({
       editor: null,
@@ -200,21 +201,21 @@ suite('Record and navigate jumps', () => {
   suite('Jump Tracker integration tests', () => {
     async function waitFor(predicate: () => boolean, timeout: number = 1000): Promise<void> {
       await new Promise((resolve, reject) => {
-        let checkJumpsInterval = setInterval(() => {
+        let interval = setInterval(() => {
           if (predicate()) {
             resolve();
-            clearInterval(checkJumpsInterval);
+            clearInterval(interval);
           }
         }, Math.min(10, timeout));
 
-        let timer = setTimeout(() => {
+        setTimeout(() => {
           reject(new Error(`Timeout occurred when waiting for: ${predicate}`));
-          clearInterval(checkJumpsInterval);
+          clearInterval(interval);
         }, timeout);
       });
     }
 
-    const setupWithLines = async (
+    const setUpWithLines = async (
       lines: string[]
     ): Promise<{
       editor: vscode.TextEditor;
@@ -249,11 +250,12 @@ suite('Record and navigate jumps', () => {
       // now be recorded as a jump in one of our onDidChangeTextEditorSelection
       // handlers.
       const lines = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6'];
-      const { editor, jumpTracker } = await setupWithLines(lines);
+      const { editor, jumpTracker } = await setUpWithLines(lines);
 
-      editor.selection = new vscode.Selection(new vscode.Position(3, 0), new Position(3, 0));
+      editor.selection = new vscode.Selection(line(3), line(3));
       await waitFor(() => jumpTracker.jumps.length >= 1, 5000);
-      editor.selection = new vscode.Selection(new vscode.Position(5, 0), new Position(5, 0));
+
+      editor.selection = new vscode.Selection(line(5), line(5));
       await waitFor(() => jumpTracker.jumps.length >= 2, 5000);
 
       assert.equal(jumpTracker.jumps.length, 2);
