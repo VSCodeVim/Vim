@@ -170,7 +170,7 @@
       {
         "key": "ctrl+f",
         "command": "extension.vim_ctrl+f",
-        "when": "editorTextFocus && vim.active && vim.use<C-f> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-f> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+h",
