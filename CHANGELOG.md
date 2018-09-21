@@ -6,7 +6,6 @@
 
 **Enhancements:**
 
-- Support vscode's color copy [\#3038](https://github.com/VSCodeVim/Vim/issues/3038)
 - the jump list is wrong [\#1688](https://github.com/VSCodeVim/Vim/issues/1688)
 
 **Fixed Bugs:**
