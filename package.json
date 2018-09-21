@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.16.4",
+  "version": "0.16.5",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -170,7 +170,7 @@
       {
         "key": "ctrl+f",
         "command": "extension.vim_ctrl+f",
-        "when": "editorTextFocus && vim.active && vim.use<C-f> && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.use<C-f> && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+h",
@@ -697,7 +697,7 @@
     "minimist": "1.2.0",
     "mocha": "5.2.0",
     "plugin-error": "1.0.1",
-    "prettier": "1.14.2",
+    "prettier": "1.14.3",
     "tslint": "5.11.0",
     "typescript": "3.0.3",
     "vscode": "1.1.21"
