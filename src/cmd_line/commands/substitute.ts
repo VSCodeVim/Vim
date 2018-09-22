@@ -10,9 +10,11 @@ import { configuration } from '../../configuration/configuration';
 import { Decoration } from '../../configuration/decoration';
 import { Jump } from '../../jumps/jump';
 import { Position } from '../../common/motion/position';
+import { SubstituteState } from '../../state/substituteState';
+import { SearchState, SearchDirection } from '../../state/searchState';
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
-  pattern: string;
+  pattern: string | undefined;
   replace: string;
   flags: number;
   count?: number;
@@ -84,14 +86,35 @@ export class SubstituteCommand extends node.CommandBase {
       jsRegexFlags += 'i';
     }
 
-    // If no pattern is entered, use previous search state (including search with * and #)
-    if (args.pattern === '') {
-      const prevSearchState = vimState.globalState.searchState;
-      if (prevSearchState === undefined || prevSearchState.searchString === '') {
+    if (args.pattern === undefined) {
+      // If no pattern is entered, use previous SUBSTITUTION state and don't update search state
+      // i.e. :s
+      const prevSubstiteState = vimState.globalState.substituteState;
+      if (prevSubstiteState === undefined || prevSubstiteState.searchPattern === '') {
         throw VimError.fromCode(ErrorCode.E35);
       } else {
-        args.pattern = prevSearchState.searchString;
+        args.pattern = prevSubstiteState.searchPattern;
+        args.replace = prevSubstiteState.replaceString;
       }
+    } else {
+      if (args.pattern === '') {
+        // If an explicitly empty pattern is entered, use previous search state (including search with * and #) and update both states
+        // e.g :s/ or :s///
+        const prevSearchState = vimState.globalState.searchState;
+        if (prevSearchState === undefined || prevSearchState.searchString === '') {
+          throw VimError.fromCode(ErrorCode.E35);
+        } else {
+          args.pattern = prevSearchState.searchString;
+        }
+      }
+      vimState.globalState.substituteState = new SubstituteState(args.pattern, args.replace);
+      vimState.globalState.searchState = new SearchState(
+        SearchDirection.Forward,
+        vimState.cursorPosition,
+        args.pattern,
+        { isRegex: true },
+        vimState.currentMode
+      );
     }
     return new RegExp(args.pattern, jsRegexFlags);
   }

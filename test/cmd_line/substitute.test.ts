@@ -303,6 +303,106 @@ suite('Basic substitute', () => {
 
       assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
     });
+    test('Substitute with parameters should update search state', async () => {
+      await modeHandler.handleMultipleKeyEvents([
+        'i', // foo bar foo bar
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        'o',
+        'f',
+        'o',
+        'o',
+        '<Esc>',
+        'o',
+        'b',
+        'a',
+        'r',
+        '<Esc>',
+        '/', // search for bar
+        'b',
+        'a',
+        'r',
+        '\n',
+      ]);
+      await commandLine.Run('s/ar/ite', modeHandler.vimState); // first bar to bite
+      await modeHandler.handleMultipleKeyEvents([
+        'n', // repeat search for ar, not bar
+        'r', // replace bar with brr
+        'r',
+      ]);
+
+      assertEqualLines(['foo', 'bite', 'foo', 'brr']);
+    });
+    test('Substitute with no pattern should repeat previous substitution and not update search state', async () => {
+      await modeHandler.handleMultipleKeyEvents([
+        'i', // link zelda link zelda link
+        'l',
+        'i',
+        'n',
+        'k',
+        '<Esc>',
+        'o',
+        'z',
+        'e',
+        'l',
+        'd',
+        'a',
+        '<Esc>',
+        'o',
+        'l',
+        'i',
+        'n',
+        'k',
+        '<Esc>',
+        'o',
+        'z',
+        'e',
+        'l',
+        'd',
+        'a',
+        '<Esc>',
+        'o',
+        'l',
+        'i',
+        'n',
+        'k',
+        '<Esc>',
+        '1', // go to the first line
+        'g',
+        'g',
+      ]);
+      await commandLine.Run('s/ink/egend', modeHandler.vimState); // replace first ink with egend
+      await modeHandler.handleMultipleKeyEvents([
+        '/',
+        'l',
+        'i',
+        'n',
+        'k', // search for full link
+        '\n',
+      ]);
+      await commandLine.Run('s', modeHandler.vimState); // repeat previous replacement of ink, not link!
+      await modeHandler.handleMultipleKeyEvents([
+        'n', // search for link, not ink
+        'r',
+        'p', // should be pink now
+      ]);
+
+      assertEqualLines(['legend', 'zelda', 'legend', 'zelda', 'pink']);
+    });
+    test('Substitute repeat previous should accept flags', async () => {
+      await modeHandler.handleMultipleKeyEvents(['i', 'f', 'o', 'o', 'o', '<Esc>']);
+      await commandLine.Run('s/o/un', modeHandler.vimState); // replace first o with un
+      await commandLine.Run('s g', modeHandler.vimState); // repeat replacement on all following o's
+
+      assertEqualLines(['fununun']);
+    });
     test('Substitute with empty search string should use last searched pattern', async () => {
       await modeHandler.handleMultipleKeyEvents([
         'i',
