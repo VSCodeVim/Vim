@@ -8,8 +8,10 @@ import {
   reloadConfiguration,
   setupWorkspace,
 } from './../testUtils';
+import { getTestingFunctions } from '../testSimplifier';
 
 suite('Basic substitute', () => {
+  let { newTest, newTestOnly } = getTestingFunctions();
   let modeHandler: ModeHandler;
 
   setup(async () => {
@@ -33,14 +35,70 @@ suite('Basic substitute', () => {
     assertEqualLines(['dbd']);
   });
 
-  test('Replace multiple lines', async () => {
+  test('Replace across all lines', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
     await commandLine.Run('%s/a/d/g', modeHandler.vimState);
 
     assertEqualLines(['dbd', 'db']);
   });
 
-  test('Replace across specific lines', async () => {
+  newTest({
+    title: 'Replace on specific single line',
+    start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
+    keysPressed: ':3s/blah/yay\n',
+    end: ['blah blah', 'bla|h', 'yay blah', 'blah blah'],
+  });
+
+  newTest({
+    title: 'Replace on current line using dot',
+    start: ['blah blah', '|blah', 'blah blah', 'blah blah'],
+    keysPressed: ':.s/blah/yay\n',
+    end: ['blah blah', '|yay', 'blah blah', 'blah blah'],
+  });
+
+  newTest({
+    title: 'Replace single relative line using dot and plus',
+    start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
+    keysPressed: ':.+2s/blah/yay\n',
+    end: ['blah blah', 'bla|h', 'blah blah', 'yay blah'],
+  });
+
+  newTest({
+    title: 'Replace across specific line range',
+    start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
+    keysPressed: ':3,4s/blah/yay\n',
+    end: ['blah blah', 'bla|h', 'yay blah', 'yay blah'],
+  });
+
+  newTest({
+    title: 'Replace across relative line range using dot, plus, and minus',
+    start: ['blah blah', '|blah', 'blah blah', 'blah blah'],
+    keysPressed: ':.-1,.+1s/blah/yay\n',
+    end: ['yay blah', '|yay', 'yay blah', 'blah blah'],
+  });
+
+  newTest({
+    title: 'Undocumented: operator without LHS assumes dot as LHS',
+    start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
+    keysPressed: ':+2s/blah/yay\n',
+    end: ['blah blah', 'bla|h', 'blah blah', 'yay blah'],
+  });
+
+  newTest({
+    title: 'Undocumented: multiple consecutive operators use 1 as RHS',
+    start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
+    keysPressed: ':.++1s/blah/yay\n',
+    end: ['blah blah', 'bla|h', 'blah blah', 'yay blah'],
+  });
+
+  newTest({
+    title: 'Undocumented: trailing operators use 1 as RHS',
+    start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
+    keysPressed: ':.+1+s/blah/yay\n',
+    end: ['blah blah', 'bla|h', 'blah blah', 'yay blah'],
+  });
+
+  test('Replace specific single equal lines', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
     await commandLine.Run('1,1s/a/d/g', modeHandler.vimState);
 
