@@ -91,12 +91,14 @@ export async function activate(context: vscode.ExtensionContext) {
     async (event: vscode.TextEditorSelectionChangeEvent) => {
       const editor = event.textEditor;
       const modeHandler = ModeHandlerMap.get(new EditorIdentity(editor).toString())!;
-      const lastCursorsUpdatedByVim = modeHandler.vimState.cursorPositionAfterLastEvent;
+      const lastCursorsUpdatedByVim =
+        modeHandler.vimState && modeHandler.vimState.cursorPositionAfterLastEvent;
       const currentPosition = Position.FromVSCodePosition(editor.selection.start);
 
       const changedByExternalCommand =
         event.kind === vscode.TextEditorSelectionChangeKind.Command &&
-        !lastCursorsUpdatedByVim.some(c => c.line === currentPosition.line);
+        (lastCursorsUpdatedByVim &&
+          !lastCursorsUpdatedByVim.some(c => c.line === currentPosition.line));
 
       if (changedByExternalCommand) {
         // This is meant for recording non-Vim commands as jumps,
