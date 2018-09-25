@@ -15,6 +15,11 @@ import { Neovim } from '../neovim/neovim';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { logger } from '../util/logger';
 
+interface IVimModeChangedEvent {
+  previousMode: ModeName;
+  newMode: ModeName;
+}
+
 /**
  * The VimState class holds permanent state that carries over from action
  * to action.
@@ -193,8 +198,21 @@ export class VimState implements vscode.Disposable {
 
   public set currentMode(value: number) {
     this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
-    this._currentMode = value;
+
+    if (this._currentMode !== value) {
+      const previousMode = this._currentMode;
+      const newMode = value;
+      this._currentMode = newMode;
+
+      this._onVimModeChanged.fire({ previousMode, newMode });
+    }
   }
+
+  private readonly _onVimModeChanged: vscode.EventEmitter<
+    IVimModeChangedEvent
+  > = new vscode.EventEmitter<IVimModeChangedEvent>();
+  public readonly onVimModeChanged: vscode.Event<IVimModeChangedEvent> = this._onVimModeChanged
+    .event;
 
   public currentRegisterMode = RegisterMode.AscertainFromCurrentMode;
 
@@ -248,6 +266,10 @@ export class VimState implements vscode.Disposable {
   dispose() {
     if (this.nvim) {
       this.nvim.dispose();
+    }
+
+    if (this._onVimModeChanged) {
+      this._onVimModeChanged.dispose();
     }
   }
 }

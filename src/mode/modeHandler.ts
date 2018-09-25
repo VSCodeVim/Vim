@@ -63,7 +63,12 @@ export class ModeHandler implements vscode.Disposable {
     ];
 
     this.vimState = new VimState(vscode.window.activeTextEditor!, configuration.enableNeovim);
-    this.setCurrentMode(configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal);
+    this.setInitialMode(configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal);
+    this.vimState.onVimModeChanged(e => {
+      if (e.previousMode !== e.newMode) {
+        vscode.commands.executeCommand('setContext', 'vim.mode', ModeName[e.newMode]);
+      }
+    });
 
     // Sometimes, Visual Studio Code will start the cursor in a position which
     // is not (0, 0) - e.g., if you previously edited the file and left the
@@ -262,6 +267,11 @@ export class ModeHandler implements vscode.Disposable {
 
       await this.updateView(this.vimState, { drawSelection: toDraw, revealRange: true });
     }
+  }
+
+  private setInitialMode(initialModeName: ModeName): void {
+    this.setCurrentMode(initialModeName);
+    vscode.commands.executeCommand('setContext', 'vim.mode', initialModeName);
   }
 
   private setCurrentMode(modeName: ModeName): void {
@@ -1416,12 +1426,6 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     this._renderStatusBar();
-
-    await vscode.commands.executeCommand(
-      'setContext',
-      'vim.mode',
-      ModeName[this.vimState.currentMode]
-    );
   }
 
   private _renderStatusBar(): void {
