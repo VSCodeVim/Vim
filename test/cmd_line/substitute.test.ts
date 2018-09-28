@@ -1,3 +1,5 @@
+import * as sinon from 'sinon';
+import { SubstituteCommand } from '../../src/cmd_line/commands/substitute';
 import { getAndUpdateModeHandler } from '../../extension';
 import { commandLine } from '../../src/cmd_line/commandLine';
 import { Globals } from '../../src/globals';
@@ -31,6 +33,24 @@ suite('Basic substitute', () => {
     await commandLine.Run('%s/a/d/g', modeHandler.vimState);
 
     assertEqualLines(['dbd']);
+  });
+
+  test('Replace with `c` flag', async () => {
+    const confirmStub = sinon.stub(SubstituteCommand.prototype, 'confirmReplacement').returns(true);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
+    await commandLine.Run('%s/a/d/c', modeHandler.vimState);
+
+    assertEqualLines(['dba']);
+    confirmStub.restore();
+  });
+
+  test('Replace with `gc` flag', async () => {
+    const confirmStub = sinon.stub(SubstituteCommand.prototype, 'confirmReplacement').returns(true);
+    await modeHandler.handleMultipleKeyEvents(['i', 'f', 'f', 'b', 'a', 'r', 'f', '<Esc>']);
+    await commandLine.Run('%s/f/foo/gc', modeHandler.vimState);
+
+    assertEqualLines(['foofoobarfoo']);
+    confirmStub.restore();
   });
 
   test('Replace multiple lines', async () => {
@@ -127,6 +147,17 @@ suite('Basic substitute', () => {
       await commandLine.Run('%s/a/d/g', modeHandler.vimState);
 
       assertEqualLines(['dba']);
+    });
+
+    test('Replace with `c` flag inverts global flag', async () => {
+      const confirmStub = sinon
+        .stub(SubstituteCommand.prototype, 'confirmReplacement')
+        .returns(true);
+      await modeHandler.handleMultipleKeyEvents(['i', 'f', 'f', 'b', 'a', 'r', 'f', '<Esc>']);
+      await commandLine.Run('%s/f/foo/c', modeHandler.vimState);
+
+      assertEqualLines(['foofoobarfoo']);
+      confirmStub.restore();
     });
 
     test('Replace multiple lines', async () => {
