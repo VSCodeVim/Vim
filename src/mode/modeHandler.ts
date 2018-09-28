@@ -321,6 +321,7 @@ export class ModeHandler implements vscode.Disposable {
        */
       if (
         !this.vimState.isCurrentlyPerformingRemapping &&
+        !this.vimState.recordedState.operator &&
         (withinTimeout || this.vimState.recordedState.commandList.length === 1)
       ) {
         handled = await this._remappers.sendKey(
