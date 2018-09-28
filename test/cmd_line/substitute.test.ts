@@ -10,8 +10,10 @@ import {
   reloadConfiguration,
   setupWorkspace,
 } from './../testUtils';
+import { getTestingFunctions } from '../testSimplifier';
 
 suite('Basic substitute', () => {
+  let { newTest, newTestOnly } = getTestingFunctions();
   let modeHandler: ModeHandler;
 
   setup(async () => {
@@ -243,7 +245,7 @@ suite('Basic substitute', () => {
       assertEqualLines(['bz']);
     });
   });
-  suite('Substitute with empty search string should use previous search', () => {
+  suite('Substitute should use various previous search/substitute states', () => {
     test('Substitute with previous search using *', async () => {
       await modeHandler.handleMultipleKeyEvents([
         'i',
@@ -334,105 +336,73 @@ suite('Basic substitute', () => {
 
       assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
     });
-    test('Substitute with parameters should update search state', async () => {
-      await modeHandler.handleMultipleKeyEvents([
-        'i', // foo bar foo bar
-        'f',
-        'o',
-        'o',
-        '<Esc>',
-        'o',
-        'b',
-        'a',
-        'r',
-        '<Esc>',
-        'o',
-        'f',
-        'o',
-        'o',
-        '<Esc>',
-        'o',
-        'b',
-        'a',
-        'r',
-        '<Esc>',
-        '/', // search for bar
-        'b',
-        'a',
-        'r',
-        '\n',
-      ]);
-      await commandLine.Run('s/ar/ite', modeHandler.vimState); // first bar to bite
-      await modeHandler.handleMultipleKeyEvents([
-        'n', // repeat search for ar, not bar
-        'r', // replace bar with brr
-        'r',
-      ]);
-
-      assertEqualLines(['foo', 'bite', 'foo', 'brr']);
+    newTest({
+      title: 'Substitute with parameters should update search state',
+      start: ['foo', 'bar', 'foo', 'bar|'],
+      keysPressed:
+        '/bar\n' + // search for bar (search state now = bar)
+        ':s/ar/ite\n' + // change first bar to bite (search state now = ar, not bar)
+        'n' + // repeat search (ar, not bar)
+        'rr', // and replace a with r
+      end: ['foo', 'bite', 'foo', 'b|rr'],
     });
-    test('Substitute with no pattern should repeat previous substitution and not update search state', async () => {
-      await modeHandler.handleMultipleKeyEvents([
-        'i', // link zelda link zelda link
-        'l',
-        'i',
-        'n',
-        'k',
-        '<Esc>',
-        'o',
-        'z',
-        'e',
-        'l',
-        'd',
-        'a',
-        '<Esc>',
-        'o',
-        'l',
-        'i',
-        'n',
-        'k',
-        '<Esc>',
-        'o',
-        'z',
-        'e',
-        'l',
-        'd',
-        'a',
-        '<Esc>',
-        'o',
-        'l',
-        'i',
-        'n',
-        'k',
-        '<Esc>',
-        '1', // go to the first line
-        'g',
-        'g',
-      ]);
-      await commandLine.Run('s/ink/egend', modeHandler.vimState); // replace first ink with egend
-      await modeHandler.handleMultipleKeyEvents([
-        '/',
-        'l',
-        'i',
-        'n',
-        'k', // search for full link
-        '\n',
-      ]);
-      await commandLine.Run('s', modeHandler.vimState); // repeat previous replacement of ink, not link!
-      await modeHandler.handleMultipleKeyEvents([
-        'n', // search for link, not ink
-        'r',
-        'p', // should be pink now
-      ]);
-
-      assertEqualLines(['legend', 'zelda', 'legend', 'zelda', 'pink']);
+    newTest({
+      title:
+        'Substitute with empty replacement should delete previous substitution (all variants) and accepts flags',
+      start: [
+        'link',
+        '|ganon is here',
+        'link',
+        'ganon is here',
+        'link',
+        'ganon is here',
+        'link',
+        'ganon is here',
+        'link',
+        'ganon ganon is here',
+      ],
+      keysPressed:
+        ':s/ganon/zelda\n' + // replace ganon with zelda (ensuring we have a prior replacement state)
+        'n' + // find next ganon
+        ':s/\n' + // replace ganon with nothing (using prior state)
+        ':s/ganon/zelda\n' + // does nothing (just ensuring we have a prior replacement state)
+        'n' + // find next ganon
+        ':s//\n' + // replace ganon with nothing (using prior state)
+        'n' + // find next ganon
+        ':s/ganon\n' + // replace ganon with nothing (using single input)
+        ':s/ganon/zelda\n' + // does nothing (just ensuring we have a prior replacement state)
+        'n' + // find next ganon
+        ':s///g\n', // replace ganon with nothing
+      end: [
+        'link',
+        'zelda is here',
+        'link',
+        ' is here',
+        'link',
+        ' is here',
+        'link',
+        ' is here',
+        'link',
+        '|  is here',
+      ],
     });
-    test('Substitute repeat previous should accept flags', async () => {
-      await modeHandler.handleMultipleKeyEvents(['i', 'f', 'o', 'o', 'o', '<Esc>']);
-      await commandLine.Run('s/o/un', modeHandler.vimState); // replace first o with un
-      await commandLine.Run('s g', modeHandler.vimState); // repeat replacement on all following o's
-
-      assertEqualLines(['fununun']);
+    newTest({
+      title:
+        'Substitute with no pattern should repeat previous substitution and not alter search state',
+      start: ['|link', 'zelda', 'link', 'zelda', 'link'],
+      keysPressed:
+        ':s/ink/egend\n' + // replace link with legend (search state now = egend, and substitute state set)
+        '/link\n' + // search for link (search state now = link, not ink)
+        ':s\n' + // repeat replacement (using substitute state, so ink, not link - note: search state should NOT change)
+        'n' + // repeat search for link, not ink
+        'rp', // and replace l with p (confirming search state was unaltered)
+      end: ['legend', 'zelda', 'legend', 'zelda', '|pink'],
+    });
+    newTest({
+      title: 'Substitute repeat previous should accept flags',
+      start: ['|fooo'],
+      keysPressed: ':s/o/un\n:s g\n', // repeated replacement accepts g flag, replacing all other occurrences
+      end: ['|fununun'],
     });
     test('Substitute with empty search string should use last searched pattern', async () => {
       await modeHandler.handleMultipleKeyEvents([
