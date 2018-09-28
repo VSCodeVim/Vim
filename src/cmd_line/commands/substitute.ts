@@ -13,6 +13,12 @@ import { Position } from '../../common/motion/position';
 import { SubstituteState } from '../../state/substituteState';
 import { SearchState, SearchDirection } from '../../state/searchState';
 
+/**
+ * NOTE: for "pattern", undefined is different from an empty string.
+ * when it's undefined, it means to repeat the previous REPLACEMENT and ignore "replace".
+ * when it's an empty string, it means to use the previous SEARCH (not replacement) state,
+ * and replace with whatever's set by "replace" (even an empty string).
+ */
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
   pattern: string | undefined;
   replace: string;
@@ -52,6 +58,31 @@ export enum SubstituteFlags {
   UsePreviousPattern = 0x400,
 }
 
+/**
+ * vim has a distinctly different state for previous search and for previous substitute.  However, in SOME
+ * cases a substitution will also update the search state along with the substitute state.
+ *
+ * Also, the substitute command itself will sometimes use the search state, and other times it will use the
+ * substitute state.
+ *
+ * These are the following cases and how vim handles them:
+ * 1. :s/this/that
+ *   - standard search/replace
+ *   - update substitution state
+ *   - update search state too!
+ * 2. :s or :s [flags]
+ *   - use previous SUBSTITUTION state, and repeat previous substitution pattern and replace.
+ *   - do not touch search state!
+ *   - changing substitution state is dont-care cause we're repeating it ;)
+ * 3. :s/ or :s// or :s///
+ *   - use previous SEARCH state (not substitution), and DELETE the string matching the pattern (replace with nothing)
+ *   - update substitution state
+ *   - updating search state is dont-care cause we're repeating it ;)
+ * 4. :s/this or :s/this/ or :s/this//
+ *   - input is pattern - replacement is empty (delete)
+ *   - update replacement state
+ *   - update search state too!
+ */
 export class SubstituteCommand extends node.CommandBase {
   neovimCapable = true;
   protected _arguments: ISubstituteCommandArguments;
