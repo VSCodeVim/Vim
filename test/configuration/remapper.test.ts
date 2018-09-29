@@ -46,6 +46,14 @@ suite('Remapper', () => {
       before: ['d'],
       after: ['"', '_', 'd'],
     },
+    {
+      before: ['y', 'y'],
+      after: ['y', 'l'],
+    },
+    {
+      before: ['e'],
+      after: ['$'],
+    },
   ];
   const visualModeKeyBindings: IKeyRemapping[] = [
     {
@@ -284,7 +292,7 @@ suite('Remapper', () => {
     assert.equal(modeHandler.currentMode.name, ModeName.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
-    await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>', '0']);
 
     const expected = 'text-to-put-on-register';
     let actual: IRegisterContent;
