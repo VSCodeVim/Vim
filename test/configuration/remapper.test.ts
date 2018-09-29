@@ -305,6 +305,24 @@ suite('Remapper', () => {
     actual = await Register.get(vimState);
     assert.equal(actual.text, expected);
   });
+
+  test('d -> black hole register delete in normal mode through modehandler', async () => {
+    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
+
+    const expected = 'text-to-put-on-register';
+    let actual: IRegisterContent;
+    Register.put(expected, modeHandler.vimState);
+    actual = await Register.get(vimState);
+    assert.equal(actual.text, expected);
+
+    await modeHandler.handleMultipleKeyEvents(['d', 'w']);
+
+    actual = await Register.get(vimState);
+    assert.equal(actual.text, expected);
+  });
 });
 
 /* tslint:enable:no-string-literal */
