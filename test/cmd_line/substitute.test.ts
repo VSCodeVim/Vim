@@ -98,6 +98,13 @@ suite('Basic substitute', () => {
   });
 
   newTest({
+    title: 'Replace across relative line range using numLines+colon shorthand',
+    start: ['blah blah', '|blah', 'blah blah', 'blah blah'],
+    keysPressed: '3:s/blah/yay\n',
+    end: ['blah blah', '|yay', 'yay blah', 'yay blah'],
+  });
+
+  newTest({
     title: 'Undocumented: operator without LHS assumes dot as LHS',
     start: ['blah blah', 'bla|h', 'blah blah', 'blah blah'],
     keysPressed: ':+2s/blah/yay\n',
