@@ -25,7 +25,6 @@ export class LineRange {
       if (this.left.length > 0) {
         switch (tok.type) {
           case token.TokenType.Offset:
-          case token.TokenType.LineNumber:
           case token.TokenType.Plus:
           case token.TokenType.Minus:
             break;
@@ -38,7 +37,6 @@ export class LineRange {
       if (this.right.length > 0) {
         switch (tok.type) {
           case token.TokenType.Offset:
-          case token.TokenType.LineNumber:
           case token.TokenType.Plus:
           case token.TokenType.Minus:
             break;
@@ -137,7 +135,7 @@ export class LineRange {
               currentColumn = 0;
               currentOperation = currentToken.type;
               break;
-            case token.TokenType.LineNumber:
+            case token.TokenType.Offset:
               currentLineNum += Number.parseInt(currentToken.content, 10);
               currentColumn = 0;
               currentOperation = undefined;
@@ -155,7 +153,7 @@ export class LineRange {
               currentColumn = 0;
               currentOperation = currentToken.type;
               break;
-            case token.TokenType.LineNumber:
+            case token.TokenType.Offset:
               currentLineNum -= Number.parseInt(currentToken.content, 10);
               currentColumn = 0;
               currentOperation = undefined;
