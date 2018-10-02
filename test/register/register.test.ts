@@ -105,6 +105,49 @@ suite('register', () => {
     assertEqualLines(['test2', 'test2', 'test3']);
   });
 
+  test("Multiline yank (`[count]yy`) stores text in Register '0'", async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
+    await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
+
+    await modeHandler.handleMultipleKeyEvents([
+      '<Esc>',
+      'g',
+      'g',
+      '2',
+      'y',
+      'y',
+      'd',
+      'd',
+      '"',
+      '0',
+      'P',
+    ]);
+
+    assertEqualLines(['test1', 'test2', 'test2', 'test3']);
+  });
+
+  test("Multiline yank (`[count]Y`) stores text in Register '0'", async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
+    await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
+
+    await modeHandler.handleMultipleKeyEvents([
+      '<Esc>',
+      'g',
+      'g',
+      '2',
+      'Y',
+      'd',
+      'd',
+      '"',
+      '0',
+      'P',
+    ]);
+
+    assertEqualLines(['test1', 'test2', 'test2', 'test3']);
+  });
+
   test("Register '1'-'9' stores delete content", async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
