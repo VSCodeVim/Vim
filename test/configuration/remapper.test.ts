@@ -7,12 +7,15 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
 import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { IKeyRemapping } from '../../src/configuration/iconfiguration';
+import { IRegisterContent, Register } from '../../src/register/register';
 import { getAndUpdateModeHandler } from '../../extension';
+import { VimState } from '../../src/state/vimState';
 
 /* tslint:disable:no-string-literal */
 
 suite('Remapper', () => {
   let modeHandler: ModeHandler;
+  let vimState: VimState;
   const leaderKey = '\\';
   const insertModeKeyBindings: IKeyRemapping[] = [
     {
@@ -38,6 +41,18 @@ suite('Remapper', () => {
           args: [],
         },
       ],
+    },
+    {
+      before: ['d'],
+      after: ['"', '_', 'd'],
+    },
+    {
+      before: ['y', 'y'],
+      after: ['y', 'l'],
+    },
+    {
+      before: ['e'],
+      after: ['$'],
     },
   ];
   const visualModeKeyBindings: IKeyRemapping[] = [
@@ -81,6 +96,7 @@ suite('Remapper', () => {
 
     await setupWorkspace(configuration);
     modeHandler = await getAndUpdateModeHandler();
+    vimState = modeHandler.vimState;
   });
 
   teardown(cleanUpWorkspace);
@@ -270,6 +286,42 @@ suite('Remapper', () => {
     // assert
     assert.equal(actual, true);
     assert.equal(vscode.window.visibleTextEditors.length, 0);
+  });
+
+  test('d -> black hole register delete in normal mode through modehandler', async () => {
+    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>', '0']);
+
+    const expected = 'text-to-put-on-register';
+    let actual: IRegisterContent;
+    Register.put(expected, modeHandler.vimState);
+    actual = await Register.get(vimState);
+    assert.equal(actual.text, expected);
+
+    await modeHandler.handleMultipleKeyEvents(['d', 'd']);
+
+    actual = await Register.get(vimState);
+    assert.equal(actual.text, expected);
+  });
+
+  test('d -> black hole register delete in normal mode through modehandler', async () => {
+    assert.equal(modeHandler.currentMode.name, ModeName.Normal);
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
+    await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
+
+    const expected = 'text-to-put-on-register';
+    let actual: IRegisterContent;
+    Register.put(expected, modeHandler.vimState);
+    actual = await Register.get(vimState);
+    assert.equal(actual.text, expected);
+
+    await modeHandler.handleMultipleKeyEvents(['d', 'w']);
+
+    actual = await Register.get(vimState);
+    assert.equal(actual.text, expected);
   });
 });
 
