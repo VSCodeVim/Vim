@@ -1,5 +1,27 @@
 # Change Log
 
+## [v0.16.6](https://github.com/vscodevim/vim/tree/v0.16.6) (2018-10-02)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.5...v0.16.6)
+
+**Fixed Bugs:**
+
+- Remapping `d` to always delete to black-hole [\#2672](https://github.com/VSCodeVim/Vim/issues/2672)
+
+**Closed issues:**
+
+- Visual Block Mode when not using Ctrl keys [\#3042](https://github.com/VSCodeVim/Vim/issues/3042)
+- Confirm-Replace works incorrectly with global substitute for certain types of replace patterns [\#2950](https://github.com/VSCodeVim/Vim/issues/2950)
+- Investigate reducing startup activation time [\#2947](https://github.com/VSCodeVim/Vim/issues/2947)
+
+**Merged pull requests:**
+
+- Feature/fix black hole operator mappings [\#3081](https://github.com/VSCodeVim/Vim/pull/3081) ([shawnaxsom](https://github.com/shawnaxsom))
+- Feature/insert mode optimizations [\#3078](https://github.com/VSCodeVim/Vim/pull/3078) ([shawnaxsom](https://github.com/shawnaxsom))
+- Update dependency typescript to v3.1.1 [\#3077](https://github.com/VSCodeVim/Vim/pull/3077) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.32 [\#3066](https://github.com/VSCodeVim/Vim/pull/3066) ([renovate-bot](https://github.com/renovate-bot))
+- Fix substitute with gc flag [\#3055](https://github.com/VSCodeVim/Vim/pull/3055) ([tomotg](https://github.com/tomotg))
+
 ## [v0.16.5](https://github.com/vscodevim/vim/tree/v0.16.5) (2018-09-21)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.4...v0.16.5)
@@ -17,6 +39,7 @@
 **Closed issues:**
 
 - C-o, C-i strange jumping behavior. [\#3047](https://github.com/VSCodeVim/Vim/issues/3047)
+- Support vscode's color copy [\#3038](https://github.com/VSCodeVim/Vim/issues/3038)
 - Possible for `:new` to a open a new editor in the current group without splitting? [\#2911](https://github.com/VSCodeVim/Vim/issues/2911)
 - Support for ' ' \(Jump to previous cursor position\) [\#2031](https://github.com/VSCodeVim/Vim/issues/2031)
 

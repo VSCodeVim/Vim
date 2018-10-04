@@ -37,6 +37,7 @@ import { Jump } from '../jumps/jump';
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
+  private _previousMode: ModeName;
   private _remappers: Remappers;
 
   public vimState: VimState;
@@ -321,6 +322,7 @@ export class ModeHandler implements vscode.Disposable {
        */
       if (
         !this.vimState.isCurrentlyPerformingRemapping &&
+        !this.vimState.recordedState.operator &&
         (withinTimeout || this.vimState.recordedState.commandList.length === 1)
       ) {
         handled = await this._remappers.sendKey(
@@ -1421,11 +1423,14 @@ export class ModeHandler implements vscode.Disposable {
 
     this._renderStatusBar();
 
-    await vscode.commands.executeCommand(
-      'setContext',
-      'vim.mode',
-      ModeName[this.vimState.currentMode]
-    );
+    if (this._previousMode !== this.vimState.currentMode) {
+      await vscode.commands.executeCommand(
+        'setContext',
+        'vim.mode',
+        ModeName[this.vimState.currentMode]
+      );
+      this._previousMode = this.vimState.currentMode;
+    }
   }
 
   private _renderStatusBar(): void {
