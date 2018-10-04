@@ -112,8 +112,42 @@ export class ModeHandler implements vscode.Disposable {
       }
     );
 
+    const onChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(e => {
+      if (configuration.disableExt) {
+        return;
+      }
+
+      if (Globals.isTesting) {
+        return;
+      }
+
+      if (e !== undefined) {
+        this.vimState.editor = e;
+        taskQueue.enqueueTask(
+          () => this.handleActiveEditorChange(e),
+          undefined,
+          /**
+           * We don't want these to become backlogged! If they do, we'll update
+           * the selection to an incorrect value and see a jittering cursor.
+           */
+          true
+        );
+      }
+    });
+
     this._disposables.push(onChangeTextEditorSelection);
+    this._disposables.push(onChangeActiveTextEditor);
     this._disposables.push(this.vimState);
+  }
+
+  private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
+    let onlyUpdateInternal = e.kind !== vscode.TextEditorSelectionChangeKind.Mouse;
+    return this.handleSelectionOrActiveEditorChange(e.selections, onlyUpdateInternal, e.textEditor);
+  }
+
+  private async handleActiveEditorChange(e: vscode.TextEditor): Promise<void> {
+    let onlyUpdateInternal = false;
+    return this.handleSelectionOrActiveEditorChange(e.selections, onlyUpdateInternal, e);
   }
 
   /**
@@ -131,14 +165,18 @@ export class ModeHandler implements vscode.Disposable {
    * https://gist.github.com/rebornix/d21d1cc060c009d4430d3904030bd4c1 to
    * perform the manual testing.
    */
-  private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
-    let selection = e.selections[0];
+  private async handleSelectionOrActiveEditorChange(
+    selections: vscode.Selection[],
+    onlyUpdateInternal: boolean,
+    eventTextEditor: vscode.TextEditor
+  ): Promise<void> {
+    let selection = selections[0];
     if (
-      (e.selections.length !== this.vimState.allCursors.length || this.vimState.isMultiCursor) &&
+      (selections.length !== this.vimState.allCursors.length || this.vimState.isMultiCursor) &&
       this.vimState.currentMode !== ModeName.VisualBlock
     ) {
       // Number of selections changed, make sure we know about all of them still
-      this.vimState.allCursors = e.textEditor.selections.map(
+      this.vimState.allCursors = eventTextEditor.selections.map(
         sel =>
           new Range(
             // Adjust the cursor positions because cursors & selections don't match exactly
@@ -156,7 +194,7 @@ export class ModeHandler implements vscode.Disposable {
      * We only trigger our view updating process if it's a mouse selection.
      * Otherwise we only update our internal cursor postions accordingly.
      */
-    if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
+    if (onlyUpdateInternal) {
       if (selection) {
         if (this.currentMode.isVisualMode) {
           /**
@@ -173,7 +211,7 @@ export class ModeHandler implements vscode.Disposable {
       return;
     }
 
-    if (this.vimState.isMultiCursor && e.selections.length === 1) {
+    if (this.vimState.isMultiCursor && selections.length === 1) {
       this.vimState.isMultiCursor = false;
     }
 
