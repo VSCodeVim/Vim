@@ -37,6 +37,7 @@ import { Jump } from '../jumps/jump';
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
+  private _previousMode: ModeName;
   private _remappers: Remappers;
 
   public vimState: VimState;
@@ -310,6 +311,7 @@ export class ModeHandler implements vscode.Disposable {
     try {
       // Take the count prefix out to perform the correct remapping.
       const withinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
+      const isOperatorCombination = this.vimState.recordedState.operator;
 
       let handled = false;
 
@@ -317,10 +319,14 @@ export class ModeHandler implements vscode.Disposable {
        * Check that
        *
        * 1) We are not already performing a nonrecursive remapping.
-       * 2) We haven't timed out of our previous remapping.
+       * 2) We aren't in normal mode performing on an operator
+       *    Note: ciwjj should be remapped if jj -> <Esc> in insert mode
+       *          dd should not remap the second "d", if d -> "_d in normal mode
+       * 3) We haven't timed out of our previous remapping.
        */
       if (
         !this.vimState.isCurrentlyPerformingRemapping &&
+        (!isOperatorCombination || this.vimState.currentMode !== ModeName.Normal) &&
         (withinTimeout || this.vimState.recordedState.commandList.length === 1)
       ) {
         handled = await this._remappers.sendKey(
@@ -1417,11 +1423,14 @@ export class ModeHandler implements vscode.Disposable {
 
     this._renderStatusBar();
 
-    await vscode.commands.executeCommand(
-      'setContext',
-      'vim.mode',
-      ModeName[this.vimState.currentMode]
-    );
+    if (this._previousMode !== this.vimState.currentMode) {
+      await vscode.commands.executeCommand(
+        'setContext',
+        'vim.mode',
+        ModeName[this.vimState.currentMode]
+      );
+      this._previousMode = this.vimState.currentMode;
+    }
   }
 
   private _renderStatusBar(): void {

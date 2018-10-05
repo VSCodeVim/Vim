@@ -1,5 +1,57 @@
 # Change Log
 
+## [v0.16.6](https://github.com/vscodevim/vim/tree/v0.16.6) (2018-10-02)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.5...v0.16.6)
+
+**Fixed Bugs:**
+
+- Remapping `d` to always delete to black-hole [\#2672](https://github.com/VSCodeVim/Vim/issues/2672)
+
+**Closed issues:**
+
+- Visual Block Mode when not using Ctrl keys [\#3042](https://github.com/VSCodeVim/Vim/issues/3042)
+- Confirm-Replace works incorrectly with global substitute for certain types of replace patterns [\#2950](https://github.com/VSCodeVim/Vim/issues/2950)
+- Investigate reducing startup activation time [\#2947](https://github.com/VSCodeVim/Vim/issues/2947)
+
+**Merged pull requests:**
+
+- Feature/fix black hole operator mappings [\#3081](https://github.com/VSCodeVim/Vim/pull/3081) ([shawnaxsom](https://github.com/shawnaxsom))
+- Feature/insert mode optimizations [\#3078](https://github.com/VSCodeVim/Vim/pull/3078) ([shawnaxsom](https://github.com/shawnaxsom))
+- Update dependency typescript to v3.1.1 [\#3077](https://github.com/VSCodeVim/Vim/pull/3077) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.32 [\#3066](https://github.com/VSCodeVim/Vim/pull/3066) ([renovate-bot](https://github.com/renovate-bot))
+- Fix substitute with gc flag [\#3055](https://github.com/VSCodeVim/Vim/pull/3055) ([tomotg](https://github.com/tomotg))
+
+## [v0.16.5](https://github.com/vscodevim/vim/tree/v0.16.5) (2018-09-21)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.4...v0.16.5)
+
+**Enhancements:**
+
+- the jump list is wrong [\#1688](https://github.com/VSCodeVim/Vim/issues/1688)
+
+**Fixed Bugs:**
+
+- keybinding \<c-f\> overwrite vscode's default behavior [\#3050](https://github.com/VSCodeVim/Vim/issues/3050)
+- New Jump Tracker doesn't always handle that isn't left open in a tab [\#3039](https://github.com/VSCodeVim/Vim/issues/3039)
+- Exiting CommandMode should mimic Vim behavior [\#3035](https://github.com/VSCodeVim/Vim/issues/3035)
+
+**Closed issues:**
+
+- C-o, C-i strange jumping behavior. [\#3047](https://github.com/VSCodeVim/Vim/issues/3047)
+- Support vscode's color copy [\#3038](https://github.com/VSCodeVim/Vim/issues/3038)
+- Possible for `:new` to a open a new editor in the current group without splitting? [\#2911](https://github.com/VSCodeVim/Vim/issues/2911)
+- Support for ' ' \(Jump to previous cursor position\) [\#2031](https://github.com/VSCodeVim/Vim/issues/2031)
+
+**Merged pull requests:**
+
+- Update dependency prettier to v1.14.3 [\#3060](https://github.com/VSCodeVim/Vim/pull/3060) ([renovate-bot](https://github.com/renovate-bot))
+- fix `\<C-f\>` in 「Insert」mode [\#3051](https://github.com/VSCodeVim/Vim/pull/3051) ([myhere](https://github.com/myhere))
+- Support for line completion \(\<C-x\>\<C-l\>\) [\#3048](https://github.com/VSCodeVim/Vim/pull/3048) ([shawnaxsom](https://github.com/shawnaxsom))
+- Update dependency lodash to v4.17.11 [\#3045](https://github.com/VSCodeVim/Vim/pull/3045) ([renovate-bot](https://github.com/renovate-bot))
+- Fixed Jump Tracker jumps when jumping from a file that auto closes [\#3041](https://github.com/VSCodeVim/Vim/pull/3041) ([shawnaxsom](https://github.com/shawnaxsom))
+- Fix: Missing bindings to exit CommandMode. closes \#3035 [\#3036](https://github.com/VSCodeVim/Vim/pull/3036) ([mxlian](https://github.com/mxlian))
+
 ## [v0.16.4](https://github.com/vscodevim/vim/tree/v0.16.4) (2018-09-10)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.3...v0.16.4)
