@@ -8,8 +8,8 @@ import { Message } from './../../util/message';
 const untildify = require('untildify');
 
 export enum FilePosition {
-  CurrentWindow,
-  NewWindow,
+  NewWindowVerticalSplit,
+  NewWindowHorizontalSplit,
 }
 
 export interface IFileCommandArguments extends node.ICommandArgs {
@@ -32,103 +32,83 @@ export class FileCommand extends node.CommandBase {
   get arguments(): IFileCommandArguments {
     return this._arguments;
   }
-
-  getActiveViewColumn(): vscode.ViewColumn {
-    const active = vscode.window.activeTextEditor;
-
-    if (!active) {
-      return vscode.ViewColumn.One;
-    }
-
-    return active.viewColumn!;
-  }
-
-  getViewColumnToRight(): vscode.ViewColumn {
-    const active = vscode.window.activeTextEditor;
-
-    if (!active) {
-      return vscode.ViewColumn.One;
-    }
-
-    switch (active.viewColumn) {
-      case vscode.ViewColumn.One:
-        return vscode.ViewColumn.Two;
-      case vscode.ViewColumn.Two:
-        return vscode.ViewColumn.Three;
-    }
-
-    return active.viewColumn!;
-  }
-
   async execute(): Promise<void> {
     if (this._arguments.bang) {
       await vscode.commands.executeCommand('workbench.action.files.revert');
       return;
     }
 
+    // Need to do this before the split since it loses the activeTextEditor
+    let editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
+
+    // Do the split if requested
+    let split = false;
+    if (this._arguments.position === FilePosition.NewWindowVerticalSplit) {
+      await vscode.commands.executeCommand('workbench.action.splitEditorRight');
+      split = true;
+    }
+    if (this._arguments.position === FilePosition.NewWindowHorizontalSplit) {
+      await vscode.commands.executeCommand('workbench.action.splitEditorDown');
+      split = true;
+    }
+
+    let hidePreviousEditor = async function() {
+      if (split === true) {
+        await vscode.commands.executeCommand('workbench.action.previousEditor');
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      }
+    };
+
+    // No name was specified
     if (this._arguments.name === undefined) {
-      // Open an empty file
-      if (this._arguments.position === FilePosition.CurrentWindow) {
+      if (this._arguments.createFileIfNotExists === true) {
         await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
-      } else {
-        await vscode.commands.executeCommand('workbench.action.splitEditor');
-        await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
-        await vscode.commands.executeCommand('workbench.action.closeOtherEditors');
+        await hidePreviousEditor();
       }
       return;
     }
 
+    let filePath = '';
+
+    // Using the empty string will request to open a file
     if (this._arguments.name === '') {
-      if (this._arguments.position === FilePosition.NewWindow) {
-        await vscode.commands.executeCommand('workbench.action.splitEditor');
+      // No name on split is fine and just return
+      if (split === true) {
         return;
       }
 
       const fileList = await vscode.window.showOpenDialog({});
       if (fileList) {
-        const doc = await vscode.workspace.openTextDocument(fileList[0]);
-        vscode.window.showTextDocument(doc);
+        filePath = fileList[0].fsPath;
       }
-      return;
-    }
+    } else {
+      // Using a filename, open or create the file
+      this._arguments.name = <string>untildify(this._arguments.name);
+      filePath = path.isAbsolute(this._arguments.name)
+        ? this._arguments.name
+        : path.join(path.dirname(editorFilePath), this._arguments.name);
 
-    this._arguments.name = <string>untildify(this._arguments.name);
-
-    let filePath = this._arguments.name;
-    if (!path.isAbsolute(this._arguments.name)) {
-      let curFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
-      filePath = path.join(path.dirname(curFilePath), this._arguments.name);
-
-      if (!fs.existsSync(filePath)) {
+      if (filePath !== editorFilePath && !fs.existsSync(filePath)) {
         // if file does not exist and does not have an extension
         // try to find it with the same extension
         if (path.extname(filePath) === '') {
-          const pathWithExt = filePath + path.extname(curFilePath);
+          const pathWithExt = filePath + path.extname(editorFilePath);
           if (fs.existsSync(pathWithExt)) {
             filePath = pathWithExt;
           }
         }
+        if (this._arguments.createFileIfNotExists) {
+          fs.closeSync(fs.openSync(filePath, 'w'));
+        } else {
+          Message.ShowError('This file ' + filePath + ' does not exist.');
+          return;
+        }
       }
     }
 
-    // create file
-    if (!fs.existsSync(filePath)) {
-      if (this.arguments.createFileIfNotExists) {
-        fs.closeSync(fs.openSync(filePath, 'w'));
-      } else {
-        Message.ShowError('The file ' + filePath + ' does not exist.');
-        return;
-      }
-    }
+    const doc = await vscode.workspace.openTextDocument(filePath);
 
-    let folder = vscode.Uri.file(filePath);
-    await vscode.commands.executeCommand(
-      'vscode.open',
-      folder,
-      this._arguments.position === FilePosition.NewWindow
-        ? this.getViewColumnToRight()
-        : this.getActiveViewColumn()
-    );
+    vscode.window.showTextDocument(doc);
 
     if (this.arguments.lineNumber) {
       vscode.window.activeTextEditor!.revealRange(
@@ -138,5 +118,6 @@ export class FileCommand extends node.CommandBase {
         )
       );
     }
+    await hidePreviousEditor();
   }
 }
