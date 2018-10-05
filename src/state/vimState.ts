@@ -162,6 +162,14 @@ export class VimState implements vscode.Disposable {
 
   public cursorPositionJustBeforeAnythingHappened = [new Position(0, 0)];
 
+  /**
+   * Cursor position recorded after last event was handled that we performed or detected.
+   * onDidChangeTextEditorSelection sends events when we change vscode.textEditor.selection.
+   * Knowing the position helps filter out our own events we've already handled.
+   * @param vimState - State that contains the fileName and prior position for the jump
+   */
+  public cursorPositionAfterLastEvent = [new Position(0, 0)];
+
   public isRecordingMacro: boolean = false;
   public isReplayingMacro: boolean = false;
 

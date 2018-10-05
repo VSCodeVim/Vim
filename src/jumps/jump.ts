@@ -60,6 +60,34 @@ export class Jump {
   }
 
   /**
+   * Factory method for creating a Jump from a VimState's cursor position,
+   * after the last event from the Vim extension itself, or the
+   * last event detected by the Vim extension.
+   * Typically should match vimState.cursorPosition, unless a command has occurred that
+   * hasn't finished being handled, or an update wasn't detected.
+   * @param vimState - State that contains the fileName and prior position for the jump
+   */
+  static fromStateAfterLastEvent(vimState: VimState) {
+    return new Jump({
+      editor: vimState.editor,
+      fileName: vimState.editor.document.fileName,
+      position: vimState.cursorPositionAfterLastEvent[0],
+    });
+  }
+
+  /**
+   * Factory method for creating a Jump from a vscode.TextEditor's cursor start position.
+   * @param editor - Editor that contains the filename and position of the jump.
+   */
+  static fromTextEditor(editor: vscode.TextEditor) {
+    return new Jump({
+      editor,
+      fileName: editor.document.fileName,
+      position: new Position(editor.selection.start.line, editor.selection.start.character),
+    });
+  }
+
+  /**
    * Determine whether another jump matches the same file path and line number,
    * regardless of whether the column numbers match.
    *

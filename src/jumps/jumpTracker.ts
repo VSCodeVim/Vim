@@ -48,7 +48,7 @@ export class JumpTracker {
   }
 
   /**
-   * Current jump in the list of jumps.
+   * Whether any jumps are currently recorded.
    */
   public get hasJumps(): boolean {
     return this._jumps.length > 0;
