@@ -37,8 +37,13 @@ import { Jump } from '../jumps/jump';
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
-  private _previousMode: ModeName;
   private _remappers: Remappers;
+
+  /**
+   * Last vim.mode sent to vscode, for updating keybindings.
+   * It is static, as the context applies across editors.
+   */
+  private static _lastVimModeSetForKeybindings: ModeName;
 
   public vimState: VimState;
 
@@ -1423,13 +1428,23 @@ export class ModeHandler implements vscode.Disposable {
 
     this._renderStatusBar();
 
-    if (this._previousMode !== this.vimState.currentMode) {
-      await vscode.commands.executeCommand(
-        'setContext',
-        'vim.mode',
-        ModeName[this.vimState.currentMode]
-      );
-      this._previousMode = this.vimState.currentMode;
+    await this.updateVimModeForKeybindings(this.vimState.currentMode);
+  }
+
+  /**
+   * Let vscode know what our current mode is by setting vim.mode.
+   * This is used to determine keybindings, as seen in package.json.
+   * Applies across editors.
+   * @param mode New (current) mode
+   */
+  public async updateVimModeForKeybindings(mode: ModeName): Promise<void> {
+    // This can be an expensive operation (sometimes taking 40-60ms),
+    // so we only want to send it when it actually changes, which should
+    // include key events as well as changing or opening tabs.
+    if (ModeHandler._lastVimModeSetForKeybindings !== mode) {
+      await vscode.commands.executeCommand('setContext', 'vim.mode', ModeName[mode]);
+      // There doesn't seem to be a "getContext" available to extensions, so track ourselves.
+      ModeHandler._lastVimModeSetForKeybindings = mode;
     }
   }
 
