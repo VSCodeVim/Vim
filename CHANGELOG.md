@@ -1,5 +1,42 @@
 # Change Log
 
+## [v0.16.7](https://github.com/vscodevim/vim/tree/v0.16.7) (2018-10-06)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.6...v0.16.7)
+
+**Merged pull requests:**
+
+- Update dependency @types/sinon to v5.0.4 [\#3104](https://github.com/VSCodeVim/Vim/pull/3104) ([renovate-bot](https://github.com/renovate-bot))
+- Cleanup gt count command [\#3097](https://github.com/VSCodeVim/Vim/pull/3097) ([xconverge](https://github.com/xconverge))
+- Update dependency @types/sinon to v5.0.3 [\#3093](https://github.com/VSCodeVim/Vim/pull/3093) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.34 [\#3092](https://github.com/VSCodeVim/Vim/pull/3092) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency sinon to v6.3.5 [\#3091](https://github.com/VSCodeVim/Vim/pull/3091) ([renovate-bot](https://github.com/renovate-bot))
+- Remappings not applying with operators that enter insert mode [\#3090](https://github.com/VSCodeVim/Vim/pull/3090) ([shawnaxsom](https://github.com/shawnaxsom))
+- v0.16.6 [\#3085](https://github.com/VSCodeVim/Vim/pull/3085) ([jpoon](https://github.com/jpoon))
+- Add support for grid layout [\#2697](https://github.com/VSCodeVim/Vim/pull/2697) ([rodcloutier](https://github.com/rodcloutier))
+
+## [v0.16.6](https://github.com/vscodevim/vim/tree/v0.16.6) (2018-10-02)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.5...v0.16.6)
+
+**Fixed Bugs:**
+
+- Confirm-Replace works incorrectly with global substitute for certain types of replace patterns [\#2950](https://github.com/VSCodeVim/Vim/issues/2950)
+- Remapping `d` to always delete to black-hole [\#2672](https://github.com/VSCodeVim/Vim/issues/2672)
+
+**Closed issues:**
+
+- Visual Block Mode when not using Ctrl keys [\#3042](https://github.com/VSCodeVim/Vim/issues/3042)
+- Investigate reducing startup activation time [\#2947](https://github.com/VSCodeVim/Vim/issues/2947)
+
+**Merged pull requests:**
+
+- Feature/fix black hole operator mappings [\#3081](https://github.com/VSCodeVim/Vim/pull/3081) ([shawnaxsom](https://github.com/shawnaxsom))
+- Feature/insert mode optimizations [\#3078](https://github.com/VSCodeVim/Vim/pull/3078) ([shawnaxsom](https://github.com/shawnaxsom))
+- Update dependency typescript to v3.1.1 [\#3077](https://github.com/VSCodeVim/Vim/pull/3077) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.32 [\#3066](https://github.com/VSCodeVim/Vim/pull/3066) ([renovate-bot](https://github.com/renovate-bot))
+- Fix substitute with gc flag [\#3055](https://github.com/VSCodeVim/Vim/pull/3055) ([tomotg](https://github.com/tomotg))
+
 ## [v0.16.5](https://github.com/vscodevim/vim/tree/v0.16.5) (2018-09-21)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.4...v0.16.5)
@@ -17,6 +54,7 @@
 **Closed issues:**
 
 - C-o, C-i strange jumping behavior. [\#3047](https://github.com/VSCodeVim/Vim/issues/3047)
+- Support vscode's color copy [\#3038](https://github.com/VSCodeVim/Vim/issues/3038)
 - Possible for `:new` to a open a new editor in the current group without splitting? [\#2911](https://github.com/VSCodeVim/Vim/issues/2911)
 - Support for ' ' \(Jump to previous cursor position\) [\#2031](https://github.com/VSCodeVim/Vim/issues/2031)
 
