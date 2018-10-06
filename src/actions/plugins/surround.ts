@@ -30,6 +30,7 @@ import {
   SelectInnerWord,
   TextObjectMovement,
 } from './../textobject';
+import * as vscode from 'vscode';
 
 @RegisterAction
 class CommandSurroundAddTarget extends BaseCommand {
@@ -436,16 +437,27 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     vimState: VimState,
     position: Position
   ): Promise<boolean> {
-    const { target, replacement, operator } = vimState.surround!;
+    const { target, operator } = vimState.surround!;
+    let replacement = vimState.surround!.replacement;
+
+    // Flag of whether or not html attributes should be retained
+    let retainAttributes = false;
 
     if (operator === 'change' || operator === 'yank') {
       if (!replacement) {
         return false;
       }
 
-      // This is an incomplete tag. Wait for the user to finish it.
-      if (replacement[0] === '<' && replacement[replacement.length - 1] !== '>') {
-        return false;
+      // This is currently an incomplete tag. Check if we should finish it.
+      if (replacement[0] === '<') {
+        // If enter is used, retain the html attributes if possible and consider this tag done
+        // if neither > or <enter> were pressed, this is not a complete tag so return false
+        if (replacement[replacement.length - 1] === '\n') {
+          replacement = replacement.slice(0, replacement.length - 1);
+          retainAttributes = true;
+        } else if (replacement[replacement.length - 1] !== '>') {
+          return false;
+        }
       }
     }
 
@@ -563,7 +575,14 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       startReplaceRange = new Range(start, start.getRight());
       endReplaceRange = new Range(innerTagContent.stop, innerTagContent.stop.getRight());
 
-      startDeleteRange = new Range(start.getRight(), innerTagContent.start);
+      if (retainAttributes) {
+        // Don't remove the attributes, just the tag name (one WORD)
+        const tagNameEnd = start.getCurrentBigWordEnd().getRight();
+        startDeleteRange = new Range(start.getRight(), tagNameEnd);
+      } else {
+        startDeleteRange = new Range(start.getRight(), innerTagContent.start);
+      }
+
       endDeleteRange = new Range(innerTagContent.stop.getRight(), stop);
     }
 
