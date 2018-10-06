@@ -1,17 +1,32 @@
 # Change Log
 
+## [v0.16.7](https://github.com/vscodevim/vim/tree/v0.16.7) (2018-10-06)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.6...v0.16.7)
+
+**Merged pull requests:**
+
+- Update dependency @types/sinon to v5.0.4 [\#3104](https://github.com/VSCodeVim/Vim/pull/3104) ([renovate-bot](https://github.com/renovate-bot))
+- Cleanup gt count command [\#3097](https://github.com/VSCodeVim/Vim/pull/3097) ([xconverge](https://github.com/xconverge))
+- Update dependency @types/sinon to v5.0.3 [\#3093](https://github.com/VSCodeVim/Vim/pull/3093) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.34 [\#3092](https://github.com/VSCodeVim/Vim/pull/3092) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency sinon to v6.3.5 [\#3091](https://github.com/VSCodeVim/Vim/pull/3091) ([renovate-bot](https://github.com/renovate-bot))
+- Remappings not applying with operators that enter insert mode [\#3090](https://github.com/VSCodeVim/Vim/pull/3090) ([shawnaxsom](https://github.com/shawnaxsom))
+- v0.16.6 [\#3085](https://github.com/VSCodeVim/Vim/pull/3085) ([jpoon](https://github.com/jpoon))
+- Add support for grid layout [\#2697](https://github.com/VSCodeVim/Vim/pull/2697) ([rodcloutier](https://github.com/rodcloutier))
+
 ## [v0.16.6](https://github.com/vscodevim/vim/tree/v0.16.6) (2018-10-02)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.5...v0.16.6)
 
 **Fixed Bugs:**
 
+- Confirm-Replace works incorrectly with global substitute for certain types of replace patterns [\#2950](https://github.com/VSCodeVim/Vim/issues/2950)
 - Remapping `d` to always delete to black-hole [\#2672](https://github.com/VSCodeVim/Vim/issues/2672)
 
 **Closed issues:**
 
 - Visual Block Mode when not using Ctrl keys [\#3042](https://github.com/VSCodeVim/Vim/issues/3042)
-- Confirm-Replace works incorrectly with global substitute for certain types of replace patterns [\#2950](https://github.com/VSCodeVim/Vim/issues/2950)
 - Investigate reducing startup activation time [\#2947](https://github.com/VSCodeVim/Vim/issues/2947)
 
 **Merged pull requests:**
