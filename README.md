@@ -2,14 +2,16 @@
 <p align="center"><strong>Vim emulation for Visual Studio Code</strong></p>
 
 [![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
+[![](https://vsmarketplacebadge.apphb.com/installs-short/vscodevim.vim.svg)](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim)
 [![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
+[![https://vscodevim-slackin.azurewebsites.net](https://img.shields.io/badge/vscodevim-slack-blue.svg?logo=slack)](https://vscodevim-slackin.azurewebsites.net)
 
 VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
 
 - 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
 - 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
 - ❓ If you need to ask any questions, join us on [Slack](https://vscodevim-slackin.azurewebsites.net)
-- :octocat: Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
+- Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
 
 <details>
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
@@ -61,7 +63,7 @@ We also recommend increasing Key Repeat and Delay Until Repeat settings in _Syst
 
 ### Windows Setup
 
-Like real vim, VSCodeVim will take over your control keys. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
+Like real vim, VSCodeVim will take over your control keys. This behaviour can be adjusted with the [`useCtrlKeys`](#vscodevim-settings) and [`handleKeys`](#vscodevim-settings) settings.
 
 ### Linux Setup
 
@@ -576,7 +578,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 ### None of the native Visual Studio Code `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
-Set the [`useCtrlKeys` setting](#vimusectrlkeys) to `false`.
+Set the [`useCtrlKeys` setting](#vscodevim-settings) to `false`.
 
 ### Moving `j`/`k` over folds opens up the folds
 
