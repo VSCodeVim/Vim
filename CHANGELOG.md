@@ -1,5 +1,25 @@
 # Change Log
 
+## [v0.16.8](https://github.com/vscodevim/vim/tree/v0.16.8) (2018-10-06)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.7...v0.16.8)
+
+**Closed issues:**
+
+- \<C -c\> stopped working this morning [\#3110](https://github.com/VSCodeVim/Vim/issues/3110)
+- version 0.16.6 cause \<tab\> key insert string for unknown reason [\#3096](https://github.com/VSCodeVim/Vim/issues/3096)
+- yank in visual mode doesn't update register 0 [\#3065](https://github.com/VSCodeVim/Vim/issues/3065)
+- Paste the yanked text with "0p does no work [\#2554](https://github.com/VSCodeVim/Vim/issues/2554)
+- Surround: Keep HTML attributes when changing tags [\#1938](https://github.com/VSCodeVim/Vim/issues/1938)
+
+**Merged pull requests:**
+
+- Fix issues with keybindings when changing to an editor in different mode [\#3108](https://github.com/VSCodeVim/Vim/pull/3108) ([shawnaxsom](https://github.com/shawnaxsom))
+- README cleanup [\#3107](https://github.com/VSCodeVim/Vim/pull/3107) ([xconverge](https://github.com/xconverge))
+- Update readme based on new feature for surround with attributes [\#3106](https://github.com/VSCodeVim/Vim/pull/3106) ([xconverge](https://github.com/xconverge))
+- fixes \#1938 Allow to retain attributes when using surround [\#3105](https://github.com/VSCodeVim/Vim/pull/3105) ([xconverge](https://github.com/xconverge))
+- Multiline yank writes to 0 register; fixes \#1214 [\#3087](https://github.com/VSCodeVim/Vim/pull/3087) ([JKillian](https://github.com/JKillian))
+
 ## [v0.16.7](https://github.com/vscodevim/vim/tree/v0.16.7) (2018-10-06)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.6...v0.16.7)
