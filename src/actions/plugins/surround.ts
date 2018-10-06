@@ -30,7 +30,6 @@ import {
   SelectInnerWord,
   TextObjectMovement,
 } from './../textobject';
-import * as vscode from 'vscode';
 
 @RegisterAction
 class CommandSurroundAddTarget extends BaseCommand {
