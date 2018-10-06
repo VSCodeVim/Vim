@@ -439,7 +439,7 @@ You can customize the appearance of easymotion markers (the boxes with letters) 
 
 Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
 
-`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode.
+`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
 
 Surround is enabled by default, but can be disabled by setting `"vim.surround": false`.
 
