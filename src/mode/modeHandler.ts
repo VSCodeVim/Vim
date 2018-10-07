@@ -523,7 +523,9 @@ export class ModeHandler implements vscode.Disposable {
       if (
         vimState.currentMode === ModeName.Normal &&
         prevState !== ModeName.SearchInProgressMode &&
-        prevState !== ModeName.CommandlineInProgress
+        prevState !== ModeName.CommandlineInProgress &&
+        prevState !== ModeName.EasyMotionInputMode &&
+        prevState !== ModeName.EasyMotionMode
       ) {
         ranRepeatableAction = true;
       }
