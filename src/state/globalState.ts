@@ -1,6 +1,10 @@
 import { JumpTracker } from '../jumps/jumpTracker';
 import { RecordedState } from './../state/recordedState';
-import { SearchState } from './searchState';
+import { SearchState, SearchDirection } from './searchState';
+import { SearchHistory } from './searchStateHistory';
+import { getExtensionDirPath } from '../util/util';
+import { Position } from '../common/motion/position';
+import { ModeName } from '../mode/mode';
 
 /**
  * State which stores global state (across editors)
@@ -46,6 +50,32 @@ export class GlobalState {
 
   public set searchStatePrevious(states: SearchState[]) {
     GlobalState._searchStatePrevious = GlobalState._searchStatePrevious.concat(states);
+  }
+
+  private static _searchHistory: SearchHistory | undefined;
+  public loadSearchHistory() {
+    if (GlobalState._searchHistory === undefined) {
+      GlobalState._searchHistory = new SearchHistory(getExtensionDirPath());
+      GlobalState._searchHistory
+        .get()
+        .forEach(val =>
+          this.searchStatePrevious.push(
+            new SearchState(
+              SearchDirection.Forward,
+              new Position(0, 0),
+              val,
+              undefined,
+              ModeName.Normal
+            )
+          )
+        );
+    }
+  }
+
+  public addNewSearchHistoryItem(searchString: string) {
+    if (GlobalState._searchHistory !== undefined) {
+      GlobalState._searchHistory.add(searchString);
+    }
   }
 
   public get previousFullAction(): RecordedState | undefined {
