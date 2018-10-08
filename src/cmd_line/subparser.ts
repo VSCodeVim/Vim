@@ -74,6 +74,7 @@ export const commandParsers = {
   s: parseSubstituteCommandArgs,
 
   e: fileCmd.parseEditFileCommandArgs,
+  edit: fileCmd.parseEditFileCommandArgs,
   ene: fileCmd.parseEditNewFileCommandArgs,
   enew: fileCmd.parseEditNewFileCommandArgs,
 
