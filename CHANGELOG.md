@@ -1,5 +1,24 @@
 # Change Log
 
+## [v0.16.9](https://github.com/vscodevim/vim/tree/v0.16.9) (2018-10-08)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.8...v0.16.9)
+
+**Fixed Bugs:**
+
+- Unexpected behavior with easymotion and `.` as repeat command [\#2310](https://github.com/VSCodeVim/Vim/issues/2310)
+
+**Closed issues:**
+
+- Repeating command \(`.`\) after doing vim-easymotion find character command doesn't work. [\#3111](https://github.com/VSCodeVim/Vim/issues/3111)
+- Incrementing / Decrementing numbers doesn't work when it's after a minus sign and a word [\#3057](https://github.com/VSCodeVim/Vim/issues/3057)
+
+**Merged pull requests:**
+
+- support "edit" command [\#3114](https://github.com/VSCodeVim/Vim/pull/3114) ([m59peacemaker](https://github.com/m59peacemaker))
+- Minor C-a C-x fix [\#3113](https://github.com/VSCodeVim/Vim/pull/3113) ([xconverge](https://github.com/xconverge))
+- Allow dot to repeat after doing any EasyMotion move [\#3112](https://github.com/VSCodeVim/Vim/pull/3112) ([xconverge](https://github.com/xconverge))
+
 ## [v0.16.8](https://github.com/vscodevim/vim/tree/v0.16.8) (2018-10-06)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.7...v0.16.8)
@@ -60,10 +79,6 @@
 ## [v0.16.5](https://github.com/vscodevim/vim/tree/v0.16.5) (2018-09-21)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.4...v0.16.5)
-
-**Enhancements:**
-
-- the jump list is wrong [\#1688](https://github.com/VSCodeVim/Vim/issues/1688)
 
 **Fixed Bugs:**
 
