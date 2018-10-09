@@ -187,6 +187,8 @@ export async function activate(context: vscode.ExtensionContext) {
       if (vscode.window.activeTextEditor !== undefined) {
         const mh: ModeHandler = await getAndUpdateModeHandler();
 
+        await mh.updateVimModeForKeybindings(mh.vimState.currentMode);
+
         await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
 
         globalState.jumpTracker.handleFileJump(
@@ -297,6 +299,9 @@ export async function activate(context: vscode.ExtensionContext) {
     let mh = await getAndUpdateModeHandler();
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
+
+  // Initialize the search history
+  globalState.loadSearchHistory();
 
   // This is called last because getAndUpdateModeHandler() will change cursor
   toggleExtension(configuration.disableExt, compositionState);

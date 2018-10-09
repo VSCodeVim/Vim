@@ -877,9 +877,11 @@ class CommandInsertInSearchMode extends BaseCommand {
           previousSearchState[previousSearchState.length - 1]!.searchString
         ) {
           previousSearchState.push(searchState);
+          vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
         }
       } else {
         vimState.globalState.searchStatePrevious.push(searchState);
+        vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
       }
 
       // Make sure search history does not exceed configuration option
@@ -3032,12 +3034,12 @@ class CommandTabNext extends BaseTabCommand {
   runsOnceForEachCountPrefix = false;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    // gt behaves differently than gT and goes to an absolute index tab, it does
-    // NOT iterate over next tabs
+    // gt behaves differently than gT and goes to an absolute index tab
+    // (1-based), it does NOT iterate over next tabs
     if (vimState.recordedState.count > 0) {
       new TabCommand({
         tab: Tab.Absolute,
-        count: vimState.recordedState.count,
+        count: vimState.recordedState.count - 1,
       }).execute();
     } else {
       new TabCommand({
@@ -3975,8 +3977,8 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
     for (let { start, end, word } of Position.IterateWords(whereToStart)) {
       // '-' doesn't count as a word, but is important to include in parsing
-      // the number
-      if (text[start.character - 1] === '-') {
+      // the number, as long as it is not just part of the word (-foo2 for example)
+      if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
         start = start.getLeft();
         word = text[start.character] + word;
       }

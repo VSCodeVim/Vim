@@ -1,6 +1,10 @@
 import { JumpTracker } from '../jumps/jumpTracker';
 import { RecordedState } from './../state/recordedState';
-import { SearchState } from './searchState';
+import { SubstituteState } from './substituteState';
+import { SearchState, SearchDirection } from './searchState';
+import { SearchHistory } from '../util/historyFile';
+import { Position } from '../common/motion/position';
+import { ModeName } from '../mode/mode';
 
 /**
  * State which stores global state (across editors)
@@ -16,6 +20,11 @@ export class GlobalState {
    * Previous searches performed
    */
   private static _searchStatePrevious: SearchState[] = [];
+
+  /**
+   * Last substitute state for running :s by itself
+   */
+  private static _substituteState: SubstituteState | undefined = undefined;
 
   /**
    * Last search state for running n and N commands
@@ -48,12 +57,46 @@ export class GlobalState {
     GlobalState._searchStatePrevious = GlobalState._searchStatePrevious.concat(states);
   }
 
+  private static _searchHistory: SearchHistory | undefined;
+  public loadSearchHistory() {
+    if (GlobalState._searchHistory === undefined) {
+      GlobalState._searchHistory = new SearchHistory();
+      GlobalState._searchHistory
+        .get()
+        .forEach(val =>
+          this.searchStatePrevious.push(
+            new SearchState(
+              SearchDirection.Forward,
+              new Position(0, 0),
+              val,
+              undefined,
+              ModeName.Normal
+            )
+          )
+        );
+    }
+  }
+
+  public addNewSearchHistoryItem(searchString: string) {
+    if (GlobalState._searchHistory !== undefined) {
+      GlobalState._searchHistory.add(searchString);
+    }
+  }
+
   public get previousFullAction(): RecordedState | undefined {
     return GlobalState._previousFullAction;
   }
 
   public set previousFullAction(state: RecordedState | undefined) {
     GlobalState._previousFullAction = state;
+  }
+
+  public get substituteState(): SubstituteState | undefined {
+    return GlobalState._substituteState;
+  }
+
+  public set substituteState(state: SubstituteState | undefined) {
+    GlobalState._substituteState = state;
   }
 
   public get searchState(): SearchState | undefined {
