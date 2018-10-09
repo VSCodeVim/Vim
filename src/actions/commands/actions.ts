@@ -877,9 +877,11 @@ class CommandInsertInSearchMode extends BaseCommand {
           previousSearchState[previousSearchState.length - 1]!.searchString
         ) {
           previousSearchState.push(searchState);
+          vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
         }
       } else {
         vimState.globalState.searchStatePrevious.push(searchState);
+        vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
       }
 
       // Make sure search history does not exceed configuration option
@@ -3971,8 +3973,8 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
     for (let { start, end, word } of Position.IterateWords(whereToStart)) {
       // '-' doesn't count as a word, but is important to include in parsing
-      // the number
-      if (text[start.character - 1] === '-') {
+      // the number, as long as it is not just part of the word (-foo2 for example)
+      if (text[start.character - 1] === '-' && /\d/.test(text[start.character])) {
         start = start.getLeft();
         word = text[start.character] + word;
       }
