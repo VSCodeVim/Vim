@@ -686,7 +686,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.117",
     "@types/mocha": "5.2.5",
-    "@types/node": "9.6.34",
+    "@types/node": "9.6.35",
     "@types/sinon": "5.0.5",
     "gulp": "4.0.0",
     "gulp-bump": "3.1.1",
