@@ -1,36 +1,38 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { configuration } from '../configuration/configuration';
-import { logger } from '../util/logger';
+import { logger } from './logger';
+import { getExtensionDirPath } from '../util/util';
 
 const mkdirp = require('mkdirp');
 
-export class CommandLineHistory {
-  private static readonly _historyFileName = '.cmdline_history';
+export class HistoryFile {
+  private _historyFileName: string;
   private _historyDir: string;
   private _history: string[] = [];
   private get _historyFilePath(): string {
-    return path.join(this._historyDir, CommandLineHistory._historyFileName);
+    return path.join(this._historyDir, this._historyFileName);
   }
 
-  constructor(historyDir: string) {
+  constructor(historyDir: string, historyFileName: string) {
     this._historyDir = historyDir;
+    this._historyFileName = historyFileName;
     this._loadFromFile();
   }
 
-  public add(command: string | undefined): void {
-    if (!command || command.length === 0) {
+  public add(value: string | undefined): void {
+    if (!value || value.length === 0) {
       return;
     }
 
     // remove duplicates
-    let index: number = this._history.indexOf(command);
+    let index: number = this._history.indexOf(value);
     if (index !== -1) {
       this._history.splice(index, 1);
     }
 
     // append to the end
-    this._history.push(command);
+    this._history.push(value);
 
     // resize array if necessary
     if (this._history.length > configuration.history) {
@@ -53,7 +55,7 @@ export class CommandLineHistory {
     try {
       fs.unlinkSync(this._historyFilePath);
     } catch (err) {
-      logger.warn(`CommandLineHistory: unable to delete ${this._historyFilePath}. err=${err}.`);
+      logger.warn(`Unable to delete ${this._historyFilePath}. err=${err}.`);
     }
   }
 
@@ -65,7 +67,7 @@ export class CommandLineHistory {
         }
       } catch (err) {
         logger.error(
-          `CommandLineHistory: Failed to create directory. path=${this._historyDir}. err=${err}.`
+          `SearchHistory: Failed to create directory. path=${this._historyDir}. err=${err}.`
         );
         reject(err);
       }
@@ -73,7 +75,7 @@ export class CommandLineHistory {
       try {
         fs.writeFileSync(this._historyFilePath, JSON.stringify(this._history), 'utf-8');
       } catch (err) {
-        logger.error(`CommandLineHistory: Failed to save history. err=${err}.`);
+        logger.error(`Failed to Failed to save history. path=${this._historyDir}. err=${err}.`);
         reject(err);
       }
 
@@ -88,9 +90,9 @@ export class CommandLineHistory {
       data = fs.readFileSync(this._historyFilePath, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
-        logger.debug('CommandLineHistory: History does not exist.');
+        logger.debug(`History does not exist. path=${this._historyDir}`);
       } else {
-        logger.error(`CommandLineHistory: Failed to load history. err=${err}.`);
+        logger.error(`Failed to load history. path=${this._historyDir} err=${err}.`);
         return;
       }
     }
@@ -106,8 +108,20 @@ export class CommandLineHistory {
       }
       this._history = parsedData;
     } catch (e) {
-      logger.error(`CommandLineHistory: Deleting corrupted history file. err=${e}.`);
+      logger.error(`Deleting corrupted history file. path=${this._historyDir} err=${e}.`);
       this.clear();
     }
+  }
+}
+
+export class SearchHistory extends HistoryFile {
+  constructor() {
+    super(getExtensionDirPath(), '.search_history');
+  }
+}
+
+export class CommandLineHistory extends HistoryFile {
+  constructor() {
+    super(getExtensionDirPath(), '.cmdline_history');
   }
 }

@@ -1,8 +1,7 @@
 import { JumpTracker } from '../jumps/jumpTracker';
 import { RecordedState } from './../state/recordedState';
 import { SearchState, SearchDirection } from './searchState';
-import { SearchHistory } from './searchStateHistory';
-import { getExtensionDirPath } from '../util/util';
+import { SearchHistory } from '../util/historyFile';
 import { Position } from '../common/motion/position';
 import { ModeName } from '../mode/mode';
 
@@ -55,7 +54,7 @@ export class GlobalState {
   private static _searchHistory: SearchHistory | undefined;
   public loadSearchHistory() {
     if (GlobalState._searchHistory === undefined) {
-      GlobalState._searchHistory = new SearchHistory(getExtensionDirPath());
+      GlobalState._searchHistory = new SearchHistory();
       GlobalState._searchHistory
         .get()
         .forEach(val =>
