@@ -75,7 +75,7 @@ export class HistoryFile {
       try {
         fs.writeFileSync(this._historyFilePath, JSON.stringify(this._history), 'utf-8');
       } catch (err) {
-        logger.error(`Failed to Failed to save history. path=${this._historyDir}. err=${err}.`);
+        logger.error(`Failed to save history. path=${this._historyDir}. err=${err}.`);
         reject(err);
       }
 
