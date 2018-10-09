@@ -67,7 +67,7 @@ export class HistoryFile {
         }
       } catch (err) {
         logger.error(
-          `SearchHistory: Failed to create directory. path=${this._historyDir}. err=${err}.`
+          `Failed to create directory. path=${this._historyDir}. err=${err}.`
         );
         reject(err);
       }
