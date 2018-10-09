@@ -1,5 +1,6 @@
 import { JumpTracker } from '../jumps/jumpTracker';
 import { RecordedState } from './../state/recordedState';
+import { SubstituteState } from './substituteState';
 import { SearchState, SearchDirection } from './searchState';
 import { SearchHistory } from '../util/historyFile';
 import { Position } from '../common/motion/position';
@@ -19,6 +20,11 @@ export class GlobalState {
    * Previous searches performed
    */
   private static _searchStatePrevious: SearchState[] = [];
+
+  /**
+   * Last substitute state for running :s by itself
+   */
+  private static _substituteState: SubstituteState | undefined = undefined;
 
   /**
    * Last search state for running n and N commands
@@ -83,6 +89,14 @@ export class GlobalState {
 
   public set previousFullAction(state: RecordedState | undefined) {
     GlobalState._previousFullAction = state;
+  }
+
+  public get substituteState(): SubstituteState | undefined {
+    return GlobalState._substituteState;
+  }
+
+  public set substituteState(state: SubstituteState | undefined) {
+    GlobalState._substituteState = state;
   }
 
   public get searchState(): SearchState | undefined {

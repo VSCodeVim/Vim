@@ -128,40 +128,67 @@ function parseCount(scanner: Scanner): number {
  */
 export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand {
   try {
+    let searchPattern: string | undefined;
+    let replaceString: string;
+    let flags: number;
+    let count: number;
+
+    if (!args) {
+      // special case for :s
+      return new node.SubstituteCommand({
+        pattern: undefined,
+        replace: '', // ignored in this context
+        flags: node.SubstituteFlags.None,
+        count: 1,
+      });
+    }
+    let scanner: Scanner;
+
     let delimiter = args[0];
 
     if (isValidDelimiter(delimiter)) {
-      let scanner = new Scanner(args.substr(1, args.length - 1));
-      let [searchPattern, searchDelimiter] = parsePattern('', scanner, delimiter);
-
-      if (searchDelimiter) {
-        let replaceString = parsePattern('', scanner, delimiter)[0];
-
-        scanner.skipWhiteSpace();
-        let flags = parseSubstituteFlags(scanner);
-        scanner.skipWhiteSpace();
-        let count = parseCount(scanner);
+      if (args.length === 1) {
+        // special case for :s/ or other delimiters
         return new node.SubstituteCommand({
-          pattern: searchPattern,
-          replace: replaceString,
-          flags: flags,
-          count: count,
+          pattern: '',
+          replace: '',
+          flags: node.SubstituteFlags.None,
+          count: 1,
         });
-      } else {
+      }
+
+      let secondDelimiterFound: boolean;
+
+      scanner = new Scanner(args.substr(1, args.length - 1));
+      [searchPattern, secondDelimiterFound] = parsePattern('', scanner, delimiter);
+
+      if (!secondDelimiterFound) {
+        // special case for :s/search
         return new node.SubstituteCommand({
           pattern: searchPattern,
           replace: '',
           flags: node.SubstituteFlags.None,
-          count: 0,
+          count: 1,
         });
       }
+      replaceString = parsePattern('', scanner, delimiter)[0];
+    } else {
+      // if it's not a valid delimiter, it must be flags, so start parsing from here
+      searchPattern = undefined;
+      replaceString = '';
+      scanner = new Scanner(args);
     }
 
-    // TODO(rebornix): Can this ever happen?
+    scanner.skipWhiteSpace();
+    flags = parseSubstituteFlags(scanner);
+    scanner.skipWhiteSpace();
+    count = parseCount(scanner);
+
     return new node.SubstituteCommand({
-      pattern: '',
-      replace: '',
-      flags: node.SubstituteFlags.None,
+      pattern: searchPattern,
+      replace: replaceString,
+      flags: flags,
+      count: count,
     });
   } catch (e) {
     throw error.VimError.fromCode(error.ErrorCode.E486);

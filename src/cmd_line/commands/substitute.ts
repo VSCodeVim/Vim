@@ -10,9 +10,17 @@ import { configuration } from '../../configuration/configuration';
 import { Decoration } from '../../configuration/decoration';
 import { Jump } from '../../jumps/jump';
 import { Position } from '../../common/motion/position';
+import { SubstituteState } from '../../state/substituteState';
+import { SearchState, SearchDirection } from '../../state/searchState';
 
+/**
+ * NOTE: for "pattern", undefined is different from an empty string.
+ * when it's undefined, it means to repeat the previous REPLACEMENT and ignore "replace".
+ * when it's an empty string, it means to use the previous SEARCH (not replacement) state,
+ * and replace with whatever's set by "replace" (even an empty string).
+ */
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
-  pattern: string;
+  pattern: string | undefined;
   replace: string;
   flags: number;
   count?: number;
@@ -50,6 +58,31 @@ export enum SubstituteFlags {
   UsePreviousPattern = 0x400,
 }
 
+/**
+ * vim has a distinctly different state for previous search and for previous substitute.  However, in SOME
+ * cases a substitution will also update the search state along with the substitute state.
+ *
+ * Also, the substitute command itself will sometimes use the search state, and other times it will use the
+ * substitute state.
+ *
+ * These are the following cases and how vim handles them:
+ * 1. :s/this/that
+ *   - standard search/replace
+ *   - update substitution state
+ *   - update search state too!
+ * 2. :s or :s [flags]
+ *   - use previous SUBSTITUTION state, and repeat previous substitution pattern and replace.
+ *   - do not touch search state!
+ *   - changing substitution state is dont-care cause we're repeating it ;)
+ * 3. :s/ or :s// or :s///
+ *   - use previous SEARCH state (not substitution), and DELETE the string matching the pattern (replace with nothing)
+ *   - update substitution state
+ *   - updating search state is dont-care cause we're repeating it ;)
+ * 4. :s/this or :s/this/ or :s/this//
+ *   - input is pattern - replacement is empty (delete)
+ *   - update replacement state
+ *   - update search state too!
+ */
 export class SubstituteCommand extends node.CommandBase {
   neovimCapable = true;
   protected _arguments: ISubstituteCommandArguments;
@@ -84,14 +117,35 @@ export class SubstituteCommand extends node.CommandBase {
       jsRegexFlags += 'i';
     }
 
-    // If no pattern is entered, use previous search state (including search with * and #)
-    if (args.pattern === '') {
-      const prevSearchState = vimState.globalState.searchState;
-      if (prevSearchState === undefined || prevSearchState.searchString === '') {
+    if (args.pattern === undefined) {
+      // If no pattern is entered, use previous SUBSTITUTION state and don't update search state
+      // i.e. :s
+      const prevSubstiteState = vimState.globalState.substituteState;
+      if (prevSubstiteState === undefined || prevSubstiteState.searchPattern === '') {
         throw VimError.fromCode(ErrorCode.E35);
       } else {
-        args.pattern = prevSearchState.searchString;
+        args.pattern = prevSubstiteState.searchPattern;
+        args.replace = prevSubstiteState.replaceString;
       }
+    } else {
+      if (args.pattern === '') {
+        // If an explicitly empty pattern is entered, use previous search state (including search with * and #) and update both states
+        // e.g :s/ or :s///
+        const prevSearchState = vimState.globalState.searchState;
+        if (prevSearchState === undefined || prevSearchState.searchString === '') {
+          throw VimError.fromCode(ErrorCode.E35);
+        } else {
+          args.pattern = prevSearchState.searchString;
+        }
+      }
+      vimState.globalState.substituteState = new SubstituteState(args.pattern, args.replace);
+      vimState.globalState.searchState = new SearchState(
+        SearchDirection.Forward,
+        vimState.cursorPosition,
+        args.pattern,
+        { isRegex: true },
+        vimState.currentMode
+      );
     }
     return new RegExp(args.pattern, jsRegexFlags);
   }
