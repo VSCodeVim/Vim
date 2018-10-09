@@ -3,12 +3,11 @@ import * as vscode from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { logger } from '../util/logger';
 import { Message } from '../util/message';
-import { getExtensionDirPath } from '../util/util';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import * as parser from './parser';
 import { VimError, ErrorCode } from '../error';
-import { CommandLineHistory } from './commandLineHistory';
+import { CommandLineHistory } from '../../src/util/historyFile';
 import { ModeName } from './../mode/mode';
 
 class CommandLine {
@@ -34,7 +33,7 @@ class CommandLine {
   public previousMode = ModeName.Normal;
 
   constructor() {
-    this._history = new CommandLineHistory(getExtensionDirPath());
+    this._history = new CommandLineHistory();
   }
 
   public async Run(command: string, vimState: VimState): Promise<void> {
@@ -54,7 +53,14 @@ class CommandLine {
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
 
       if (useNeovim) {
-        await vimState.nvim.run(vimState, command);
+        var statusBarText = await vimState.nvim.run(vimState, command);
+        StatusBar.SetText(
+          statusBarText,
+          vimState.currentMode,
+          vimState.isRecordingMacro,
+          true,
+          true
+        );
       } else {
         await cmd.execute(vimState.editor, vimState);
       }

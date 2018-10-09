@@ -420,7 +420,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     if (startReplace.length === 1 && startReplace in PairMatcher.pairings) {
       endReplace = PairMatcher.pairings[startReplace].match;
 
-      if (!PairMatcher.pairings[startReplace].nextMatchIsForward) {
+      if (!PairMatcher.pairings[startReplace].isNextMatchForward) {
         [startReplace, endReplace] = [endReplace, startReplace];
       } else {
         startReplace = startReplace + ' ';
@@ -436,16 +436,27 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     vimState: VimState,
     position: Position
   ): Promise<boolean> {
-    const { target, replacement, operator } = vimState.surround!;
+    const { target, operator } = vimState.surround!;
+    let replacement = vimState.surround!.replacement;
+
+    // Flag of whether or not html attributes should be retained
+    let retainAttributes = false;
 
     if (operator === 'change' || operator === 'yank') {
       if (!replacement) {
         return false;
       }
 
-      // This is an incomplete tag. Wait for the user to finish it.
-      if (replacement[0] === '<' && replacement[replacement.length - 1] !== '>') {
-        return false;
+      // This is currently an incomplete tag. Check if we should finish it.
+      if (replacement[0] === '<') {
+        // If enter is used, retain the html attributes if possible and consider this tag done
+        // if neither > or <enter> were pressed, this is not a complete tag so return false
+        if (replacement[replacement.length - 1] === '\n') {
+          replacement = replacement.slice(0, replacement.length - 1);
+          retainAttributes = true;
+        } else if (replacement[replacement.length - 1] !== '>') {
+          return false;
+        }
       }
     }
 
@@ -544,25 +555,34 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     }
 
     if (target === 't') {
+      // `MoveInsideTag` must be run first as otherwise the search will
+      // look for the next enclosing tag after having selected the first
+      let innerTagContent = await new MoveInsideTag().execAction(position, vimState);
       let { start, stop, failed } = await new MoveAroundTag().execAction(position, vimState);
-      let tagEnd = await new MoveInsideTag().execAction(position, vimState);
 
-      if (failed || tagEnd.failed) {
+      if (failed || innerTagContent.failed) {
         return CommandSurroundAddToReplacement.Finish(vimState);
       }
 
       stop = stop.getRight();
-      tagEnd.stop = tagEnd.stop.getRight();
+      innerTagContent.stop = innerTagContent.stop.getRight();
 
       if (failed) {
         return CommandSurroundAddToReplacement.Finish(vimState);
       }
 
       startReplaceRange = new Range(start, start.getRight());
-      endReplaceRange = new Range(tagEnd.stop, tagEnd.stop.getRight());
+      endReplaceRange = new Range(innerTagContent.stop, innerTagContent.stop.getRight());
 
-      startDeleteRange = new Range(start.getRight(), tagEnd.start);
-      endDeleteRange = new Range(tagEnd.stop.getRight(), stop);
+      if (retainAttributes) {
+        // Don't remove the attributes, just the tag name (one WORD)
+        const tagNameEnd = start.getCurrentBigWordEnd().getRight();
+        startDeleteRange = new Range(start.getRight(), tagNameEnd);
+      } else {
+        startDeleteRange = new Range(start.getRight(), innerTagContent.start);
+      }
+
+      endDeleteRange = new Range(innerTagContent.stop.getRight(), stop);
     }
 
     if (operator === 'change') {

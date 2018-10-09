@@ -1,6 +1,5 @@
-import { CommandLineHistory } from '../../src/cmd_line/commandLineHistory';
+import { CommandLineHistory } from '../../src/util/historyFile';
 import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
-import { Configuration } from '../testConfiguration';
 import { configuration } from '../../src/configuration/configuration';
 import * as path from 'path';
 import * as os from 'os';
@@ -24,17 +23,15 @@ suite('command-line history', () => {
       .substr(0, 10);
   };
 
-  const filePath = path.join(os.tmpdir(), rndName());
-
   setup(async () => {
-    await setupWorkspace(new Configuration());
+    await setupWorkspace();
 
     run_cmds = [];
     for (let i = 0; i < configuration.history; i++) {
       run_cmds.push(i.toString());
     }
 
-    history = new CommandLineHistory(filePath);
+    history = new CommandLineHistory();
   });
 
   teardown(async () => {
@@ -87,7 +84,7 @@ suite('command-line history', () => {
       history.add(cmd);
     }
 
-    let history2 = new CommandLineHistory(filePath);
+    let history2 = new CommandLineHistory();
     assertArrayEquals(run_cmds.slice(), history2.get());
   });
 

@@ -2,14 +2,16 @@
 <p align="center"><strong>Vim emulation for Visual Studio Code</strong></p>
 
 [![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
+[![](https://vsmarketplacebadge.apphb.com/installs-short/vscodevim.vim.svg)](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim)
 [![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
+[![https://vscodevim-slackin.azurewebsites.net](https://img.shields.io/badge/vscodevim-slack-blue.svg?logo=slack)](https://vscodevim-slackin.azurewebsites.net)
 
 VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
 
 - 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
 - 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
 - ❓ If you need to ask any questions, join us on [Slack](https://vscodevim-slackin.azurewebsites.net)
-- :octocat: Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
+- Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
 
 <details>
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
@@ -45,7 +47,7 @@ VSCodeVim is automatically enabled following [installation](https://marketplace.
 
 ### Vim Compatibility
 
-Vimscript is _not_ supported, therefore we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#emulated-plugins).
+Vimscript is _not_ supported, therefore we are _not_ able to load your `.vimrc` or use `.vim` plugins. You have to replicate these using our [Settings](#settings) and [Emulated plugins](#-emulated-plugins).
 
 ### Mac Setup
 
@@ -61,7 +63,7 @@ We also recommend increasing Key Repeat and Delay Until Repeat settings in _Syst
 
 ### Windows Setup
 
-Like real vim, VSCodeVim will take over your control keys. This behaviour can be adjusted with the [`useCtrlKeys`](#vimusectrlkeys) and [`handleKeys`](#vimhandlekeys) settings.
+Like real vim, VSCodeVim will take over your control keys. This behaviour can be adjusted with the [`useCtrlKeys`](#vscodevim-settings) and [`handleKeys`](#vscodevim-settings) settings.
 
 ### Linux Setup
 
@@ -122,7 +124,7 @@ These settings are specific to VSCodeVim.
 | vim.disableExtension            | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                 | Boolean | false                    |
 | vim.handleKeys                  | Delegate configured keys to be handled by VSCode instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the when argument can be delegated back to VSCode by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VSCode behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`          |
 | vim.overrideCopy                | Override VSCode's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                | Boolean | false                    |
-| vim.searchHighlightColor        | Set the color of search highlights                                                                                                                                                                                                                                                                                                                                                                                             | String  | rgba(150, 150, 150, 0.3) |
+| vim.searchHighlightColor        | Set the color of search highlights                                                                                                                                                                                                                                                                                                                                                                                             | String  | rgba(150, 150, 255, 0.3) |
 | vim.startInInsertMode           | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                    | Boolean | false                    |
 | vim.substituteGlobalFlag        | Similar to Vim's `gdefault` setting. `/g` flag in a substitute command replaces all occurrences in the line. Without this flag, replacement occurs only for the first occurrence in each line. With this setting enabled, the `g` is on by default.                                                                                                                                                                            | Boolean | false                    |
 | vim.useCtrlKeys                 | Enable Vim ctrl keys overriding common VSCode operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                       | Boolean | true                     |
@@ -439,7 +441,7 @@ You can customize the appearance of easymotion markers (the boxes with letters) 
 
 Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is used to work with surrounding characters like parenthesis, brackets, quotes, and XML tags.
 
-`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode.
+`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
 
 Surround is enabled by default, but can be disabled by setting `"vim.surround": false`.
 
@@ -576,7 +578,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 ### None of the native Visual Studio Code `ctrl` (e.g. `ctrl+f`, `ctrl+v`) commands work
 
-Set the [`useCtrlKeys` setting](#vimusectrlkeys) to `false`.
+Set the [`useCtrlKeys` setting](#vscodevim-settings) to `false`.
 
 ### Moving `j`/`k` over folds opens up the folds
 

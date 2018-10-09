@@ -8,6 +8,8 @@ import { VimError, ErrorCode } from '../../error';
 import { TextEditor } from '../../textEditor';
 import { configuration } from '../../configuration/configuration';
 import { Decoration } from '../../configuration/decoration';
+import { Jump } from '../../jumps/jump';
+import { Position } from '../../common/motion/position';
 
 export interface ISubstituteCommandArguments extends node.ICommandArgs {
   pattern: string;
@@ -120,18 +122,36 @@ export class SubstituteCommand extends node.CommandBase {
           !(this._arguments.flags & SubstituteFlags.ConfirmEach) ||
           (await this.confirmReplacement(regex.source, line, vimState, match, matchPos))
         ) {
-          newContent = newContent.replace(nonGlobalRegex, this._arguments.replace);
-          await TextEditor.replace(
-            new vscode.Range(line, 0, line, originalContent.length),
-            newContent
+          const rangeEnd = newContent.length;
+          newContent =
+            newContent.slice(0, matchPos) +
+            newContent.slice(matchPos).replace(nonGlobalRegex, this._arguments.replace);
+          await TextEditor.replace(new vscode.Range(line, 0, line, rangeEnd), newContent);
+
+          vimState.globalState.jumpTracker.recordJump(
+            new Jump({
+              editor: vimState.editor,
+              fileName: vimState.editor.document.fileName,
+              position: new Position(line, 0),
+            }),
+            Jump.fromStateNow(vimState)
           );
         }
-        matchPos += match.length;
+        matchPos += this._arguments.replace.length;
       }
     } else {
       await TextEditor.replace(
         new vscode.Range(line, 0, line, originalContent.length),
         originalContent.replace(regex, this._arguments.replace)
+      );
+
+      vimState.globalState.jumpTracker.recordJump(
+        new Jump({
+          editor: vimState.editor,
+          fileName: vimState.editor.document.fileName,
+          position: new Position(line, 0),
+        }),
+        Jump.fromStateNow(vimState)
       );
     }
   }

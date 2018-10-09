@@ -3,30 +3,7 @@ import * as vscode from 'vscode';
 import { TextEditor } from './../../textEditor';
 import { Position, PositionDiff } from './../motion/position';
 import { configuration } from '../../configuration/configuration';
-
-function escapeRegExpCharacters(value: string): string {
-  return value.replace(/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, '\\$&');
-}
-
-let toReversedString = (function() {
-  function reverse(str: string): string {
-    let reversedStr = '';
-    for (let i = str.length - 1; i >= 0; i--) {
-      reversedStr += str.charAt(i);
-    }
-    return reversedStr;
-  }
-
-  let lastInput: string = '';
-  let lastOutput: string = '';
-  return function(str: string): string {
-    if (lastInput !== str) {
-      lastInput = str;
-      lastOutput = reverse(lastInput);
-    }
-    return lastOutput;
-  };
-})();
+import { VimState } from '../../state/vimState';
 
 /**
  * PairMatcher finds the position matching the given character, respecting nested
@@ -36,32 +13,112 @@ export class PairMatcher {
   static pairings: {
     [key: string]: {
       match: string;
-      nextMatchIsForward: boolean;
-      directionLess?: boolean;
+      isNextMatchForward: boolean;
+      directionless?: boolean;
       matchesWithPercentageMotion?: boolean;
     };
   } = {
-    '(': { match: ')', nextMatchIsForward: true, matchesWithPercentageMotion: true },
-    '{': { match: '}', nextMatchIsForward: true, matchesWithPercentageMotion: true },
-    '[': { match: ']', nextMatchIsForward: true, matchesWithPercentageMotion: true },
-    ')': { match: '(', nextMatchIsForward: false, matchesWithPercentageMotion: true },
-    '}': { match: '{', nextMatchIsForward: false, matchesWithPercentageMotion: true },
-    ']': { match: '[', nextMatchIsForward: false, matchesWithPercentageMotion: true },
+    '(': { match: ')', isNextMatchForward: true, matchesWithPercentageMotion: true },
+    '{': { match: '}', isNextMatchForward: true, matchesWithPercentageMotion: true },
+    '[': { match: ']', isNextMatchForward: true, matchesWithPercentageMotion: true },
+    ')': { match: '(', isNextMatchForward: false, matchesWithPercentageMotion: true },
+    '}': { match: '{', isNextMatchForward: false, matchesWithPercentageMotion: true },
+    ']': { match: '[', isNextMatchForward: false, matchesWithPercentageMotion: true },
+
     // These characters can't be used for "%"-based matching, but are still
     // useful for text objects.
-    '<': { match: '>', nextMatchIsForward: true },
-    '>': { match: '<', nextMatchIsForward: false },
+    '<': { match: '>', isNextMatchForward: true },
+    '>': { match: '<', isNextMatchForward: false },
     // These are useful for deleting closing and opening quotes, but don't seem to negatively
     // affect how text objects such as `ci"` work, which was my worry.
-    '"': { match: '"', nextMatchIsForward: false, directionLess: true },
-    "'": { match: "'", nextMatchIsForward: false, directionLess: true },
-    '`': { match: '`', nextMatchIsForward: false, directionLess: true },
+    '"': { match: '"', isNextMatchForward: false, directionless: true },
+    "'": { match: "'", isNextMatchForward: false, directionless: true },
+    '`': { match: '`', isNextMatchForward: false, directionless: true },
   };
+
+  private static findPairedChar(
+    position: Position,
+    charToFind: string,
+    charToStack: string,
+    stackHeight,
+    isNextMatchForward: boolean,
+    vimState?: VimState
+  ): Position | undefined {
+    let lineNumber = position.line;
+    let linePosition = position.character;
+    let lineCount = TextEditor.getLineCount();
+    let cursorChar = TextEditor.getCharAt(position);
+    if (vimState) {
+      let startPos = vimState.cursorStartPosition;
+      let endPos = vimState.cursorPosition;
+      if (startPos.isEqual(endPos) && cursorChar === charToFind) {
+        return position;
+      }
+    }
+
+    while (PairMatcher.keepSearching(lineNumber, lineCount, isNextMatchForward)) {
+      let lineText = TextEditor.getLineAt(new Position(lineNumber, 0)).text.split('');
+      const originalLineLength = lineText.length;
+      if (lineNumber === position.line) {
+        if (isNextMatchForward) {
+          lineText = lineText.slice(linePosition + 1, originalLineLength);
+        } else {
+          lineText = lineText.slice(0, linePosition);
+        }
+      }
+
+      while (true) {
+        if (lineText.length <= 0 || stackHeight <= -1) {
+          break;
+        }
+
+        let nextChar: string | undefined;
+        if (isNextMatchForward) {
+          nextChar = lineText.shift();
+        } else {
+          nextChar = lineText.pop();
+        }
+
+        if (nextChar === charToStack) {
+          stackHeight++;
+        } else if (nextChar === charToFind) {
+          stackHeight--;
+        } else {
+          continue;
+        }
+      }
+
+      if (stackHeight <= -1) {
+        let pairMemberChar: number;
+        if (isNextMatchForward) {
+          pairMemberChar = Math.max(0, originalLineLength - lineText.length - 1);
+        } else {
+          pairMemberChar = lineText.length;
+        }
+        return new Position(lineNumber, pairMemberChar);
+      }
+
+      if (isNextMatchForward) {
+        lineNumber++;
+      } else {
+        lineNumber--;
+      }
+    }
+    return undefined;
+  }
+
+  private static keepSearching(lineNumber, lineCount, isNextMatchForward) {
+    if (isNextMatchForward) {
+      return lineNumber <= lineCount - 1;
+    } else {
+      return lineNumber >= 0;
+    }
+  }
 
   static nextPairedChar(
     position: Position,
     charToMatch: string,
-    closed: boolean = true
+    vimState?: VimState
   ): Position | undefined {
     /**
      * We do a fairly basic implementation that only tracks the state of the type of
@@ -74,103 +131,29 @@ export class PairMatcher {
      * PRs welcomed! (TODO)
      * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
      */
-    const toFind = this.pairings[charToMatch];
+    const pairing = this.pairings[charToMatch];
 
-    if (toFind === undefined || toFind.directionLess) {
+    if (pairing === undefined || pairing.directionless) {
       return undefined;
     }
 
-    let regex = new RegExp(
-      '(' + escapeRegExpCharacters(charToMatch) + '|' + escapeRegExpCharacters(toFind.match) + ')',
-      'i'
+    const stackHeight = 0;
+    let matchedPos: Position | undefined;
+    const charToFind = pairing.match;
+    const charToStack = charToMatch;
+
+    matchedPos = PairMatcher.findPairedChar(
+      position,
+      charToFind,
+      charToStack,
+      stackHeight,
+      pairing.isNextMatchForward,
+      vimState
     );
 
-    let stackHeight = closed ? 0 : 1;
-    let matchedPosition: Position | undefined = undefined;
-
-    // find matched bracket up
-    if (!toFind.nextMatchIsForward) {
-      for (let lineNumber = position.line; lineNumber >= 0; lineNumber--) {
-        let lineText = TextEditor.getLineAt(new Position(lineNumber, 0)).text;
-        let startOffset =
-          lineNumber === position.line ? lineText.length - position.character - 1 : 0;
-
-        while (true) {
-          let queryText = toReversedString(lineText).substr(startOffset);
-          if (queryText === '') {
-            break;
-          }
-
-          let m = queryText.match(regex);
-
-          if (!m) {
-            break;
-          }
-
-          let matchedChar = m[0];
-          if (matchedChar === charToMatch) {
-            stackHeight++;
-          }
-
-          if (matchedChar === toFind.match) {
-            stackHeight--;
-          }
-
-          if (stackHeight === 0) {
-            matchedPosition = new Position(
-              lineNumber,
-              lineText.length - startOffset - m.index! - 1
-            );
-            return matchedPosition;
-          }
-
-          startOffset = startOffset + m.index! + 1;
-        }
-      }
-    } else {
-      for (
-        let lineNumber = position.line, lineCount = TextEditor.getLineCount();
-        lineNumber < lineCount;
-        lineNumber++
-      ) {
-        let lineText = TextEditor.getLineAt(new Position(lineNumber, 0)).text;
-        let startOffset = lineNumber === position.line ? position.character : 0;
-
-        while (true) {
-          let queryText = lineText.substr(startOffset);
-          if (queryText === '') {
-            break;
-          }
-
-          let m = queryText.match(regex);
-
-          if (!m) {
-            break;
-          }
-
-          let matchedChar = m[0];
-          if (matchedChar === charToMatch) {
-            stackHeight++;
-          }
-
-          if (matchedChar === toFind.match) {
-            stackHeight--;
-          }
-
-          if (stackHeight === 0) {
-            matchedPosition = new Position(lineNumber, startOffset + m.index!);
-            return matchedPosition;
-          }
-
-          startOffset = startOffset + m.index! + 1;
-        }
-      }
+    if (matchedPos) {
+      return matchedPos;
     }
-
-    if (matchedPosition) {
-      return matchedPosition;
-    }
-
     // TODO(bell)
     return undefined;
   }

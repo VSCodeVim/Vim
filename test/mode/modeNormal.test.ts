@@ -365,6 +365,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle count prefixed 'ci)'",
+    start: [' b(l(baz(f|oo)baz)a)h '],
+    keysPressed: 'c3i)',
+    end: [' b(|)h '],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
+    title: "Can handle count prefixed 'ca)'",
+    start: [' b(l(baz(f|oo)baz)a)h '],
+    keysPressed: 'c3a)',
+    end: [' b|h '],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
     title: "Can handle 'ca(' spanning multiple lines",
     start: ['call(', '  |arg1)'],
     keysPressed: 'ca(',
@@ -1624,6 +1640,13 @@ suite('Mode Normal', () => {
     start: ['foo1|bar2'],
     keysPressed: '<C-a>',
     end: ['foo1bar|3'],
+  });
+
+  newTest({
+    title: 'can <C-a> on word with - in front of it',
+    start: ['-fo|o2'],
+    keysPressed: '<C-a>',
+    end: ['-foo|3'],
   });
 
   newTest({

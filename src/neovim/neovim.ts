@@ -9,34 +9,21 @@ import { TextEditor } from '../textEditor';
 import { Position } from './../common/motion/position';
 import { VimState } from './../state/vimState';
 import { logger } from '../util/logger';
-import { StatusBar } from '../statusBar';
 
 export class Neovim implements vscode.Disposable {
   private process: ChildProcess;
   private nvim: Nvim;
 
-  async initialize() {
-    let dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
-    if (!existsSync(dir)) {
-      dir = __dirname;
-    }
-    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
-      cwd: dir,
-    });
-    this.process.on('error', err => {
-      logger.error(`Neovim: Error spawning neovim. Error=${err.message}.`);
-      configuration.enableNeovim = false;
-    });
-    this.nvim = await attach(this.process.stdin, this.process.stdout);
-  }
-
   async run(vimState: VimState, command: string) {
-    await this.syncVSToVim(vimState);
-    command = ':' + command + '\n';
-    command = command.replace('<', '<lt>');
+    if (!this.nvim) {
+      this.nvim = await this.startNeovim();
+    }
 
-    // Clear the previous error and status messages. API does not allow setVvar
-    // so do it manually
+    await this.syncVSToVim(vimState);
+    command = (':' + command + '\n').replace('<', '<lt>');
+
+    // Clear the previous error and status messages.
+    // API does not allow setVvar so do it manually
     await this.nvim.command('let v:errmsg="" | let v:statusmsg=""');
 
     // Execute the command
@@ -58,24 +45,25 @@ export class Neovim implements vscode.Disposable {
       }
     }
 
-    // TODO xconverge: only do this if a command was successful, but be mindful
-    // of indentation changes that were made
-
     // Sync buffer back to vscode
     await this.syncVimToVs(vimState);
 
-    // Lastly update the status bar
-    StatusBar.SetText(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true, true);
-
-    return;
+    return statusBarText;
   }
 
-  async input(vimState: VimState, keys: string) {
-    await this.syncVSToVim(vimState);
-    await this.nvim.input(keys);
-    await this.syncVimToVs(vimState);
-
-    return;
+  private async startNeovim() {
+    let dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
+    if (!existsSync(dir)) {
+      dir = __dirname;
+    }
+    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
+      cwd: dir,
+    });
+    this.process.on('error', err => {
+      logger.error(`Neovim: Error spawning neovim. Error=${err.message}.`);
+      configuration.enableNeovim = false;
+    });
+    return attach(this.process.stdin, this.process.stdout);
   }
 
   // Data flows from VS to Vim
