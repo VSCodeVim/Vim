@@ -300,6 +300,9 @@ export async function activate(context: vscode.ExtensionContext) {
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
+  // Initialize the search history
+  globalState.loadSearchHistory();
+
   // This is called last because getAndUpdateModeHandler() will change cursor
   toggleExtension(configuration.disableExt, compositionState);
 }
