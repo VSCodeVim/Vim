@@ -344,7 +344,7 @@ export abstract class FoldFixMovement extends BaseMovement {
     return result;
   }
 }
-export class MoveDownFoldFix extends FoldFixMovement {
+export class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = 'down';
   by: CursorMoveByUnit = 'line';
   value = 1;
