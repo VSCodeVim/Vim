@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as util from 'util';
 import { configuration } from '../configuration/configuration';
 import { logger } from './logger';
 import { getExtensionDirPath } from '../util/util';
@@ -17,7 +18,6 @@ export class HistoryFile {
   constructor(historyDir: string, historyFileName: string) {
     this._historyDir = historyDir;
     this._historyFileName = historyFileName;
-    this._loadFromFile();
   }
 
   public add(value: string | undefined): void {
@@ -60,20 +60,22 @@ export class HistoryFile {
   }
 
   public async save(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       try {
-        if (!fs.existsSync(this._historyDir)) {
+        if (!(await util.promisify(fs.exists)(this._historyDir))) {
           mkdirp.sync(this._historyDir, 0o775);
         }
       } catch (err) {
-        logger.error(
-          `Failed to create directory. path=${this._historyDir}. err=${err}.`
-        );
+        logger.error(`Failed to create directory. path=${this._historyDir}. err=${err}.`);
         reject(err);
       }
 
       try {
-        fs.writeFileSync(this._historyFilePath, JSON.stringify(this._history), 'utf-8');
+        await util.promisify(fs.writeFile)(
+          this._historyFilePath,
+          JSON.stringify(this._history),
+          'utf-8'
+        );
       } catch (err) {
         logger.error(`Failed to save history. path=${this._historyDir}. err=${err}.`);
         reject(err);
@@ -83,11 +85,11 @@ export class HistoryFile {
     });
   }
 
-  private _loadFromFile() {
+  public async load() {
     let data = '';
 
     try {
-      data = fs.readFileSync(this._historyFilePath, 'utf-8');
+      data = await util.promisify(fs.readFile)(this._historyFilePath, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
         logger.debug(`History does not exist. path=${this._historyDir}`);

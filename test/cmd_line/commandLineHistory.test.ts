@@ -32,10 +32,11 @@ suite('command-line history', () => {
     }
 
     history = new CommandLineHistory();
+    await history.load();
   });
 
   teardown(async () => {
-    cleanUpWorkspace();
+    await cleanUpWorkspace();
     history.clear();
   });
 
@@ -85,6 +86,7 @@ suite('command-line history', () => {
     }
 
     let history2 = new CommandLineHistory();
+    await history2.load();
     assertArrayEquals(run_cmds.slice(), history2.get());
   });
 

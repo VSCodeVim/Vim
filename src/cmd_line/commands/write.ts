@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as util from 'util';
 import * as vscode from 'vscode';
 
 import { VimState } from '../../state/vimState';
@@ -55,7 +56,7 @@ export class WriteCommand extends node.CommandBase {
     }
 
     try {
-      fs.accessSync(vimState.editor.document.fileName, fs.constants.W_OK);
+      await util.promisify(fs.access)(vimState.editor.document.fileName, fs.constants.W_OK);
       return this.save(vimState);
     } catch (accessErr) {
       if (this.arguments.bang) {

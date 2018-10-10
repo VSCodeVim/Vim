@@ -1894,7 +1894,7 @@ abstract class MoveTagMatch extends ExpandingSelection {
     }
     // if (start === end) {
     //   if (vimState.recordedState.operator instanceof ChangeOperator) {
-    //     vimState.currentMode = ModeName.Insert;
+    //     await vimState.setCurrentMode(ModeName.Insert);
     //   }
     //   return {
     //     start: startPosition,
