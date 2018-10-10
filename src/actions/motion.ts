@@ -54,13 +54,6 @@ export abstract class BaseMovement extends BaseAction {
   isMotion = true;
 
   /**
-   * If isJump is true, then the cursor position will be added to the jump list on completion.
-   *
-   * Default to false, as many motions operate on a single line and do not count as a jump.
-   */
-  isJump = false;
-
-  /**
    * If movement can be repeated with semicolon or comma this will be true when
    * running the repetition.
    */
@@ -303,7 +296,7 @@ class MoveDownByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintain
   value = 1;
 }
 
-export abstract class FoldFixMovement extends MoveByScreenLineMaintainDesiredColumn {
+export abstract class FoldFixMovement extends BaseMovement {
   protected async createMovementResult(
     position: Position,
     vimState: VimState,
@@ -330,8 +323,7 @@ export abstract class FoldFixMovement extends MoveByScreenLineMaintainDesiredCol
     // exclude line just below folded region added before first up
     if (includeFoldedRegionBelowBeforeUp) {
       result.start = result.stop.getUp(vimState.desiredColumn);
-      result = <IMovement>await new MoveUpFoldFix().execAction(position, vimState);
-      result = <IMovement>await new MoveUpFoldFix().execAction(position, vimState);
+      result.stop = (<IMovement>await new MoveUpFoldFix().execAction(position, vimState)).stop;
     }
 
     const lastDownBeforeAction =
@@ -387,7 +379,7 @@ export class MoveDownFoldFix extends FoldFixMovement {
 }
 
 @RegisterAction
-class MoveDown extends BaseMovement {
+class MoveDown extends FoldFixMovement {
   keys = ['j'];
   doesntChangeDesiredColumn = true;
 
@@ -432,7 +424,7 @@ class MoveUpByScreenLineMaintainDesiredColumn extends MoveByScreenLineMaintainDe
 }
 
 @RegisterAction
-class MoveUp extends BaseMovement {
+class MoveUp extends FoldFixMovement {
   keys = ['k'];
   doesntChangeDesiredColumn = true;
 
@@ -462,7 +454,7 @@ class MoveUp extends BaseMovement {
 }
 
 @RegisterAction
-export class MoveUpFoldFix extends FoldFixMovement {
+export class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   movementType: CursorMovePosition = 'up';
   by: CursorMoveByUnit = 'line';
   value = 1;
@@ -549,7 +541,6 @@ class RightArrowInReplaceMode extends ArrowsInReplaceMode {
 @RegisterAction
 class CommandNextSearchMatch extends BaseMovement {
   keys = ['n'];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const searchState = vimState.globalState.searchState;
@@ -573,7 +564,6 @@ class CommandNextSearchMatch extends BaseMovement {
 @RegisterAction
 class CommandPreviousSearchMatch extends BaseMovement {
   keys = ['N'];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const searchState = vimState.globalState.searchState;
@@ -592,7 +582,6 @@ class CommandPreviousSearchMatch extends BaseMovement {
 @RegisterAction
 export class MarkMovementBOL extends BaseMovement {
   keys = ["'", '<character>'];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const markName = this.keysPressed[1];
@@ -607,7 +596,6 @@ export class MarkMovementBOL extends BaseMovement {
 @RegisterAction
 export class MarkMovement extends BaseMovement {
   keys = ['`', '<character>'];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const markName = this.keysPressed[1];
@@ -1102,7 +1090,6 @@ class MoveScreenToLeftHalf extends MoveByScreenLine {
   movementType: CursorMovePosition = 'left';
   by: CursorMoveByUnit = 'halfLine';
   value = 1;
-  isJump = true;
 
   public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
     // Don't run if there's an operator because the Sneak plugin uses <operator>z
@@ -1118,7 +1105,6 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
   movementType: CursorMovePosition = 'viewPortTop';
   by: CursorMoveByUnit = 'line';
   value = 1;
-  isJump = true;
 
   public async execActionWithCount(
     position: Position,
@@ -1136,7 +1122,6 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
   movementType: CursorMovePosition = 'viewPortBottom';
   by: CursorMoveByUnit = 'line';
   value = 1;
-  isJump = true;
 
   public async execActionWithCount(
     position: Position,
@@ -1153,7 +1138,6 @@ class MoveToMiddleLineInViewPort extends MoveByScreenLine {
   keys = ['M'];
   movementType: CursorMovePosition = 'viewPortCenter';
   by: CursorMoveByUnit = 'line';
-  isJump = true;
 }
 
 @RegisterAction
@@ -1188,7 +1172,6 @@ class MoveNextLineNonBlank extends BaseMovement {
 @RegisterAction
 class MoveNonBlankFirst extends BaseMovement {
   keys = ['g', 'g'];
-  isJump = true;
 
   public async execActionWithCount(
     position: Position,
@@ -1206,7 +1189,6 @@ class MoveNonBlankFirst extends BaseMovement {
 @RegisterAction
 class MoveNonBlankLast extends BaseMovement {
   keys = ['G'];
-  isJump = true;
 
   public async execActionWithCount(
     position: Position,
@@ -1374,7 +1356,6 @@ class MoveBeginningFullWord extends BaseMovement {
 @RegisterAction
 class MovePreviousSentenceBegin extends BaseMovement {
   keys = ['('];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getSentenceBegin({ forward: false });
@@ -1384,7 +1365,6 @@ class MovePreviousSentenceBegin extends BaseMovement {
 @RegisterAction
 class MoveNextSentenceBegin extends BaseMovement {
   keys = [')'];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getSentenceBegin({ forward: true });
@@ -1394,7 +1374,6 @@ class MoveNextSentenceBegin extends BaseMovement {
 @RegisterAction
 class MoveParagraphEnd extends BaseMovement {
   keys = ['}'];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     const isLineWise =
@@ -1412,7 +1391,6 @@ class MoveParagraphEnd extends BaseMovement {
 @RegisterAction
 class MoveParagraphBegin extends BaseMovement {
   keys = ['{'];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getCurrentParagraphBeginning();
@@ -1423,7 +1401,6 @@ abstract class MoveSectionBoundary extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   boundary: string;
   forward: boolean;
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.getSectionBoundary({
@@ -1464,7 +1441,6 @@ class MovePreviousSectionEnd extends MoveSectionBoundary {
 @RegisterAction
 class MoveToMatchingBracket extends BaseMovement {
   keys = ['%'];
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     position = position.getLeftIfEOL();
@@ -1549,7 +1525,6 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
@@ -1761,7 +1736,6 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected charToMatch: string;
   protected includeSurrounding = false;
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const text = TextEditor.getLineAt(position).text;
@@ -1939,7 +1913,6 @@ class MoveToUnclosedCurlyBracketForward extends MoveToMatchingBracket {
 abstract class MoveTagMatch extends ExpandingSelection {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock];
   protected includeTag = false;
-  isJump = true;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const editorText = TextEditor.getText();
