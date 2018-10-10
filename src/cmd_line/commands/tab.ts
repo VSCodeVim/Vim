@@ -47,21 +47,11 @@ export class TabCommand extends node.CommandBase {
   async execute(): Promise<void> {
     switch (this._arguments.tab) {
       case Tab.Absolute:
-        if (this._arguments.count /** not undefined or 0 */) {
-          if (this._arguments.count <= 9) {
-            await vscode.commands.executeCommand(
-              'workbench.action.openEditorAtIndex' + this._arguments.count
-            );
-          } else {
-            // VScode only allows up to 9, here is a hack that might work ok
-            // sometimes but will wrap around if you go too far
-            // https://github.com/Microsoft/vscode/issues/55205
-            await vscode.commands.executeCommand('workbench.action.openEditorAtIndex9');
-            await this.executeCommandWithCount(
-              this._arguments.count - 9,
-              'workbench.action.nextEditorInGroup'
-            );
-          }
+        if (this._arguments.count !== undefined && this._arguments.count >= 0) {
+          await vscode.commands.executeCommand(
+            'workbench.action.openEditorAtIndex',
+            this._arguments.count
+          );
         }
         break;
       case Tab.Next:

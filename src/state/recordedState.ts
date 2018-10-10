@@ -126,7 +126,7 @@ export class RecordedState {
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
   public get command(): BaseCommand {
-    const list = _.filter(this.actionsRun, a => a instanceof BaseCommand);
+    const list = _.filter(this.actionsRun, a => a instanceof BaseCommand).reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 

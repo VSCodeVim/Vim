@@ -1643,6 +1643,13 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'can <C-a> on word with - in front of it',
+    start: ['-fo|o2'],
+    keysPressed: '<C-a>',
+    end: ['-foo|3'],
+  });
+
+  newTest({
     title: 'can do Y',
     start: ['|blah blah'],
     keysPressed: 'Yp',

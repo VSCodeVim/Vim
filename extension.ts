@@ -34,7 +34,7 @@ interface ICodeKeybinding {
   commands?: { command: string; args: any[] }[];
 }
 
-export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
+export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promise<ModeHandler> {
   const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
 
   let [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeEditorId.toString());
@@ -44,7 +44,11 @@ export async function getAndUpdateModeHandler(): Promise<ModeHandler> {
 
   curHandler.vimState.editor = vscode.window.activeTextEditor!;
 
-  if (!previousActiveEditorId || !previousActiveEditorId.isEqual(activeEditorId)) {
+  if (
+    forceSyncAndUpdate ||
+    !previousActiveEditorId ||
+    !previousActiveEditorId.isEqual(activeEditorId)
+  ) {
     curHandler.syncCursors();
     await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
@@ -185,7 +189,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
     taskQueue.enqueueTask(async () => {
       if (vscode.window.activeTextEditor !== undefined) {
-        const mh: ModeHandler = await getAndUpdateModeHandler();
+        const mh: ModeHandler = await getAndUpdateModeHandler(true);
+
+        await mh.updateVimModeForKeybindings(mh.vimState.currentMode);
 
         await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
 
@@ -297,6 +303,9 @@ export async function activate(context: vscode.ExtensionContext) {
     let mh = await getAndUpdateModeHandler();
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
+
+  // Initialize the search history
+  globalState.loadSearchHistory();
 
   // This is called last because getAndUpdateModeHandler() will change cursor
   toggleExtension(configuration.disableExt, compositionState);
