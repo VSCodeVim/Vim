@@ -1010,8 +1010,10 @@ class CommandOverrideCopy extends BaseCommand {
         .map(range => {
           const start = Position.EarlierOf(range.start, range.stop);
           const stop = Position.LaterOf(range.start, range.stop);
-          return vimState.editor.document.getText(new vscode.Range(start, stop.getRight()));
-        })
+          return start < stop
+          ? vimState.editor.document.getText(new vscode.Range(start, stop.getRight()))
+          : vimState.editor.document.getText(new vscode.Range(stop, start.getRight()))
+      })
         .join('\n');
     } else if (vimState.currentMode === ModeName.VisualLine) {
       text = vimState.allCursors
