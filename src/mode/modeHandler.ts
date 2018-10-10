@@ -32,11 +32,18 @@ import {
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { logger } from '../util/logger';
 import { Neovim } from '../neovim/neovim';
+import { Jump } from '../jumps/jump';
 
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _remappers: Remappers;
+
+  /**
+   * Last vim.mode sent to vscode, for updating keybindings.
+   * It is static, as the context applies across editors.
+   */
+  private static _lastVimModeSetForKeybindings: ModeName;
 
   public vimState: VimState;
 
@@ -75,38 +82,40 @@ export class ModeHandler implements vscode.Disposable {
     this.syncCursors();
 
     // Handle scenarios where mouse used to change current position.
-    const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(e => {
-      if (configuration.disableExt) {
-        return;
-      }
+    const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(
+      (e: vscode.TextEditorSelectionChangeEvent) => {
+        if (configuration.disableExt) {
+          return;
+        }
 
-      if (Globals.isTesting) {
-        return;
-      }
+        if (Globals.isTesting) {
+          return;
+        }
 
-      if (e.textEditor !== this.vimState.editor) {
-        return;
-      }
+        if (e.textEditor !== this.vimState.editor) {
+          return;
+        }
 
-      if (this.vimState.focusChanged) {
-        this.vimState.focusChanged = false;
-        return;
-      }
+        if (this.vimState.focusChanged) {
+          this.vimState.focusChanged = false;
+          return;
+        }
 
-      if (this.currentMode.name === ModeName.EasyMotionMode) {
-        return;
-      }
+        if (this.currentMode.name === ModeName.EasyMotionMode) {
+          return;
+        }
 
-      taskQueue.enqueueTask(
-        () => this.handleSelectionChange(e),
-        undefined,
-        /**
-         * We don't want these to become backlogged! If they do, we'll update
-         * the selection to an incorrect value and see a jittering cursor.
-         */
-        true
-      );
-    });
+        taskQueue.enqueueTask(
+          () => this.handleSelectionChange(e),
+          undefined,
+          /**
+           * We don't want these to become backlogged! If they do, we'll update
+           * the selection to an incorrect value and see a jittering cursor.
+           */
+          true
+        );
+      }
+    );
 
     this._disposables.push(onChangeTextEditorSelection);
     this._disposables.push(this.vimState);
@@ -307,6 +316,7 @@ export class ModeHandler implements vscode.Disposable {
     try {
       // Take the count prefix out to perform the correct remapping.
       const withinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
+      const isOperatorCombination = this.vimState.recordedState.operator;
 
       let handled = false;
 
@@ -314,10 +324,14 @@ export class ModeHandler implements vscode.Disposable {
        * Check that
        *
        * 1) We are not already performing a nonrecursive remapping.
-       * 2) We haven't timed out of our previous remapping.
+       * 2) We aren't in normal mode performing on an operator
+       *    Note: ciwjj should be remapped if jj -> <Esc> in insert mode
+       *          dd should not remap the second "d", if d -> "_d in normal mode
+       * 3) We haven't timed out of our previous remapping.
        */
       if (
         !this.vimState.isCurrentlyPerformingRemapping &&
+        (!isOperatorCombination || this.vimState.currentMode !== ModeName.Normal) &&
         (withinTimeout || this.vimState.recordedState.commandList.length === 1)
       ) {
         handled = await this._remappers.sendKey(
@@ -355,6 +369,7 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     recordedState.actionKeys.push(key);
+
     vimState.keyHistory.push(key);
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
@@ -371,6 +386,7 @@ export class ModeHandler implements vscode.Disposable {
 
     let action = result as BaseAction;
     let actionToRecord: BaseAction | undefined = action;
+    let originalLocation = Jump.fromStateNow(vimState);
 
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);
@@ -430,6 +446,13 @@ export class ModeHandler implements vscode.Disposable {
 
     // Update view
     await this.updateView(vimState);
+
+    if (action.isJump) {
+      vimState.globalState.jumpTracker.recordJump(
+        Jump.fromStateBefore(vimState),
+        Jump.fromStateNow(vimState)
+      );
+    }
 
     return vimState;
   }
@@ -500,7 +523,9 @@ export class ModeHandler implements vscode.Disposable {
       if (
         vimState.currentMode === ModeName.Normal &&
         prevState !== ModeName.SearchInProgressMode &&
-        prevState !== ModeName.CommandlineInProgress
+        prevState !== ModeName.CommandlineInProgress &&
+        prevState !== ModeName.EasyMotionInputMode &&
+        prevState !== ModeName.EasyMotionMode
       ) {
         ranRepeatableAction = true;
       }
@@ -1157,6 +1182,8 @@ export class ModeHandler implements vscode.Disposable {
     vimState.isRunningDotCommand = true;
 
     for (let action of actions) {
+      let originalLocation = Jump.fromStateNow(vimState);
+
       recordedState.actionsRun.push(action);
       vimState.keyHistory = vimState.keyHistory.concat(action.keysPressed);
 
@@ -1173,6 +1200,10 @@ export class ModeHandler implements vscode.Disposable {
       }
 
       await this.updateView(vimState);
+
+      if (action.isJump) {
+        vimState.globalState.jumpTracker.recordJump(originalLocation, Jump.fromStateNow(vimState));
+      }
     }
 
     vimState.isRunningDotCommand = false;
@@ -1399,11 +1430,24 @@ export class ModeHandler implements vscode.Disposable {
 
     this._renderStatusBar();
 
-    await vscode.commands.executeCommand(
-      'setContext',
-      'vim.mode',
-      ModeName[this.vimState.currentMode]
-    );
+    await this.updateVimModeForKeybindings(this.vimState.currentMode);
+  }
+
+  /**
+   * Let vscode know what our current mode is by setting vim.mode.
+   * This is used to determine keybindings, as seen in package.json.
+   * Applies across editors.
+   * @param mode New (current) mode
+   */
+  public async updateVimModeForKeybindings(mode: ModeName): Promise<void> {
+    // This can be an expensive operation (sometimes taking 40-60ms),
+    // so we only want to send it when it actually changes, which should
+    // include key events as well as changing or opening tabs.
+    if (ModeHandler._lastVimModeSetForKeybindings !== mode) {
+      await vscode.commands.executeCommand('setContext', 'vim.mode', ModeName[mode]);
+      // There doesn't seem to be a "getContext" available to extensions, so track ourselves.
+      ModeHandler._lastVimModeSetForKeybindings = mode;
+    }
   }
 
   private _renderStatusBar(): void {

@@ -71,19 +71,23 @@ export const commandParsers = {
 
   tabm: tabCmd.parseTabMovementCommandArgs,
 
-  e: fileCmd.parseEditFileCommandArgs,
-
   s: parseSubstituteCommandArgs,
 
-  vs: fileCmd.parseEditFileInNewWindowCommandArgs,
-  vsp: fileCmd.parseEditFileInNewWindowCommandArgs,
-  sp: fileCmd.parseEditFileInNewWindowCommandArgs,
-  split: fileCmd.parseEditFileInNewWindowCommandArgs,
-  vsplit: fileCmd.parseEditFileInNewWindowCommandArgs,
-  ne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
-  vne: fileCmd.parseEditNewFileInNewWindowCommandArgs,
-  new: fileCmd.parseEditNewFileInNewWindowCommandArgs,
-  vnew: fileCmd.parseEditNewFileInNewWindowCommandArgs,
+  e: fileCmd.parseEditFileCommandArgs,
+  edit: fileCmd.parseEditFileCommandArgs,
+  ene: fileCmd.parseEditNewFileCommandArgs,
+  enew: fileCmd.parseEditNewFileCommandArgs,
+
+  sp: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
+  split: fileCmd.parseEditFileInNewHorizontalWindowCommandArgs,
+  vs: fileCmd.parseEditFileInNewVerticalWindowCommandArgs,
+  vsp: fileCmd.parseEditFileInNewVerticalWindowCommandArgs,
+  vsplit: fileCmd.parseEditFileInNewVerticalWindowCommandArgs,
+
+  new: fileCmd.parseEditNewFileInNewHorizontalWindowCommandArgs,
+  vne: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
+  vnew: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
+
   only: parseOnlyCommandArgs,
 
   set: parseOptionsCommandArgs,

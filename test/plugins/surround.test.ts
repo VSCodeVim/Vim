@@ -141,4 +141,18 @@ suite('surround plugin', () => {
     keysPressed: 'cs{[',
     end: ['func() [ ', '    |foo()', ' ]'],
   });
+
+  newTest({
+    title: 'change surround with tags that contain an attribute and preserve them',
+    start: ['<h2 test class="foo">b|ar</h2>'],
+    keysPressed: 'cstth3' + '\n',
+    end: ['<h3 test class="foo">b|ar</h3>'],
+  });
+
+  newTest({
+    title: 'change surround with tags that contain an attribute and remove them',
+    start: ['<h2 test class="foo">b|ar</h2>'],
+    keysPressed: 'cstth3>',
+    end: ['<h3>b|ar</h3>'],
+  });
 });

@@ -1,3 +1,5 @@
+import * as sinon from 'sinon';
+import { SubstituteCommand } from '../../src/cmd_line/commands/substitute';
 import { getAndUpdateModeHandler } from '../../extension';
 import { commandLine } from '../../src/cmd_line/commandLine';
 import { Globals } from '../../src/globals';
@@ -8,8 +10,10 @@ import {
   reloadConfiguration,
   setupWorkspace,
 } from './../testUtils';
+import { getTestingFunctions } from '../testSimplifier';
 
 suite('Basic substitute', () => {
+  let { newTest, newTestOnly } = getTestingFunctions();
   let modeHandler: ModeHandler;
 
   setup(async () => {
@@ -31,6 +35,24 @@ suite('Basic substitute', () => {
     await commandLine.Run('%s/a/d/g', modeHandler.vimState);
 
     assertEqualLines(['dbd']);
+  });
+
+  test('Replace with `c` flag', async () => {
+    const confirmStub = sinon.stub(SubstituteCommand.prototype, 'confirmReplacement').returns(true);
+    await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
+    await commandLine.Run('%s/a/d/c', modeHandler.vimState);
+
+    assertEqualLines(['dba']);
+    confirmStub.restore();
+  });
+
+  test('Replace with `gc` flag', async () => {
+    const confirmStub = sinon.stub(SubstituteCommand.prototype, 'confirmReplacement').returns(true);
+    await modeHandler.handleMultipleKeyEvents(['i', 'f', 'f', 'b', 'a', 'r', 'f', '<Esc>']);
+    await commandLine.Run('%s/f/foo/gc', modeHandler.vimState);
+
+    assertEqualLines(['foofoobarfoo']);
+    confirmStub.restore();
   });
 
   test('Replace multiple lines', async () => {
@@ -129,6 +151,17 @@ suite('Basic substitute', () => {
       assertEqualLines(['dba']);
     });
 
+    test('Replace with `c` flag inverts global flag', async () => {
+      const confirmStub = sinon
+        .stub(SubstituteCommand.prototype, 'confirmReplacement')
+        .returns(true);
+      await modeHandler.handleMultipleKeyEvents(['i', 'f', 'f', 'b', 'a', 'r', 'f', '<Esc>']);
+      await commandLine.Run('%s/f/foo/c', modeHandler.vimState);
+
+      assertEqualLines(['foofoobarfoo']);
+      confirmStub.restore();
+    });
+
     test('Replace multiple lines', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>', 'o', 'a', 'b']);
       await commandLine.Run('%s/a/d/', modeHandler.vimState);
@@ -212,7 +245,7 @@ suite('Basic substitute', () => {
       assertEqualLines(['bz']);
     });
   });
-  suite('Substitute with empty search string should use previous search', () => {
+  suite('Substitute should use various previous search/substitute states', () => {
     test('Substitute with previous search using *', async () => {
       await modeHandler.handleMultipleKeyEvents([
         'i',
@@ -302,6 +335,74 @@ suite('Basic substitute', () => {
       await commandLine.Run('%s//fighters', modeHandler.vimState);
 
       assertEqualLines(['fighters', 'bar', 'fighters', 'bar']);
+    });
+    newTest({
+      title: 'Substitute with parameters should update search state',
+      start: ['foo', 'bar', 'foo', 'bar|'],
+      keysPressed:
+        '/bar\n' + // search for bar (search state now = bar)
+        ':s/ar/ite\n' + // change first bar to bite (search state now = ar, not bar)
+        'n' + // repeat search (ar, not bar)
+        'rr', // and replace a with r
+      end: ['foo', 'bite', 'foo', 'b|rr'],
+    });
+    newTest({
+      title:
+        'Substitute with empty replacement should delete previous substitution (all variants) and accepts flags',
+      start: [
+        'link',
+        '|ganon is here',
+        'link',
+        'ganon is here',
+        'link',
+        'ganon is here',
+        'link',
+        'ganon is here',
+        'link',
+        'ganon ganon is here',
+      ],
+      keysPressed:
+        ':s/ganon/zelda\n' + // replace ganon with zelda (ensuring we have a prior replacement state)
+        'n' + // find next ganon
+        ':s/\n' + // replace ganon with nothing (using prior state)
+        ':s/ganon/zelda\n' + // does nothing (just ensuring we have a prior replacement state)
+        'n' + // find next ganon
+        ':s//\n' + // replace ganon with nothing (using prior state)
+        'n' + // find next ganon
+        ':s/ganon\n' + // replace ganon with nothing (using single input)
+        ':s/ganon/zelda\n' + // does nothing (just ensuring we have a prior replacement state)
+        'n' + // find next ganon
+        ':s///g\n', // replace ganon with nothing
+      end: [
+        'link',
+        'zelda is here',
+        'link',
+        ' is here',
+        'link',
+        ' is here',
+        'link',
+        ' is here',
+        'link',
+        '|  is here',
+      ],
+    });
+    newTest({
+      title:
+        'Substitute with no pattern should repeat previous substitution and not alter search state',
+      start: ['|link', 'zelda', 'link', 'zelda', 'link'],
+      keysPressed:
+        ':s/ink/egend\n' + // replace link with legend (search state now = egend, and substitute state set)
+        '/link\n' + // search for link (search state now = link, not ink)
+        ':s\n' + // repeat replacement (using substitute state, so ink, not link - note: search state should NOT change)
+        'n' + // repeat search for link, not ink
+        'rp', // and replace l with p (confirming search state was unaltered)
+      end: ['legend', 'zelda', 'legend', 'zelda', '|pink'],
+    });
+    newTest({
+      title: 'Substitute repeat previous should accept flags',
+      start: ['|fooo'],
+      keysPressed: ':s/o/un\n:s g\n', // repeated replacement accepts g flag, replacing all other occurrences
+      end: ['|fununun'],
     });
     test('Substitute with empty search string should use last searched pattern', async () => {
       await modeHandler.handleMultipleKeyEvents([
