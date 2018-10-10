@@ -122,16 +122,9 @@ export class DeleteOperator extends BaseOperator {
     if (registerMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
-      const isddCommand = vimState.recordedState.commandWithoutCountPrefix === 'dd';
-      if (configuration.foldfix && isddCommand) {
-        const startEndLineDistance = Math.abs(end.line - start.line);
-        end = new Position(start.line, end.character);
-        // delete folded lines hidden by every line that is to be deleted
-        for (let len = startEndLineDistance + 1; len > 0; len--) {
-          const expectedEndWithoutFolds = end.getDown(0);
-          end = (<IMovement>await new MoveDownFoldFix().execAction(end, vimState)).stop;
-        }
-        end = end.getUp(0).getLineEnd();
+
+      if (configuration.foldfix) {
+        end = await includeFoldedLines(start, end, vimState);
       }
     }
     end = new Position(end.line, end.character + 1);
@@ -274,16 +267,9 @@ export class YankOperator extends BaseOperator {
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
-      const isyyCommand = vimState.recordedState.commandWithoutCountPrefix === 'yy';
-      if (configuration.foldfix && isyyCommand) {
-        const startEndLineDistance = Math.abs(end.line - start.line);
-        end = new Position(start.line, end.character);
-        // delete folded lines hidden by every line that is to be deleted
-        for (let len = startEndLineDistance + 1; len > 0; len--) {
-          const expectedEndWithoutFolds = end.getDown(0);
-          end = (<IMovement>await new MoveDownFoldFix().execAction(end, vimState)).stop;
-        }
-        end = end.getUp(0).getLineEnd();
+
+      if (configuration.foldfix) {
+        end = await includeFoldedLines(start, end, vimState);
       }
     }
 
@@ -320,6 +306,25 @@ export class YankOperator extends BaseOperator {
 
     return vimState;
   }
+}
+
+async function includeFoldedLines(
+  start: Position,
+  end: Position,
+  vimState: VimState
+): Promise<Position> {
+  const isddCommand = vimState.recordedState.commandWithoutCountPrefix === 'dd';
+  const isyyCommand = vimState.recordedState.commandWithoutCountPrefix === 'yy';
+
+  if (isddCommand || isyyCommand) {
+    const startEndLineDistance = Math.abs(end.line - start.line);
+    end = new Position(start.line, end.character);
+    for (let len = startEndLineDistance + 1; len > 0; len--) {
+      end = (<IMovement>await new MoveDownFoldFix().execAction(end, vimState)).stop;
+    }
+    end = end.getUp(0).getLineEnd();
+  }
+  return end;
 }
 
 @RegisterAction
