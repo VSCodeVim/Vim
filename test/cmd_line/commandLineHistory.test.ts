@@ -42,38 +42,38 @@ suite('command-line history', () => {
 
   test('add command', async () => {
     for (let cmd of run_cmds) {
-      history.add(cmd);
+      await history.add(cmd);
     }
     assertArrayEquals(run_cmds.slice(), history.get());
   });
 
   test('add empty command', async () => {
     for (let cmd of run_cmds) {
-      history.add(cmd);
+      await history.add(cmd);
     }
-    history.add('');
+    await history.add('');
     assertArrayEquals(run_cmds.slice(), history.get());
-    history.add(undefined);
+    await history.add(undefined);
     assertArrayEquals(run_cmds.slice(), history.get());
   });
 
   test('add command over configuration.history', async () => {
     for (let cmd of run_cmds) {
-      history.add(cmd);
+      await history.add(cmd);
     }
     let added_cmd: string = String(configuration.history);
     run_cmds.push(added_cmd);
-    history.add(added_cmd);
+    await history.add(added_cmd);
 
     assertArrayEquals(run_cmds.slice(1), history.get());
   });
 
   test('add command that exists in history', async () => {
     for (let cmd of run_cmds) {
-      history.add(cmd);
+      await history.add(cmd);
     }
     let existed_cmd: string = '0';
-    history.add(existed_cmd);
+    await history.add(existed_cmd);
     let expected_raw_history: string[] = run_cmds.slice();
     expected_raw_history.splice(expected_raw_history.indexOf(existed_cmd), 1);
     expected_raw_history.push(existed_cmd);
@@ -82,7 +82,7 @@ suite('command-line history', () => {
 
   test('load and save history', async () => {
     for (let cmd of run_cmds) {
-      history.add(cmd);
+      await history.add(cmd);
     }
 
     let history2 = new CommandLineHistory();
@@ -92,14 +92,14 @@ suite('command-line history', () => {
 
   test('change configuration.history', async () => {
     for (let cmd of run_cmds) {
-      history.add(cmd);
+      await history.add(cmd);
     }
 
     assert.equal(history.get().length, configuration.history);
 
     configuration.history = 10;
     for (let cmd of run_cmds) {
-      history.add(cmd);
+      await history.add(cmd);
     }
 
     assertArrayEquals(run_cmds.slice(run_cmds.length - configuration.history), history.get());

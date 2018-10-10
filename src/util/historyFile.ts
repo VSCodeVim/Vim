@@ -20,7 +20,7 @@ export class HistoryFile {
     this._historyFileName = historyFileName;
   }
 
-  public add(value: string | undefined): void {
+  public async add(value: string | undefined): Promise<void> {
     if (!value || value.length === 0) {
       return;
     }
@@ -39,7 +39,7 @@ export class HistoryFile {
       this._history = this._history.slice(this._history.length - configuration.history);
     }
 
-    this.save();
+    await this.save();
   }
 
   public get(): string[] {
@@ -59,7 +59,7 @@ export class HistoryFile {
     }
   }
 
-  public async save(): Promise<void> {
+  public save(): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
       try {
         if (!(await util.promisify(fs.exists)(this._historyDir))) {
