@@ -65,7 +65,7 @@ namespace LexerFunctions {
             return lexDigits(TokenType.LineNumber);
           } else {
             // otherwise, use previous token to determine which flavor of digit lexer should be used
-            let previousTokenType = tokens[tokens.length - 1].type;
+            const previousTokenType = tokens[tokens.length - 1].type;
             if (previousTokenType === TokenType.Plus || previousTokenType === TokenType.Minus) {
               return lexDigits(TokenType.Offset);
             } else {

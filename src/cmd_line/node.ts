@@ -75,7 +75,7 @@ export class LineRange {
     let currentColumn = 0; // only mark does this differently
     let currentOperation: LineRefOperation = undefined;
 
-    var firstToken = toks[0];
+    const firstToken = toks[0];
     // handle first-token special cases (e.g. %, inital line number is "." by default)
     switch (firstToken.type) {
       case token.TokenType.Percent:
