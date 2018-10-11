@@ -275,7 +275,11 @@ export class SubstituteCommand extends node.CommandBase {
       endLine = new vscode.Position(TextEditor.getLineCount() - 1, 0);
     } else {
       startLine = range.lineRefToPosition(vimState.editor, range.left, vimState);
-      endLine = range.lineRefToPosition(vimState.editor, range.right, vimState);
+      if (range.right.length === 0) {
+        endLine = startLine;
+      } else {
+        endLine = range.lineRefToPosition(vimState.editor, range.right, vimState);
+      }
     }
 
     if (this._arguments.count && this._arguments.count >= 0) {

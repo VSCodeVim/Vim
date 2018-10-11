@@ -32,6 +32,9 @@ function parseLineRange(state: ParserState, commandLine: node.CommandLine): IPar
       case token.TokenType.SelectionFirstLine:
       case token.TokenType.SelectionLastLine:
       case token.TokenType.Mark:
+      case token.TokenType.Offset:
+      case token.TokenType.Plus:
+      case token.TokenType.Minus:
         commandLine.range.addToken(tok);
         continue;
       case token.TokenType.CommandName:
