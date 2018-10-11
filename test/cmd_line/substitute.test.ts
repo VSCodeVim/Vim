@@ -37,6 +37,13 @@ suite('Basic substitute', () => {
     assertEqualLines(['dbd']);
   });
 
+  newTest({
+    title: 'Replace with flags AND count',
+    start: ['|blah blah', 'blah', 'blah blah', 'blah blah'],
+    keysPressed: ':.s/blah/yay/g 2\n',
+    end: ['|yay yay', 'yay', 'blah blah', 'blah blah'],
+  });
+
   test('Replace with `c` flag', async () => {
     const confirmStub = sinon.stub(SubstituteCommand.prototype, 'confirmReplacement').returns(true);
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
@@ -102,6 +109,20 @@ suite('Basic substitute', () => {
     start: ['blah blah', '|blah', 'blah blah', 'blah blah'],
     keysPressed: '3:s/blah/yay\n',
     end: ['blah blah', '|yay', 'yay blah', 'yay blah'],
+  });
+
+  newTest({
+    title: 'Repeat replacement across relative line range',
+    start: ['|blah blah', 'blah', 'blah blah', 'blah blah'],
+    keysPressed: ':s/blah/yay\nj3:s\n',
+    end: ['yay blah', '|yay', 'yay blah', 'yay blah'],
+  });
+
+  newTest({
+    title: 'Replace with range AND count but no flags',
+    start: ['|blah blah', 'blah', 'blah blah', 'blah blah'],
+    keysPressed: '3:s/blah/yay/ 2\n',
+    end: ['|blah blah', 'blah', 'yay blah', 'yay blah'],
   });
 
   newTest({
