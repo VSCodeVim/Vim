@@ -198,6 +198,11 @@ export interface IConfiguration {
   mouseSelectionGoesIntoVisualMode: boolean;
 
   /**
+   * Includes trailing whitespace when changing word.
+   */
+  changeWordIncludesWhitespace: boolean;
+
+  /**
    * Uses a hack to fix moving around folds.
    */
   foldfix: boolean;
