@@ -384,6 +384,11 @@
           "description": "Color of the search highlight.",
           "default": "rgba(150, 150, 255, 0.3)"
         },
+        "vim.yankHighlightColor": {
+          "type": "string",
+          "description": "Color of the yank highlight.",
+          "default": "rgba(250, 240, 170, 0.5)"
+        },
         "vim.useSystemClipboard": {
           "type": "boolean",
           "description": "Use system clipboard for unnamed register.",

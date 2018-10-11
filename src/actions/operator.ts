@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { Position, PositionDiff } from './../common/motion/position';
 import { Range } from './../common/motion/range';
 import { configuration } from './../configuration/configuration';
+import { Decoration } from '../configuration/decoration';
 import { ModeName } from './../mode/mode';
 import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
@@ -268,7 +269,8 @@ export class YankOperator extends BaseOperator {
       end = end.getLineEnd();
     }
 
-    let text = TextEditor.getText(new vscode.Range(start, end));
+    const range = new vscode.Range(start, end);
+    let text = TextEditor.getText(range);
 
     // If we selected the newline character, add it as well.
     if (
@@ -278,6 +280,7 @@ export class YankOperator extends BaseOperator {
       text = text + '\n';
     }
 
+    Decoration.yankHighlight(vimState, [range]);
     Register.put(text, vimState, this.multicursorIndex);
 
     await vimState.setCurrentMode(ModeName.Normal);
@@ -643,12 +646,14 @@ export class YankVisualBlockMode extends BaseOperator {
     return false;
   }
 
-  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
     let toCopy: string = '';
+    const ranges: vscode.Range[] = [];
 
-    const isMultiline = start.line !== end.line;
+    const isMultiline = startPos.line !== endPos.line;
 
-    for (const { line } of Position.IterateLine(vimState)) {
+    for (const { line, start, end } of Position.IterateLine(vimState)) {
+      ranges.push(new vscode.Range(start, end));
       if (isMultiline) {
         toCopy += line + '\n';
       } else {
@@ -658,13 +663,14 @@ export class YankVisualBlockMode extends BaseOperator {
 
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
+    Decoration.yankHighlight(vimState, ranges);
     Register.put(toCopy, vimState, this.multicursorIndex);
 
     const numLinesYanked = toCopy.split('\n').length;
     ReportLinesYanked(numLinesYanked, vimState);
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorStopPosition = start;
+    vimState.cursorStopPosition = startPos;
     return vimState;
   }
 }

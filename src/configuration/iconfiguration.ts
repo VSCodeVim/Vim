@@ -172,6 +172,11 @@ export interface IConfiguration {
   searchHighlightColor: string;
 
   /**
+   * Color of yank highlights.
+   */
+  yankHighlightColor: string;
+
+  /**
    * Size of a tab character.
    */
   tabstop: number;

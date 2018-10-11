@@ -57,6 +57,7 @@ export class Configuration implements IConfiguration {
     loggingLevelForConsole: 'debug';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
+  yankHighlightColor = 'rgba(250, 240, 170, 0.5)';
   tabstop = 2;
   editorCursorStyle = vscode.TextEditorCursorStyle.Line;
   expandtab = true;

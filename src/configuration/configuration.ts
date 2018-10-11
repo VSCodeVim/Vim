@@ -227,6 +227,8 @@ class Configuration implements IConfiguration {
 
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
 
+  yankHighlightColor = 'rgba(250, 240, 170, 0.5)';
+
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
   tabstop: number;
 
