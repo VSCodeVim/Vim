@@ -1333,6 +1333,9 @@ export class PutCommand extends BaseCommand {
     const register = await Register.get(vimState);
     const dest = after ? position : position.getRight();
 
+    // Force linewise when using put with indent (`[p` or `]p`)
+    const currentRegisterMode = adjustIndent ? RegisterMode.LineWise : register.registerMode;
+
     if (register.text instanceof RecordedState) {
       /**
        *  Paste content from recordedState. This one is actually complex as
@@ -1362,12 +1365,12 @@ export class PutCommand extends BaseCommand {
     const noPrevLine = vimState.cursorStartPosition.isAtDocumentBegin();
     const noNextLine = vimState.cursorPosition.isAtDocumentEnd();
 
-    if (register.registerMode === RegisterMode.CharacterWise) {
+    if (currentRegisterMode === RegisterMode.CharacterWise) {
       textToAdd = text;
       whereToAddText = dest;
     } else if (
       vimState.currentMode === ModeName.Visual &&
-      register.registerMode === RegisterMode.LineWise
+      currentRegisterMode === RegisterMode.LineWise
     ) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
@@ -1375,7 +1378,7 @@ export class PutCommand extends BaseCommand {
       whereToAddText = dest;
     } else if (
       vimState.currentMode === ModeName.VisualLine &&
-      register.registerMode === RegisterMode.LineWise
+      currentRegisterMode === RegisterMode.LineWise
     ) {
       // in the specific case of linewise register data during visual mode,
       // we need extra newline feeds
@@ -1440,11 +1443,11 @@ export class PutCommand extends BaseCommand {
 
     if (
       vimState.currentMode === ModeName.VisualLine &&
-      register.registerMode === RegisterMode.LineWise
+      currentRegisterMode === RegisterMode.LineWise
     ) {
       const numNewline = [...text].filter(c => c === '\n').length;
       diff = PositionDiff.NewBOLDiff(-numNewline - (noNextLine ? 0 : 1));
-    } else if (register.registerMode === RegisterMode.LineWise) {
+    } else if (currentRegisterMode === RegisterMode.LineWise) {
       const check = text.match(/^\s*/);
       let numWhitespace = 0;
 
@@ -1486,7 +1489,7 @@ export class PutCommand extends BaseCommand {
       diff: diff,
     });
 
-    vimState.currentRegisterMode = register.registerMode;
+    vimState.currentRegisterMode = currentRegisterMode;
     return vimState;
   }
 
