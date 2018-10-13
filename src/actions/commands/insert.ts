@@ -282,6 +282,14 @@ export class CommandInsertInInsertMode extends BaseCommand {
           position: vimState.cursorPosition,
         });
       } else {
+        if (char === '\n') {
+          // Remove whitespace to the right of cursor before inserting newline
+          const whitespace = line.substring(position.character).search(/\S|$/);
+          if (whitespace > 0) {
+            await TextEditor.delete(new vscode.Range(position, position.getRight(whitespace)));
+          }
+        }
+
         vimState.recordedState.transformations.push({
           type: 'insertTextVSCode',
           text: char,
