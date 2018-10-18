@@ -58,9 +58,10 @@ export class SearchState {
 
     // checking if the tab that is worked on has changed, or the file version has changed
     const shouldRecalculate =
-      this._cachedDocumentName !== TextEditor.getDocumentName() ||
-      this._cachedDocumentVersion !== TextEditor.getDocumentVersion() ||
-      forceRecalc;
+      TextEditor.isActive &&
+      (this._cachedDocumentName !== TextEditor.getDocumentName() ||
+        this._cachedDocumentVersion !== TextEditor.getDocumentVersion() ||
+        forceRecalc);
 
     if (shouldRecalculate) {
       // Calculate and store all matching ranges
