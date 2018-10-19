@@ -316,6 +316,8 @@ class Configuration implements IConfiguration {
 
   mouseSelectionGoesIntoVisualMode = true;
 
+  changeWordIncludesWhitespace = false;
+
   foldfix = false;
 
   private disableExtension: boolean = false;
