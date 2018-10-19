@@ -1,5 +1,20 @@
 # Change Log
 
+## [v0.16.11](https://github.com/vscodevim/vim/tree/v0.16.11) (2018-10-19)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.10...v0.16.11)
+
+**Closed issues:**
+
+- Version 0.16.10 stuck in insert mode [\#3143](https://github.com/VSCodeVim/Vim/issues/3143)
+- fold code block bug [\#3140](https://github.com/VSCodeVim/Vim/issues/3140)
+- Escape key stopped being registered so can't exit insert mode [\#3139](https://github.com/VSCodeVim/Vim/issues/3139)
+
+**Merged pull requests:**
+
+- Prevent error on loading search history if no active editor on startup [\#3146](https://github.com/VSCodeVim/Vim/pull/3146) ([shawnaxsom](https://github.com/shawnaxsom))
+- v0.16.10 [\#3137](https://github.com/VSCodeVim/Vim/pull/3137) ([jpoon](https://github.com/jpoon))
+
 ## [v0.16.10](https://github.com/vscodevim/vim/tree/v0.16.10) (2018-10-14)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.9...v0.16.10)
