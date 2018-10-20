@@ -26,6 +26,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1.  Install prerequisites:
     - latest [Visual Studio Code](https://code.visualstudio.com/)
     - [Node.js](https://nodejs.org/) v8.0.0 or higher
+    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 1.  In a terminal:
 
     ```bash
@@ -46,7 +47,9 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
     # Alternatively, build and run tests through gulp and npm scripts
     gulp build                  # build
-    npm test                    # test
+    npm test                    # test (must close all instances of VSCode)
+
+    # Only available if Docker is installed and running
     gulp test                   # run tests inside Docker container
     gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
     ```
