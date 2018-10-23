@@ -107,7 +107,7 @@ export class Remapper implements IRemapper {
         await vimState.historyTracker.undoAndRemoveChanges(
           Math.max(0, numCharsToRemove * vimState.allCursors.length)
         );
-        vimState.cursorPosition = vimState.cursorPosition.getLeft(numCharsToRemove);
+        vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft(numCharsToRemove)));
       }
 
       // We need to remove the keys that were remapped into different keys
