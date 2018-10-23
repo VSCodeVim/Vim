@@ -1,7 +1,7 @@
 # Contribution Guide
 
 This document offers a set of guidelines for contributing to VSCodeVim.
-These are just guidelines, not rules, use your best judgment and feel free to propose changes to this document.
+These are just guidelines, not rules; use your best judgment and feel free to propose changes to this document.
 If you need help, drop by on [Slack](https://vscodevim-slackin.azurewebsites.net/).
 
 Thanks for helping us in making VSCodeVim better! :clap:
@@ -26,6 +26,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1.  Install prerequisites:
     - latest [Visual Studio Code](https://code.visualstudio.com/)
     - [Node.js](https://nodejs.org/) v8.0.0 or higher
+    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 1.  In a terminal:
 
     ```bash
@@ -46,7 +47,9 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
     # Alternatively, build and run tests through gulp and npm scripts
     gulp build                  # build
-    npm test                    # test
+    npm test                    # test (must close all instances of VSCode)
+
+    # Only available if Docker is installed and running
     gulp test                   # run tests inside Docker container
     gulp test --grep testSuite  # run only tests/suites filtered by js regex inside container
     ```
@@ -90,14 +93,14 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 
 To push a release:
 
-```
+```bash
 gulp release --semver [SEMVER] --githubToken [TOKEN]
 git push --follow-tags
 ```
 
 The above Gulp command will:
 
-1.  Bump the package version based off the semver supplied. Supported values: patch, minor, major).
+1.  Bump the package version based off the semver supplied. Supported values: patch, minor, major.
 2.  Create a changelog using [github-changelog-generator](https://github.com/github-changelog-generator/github-changelog-generator).
 3.  Create a Git commit with the above changes.
 4.  Create a Git tag using the new package version.
@@ -108,9 +111,11 @@ In addition to building and testing the extension, when a tag is applied to the 
 
 ### Visual Studio Code Slowdown
 
-If you notice a slowdown and have ever ran `npm test` in the past instread of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VS Code by:
+If you notice a slowdown and have ever run `npm test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
 
-`$ rm -rf .vscode-test/`
+```bash
+$ rm -rf .vscode-test/
+```
 
 ## Styleguide
 
