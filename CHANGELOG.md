@@ -1,5 +1,22 @@
 # Change Log
 
+## [v0.16.12](https://github.com/vscodevim/vim/tree/v0.16.12) (2018-10-26)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.11...v0.16.12)
+
+**Fixed Bugs:**
+
+- Gulp test with Docker fails to launch [\#3152](https://github.com/VSCodeVim/Vim/issues/3152)
+- The link to \*Multi-Cursor\* mode in \_\_Table of content\_\_ doesn't work \(in repo\) [\#3149](https://github.com/VSCodeVim/Vim/issues/3149)
+- Multi-Cursor + insertModeKeyBinding jk -\> \<Esc\> [\#2752](https://github.com/VSCodeVim/Vim/issues/2752)
+
+**Merged pull requests:**
+
+- Add more Docker documentation [\#3156](https://github.com/VSCodeVim/Vim/pull/3156) ([westim](https://github.com/westim))
+- Fix 3152: Upgrade Docker prerequisite libgtk from 2.0 to 3.0 [\#3153](https://github.com/VSCodeVim/Vim/pull/3153) ([westim](https://github.com/westim))
+- Fix \#3149: broken table of contents links [\#3151](https://github.com/VSCodeVim/Vim/pull/3151) ([westim](https://github.com/westim))
+- Fix for \#2752 [\#3131](https://github.com/VSCodeVim/Vim/pull/3131) ([donald93](https://github.com/donald93))
+
 ## [v0.16.11](https://github.com/vscodevim/vim/tree/v0.16.11) (2018-10-19)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.10...v0.16.11)
