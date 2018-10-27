@@ -1,9 +1,9 @@
-max-issues=1000
+max-issues=500
 bugs-label=**Fixed Bugs:**
 bug-labels=kind/bug
 enhancement-label=**Enhancements:**
 enhancement-labels=kind/enhancement,kind/feature
 exclude-labels=status/by-design,status/duplicate,kind/question,kind/discussion
-since-tag=v0.15.7
+since-tag=v0.16.11
 base=build/CHANGELOG.base.md
 cache-file=/usr/local/src/your-app/.cache/github_changelog_generator
