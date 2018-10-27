@@ -1,5 +1,7 @@
 FROM node:8.11
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && \
     apt-get install -y xorg xvfb libxss-dev libgtk-3-0 gconf2 libnss3 libasound2
 
