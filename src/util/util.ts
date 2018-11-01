@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import * as os from 'os';
-import * as path from 'path';
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
 import { logger } from './logger';
