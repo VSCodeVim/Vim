@@ -59,30 +59,26 @@ export class HistoryFile {
     }
   }
 
-  public save(): Promise<void> {
-    return new Promise<void>(async (resolve, reject) => {
-      try {
-        if (!(await util.promisify(fs.exists)(this._historyDir))) {
-          mkdirp.sync(this._historyDir, 0o775);
-        }
-      } catch (err) {
-        logger.error(`Failed to create directory. path=${this._historyDir}. err=${err}.`);
-        reject(err);
+  public async save(): Promise<void> {
+    try {
+      if (!(await util.promisify(fs.exists)(this._historyDir))) {
+        mkdirp.sync(this._historyDir, 0o775);
       }
+    } catch (err) {
+      logger.error(`Failed to create directory. path=${this._historyDir}. err=${err}.`);
+      throw err;
+    }
 
-      try {
-        await util.promisify(fs.writeFile)(
-          this._historyFilePath,
-          JSON.stringify(this._history),
-          'utf-8'
-        );
-      } catch (err) {
-        logger.error(`Failed to save history. path=${this._historyDir}. err=${err}.`);
-        reject(err);
-      }
-
-      resolve();
-    });
+    try {
+      await util.promisify(fs.writeFile)(
+        this._historyFilePath,
+        JSON.stringify(this._history),
+        'utf-8'
+      );
+    } catch (err) {
+      logger.error(`Failed to save history. path=${this._historyDir}. err=${err}.`);
+      throw err;
+    }
   }
 
   public async load() {
