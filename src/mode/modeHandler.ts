@@ -392,7 +392,6 @@ export class ModeHandler implements vscode.Disposable {
 
     let action = result as BaseAction;
     let actionToRecord: BaseAction | undefined = action;
-    let originalLocation = Jump.fromStateNow(vimState);
 
     if (recordedState.actionsRun.length === 0) {
       recordedState.actionsRun.push(action);

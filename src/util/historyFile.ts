@@ -62,7 +62,7 @@ export class HistoryFile {
   public async save(): Promise<void> {
     try {
       if (!(await util.promisify(fs.exists)(this._historyDir))) {
-        mkdirp.sync(this._historyDir, 0o775);
+        await util.promisify(mkdirp)(this._historyDir, 0o775);
       }
     } catch (err) {
       logger.error(`Failed to create directory. path=${this._historyDir}. err=${err}.`);
