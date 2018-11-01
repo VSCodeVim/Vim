@@ -1,6 +1,3 @@
-import { Position } from './../common/motion/position';
-import { TextEditor } from './../textEditor';
-
 /**
  * State involved with Substitution commands (:s).
  */
