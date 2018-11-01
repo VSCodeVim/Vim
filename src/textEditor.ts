@@ -11,6 +11,21 @@ export class TextEditor {
   // TODO: Refactor args
 
   /**
+   * Verify that a tab is even open for the TextEditor to act upon.
+   *
+   * This class was designed assuming there will usually be an active editor
+   * to act upon, which is usually true with editor hotkeys.
+   *
+   * But there are cases where an editor won't be active, such as running
+   * code on VSCodeVim activation, where you might see the error:
+   * > [Extension Host] Here is the error stack:
+   * > TypeError: Cannot read property 'document' of undefined
+   */
+  static get isActive() {
+    return vscode.window.activeTextEditor != null;
+  }
+
+  /**
    * Do not use this method! It has been deprecated. Use InsertTextTransformation
    * (or possibly InsertTextVSCodeTransformation) instead.
    */

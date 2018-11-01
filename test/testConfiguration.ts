@@ -63,6 +63,7 @@ export class Configuration implements IConfiguration {
   iskeyword = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
+  changeWordIncludesWhitespace = false;
   foldfix = false;
   disableExt = false;
   enableNeovim = false;

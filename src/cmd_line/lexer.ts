@@ -60,7 +60,18 @@ namespace LexerFunctions {
         case '7':
         case '8':
         case '9':
-          return lexLineRef;
+          if (tokens.length < 1) {
+            // special case - first digitey token is always a line number
+            return lexDigits(TokenType.LineNumber);
+          } else {
+            // otherwise, use previous token to determine which flavor of digit lexer should be used
+            const previousTokenType = tokens[tokens.length - 1].type;
+            if (previousTokenType === TokenType.Plus || previousTokenType === TokenType.Minus) {
+              return lexDigits(TokenType.Offset);
+            } else {
+              return lexDigits(TokenType.LineNumber);
+            }
+          }
         case '+':
           tokens.push(emitToken(TokenType.Plus, state)!);
           continue;
@@ -110,33 +121,41 @@ namespace LexerFunctions {
     return lexRange;
   }
 
-  function lexLineRef(state: Scanner, tokens: Token[]): ILexFunction | null {
-    // The first digit has already been lexed.
-    while (true) {
-      if (state.isAtEof) {
-        tokens.push(emitToken(TokenType.LineNumber, state)!);
-        return null;
-      }
+  /**
+   * when we're lexing digits, it could either be a line number or an offset, depending on whether
+   * our previous token was a + or a -
+   *
+   * so it's lexRange's job to specify which token to emit.
+   */
+  function lexDigits(tokenType: TokenType) {
+    return function(state: Scanner, tokens: Token[]): ILexFunction | null {
+      // The first digit has already been lexed.
+      while (true) {
+        if (state.isAtEof) {
+          tokens.push(emitToken(tokenType, state)!);
+          return null;
+        }
 
-      var c = state.next();
-      switch (c) {
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-          continue;
-        default:
-          state.backup();
-          tokens.push(emitToken(TokenType.LineNumber, state)!);
-          return lexRange;
+        var c = state.next();
+        switch (c) {
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            continue;
+          default:
+            state.backup();
+            tokens.push(emitToken(tokenType, state)!);
+            return lexRange;
+        }
       }
-    }
+    };
   }
 
   function lexCommand(state: Scanner, tokens: Token[]): ILexFunction | null {

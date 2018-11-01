@@ -1150,7 +1150,11 @@ export class MoveWordBegin extends BaseMovement {
     vimState: VimState,
     isLastIteration: boolean = false
   ): Promise<Position> {
-    if (isLastIteration && vimState.recordedState.operator instanceof ChangeOperator) {
+    if (
+      isLastIteration &&
+      !configuration.changeWordIncludesWhitespace &&
+      vimState.recordedState.operator instanceof ChangeOperator
+    ) {
       if (TextEditor.getLineAt(position).text.length < 1) {
         return position;
       }
@@ -1208,7 +1212,10 @@ class MoveFullWordBegin extends BaseMovement {
   keys = ['W'];
 
   public async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (vimState.recordedState.operator instanceof ChangeOperator) {
+    if (
+      !configuration.changeWordIncludesWhitespace &&
+      vimState.recordedState.operator instanceof ChangeOperator
+    ) {
       // TODO use execForOperator? Or maybe dont?
 
       // See note for w

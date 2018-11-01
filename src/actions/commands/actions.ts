@@ -1774,7 +1774,11 @@ class CommandShowCommandLine extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Normal) {
-      vimState.currentCommandlineText = '';
+      if (vimState.recordedState.count) {
+        vimState.currentCommandlineText = `.,.+${vimState.recordedState.count - 1}`;
+      } else {
+        vimState.currentCommandlineText = '';
+      }
     } else {
       vimState.currentCommandlineText = "'<,'>";
     }

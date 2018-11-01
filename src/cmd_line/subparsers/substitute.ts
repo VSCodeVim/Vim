@@ -96,7 +96,8 @@ function parseSubstituteFlags(scanner: Scanner): number {
         flags = flags | node.SubstituteFlags.UsePreviousPattern;
         break;
       default:
-        return node.SubstituteFlags.None;
+        scanner.backup();
+        return flags;
     }
 
     index++;
@@ -139,7 +140,6 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
         pattern: undefined,
         replace: '', // ignored in this context
         flags: node.SubstituteFlags.None,
-        count: 1,
       });
     }
     let scanner: Scanner;
@@ -153,7 +153,6 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
           pattern: '',
           replace: '',
           flags: node.SubstituteFlags.None,
-          count: 1,
         });
       }
 
@@ -168,7 +167,6 @@ export function parseSubstituteCommandArgs(args: string): node.SubstituteCommand
           pattern: searchPattern,
           replace: '',
           flags: node.SubstituteFlags.None,
-          count: 1,
         });
       }
       replaceString = parsePattern('', scanner, delimiter)[0];

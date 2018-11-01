@@ -1,17 +1,80 @@
 # Change Log
 
+## [v0.16.12](https://github.com/vscodevim/vim/tree/v0.16.12) (2018-10-26)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.11...v0.16.12)
+
+**Fixed Bugs:**
+
+- Gulp test with Docker fails to launch [\#3152](https://github.com/VSCodeVim/Vim/issues/3152)
+- The link to \*Multi-Cursor\* mode in \_\_Table of content\_\_ doesn't work \(in repo\) [\#3149](https://github.com/VSCodeVim/Vim/issues/3149)
+- Multi-Cursor + insertModeKeyBinding jk -\> \<Esc\> [\#2752](https://github.com/VSCodeVim/Vim/issues/2752)
+
+**Merged pull requests:**
+
+- Add more Docker documentation [\#3156](https://github.com/VSCodeVim/Vim/pull/3156) ([westim](https://github.com/westim))
+- Fix 3152: Upgrade Docker prerequisite libgtk from 2.0 to 3.0 [\#3153](https://github.com/VSCodeVim/Vim/pull/3153) ([westim](https://github.com/westim))
+- Fix \#3149: broken table of contents links [\#3151](https://github.com/VSCodeVim/Vim/pull/3151) ([westim](https://github.com/westim))
+- Fix for \#2752 [\#3131](https://github.com/VSCodeVim/Vim/pull/3131) ([donald93](https://github.com/donald93))
+
+## [v0.16.11](https://github.com/vscodevim/vim/tree/v0.16.11) (2018-10-19)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.10...v0.16.11)
+
+**Closed issues:**
+
+- Version 0.16.10 stuck in insert mode [\#3143](https://github.com/VSCodeVim/Vim/issues/3143)
+- fold code block bug [\#3140](https://github.com/VSCodeVim/Vim/issues/3140)
+- Escape key stopped being registered so can't exit insert mode [\#3139](https://github.com/VSCodeVim/Vim/issues/3139)
+
+**Merged pull requests:**
+
+- Prevent error on loading search history if no active editor on startup [\#3146](https://github.com/VSCodeVim/Vim/pull/3146) ([shawnaxsom](https://github.com/shawnaxsom))
+- v0.16.10 [\#3137](https://github.com/VSCodeVim/Vim/pull/3137) ([jpoon](https://github.com/jpoon))
+
+## [v0.16.10](https://github.com/vscodevim/vim/tree/v0.16.10) (2018-10-14)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.9...v0.16.10)
+
+**Enhancements:**
+
+- Previous searches are not saved across sessions [\#3098](https://github.com/VSCodeVim/Vim/issues/3098)
+- substitution statefulness [\#3067](https://github.com/VSCodeVim/Vim/issues/3067)
+- feat: implement 'changeWordIncludesWhitespace' option [\#2964](https://github.com/VSCodeVim/Vim/pull/2964) ([darfink](https://github.com/darfink))
+
+**Fixed Bugs:**
+
+- Wrong cursor position after using same file in two panels [\#2688](https://github.com/VSCodeVim/Vim/issues/2688)
+- Search and replace doesn't work with current line \(.\) and relative lines [\#2384](https://github.com/VSCodeVim/Vim/issues/2384)
+
+**Closed issues:**
+
+- Broken on Insiders build [\#3119](https://github.com/VSCodeVim/Vim/issues/3119)
+- Cannot bind \<C-h\> [\#3072](https://github.com/VSCodeVim/Vim/issues/3072)
+- CTRL-\[ does not quit the command-line editing mode [\#3019](https://github.com/VSCodeVim/Vim/issues/3019)
+
+**Merged pull requests:**
+
+- chore\(deps\): update dependency sinon to v7 [\#3135](https://github.com/VSCodeVim/Vim/pull/3135) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency typescript to v3.1.3 [\#3130](https://github.com/VSCodeVim/Vim/pull/3130) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency typescript to v3.1.2 [\#3122](https://github.com/VSCodeVim/Vim/pull/3122) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/node to v9.6.35 [\#3121](https://github.com/VSCodeVim/Vim/pull/3121) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/lodash to v4.14.117 [\#3120](https://github.com/VSCodeVim/Vim/pull/3120) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/sinon to v5.0.5 [\#3118](https://github.com/VSCodeVim/Vim/pull/3118) ([renovate-bot](https://github.com/renovate-bot))
+- Save search history to a file like commandline history [\#3116](https://github.com/VSCodeVim/Vim/pull/3116) ([xconverge](https://github.com/xconverge))
+- fix \(simpler\) - cursor whenever changing editors - closes \#2688 [\#3103](https://github.com/VSCodeVim/Vim/pull/3103) ([captaincaius](https://github.com/captaincaius))
+- feature: relative, plus/minus ranges. closes \#2384 [\#3071](https://github.com/VSCodeVim/Vim/pull/3071) ([captaincaius](https://github.com/captaincaius))
+- Adding state to substitution command [\#3068](https://github.com/VSCodeVim/Vim/pull/3068) ([captaincaius](https://github.com/captaincaius))
+
 ## [v0.16.9](https://github.com/vscodevim/vim/tree/v0.16.9) (2018-10-08)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.8...v0.16.9)
 
 **Fixed Bugs:**
 
-- Unexpected behavior with easymotion and `.` as repeat command [\#2310](https://github.com/VSCodeVim/Vim/issues/2310)
-
-**Closed issues:**
-
 - Repeating command \(`.`\) after doing vim-easymotion find character command doesn't work. [\#3111](https://github.com/VSCodeVim/Vim/issues/3111)
 - Incrementing / Decrementing numbers doesn't work when it's after a minus sign and a word [\#3057](https://github.com/VSCodeVim/Vim/issues/3057)
+- Unexpected behavior with easymotion and `.` as repeat command [\#2310](https://github.com/VSCodeVim/Vim/issues/2310)
 
 **Merged pull requests:**
 
