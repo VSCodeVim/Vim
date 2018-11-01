@@ -66,9 +66,7 @@ export class HistoryFile {
           mkdirp.sync(this._historyDir, 0o775);
         }
       } catch (err) {
-        logger.error(
-          `Failed to create directory. path=${this._historyDir}. err=${err}.`
-        );
+        logger.error(`Failed to create directory. path=${this._historyDir}. err=${err}.`);
         reject(err);
       }
 
