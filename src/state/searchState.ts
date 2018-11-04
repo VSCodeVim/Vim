@@ -223,8 +223,19 @@ export class SearchState {
     }
 
     const effectiveDirection = direction * this._searchDirection;
+    const forward = effectiveDirection === SearchDirection.Forward;
 
-    if (effectiveDirection === SearchDirection.Forward) {
+    if (!configuration.wrapscan) {
+      const last = this._matchRanges.length - 1;
+      if (
+        (forward && this._matchRanges[last].contains(startPosition)) ||
+        (!forward && this._matchRanges[0].contains(startPosition))
+      ) {
+        return { start: startPosition, end: startPosition, match: false };
+      }
+    }
+
+    if (forward) {
       for (let matchRange of this._matchRanges) {
         if (matchRange.start.compareTo(startPosition) > 0) {
           return {
