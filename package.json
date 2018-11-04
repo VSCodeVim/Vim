@@ -661,6 +661,11 @@
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
           "default": ""
+        },
+        "vim.wrapscan": {
+          "type": "boolean",
+          "description": "when \"search next\" reaches end of file, it wraps around to the beginning and vice versa",
+          "default": true
         }
       }
     }

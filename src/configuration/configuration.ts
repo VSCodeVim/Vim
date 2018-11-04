@@ -253,6 +253,8 @@ class Configuration implements IConfiguration {
 
   statusBarColorControl = false;
 
+  wrapscan = true;
+
   statusBarColors: IModeSpecificStrings<string | string[]> = {
     normal: '#005f5f',
     insert: '#5f0000',

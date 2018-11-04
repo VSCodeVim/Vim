@@ -240,5 +240,7 @@ export interface IConfiguration {
    */
   whichwrap: string;
 
+  wrapscan: boolean;
+
   cursorStylePerMode: IModeSpecificStrings<string>;
 }
