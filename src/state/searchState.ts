@@ -227,10 +227,10 @@ export class SearchState {
 
     if (!configuration.wrapscan) {
       if (
-        (isForward && this._matchRanges[this._matchRanges.length - 1].contains(startPosition)) ||
-        (!isForward && this._matchRanges[0].contains(startPosition))
+        (!isForward && this._matchRanges[0].start.line === startPosition.line) ||
+        (isForward &&
+          this._matchRanges[this._matchRanges.length - 1].start.line === startPosition.line)
       ) {
-
         return { start: startPosition, end: startPosition, match: true };
       }
     }
