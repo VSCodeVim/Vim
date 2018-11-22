@@ -490,9 +490,8 @@ export class ModeHandler implements vscode.Disposable {
     */
 
     if (vimState.currentMode === ModeName.Visual) {
-      vimState.allCursors = vimState.allCursors.map(
-        x =>
-          x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getLeftThroughLineBreaks(true)) : x
+      vimState.allCursors = vimState.allCursors.map(x =>
+        x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getLeftThroughLineBreaks(true)) : x
       );
     }
     if (action instanceof BaseMovement) {
@@ -560,13 +559,12 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     if (vimState.currentMode === ModeName.Visual) {
-      vimState.allCursors = vimState.allCursors.map(
-        x =>
-          x.start.isEarlierThan(x.stop)
-            ? x.withNewStop(
+      vimState.allCursors = vimState.allCursors.map(x =>
+        x.start.isEarlierThan(x.stop)
+          ? x.withNewStop(
               x.stop.isLineEnd() ? x.stop.getRightThroughLineBreaks() : x.stop.getRight()
             )
-            : x
+          : x
       );
     }
     // And then we have to do it again because an operator could

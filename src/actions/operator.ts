@@ -160,8 +160,8 @@ export class DeleteOperator extends BaseOperator {
       text = text.endsWith('\r\n')
         ? text.slice(0, -2)
         : text.endsWith('\n')
-          ? text.slice(0, -1)
-          : text;
+        ? text.slice(0, -1)
+        : text;
     }
 
     if (yank) {
