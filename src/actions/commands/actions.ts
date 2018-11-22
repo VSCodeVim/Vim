@@ -210,12 +210,11 @@ export abstract class BaseCommand extends BaseAction {
 
     const cursorsToIterateOver = vimState.allCursors
       .map(x => new Range(x.start, x.stop))
-      .sort(
-        (a, b) =>
-          a.start.line > b.start.line ||
-          (a.start.line === b.start.line && a.start.character > b.start.character)
-            ? 1
-            : -1
+      .sort((a, b) =>
+        a.start.line > b.start.line ||
+        (a.start.line === b.start.line && a.start.character > b.start.character)
+          ? 1
+          : -1
       );
 
     let cursorIndex = 0;
@@ -3276,12 +3275,11 @@ class ActionJoin extends BaseCommand {
 
     const cursorsToIterateOver = vimState.allCursors
       .map(x => new Range(x.start, x.stop))
-      .sort(
-        (a, b) =>
-          a.start.line > b.start.line ||
-          (a.start.line === b.start.line && a.start.character > b.start.character)
-            ? 1
-            : -1
+      .sort((a, b) =>
+        a.start.line > b.start.line ||
+        (a.start.line === b.start.line && a.start.character > b.start.character)
+          ? 1
+          : -1
       );
 
     for (const { start, stop } of cursorsToIterateOver) {
