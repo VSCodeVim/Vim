@@ -687,11 +687,11 @@
   "devDependencies": {
     "@types/clipboardy": "1.1.0",
     "@types/copy-paste": "1.1.30",
-    "@types/diff": "3.5.1",
+    "@types/diff": "3.5.2",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.117",
+    "@types/lodash": "4.14.118",
     "@types/mocha": "5.2.5",
-    "@types/node": "9.6.35",
+    "@types/node": "9.6.37",
     "@types/sinon": "5.0.5",
     "gulp": "4.0.0",
     "gulp-bump": "3.1.1",
@@ -706,7 +706,7 @@
     "prettier": "1.14.3",
     "sinon": "7.1.1",
     "tslint": "5.11.0",
-    "typescript": "3.1.5",
+    "typescript": "3.1.6",
     "vscode": "1.1.21"
   }
 }
