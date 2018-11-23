@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as util from 'util';
 import { configuration } from '../configuration/configuration';
 import { logger } from './logger';
 import { getExtensionDirPath } from '../util/util';
@@ -17,10 +18,9 @@ export class HistoryFile {
   constructor(historyDir: string, historyFileName: string) {
     this._historyDir = historyDir;
     this._historyFileName = historyFileName;
-    this._loadFromFile();
   }
 
-  public add(value: string | undefined): void {
+  public async add(value: string | undefined): Promise<void> {
     if (!value || value.length === 0) {
       return;
     }
@@ -39,7 +39,7 @@ export class HistoryFile {
       this._history = this._history.slice(this._history.length - configuration.history);
     }
 
-    this.save();
+    await this.save();
   }
 
   public get(): string[] {
@@ -60,32 +60,32 @@ export class HistoryFile {
   }
 
   public async save(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        if (!fs.existsSync(this._historyDir)) {
-          mkdirp.sync(this._historyDir, 0o775);
-        }
-      } catch (err) {
-        logger.error(`Failed to create directory. path=${this._historyDir}. err=${err}.`);
-        reject(err);
+    try {
+      if (!(await util.promisify(fs.exists)(this._historyDir))) {
+        await util.promisify(mkdirp)(this._historyDir, 0o775);
       }
+    } catch (err) {
+      logger.error(`Failed to create directory. path=${this._historyDir}. err=${err}.`);
+      throw err;
+    }
 
-      try {
-        fs.writeFileSync(this._historyFilePath, JSON.stringify(this._history), 'utf-8');
-      } catch (err) {
-        logger.error(`Failed to save history. path=${this._historyDir}. err=${err}.`);
-        reject(err);
-      }
-
-      resolve();
-    });
+    try {
+      await util.promisify(fs.writeFile)(
+        this._historyFilePath,
+        JSON.stringify(this._history),
+        'utf-8'
+      );
+    } catch (err) {
+      logger.error(`Failed to save history. path=${this._historyDir}. err=${err}.`);
+      throw err;
+    }
   }
 
-  private _loadFromFile() {
+  public async load() {
     let data = '';
 
     try {
-      data = fs.readFileSync(this._historyFilePath, 'utf-8');
+      data = await util.promisify(fs.readFile)(this._historyFilePath, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
         logger.debug(`History does not exist. path=${this._historyDir}`);

@@ -58,7 +58,7 @@ class CommandEscInsertMode extends BaseCommand {
         );
       }
     }
-    vimState.currentMode = ModeName.Normal;
+    await vimState.setCurrentMode(ModeName.Normal);
 
     // If we wanted to repeat this insert (only for i and a), now is the time to do it. Insert
     // count amount of these strings before returning back to normal mode
@@ -143,7 +143,7 @@ export class CommandInsertPreviousText extends BaseCommand {
 
     vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.end);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-    vimState.currentMode = ModeName.Insert;
+    await vimState.setCurrentMode(ModeName.Insert);
     return vimState;
   }
 }
@@ -155,7 +155,7 @@ class CommandInsertPreviousTextAndQuit extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState = await new CommandInsertPreviousText().exec(position, vimState);
-    vimState.currentMode = ModeName.Normal;
+    await vimState.setCurrentMode(ModeName.Normal);
     return vimState;
   }
 }
@@ -327,7 +327,7 @@ class CommandInsertRegisterContent extends BaseCommand {
     }
 
     await TextEditor.insertAt(text, position);
-    vimState.currentMode = ModeName.Insert;
+    await vimState.setCurrentMode(ModeName.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
@@ -412,7 +412,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
     );
     vimState.cursorPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
-    vimState.currentMode = ModeName.Insert;
+    await vimState.setCurrentMode(ModeName.Insert);
     return vimState;
   }
 }
