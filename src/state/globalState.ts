@@ -58,9 +58,10 @@ export class GlobalState {
   }
 
   private static _searchHistory: SearchHistory | undefined;
-  public loadSearchHistory() {
+  public async loadSearchHistory() {
     if (GlobalState._searchHistory === undefined) {
       GlobalState._searchHistory = new SearchHistory();
+      await GlobalState._searchHistory.load();
       GlobalState._searchHistory
         .get()
         .forEach(val =>

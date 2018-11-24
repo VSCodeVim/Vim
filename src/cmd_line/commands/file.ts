@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as util from 'util';
 import * as vscode from 'vscode';
 
 import * as node from '../node';
@@ -88,17 +89,17 @@ export class FileCommand extends node.CommandBase {
         ? this._arguments.name
         : path.join(path.dirname(editorFilePath), this._arguments.name);
 
-      if (filePath !== editorFilePath && !fs.existsSync(filePath)) {
+      if (filePath !== editorFilePath && !(await util.promisify(fs.exists)(filePath))) {
         // if file does not exist and does not have an extension
         // try to find it with the same extension
         if (path.extname(filePath) === '') {
           const pathWithExt = filePath + path.extname(editorFilePath);
-          if (fs.existsSync(pathWithExt)) {
+          if (await util.promisify(fs.exists)(pathWithExt)) {
             filePath = pathWithExt;
           }
         }
         if (this._arguments.createFileIfNotExists) {
-          fs.closeSync(fs.openSync(filePath, 'w'));
+          await util.promisify(fs.close)(await util.promisify(fs.open)(filePath, 'w'));
         } else {
           Message.ShowError('This file ' + filePath + ' does not exist.');
           return;
