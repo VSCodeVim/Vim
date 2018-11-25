@@ -36,6 +36,10 @@ export class SearchState {
   private _cachedDocumentVersion: number;
   private _cachedDocumentName: String;
   private _searchDirection: SearchDirection = SearchDirection.Forward;
+  public get searchDirection(): SearchDirection {
+    return this._searchDirection;
+  }
+
   private isRegex: boolean;
 
   private _searchString = '';
