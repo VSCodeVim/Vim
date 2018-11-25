@@ -245,16 +245,21 @@ export async function activate(context: vscode.ExtensionContext) {
 
   overrideCommand(context, 'compositionStart', async () => {
     taskQueue.enqueueTask(async () => {
-      compositionState.isInComposition = true;
+      const mh = await getAndUpdateModeHandler();
+      if (mh.vimState.currentMode !== ModeName.Insert) {
+        compositionState.isInComposition = true;
+      }
     });
   });
 
   overrideCommand(context, 'compositionEnd', async () => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
-      let text = compositionState.composingText;
-      compositionState.reset();
-      await mh.handleMultipleKeyEvents(text.split(''));
+      if (mh.vimState.currentMode !== ModeName.Insert) {
+        let text = compositionState.composingText;
+        compositionState.reset();
+        await mh.handleMultipleKeyEvents(text.split(''));
+      }
     });
   });
 
@@ -304,8 +309,9 @@ export async function activate(context: vscode.ExtensionContext) {
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
+  await commandLine.load();
   // Initialize the search history
-  globalState.loadSearchHistory();
+  await globalState.loadSearchHistory();
 
   // This is called last because getAndUpdateModeHandler() will change cursor
   toggleExtension(configuration.disableExt, compositionState);

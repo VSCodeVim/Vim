@@ -52,10 +52,10 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | :1234: l       | right (also: Space or Right key)                                               |
 | :white_check_mark: | 0              | to first character in the line (also: Home key)                                |
 | :white_check_mark: | ^              | to first non-blank character in the line                                       |
-| :white_check_mark: | :1234: $       | to the last character in the line (N-1 lines lower) (also: End key)            |
+| :white_check_mark: | :1234: \$      | to the last character in the line (N-1 lines lower) (also: End key)            |
 | :white_check_mark: | g0             | to first character in screen line (differs from "0" when lines wrap)           |
 | :white_check_mark: | g^             | to first non-blank character in screen line (differs from "^" when lines wrap) |
-| :white_check_mark: | :1234: g$      | to last character in screen line (differs from "$" when lines wrap)            |
+| :white_check_mark: | :1234: g\$     | to last character in screen line (differs from "\$" when lines wrap)           |
 | :white_check_mark: | gm             | to middle of the screen line                                                   |
 | :white_check_mark: | :1234: \|      | to column N (default: 1)                                                       |
 | :white_check_mark: | :1234: f{char} | to the Nth occurrence of {char} to the right                                   |
@@ -503,8 +503,8 @@ Since the list is too long, now we just put those already supported options here
 | :white_check_mark: :star: | ;             | idem, set cursor to the first line number before interpreting the second one | The cursor movement is not included. |
 | :white_check_mark:        | {number}      | an absolute line number                                                      |
 | :white_check_mark:        | .             | the current line                                                             |
-| :white_check_mark:        | $             | the last line in the file                                                    |
-| :white_check_mark:        | %             | equal to 1,$ (the entire file)                                               |
+| :white_check_mark:        | \$            | the last line in the file                                                    |
+| :white_check_mark:        | %             | equal to 1,\$ (the entire file)                                              |
 | :white_check_mark:        | \*            | equal to '<,'> (visual area)                                                 |
 | :white_check_mark:        | 't            | position of mark t                                                           |
 | :arrow_down:              | /{pattern}[/] | the next line where {pattern} matches                                        |

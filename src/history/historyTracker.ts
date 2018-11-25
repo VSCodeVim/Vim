@@ -622,11 +622,11 @@ export class HistoryTracker {
     this.currentHistoryStepIndex = this.currentHistoryStepIndex - stepsToUndo + 1;
 
     /*
-    * Unlike the goBackHistoryStep() function, this function does not trust the
-    * HistoryStep.cursorStart property. This can lead to invalid cursor position errors.
-    * Since this function reverses change-by-change, rather than step-by-step,
-    * the cursor position is based on the start of the last change that is undone.
-    */
+     * Unlike the goBackHistoryStep() function, this function does not trust the
+     * HistoryStep.cursorStart property. This can lead to invalid cursor position errors.
+     * Since this function reverses change-by-change, rather than step-by-step,
+     * the cursor position is based on the start of the last change that is undone.
+     */
     return lastChange && [lastChange.start];
   }
 

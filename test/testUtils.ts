@@ -9,6 +9,7 @@ import { Globals } from '../src/globals';
 import { IConfiguration } from '../src/configuration/iconfiguration';
 import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
+import { commandLine } from '../src/cmd_line/commandLine';
 
 function rndName() {
   return Math.random()
@@ -77,6 +78,7 @@ export async function setupWorkspace(
   config: IConfiguration = new Configuration(),
   fileExtension: string = ''
 ): Promise<any> {
+  await commandLine.load();
   const filePath = await createRandomFile('', fileExtension);
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
 

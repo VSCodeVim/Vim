@@ -36,6 +36,10 @@ class CommandLine {
     this._history = new CommandLineHistory();
   }
 
+  public load(): Promise<void> {
+    return this._history.load();
+  }
+
   public async Run(command: string, vimState: VimState): Promise<void> {
     if (!command || command.length === 0) {
       return;

@@ -96,20 +96,18 @@ export class LineRange {
       case token.TokenType.SelectionFirstLine:
         currentLineNum = Math.min.apply(
           null,
-          doc.selections.map(
-            selection =>
-              selection.start.isBeforeOrEqual(selection.end)
-                ? selection.start.line
-                : selection.end.line
+          doc.selections.map(selection =>
+            selection.start.isBeforeOrEqual(selection.end)
+              ? selection.start.line
+              : selection.end.line
           )
         );
         break;
       case token.TokenType.SelectionLastLine:
         currentLineNum = Math.max.apply(
           null,
-          doc.selections.map(
-            selection =>
-              selection.start.isAfter(selection.end) ? selection.start.line : selection.end.line
+          doc.selections.map(selection =>
+            selection.start.isAfter(selection.end) ? selection.start.line : selection.end.line
           )
         );
         break;
