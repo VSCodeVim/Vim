@@ -1,5 +1,42 @@
 # Change Log
 
+## [v0.16.13](https://github.com/vscodevim/vim/tree/v0.16.13) (2018-11-27)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.12...v0.16.13)
+
+**Fixed Bugs:**
+
+- Finding with `?` renders `/` in the status bar instead of `?` [\#3211](https://github.com/VSCodeVim/Vim/issues/3211)
+- Test docker - debconf enforces interactive during build [\#3168](https://github.com/VSCodeVim/Vim/issues/3168)
+
+**Closed issues:**
+
+- Problem with insert mode after highlighting in visual mode [\#3174](https://github.com/VSCodeVim/Vim/issues/3174)
+- Recursive mapping V key [\#3173](https://github.com/VSCodeVim/Vim/issues/3173)
+- Code Action not working when using Vim mappings [\#3160](https://github.com/VSCodeVim/Vim/issues/3160)
+
+**Merged pull requests:**
+
+- chore\(deps\): update node.js to v8.13 [\#3222](https://github.com/VSCodeVim/Vim/pull/3222) ([renovate-bot](https://github.com/renovate-bot))
+- display '?' or '/' in status bar in search mode [\#3218](https://github.com/VSCodeVim/Vim/pull/3218) ([dsschnau](https://github.com/dsschnau))
+- fix: upgrade sinon 5.0.5-\>5.0.7. prettier 1.14.3-\>1.15.2 [\#3217](https://github.com/VSCodeVim/Vim/pull/3217) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/node to v9.6.39 [\#3215](https://github.com/VSCodeVim/Vim/pull/3215) ([renovate-bot](https://github.com/renovate-bot))
+- Fix \#1287: CJK characters\(korean\) overlap each other in insert mode [\#3214](https://github.com/VSCodeVim/Vim/pull/3214) ([Injae-Lee](https://github.com/Injae-Lee))
+- chore\(deps\): update dependency @types/node to v9.6.37 [\#3204](https://github.com/VSCodeVim/Vim/pull/3204) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/lodash to v4.14.118 [\#3196](https://github.com/VSCodeVim/Vim/pull/3196) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update node.js to v8.12 [\#3194](https://github.com/VSCodeVim/Vim/pull/3194) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/diff to v3.5.2 [\#3193](https://github.com/VSCodeVim/Vim/pull/3193) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency typescript to v3.1.6 [\#3188](https://github.com/VSCodeVim/Vim/pull/3188) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency @types/node to v9.6.36 [\#3187](https://github.com/VSCodeVim/Vim/pull/3187) ([renovate-bot](https://github.com/renovate-bot))
+- docs: update roadmap for split and new [\#3184](https://github.com/VSCodeVim/Vim/pull/3184) ([jpoon](https://github.com/jpoon))
+- fix: automerge renovate minor/patch [\#3183](https://github.com/VSCodeVim/Vim/pull/3183) ([jpoon](https://github.com/jpoon))
+- Update dependency typescript to v3.1.5 [\#3182](https://github.com/VSCodeVim/Vim/pull/3182) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency typescript to v3.1.4 [\#3175](https://github.com/VSCodeVim/Vim/pull/3175) ([renovate-bot](https://github.com/renovate-bot))
+- Issue \#3168 - Ubuntu tests [\#3169](https://github.com/VSCodeVim/Vim/pull/3169) ([pschoffer](https://github.com/pschoffer))
+- v0.16.12 [\#3165](https://github.com/VSCodeVim/Vim/pull/3165) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency sinon to v7.1.1 [\#3162](https://github.com/VSCodeVim/Vim/pull/3162) ([renovate-bot](https://github.com/renovate-bot))
+- Convert synchronous funcs to async [\#3123](https://github.com/VSCodeVim/Vim/pull/3123) ([kylecarbs](https://github.com/kylecarbs))
+
 ## [v0.16.12](https://github.com/vscodevim/vim/tree/v0.16.12) (2018-10-26)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.11...v0.16.12)
