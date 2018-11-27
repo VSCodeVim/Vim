@@ -76,7 +76,7 @@ function validateArgs(done) {
 }
 
 function createChangelog(done) {
-  const imageName = 'ferrarimarco/github-changelog-generator';
+  const imageName = 'jpoon/github-changelog-generator';
   const version = require('./package.json').version;
 
   const options = minimist(process.argv.slice(2), releaseOptions);
@@ -91,10 +91,6 @@ function createChangelog(done) {
       '-v',
       process.cwd() + ':/usr/local/src/your-app',
       imageName,
-      '--user',
-      'vscodevim',
-      '--project',
-      'vim',
       '--token',
       gitHubToken,
       '--future-release',
