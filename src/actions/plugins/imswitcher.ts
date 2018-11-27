@@ -1,5 +1,6 @@
 import { ModeName } from '../../mode/mode';
-import { existsSync } from 'fs';
+import { exists } from 'fs';
+import { promisify } from 'util';
 import { configuration } from '../../configuration/configuration';
 import * as util from '../../util/util';
 import { logger } from '../../util/logger';
@@ -28,9 +29,9 @@ export class InputMethodSwitcher {
     let isNewModeInsertLike = this.isInsertLikeMode(newMode);
     if (isPrevModeInsertLike !== isNewModeInsertLike) {
       if (isNewModeInsertLike) {
-        this.resumeIM();
+        await this.resumeIM();
       } else {
-        this.switchToDefaultIM();
+        await this.switchToDefaultIM();
       }
     }
   }
@@ -39,7 +40,7 @@ export class InputMethodSwitcher {
   private async switchToDefaultIM() {
     const obtainIMCmd = configuration.autoSwitchInputMethod.obtainIMCmd;
     const rawObtainIMCmd = this.getRawCmd(obtainIMCmd);
-    if (existsSync(rawObtainIMCmd) || Globals.isTesting) {
+    if ((await promisify(exists)(rawObtainIMCmd)) || Globals.isTesting) {
       try {
         const insertIMKey = await this.execute(obtainIMCmd);
         if (insertIMKey !== undefined) {
@@ -54,21 +55,21 @@ export class InputMethodSwitcher {
 
     const defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
     if (defaultIMKey !== this.savedIMKey) {
-      this.switchToIM(defaultIMKey);
+      await this.switchToIM(defaultIMKey);
     }
   }
 
   // resume origin inputmethod
   private async resumeIM() {
     if (this.savedIMKey !== configuration.autoSwitchInputMethod.defaultIM) {
-      this.switchToIM(this.savedIMKey);
+      await this.switchToIM(this.savedIMKey);
     }
   }
 
   private async switchToIM(imKey: string) {
     let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
     const rawSwitchIMCmd = this.getRawCmd(switchIMCmd);
-    if (existsSync(rawSwitchIMCmd) || Globals.isTesting) {
+    if ((await promisify(exists)(rawSwitchIMCmd)) || Globals.isTesting) {
       if (imKey !== '' && imKey !== undefined) {
         switchIMCmd = switchIMCmd.replace('{im}', imKey);
         try {

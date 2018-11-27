@@ -191,8 +191,8 @@ export class VimState implements vscode.Disposable {
     return this._currentMode;
   }
 
-  public set currentMode(value: number) {
-    this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
+  public async setCurrentMode(value: number): Promise<void> {
+    await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
     this._currentMode = value;
   }
 

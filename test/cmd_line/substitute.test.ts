@@ -45,7 +45,9 @@ suite('Basic substitute', () => {
   });
 
   test('Replace with `c` flag', async () => {
-    const confirmStub = sinon.stub(SubstituteCommand.prototype, 'confirmReplacement').returns(true);
+    const confirmStub = sinon
+      .stub(SubstituteCommand.prototype, 'confirmReplacement')
+      .resolves(true);
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);
     await commandLine.Run('%s/a/d/c', modeHandler.vimState);
 
@@ -54,7 +56,9 @@ suite('Basic substitute', () => {
   });
 
   test('Replace with `gc` flag', async () => {
-    const confirmStub = sinon.stub(SubstituteCommand.prototype, 'confirmReplacement').returns(true);
+    const confirmStub = sinon
+      .stub(SubstituteCommand.prototype, 'confirmReplacement')
+      .resolves(true);
     await modeHandler.handleMultipleKeyEvents(['i', 'f', 'f', 'b', 'a', 'r', 'f', '<Esc>']);
     await commandLine.Run('%s/f/foo/gc', modeHandler.vimState);
 
@@ -238,7 +242,7 @@ suite('Basic substitute', () => {
     test('Replace with `c` flag inverts global flag', async () => {
       const confirmStub = sinon
         .stub(SubstituteCommand.prototype, 'confirmReplacement')
-        .returns(true);
+        .resolves(true);
       await modeHandler.handleMultipleKeyEvents(['i', 'f', 'f', 'b', 'a', 'r', 'f', '<Esc>']);
       await commandLine.Run('%s/f/foo/c', modeHandler.vimState);
 
