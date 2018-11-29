@@ -523,7 +523,7 @@ You can use any third-party program to switch input methods. We recommend [im-se
       $ /usr/local/bin/im-select
       ```
 
-      the program will output your default input method (eg. `com.apple.keyload.US`). The table below is a list of common English key layouts for MacOS.
+      the program will output your default input method (eg. `com.apple.keylayout.US`). The table below is a list of common English key layouts for MacOS.
 
       | Key                            | Description |
       | ------------------------------ | ----------- |
