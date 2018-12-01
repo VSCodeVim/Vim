@@ -275,13 +275,19 @@ suite('Record and navigate jumps', () => {
         end: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         jumps: ['start', '{', 'b1', 'a2', 'a1'],
       });
-
       newJumpTest({
         title: 'Can enter number to jump back multiple times',
         start: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         keysPressed: 'Gggj%2<C-o>',
         end: ['start', '{', 'a1', 'b1', 'a2', 'b2', '}', '|end'],
         jumps: ['start', '|end', '{', '}'],
+      });
+      newJumpTest({
+        title: 'TODO name this test after https://github.com/VSCodeVim/Vim/issues/3138',
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: 'jf{%r]``r[',
+        end: ['start', 'var foo = |["a", "b"]', 'end'],
+        jumps: [],
       });
     });
 
