@@ -283,10 +283,38 @@ suite('Record and navigate jumps', () => {
         jumps: ['start', '|end', '{', '}'],
       });
       newJumpTest({
-        title: 'TODO name this test after https://github.com/VSCodeVim/Vim/issues/3138',
+        title: 'Can track one-line `` jumps',
         start: ['|start', 'var foo = {"a", "b"}', 'end'],
         keysPressed: 'jf{%r]``r[',
         end: ['start', 'var foo = |["a", "b"]', 'end'],
+        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+      });
+      newJumpTest({
+        title: 'Can track one-line double `` jumps',
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: 'jf{%r]``r[``',
+        end: ['start', 'var foo = ["a", "b"|]', 'end'],
+        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+      });
+      newJumpTest({
+        title: "Can track one-line '' jumps",
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: "jf{%r]``r[''",
+        end: ['start', '|var foo = ["a", "b"]', 'end'],
+        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+      });
+      newJumpTest({
+        title: "Can track one-line double '' jumps",
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: "jf{%r]``r[''''",
+        end: ['start', '|var foo = ["a", "b"]', 'end'],
+        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+      });
+      newJumpTest({
+        title: "Can handle '' jumps with no previous jump",
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: "''",
+        end: ['|start', 'var foo = {"a", "b"}', 'end'],
         jumps: [],
       });
     });
