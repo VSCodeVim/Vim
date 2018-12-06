@@ -23,6 +23,7 @@ import { RegisterAction } from './../base';
 import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
+import { Jump } from '../../jumps/jump';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -2853,15 +2854,7 @@ class CommandNavigateLast extends BaseCommand {
   isJump = true;
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const oldActiveEditor = vimState.editor;
-
-    await vscode.commands.executeCommand('workbench.action.navigateLast');
-
-    if (oldActiveEditor === vimState.editor) {
-      vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-    }
-
-    return vimState;
+    return vimState.globalState.jumpTracker.jumpBack(position, vimState);
   }
 }
 
@@ -2873,17 +2866,19 @@ class CommandNavigateLastBOL extends BaseCommand {
     return false;
   }
   isJump = true;
-
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const oldActiveEditor = vimState.editor;
-
-    await vscode.commands.executeCommand('workbench.action.navigateLast');
-
-    if (oldActiveEditor === vimState.editor) {
-      const pos = Position.FromVSCodePosition(vimState.editor.selection.start);
-      vimState.cursorPosition = pos.getFirstLineNonBlankChar();
+    const lastJump = vimState.globalState.jumpTracker.end;
+    if (lastJump == null) {
+      // This command goes to the last jump, and there is no previous jump, so there's nothing to do.
+      return vimState;
     }
-
+    const jump = new Jump({
+      editor: vimState.editor,
+      fileName: vimState.editor.document.fileName,
+      position: lastJump.position.getLineBegin(),
+    });
+    vimState.globalState.jumpTracker.recordJump(Jump.fromStateNow(vimState), jump);
+    vimState.cursorPosition = jump.position;
     return vimState;
   }
 }
