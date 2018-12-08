@@ -169,6 +169,16 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
+- Bind `£` to goto previous whole word under cursor
+```json
+    "vim.normalModeKeyBindings": [
+        {
+            "before": ["£"],
+            "after": ["#"]
+        }
+    ]
+```
+
 - Bind `:` to show the command palette:
 
 ```json
