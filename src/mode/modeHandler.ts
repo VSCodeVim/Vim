@@ -578,7 +578,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    if (ranAction && vimState.currentMode !== ModeName.Insert) {
+    if (ranAction) {
       vimState.recordedState.resetCommandList();
     }
 
