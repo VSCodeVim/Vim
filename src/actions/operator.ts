@@ -343,6 +343,9 @@ export class FormatOperator extends BaseOperator {
   public modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+    // = operates on complete lines
+    start = new Position(start.line, 0);
+    end = end.getLineEnd();
     vimState.editor.selection = new vscode.Selection(start, end);
     await vscode.commands.executeCommand('editor.action.formatSelection');
     let line = vimState.cursorStartPosition.line;
@@ -351,7 +354,7 @@ export class FormatOperator extends BaseOperator {
       line = vimState.cursorPosition.line;
     }
 
-    let newCursorPosition = new Position(line, 0);
+    let newCursorPosition = new Position(line, 0).getFirstLineNonBlankChar();
     vimState.cursorPosition = newCursorPosition;
     vimState.cursorStartPosition = newCursorPosition;
     await vimState.setCurrentMode(ModeName.Normal);
