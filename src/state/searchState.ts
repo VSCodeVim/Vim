@@ -36,6 +36,10 @@ export class SearchState {
   private _cachedDocumentVersion: number;
   private _cachedDocumentName: String;
   private _searchDirection: SearchDirection = SearchDirection.Forward;
+  public get searchDirection(): SearchDirection {
+    return this._searchDirection;
+  }
+
   private isRegex: boolean;
 
   private _searchString = '';
@@ -179,12 +183,11 @@ export class SearchState {
         }
       } while (result && !(wrappedOver && result!.index > startPos));
 
-      this._matchRanges.sort(
-        (x, y) =>
-          x.start.line < y.start.line ||
-          (x.start.line === y.start.line && x.start.character < y.start.character)
-            ? -1
-            : 1
+      this._matchRanges.sort((x, y) =>
+        x.start.line < y.start.line ||
+        (x.start.line === y.start.line && x.start.character < y.start.character)
+          ? -1
+          : 1
       );
     }
   }

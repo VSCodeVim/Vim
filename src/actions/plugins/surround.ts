@@ -196,7 +196,7 @@ class CommandSurroundModeStart extends BaseCommand {
     };
 
     if (operatorString !== 'yank') {
-      vimState.currentMode = ModeName.SurroundInputMode;
+      await vimState.setCurrentMode(ModeName.SurroundInputMode);
     }
 
     return vimState;
@@ -267,7 +267,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
       vimState.surround.isVisualLine = true;
     }
 
-    vimState.currentMode = ModeName.SurroundInputMode;
+    await vimState.setCurrentMode(ModeName.SurroundInputMode);
     vimState.cursorPosition = vimState.cursorStartPosition;
 
     return vimState;
@@ -335,12 +335,12 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     return vimState;
   }
 
-  public static Finish(vimState: VimState): boolean {
+  public static async Finish(vimState: VimState): Promise<boolean> {
     vimState.recordedState.hasRunOperator = false;
     vimState.recordedState.actionsRun = [];
     vimState.recordedState.hasRunSurround = true;
     vimState.surround = undefined;
-    vimState.currentMode = ModeName.Normal;
+    await vimState.setCurrentMode(ModeName.Normal);
 
     // Record keys that were pressed since surround started
     for (

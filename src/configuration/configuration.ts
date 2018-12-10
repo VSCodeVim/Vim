@@ -287,24 +287,14 @@ class Configuration implements IConfiguration {
   @overlapSetting({
     settingName: 'lineNumbers',
     defaultValue: true,
-    map: new Map([
-      ['on', true],
-      ['off', false],
-      ['relative', false],
-      ['interval', false],
-    ]),
+    map: new Map([['on', true], ['off', false], ['relative', false], ['interval', false]]),
   })
   number: boolean;
 
   @overlapSetting({
     settingName: 'lineNumbers',
     defaultValue: false,
-    map: new Map([
-      ['on', false],
-      ['off', false],
-      ['relative', true],
-      ['interval', false],
-    ]),
+    map: new Map([['on', false], ['off', false], ['relative', true], ['interval', false]]),
   })
   relativenumber: boolean;
 
@@ -374,9 +364,9 @@ function overlapSetting(args: {
   defaultValue: OptionValue;
   map?: Map<string | number | boolean, string | number | boolean>;
 }) {
-  return function (target: any, propertyKey: string) {
+  return function(target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
-      get: function () {
+      get: function() {
         if (this['_' + propertyKey] !== undefined) {
           return this['_' + propertyKey];
         }
@@ -388,7 +378,7 @@ function overlapSetting(args: {
 
         return val;
       },
-      set: function (value) {
+      set: function(value) {
         this['_' + propertyKey] = value;
 
         if (value === undefined || Globals.isTesting) {

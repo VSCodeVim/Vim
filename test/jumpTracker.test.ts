@@ -275,13 +275,47 @@ suite('Record and navigate jumps', () => {
         end: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         jumps: ['start', '{', 'b1', 'a2', 'a1'],
       });
-
       newJumpTest({
         title: 'Can enter number to jump back multiple times',
         start: ['|start', '{', 'a1', 'b1', 'a2', 'b2', '}', 'end'],
         keysPressed: 'Gggj%2<C-o>',
         end: ['start', '{', 'a1', 'b1', 'a2', 'b2', '}', '|end'],
         jumps: ['start', '|end', '{', '}'],
+      });
+      newJumpTest({
+        title: 'Can track one-line `` jumps',
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: 'jf{%r]``r[',
+        end: ['start', 'var foo = |["a", "b"]', 'end'],
+        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+      });
+      newJumpTest({
+        title: 'Can track one-line double `` jumps',
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: 'jf{%r]``r[``',
+        end: ['start', 'var foo = ["a", "b"|]', 'end'],
+        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+      });
+      newJumpTest({
+        title: "Can track one-line '' jumps",
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: "jf{%r]``r[''",
+        end: ['start', '|var foo = ["a", "b"]', 'end'],
+        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+      });
+      newJumpTest({
+        title: "Can track one-line double '' jumps",
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: "jf{%r]``r[''''",
+        end: ['start', '|var foo = ["a", "b"]', 'end'],
+        jumps: ['var foo = ["a", "b"]', 'var foo = ["a", "b"]'],
+      });
+      newJumpTest({
+        title: "Can handle '' jumps with no previous jump",
+        start: ['|start', 'var foo = {"a", "b"}', 'end'],
+        keysPressed: "''",
+        end: ['|start', 'var foo = {"a", "b"}', 'end'],
+        jumps: [],
       });
     });
 

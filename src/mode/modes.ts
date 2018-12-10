@@ -2,6 +2,8 @@ import { Position } from './../common/motion/position';
 import { Mode, ModeName } from './mode';
 import { VSCodeVimCursorType } from './mode';
 import { VimState } from '../state/vimState';
+import { SearchDirection } from '../state/searchState';
+import { logger } from '../util/logger';
 
 export enum VisualBlockInsertionType {
   /**
@@ -63,7 +65,13 @@ export class SearchInProgressMode extends Mode {
   }
 
   getStatusBarText(vimState: VimState): string {
-    return `/${vimState.globalState.searchState!.searchString}`;
+    if (vimState.globalState.searchState === undefined) {
+      logger.error(`SearchInProgressMode.getStatusBarText: vimState.globalState.searchState is undefined.`);
+      return '';
+    }
+    const leadingChar =
+      vimState.globalState.searchState.searchDirection === SearchDirection.Forward ? '/' : '?';
+    return `${leadingChar}${vimState.globalState.searchState!.searchString}`;
   }
 
   getStatusBarCommandText(vimState: VimState): string {

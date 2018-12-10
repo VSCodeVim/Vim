@@ -95,7 +95,7 @@ abstract class BaseEasyMotionCommand extends BaseCommand {
           // Store mode to return to after performing easy motion
           vimState.easyMotion.previousMode = vimState.currentMode;
           // Enter the EasyMotion mode and await further keys
-          vimState.currentMode = ModeName.EasyMotionMode;
+          await vimState.setCurrentMode(ModeName.EasyMotionMode);
           return vimState;
         }
       }
@@ -266,7 +266,7 @@ export class EasyMotionCharMoveCommandBase extends BaseCommand {
       vimState.easyMotion.searchAction = this._action;
       vimState.globalState.hl = true;
 
-      vimState.currentMode = ModeName.EasyMotionInputMode;
+      await vimState.setCurrentMode(ModeName.EasyMotionInputMode);
       return vimState;
     }
   }
@@ -350,7 +350,7 @@ class EasyMotionCharInputMode extends BaseCommand {
     action.updateSearchString(newSearchString);
     if (action.shouldFire()) {
       // Skip Easymotion input mode to make sure not to back to it
-      vimState.currentMode = vimState.easyMotion.previousMode;
+      await vimState.setCurrentMode(vimState.easyMotion.previousMode);
       const state = await action.fire(vimState.cursorPosition, vimState);
       return state;
     }
@@ -364,7 +364,7 @@ class CommandEscEasyMotionCharInputMode extends BaseCommand {
   keys = ['<Esc>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.currentMode = ModeName.Normal;
+    await vimState.setCurrentMode(ModeName.Normal);
     return vimState;
   }
 }
@@ -402,7 +402,7 @@ class MoveEasyMotion extends BaseCommand {
 
         vimState.easyMotion.clearDecorations();
         // Restore the mode from before easy motion
-        vimState.currentMode = vimState.easyMotion.previousMode;
+        await vimState.setCurrentMode(vimState.easyMotion.previousMode);
 
         // Set cursor position based on marker entered
         vimState.cursorPosition = marker.position;
@@ -412,7 +412,7 @@ class MoveEasyMotion extends BaseCommand {
         if (markers.length === 0) {
           // None found, exit mode
           vimState.easyMotion.clearDecorations();
-          vimState.currentMode = vimState.easyMotion.previousMode;
+          await vimState.setCurrentMode(vimState.easyMotion.previousMode);
           return vimState;
         } else {
           return vimState;

@@ -1,9 +1,11 @@
-max-issues=500
+project=vim
+user=vscodevim
+base=build/CHANGELOG.base.md
 bugs-label=**Fixed Bugs:**
 bug-labels=kind/bug
+cache-file=/usr/local/src/your-app/.cache/github_changelog_generator
 enhancement-label=**Enhancements:**
 enhancement-labels=kind/enhancement,kind/feature
 exclude-labels=status/by-design,status/duplicate,kind/question,kind/discussion
 since-tag=v0.16.11
-base=build/CHANGELOG.base.md
-cache-file=/usr/local/src/your-app/.cache/github_changelog_generator
+max-issues=500

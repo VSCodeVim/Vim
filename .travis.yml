@@ -19,10 +19,6 @@ language: node_js
 node_js:
 - 8
 
-env:
-  global:
-    secure: "xxrknQgZj/Zdr/LePcWcq9rVX3JvAcMsn7wv5VNE2yn49yvLXDH6WQuoG+xE47JkVlL3dG5jTRLFmglg+VxkpqyT/ozjUT4XTJueSghJKhWJedjp1w9qHqnqyChY66KCmi9euEfp552ecu5ud9tCu+aMvtYz2Li5ZjE1BS/r2sRmnKzb5DK0zIaNi+lNW1VBjWLSEBeUswfJingoOkb1EwgRwAvrdq91n7B3wccbVLLLLkzghzr8GTREsxHww9VwYGmMtquSczp9fx5gFg8icLqhjgWOmlu4hmhxSsFZASQDHwWAiFae4VBYklXwdk+YBYtQkea8L+8WpJ3Q/cN6DpNzOvCo8leEnJJkb0m0DPBYN1cZBzTY7/QL2yKVKxwZbzEYSbrS44YgQX5Wcv8b07TDJlzXSFjimQshiJF0AIPVbsOezvF8WvSeACyAd+mpLUlgSXhRP6AEMZqzVYOPUoZ51BNo5LCYA/o4YCSXqudbHI3zoPMCHKSASFFx6924uO1w4AZn/wEe4n3/P6NMDLIywUb/xOkKMChgZ/IVz5zbkjjAc/Nwpbggj4SIpNx1fWD/G6hteNbB2981O45num4h5jIUUC7HN0uSViyZFQYoNshQsRgjQIAcRtIuHBPh5pngsZeKvby3Z+q6fNsqtLr4DuC++XbrpOjETi5hLpg="
-
 addons:
   apt:
     packages:

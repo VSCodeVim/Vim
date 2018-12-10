@@ -1,6 +1,6 @@
+import { exists } from 'fs';
+import * as util from 'util';
 import * as vscode from 'vscode';
-
-import { existsSync } from 'fs';
 
 import { FileCommand } from './../cmd_line/commands/file';
 import { Position } from './../common/motion/position';
@@ -78,7 +78,7 @@ export class JumpTracker {
    * @param to - File/position jumped to
    */
   public recordJump(from: Jump | null, to?: Jump | null) {
-    if (from && to && from.onSameLine(to)) {
+    if (from && to && from.isSamePosition(to)) {
       return;
     }
 
@@ -119,7 +119,7 @@ export class JumpTracker {
     if (jump.editor) {
       // Open jump file from stored editor
       await vscode.window.showTextDocument(jump.editor.document);
-    } else if (existsSync(jump.fileName)) {
+    } else if (await util.promisify(exists)(jump.fileName)) {
       // Open jump file from disk
       await new FileCommand({
         name: jump.fileName,
@@ -313,10 +313,10 @@ export class JumpTracker {
 
   pushJump(from: Jump | null, to?: Jump | null) {
     if (from) {
-      this.clearJumpsOnSameLine(from);
+      this.clearJumpsOnSamePosition(from);
     }
 
-    if (from && !from.onSameLine(to)) {
+    if (from && !from.isSamePosition(to)) {
       this._jumps.push(from);
     }
 
@@ -347,8 +347,8 @@ export class JumpTracker {
     }
   }
 
-  clearJumpsOnSameLine(jump: Jump): void {
-    this._jumps = this._jumps.filter(j => j === jump || !j.onSameLine(jump));
+  clearJumpsOnSamePosition(jump: Jump): void {
+    this._jumps = this._jumps.filter(j => j === jump || !j.isSamePosition(jump));
   }
 
   removeDuplicateJumps() {

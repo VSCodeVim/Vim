@@ -169,6 +169,17 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
+- Bind `£` to goto previous whole word under cursor
+
+```json
+    "vim.normalModeKeyBindings": [
+        {
+            "before": ["£"],
+            "after": ["#"]
+        }
+    ]
+```
+
 - Bind `:` to show the command palette:
 
 ```json
@@ -436,7 +447,7 @@ You can customize the appearance of easymotion markers (the boxes with letters) 
 | `vim.easymotionMarkerFontWeight`             | The font weight used for the marker text.                                                                                                                                                                                                                         |
 | `vim.easymotionMarkerYOffset`                | The distance between the top of the marker and the text (will typically need some adjusting if height or font size have been changed).                                                                                                                            |
 | `vim.easymotionKeys`                         | The characters used for jump marker name                                                                                                                                                                                                                          |
-| `vim.easymotionJumpToAnywhereRegex`          | Custom regex to match for JumpToAnywhere motion (analogous to `Easymotion_re_anywhere`). Example setting (which also matches start & end of line, as well as Javascript comments in addition to the regular behavior (note the double escaping required): ^\\s\*. | \\b[A-Za-z0-9] | [A-Za-z0-9]\\b | \_. | \\#. | [a-z][a-z] | // | .$" |
+| `vim.easymotionJumpToAnywhereRegex`          | Custom regex to match for JumpToAnywhere motion (analogous to `Easymotion_re_anywhere`). Example setting (which also matches start & end of line, as well as Javascript comments in addition to the regular behavior (note the double escaping required): ^\\s\*. | \\b[A-Za-z0-9] | [A-Za-z0-9]\\b | \_. | \\#. | [a-z][a-z] | // | .\$" |
 
 ### vim-surround
 
@@ -523,7 +534,7 @@ You can use any third-party program to switch input methods. We recommend [im-se
       $ /usr/local/bin/im-select
       ```
 
-      the program will output your default input method (eg. `com.apple.keyload.US`). The table below is a list of common English key layouts for MacOS.
+      the program will output your default input method (eg. `com.apple.keylayout.US`). The table below is a list of common English key layouts for MacOS.
 
       | Key                            | Description |
       | ------------------------------ | ----------- |
