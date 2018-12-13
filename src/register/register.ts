@@ -359,7 +359,7 @@ export class Register {
 
     /* Read from system clipboard */
     if (Register.isClipboardRegister(register)) {
-      let text = Clipboard.Paste();
+      let text = await Clipboard.Paste();
 
       // Harmonize newline character
       text = text.replace(/\r\n/g, '\n');

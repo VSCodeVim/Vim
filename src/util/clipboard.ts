@@ -1,16 +1,16 @@
 import { logger } from './logger';
-import * as clipboardy from 'clipboardy';
+import * as vscode from 'vscode';
 
 export class Clipboard {
-  public static Copy(text: string) {
+  public static async Copy(text: string): Promise<void> {
     try {
-      clipboardy.writeSync(text);
+      await vscode.env.clipboard.writeText(text);
     } catch (e) {
       logger.error(e, `Clipboard: Error copying to clipboard. err=${e}`);
     }
   }
 
-  public static Paste(): string {
-    return clipboardy.readSync();
+  public static Paste(): Thenable<string> {
+    return vscode.env.clipboard.readText();
   }
 }
