@@ -10,7 +10,7 @@ export class Clipboard {
     }
   }
 
-  public static Paste(): Thenable<string> {
+  public static async Paste(): Promise<string> {
     return vscode.env.clipboard.readText();
   }
 }

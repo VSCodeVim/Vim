@@ -65,14 +65,6 @@ We also recommend increasing Key Repeat and Delay Until Repeat settings in _Syst
 
 Like real vim, VSCodeVim will take over your control keys. This behaviour can be adjusted with the [`useCtrlKeys`](#vscodevim-settings) and [`handleKeys`](#vscodevim-settings) settings.
 
-### Linux Setup
-
-If you have configured `vim.useSystemClipboard: "true"`, we rely on [clipboardy](https://github.com/sindresorhus/clipboardy) which is dependent on `xsel`:
-
-```sh
-apt install xsel
-```
-
 ## ⚙️ Settings
 
 The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab in the extensions menu of VSCode.
