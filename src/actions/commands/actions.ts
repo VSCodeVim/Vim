@@ -1036,7 +1036,7 @@ class CommandOverrideCopy extends BaseCommand {
         .join('\n');
     }
 
-    Clipboard.Copy(text);
+    await Clipboard.Copy(text);
     // all vim yank operations return to normal mode.
     await vimState.setCurrentMode(ModeName.Normal);
 
