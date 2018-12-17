@@ -1,5 +1,24 @@
 # Change Log
 
+## [v0.17.0](https://github.com/vscodevim/vim/tree/v0.17.0) (2018-12-17)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.14...v0.17.0)
+
+**Fixed Bugs:**
+
+- Running :reg when clipboard is empty causes an error [\#2898](https://github.com/VSCodeVim/Vim/issues/2898)
+
+**Closed issues:**
+
+- Can't copy the text to other editors [\#3251](https://github.com/VSCodeVim/Vim/issues/3251)
+
+**Merged pull requests:**
+
+- Change to use native vscode clipboard [\#3261](https://github.com/VSCodeVim/Vim/pull/3261) ([xconverge](https://github.com/xconverge))
+- chore\(deps\): update dependency @types/sinon to v7 [\#3259](https://github.com/VSCodeVim/Vim/pull/3259) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency sinon to v7.2.1 [\#3258](https://github.com/VSCodeVim/Vim/pull/3258) ([renovate-bot](https://github.com/renovate-bot))
+- v0.16.13 -\> v0.16.14 [\#3257](https://github.com/VSCodeVim/Vim/pull/3257) ([jpoon](https://github.com/jpoon))
+
 ## [v0.16.14](https://github.com/vscodevim/vim/tree/v0.16.14) (2018-12-11)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.13...v0.16.14)
