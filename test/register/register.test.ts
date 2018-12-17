@@ -65,7 +65,7 @@ suite('register', () => {
   test('System clipboard works with chinese characters', async () => {
     const testString = '你好';
     Clipboard.Copy(testString);
-    assertEqual(testString, Clipboard.Paste());
+    assertEqual(testString, await Clipboard.Paste());
 
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 

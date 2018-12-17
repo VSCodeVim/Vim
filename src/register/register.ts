@@ -337,7 +337,7 @@ export class Register {
    */
   public static async get(vimState: VimState): Promise<IRegisterContent> {
     const register = vimState.recordedState.registerName;
-    return Register.getByKey(register, vimState);
+    return await Register.getByKey(register, vimState);
   }
 
   public static async getByKey(register: string, vimState?: VimState): Promise<IRegisterContent> {
@@ -359,7 +359,7 @@ export class Register {
 
     /* Read from system clipboard */
     if (Register.isClipboardRegister(register)) {
-      let text = Clipboard.Paste();
+      let text = await Clipboard.Paste();
 
       // Harmonize newline character
       text = text.replace(/\r\n/g, '\n');

@@ -24,7 +24,7 @@
     "url": "https://github.com/VSCodeVim/Vim/issues"
   },
   "engines": {
-    "vscode": "^1.27.0"
+    "vscode": "^1.30.0"
   },
   "categories": [
     "Other",
@@ -674,7 +674,6 @@
   },
   "dependencies": {
     "appdirectory": "0.1.0",
-    "clipboardy": "1.2.3",
     "diff-match-patch": "1.0.4",
     "lodash": "4.17.11",
     "mkdirp": "0.5.1",
@@ -685,8 +684,6 @@
     "winston-console-for-electron": "0.0.3"
   },
   "devDependencies": {
-    "@types/clipboardy": "1.1.0",
-    "@types/copy-paste": "1.1.30",
     "@types/diff": "3.5.2",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.119",

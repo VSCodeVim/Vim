@@ -506,7 +506,7 @@ class CommandCtrlVInInsertMode extends BaseCommand {
   keys = ['<C-v>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const textFromClipboard = Clipboard.Paste();
+    const textFromClipboard = await Clipboard.Paste();
 
     if (vimState.isMultiCursor) {
       vimState.recordedState.transformations.push({

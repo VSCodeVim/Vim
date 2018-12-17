@@ -957,7 +957,7 @@ class CommandCtrlVInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = vimState.globalState.searchState!;
-    const textFromClipboard = Clipboard.Paste();
+    const textFromClipboard = await Clipboard.Paste();
 
     searchState.searchString += textFromClipboard;
     return vimState;
@@ -974,7 +974,7 @@ class CommandCmdVInSearchMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const searchState = vimState.globalState.searchState!;
-    const textFromClipboard = Clipboard.Paste();
+    const textFromClipboard = await Clipboard.Paste();
 
     searchState.searchString += textFromClipboard;
     return vimState;
@@ -1036,7 +1036,7 @@ class CommandOverrideCopy extends BaseCommand {
         .join('\n');
     }
 
-    Clipboard.Copy(text);
+    await Clipboard.Copy(text);
     // all vim yank operations return to normal mode.
     await vimState.setCurrentMode(ModeName.Normal);
 
@@ -1899,7 +1899,7 @@ class CommandCtrlVInCommandline extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const textFromClipboard = Clipboard.Paste();
+    const textFromClipboard = await Clipboard.Paste();
 
     let modifiedString = vimState.currentCommandlineText.split('');
     modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, textFromClipboard);
@@ -1920,7 +1920,7 @@ class CommandCmdVInCommandline extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    const textFromClipboard = Clipboard.Paste();
+    const textFromClipboard = await Clipboard.Paste();
 
     let modifiedString = vimState.currentCommandlineText.split('');
     modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, textFromClipboard);
