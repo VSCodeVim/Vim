@@ -11,6 +11,6 @@ export class Clipboard {
   }
 
   public static async Paste(): Promise<string> {
-    return vscode.env.clipboard.readText();
+    return await vscode.env.clipboard.readText();
   }
 }
