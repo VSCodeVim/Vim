@@ -354,7 +354,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      logger.error(`ModeHandler: error handling key=${key}. err=${e}.`);
+      logger.error(`ModeHandler: error handling key=${key}. err=${e}. stack=${e.stack}.`);
       throw e;
     }
 
@@ -1180,7 +1180,7 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async runMacro(vimState: VimState, recordedMacro: RecordedState): Promise<VimState> {
-    const actions = recordedMacro.actionsRun.slice(0);
+    const actions = recordedMacro.actionsRun || [];
     let recordedState = new RecordedState();
     vimState.recordedState = recordedState;
     vimState.isRunningDotCommand = true;
