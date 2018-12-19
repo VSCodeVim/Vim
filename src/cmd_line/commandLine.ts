@@ -58,13 +58,7 @@ class CommandLine {
 
       if (useNeovim) {
         var statusBarText = await vimState.nvim.run(vimState, command);
-        StatusBar.SetText(
-          statusBarText,
-          vimState.currentMode,
-          vimState.isRecordingMacro,
-          true,
-          true
-        );
+        StatusBar.Set(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true);
       } else {
         await cmd.execute(vimState.editor, vimState);
       }
@@ -73,11 +67,10 @@ class CommandLine {
         if (e.code === ErrorCode.E492 && configuration.enableNeovim) {
           await vimState.nvim.run(vimState, command);
         } else {
-          StatusBar.SetText(
+          StatusBar.Set(
             `${e.toString()}. ${command}`,
             vimState.currentMode,
             vimState.isRecordingMacro,
-            true,
             true
           );
         }
