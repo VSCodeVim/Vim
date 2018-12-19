@@ -1,58 +1,77 @@
 import * as vscode from 'vscode';
 import { ModeName } from './mode/mode';
+import { configuration } from './configuration/configuration';
 
 class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
-  private _prevModeNameForText: ModeName | undefined;
-  private _prevModeNameForColor: ModeName | undefined;
-  private _isRecordingMacro: boolean;
-  private _isErrorCurrentlyShown: boolean;
+  private _previousModeName: ModeName | undefined;
+  private _wasRecordingMacro: boolean;
+  private _wasHighPriority: boolean;
 
   constructor() {
     this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    this._prevModeNameForText = undefined;
-    this._prevModeNameForColor = undefined;
-    this._isRecordingMacro = false;
-    this._isErrorCurrentlyShown = true;
+    this._statusBarItem.show();
+    this._previousModeName = undefined;
+    this._wasRecordingMacro = false;
+    this._wasHighPriority = false;
   }
 
-  public SetText(
+  public Set(
     text: string,
     mode: ModeName,
     isRecordingMacro: boolean,
-    forceUpdate: boolean = false,
-    isError: boolean = false
+    isHighPriority: boolean = false
   ) {
-    let updateStatusBar =
-      this._prevModeNameForText !== mode ||
-      this._isRecordingMacro !== isRecordingMacro ||
-      forceUpdate;
+    let hasModeChanged = mode !== this._previousModeName;
 
-    updateStatusBar = updateStatusBar && !this._isErrorCurrentlyShown;
-    if (isError) {
-      this._isErrorCurrentlyShown = true;
+    // text
+    let shouldUpdateText =
+      hasModeChanged ||
+      mode === ModeName.SearchInProgressMode ||
+      mode === ModeName.CommandlineInProgress ||
+      isRecordingMacro !== this._wasRecordingMacro ||
+      configuration.showcmd;
+
+    if ((shouldUpdateText && !this._wasHighPriority) || isHighPriority) {
+      this.UpdateText(text);
     }
 
-    // If an error is shown, don't update the status bar until mode is changed
-    if (this._prevModeNameForText !== mode && mode !== ModeName.Normal) {
-      this._isErrorCurrentlyShown = false;
+    // color
+    let shouldUpdateColor = configuration.statusBarColorControl && hasModeChanged;
+    if (shouldUpdateColor) {
+      this.UpdateColor(mode);
     }
 
-    this._prevModeNameForText = mode;
-    this._isRecordingMacro = isRecordingMacro;
-
-    if (updateStatusBar) {
-      this._statusBarItem.text = text || '';
-      this._statusBarItem.show();
+    if (hasModeChanged && mode !== ModeName.Normal) {
+      this._wasHighPriority = false;
+    } else if (isHighPriority) {
+      this._wasHighPriority = true;
     }
+
+    this._previousModeName = mode;
+    this._wasRecordingMacro = isRecordingMacro;
   }
 
-  public SetColor(mode: ModeName, background: string, foreground?: string) {
-    if (this._prevModeNameForColor === mode) {
-      return;
-    }
+  dispose() {
+    this._statusBarItem.dispose();
+  }
 
-    this._prevModeNameForColor = mode;
+  private UpdateText(text: string) {
+    this._statusBarItem.text = text || '';
+  }
+
+  private UpdateColor(mode: ModeName) {
+    let foreground;
+    let background;
+
+    const colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+    if (colorToSet !== undefined) {
+      if (typeof colorToSet === 'string') {
+        background = colorToSet;
+      } else {
+        [background, foreground] = colorToSet;
+      }
+    }
 
     const currentColorCustomizations = vscode.workspace
       .getConfiguration('workbench')
@@ -72,10 +91,6 @@ class StatusBarImpl implements vscode.Disposable {
     vscode.workspace
       .getConfiguration('workbench')
       .update('colorCustomizations', colorCustomizations, true);
-  }
-
-  dispose() {
-    this._statusBarItem.dispose();
   }
 }
 
