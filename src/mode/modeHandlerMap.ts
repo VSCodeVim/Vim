@@ -9,7 +9,7 @@ class ModeHandlerMapImpl {
     if (!modeHandler) {
       isNew = true;
       await new Promise((res, rej) => {
-        modeHandler = new ModeHandler((err) => {
+        modeHandler = new ModeHandler(err => {
           if (err) {
             rej(err);
             return;
