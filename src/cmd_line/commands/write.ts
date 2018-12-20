@@ -50,7 +50,7 @@ export class WriteCommand extends node.CommandBase {
       return;
     }
 
-    if (vimState.editor.document.isUntitled) {
+    if (vimState.editor.document.isUntitled || vimState.editor.document.uri.scheme !== 'file') {
       await vscode.commands.executeCommand('workbench.action.files.save');
       return;
     }
