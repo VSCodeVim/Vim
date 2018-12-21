@@ -482,7 +482,23 @@ class CommandNavigateAutocompleteDown extends BaseCommand {
   keys = [['<C-n>'], ['<C-j>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand('selectNextSuggestion');
+    /* if we're in a multi cursor state, we check to see if the current active text selection
+     * is the same as the position we've been passed when we exec this function
+     * this has the effect of only ever executing `selectNextSuggestion` once.
+     * without this we execute it once per multi cursor, meaning it skips over the autocomplete
+     * list suggestions
+     */
+    if (vimState.isMultiCursor && vscode.window.activeTextEditor) {
+      const selection = vscode.window.activeTextEditor.selections[0];
+      if (
+        selection.active.line === position.line &&
+        selection.active.character === position.character
+      ) {
+        await vscode.commands.executeCommand('selectNextSuggestion');
+      }
+    } else {
+      await vscode.commands.executeCommand('selectNextSuggestion');
+    }
 
     return vimState;
   }
@@ -494,7 +510,23 @@ class CommandNavigateAutocompleteUp extends BaseCommand {
   keys = [['<C-p>'], ['<C-k>']];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vscode.commands.executeCommand('selectPrevSuggestion');
+    /* if we're in a multi cursor state, we check to see if the current active text selection
+     * is the same as the position we've been passed when we exec this function
+     * this has the effect of only ever executing `selectPrevSuggestion` once.
+     * without this we execute it once per multi cursor, meaning it skips over the autocomplete
+     * list suggestions
+     */
+    if (vimState.isMultiCursor && vscode.window.activeTextEditor) {
+      const selection = vscode.window.activeTextEditor.selections[0];
+      if (
+        selection.active.line === position.line &&
+        selection.active.character === position.character
+      ) {
+        await vscode.commands.executeCommand('selectPrevSuggestion');
+      }
+    } else {
+      await vscode.commands.executeCommand('selectPrevSuggestion');
+    }
 
     return vimState;
   }
