@@ -57,7 +57,7 @@ export class Neovim implements vscode.Disposable {
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
     }
-    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-N', '--embed'], {
+    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-i', 'NONE', '-N', '--embed'], {
       cwd: dir,
     });
     this.process.on('error', err => {
