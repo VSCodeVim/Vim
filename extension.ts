@@ -22,6 +22,7 @@ import { StatusBar } from './src/statusBar';
 import { VsCodeContext } from './src/util/vscode-context';
 import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
+import { configurationValidator } from './src/configuration/configurationValidator';
 import { logger } from './src/util/logger';
 import { taskQueue } from './src/taskQueue';
 
@@ -311,8 +312,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   await commandLine.load();
-  // Initialize the search history
   await globalState.loadSearchHistory();
+  await configurationValidator.initialize();
 
   // This is called last because getAndUpdateModeHandler() will change cursor
   toggleExtension(configuration.disableExt, compositionState);
