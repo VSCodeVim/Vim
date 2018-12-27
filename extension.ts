@@ -8,21 +8,22 @@ import './src/actions/include-all';
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { configuration } from './src/configuration/configuration';
-import { commandLine } from './src/cmd_line/commandLine';
-import { Position } from './src/common/motion/position';
-import { EditorIdentity } from './src/editorIdentity';
-import { Globals } from './src/globals';
-import { GlobalState } from './src/state/globalState';
-import { Jump } from './src/jumps/jump';
-import { ModeName } from './src/mode/mode';
-import { ModeHandler } from './src/mode/modeHandler';
-import { Notation } from './src/configuration/notation';
-import { StatusBar } from './src/statusBar';
-import { taskQueue } from './src/taskQueue';
-import { ModeHandlerMap } from './src/mode/modeHandlerMap';
-import { logger } from './src/util/logger';
 import { CompositionState } from './src/state/compositionState';
+import { EditorIdentity } from './src/editorIdentity';
+import { GlobalState } from './src/state/globalState';
+import { Globals } from './src/globals';
+import { Jump } from './src/jumps/jump';
+import { ModeHandler } from './src/mode/modeHandler';
+import { ModeHandlerMap } from './src/mode/modeHandlerMap';
+import { ModeName } from './src/mode/mode';
+import { Notation } from './src/configuration/notation';
+import { Position } from './src/common/motion/position';
+import { StatusBar } from './src/statusBar';
+import { VsCodeContext } from './src/util/vscode-context';
+import { commandLine } from './src/cmd_line/commandLine';
+import { configuration } from './src/configuration/configuration';
+import { logger } from './src/util/logger';
+import { taskQueue } from './src/taskQueue';
 
 const globalState = new GlobalState();
 let extensionContext: vscode.ExtensionContext;
@@ -191,7 +192,7 @@ export async function activate(context: vscode.ExtensionContext) {
       if (vscode.window.activeTextEditor !== undefined) {
         const mh: ModeHandler = await getAndUpdateModeHandler(true);
 
-        await mh.updateVimModeForKeybindings(mh.vimState.currentMode);
+        await VsCodeContext.Set('vim.mode', this.vimState.currentMode);
 
         await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
 
@@ -324,7 +325,7 @@ export async function activate(context: vscode.ExtensionContext) {
  * @param isDisabled if true, sets VSCodeVim to Disabled mode; else sets to enabled mode
  */
 async function toggleExtension(isDisabled: boolean, compositionState: CompositionState) {
-  await vscode.commands.executeCommand('setContext', 'vim.active', !isDisabled);
+  await VsCodeContext.Set('vim.active', !isDisabled);
   if (!vscode.window.activeTextEditor) {
     // This was happening in unit tests.
     // If activate was called and no editor window is open, we can't properly initialize.
