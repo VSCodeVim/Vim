@@ -1,5 +1,18 @@
 # Change Log
 
+## [v0.17.2](https://github.com/vscodevim/vim/tree/v0.17.2) (2018-12-28)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.17.1...v0.17.2)
+
+**Fixed Bugs:**
+
+- v0.17.1 prints `\<tab\>` string for every tab keystroke [\#3298](https://github.com/VSCodeVim/Vim/issues/3298)
+
+**Merged pull requests:**
+
+- fix: v0.17.1 regression [\#3299](https://github.com/VSCodeVim/Vim/pull/3299) ([jpoon](https://github.com/jpoon))
+- v0.17.0-\>v0.17.1 [\#3297](https://github.com/VSCodeVim/Vim/pull/3297) ([jpoon](https://github.com/jpoon))
+
 ## [v0.17.1](https://github.com/vscodevim/vim/tree/v0.17.1) (2018-12-28)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.17.0...v0.17.1)
