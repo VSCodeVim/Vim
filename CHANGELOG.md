@@ -1,5 +1,31 @@
 # Change Log
 
+## [v0.17.1](https://github.com/vscodevim/vim/tree/v0.17.1) (2018-12-28)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.17.0...v0.17.1)
+
+**Fixed Bugs:**
+
+- Keybindings reset on invalid command [\#3295](https://github.com/VSCodeVim/Vim/issues/3295)
+
+**Closed issues:**
+
+- For easy motion plugin, allow user to remap leader key. [\#3244](https://github.com/VSCodeVim/Vim/issues/3244)
+- after opening user settings, all Vim keybindings are disabled [\#3029](https://github.com/VSCodeVim/Vim/issues/3029)
+
+**Merged pull requests:**
+
+- fix: ignore remappings with non-existent commands. fixes \#3295 [\#3296](https://github.com/VSCodeVim/Vim/pull/3296) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update node.js to v8.15 [\#3294](https://github.com/VSCodeVim/Vim/pull/3294) ([renovate-bot](https://github.com/renovate-bot))
+- fix: slightly improve perf by caching vscode context [\#3293](https://github.com/VSCodeVim/Vim/pull/3293) ([jpoon](https://github.com/jpoon))
+- fix: disable nvim shada [\#3288](https://github.com/VSCodeVim/Vim/pull/3288) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/sinon to v7.0.2 [\#3279](https://github.com/VSCodeVim/Vim/pull/3279) ([renovate-bot](https://github.com/renovate-bot))
+- refactor: status bar [\#3276](https://github.com/VSCodeVim/Vim/pull/3276) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/node to v9.6.41 [\#3275](https://github.com/VSCodeVim/Vim/pull/3275) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency tslint to v5.12.0 [\#3272](https://github.com/VSCodeVim/Vim/pull/3272) ([renovate-bot](https://github.com/renovate-bot))
+- Release [\#3271](https://github.com/VSCodeVim/Vim/pull/3271) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency typescript to v3.2.2 [\#3234](https://github.com/VSCodeVim/Vim/pull/3234) ([renovate-bot](https://github.com/renovate-bot))
+
 ## [v0.17.0](https://github.com/vscodevim/vim/tree/v0.17.0) (2018-12-17)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.16.14...v0.17.0)
@@ -7,10 +33,6 @@
 **Fixed Bugs:**
 
 - Running :reg when clipboard is empty causes an error [\#2898](https://github.com/VSCodeVim/Vim/issues/2898)
-
-**Closed issues:**
-
-- Can't copy the text to other editors [\#3251](https://github.com/VSCodeVim/Vim/issues/3251)
 
 **Merged pull requests:**
 
