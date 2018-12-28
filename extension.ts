@@ -193,7 +193,7 @@ export async function activate(context: vscode.ExtensionContext) {
       if (vscode.window.activeTextEditor !== undefined) {
         const mh: ModeHandler = await getAndUpdateModeHandler(true);
 
-        await VsCodeContext.Set('vim.mode', this.vimState.currentMode);
+        await VsCodeContext.Set('vim.mode', ModeName[mh.vimState.currentMode]);
 
         await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
 

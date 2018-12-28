@@ -34,7 +34,6 @@ import {
   TextTransformations,
 } from './../transformations/transformations';
 
-
 export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
@@ -537,12 +536,12 @@ export class ModeHandler implements vscode.Disposable {
       this.IsModeWhereCmdVIsOverriden(vimState.currentMode) &&
       !this.IsModeWhereCmdVIsOverriden(prevState)
     ) {
-      VsCodeContext.Set('vim.overrideCmdV', true);
+      await VsCodeContext.Set('vim.overrideCmdV', true);
     } else if (
       this.IsModeWhereCmdVIsOverriden(prevState) &&
       !this.IsModeWhereCmdVIsOverriden(vimState.currentMode)
     ) {
-      VsCodeContext.Set('vim.overrideCmdV', false);
+      await VsCodeContext.Set('vim.overrideCmdV', false);
     }
 
     if (recordedState.operatorReadyToExecute(vimState.currentMode)) {
@@ -1429,7 +1428,7 @@ export class ModeHandler implements vscode.Disposable {
 
     this._renderStatusBar();
 
-    await VsCodeContext.Set('vim.mode', this.vimState.currentMode);
+    await VsCodeContext.Set('vim.mode', ModeName[this.vimState.currentMode]);
   }
 
   private _renderStatusBar(): void {
