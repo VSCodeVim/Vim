@@ -7,5 +7,5 @@ cache-file=/usr/local/src/your-app/.cache/github_changelog_generator
 enhancement-label=**Enhancements:**
 enhancement-labels=kind/enhancement,kind/feature
 exclude-labels=status/by-design,status/duplicate,kind/question,kind/discussion
-since-tag=v0.16.11
+since-tag=v0.17.2
 max-issues=500
