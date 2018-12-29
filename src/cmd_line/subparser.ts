@@ -88,6 +88,7 @@ export const commandParsers = {
   vne: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
   vnew: fileCmd.parseEditNewFileInNewVerticalWindowCommandArgs,
 
+  on: parseOnlyCommandArgs,
   only: parseOnlyCommandArgs,
 
   set: parseOptionsCommandArgs,
