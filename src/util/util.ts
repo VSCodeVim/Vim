@@ -12,11 +12,11 @@ const AppDirectory = require('appdirectory');
  * update the position of the cursor. So we have to wait!
  */
 export async function waitForCursorSync(
-  timeout: number = 0,
+  timeoutInMilliseconds: number = 0,
   rejectOnTimeout = false
 ): Promise<void> {
   await new Promise((resolve, reject) => {
-    let timer = setTimeout(rejectOnTimeout ? reject : resolve, timeout);
+    let timer = setTimeout(rejectOnTimeout ? reject : resolve, timeoutInMilliseconds);
 
     const disposable = vscode.window.onDidChangeTextEditorSelection(x => {
       disposable.dispose();
@@ -26,11 +26,11 @@ export async function waitForCursorSync(
   });
 }
 
-export async function getCursorsAfterSync(timeout: number = 0): Promise<Range[]> {
+export async function getCursorsAfterSync(timeoutInMilliseconds: number = 0): Promise<Range[]> {
   try {
-    await waitForCursorSync(timeout, true);
+    await waitForCursorSync(timeoutInMilliseconds, true);
   } catch (e) {
-    logger.warn(`getCursorsAfterSync: selection not updated within ${timeout}ms. error=${e}.`);
+    logger.warn(`getCursorsAfterSync: selection not updated within ${timeoutInMilliseconds}ms. error=${e}.`);
   }
 
   return vscode.window.activeTextEditor!.selections.map(
