@@ -1,15 +1,15 @@
-import * as vscode from 'vscode';
-import { spawn, ChildProcess } from 'child_process';
-import { dirname } from 'path';
-import { exists } from 'fs';
 import * as util from 'util';
-import { attach, Nvim } from 'promised-neovim-client';
-import { configuration } from '../configuration/configuration';
+import * as vscode from 'vscode';
+import { Position } from './../common/motion/position';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
-import { Position } from './../common/motion/position';
 import { VimState } from './../state/vimState';
+import { attach, Nvim } from 'promised-neovim-client';
+import { configuration } from '../configuration/configuration';
+import { dirname } from 'path';
+import { exists } from 'fs';
 import { logger } from '../util/logger';
+import { spawn, ChildProcess } from 'child_process';
 
 export class Neovim implements vscode.Disposable {
   private process: ChildProcess;

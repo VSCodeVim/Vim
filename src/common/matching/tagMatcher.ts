@@ -1,6 +1,5 @@
 import { TextEditor } from '../../textEditor';
 import { VimState } from '../../state/vimState';
-import { Position } from 'vscode';
 
 type Tag = { name: string; type: 'close' | 'open'; startPos: number; endPos: number };
 type MatchedTag = {
