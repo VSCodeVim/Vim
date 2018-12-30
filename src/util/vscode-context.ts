@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 
-export class VsCodeContextImpl {
+/**
+ * Wrapper around VS Code's `setContext`.
+ * The API call takes several milliseconds to seconds to complete,
+ * so let's cache the values and only call the API when necessary.
+ */
+class VsCodeContextImpl {
   contextMap: { [key: string]: any } = {};
 
   public async Set(key: string, value: any): Promise<void> {
