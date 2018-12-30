@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 
 import { Globals } from '../globals';
-import { taskQueue } from '../taskQueue';
 import { Notation } from './notation';
+import { taskQueue } from '../taskQueue';
 import {
   IConfiguration,
   IKeyRemapping,
@@ -10,6 +10,7 @@ import {
   IAutoSwitchInputMethod,
   IDebugConfiguration,
 } from './iconfiguration';
+import { VsCodeContext } from '../util/vscode-context';
 
 const packagejson: {
   contributes: {
@@ -159,15 +160,11 @@ class Configuration implements IConfiguration {
         }
       }
 
-      vscode.commands.executeCommand('setContext', `vim.use${boundKey.key}`, useKey);
+      VsCodeContext.Set(`vim.use${boundKey.key}`, useKey);
     }
 
-    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', this.overrideCopy);
-    vscode.commands.executeCommand(
-      'setContext',
-      'vim.overrideCtrlC',
-      this.overrideCopy || this.useCtrlKeys
-    );
+    VsCodeContext.Set('vim.overrideCopy', this.overrideCopy);
+    VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
   }
 
   unproxify(obj: Object): Object {

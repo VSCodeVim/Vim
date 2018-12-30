@@ -2,7 +2,7 @@ import { JumpTracker } from '../jumps/jumpTracker';
 import { RecordedState } from './../state/recordedState';
 import { SubstituteState } from './substituteState';
 import { SearchState, SearchDirection } from './searchState';
-import { SearchHistory } from '../util/historyFile';
+import { SearchHistory } from '../history/historyFile';
 import { Position } from '../common/motion/position';
 import { ModeName } from '../mode/mode';
 

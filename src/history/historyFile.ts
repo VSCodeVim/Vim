@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
 import { configuration } from '../configuration/configuration';
-import { logger } from './logger';
+import { logger } from '../util/logger';
 import { getExtensionDirPath } from '../util/util';
 
 const mkdirp = require('mkdirp');

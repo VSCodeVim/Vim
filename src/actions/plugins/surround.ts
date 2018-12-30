@@ -650,15 +650,20 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       }
 
       if (startReplaceRange) {
-        TextEditor.replaceText(
-          vimState,
-          startReplace,
-          startReplaceRange.start,
-          startReplaceRange.stop
-        );
+        vimState.recordedState.transformations.push({
+          type: 'replaceText',
+          text: startReplace,
+          start: startReplaceRange.start,
+          end: startReplaceRange.stop,
+        });
       }
       if (endReplaceRange) {
-        TextEditor.replaceText(vimState, endReplace, endReplaceRange.start, endReplaceRange.stop);
+        vimState.recordedState.transformations.push({
+          type: 'replaceText',
+          text: endReplace,
+          start: endReplaceRange.start,
+          end: endReplaceRange.stop,
+        });
       }
       if (startDeleteRange) {
         vimState.recordedState.transformations.push({

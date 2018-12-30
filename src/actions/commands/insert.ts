@@ -199,13 +199,13 @@ class CommandInsertIndentInCurrentLine extends BaseCommand {
     const tabSize = configuration.tabstop || Number(vimState.editor.options.tabSize);
     const newIndentationWidth = (indentationWidth / tabSize + 1) * tabSize;
 
-    TextEditor.replaceText(
-      vimState,
-      TextEditor.setIndentationLevel(originalText, newIndentationWidth),
-      position.getLineBegin(),
-      position.getLineEnd(),
-      new PositionDiff(0, newIndentationWidth - indentationWidth)
-    );
+    vimState.recordedState.transformations.push({
+      type: 'replaceText',
+      text: TextEditor.setIndentationLevel(originalText, newIndentationWidth),
+      start: position.getLineBegin(),
+      end: position.getLineEnd(),
+      diff: new PositionDiff(0, newIndentationWidth - indentationWidth),
+    });
 
     return vimState;
   }
