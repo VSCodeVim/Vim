@@ -422,8 +422,7 @@
         },
         "vim.iskeyword": {
           "type": "string",
-          "description": "keywords contain alphanumeric characters and '_'",
-          "default": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-"
+          "description": "keywords contain alphanumeric characters and '_'. If not configured `editor.wordSeparators` is used."
         },
         "vim.ignorecase": {
           "type": "boolean",
