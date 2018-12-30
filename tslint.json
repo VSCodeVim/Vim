@@ -1,6 +1,7 @@
 {
   "rules": {
     "align": false,
+    "await-promise": [true, "Thenable"],
     "ban": false,
     "class-name": true,
     "comment-format": [

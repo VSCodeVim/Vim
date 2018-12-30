@@ -877,11 +877,11 @@ class CommandInsertInSearchMode extends BaseCommand {
           previousSearchState[previousSearchState.length - 1]!.searchString
         ) {
           previousSearchState.push(searchState);
-          await vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
+          vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
         }
       } else {
         vimState.globalState.searchStatePrevious.push(searchState);
-        await vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
+        vimState.globalState.addNewSearchHistoryItem(searchState.searchString);
       }
 
       // Make sure search history does not exceed configuration option
