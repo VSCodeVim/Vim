@@ -49,8 +49,9 @@ export class WriteCommand extends node.CommandBase {
       Message.ShowError('Not implemented.');
       return;
     }
-
-    if (vimState.editor.document.isUntitled) {
+    
+    // defer saving the file to vscode if file is new (to present file explorer) or if file is a remote file
+    if (vimState.editor.document.isUntitled || vimState.editor.document.uri.scheme !== 'file') {
       await vscode.commands.executeCommand('workbench.action.files.save');
       return;
     }
