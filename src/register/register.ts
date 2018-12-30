@@ -346,7 +346,7 @@ export class Register {
    */
   public static async get(vimState: VimState): Promise<IRegisterContent> {
     const register = vimState.recordedState.registerName;
-    return await Register.getByKey(register, vimState);
+    return Register.getByKey(register, vimState);
   }
 
   public static async getByKey(register: string, vimState?: VimState): Promise<IRegisterContent> {

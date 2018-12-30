@@ -1350,7 +1350,7 @@ export class PutCommand extends BaseCommand {
       });
       return vimState;
     } else if (typeof register.text === 'object' && vimState.currentMode === ModeName.VisualBlock) {
-      return await this.execVisualBlockPaste(register.text, position, vimState, after);
+      return this.execVisualBlockPaste(register.text, position, vimState, after);
     }
 
     let text = await PutCommand.GetText(vimState, this.multicursorIndex);
@@ -1613,7 +1613,7 @@ export class PutWithIndentCommand extends BaseCommand {
   }
 
   public async execCount(position: Position, vimState: VimState): Promise<VimState> {
-    return await super.execCount(position, vimState);
+    return super.execCount(position, vimState);
   }
 }
 
@@ -2296,7 +2296,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
       return vimState;
     }
 
-    return await new operator.DeleteOperator(this.multicursorIndex).run(
+    return new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
       position,
       position.getLineEnd().getLeft()
@@ -2316,7 +2316,7 @@ export class CommandYankFullLine extends BaseCommand {
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new operator.YankOperator().run(vimState, start, end);
+    return new operator.YankOperator().run(vimState, start, end);
   }
 }
 
@@ -2472,7 +2472,7 @@ class CommandSelectNextLastSearchWord extends BaseCommand {
   keys = ['g', 'n'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return await selectLastSearchWord(vimState, SearchDirection.Forward);
+    return selectLastSearchWord(vimState, SearchDirection.Forward);
   }
 }
 
@@ -2482,7 +2482,7 @@ class CommandSelectPreviousLastSearchWord extends BaseCommand {
   keys = ['g', 'N'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return await selectLastSearchWord(vimState, SearchDirection.Backward);
+    return selectLastSearchWord(vimState, SearchDirection.Backward);
   }
 }
 
@@ -3108,7 +3108,7 @@ class ActionDeleteCharWithDeleteKey extends BaseCommand {
       this.isCompleteAction = false;
       return vimState;
     }
-    return await new ActionDeleteChar().execCount(position, vimState);
+    return new ActionDeleteChar().execCount(position, vimState);
   }
 }
 
@@ -3862,13 +3862,13 @@ class ActionDeleteLineVisualMode extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     if (vimState.currentMode === ModeName.Visual) {
-      return await new operator.DeleteOperator(this.multicursorIndex).run(
+      return new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         vimState.cursorStartPosition.getLineBegin(),
         vimState.cursorPosition.getLineEnd()
       );
     } else {
-      return await new operator.DeleteOperator(this.multicursorIndex).run(
+      return new operator.DeleteOperator(this.multicursorIndex).run(
         vimState,
         position.getLineBegin(),
         position.getLineEnd()
@@ -3883,7 +3883,7 @@ class ActionChangeLineVisualMode extends BaseCommand {
   keys = ['C'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return await new operator.DeleteOperator(this.multicursorIndex).run(
+    return new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
       vimState.cursorStartPosition.getLineBegin(),
       vimState.cursorPosition.getLineEndIncludingEOL()
@@ -3897,7 +3897,7 @@ class ActionRemoveLineVisualMode extends BaseCommand {
   keys = ['R'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    return await new operator.DeleteOperator(this.multicursorIndex).run(
+    return new operator.DeleteOperator(this.multicursorIndex).run(
       vimState,
       vimState.cursorStartPosition.getLineBegin(),
       vimState.cursorPosition.getLineEndIncludingEOL()

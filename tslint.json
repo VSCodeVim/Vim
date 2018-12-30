@@ -45,6 +45,7 @@
     "no-inferrable-types": false,
     "no-internal-module": false,
     "no-null-keyword": false,
+    "no-return-await": true,
     "no-require-imports": false,
     "no-shadowed-variable": true,
     "no-string-literal": true,

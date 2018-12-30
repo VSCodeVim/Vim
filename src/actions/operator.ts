@@ -229,7 +229,7 @@ export class DeleteOperatorVisual extends BaseOperator {
     // see special case in DeleteOperator.delete()
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+    return new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -306,7 +306,7 @@ export class ShiftYankOperatorVisual extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new YankOperator().run(vimState, start, end);
+    return new YankOperator().run(vimState, start, end);
   }
 }
 
@@ -316,7 +316,7 @@ export class DeleteOperatorXVisual extends BaseOperator {
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+    return new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -331,7 +331,7 @@ export class ChangeOperatorSVisual extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    return await new ChangeOperator().run(vimState, start, end);
+    return new ChangeOperator().run(vimState, start, end);
   }
 }
 

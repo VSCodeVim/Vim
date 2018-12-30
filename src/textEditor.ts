@@ -64,13 +64,13 @@ export class TextEditor {
    * @deprecated Use InsertTextTransformation (or InsertTextVSCodeTransformation) instead.
    */
   static async insertAt(text: string, position: vscode.Position): Promise<boolean> {
-    return await vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.insert(position, text);
     });
   }
 
   static async delete(range: vscode.Range): Promise<boolean> {
-    return await vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.delete(range);
     });
   }
@@ -87,7 +87,7 @@ export class TextEditor {
    * @deprecated. Use ReplaceTextTransformation instead.
    */
   static async replace(range: vscode.Range, text: string): Promise<boolean> {
-    return await vscode.window.activeTextEditor!.edit(editBuilder => {
+    return vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.replace(range, text);
     });
   }
