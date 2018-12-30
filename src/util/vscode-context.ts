@@ -12,7 +12,7 @@ class VsCodeContextImpl {
     const prev = this.Get(key);
     if (!prev || prev !== value) {
       this.contextMap[key] = value;
-      return vscode.commands.executeCommand('setContext', key, value);
+      return await vscode.commands.executeCommand('setContext', key, value);
     }
   }
 
