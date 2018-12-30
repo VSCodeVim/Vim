@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { RecordedState } from '../../state/recordedState';
 import { ReplaceState } from '../../state/replaceState';
 import { VimState } from '../../state/vimState';
-import { getCursorsAfterSync } from '../../util/util';
+import { getCursorsAfterSync, waitForCursorSync } from '../../util/util';
 import { Clipboard } from '../../util/clipboard';
 import { FileCommand } from './../../cmd_line/commands/file';
 import { OnlyCommand } from './../../cmd_line/commands/only';
@@ -2580,7 +2580,10 @@ class CommandGoToDefinition extends BaseCommand {
     const oldActiveEditor = vimState.editor;
 
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
-
+    // `executeCommand` returns immediately before cursor is updated
+    // wait for the editor to update before updating the vim state
+    // https://github.com/VSCodeVim/Vim/issues/3277
+    await waitForCursorSync(1000);
     if (oldActiveEditor === vimState.editor) {
       vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }

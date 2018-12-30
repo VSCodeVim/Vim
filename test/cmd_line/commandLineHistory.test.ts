@@ -1,8 +1,6 @@
-import { CommandLineHistory } from '../../src/util/historyFile';
+import { CommandLineHistory } from '../../src/history/historyFile';
 import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { configuration } from '../../src/configuration/configuration';
-import * as path from 'path';
-import * as os from 'os';
 import * as assert from 'assert';
 
 suite('command-line history', () => {

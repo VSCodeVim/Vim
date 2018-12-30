@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 
 import { Globals } from '../globals';
-import { taskQueue } from '../taskQueue';
 import { Notation } from './notation';
+import { taskQueue } from '../taskQueue';
 import {
   IConfiguration,
   IKeyRemapping,
@@ -10,6 +10,7 @@ import {
   IAutoSwitchInputMethod,
   IDebugConfiguration,
 } from './iconfiguration';
+import { VsCodeContext } from '../util/vscode-context';
 
 const packagejson: {
   contributes: {
@@ -49,10 +50,9 @@ interface IKeyBinding {
  *
  * Vim option override sequence.
  * 1. `:set {option}` on the fly
- * 2. TODO .vimrc.
- * 3. `vim.{option}`
- * 4. VS Code configuration
- * 5. VSCodeVim flavored Vim option default values
+ * 2. `vim.{option}`
+ * 3. VS Code configuration
+ * 4. VSCodeVim flavored Vim option default values
  *
  */
 class Configuration implements IConfiguration {
@@ -159,15 +159,11 @@ class Configuration implements IConfiguration {
         }
       }
 
-      vscode.commands.executeCommand('setContext', `vim.use${boundKey.key}`, useKey);
+      VsCodeContext.Set(`vim.use${boundKey.key}`, useKey);
     }
 
-    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', this.overrideCopy);
-    vscode.commands.executeCommand(
-      'setContext',
-      'vim.overrideCtrlC',
-      this.overrideCopy || this.useCtrlKeys
-    );
+    VsCodeContext.Set('vim.overrideCopy', this.overrideCopy);
+    VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
   }
 
   unproxify(obj: Object): Object {
@@ -298,7 +294,11 @@ class Configuration implements IConfiguration {
   })
   relativenumber: boolean;
 
-  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+  @overlapSetting({
+    settingName: 'wordSeparators',
+    defaultValue: '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-',
+  })
+  iskeyword: string;
 
   boundKeyCombinations: IKeyBinding[] = [];
 
@@ -367,11 +367,16 @@ function overlapSetting(args: {
   return function(target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
       get: function() {
-        if (this['_' + propertyKey] !== undefined) {
-          return this['_' + propertyKey];
+        // retrieve value from vim configuration
+        // if the value is not defined or empty
+        // look at the equivalent `editor` setting
+        // if that is not defined then defer to the default value
+        let val = this['_' + propertyKey];
+        if (val !== undefined && val !== '') {
+          return val;
         }
 
-        let val = this.getConfiguration('editor').get(args.settingName, args.defaultValue);
+        val = this.getConfiguration('editor').get(args.settingName, args.defaultValue);
         if (args.map && val !== undefined) {
           val = args.map.get(val);
         }
@@ -379,9 +384,10 @@ function overlapSetting(args: {
         return val;
       },
       set: function(value) {
+        // synchronize the vim setting with the `editor` equivalent
         this['_' + propertyKey] = value;
 
-        if (value === undefined || Globals.isTesting) {
+        if (value === undefined || value === '' || Globals.isTesting) {
           return;
         }
 
