@@ -267,7 +267,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
     const modeHandler = await getAndUpdateModeHandler();
     await commandLine.PromptAndRun('', modeHandler.vimState);
-    modeHandler.updateView(modeHandler.vimState);
+    await modeHandler.updateView(modeHandler.vimState);
   });
 
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
@@ -306,7 +306,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
-    mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
+    await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
   await commandLine.load();

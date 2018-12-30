@@ -61,13 +61,13 @@ export class TextEditor {
   }
 
   static async insertAt(text: string, position: vscode.Position): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return await vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.insert(position, text);
     });
   }
 
   static async delete(range: vscode.Range): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return await vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.delete(range);
     });
   }
@@ -89,7 +89,7 @@ export class TextEditor {
     const end = vscode.window.activeTextEditor!.document.lineAt(lastLine).range.end;
     const range = new vscode.Range(start, end);
 
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return await vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.delete(range);
     });
   }
@@ -99,7 +99,7 @@ export class TextEditor {
    * instead.
    */
   static async replace(range: vscode.Range, text: string): Promise<boolean> {
-    return vscode.window.activeTextEditor!.edit(editBuilder => {
+    return await vscode.window.activeTextEditor!.edit(editBuilder => {
       editBuilder.replace(range, text);
     });
   }
