@@ -1,14 +1,13 @@
+import * as parser from './parser';
 import * as vscode from 'vscode';
-
+import { CommandLineHistory } from '../history/historyFile';
+import { Message } from '../util/message';
+import { ModeName } from './../mode/mode';
+import { StatusBar } from '../statusBar';
+import { VimError, ErrorCode } from '../error';
+import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { logger } from '../util/logger';
-import { Message } from '../util/message';
-import { VimState } from '../state/vimState';
-import { StatusBar } from '../statusBar';
-import * as parser from './parser';
-import { VimError, ErrorCode } from '../error';
-import { CommandLineHistory } from '../../src/util/historyFile';
-import { ModeName } from './../mode/mode';
 
 class CommandLine {
   private _history: CommandLineHistory;
