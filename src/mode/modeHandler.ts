@@ -593,7 +593,7 @@ export class ModeHandler implements vscode.Disposable {
       vimState.globalState.previousFullAction = vimState.recordedState;
 
       if (recordedState.isInsertion) {
-        Register.putByKey(recordedState, '.');
+        await Register.putByKey(recordedState, '.');
       }
     }
 

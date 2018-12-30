@@ -390,7 +390,7 @@ class CommandRecordMacro extends BaseCommand {
       // If register name is upper case, it means we are appending commands to existing register instead of overriding.
       let newRegister = new RecordedState();
       newRegister.registerName = register;
-      Register.putByKey(newRegister, register);
+      await Register.putByKey(newRegister, register);
     }
 
     vimState.isRecordingMacro = true;
@@ -1648,7 +1648,7 @@ export class PutCommandVisual extends BaseCommand {
         true
       );
       const deletedRegister = await Register.getByKey(vimState.recordedState.registerName);
-      Register.putByKey(
+      await Register.putByKey(
         replaceRegister.text,
         vimState.recordedState.registerName,
         replaceRegister.registerMode
@@ -1660,7 +1660,7 @@ export class PutCommandVisual extends BaseCommand {
       await deleteResult.setCurrentMode(oldMode);
       deleteResult = await new PutCommand().exec(start, deleteResult, true);
       await deleteResult.setCurrentMode(resultMode);
-      Register.putByKey(
+      await Register.putByKey(
         deletedRegister.text,
         vimState.recordedState.registerName,
         deletedRegister.registerMode

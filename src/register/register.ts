@@ -74,7 +74,11 @@ export class Register {
    * Puts content in a register. If none is specified, uses the default
    * register ".
    */
-  public static put(content: RegisterContent, vimState: VimState, multicursorIndex?: number): void {
+  public static async put(
+    content: RegisterContent,
+    vimState: VimState,
+    multicursorIndex?: number
+  ): Promise<void> {
     const register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
@@ -89,13 +93,18 @@ export class Register {
       if (Register.isValidUppercaseRegister(register)) {
         Register.appendMulticursorRegister(content, register, vimState, multicursorIndex as number);
       } else {
-        Register.putMulticursorRegister(content, register, vimState, multicursorIndex as number);
+        await Register.putMulticursorRegister(
+          content,
+          register,
+          vimState,
+          multicursorIndex as number
+        );
       }
     } else {
       if (Register.isValidUppercaseRegister(register)) {
         Register.appendNormalRegister(content, register, vimState);
       } else {
-        Register.putNormalRegister(content, register, vimState);
+        await Register.putNormalRegister(content, register, vimState);
       }
     }
   }
@@ -122,12 +131,12 @@ export class Register {
    *
    * `REMARKS:` This procedure assumes that you pass an valid register.
    */
-  private static putMulticursorRegister(
+  private static async putMulticursorRegister(
     content: RegisterContent,
     register: string,
     vimState: VimState,
     multicursorIndex: number
-  ): void {
+  ): Promise<void> {
     if (multicursorIndex === 0) {
       Register.registers[register.toLowerCase()] = {
         text: [],
@@ -153,7 +162,7 @@ export class Register {
         }
         clipboardText = clipboardText.replace(/\n$/, '');
 
-        Clipboard.Copy(clipboardText);
+        await Clipboard.Copy(clipboardText);
       }
 
       Register.processNumberedRegister(registerContent.text, vimState);
@@ -214,13 +223,13 @@ export class Register {
    *
    * `REMARKS:` This Procedure assume that you pass an valid register.
    */
-  private static putNormalRegister(
+  private static async putNormalRegister(
     content: RegisterContent,
     register: string,
     vimState: VimState
-  ): void {
+  ): Promise<void> {
     if (Register.isClipboardRegister(register)) {
-      Clipboard.Copy(content.toString());
+      await Clipboard.Copy(content.toString());
     }
 
     Register.registers[register.toLowerCase()] = {
@@ -273,17 +282,17 @@ export class Register {
     }
   }
 
-  public static putByKey(
+  public static async putByKey(
     content: RegisterContent,
     register = '"',
     registerMode = RegisterMode.AscertainFromCurrentMode
-  ): void {
+  ): Promise<void> {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
 
     if (Register.isClipboardRegister(register)) {
-      Clipboard.Copy(content.toString());
+      await Clipboard.Copy(content.toString());
     }
 
     if (Register.isBlackHoleRegister(register)) {

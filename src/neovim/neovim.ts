@@ -152,7 +152,7 @@ export class Neovim implements vscode.Disposable {
     };
     vimState.currentRegisterMode =
       vimRegToVsReg[(await this.nvim.callFunction('getregtype', ['"'])) as string];
-    Register.put((await this.nvim.callFunction('getreg', ['"'])) as string, vimState);
+    await Register.put((await this.nvim.callFunction('getreg', ['"'])) as string, vimState);
   }
 
   dispose() {

@@ -23,7 +23,7 @@ suite('register', () => {
 
   suite('clipboard', () => {
     setup(async () => {
-      Clipboard.Copy('12345');
+      await Clipboard.Copy('12345');
     });
 
     newTest({
@@ -64,7 +64,7 @@ suite('register', () => {
 
   test('System clipboard works with chinese characters', async () => {
     const testString = '你好';
-    Clipboard.Copy(testString);
+    await Clipboard.Copy(testString);
     assertEqual(testString, await Clipboard.Paste());
 
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
@@ -248,7 +248,7 @@ suite('register', () => {
     let actual: IRegisterContent;
 
     try {
-      Register.put(expected, vimState);
+      await Register.put(expected, vimState);
       actual = await Register.get(vimState);
       assert.equal(actual.text, expected);
     } catch (err) {

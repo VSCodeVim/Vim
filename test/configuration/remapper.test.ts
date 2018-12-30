@@ -363,7 +363,7 @@ suite('Remapper', () => {
 
     const expected = 'text-to-put-on-register';
     let actual: IRegisterContent;
-    Register.put(expected, modeHandler.vimState);
+    await Register.put(expected, modeHandler.vimState);
     actual = await Register.get(vimState);
     assert.equal(actual.text, expected);
 
@@ -390,7 +390,7 @@ suite('Remapper', () => {
 
     const expected = 'text-to-put-on-register';
     let actual: IRegisterContent;
-    Register.put(expected, modeHandler.vimState);
+    await Register.put(expected, modeHandler.vimState);
     actual = await Register.get(vimState);
     assert.equal(actual.text, expected);
 

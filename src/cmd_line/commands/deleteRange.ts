@@ -63,7 +63,7 @@ export class DeleteRangeCommand extends node.CommandBase {
 
     let cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.active);
     let text = await this.deleteRange(cursorPosition, cursorPosition, vimState);
-    Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
+    await Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 
   async executeWithRange(vimState: VimState, range: node.LineRange) {
@@ -83,6 +83,6 @@ export class DeleteRangeCommand extends node.CommandBase {
       Position.FromVSCodePosition(end),
       vimState
     );
-    Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
+    await Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 }
