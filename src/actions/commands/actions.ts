@@ -667,7 +667,7 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
     let startColumn = vimState.cursorStartPosition.character;
     let currentLine = vimState.cursorPosition.line;
     let range = editor.visibleRanges[0];
-    let newFirstLine = currentLine + (range.end.line - range.start.line >> 1);
+    let newFirstLine = currentLine + ((range.end.line - range.start.line) / 2);
 
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand('editorScroll', {
@@ -699,7 +699,7 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
     let startColumn = vimState.cursorStartPosition.character;
     let currentLine = vimState.cursorPosition.line;
     let range = editor.visibleRanges[0]
-    let newFirstLine = currentLine - (range.end.line - range.start.line >> 1);
+    let newFirstLine = currentLine - ((range.end.line - range.start.line) / 2);
 
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand('editorScroll', {
