@@ -663,12 +663,11 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
   by: EditorScrollByUnit = 'halfPage';
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    let lineOffset = 0;
     let editor = vscode.window.activeTextEditor!;
     let startColumn = vimState.cursorStartPosition.character;
-    let firstLine = editor.visibleRanges[0].start.line;
-    let currentSelectionLine = vimState.cursorPosition.line;
-    lineOffset = currentSelectionLine - firstLine;
+    let currentLine = vimState.cursorPosition.line;
+    let range = editor.visibleRanges[0];
+    let newFirstLine = currentLine + (range.end.line - range.start.line >> 1);
 
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand('editorScroll', {
@@ -682,8 +681,7 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
         ) >= 0,
     });
 
-    let newFirstLine = editor.visibleRanges[0].start.line;
-    let newPosition = new Position(newFirstLine + lineOffset, startColumn);
+    let newPosition = new Position(newFirstLine, startColumn);
     vimState.cursorPosition = newPosition;
     return vimState;
   }
@@ -699,10 +697,9 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
     let lineOffset = 0;
     let editor = vscode.window.activeTextEditor!;
     let startColumn = vimState.cursorStartPosition.character;
-
-    let firstLine = editor.visibleRanges[0].start.line;
-    let currentSelectionLine = vimState.cursorPosition.line;
-    lineOffset = currentSelectionLine - firstLine;
+    let currentLine = vimState.cursorPosition.line;
+    let range = editor.visibleRanges[0]
+    let newFirstLine = currentLine - (range.end.line - range.start.line >> 1);
 
     let timesToRepeat = vimState.recordedState.count || 1;
     await vscode.commands.executeCommand('editorScroll', {
@@ -716,8 +713,7 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
         ) >= 0,
     });
 
-    let newFirstLine = editor.visibleRanges[0].start.line;
-    let newPosition = new Position(newFirstLine + lineOffset, startColumn);
+    let newPosition = new Position(Math.max(newFirstLine, 0), startColumn);
     vimState.cursorPosition = newPosition;
     return vimState;
   }
