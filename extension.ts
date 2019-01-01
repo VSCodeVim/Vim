@@ -23,7 +23,7 @@ import { VsCodeContext } from './src/util/vscode-context';
 import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
 import { configurationValidator } from './src/configuration/configurationValidator';
-import { logger } from './src/util/logger';
+import { logger, log } from './src/util/logger';
 import { taskQueue } from './src/taskQueue';
 
 const globalState = new GlobalState();
@@ -81,6 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidChangeConfiguration(() => {
     logger.debug('onDidChangeConfiguration: reloading configuration');
     configuration.reload();
+    log.onConfigurationChange();
   });
 
   const textWasDeleted = event =>

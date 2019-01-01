@@ -52,6 +52,7 @@ export class Configuration implements IConfiguration {
     replace: '#D08770',
   };
   debug: {
+    displayError: false;
     loggingLevel: 'warn';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';

@@ -341,6 +341,11 @@
       "title": "Vim Configuration",
       "type": "object",
       "properties": {
+        "vim.debug.displayError": {
+          "type": "boolean",
+          "description": "Boolean indicates whether VIM errors will be displayed as a VS Code informational window",
+          "default": true
+        },
         "vim.debug.loggingLevel": {
           "type": "string",
           "description": "Extension logging level",
