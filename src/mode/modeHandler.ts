@@ -781,7 +781,7 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     if (!recordedState.operator) {
-      console.error('recordedState.operator: ' + recordedState.operator);
+      logger.warn('recordedState.operator: ' + recordedState.operator);
       throw new Error("what in god's name. recordedState.operator is falsy.");
     }
 
@@ -794,7 +794,6 @@ export class ModeHandler implements vscode.Disposable {
     const resultingCursors: Range[] = [];
     let i = 0;
 
-    let resultingModeName: ModeName;
     let startingModeName = vimState.currentMode;
 
     for (let { start, stop } of vimState.allCursors) {
@@ -837,8 +836,6 @@ export class ModeHandler implements vscode.Disposable {
           transformation.cursorIndex = recordedState.operator.multicursorIndex;
         }
       }
-
-      resultingModeName = resultVimState.currentMode;
 
       let resultingRange = new Range(
         resultVimState.cursorStartPosition,
@@ -898,7 +895,7 @@ export class ModeHandler implements vscode.Disposable {
         case 'moveCursor':
           break;
         default:
-          console.warn(`Unhandled text transformation type: ${command.type}.`);
+          logger.warn(`modeHandler: Unhandled text transformation type: ${command.type}.`);
           break;
       }
 
@@ -1040,7 +1037,7 @@ export class ModeHandler implements vscode.Disposable {
           }
           break;
         default:
-          console.warn(`Unhandled text transformation type: ${command.type}.`);
+          logger.warn(`modeHandler: Unhandled text transformation type: ${command.type}.`);
           break;
       }
     }
