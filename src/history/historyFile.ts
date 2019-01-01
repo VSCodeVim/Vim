@@ -102,7 +102,7 @@ export class HistoryFile {
     try {
       let parsedData = JSON.parse(data);
       if (!Array.isArray(parsedData)) {
-        throw Error('Expected JSON');
+        throw Error('Unexpected format in history file. Expected JSON.');
       }
       this._history = parsedData;
     } catch (e) {
