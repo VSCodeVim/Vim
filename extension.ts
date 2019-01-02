@@ -95,7 +95,7 @@ export async function activate(context: vscode.ExtensionContext) {
     event.contentChanges[0].range.start.line === event.contentChanges[0].range.end.line;
 
   vscode.workspace.onDidChangeTextDocument(async event => {
-    if (configuration.disableExt) {
+    if (configuration.disableExtension) {
       return;
     }
 
@@ -166,7 +166,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // window events
   vscode.window.onDidChangeActiveTextEditor(async () => {
-    if (configuration.disableExt) {
+    if (configuration.disableExtension) {
       return;
     }
 
@@ -298,8 +298,8 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   registerCommand(context, 'toggleVim', async () => {
-    configuration.disableExt = !configuration.disableExt;
-    toggleExtension(configuration.disableExt, compositionState);
+    configuration.disableExtension = !configuration.disableExtension;
+    toggleExtension(configuration.disableExtension, compositionState);
   });
 
   for (const boundKey of configuration.boundKeyCombinations) {
@@ -317,7 +317,7 @@ export async function activate(context: vscode.ExtensionContext) {
     globalState.load(),
     configurationValidator.initialize(),
     // This is called last because getAndUpdateModeHandler() will change cursor
-    toggleExtension(configuration.disableExt, compositionState),
+    toggleExtension(configuration.disableExtension, compositionState),
   ]);
 }
 
@@ -350,9 +350,8 @@ function overrideCommand(
   callback: (...args: any[]) => any
 ) {
   const disposable = vscode.commands.registerCommand(command, async args => {
-    if (configuration.disableExt) {
-      await vscode.commands.executeCommand('default:' + command, args);
-      return;
+    if (configuration.disableExtension) {
+      return vscode.commands.executeCommand('default:' + command, args);
     }
 
     if (!vscode.window.activeTextEditor) {
@@ -363,11 +362,10 @@ function overrideCommand(
       vscode.window.activeTextEditor.document &&
       vscode.window.activeTextEditor.document.uri.toString() === 'debug:input'
     ) {
-      await vscode.commands.executeCommand('default:' + command, args);
-      return;
+      return vscode.commands.executeCommand('default:' + command, args);
     }
 
-    callback(args);
+    return callback(args);
   });
   context.subscriptions.push(disposable);
 }
