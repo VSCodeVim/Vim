@@ -348,16 +348,16 @@
         },
         "vim.debug.loggingLevel": {
           "type": "string",
-          "description": "Extension logging level",
+          "description": "Maximum level of messages to log to console. Logs are visible in the developer tools.",
           "default": "error"
         },
         "vim.normalModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
@@ -386,19 +386,19 @@
         },
         "vim.insertModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.visualModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.visualModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.textwidth": {
           "type": "number",
