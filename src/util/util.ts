@@ -31,7 +31,7 @@ export async function getCursorsAfterSync(timeoutInMilliseconds: number = 0): Pr
     await waitForCursorSync(timeoutInMilliseconds, true);
   } catch (e) {
     logger.warn(
-      `getCursorsAfterSync: selection not updated within ${timeoutInMilliseconds}ms. error=${e}.`
+      `getCursorsAfterSync: selection not updated within ${timeoutInMilliseconds}ms.`
     );
   }
 
