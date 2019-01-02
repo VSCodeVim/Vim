@@ -77,13 +77,13 @@ suite('Remapper', () => {
       inputtedKeys: string[],
       currentMode: ModeName
     ) {
-      return TestRemapper._findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
+      return TestRemapper.findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
     }
 
     public getRemappedKeySequenceLengthRange(remappings: {
       [key: string]: IKeyRemapping;
     }): [number, number] {
-      return TestRemapper._getRemappedKeysLengthRange(remappings);
+      return TestRemapper.getRemappedKeysLengthRange(remappings);
     }
   }
 

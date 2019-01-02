@@ -260,7 +260,7 @@ export async function activate(context: vscode.ExtensionContext) {
       if (mh.vimState.currentMode !== ModeName.Insert) {
         let text = compositionState.composingText;
         compositionState.reset();
-        await mh.handleMultipleKeyEvents(text.split(''));
+        mh.handleMultipleKeyEvents(text.split(''));
       }
     });
   });
@@ -287,9 +287,9 @@ export async function activate(context: vscode.ExtensionContext) {
           // Check if this is a vim command by looking for :
           if (command.command.slice(0, 1) === ':') {
             await commandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
-            await mh.updateView(mh.vimState);
+            mh.updateView(mh.vimState);
           } else {
-            await vscode.commands.executeCommand(command.command, command.args);
+            vscode.commands.executeCommand(command.command, command.args);
           }
         }
       }
@@ -311,12 +311,13 @@ export async function activate(context: vscode.ExtensionContext) {
     await mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
-  await commandLine.load();
-  await globalState.loadSearchHistory();
-  await configurationValidator.initialize();
-
-  // This is called last because getAndUpdateModeHandler() will change cursor
-  toggleExtension(configuration.disableExt, compositionState);
+  await Promise.all([
+    commandLine.load(),
+    globalState.load(),
+    configurationValidator.initialize(),
+    // This is called last because getAndUpdateModeHandler() will change cursor
+    toggleExtension(configuration.disableExt, compositionState),
+  ]);
 }
 
 /**

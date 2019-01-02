@@ -35,7 +35,7 @@ class CommandLine {
     this._history = new CommandLineHistory();
   }
 
-  public load(): Promise<void> {
+  public async load(): Promise<void> {
     return this._history.load();
   }
 
@@ -56,7 +56,7 @@ class CommandLine {
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
 
       if (useNeovim) {
-        var statusBarText = await vimState.nvim.run(vimState, command);
+        const statusBarText = await vimState.nvim.run(vimState, command);
         StatusBar.Set(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true);
       } else {
         await cmd.execute(vimState.editor, vimState);
@@ -74,7 +74,7 @@ class CommandLine {
           );
         }
       } else {
-        logger.error(`commandLine : error executing cmd=${command}. err=${e}.`);
+        logger.error(`commandLine: error executing cmd=${command}. err=${e}.`);
         Message.ShowError(e.toString());
       }
     }

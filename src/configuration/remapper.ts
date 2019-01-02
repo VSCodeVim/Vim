@@ -5,10 +5,10 @@ import { IKeyRemapping } from './iconfiguration';
 import { ModeHandler } from '../mode/modeHandler';
 import { ModeName } from '../mode/mode';
 import { VimState } from './../state/vimState';
+import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { configurationValidator } from './configurationValidator';
 import { logger } from '../util/logger';
-import { commandLine } from '../cmd_line/commandLine';
 
 interface IRemapper {
   /**
@@ -85,7 +85,7 @@ export class Remapper implements IRemapper {
     logger.debug(
       `Remapper: find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}.`
     );
-    let remapping: IKeyRemapping | undefined = Remapper._findMatchingRemap(
+    let remapping: IKeyRemapping | undefined = Remapper.findMatchingRemap(
       userDefinedRemappings,
       keys,
       vimState.currentMode
@@ -206,6 +206,7 @@ export class Remapper implements IRemapper {
           debugMsg += `command=${cmd}. args=${args}.`;
 
           if (!configurationValidator.isCommandValid(cmd)) {
+            debugMsg += ` Command does not exist.`;
             isCommandValid = false;
             break;
           }
@@ -221,19 +222,18 @@ export class Remapper implements IRemapper {
         continue;
       }
 
-      if (!isCommandValid) {
-        logger.error(
-          `Remapper: ${
-            this._configKey
-          }. Invalid configuration. Command does not exist. ${debugMsg}.`
-        );
-        continue;
-      }
-
       const keys = remapping.before.join('');
       if (keys in remappings) {
         logger.error(`Remapper: ${this._configKey}. Duplicate configuration. ${debugMsg}`);
         continue;
+      }
+
+      if (!isCommandValid) {
+        logger.warn(
+          `Remapper: ${this._configKey}.
+          ${debugMsg}
+          If you are referencing a command from an extension that has not yet been activated, this message can be ignored.`
+        );
       }
 
       logger.debug(`Remapper: ${this._configKey}. loaded: ${debugMsg}`);
@@ -243,14 +243,14 @@ export class Remapper implements IRemapper {
     return remappings;
   }
 
-  protected static _findMatchingRemap(
+  protected static findMatchingRemap(
     userDefinedRemappings: { [key: string]: IKeyRemapping },
     inputtedKeys: string[],
     currentMode: ModeName
   ) {
     let remapping: IKeyRemapping | undefined;
 
-    let range = Remapper._getRemappedKeysLengthRange(userDefinedRemappings);
+    let range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
     const startingSliceLength = Math.max(range[1], inputtedKeys.length);
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
@@ -281,7 +281,7 @@ export class Remapper implements IRemapper {
    * Given list of remappings, returns the length of the shortest and longest remapped keys
    * @param remappings
    */
-  protected static _getRemappedKeysLengthRange(remappings: {
+  protected static getRemappedKeysLengthRange(remappings: {
     [key: string]: IKeyRemapping;
   }): [number, number] {
     const keys = Object.keys(remappings);
