@@ -207,7 +207,12 @@ export interface IConfiguration {
    */
   foldfix: boolean;
 
-  disableExt: boolean;
+  /**
+   * "Soft"-disabling of extension.
+   * Differs from VS Code's disablng of the extension as the extension
+   * will still be loaded and activated, but all functionality will be disabled.
+   */
+  disableExtension: boolean;
 
   /**
    * Neovim

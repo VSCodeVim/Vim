@@ -81,7 +81,7 @@ export class ModeHandler implements vscode.Disposable {
         // Handle scenarios where mouse used to change current position.
         const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(
           (e: vscode.TextEditorSelectionChangeEvent) => {
-            if (configuration.disableExt) {
+            if (configuration.disableExtension) {
               return;
             }
 
