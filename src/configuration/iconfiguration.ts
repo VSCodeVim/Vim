@@ -25,7 +25,7 @@ export interface IDebugConfiguration {
   /**
    * Boolean indicating if errors should be displayed as a VS Code informational window
    */
-  displayError: boolean;
+  showErrorMessages: boolean;
   /**
    * Maximum level of messages to log.
    * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']

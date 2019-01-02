@@ -341,7 +341,7 @@
       "title": "Vim Configuration",
       "type": "object",
       "properties": {
-        "vim.debug.displayError": {
+        "vim.debug.showErrorMessages": {
           "type": "boolean",
           "description": "Boolean indicates whether VIM errors will be displayed as a VS Code informational window",
           "default": true
