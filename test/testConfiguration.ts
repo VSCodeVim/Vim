@@ -66,7 +66,7 @@ export class Configuration implements IConfiguration {
   mouseSelectionGoesIntoVisualMode = true;
   changeWordIncludesWhitespace = false;
   foldfix = false;
-  disableExt = false;
+  disableExtension = false;
   enableNeovim = false;
   neovimPath = 'nvim';
   substituteGlobalFlag = false;
