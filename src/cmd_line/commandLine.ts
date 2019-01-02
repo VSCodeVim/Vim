@@ -74,7 +74,7 @@ class CommandLine {
           );
         }
       } else {
-        logger.error(`commandLine: error executing cmd=${command}. err=${e}.`);
+        logger.error(`commandLine: Error executing cmd=${command}. err=${e}.`);
         Message.ShowError(e.toString());
       }
     }
@@ -82,7 +82,7 @@ class CommandLine {
 
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
-      logger.debug('commandLine : No active document');
+      logger.debug('commandLine: No active document');
       return;
     }
     let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
@@ -100,7 +100,7 @@ class CommandLine {
 
   public async ShowHistory(initialText: string, vimState: VimState): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
-      logger.debug('commandLine : No active document.');
+      logger.debug('commandLine: No active document.');
       return '';
     }
 

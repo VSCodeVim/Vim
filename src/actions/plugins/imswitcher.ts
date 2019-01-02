@@ -47,7 +47,7 @@ export class InputMethodSwitcher {
           this.savedIMKey = insertIMKey.trim();
         }
       } catch (e) {
-        logger.error(`IMSwitcher: promise is rejected. err=${e}`);
+        logger.error(`IMSwitcher: Error switching to default IM. err=${e}`);
       }
     } else {
       this.showCmdNotFoundErrorMessage(rawObtainIMCmd, 'vim.autoSwitchInputMethod.obtainIMCmd');
@@ -75,7 +75,7 @@ export class InputMethodSwitcher {
         try {
           await this.execute(switchIMCmd);
         } catch (e) {
-          logger.error(`IMSwitcher: promise is rejected. err=${e}`);
+          logger.error(`IMSwitcher: Error switching to IM. err=${e}`);
         }
       }
     } else {

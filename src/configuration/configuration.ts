@@ -245,6 +245,7 @@ class Configuration implements IConfiguration {
   };
 
   debug: IDebugConfiguration = {
+    showErrorMessages: true,
     loggingLevel: 'error',
   };
 
