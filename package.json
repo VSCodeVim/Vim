@@ -594,7 +594,7 @@
         },
         "vim.disableExtension": {
           "type": "boolean",
-          "description": "Disables the VSCodeVim extension.",
+          "description": "Disables the VSCodeVim extension. Extension will continue to be loaded and activated, but VIM functionality will be disabled.",
           "default": false
         },
         "vim.enableNeovim": {
