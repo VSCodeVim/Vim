@@ -52,6 +52,7 @@ export class Configuration implements IConfiguration {
     replace: '#D08770',
   };
   debug: {
+    showErrorMessages: false;
     loggingLevel: 'warn';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
@@ -65,7 +66,7 @@ export class Configuration implements IConfiguration {
   mouseSelectionGoesIntoVisualMode = true;
   changeWordIncludesWhitespace = false;
   foldfix = false;
-  disableExt = false;
+  disableExtension = false;
   enableNeovim = false;
   neovimPath = 'nvim';
   substituteGlobalFlag = false;

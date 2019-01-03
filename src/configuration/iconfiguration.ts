@@ -23,6 +23,10 @@ export interface IAutoSwitchInputMethod {
 }
 export interface IDebugConfiguration {
   /**
+   * Boolean indicating if errors should be displayed as a VS Code informational window
+   */
+  showErrorMessages: boolean;
+  /**
    * Maximum level of messages to log.
    * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
@@ -207,7 +211,12 @@ export interface IConfiguration {
    */
   foldfix: boolean;
 
-  disableExt: boolean;
+  /**
+   * "Soft"-disabling of extension.
+   * Differs from VS Code's disablng of the extension as the extension
+   * will still be loaded and activated, but all functionality will be disabled.
+   */
+  disableExtension: boolean;
 
   /**
    * Neovim

@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.17.2",
+  "version": "0.17.3",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -341,18 +341,23 @@
       "title": "Vim Configuration",
       "type": "object",
       "properties": {
+        "vim.debug.showErrorMessages": {
+          "type": "boolean",
+          "description": "Boolean indicates whether VIM errors will be displayed as a VS Code informational window",
+          "default": true
+        },
         "vim.debug.loggingLevel": {
           "type": "string",
-          "description": "Extension logging level",
+          "description": "Maximum level of messages to log to console. Logs are visible in the developer tools.",
           "default": "error"
         },
         "vim.normalModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
@@ -381,19 +386,19 @@
         },
         "vim.insertModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.visualModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.visualModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.textwidth": {
           "type": "number",
@@ -422,8 +427,7 @@
         },
         "vim.iskeyword": {
           "type": "string",
-          "description": "keywords contain alphanumeric characters and '_'",
-          "default": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-"
+          "description": "keywords contain alphanumeric characters and '_'. If not configured `editor.wordSeparators` is used."
         },
         "vim.ignorecase": {
           "type": "boolean",
@@ -595,7 +599,7 @@
         },
         "vim.disableExtension": {
           "type": "boolean",
-          "description": "Disables the VSCodeVim extension.",
+          "description": "Disables the VSCodeVim extension. Extension will continue to be loaded and activated, but VIM functionality will be disabled.",
           "default": false
         },
         "vim.enableNeovim": {
@@ -689,7 +693,7 @@
     "@types/lodash": "4.14.119",
     "@types/mocha": "5.2.5",
     "@types/node": "9.6.41",
-    "@types/sinon": "7.0.2",
+    "@types/sinon": "7.0.3",
     "gulp": "4.0.0",
     "gulp-bump": "3.1.1",
     "gulp-git": "2.8.0",
