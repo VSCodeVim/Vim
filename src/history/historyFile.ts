@@ -55,7 +55,7 @@ export class HistoryFile {
     try {
       fs.unlinkSync(this._historyFilePath);
     } catch (err) {
-      logger.warn(`Unable to delete ${this._historyFilePath}. err=${err}.`);
+      logger.warn(`historyFile: Unable to delete ${this._historyFilePath}. err=${err}.`);
     }
   }
 
@@ -65,7 +65,7 @@ export class HistoryFile {
         await util.promisify(mkdirp)(this._historyDir, 0o775);
       }
     } catch (err) {
-      logger.error(`Failed to create directory. path=${this._historyDir}. err=${err}.`);
+      logger.error(`historyFile: Failed to create directory. path=${this._historyDir}. err=${err}.`);
       throw err;
     }
 
@@ -76,7 +76,7 @@ export class HistoryFile {
         'utf-8'
       );
     } catch (err) {
-      logger.error(`Failed to save history. path=${this._historyDir}. err=${err}.`);
+      logger.error(`historyFile: Failed to save history. path=${this._historyDir}. err=${err}.`);
       throw err;
     }
   }
@@ -88,9 +88,9 @@ export class HistoryFile {
       data = await util.promisify(fs.readFile)(this._historyFilePath, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
-        logger.debug(`History does not exist. path=${this._historyDir}`);
+        logger.debug(`historyFile: History does not exist. path=${this._historyDir}`);
       } else {
-        logger.error(`Failed to load history. path=${this._historyDir} err=${err}.`);
+        logger.warn(`historyFile: Failed to load history. path=${this._historyDir} err=${err}.`);
         return;
       }
     }
@@ -106,7 +106,7 @@ export class HistoryFile {
       }
       this._history = parsedData;
     } catch (e) {
-      logger.error(`Deleting corrupted history file. path=${this._historyDir} err=${e}.`);
+      logger.warn(`historyFile: Deleting corrupted history file. path=${this._historyDir} err=${e}.`);
       this.clear();
     }
   }
