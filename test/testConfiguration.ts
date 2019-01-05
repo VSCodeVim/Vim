@@ -52,8 +52,9 @@ export class Configuration implements IConfiguration {
     replace: '#D08770',
   };
   debug: {
-    showErrorMessages: false;
-    loggingLevel: 'warn';
+    silent: false;
+    loggingLevelForAlert: 'error';
+    loggingLevelForConsole: 'debug';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   tabstop = 2;

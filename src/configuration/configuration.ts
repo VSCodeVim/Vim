@@ -245,8 +245,9 @@ class Configuration implements IConfiguration {
   };
 
   debug: IDebugConfiguration = {
-    showErrorMessages: true,
-    loggingLevel: 'error',
+    silent: false,
+    loggingLevelForAlert: 'error',
+    loggingLevelForConsole: 'error',
   };
 
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';

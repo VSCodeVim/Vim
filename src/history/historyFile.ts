@@ -65,7 +65,9 @@ export class HistoryFile {
         await util.promisify(mkdirp)(this._historyDir, 0o775);
       }
     } catch (err) {
-      logger.error(`historyFile: Failed to create directory. path=${this._historyDir}. err=${err}.`);
+      logger.error(
+        `historyFile: Failed to create directory. path=${this._historyDir}. err=${err}.`
+      );
       throw err;
     }
 
@@ -106,7 +108,9 @@ export class HistoryFile {
       }
       this._history = parsedData;
     } catch (e) {
-      logger.warn(`historyFile: Deleting corrupted history file. path=${this._historyDir} err=${e}.`);
+      logger.warn(
+        `historyFile: Deleting corrupted history file. path=${this._historyDir} err=${e}.`
+      );
       this.clear();
     }
   }

@@ -28,6 +28,7 @@ export class Neovim implements vscode.Disposable {
     await this.nvim.command('let v:errmsg="" | let v:statusmsg=""');
 
     // Execute the command
+    logger.debug(`Neovim: Running ${command}.`);
     await this.nvim.input(command);
     if ((await this.nvim.getMode()).blocking) {
       await this.nvim.input('<esc>');
@@ -53,6 +54,7 @@ export class Neovim implements vscode.Disposable {
   }
 
   private async startNeovim() {
+    logger.debug('Neovim: Spawning Neovim process...');
     let dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
