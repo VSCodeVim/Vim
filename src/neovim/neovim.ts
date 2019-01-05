@@ -4,16 +4,16 @@ import { Position } from './../common/motion/position';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
 import { VimState } from './../state/vimState';
-import { attach, Nvim } from 'promised-neovim-client';
 import { configuration } from '../configuration/configuration';
 import { dirname } from 'path';
 import { exists } from 'fs';
 import { logger } from '../util/logger';
 import { spawn, ChildProcess } from 'child_process';
+import { attach, Neovim } from 'neovim';
 
-export class Neovim implements vscode.Disposable {
+export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;
-  private nvim: Nvim;
+  private nvim: Neovim;
 
   async run(vimState: VimState, command: string) {
     if (!this.nvim) {
@@ -30,7 +30,8 @@ export class Neovim implements vscode.Disposable {
     // Execute the command
     logger.debug(`Neovim: Running ${command}.`);
     await this.nvim.input(command);
-    if ((await this.nvim.getMode()).blocking) {
+    const mode = await this.nvim.mode;
+    if (mode.blocking) {
       await this.nvim.input('<esc>');
     }
 
@@ -62,22 +63,28 @@ export class Neovim implements vscode.Disposable {
     this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-i', 'NONE', '-N', '--embed'], {
       cwd: dir,
     });
+
     this.process.on('error', err => {
       logger.error(`Neovim: Error spawning neovim. Error=${err.message}.`);
       configuration.enableNeovim = false;
     });
-    return attach(this.process.stdin, this.process.stdout);
+    return attach({ proc: this.process });
   }
 
   // Data flows from VS to Vim
   private async syncVSToVim(vimState: VimState) {
-    const buf = await this.nvim.getCurrentBuf();
+    const buf = await this.nvim.buffer;
     if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToTabs');
     }
 
     await this.nvim.setOption('gdefault', configuration.substituteGlobalFlag === true);
-    await buf.setLines(0, -1, true, TextEditor.getText().split('\n'));
+    await buf.setLines(TextEditor.getText().split('\n'), {
+      start: 0,
+      end: -1,
+      strictIndexing: true,
+    });
+
     const [rangeStart, rangeEnd] = [
       Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
       Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition),
@@ -113,8 +120,8 @@ export class Neovim implements vscode.Disposable {
 
   // Data flows from Vim to VS
   private async syncVimToVs(vimState: VimState) {
-    const buf = await this.nvim.getCurrentBuf();
-    const lines = await buf.getLines(0, -1, false);
+    const buf = await this.nvim.buffer;
+    const lines = await buf.getLines({ start: 0, end: -1, strictIndexing: false });
 
     // one Windows, lines that went to nvim and back have a '\r' at the end,
     // which causes the issues exhibited in #1914

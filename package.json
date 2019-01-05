@@ -686,8 +686,7 @@
     "diff-match-patch": "1.0.4",
     "lodash": "4.17.11",
     "mkdirp": "0.5.1",
-    "neovim-client": "2.1.0",
-    "promised-neovim-client": "2.0.2",
+    "neovim": "4.2.1",
     "untildify": "3.0.3",
     "winston": "3.1.0",
     "winston-console-for-electron": "0.0.5"
