@@ -1,4 +1,41 @@
-# Change Log
+﻿# Change Log
+
+## [v1.0.0](https://github.com/vscodevim/vim/tree/v1.0.0) (2019-01-05)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v0.17.3...v1.0.0)
+
+The first commit to this project was a little over 3 years ago, and what a journey it's been. To celebrate the new year, we are pushing out v1.0.0 of VSCodeVim! In addition to this project reaching such an amazing milestone, in my personal life I'll soon be celebrating the birth of my first-born. With that in mind, over the last few weeks I've tried to close out as many issues as I could before my time is filled with diapers and bottles. Thanks to amazing team of maintainers, contributors, and users that have brought us to where we are today and where we'll go tomorrow.
+
+**Breaking Change:**
+
+- `vim.debug.loggingLevel` has been removed. In it's place we now have `vim.debug.loggingLevelForConsole`. For full details, see the [settings section of our README](https://github.com/VSCodeVim/Vim#vscodevim-settings).
+
+**Enhancements:**
+
+- feat: change debug configurations to loggingLevelForConsole, loggingLevelForAlert [\#3325](https://github.com/VSCodeVim/Vim/pull/3325) ([jpoon](https://github.com/jpoon))
+
+**Fixed Bugs:**
+
+- Status Bar Color did not changed with the mode [\#3316](https://github.com/VSCodeVim/Vim/issues/3316)
+- Error when remapping to commands with name starting with "extension." [\#3307](https://github.com/VSCodeVim/Vim/issues/3307)
+
+**Closed issues:**
+
+- gf: 'try to find it with the same extension'-code doesn't work [\#3309](https://github.com/VSCodeVim/Vim/issues/3309)
+- Extension causes high cpu load [\#3289](https://github.com/VSCodeVim/Vim/issues/3289)
+- The Vim plugin can not edit except i/a/s [\#3270](https://github.com/VSCodeVim/Vim/issues/3270)
+- Keyboard stops working with VSCode when indenting multiline \[MacOS Mojave\] [\#3206](https://github.com/VSCodeVim/Vim/issues/3206)
+- ctrl o shortcut not work sometimes [\#3074](https://github.com/VSCodeVim/Vim/issues/3074)
+
+**Merged pull requests:**
+
+- fix: closes \#3316 [\#3321](https://github.com/VSCodeVim/Vim/pull/3321) ([jpoon](https://github.com/jpoon))
+- fix: Actually fix \#3295. [\#3320](https://github.com/VSCodeVim/Vim/pull/3320) ([jpoon](https://github.com/jpoon))
+- refactor: disableExtension configuration should follow pattern of rest of configs [\#3318](https://github.com/VSCodeVim/Vim/pull/3318) ([jpoon](https://github.com/jpoon))
+- feat: show vim errors in vscode informational window [\#3315](https://github.com/VSCodeVim/Vim/pull/3315) ([jpoon](https://github.com/jpoon))
+- fix: log warning if remapped command does not exist. closes \#3307 [\#3314](https://github.com/VSCodeVim/Vim/pull/3314) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/sinon to v7.0.3 [\#3313](https://github.com/VSCodeVim/Vim/pull/3313) ([renovate-bot](https://github.com/renovate-bot))
+- v0.17.3 [\#3306](https://github.com/VSCodeVim/Vim/pull/3306) ([jpoon](https://github.com/jpoon))
 
 ## [v0.17.3](https://github.com/vscodevim/vim/tree/v0.17.3) (2018-12-30)
 
