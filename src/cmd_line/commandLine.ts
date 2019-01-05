@@ -1,7 +1,6 @@
 import * as parser from './parser';
 import * as vscode from 'vscode';
 import { CommandLineHistory } from '../history/historyFile';
-import { Message } from '../util/message';
 import { ModeName } from './../mode/mode';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode } from '../error';
@@ -75,7 +74,6 @@ class CommandLine {
         }
       } else {
         logger.error(`commandLine: Error executing cmd=${command}. err=${e}.`);
-        Message.ShowError(e.toString());
       }
     }
   }

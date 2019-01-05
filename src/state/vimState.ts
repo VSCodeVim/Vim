@@ -150,7 +150,7 @@ export class VimState implements vscode.Disposable {
 
   public set allCursors(value: Range[]) {
     for (const cursor of value) {
-      if (!cursor.start.isValid() || !cursor.stop.isValid()) {
+      if (!cursor.start.isValid(this.editor) || !cursor.stop.isValid(this.editor)) {
         logger.debug('VimState: invalid value for set cursor position. This is probably bad?');
       }
     }

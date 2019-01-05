@@ -1,6 +1,7 @@
-import { configuration } from '../../configuration/configuration';
-import { Message } from '../../util/message';
 import * as node from '../node';
+import * as vscode from 'vscode';
+import { configuration } from '../../configuration/configuration';
+import { VimError, ErrorCode } from '../../error';
 
 export enum SetOptionOperator {
   /*
@@ -98,9 +99,11 @@ export class SetOptionsCommand extends node.CommandBase {
       case SetOptionOperator.Info:
         let value = configuration[this._arguments.name];
         if (value === undefined) {
-          await Message.ShowError(`E518 Unknown option: ${this._arguments.name}`);
+          await vscode.window.showErrorMessage(
+            `${VimError.fromCode(ErrorCode.E518).toString()}. ${value}`
+          );
         } else {
-          await Message.ShowInfo(`${this._arguments.name}=${value}`);
+          await vscode.window.showInformationMessage(`${this._arguments.name}=${value}`);
         }
         break;
       default:
