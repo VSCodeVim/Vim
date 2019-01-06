@@ -43,8 +43,8 @@ export function ReportLinesYanked(numLinesYanked: number, vimState: VimState) {
         vimState.isRecordingMacro,
         true
       );
-    } else{
-      ReportClear(vimState);
     }
+  } else {
+    ReportClear(vimState);
   }
 }
