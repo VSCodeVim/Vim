@@ -19,7 +19,7 @@ export class NeovimWrapper implements vscode.Disposable {
     if (!this.nvim) {
       this.nvim = await this.startNeovim();
 
-      await this.nvim.uiAttach(999999999, 999999999, {
+      await this.nvim.uiAttach(80, 20, {
         ext_cmdline: false,
         ext_popupmenu: false,
         ext_tabline: false,
