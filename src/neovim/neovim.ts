@@ -18,6 +18,9 @@ export class NeovimWrapper implements vscode.Disposable {
   async run(vimState: VimState, command: string) {
     if (!this.nvim) {
       this.nvim = await this.startNeovim();
+      const apiInfo = await this.nvim.apiInfo;
+      const version = apiInfo[1].version;
+      logger.debug(`Neovim Version: ${version.major}.${version.minor}.${version.patch}`);
     }
 
     await this.syncVSToVim(vimState);
