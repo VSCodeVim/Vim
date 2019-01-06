@@ -3964,6 +3964,11 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const text = TextEditor.getLineAt(position).text;
 
+    // Make sure position within the text is possible and return if not
+    if (text.length <= position.character) {
+      return vimState;
+    }
+
     // Start looking to the right for the next word to increment, unless we're
     // already on a word to increment, in which case start at the beginning of
     // that word.
