@@ -400,7 +400,3 @@ function handleContentChangedFromDisk(document: vscode.TextDocument): void {
     modeHandler.vimState.historyTracker.clear();
   });
 }
-
-process.on('unhandledRejection', function(reason: any, p: any) {
-  logger.error(`Unhandled rejection. Promise ${p}. Reason: ${reason}.`);
-});
