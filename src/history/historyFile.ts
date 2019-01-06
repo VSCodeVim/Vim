@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as util from 'util';
+import { promisify } from 'util';
 import { configuration } from '../configuration/configuration';
 import { logger } from '../util/logger';
 import { getExtensionDirPath } from '../util/util';
@@ -11,13 +11,14 @@ export class HistoryFile {
   private _historyFileName: string;
   private _historyDir: string;
   private _history: string[] = [];
-  private get _historyFilePath(): string {
+
+  public get historyFilePath(): string {
     return path.join(this._historyDir, this._historyFileName);
   }
 
-  constructor(historyDir: string, historyFileName: string) {
-    this._historyDir = historyDir;
+  constructor(historyFileName: string, historyDir?: string) {
     this._historyFileName = historyFileName;
+    this._historyDir = historyDir ? historyDir : getExtensionDirPath();
   }
 
   public async add(value: string | undefined): Promise<void> {
@@ -39,7 +40,7 @@ export class HistoryFile {
       this._history = this._history.slice(this._history.length - configuration.history);
     }
 
-    await this.save();
+    return this.save();
   }
 
   public get(): string[] {
@@ -53,48 +54,25 @@ export class HistoryFile {
 
   public clear() {
     try {
-      fs.unlinkSync(this._historyFilePath);
+      this._history = [];
+      fs.unlinkSync(this.historyFilePath);
     } catch (err) {
-      logger.warn(`historyFile: Unable to delete ${this._historyFilePath}. err=${err}.`);
+      logger.warn(`historyFile: Unable to delete ${this.historyFilePath}. err=${err}.`);
     }
   }
 
-  public async save(): Promise<void> {
-    try {
-      if (!(await util.promisify(fs.exists)(this._historyDir))) {
-        await util.promisify(mkdirp)(this._historyDir, 0o775);
-      }
-    } catch (err) {
-      logger.error(
-        `historyFile: Failed to create directory. path=${this._historyDir}. err=${err}.`
-      );
-      throw err;
-    }
-
-    try {
-      await util.promisify(fs.writeFile)(
-        this._historyFilePath,
-        JSON.stringify(this._history),
-        'utf-8'
-      );
-    } catch (err) {
-      logger.error(`historyFile: Failed to save history. path=${this._historyDir}. err=${err}.`);
-      throw err;
-    }
-  }
-
-  public async load() {
+  public async load(): Promise<void> {
     let data = '';
 
     try {
-      data = await util.promisify(fs.readFile)(this._historyFilePath, 'utf-8');
+      data = await promisify(fs.readFile)(this.historyFilePath, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
         logger.debug(`historyFile: History does not exist. path=${this._historyDir}`);
       } else {
         logger.warn(`historyFile: Failed to load history. path=${this._historyDir} err=${err}.`);
-        return;
       }
+      return;
     }
 
     if (data.length === 0) {
@@ -114,16 +92,30 @@ export class HistoryFile {
       this.clear();
     }
   }
+
+  private async save(): Promise<void> {
+    try {
+      // create supplied directory. if directory already exists, do nothing.
+      await promisify(mkdirp)(this._historyDir, 0o775);
+      // create file
+      await promisify(fs.writeFile)(this.historyFilePath, JSON.stringify(this._history), 'utf-8');
+    } catch (err) {
+      logger.error(
+        `historyFile: Failed to save history. filepath=${this.historyFilePath}. err=${err}.`
+      );
+      throw err;
+    }
+  }
 }
 
 export class SearchHistory extends HistoryFile {
-  constructor() {
-    super(getExtensionDirPath(), '.search_history');
+  constructor(historyFileDir?: string) {
+    super('.search_history', historyFileDir);
   }
 }
 
 export class CommandLineHistory extends HistoryFile {
-  constructor() {
-    super(getExtensionDirPath(), '.cmdline_history');
+  constructor(historyFileDir?: string) {
+    super('.cmdline_history', historyFileDir);
   }
 }

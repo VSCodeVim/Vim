@@ -348,7 +348,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      logger.error(`ModeHandler: error handling key=${key}. err=${e}. stack=${e.stack}`);
+      logger.error(`ModeHandler: error handling key=${key}. err=${e}.`);
       throw e;
     }
 
