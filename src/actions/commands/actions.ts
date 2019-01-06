@@ -24,6 +24,7 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
+import { StatusBar } from '../../statusBar';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -1332,6 +1333,7 @@ export class PutCommand extends BaseCommand {
   ): Promise<VimState> {
     const register = await Register.get(vimState);
     const dest = after ? position : position.getRight();
+    const numLinesBeforePut = TextEditor.getLineCount();
 
     if (register.text instanceof RecordedState) {
       /**
@@ -1486,6 +1488,16 @@ export class PutCommand extends BaseCommand {
       diff: diff,
     });
 
+    const numNewlinesAfterPut = textToAdd.split('\n').length;
+    if (numNewlinesAfterPut > configuration.report) {
+      StatusBar.Set(
+        numNewlinesAfterPut + ' more lines',
+        vimState.currentMode,
+        vimState.isRecordingMacro,
+        true
+      );
+    }
+
     vimState.currentRegisterMode = register.registerMode;
     return vimState;
   }
@@ -1544,6 +1556,15 @@ export class PutCommand extends BaseCommand {
         diff: new PositionDiff(-numNewlines + 1, 0),
         cursorIndex: this.multicursorIndex,
       });
+
+      if (numNewlines > configuration.report) {
+        StatusBar.Set(
+          numNewlines + ' more lines',
+          vimState.currentMode,
+          vimState.isRecordingMacro,
+          true
+        );
+      }
     }
 
     return result;
@@ -2237,6 +2258,9 @@ class CommandUndo extends BaseCommand {
     }
 
     vimState.alteredHistory = true;
+
+    StatusBar.Set('', vimState.currentMode, vimState.isRecordingMacro, true);
+
     return vimState;
   }
 }

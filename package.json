@@ -670,6 +670,11 @@
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
           "default": ""
+        },
+        "vim.report": {
+          "type": "number",
+          "description": "Threshold for reporting number of lines changed.",
+          "default": 2
         }
       }
     }

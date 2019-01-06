@@ -87,4 +87,5 @@ export class Configuration implements IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   whichwrap = '';
   wrapKeys = {};
+  report = 2;
 }

@@ -10,6 +10,7 @@ import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
+import { StatusBar } from '../statusBar';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -215,6 +216,17 @@ export class DeleteOperator extends BaseOperator {
     if (vimState.currentMode === ModeName.Visual) {
       vimState.desiredColumn = newPos.character;
     }
+
+    const numLinesDeleted = Math.abs(start.line - end.line) + 1;
+    if (numLinesDeleted > configuration.report) {
+      StatusBar.Set(
+        numLinesDeleted + ' fewer lines',
+        vimState.currentMode,
+        vimState.isRecordingMacro,
+        true
+      );
+    }
+
     return vimState;
   }
 }
@@ -292,6 +304,16 @@ export class YankOperator extends BaseOperator {
       );
     } else {
       vimState.cursorPosition = start;
+    }
+
+    const numLinesYanked = text.split('\n').length;
+    if (numLinesYanked > configuration.report) {
+      StatusBar.Set(
+        numLinesYanked + ' lines yanked',
+        vimState.currentMode,
+        vimState.isRecordingMacro,
+        true
+      );
     }
 
     return vimState;
@@ -648,6 +670,17 @@ export class YankVisualBlockMode extends BaseOperator {
 
     await vimState.setCurrentMode(ModeName.Normal);
     vimState.cursorPosition = start;
+
+    const numLinesYanked = toCopy.split('\n').length;
+    if (numLinesYanked > configuration.report) {
+      StatusBar.Set(
+        'block of ' + numLinesYanked + ' lines yanked',
+        vimState.currentMode,
+        vimState.isRecordingMacro,
+        true
+      );
+    }
+
     return vimState;
   }
 }

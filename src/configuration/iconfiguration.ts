@@ -258,4 +258,9 @@ export interface IConfiguration {
   whichwrap: string;
 
   cursorStylePerMode: IModeSpecificStrings<string>;
+
+  /**
+   * Threshold to report changed lines to status bar
+   */
+  report: number;
 }
