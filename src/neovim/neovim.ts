@@ -18,6 +18,15 @@ export class NeovimWrapper implements vscode.Disposable {
   async run(vimState: VimState, command: string) {
     if (!this.nvim) {
       this.nvim = await this.startNeovim();
+
+      await this.nvim.uiAttach(999999999, 999999999, {
+        ext_cmdline: false,
+        ext_popupmenu: false,
+        ext_tabline: false,
+        ext_wildmenu: false,
+        rgb: false,
+      });
+
       const apiInfo = await this.nvim.apiInfo;
       const version = apiInfo[1].version;
       logger.debug(`Neovim Version: ${version.major}.${version.minor}.${version.patch}`);
@@ -63,7 +72,7 @@ export class NeovimWrapper implements vscode.Disposable {
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
     }
-    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-n', '--embed', '--headless'], {
+    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-n', '--embed'], {
       cwd: dir,
     });
 
