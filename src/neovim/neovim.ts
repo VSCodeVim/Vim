@@ -63,7 +63,7 @@ export class NeovimWrapper implements vscode.Disposable {
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
     }
-    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-i', 'NONE', '-N', '--embed'], {
+    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-n', '--embed', '--headless'], {
       cwd: dir,
     });
 
