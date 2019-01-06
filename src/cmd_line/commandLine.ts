@@ -47,6 +47,11 @@ class CommandLine {
       command = command.slice(1);
     }
 
+    if (command === 'help') {
+      StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
+      return;
+    }
+
     this._history.add(command);
     this._commandLineHistoryIndex = this._history.get().length;
 
