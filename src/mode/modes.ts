@@ -66,9 +66,7 @@ export class SearchInProgressMode extends Mode {
 
   getStatusBarText(vimState: VimState): string {
     if (vimState.globalState.searchState === undefined) {
-      logger.error(
-        `SearchInProgressMode.getStatusBarText: vimState.globalState.searchState is undefined.`
-      );
+      logger.warn(`SearchInProgressMode: vimState.globalState.searchState is undefined.`);
       return '';
     }
     const leadingChar =

@@ -23,10 +23,22 @@ export interface IAutoSwitchInputMethod {
 }
 export interface IDebugConfiguration {
   /**
-   * Maximum level of messages to log.
+   * Boolean indicating whether all logs should be suppressed
+   * This value overrides both `loggingLevelForAlert` and `loggingLevelForConsole`
+   */
+  silent: boolean;
+
+  /**
+   * Maximum level of messages to show as VS Code information message
    * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
-  loggingLevel: string;
+  loggingLevelForAlert: string;
+
+  /**
+   * Maximum level of messages to log to console.
+   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
+   */
+  loggingLevelForConsole: string;
 }
 
 export interface IConfiguration {
@@ -207,7 +219,12 @@ export interface IConfiguration {
    */
   foldfix: boolean;
 
-  disableExt: boolean;
+  /**
+   * "Soft"-disabling of extension.
+   * Differs from VS Code's disablng of the extension as the extension
+   * will still be loaded and activated, but all functionality will be disabled.
+   */
+  disableExtension: boolean;
 
   /**
    * Neovim

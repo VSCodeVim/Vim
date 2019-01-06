@@ -11,7 +11,7 @@ import { RegisterMode } from './../register/register';
 import { GlobalState } from './../state/globalState';
 import { ReplaceState } from './../state/replaceState';
 import { RecordedState } from './recordedState';
-import { Neovim } from '../neovim/neovim';
+import { NeovimWrapper } from '../neovim/neovim';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
 import { logger } from '../util/logger';
 
@@ -150,7 +150,7 @@ export class VimState implements vscode.Disposable {
 
   public set allCursors(value: Range[]) {
     for (const cursor of value) {
-      if (!cursor.start.isValid() || !cursor.stop.isValid()) {
+      if (!cursor.start.isValid(this.editor) || !cursor.stop.isValid(this.editor)) {
         logger.debug('VimState: invalid value for set cursor position. This is probably bad?');
       }
     }
@@ -228,7 +228,7 @@ export class VimState implements vscode.Disposable {
    */
   public prevSelection: vscode.Selection;
 
-  public nvim: Neovim;
+  public nvim: NeovimWrapper;
 
   private _inputMethodSwitcher: InputMethodSwitcher;
 
@@ -239,7 +239,7 @@ export class VimState implements vscode.Disposable {
     this.easyMotion = new EasyMotion();
 
     if (enableNeovim) {
-      this.nvim = new Neovim();
+      this.nvim = new NeovimWrapper();
     }
 
     this._inputMethodSwitcher = new InputMethodSwitcher();

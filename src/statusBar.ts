@@ -75,7 +75,7 @@ class StatusBarImpl implements vscode.Disposable {
     const workbenchConfiguration = vscode.workspace.getConfiguration('workbench');
     const currentColorCustomizations = workbenchConfiguration.get('colorCustomizations');
 
-    const colorCustomizations = Object.assign(currentColorCustomizations || {}, {
+    const colorCustomizations = Object.assign({}, currentColorCustomizations || {}, {
       'statusBar.background': `${background}`,
       'statusBar.noFolderBackground': `${background}`,
       'statusBar.debuggingBackground': `${background}`,

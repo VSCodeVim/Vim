@@ -1,12 +1,11 @@
 import * as fs from 'fs';
+import * as node from '../node';
 import * as path from 'path';
 import * as util from 'util';
 import * as vscode from 'vscode';
-
-import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
-import { Message } from '../../util/message';
-import * as node from '../node';
+import { VimState } from '../../state/vimState';
+import { logger } from '../../util/logger';
 
 export interface IWriteCommandArguments extends node.ICommandArgs {
   opt?: string;
@@ -37,16 +36,16 @@ export class WriteCommand extends node.CommandBase {
 
   async execute(vimState: VimState): Promise<void> {
     if (this.arguments.opt) {
-      Message.ShowError('Not implemented.');
+      logger.warn('write: not implemented');
       return;
     } else if (this.arguments.file) {
-      Message.ShowError('Not implemented.');
+      logger.warn('write: not implemented');
       return;
     } else if (this.arguments.append) {
-      Message.ShowError('Not implemented.');
+      logger.warn('write: not implemented');
       return;
     } else if (this.arguments.cmd) {
-      Message.ShowError('Not implemented.');
+      logger.warn('write: not implemented');
       return;
     }
 

@@ -30,9 +30,7 @@ export async function getCursorsAfterSync(timeoutInMilliseconds: number = 0): Pr
   try {
     await waitForCursorSync(timeoutInMilliseconds, true);
   } catch (e) {
-    logger.warn(
-      `getCursorsAfterSync: selection not updated within ${timeoutInMilliseconds}ms. error=${e}.`
-    );
+    logger.warn(`getCursorsAfterSync: selection not updated within ${timeoutInMilliseconds}ms.`);
   }
 
   return vscode.window.activeTextEditor!.selections.map(
