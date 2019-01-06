@@ -654,11 +654,11 @@ export class YankVisualBlockMode extends BaseOperator {
 
     Register.put(toCopy, vimState, this.multicursorIndex);
 
-    await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorPosition = start;
-
     const numLinesYanked = toCopy.split('\n').length;
     ReportLinesYanked(numLinesYanked, vimState);
+
+    await vimState.setCurrentMode(ModeName.Normal);
+    vimState.cursorPosition = start;
 
     return vimState;
   }
