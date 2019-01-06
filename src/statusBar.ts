@@ -54,8 +54,9 @@ class StatusBarImpl implements vscode.Disposable {
   public ReportLinesChanged(numLinesChanged: number, mode: ModeName) {
     if (numLinesChanged > configuration.report) {
       StatusBar.Set(numLinesChanged + ' more lines', mode, this._wasRecordingMacro, true);
-    } else if (-numLinesChanged > configuration.report)
+    } else if (-numLinesChanged > configuration.report) {
       StatusBar.Set(numLinesChanged + ' fewer lines', mode, this._wasRecordingMacro, true);
+    }
   }
 
   public ReportLinesYanked(numLinesYanked: number, mode: ModeName) {
