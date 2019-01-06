@@ -22,6 +22,8 @@ export function ReportLinesChanged(numLinesChanged: number, vimState: VimState) 
       vimState.isRecordingMacro,
       true
     );
+  } else {
+    ReportClear(vimState);
   }
 }
 
@@ -41,6 +43,8 @@ export function ReportLinesYanked(numLinesYanked: number, vimState: VimState) {
         vimState.isRecordingMacro,
         true
       );
+    } else{
+      ReportClear(vimState);
     }
   }
 }
