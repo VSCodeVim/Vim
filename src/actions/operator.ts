@@ -218,14 +218,7 @@ export class DeleteOperator extends BaseOperator {
     }
 
     const numLinesDeleted = Math.abs(start.line - end.line) + 1;
-    if (numLinesDeleted > configuration.report) {
-      StatusBar.Set(
-        numLinesDeleted + ' fewer lines',
-        vimState.currentMode,
-        vimState.isRecordingMacro,
-        true
-      );
-    }
+    StatusBar.ReportLinesChanged(-numLinesDeleted, vimState.currentMode);
 
     return vimState;
   }
@@ -307,14 +300,7 @@ export class YankOperator extends BaseOperator {
     }
 
     const numLinesYanked = text.split('\n').length;
-    if (numLinesYanked > configuration.report) {
-      StatusBar.Set(
-        numLinesYanked + ' lines yanked',
-        vimState.currentMode,
-        vimState.isRecordingMacro,
-        true
-      );
-    }
+    StatusBar.ReportLinesYanked(numLinesYanked, vimState.currentMode);
 
     return vimState;
   }
@@ -672,14 +658,7 @@ export class YankVisualBlockMode extends BaseOperator {
     vimState.cursorPosition = start;
 
     const numLinesYanked = toCopy.split('\n').length;
-    if (numLinesYanked > configuration.report) {
-      StatusBar.Set(
-        'block of ' + numLinesYanked + ' lines yanked',
-        vimState.currentMode,
-        vimState.isRecordingMacro,
-        true
-      );
-    }
+    StatusBar.ReportLinesYanked(numLinesYanked, vimState.currentMode);
 
     return vimState;
   }

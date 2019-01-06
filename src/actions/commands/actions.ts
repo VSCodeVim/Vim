@@ -1489,14 +1489,7 @@ export class PutCommand extends BaseCommand {
     });
 
     const numNewlinesAfterPut = textToAdd.split('\n').length;
-    if (numNewlinesAfterPut > configuration.report) {
-      StatusBar.Set(
-        numNewlinesAfterPut + ' more lines',
-        vimState.currentMode,
-        vimState.isRecordingMacro,
-        true
-      );
-    }
+    StatusBar.ReportLinesChanged(numNewlinesAfterPut, vimState.currentMode);
 
     vimState.currentRegisterMode = register.registerMode;
     return vimState;
@@ -1557,14 +1550,7 @@ export class PutCommand extends BaseCommand {
         cursorIndex: this.multicursorIndex,
       });
 
-      if (numNewlines > configuration.report) {
-        StatusBar.Set(
-          numNewlines + ' more lines',
-          vimState.currentMode,
-          vimState.isRecordingMacro,
-          true
-        );
-      }
+      StatusBar.ReportLinesChanged(numNewlines, vimState.currentMode);
     }
 
     return result;

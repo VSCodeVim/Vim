@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ModeName } from './mode/mode';
+import { ModeName, Mode } from './mode/mode';
 import { configuration } from './configuration/configuration';
 
 class StatusBarImpl implements vscode.Disposable {
@@ -49,6 +49,28 @@ class StatusBarImpl implements vscode.Disposable {
 
     this._previousModeName = mode;
     this._wasRecordingMacro = isRecordingMacro;
+  }
+
+  public ReportLinesChanged(numLinesChanged: number, mode: ModeName) {
+    if (numLinesChanged > configuration.report) {
+      StatusBar.Set(numLinesChanged + ' more lines', mode, this._wasRecordingMacro, true);
+    } else if (-numLinesChanged > configuration.report)
+      StatusBar.Set(numLinesChanged + ' fewer lines', mode, this._wasRecordingMacro, true);
+  }
+
+  public ReportLinesYanked(numLinesYanked: number, mode: ModeName) {
+    if (numLinesYanked > configuration.report) {
+      if (mode === ModeName.VisualBlock) {
+        StatusBar.Set(
+          'block of ' + numLinesYanked + ' lines yanked',
+          mode,
+          this._wasRecordingMacro,
+          true
+        );
+      } else {
+        StatusBar.Set(numLinesYanked + ' lines yanked', mode, this._wasRecordingMacro, true);
+      }
+    }
   }
 
   dispose() {
