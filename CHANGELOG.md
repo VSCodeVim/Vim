@@ -1,16 +1,43 @@
-﻿# Change Log
+# Change Log
+
+## [v1.0.1](https://github.com/vscodevim/vim/tree/v1.0.1) (2019-01-06)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.0...v1.0.1)
+
+**Enhancements:**
+
+- bug: fix neovim start-up flags [\#3290](https://github.com/VSCodeVim/Vim/issues/3290)
+
+**Fixed Bugs:**
+
+- Occurs when I save and quit. [\#3331](https://github.com/VSCodeVim/Vim/issues/3331)
+- historyFile: Failed to create directory. path=/home/user/.cache/VSCodeVim. err=true. [\#3330](https://github.com/VSCodeVim/Vim/issues/3330)
+
+**Closed issues:**
+
+- Unhandled rejection when using quokka.js extension [\#3333](https://github.com/VSCodeVim/Vim/issues/3333)
+- Unhandled rejection. Promise \[object Promise\]. Reason: Failed to execute git [\#3329](https://github.com/VSCodeVim/Vim/issues/3329)
+- Unhandled rejection. Promise \[object Promise\]. Reason: TypeError: Cannot read property 'trim' of undefined. [\#3328](https://github.com/VSCodeVim/Vim/issues/3328)
+- Replacing with Neovim 0.3.2 enabled fails and require a VSCode restart [\#3323](https://github.com/VSCodeVim/Vim/issues/3323)
+
+**Merged pull requests:**
+
+- fix: dont update cursors if editor has been close. closes \#3331 [\#3338](https://github.com/VSCodeVim/Vim/pull/3338) ([jpoon](https://github.com/jpoon))
+- fix: defer to mkdirp for checking if directory exists [\#3337](https://github.com/VSCodeVim/Vim/pull/3337) ([jpoon](https://github.com/jpoon))
+- fix: stop logging for unresolved promise for the process. [\#3336](https://github.com/VSCodeVim/Vim/pull/3336) ([jpoon](https://github.com/jpoon))
+- Update to new neovim node library [\#3334](https://github.com/VSCodeVim/Vim/pull/3334) ([xconverge](https://github.com/xconverge))
+- v0.17.3-\>v1.0.0 [\#3327](https://github.com/VSCodeVim/Vim/pull/3327) ([jpoon](https://github.com/jpoon))
 
 ## [v1.0.0](https://github.com/vscodevim/vim/tree/v1.0.0) (2019-01-05)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v0.17.3...v1.0.0)
 
-The first commit to this project was a little over 3 years ago, and what a journey it's been. To celebrate the new year, we are pushing out v1.0.0 of VSCodeVim! In addition to this project reaching such an amazing milestone, in my personal life I'll soon be celebrating the birth of my first-born. With that in mind, over the last few weeks I've tried to close out as many issues as I could before my time is filled with diapers and bottles. Thanks to amazing team of maintainers, contributors, and users that have brought us to where we are today and where we'll go tomorrow.
+The first commit to this project was a little over 3 years ago, and what a journey it's been. To celebrate the new year, we are pushing out v1.0.0 of VSCodeVim! In addition to this project reaching such an amazing milestone, but in my personal life, I'll soon be celebrating the birth of my first-born. With that in mind, over the last few weeks I've tried to close out as many issues as I could before all my spare time is filled with diapers and bottles. Thanks to amazing team of maintainers, contributors, and users that have brought us to where we are today and where we'll go tomorrow.
 
 **Breaking Change:**
 
 - `vim.debug.loggingLevel` has been removed. In it's place we now have `vim.debug.loggingLevelForConsole`. For full details, see the [settings section of our README](https://github.com/VSCodeVim/Vim#vscodevim-settings).
-
-**Enhancements:**
+  **Enhancements:**
 
 - feat: change debug configurations to loggingLevelForConsole, loggingLevelForAlert [\#3325](https://github.com/VSCodeVim/Vim/pull/3325) ([jpoon](https://github.com/jpoon))
 
