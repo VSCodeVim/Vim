@@ -7,7 +7,8 @@ The first commit to this project was a little over 3 years ago, and what a journ
 **Breaking Change:**
 
 - `vim.debug.loggingLevel` has been removed. In it's place we now have `vim.debug.loggingLevelForConsole`. For full details, see the [settings section of our README](https://github.com/VSCodeVim/Vim#vscodevim-settings).
-  **Enhancements:**
+
+**Enhancements:**
 
 - feat: change debug configurations to loggingLevelForConsole, loggingLevelForAlert [\#3325](https://github.com/VSCodeVim/Vim/pull/3325) ([jpoon](https://github.com/jpoon))
 
