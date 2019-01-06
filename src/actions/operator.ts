@@ -10,7 +10,7 @@ import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
-import { StatusBar } from '../statusBar';
+import { ReportLinesChanged, ReportLinesYanked } from '../util/statusBarTextUtils';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -218,7 +218,7 @@ export class DeleteOperator extends BaseOperator {
     }
 
     const numLinesDeleted = Math.abs(start.line - end.line) + 1;
-    StatusBar.ReportLinesChanged(-numLinesDeleted, vimState.currentMode);
+    ReportLinesChanged(-numLinesDeleted, vimState);
 
     return vimState;
   }
@@ -300,7 +300,7 @@ export class YankOperator extends BaseOperator {
     }
 
     const numLinesYanked = text.split('\n').length;
-    StatusBar.ReportLinesYanked(numLinesYanked, vimState.currentMode);
+    ReportLinesYanked(numLinesYanked, vimState);
 
     return vimState;
   }
@@ -658,7 +658,7 @@ export class YankVisualBlockMode extends BaseOperator {
     vimState.cursorPosition = start;
 
     const numLinesYanked = toCopy.split('\n').length;
-    StatusBar.ReportLinesYanked(numLinesYanked, vimState.currentMode);
+    ReportLinesYanked(numLinesYanked, vimState);
 
     return vimState;
   }

@@ -24,7 +24,7 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
-import { StatusBar } from '../../statusBar';
+import { ReportLinesChanged, ReportClear } from '../../util/statusBarTextUtils';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -1489,7 +1489,7 @@ export class PutCommand extends BaseCommand {
     });
 
     const numNewlinesAfterPut = textToAdd.split('\n').length;
-    StatusBar.ReportLinesChanged(numNewlinesAfterPut, vimState.currentMode);
+    ReportLinesChanged(numNewlinesAfterPut, vimState);
 
     vimState.currentRegisterMode = register.registerMode;
     return vimState;
@@ -1550,7 +1550,7 @@ export class PutCommand extends BaseCommand {
         cursorIndex: this.multicursorIndex,
       });
 
-      StatusBar.ReportLinesChanged(numNewlines, vimState.currentMode);
+      ReportLinesChanged(numNewlines, vimState);
     }
 
     return result;
@@ -2245,7 +2245,7 @@ class CommandUndo extends BaseCommand {
 
     vimState.alteredHistory = true;
 
-    StatusBar.Set('', vimState.currentMode, vimState.isRecordingMacro, true);
+    ReportClear(vimState);
 
     return vimState;
   }
