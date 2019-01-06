@@ -11,7 +11,7 @@ import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
 
-function rndName() {
+export function rndName(): string {
   return Math.random()
     .toString(36)
     .replace(/[^a-z]+/g, '')
