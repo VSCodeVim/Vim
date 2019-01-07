@@ -24,6 +24,7 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
+import { ReportLinesChanged, ReportClear } from '../../util/statusBarTextUtils';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -1486,6 +1487,9 @@ export class PutCommand extends BaseCommand {
       diff: diff,
     });
 
+    const numNewlinesAfterPut = textToAdd.split('\n').length;
+    ReportLinesChanged(numNewlinesAfterPut, vimState);
+
     vimState.currentRegisterMode = register.registerMode;
     return vimState;
   }
@@ -1544,6 +1548,8 @@ export class PutCommand extends BaseCommand {
         diff: new PositionDiff(-numNewlines + 1, 0),
         cursorIndex: this.multicursorIndex,
       });
+
+      ReportLinesChanged(numNewlines, vimState);
     }
 
     return result;
@@ -2237,6 +2243,9 @@ class CommandUndo extends BaseCommand {
     }
 
     vimState.alteredHistory = true;
+
+    ReportClear(vimState);
+
     return vimState;
   }
 }
