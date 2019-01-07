@@ -17,7 +17,7 @@ export function ReportLinesChanged(numLinesChanged: number, vimState: VimState) 
     );
   } else if (-numLinesChanged > configuration.report) {
     StatusBar.Set(
-      numLinesChanged + ' fewer lines',
+      Math.abs(numLinesChanged) + ' fewer lines',
       vimState.currentMode,
       vimState.isRecordingMacro,
       true
