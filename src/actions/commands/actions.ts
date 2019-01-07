@@ -1333,7 +1333,6 @@ export class PutCommand extends BaseCommand {
   ): Promise<VimState> {
     const register = await Register.get(vimState);
     const dest = after ? position : position.getRight();
-    const numLinesBeforePut = TextEditor.getLineCount();
 
     if (register.text instanceof RecordedState) {
       /**

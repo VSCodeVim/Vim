@@ -659,7 +659,6 @@ export class YankVisualBlockMode extends BaseOperator {
 
     await vimState.setCurrentMode(ModeName.Normal);
     vimState.cursorPosition = start;
-
     return vimState;
   }
 }
