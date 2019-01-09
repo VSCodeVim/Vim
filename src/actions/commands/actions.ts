@@ -683,9 +683,18 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
         ) >= 0,
     });
 
-    let newFirstLine = editor.visibleRanges[0].start.line;
+    const newFirstLine = editor.visibleRanges[0].start.line;
     let newPosition = new Position(newFirstLine + lineOffset, startColumn);
-    vimState.cursorPosition = newPosition;
+
+    const maxLineValue = TextEditor.getLineCount() - 1;
+    if (newPosition.line > maxLineValue) {
+      newPosition = new Position(0, 0).getDocumentEnd();
+    }
+
+    if (newPosition.isValid()) {
+      vimState.cursorPosition = newPosition;
+    }
+
     return vimState;
   }
 }
