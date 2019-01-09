@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.17.3",
+  "version": "1.0.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -341,18 +341,28 @@
       "title": "Vim Configuration",
       "type": "object",
       "properties": {
-        "vim.debug.loggingLevel": {
+        "vim.debug.silent": {
+          "type": "boolean",
+          "description": "If true, all logs are suppressed.",
+          "default": false
+        },
+        "vim.debug.loggingLevelForAlert": {
           "type": "string",
-          "description": "Extension logging level",
+          "description": "Maximum level of messages to present as VS Code information window.",
+          "default": "error"
+        },
+        "vim.debug.loggingLevelForConsole": {
+          "type": "string",
+          "description": "Maximum level of messages to log to console. Logs are visible in developer tools.",
           "default": "error"
         },
         "vim.normalModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive remapped keys in normal mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.useCtrlKeys": {
           "type": "boolean",
@@ -381,19 +391,19 @@
         },
         "vim.insertModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in insert mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.insertModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive keybinding overrides to use for insert mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.visualModeKeyBindings": {
           "type": "array",
-          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Remapped keys in visual mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.visualModeKeyBindingsNonRecursive": {
           "type": "array",
-          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for more."
+          "description": "Non-recursive keybinding overrides to use for visual mode. Allows mapping to vim commands or vscode actions. See README for details."
         },
         "vim.textwidth": {
           "type": "number",
@@ -594,7 +604,7 @@
         },
         "vim.disableExtension": {
           "type": "boolean",
-          "description": "Disables the VSCodeVim extension.",
+          "description": "Disables the VSCodeVim extension. Extension will continue to be loaded and activated, but VIM functionality will be disabled.",
           "default": false
         },
         "vim.enableNeovim": {
@@ -660,6 +670,11 @@
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
           "default": ""
+        },
+        "vim.report": {
+          "type": "number",
+          "description": "Threshold for reporting number of lines changed.",
+          "default": 2
         }
       }
     }
@@ -676,11 +691,10 @@
     "diff-match-patch": "1.0.4",
     "lodash": "4.17.11",
     "mkdirp": "0.5.1",
-    "neovim-client": "2.1.0",
-    "promised-neovim-client": "2.0.2",
+    "neovim": "4.2.1",
     "untildify": "3.0.3",
     "winston": "3.1.0",
-    "winston-console-for-electron": "0.0.3"
+    "winston-console-for-electron": "0.0.5"
   },
   "devDependencies": {
     "@types/diff": "3.5.2",
@@ -688,7 +702,7 @@
     "@types/lodash": "4.14.119",
     "@types/mocha": "5.2.5",
     "@types/node": "9.6.41",
-    "@types/sinon": "7.0.2",
+    "@types/sinon": "7.0.3",
     "gulp": "4.0.0",
     "gulp-bump": "3.1.1",
     "gulp-git": "2.8.0",

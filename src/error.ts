@@ -12,6 +12,7 @@ export enum ErrorCode {
   E486 = 486,
   E488 = 488,
   E492 = 492,
+  E518 = 518,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -24,6 +25,7 @@ export const ErrorMessage: IErrorMessage = {
   486: 'Pattern not found',
   488: 'Trailing characters',
   492: 'Not an editor command',
+  518: 'Unknown option',
 };
 
 export class VimError extends Error {

@@ -734,18 +734,19 @@ export class Position extends vscode.Position {
     );
   }
 
-  public getDocumentEnd(): Position {
-    let lineCount = TextEditor.getLineCount();
+  public getDocumentEnd(textEditor?: vscode.TextEditor): Position {
+    textEditor = textEditor || vscode.window.activeTextEditor;
+    let lineCount = TextEditor.getLineCount(textEditor);
     let line = lineCount > 0 ? lineCount - 1 : 0;
     let char = Position.getLineLength(line);
 
     return new Position(line, char);
   }
 
-  public isValid(): boolean {
+  public isValid(textEditor?: vscode.TextEditor): boolean {
     try {
       // line
-      let lineCount = TextEditor.getLineCount() || 1;
+      let lineCount = TextEditor.getLineCount(textEditor) || 1;
       if (this.line >= lineCount) {
         return false;
       }

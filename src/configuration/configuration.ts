@@ -52,7 +52,7 @@ interface IKeyBinding {
  * 1. `:set {option}` on the fly
  * 2. `vim.{option}`
  * 3. VS Code configuration
- * 4. VSCodeVim flavored Vim option default values
+ * 4. VSCodeVim configuration default values
  *
  */
 class Configuration implements IConfiguration {
@@ -81,7 +81,7 @@ class Configuration implements IConfiguration {
       let val = vimConfigs[option] as any;
       if (val !== null && val !== undefined) {
         if (val.constructor.name === Object.name) {
-          val = this.unproxify(val);
+          val = Configuration.unproxify(val);
         }
         this[option] = val;
       }
@@ -166,23 +166,9 @@ class Configuration implements IConfiguration {
     VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
   }
 
-  unproxify(obj: Object): Object {
-    let result = {};
-    for (const key in obj) {
-      let val = obj[key] as any;
-      if (val !== null && val !== undefined) {
-        result[key] = val;
-      }
-    }
-    return result;
-  }
-
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    let resource: vscode.Uri | undefined = undefined;
     let activeTextEditor = vscode.window.activeTextEditor;
-    if (activeTextEditor) {
-      resource = activeTextEditor.document.uri;
-    }
+    let resource = activeTextEditor ? activeTextEditor.document.uri : undefined;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
@@ -259,7 +245,9 @@ class Configuration implements IConfiguration {
   };
 
   debug: IDebugConfiguration = {
-    loggingLevel: 'error',
+    silent: false,
+    loggingLevelForAlert: 'error',
+    loggingLevelForConsole: 'error',
   };
 
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
@@ -310,19 +298,7 @@ class Configuration implements IConfiguration {
 
   foldfix = false;
 
-  private disableExtension: boolean = false;
-
-  get disableExt(): boolean {
-    return this.disableExtension;
-  }
-  set disableExt(isDisabled: boolean) {
-    this.disableExtension = isDisabled;
-    this.getConfiguration('vim').update(
-      'disableExtension',
-      isDisabled,
-      vscode.ConfigurationTarget.Global
-    );
-  }
+  disableExtension: boolean = false;
 
   enableNeovim = false;
   neovimPath = 'nvim';
@@ -330,6 +306,8 @@ class Configuration implements IConfiguration {
   substituteGlobalFlag = false;
   whichwrap = '';
   wrapKeys = {};
+
+  report = 2;
 
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,
@@ -356,6 +334,17 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+
+  private static unproxify(obj: Object): Object {
+    let result = {};
+    for (const key in obj) {
+      let val = obj[key] as any;
+      if (val !== null && val !== undefined) {
+        result[key] = val;
+      }
+    }
+    return result;
+  }
 }
 
 // handle mapped settings between vscode to vim

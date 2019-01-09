@@ -1,8 +1,9 @@
 import * as lexer from './lexer';
 import * as node from './node';
-import { commandParsers } from './subparser';
 import * as token from './token';
 import { VimError, ErrorCode } from '../error';
+import { commandParsers } from './subparser';
+import { logger } from '../util/logger';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;
@@ -43,7 +44,7 @@ function parseLineRange(state: ParserState, commandLine: node.CommandLine): IPar
       // commandLine.command = new node.CommandLineCommand(tok.content, null);
       // continue;
       default:
-        console.warn('skipping token ' + 'Token(' + tok.type + ',{' + tok.content + '})');
+        logger.warn('Parser: skipping token ' + 'Token(' + tok.type + ',{' + tok.content + '})');
         return null;
     }
   }

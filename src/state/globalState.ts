@@ -1,10 +1,10 @@
 import { JumpTracker } from '../jumps/jumpTracker';
-import { RecordedState } from './../state/recordedState';
-import { SubstituteState } from './substituteState';
-import { SearchState, SearchDirection } from './searchState';
-import { SearchHistory } from '../history/historyFile';
-import { Position } from '../common/motion/position';
 import { ModeName } from '../mode/mode';
+import { Position } from '../common/motion/position';
+import { RecordedState } from './../state/recordedState';
+import { SearchHistory } from '../history/historyFile';
+import { SearchState, SearchDirection } from './searchState';
+import { SubstituteState } from './substituteState';
 
 /**
  * State which stores global state (across editors)
@@ -47,6 +47,11 @@ export class GlobalState {
   private static _jumpTracker: JumpTracker = new JumpTracker();
 
   /**
+   * Tracks search history
+   */
+  private static _searchHistory: SearchHistory | undefined;
+
+  /**
    * Getters and setters for changing global state
    */
   public get searchStatePrevious(): SearchState[] {
@@ -57,8 +62,7 @@ export class GlobalState {
     GlobalState._searchStatePrevious = GlobalState._searchStatePrevious.concat(states);
   }
 
-  private static _searchHistory: SearchHistory | undefined;
-  public async loadSearchHistory() {
+  public async load() {
     if (GlobalState._searchHistory === undefined) {
       GlobalState._searchHistory = new SearchHistory();
       await GlobalState._searchHistory.load();

@@ -1,7 +1,6 @@
 import * as parser from './parser';
 import * as vscode from 'vscode';
 import { CommandLineHistory } from '../history/historyFile';
-import { Message } from '../util/message';
 import { ModeName } from './../mode/mode';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode } from '../error';
@@ -35,7 +34,7 @@ class CommandLine {
     this._history = new CommandLineHistory();
   }
 
-  public load(): Promise<void> {
+  public async load(): Promise<void> {
     return this._history.load();
   }
 
@@ -48,6 +47,11 @@ class CommandLine {
       command = command.slice(1);
     }
 
+    if (command === 'help') {
+      StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
+      return;
+    }
+
     this._history.add(command);
     this._commandLineHistoryIndex = this._history.get().length;
 
@@ -56,7 +60,7 @@ class CommandLine {
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
 
       if (useNeovim) {
-        var statusBarText = await vimState.nvim.run(vimState, command);
+        const statusBarText = await vimState.nvim.run(vimState, command);
         StatusBar.Set(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true);
       } else {
         await cmd.execute(vimState.editor, vimState);
@@ -74,15 +78,14 @@ class CommandLine {
           );
         }
       } else {
-        logger.error(`commandLine : error executing cmd=${command}. err=${e}.`);
-        Message.ShowError(e.toString());
+        logger.error(`commandLine: Error executing cmd=${command}. err=${e}.`);
       }
     }
   }
 
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
-      logger.debug('commandLine : No active document');
+      logger.debug('commandLine: No active document');
       return;
     }
     let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
@@ -100,7 +103,7 @@ class CommandLine {
 
   public async ShowHistory(initialText: string, vimState: VimState): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
-      logger.debug('commandLine : No active document.');
+      logger.debug('commandLine: No active document.');
       return '';
     }
 

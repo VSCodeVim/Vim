@@ -5,10 +5,10 @@ import { IKeyRemapping } from './iconfiguration';
 import { ModeHandler } from '../mode/modeHandler';
 import { ModeName } from '../mode/mode';
 import { VimState } from './../state/vimState';
+import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { configurationValidator } from './configurationValidator';
 import { logger } from '../util/logger';
-import { commandLine } from '../cmd_line/commandLine';
 
 interface IRemapper {
   /**
@@ -85,7 +85,7 @@ export class Remapper implements IRemapper {
     logger.debug(
       `Remapper: find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}.`
     );
-    let remapping: IKeyRemapping | undefined = Remapper._findMatchingRemap(
+    let remapping: IKeyRemapping | undefined = Remapper.findMatchingRemap(
       userDefinedRemappings,
       keys,
       vimState.currentMode
@@ -102,68 +102,12 @@ export class Remapper implements IRemapper {
         vimState.isCurrentlyPerformingRemapping = true;
       }
 
-      const numCharsToRemove = remapping.before.length - 1;
-      // Revert previously inserted characters
-      // (e.g. jj remapped to esc, we have to revert the inserted "jj")
-      if (vimState.currentMode === ModeName.Insert) {
-        // Revert every single inserted character.
-        // We subtract 1 because we haven't actually applied the last key.
-        await vimState.historyTracker.undoAndRemoveChanges(
-          Math.max(0, numCharsToRemove * vimState.allCursors.length)
-        );
-        vimState.allCursors = vimState.allCursors.map(x =>
-          x.withNewStop(x.stop.getLeft(numCharsToRemove))
-        );
+      try {
+        await this.handleRemapping(remapping, vimState, modeHandler);
+      } finally {
+        vimState.isCurrentlyPerformingRemapping = false;
       }
 
-      // We need to remove the keys that were remapped into different keys
-      // from the state.
-      vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(
-        0,
-        -numCharsToRemove
-      );
-      vimState.keyHistory = vimState.keyHistory.slice(0, -numCharsToRemove);
-
-      if (remapping.after) {
-        const count = vimState.recordedState.count || 1;
-        vimState.recordedState.count = 0;
-
-        for (let i = 0; i < count; i++) {
-          await modeHandler.handleMultipleKeyEvents(remapping.after);
-        }
-      }
-
-      if (remapping.commands) {
-        for (const command of remapping.commands) {
-          // Check if this is a vim command by looking for :
-          let commandString: string;
-          let commandArgs: string[];
-
-          if (typeof command === 'string') {
-            commandString = command;
-            commandArgs = [];
-          } else {
-            commandString = command.command;
-            commandArgs = command.args;
-          }
-
-          if (commandString.slice(0, 1) === ':') {
-            await commandLine.Run(
-              commandString.slice(1, commandString.length),
-              modeHandler.vimState
-            );
-            await modeHandler.updateView(modeHandler.vimState);
-          } else {
-            if (commandArgs) {
-              await vscode.commands.executeCommand(commandString, commandArgs);
-            } else {
-              await vscode.commands.executeCommand(commandString);
-            }
-          }
-        }
-      }
-
-      vimState.isCurrentlyPerformingRemapping = false;
       return true;
     }
 
@@ -176,6 +120,64 @@ export class Remapper implements IRemapper {
     }
 
     return false;
+  }
+
+  private async handleRemapping(
+    remapping: IKeyRemapping,
+    vimState: VimState,
+    modeHandler: ModeHandler
+  ) {
+    const numCharsToRemove = remapping.before.length - 1;
+    // Revert previously inserted characters
+    // (e.g. jj remapped to esc, we have to revert the inserted "jj")
+    if (vimState.currentMode === ModeName.Insert) {
+      // Revert every single inserted character.
+      // We subtract 1 because we haven't actually applied the last key.
+      await vimState.historyTracker.undoAndRemoveChanges(
+        Math.max(0, numCharsToRemove * vimState.allCursors.length)
+      );
+      vimState.allCursors = vimState.allCursors.map(x =>
+        x.withNewStop(x.stop.getLeft(numCharsToRemove))
+      );
+    }
+    // We need to remove the keys that were remapped into different keys from the state.
+    vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(
+      0,
+      -numCharsToRemove
+    );
+    vimState.keyHistory = vimState.keyHistory.slice(0, -numCharsToRemove);
+
+    if (remapping.after) {
+      const count = vimState.recordedState.count || 1;
+      vimState.recordedState.count = 0;
+      for (let i = 0; i < count; i++) {
+        await modeHandler.handleMultipleKeyEvents(remapping.after);
+      }
+    }
+
+    if (remapping.commands) {
+      for (const command of remapping.commands) {
+        let commandString: string;
+        let commandArgs: string[];
+        if (typeof command === 'string') {
+          commandString = command;
+          commandArgs = [];
+        } else {
+          commandString = command.command;
+          commandArgs = command.args;
+        }
+
+        if (commandString.slice(0, 1) === ':') {
+          // Check if this is a vim command by looking for :
+          await commandLine.Run(commandString.slice(1, commandString.length), modeHandler.vimState);
+          await modeHandler.updateView(modeHandler.vimState);
+        } else if (commandArgs) {
+          await vscode.commands.executeCommand(commandString, commandArgs);
+        } else {
+          await vscode.commands.executeCommand(commandString);
+        }
+      }
+    }
   }
 
   private _getRemappings(): { [key: string]: IKeyRemapping } {
@@ -206,26 +208,16 @@ export class Remapper implements IRemapper {
           debugMsg += `command=${cmd}. args=${args}.`;
 
           if (!configurationValidator.isCommandValid(cmd)) {
+            debugMsg += ` Command does not exist.`;
             isCommandValid = false;
-            break;
           }
         }
       }
 
       if (!remapping.after && !remapping.commands) {
         logger.error(
-          `Remapper: ${
-            this._configKey
-          }. Invalid configuration. Missing 'after' key or 'command'. ${debugMsg}`
-        );
-        continue;
-      }
-
-      if (!isCommandValid) {
-        logger.error(
-          `Remapper: ${
-            this._configKey
-          }. Invalid configuration. Command does not exist. ${debugMsg}.`
+          `Remapper: ${this._configKey}.
+          Invalid configuration. Missing 'after' key or 'command'. ${debugMsg}`
         );
         continue;
       }
@@ -236,21 +228,22 @@ export class Remapper implements IRemapper {
         continue;
       }
 
-      logger.debug(`Remapper: ${this._configKey}. loaded: ${debugMsg}`);
+      let log = (msg: string) => (isCommandValid ? logger.debug(msg) : logger.warn(msg));
+      log(`Remapper: ${this._configKey}. ${debugMsg}`);
       remappings[keys] = remapping;
     }
 
     return remappings;
   }
 
-  protected static _findMatchingRemap(
+  protected static findMatchingRemap(
     userDefinedRemappings: { [key: string]: IKeyRemapping },
     inputtedKeys: string[],
     currentMode: ModeName
   ) {
     let remapping: IKeyRemapping | undefined;
 
-    let range = Remapper._getRemappedKeysLengthRange(userDefinedRemappings);
+    let range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
     const startingSliceLength = Math.max(range[1], inputtedKeys.length);
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
@@ -281,7 +274,7 @@ export class Remapper implements IRemapper {
    * Given list of remappings, returns the length of the shortest and longest remapped keys
    * @param remappings
    */
-  protected static _getRemappedKeysLengthRange(remappings: {
+  protected static getRemappedKeysLengthRange(remappings: {
     [key: string]: IKeyRemapping;
   }): [number, number] {
     const keys = Object.keys(remappings);

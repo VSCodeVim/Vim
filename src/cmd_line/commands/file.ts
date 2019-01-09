@@ -1,10 +1,9 @@
 import * as fs from 'fs';
+import * as node from '../node';
 import * as path from 'path';
 import * as util from 'util';
 import * as vscode from 'vscode';
-
-import * as node from '../node';
-import { Message } from './../../util/message';
+import { logger } from '../../util/logger';
 
 const untildify = require('untildify');
 
@@ -101,7 +100,7 @@ export class FileCommand extends node.CommandBase {
           if (await util.promisify(fs.exists)(pathWithExt)) {
             filePath = pathWithExt;
           } else {
-            Message.ShowError('This file ' + filePath + ' does not exist.');
+            logger.error(`file: ${filePath} does not exist.`);
             return;
           }
         }

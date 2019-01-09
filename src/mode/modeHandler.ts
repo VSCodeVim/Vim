@@ -81,7 +81,7 @@ export class ModeHandler implements vscode.Disposable {
         // Handle scenarios where mouse used to change current position.
         const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(
           (e: vscode.TextEditorSelectionChangeEvent) => {
-            if (configuration.disableExt) {
+            if (configuration.disableExtension) {
               return;
             }
 
@@ -348,7 +348,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      logger.error(`ModeHandler: error handling key=${key}. err=${e}. stack=${e.stack}.`);
+      logger.error(`ModeHandler: error handling key=${key}. err=${e}.`);
       throw e;
     }
 
@@ -489,6 +489,7 @@ export class ModeHandler implements vscode.Disposable {
         x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getLeftThroughLineBreaks(true)) : x
       );
     }
+
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
       ranAction = true;
@@ -562,9 +563,9 @@ export class ModeHandler implements vscode.Disposable {
           : x
       );
     }
+
     // And then we have to do it again because an operator could
     // have changed it as well. (TODO: do you even decomposition bro)
-
     if (vimState.currentMode !== this.currentMode.name) {
       await this.setCurrentMode(vimState.currentMode);
 
@@ -649,29 +650,29 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Ensure cursor is within bounds
+    if (!vimState.editor.document.isClosed) {
+      for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
+        if (stop.line >= TextEditor.getLineCount()) {
+          vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
+            vimState.cursorPosition.getDocumentEnd(vimState.editor)
+          );
+        }
 
-    for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
-      if (stop.line >= TextEditor.getLineCount()) {
-        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-          vimState.cursorPosition.getDocumentEnd()
-        );
-      }
+        const currentLineLength = TextEditor.getLineAt(stop).text.length;
 
-      const currentLineLength = TextEditor.getLineAt(stop).text.length;
-
-      if (
-        vimState.currentMode === ModeName.Normal &&
-        stop.character >= currentLineLength &&
-        currentLineLength > 0
-      ) {
-        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-          stop.getLineEnd().getLeftThroughLineBreaks(true)
-        );
+        if (
+          vimState.currentMode === ModeName.Normal &&
+          stop.character >= currentLineLength &&
+          currentLineLength > 0
+        ) {
+          vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
+            stop.getLineEnd().getLeftThroughLineBreaks(true)
+          );
+        }
       }
     }
 
     // Update the current history step to have the latest cursor position
-
     vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
 
     if (this.currentMode.isVisualMode && !this.vimState.isRunningDotCommand) {
@@ -781,7 +782,7 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     if (!recordedState.operator) {
-      console.error('recordedState.operator: ' + recordedState.operator);
+      logger.warn('recordedState.operator: ' + recordedState.operator);
       throw new Error("what in god's name. recordedState.operator is falsy.");
     }
 
@@ -794,7 +795,6 @@ export class ModeHandler implements vscode.Disposable {
     const resultingCursors: Range[] = [];
     let i = 0;
 
-    let resultingModeName: ModeName;
     let startingModeName = vimState.currentMode;
 
     for (let { start, stop } of vimState.allCursors) {
@@ -837,8 +837,6 @@ export class ModeHandler implements vscode.Disposable {
           transformation.cursorIndex = recordedState.operator.multicursorIndex;
         }
       }
-
-      resultingModeName = resultVimState.currentMode;
 
       let resultingRange = new Range(
         resultVimState.cursorStartPosition,
@@ -898,7 +896,7 @@ export class ModeHandler implements vscode.Disposable {
         case 'moveCursor':
           break;
         default:
-          console.warn(`Unhandled text transformation type: ${command.type}.`);
+          logger.warn(`modeHandler: Unhandled text transformation type: ${command.type}.`);
           break;
       }
 
@@ -1040,7 +1038,7 @@ export class ModeHandler implements vscode.Disposable {
           }
           break;
         default:
-          console.warn(`Unhandled text transformation type: ${command.type}.`);
+          logger.warn(`modeHandler: Unhandled text transformation type: ${command.type}.`);
           break;
       }
     }
