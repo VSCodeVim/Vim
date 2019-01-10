@@ -273,4 +273,11 @@ suite('Mode Normal', () => {
     keysPressed: 'ddkPjddu',
     end: ['two', '|one', 'three'],
   });
+
+  newTest({
+    title: "Can handle 'ge' in multiple lines",
+    start: ['one two', 'three', 'four five|'],
+    keysPressed: 'gegegegege',
+    end: ['|one two', 'three', 'four five'],
+  });
 });
