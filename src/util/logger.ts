@@ -6,12 +6,22 @@ import { configuration } from '../configuration/configuration';
 
 /**
  * Implementation of Winston transport
- * Displays VS Code informational message to user for error messages
+ * Displays VS Code message to user
  */
-class InformationalMessage extends TransportStream {
+class VsCodeMessage extends TransportStream {
   public log(info: { level: string; message: string }, callback: Function) {
-    if (configuration.debug.showErrorMessages && info.level === 'error') {
-      vscode.window.showErrorMessage(info.message, 'Dismiss');
+    switch (info.level) {
+      case 'error':
+        vscode.window.showErrorMessage(info.message, 'Dismiss');
+        break;
+      case 'warn':
+        vscode.window.showWarningMessage(info.message, 'Dismiss');
+        break;
+      case 'info':
+      case 'verbose':
+      case 'debug':
+        vscode.window.showInformationMessage(info.message, 'Dismiss');
+        break;
     }
 
     if (callback) {
@@ -21,7 +31,15 @@ class InformationalMessage extends TransportStream {
 }
 
 export const logger = winston.createLogger({
-  level: configuration.debug.loggingLevel,
   format: winston.format.simple(),
-  transports: [new ConsoleForElectron(), new InformationalMessage()],
+  transports: [
+    new ConsoleForElectron({
+      level: configuration.debug.loggingLevelForConsole,
+      silent: configuration.debug.silent,
+    }),
+    new VsCodeMessage({
+      level: configuration.debug.loggingLevelForAlert,
+      silent: configuration.debug.silent,
+    }),
+  ],
 });

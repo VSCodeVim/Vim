@@ -24,6 +24,7 @@ import { BaseAction } from './../base';
 import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
+import { ReportLinesChanged, ReportClear } from '../../util/statusBarTextUtils';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -682,9 +683,18 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
         ) >= 0,
     });
 
-    let newFirstLine = editor.visibleRanges[0].start.line;
+    const newFirstLine = editor.visibleRanges[0].start.line;
     let newPosition = new Position(newFirstLine + lineOffset, startColumn);
-    vimState.cursorPosition = newPosition;
+
+    const maxLineValue = TextEditor.getLineCount() - 1;
+    if (newPosition.line > maxLineValue) {
+      newPosition = new Position(0, 0).getDocumentEnd();
+    }
+
+    if (newPosition.isValid()) {
+      vimState.cursorPosition = newPosition;
+    }
+
     return vimState;
   }
 }
@@ -1486,6 +1496,9 @@ export class PutCommand extends BaseCommand {
       diff: diff,
     });
 
+    const numNewlinesAfterPut = textToAdd.split('\n').length;
+    ReportLinesChanged(numNewlinesAfterPut, vimState);
+
     vimState.currentRegisterMode = register.registerMode;
     return vimState;
   }
@@ -1544,6 +1557,8 @@ export class PutCommand extends BaseCommand {
         diff: new PositionDiff(-numNewlines + 1, 0),
         cursorIndex: this.multicursorIndex,
       });
+
+      ReportLinesChanged(numNewlines, vimState);
     }
 
     return result;
@@ -2237,6 +2252,9 @@ class CommandUndo extends BaseCommand {
     }
 
     vimState.alteredHistory = true;
+
+    ReportClear(vimState);
+
     return vimState;
   }
 }
@@ -3963,6 +3981,11 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const text = TextEditor.getLineAt(position).text;
+
+    // Make sure position within the text is possible and return if not
+    if (text.length <= position.character) {
+      return vimState;
+    }
 
     // Start looking to the right for the next word to increment, unless we're
     // already on a word to increment, in which case start at the beginning of

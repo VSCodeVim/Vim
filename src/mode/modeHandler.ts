@@ -489,6 +489,7 @@ export class ModeHandler implements vscode.Disposable {
         x.start.isEarlierThan(x.stop) ? x.withNewStop(x.stop.getLeftThroughLineBreaks(true)) : x
       );
     }
+
     if (action instanceof BaseMovement) {
       ({ vimState, recordedState } = await this.executeMovement(vimState, action));
       ranAction = true;
@@ -562,9 +563,9 @@ export class ModeHandler implements vscode.Disposable {
           : x
       );
     }
+
     // And then we have to do it again because an operator could
     // have changed it as well. (TODO: do you even decomposition bro)
-
     if (vimState.currentMode !== this.currentMode.name) {
       await this.setCurrentMode(vimState.currentMode);
 
@@ -649,29 +650,29 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Ensure cursor is within bounds
+    if (!vimState.editor.document.isClosed) {
+      for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
+        if (stop.line >= TextEditor.getLineCount()) {
+          vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
+            vimState.cursorPosition.getDocumentEnd(vimState.editor)
+          );
+        }
 
-    for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
-      if (stop.line >= TextEditor.getLineCount()) {
-        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-          vimState.cursorPosition.getDocumentEnd()
-        );
-      }
+        const currentLineLength = TextEditor.getLineAt(stop).text.length;
 
-      const currentLineLength = TextEditor.getLineAt(stop).text.length;
-
-      if (
-        vimState.currentMode === ModeName.Normal &&
-        stop.character >= currentLineLength &&
-        currentLineLength > 0
-      ) {
-        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-          stop.getLineEnd().getLeftThroughLineBreaks(true)
-        );
+        if (
+          vimState.currentMode === ModeName.Normal &&
+          stop.character >= currentLineLength &&
+          currentLineLength > 0
+        ) {
+          vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
+            stop.getLineEnd().getLeftThroughLineBreaks(true)
+          );
+        }
       }
     }
 
     // Update the current history step to have the latest cursor position
-
     vimState.historyTracker.setLastHistoryEndPosition(vimState.allCursors.map(x => x.stop));
 
     if (this.currentMode.isVisualMode && !this.vimState.isRunningDotCommand) {
