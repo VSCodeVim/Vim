@@ -280,7 +280,12 @@ export class YankOperator extends BaseOperator {
       text = text + '\n';
     }
 
-    Decoration.yankHighlight(vimState, [range]);
+    if (configuration.highlightedyank.enable) {
+      const decoration = Decoration.YankHighlight;
+      vimState.editor.setDecorations(decoration, [range]);
+      setTimeout(() => decoration.dispose(), configuration.highlightedyank.duration);
+    }
+
     Register.put(text, vimState, this.multicursorIndex);
 
     await vimState.setCurrentMode(ModeName.Normal);
@@ -663,7 +668,12 @@ export class YankVisualBlockMode extends BaseOperator {
 
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
-    Decoration.yankHighlight(vimState, ranges);
+    if (configuration.highlightedyank.enable) {
+      const decoration = Decoration.YankHighlight;
+      vimState.editor.setDecorations(decoration, ranges);
+      setTimeout(() => decoration.dispose(), configuration.highlightedyank.duration);
+    }
+
     Register.put(toCopy, vimState, this.multicursorIndex);
 
     const numLinesYanked = toCopy.split('\n').length;

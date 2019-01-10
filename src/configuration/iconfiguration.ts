@@ -40,6 +40,23 @@ export interface IDebugConfiguration {
   loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 }
 
+export interface IHighlightedYankConfiguration {
+  /**
+   * Boolean indicating whether yank highlighting should be enabled.
+   */
+  enable: boolean;
+
+  /**
+   * Color of the yank highlight.
+   */
+  color: string;
+
+  /**
+   * Duration in milliseconds of the yank highlight.
+   */
+  duration: number;
+}
+
 export interface IConfiguration {
   /**
    * Use the system's clipboard when copying.
@@ -172,9 +189,9 @@ export interface IConfiguration {
   searchHighlightColor: string;
 
   /**
-   * Color of yank highlights.
+   * Yank highlight settings.
    */
-  yankHighlightColor: string;
+  highlightedyank: IHighlightedYankConfiguration;
 
   /**
    * Size of a tab character.

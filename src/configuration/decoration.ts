@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 
 import { configuration } from '../configuration/configuration';
-import { VimState } from '../state/vimState';
 
 export class Decoration {
   static readonly Default = vscode.window.createTextEditorDecorationType({
@@ -26,12 +25,9 @@ export class Decoration {
     backgroundColor: configuration.searchHighlightColor,
   });
 
-  static yankHighlight(vimState: VimState, range: vscode.Range[]) {
-    const decoration = vscode.window.createTextEditorDecorationType({
-      backgroundColor: configuration.yankHighlightColor,
+  static get YankHighlight() {
+    return vscode.window.createTextEditorDecorationType({
+      backgroundColor: configuration.highlightedyank.color,
     });
-
-    vimState.editor.setDecorations(decoration, range);
-    setTimeout(() => decoration.dispose(), 200);
   }
 }

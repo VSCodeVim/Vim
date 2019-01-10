@@ -10,6 +10,7 @@ import {
   IModeSpecificStrings,
   IAutoSwitchInputMethod,
   IDebugConfiguration,
+  IHighlightedYankConfiguration,
 } from './iconfiguration';
 
 const packagejson: {
@@ -227,7 +228,11 @@ class Configuration implements IConfiguration {
 
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
 
-  yankHighlightColor = 'rgba(250, 240, 170, 0.5)';
+  highlightedyank: IHighlightedYankConfiguration = {
+    enable: false,
+    color: 'rgba(250, 240, 170, 0.5)',
+    duration: 200,
+  };
 
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
   tabstop: number;
