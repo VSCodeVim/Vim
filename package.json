@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "0.17.3",
+  "version": "1.0.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -341,14 +341,19 @@
       "title": "Vim Configuration",
       "type": "object",
       "properties": {
-        "vim.debug.showErrorMessages": {
+        "vim.debug.silent": {
           "type": "boolean",
-          "description": "Boolean indicates whether VIM errors will be displayed as a VS Code informational window",
-          "default": true
+          "description": "If true, all logs are suppressed.",
+          "default": false
         },
-        "vim.debug.loggingLevel": {
+        "vim.debug.loggingLevelForAlert": {
           "type": "string",
-          "description": "Maximum level of messages to log to console. Logs are visible in the developer tools.",
+          "description": "Maximum level of messages to present as VS Code information window.",
+          "default": "error"
+        },
+        "vim.debug.loggingLevelForConsole": {
+          "type": "string",
+          "description": "Maximum level of messages to log to console. Logs are visible in developer tools.",
           "default": "error"
         },
         "vim.normalModeKeyBindings": {
@@ -665,6 +670,11 @@
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",
           "default": ""
+        },
+        "vim.report": {
+          "type": "number",
+          "description": "Threshold for reporting number of lines changed.",
+          "default": 2
         }
       }
     }
@@ -681,11 +691,10 @@
     "diff-match-patch": "1.0.4",
     "lodash": "4.17.11",
     "mkdirp": "0.5.1",
-    "neovim-client": "2.1.0",
-    "promised-neovim-client": "2.0.2",
+    "neovim": "4.2.1",
     "untildify": "3.0.3",
     "winston": "3.1.0",
-    "winston-console-for-electron": "0.0.3"
+    "winston-console-for-electron": "0.0.5"
   },
   "devDependencies": {
     "@types/diff": "3.5.2",
@@ -695,8 +704,8 @@
     "@types/node": "9.6.41",
     "@types/sinon": "7.0.3",
     "gulp": "4.0.0",
-    "gulp-bump": "3.1.1",
-    "gulp-git": "2.8.0",
+    "gulp-bump": "3.1.3",
+    "gulp-git": "2.8.1",
     "gulp-sourcemaps": "2.6.4",
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.3",

@@ -1,7 +1,6 @@
 import * as parser from './parser';
 import * as vscode from 'vscode';
 import { CommandLineHistory } from '../history/historyFile';
-import { Message } from '../util/message';
 import { ModeName } from './../mode/mode';
 import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode } from '../error';
@@ -48,6 +47,11 @@ class CommandLine {
       command = command.slice(1);
     }
 
+    if (command === 'help') {
+      StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
+      return;
+    }
+
     this._history.add(command);
     this._commandLineHistoryIndex = this._history.get().length;
 
@@ -75,7 +79,6 @@ class CommandLine {
         }
       } else {
         logger.error(`commandLine: Error executing cmd=${command}. err=${e}.`);
-        Message.ShowError(e.toString());
       }
     }
   }

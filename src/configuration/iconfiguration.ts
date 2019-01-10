@@ -23,14 +23,22 @@ export interface IAutoSwitchInputMethod {
 }
 export interface IDebugConfiguration {
   /**
-   * Boolean indicating if errors should be displayed as a VS Code informational window
+   * Boolean indicating whether all logs should be suppressed
+   * This value overrides both `loggingLevelForAlert` and `loggingLevelForConsole`
    */
-  showErrorMessages: boolean;
+  silent: boolean;
+
   /**
-   * Maximum level of messages to log.
+   * Maximum level of messages to show as VS Code information message
    * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
-  loggingLevel: string;
+  loggingLevelForAlert: string;
+
+  /**
+   * Maximum level of messages to log to console.
+   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
+   */
+  loggingLevelForConsole: string;
 }
 
 export interface IConfiguration {
@@ -250,4 +258,9 @@ export interface IConfiguration {
   whichwrap: string;
 
   cursorStylePerMode: IModeSpecificStrings<string>;
+
+  /**
+   * Threshold to report changed lines to status bar
+   */
+  report: number;
 }
