@@ -917,17 +917,26 @@ export class Position extends vscode.Position {
   }
 
   private getLastWordEndWithRegex(regex: RegExp): Position {
-    for (let currentLine = this.line; currentLine < TextEditor.getLineCount(); currentLine++) {
+    for (let currentLine = this.line; currentLine > -1; currentLine--) {
       let positions = this.getAllEndPositions(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let index = _.findIndex(positions, i => i >= this.character || currentLine !== this.line);
+      // if one line is empty, use the 0 position as the default value
+      if (positions.length === 0) {
+        positions.push(0);
+      }
+      // reverse the list to find the biggest element smaller than this.character
+      positions = positions.reverse();
+      let index = _.findIndex(positions, i => i < this.character || currentLine !== this.line);
       let newCharacter = 0;
       if (index === -1) {
+        if (currentLine > -1) {
+          continue;
+        }
         newCharacter = positions[positions.length - 1];
-      } else if (index > 0) {
-        newCharacter = positions[index - 1];
+      } else {
+        newCharacter = positions[index];
       }
 
       if (newCharacter !== undefined) {
@@ -935,7 +944,7 @@ export class Position extends vscode.Position {
       }
     }
 
-    return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
+    return new Position(0, 0).getLineBegin();
   }
 
   /**
