@@ -684,11 +684,15 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
     });
 
     const newFirstLine = editor.visibleRanges[0].start.line;
-    let newPosition = new Position(newFirstLine + lineOffset, startColumn);
+    const newPositionLine = newFirstLine + lineOffset;
+    let newPosition;
 
     const maxLineValue = TextEditor.getLineCount() - 1;
-    if (newPosition.line > maxLineValue) {
+    if (newPositionLine > maxLineValue) {
       newPosition = new Position(0, 0).getDocumentEnd();
+    } else {
+      const newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newPositionLine));
+      newPosition = new Position(newPositionLine, newPositionColumn);
     }
 
     if (newPosition.isValid()) {
