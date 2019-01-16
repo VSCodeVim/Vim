@@ -1,5 +1,39 @@
 # Change Log
 
+## [v1.0.2](https://github.com/vscodevim/vim/tree/v1.0.2) (2019-01-16)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.1...v1.0.2)
+
+**Enhancements:**
+
+- Show Number of Lines Yanked/Pasted [\#3266](https://github.com/VSCodeVim/Vim/issues/3266)
+
+**Fixed Bugs:**
+
+- Error handling key \<C-d\>: Illegal value for line [\#3345](https://github.com/VSCodeVim/Vim/issues/3345)
+- :set hlsearch? makes plugin freeze out [\#3344](https://github.com/VSCodeVim/Vim/issues/3344)
+- ge doesn't go to the previous line [\#3285](https://github.com/VSCodeVim/Vim/issues/3285)
+
+**Closed issues:**
+
+- Movements with 0 fail! [\#3349](https://github.com/VSCodeVim/Vim/issues/3349)
+- \<C-r\> does not redo \(opens recent menu\). [\#3346](https://github.com/VSCodeVim/Vim/issues/3346)
+- can't support the command that can Indent multiple lines of code [\#3340](https://github.com/VSCodeVim/Vim/issues/3340)
+- ModeHandler: error handling key=\<C-a\>, err=TypeError: Cannot read property 'match' of undefined [\#3332](https://github.com/VSCodeVim/Vim/issues/3332)
+- command mode :.t\[line_number\] [\#3269](https://github.com/VSCodeVim/Vim/issues/3269)
+
+**Merged pull requests:**
+
+- Update dependency tslint to v5.12.1 [\#3356](https://github.com/VSCodeVim/Vim/pull/3356) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency gulp-git to v2.8.1 [\#3353](https://github.com/VSCodeVim/Vim/pull/3353) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency gulp-bump to v3.1.3 [\#3352](https://github.com/VSCodeVim/Vim/pull/3352) ([renovate-bot](https://github.com/renovate-bot))
+- Move setoptions querying to status bar [\#3348](https://github.com/VSCodeVim/Vim/pull/3348) ([xconverge](https://github.com/xconverge))
+- fixes \#3345 [\#3347](https://github.com/VSCodeVim/Vim/pull/3347) ([xconverge](https://github.com/xconverge))
+- fixes \#3332 [\#3342](https://github.com/VSCodeVim/Vim/pull/3342) ([xconverge](https://github.com/xconverge))
+- Fixes \#3266 Report lines changed [\#3341](https://github.com/VSCodeVim/Vim/pull/3341) ([xconverge](https://github.com/xconverge))
+- v1.0.1 [\#3339](https://github.com/VSCodeVim/Vim/pull/3339) ([jpoon](https://github.com/jpoon))
+- Fix the issue of "ge" command [\#3322](https://github.com/VSCodeVim/Vim/pull/3322) ([zhuzisheng](https://github.com/zhuzisheng))
+
 ## [v1.0.1](https://github.com/vscodevim/vim/tree/v1.0.1) (2019-01-06)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.0...v1.0.1)
@@ -37,7 +71,8 @@ The first commit to this project was a little over 3 years ago, and what a journ
 **Breaking Change:**
 
 - `vim.debug.loggingLevel` has been removed. In it's place we now have `vim.debug.loggingLevelForConsole`. For full details, see the [settings section of our README](https://github.com/VSCodeVim/Vim#vscodevim-settings).
-  **Enhancements:**
+
+**Enhancements:**
 
 - feat: change debug configurations to loggingLevelForConsole, loggingLevelForAlert [\#3325](https://github.com/VSCodeVim/Vim/pull/3325) ([jpoon](https://github.com/jpoon))
 
