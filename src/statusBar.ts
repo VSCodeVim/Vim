@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ModeName, Mode } from './mode/mode';
+import { ModeName } from './mode/mode';
 import { configuration } from './configuration/configuration';
 
 class StatusBarImpl implements vscode.Disposable {
