@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ModeName } from './mode/mode';
+import { ModeName, Mode } from './mode/mode';
 import { configuration } from './configuration/configuration';
 
 class StatusBarImpl implements vscode.Disposable {
@@ -63,7 +63,13 @@ class StatusBarImpl implements vscode.Disposable {
     let foreground;
     let background;
 
-    const colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+    let colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+
+    // If no color defined, fallback to normal mode color
+    if (colorToSet === undefined) {
+      colorToSet = configuration.statusBarColors[ModeName[ModeName.Normal].toLowerCase()];
+    }
+
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {
         background = colorToSet;
