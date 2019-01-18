@@ -4,7 +4,7 @@
 [![http://aka.ms/vscodevim](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
 [![](https://vsmarketplacebadge.apphb.com/installs-short/vscodevim.vim.svg)](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim)
 [![https://travis-ci.org/VSCodeVim/Vim](https://travis-ci.org/VSCodeVim/Vim.svg?branch=master)](https://travis-ci.org/VSCodeVim/Vim)
-[![https://vscodevim-slackin.azurewebsites.net](https://img.shields.io/badge/vscodevim-slack-blue.svg?logo=slack)](https://vscodevim-slackin.azurewebsites.net)
+[![http://vscodevim.herokuapp.com/](https://img.shields.io/badge/vscodevim-slack-blue.svg?logo=slack)](http://vscodevim.herokuapp.com/)
 
 VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
 
