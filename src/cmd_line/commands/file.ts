@@ -92,17 +92,17 @@ export class FileCommand extends node.CommandBase {
         : path.join(path.dirname(editorFilePath), this._arguments.name);
 
       if (filePath !== editorFilePath && !(await util.promisify(fs.exists)(filePath))) {
-        if (this._arguments.createFileIfNotExists) {
+        // if file does not exist try to find it with the same extension
+        const pathWithExt = filePath + path.extname(editorFilePath);
+        if (await util.promisify(fs.exists)(pathWithExt)) {
+          filePath = pathWithExt;
+          // if there is no file with the same extension
+          // and the createFileIfNotExists is true then create one
+        } else if (this._arguments.createFileIfNotExists) {
           await util.promisify(fs.close)(await util.promisify(fs.open)(filePath, 'w'));
         } else {
-          // if file does not exist try to find it with the same extension
-          const pathWithExt = filePath + path.extname(editorFilePath);
-          if (await util.promisify(fs.exists)(pathWithExt)) {
-            filePath = pathWithExt;
-          } else {
-            logger.error(`file: ${filePath} does not exist.`);
-            return;
-          }
+          logger.error(`file: ${filePath} does not exist.`);
+          return;
         }
       }
     }
