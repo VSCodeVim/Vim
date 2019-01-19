@@ -684,11 +684,15 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
     });
 
     const newFirstLine = editor.visibleRanges[0].start.line;
-    let newPosition = new Position(newFirstLine + lineOffset, startColumn);
+    const newPositionLine = newFirstLine + lineOffset;
+    let newPosition;
 
     const maxLineValue = TextEditor.getLineCount() - 1;
-    if (newPosition.line > maxLineValue) {
+    if (newPositionLine > maxLineValue) {
       newPosition = new Position(0, 0).getDocumentEnd();
+    } else {
+      const newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newPositionLine));
+      newPosition = new Position(newPositionLine, newPositionColumn);
     }
 
     if (newPosition.isValid()) {
@@ -1411,14 +1415,18 @@ export class PutCommand extends BaseCommand {
           .join('\n');
       }
 
-      if (after) {
+      if (register.registerMode === RegisterMode.LineWise) {
         // P insert before current line
-        textToAdd = text + '\n';
-        whereToAddText = dest.getLineBegin();
+        if (after) {
+          textToAdd = text + '\n';
+          whereToAddText = dest.getLineBegin();
+        } else {
+          textToAdd = '\n' + text;
+          whereToAddText = dest.getLineEnd();
+        }
       } else {
-        // p paste after current line
-        textToAdd = '\n' + text;
-        whereToAddText = dest.getLineEnd();
+        textToAdd = text;
+        whereToAddText = after ? position : position.getRight();
       }
     }
 
@@ -1470,10 +1478,20 @@ export class PutCommand extends BaseCommand {
     } else {
       if (text.indexOf('\n') === -1) {
         if (!position.isLineEnd()) {
-          if (after) {
-            diff = new PositionDiff(0, -1);
+          if (
+            register.registerMode === RegisterMode.BlockWise
+          ) {
+            if (after) {
+              diff = new PositionDiff(0, -1 * text.length);
+            } else {
+              diff = new PositionDiff(0, 1);
+            }
           } else {
-            diff = new PositionDiff(0, textToAdd.length);
+            if (after) {
+              diff = new PositionDiff(0, -1);
+            } else {
+              diff = new PositionDiff(0, textToAdd.length);
+            }
           }
         }
       } else {
@@ -3604,13 +3622,20 @@ class ActionXVisualBlock extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    for (const { start, end } of Position.IterateLine(vimState)) {
+    const lines: string[] = [];
+
+    for (const { line, start, end } of Position.IterateLine(vimState)) {
+      lines.push(line);
       vimState.recordedState.transformations.push({
         type: 'deleteRange',
         range: new Range(start, end),
         manuallySetCursorPositions: true,
       });
     }
+
+    const text = lines.length === 1 ? lines[0] : lines.join('\n');
+    vimState.currentRegisterMode = RegisterMode.BlockWise;
+    Register.put(text, vimState, this.multicursorIndex);
 
     const topLeft = VisualBlockMode.getTopLeftPosition(
       vimState.cursorPosition,
