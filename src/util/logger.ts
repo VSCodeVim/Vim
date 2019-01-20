@@ -36,7 +36,7 @@ class VsCodeMessage extends TransportStream {
     let selectedAction = await showMessage(info.message, ...this.actionMessages);
     if (selectedAction === 'Suppress Errors') {
       vscode.window.showInformationMessage(
-        'Ignorance is bliss. Temporarily suppressing error messages. For more permanence, please configure `vim.debug.suppress`.'
+        'Ignorance is bliss; temporarily suppressing log messages. For more permanence, please configure `vim.debug.suppress`.'
       );
       configuration.debug.silent = true;
     }
