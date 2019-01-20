@@ -650,7 +650,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Ensure cursor is within bounds
-    if (!vimState.editor.document.isClosed) {
+    if (!vimState.editor.document.isClosed && vimState.editor === vscode.window.activeTextEditor) {
       for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
         if (stop.line >= TextEditor.getLineCount()) {
           vimState.allCursors[i] = vimState.allCursors[i].withNewStop(

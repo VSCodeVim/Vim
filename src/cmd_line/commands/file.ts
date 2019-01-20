@@ -98,14 +98,12 @@ export class FileCommand extends node.CommandBase {
       if (filePath !== editorFilePath) {
         let fileExists = await doesFileExist(filePath);
         if (!fileExists) {
-          // if file does not exist and does not have a file extension
+          // if file does not exist 
           // try to find it with the same extension as the current file
-          if (path.extname(filePath) === '') {
-            const pathWithExt = filePath + path.extname(editorFilePath);
-            fileExists = await doesFileExist(pathWithExt);
-            if (fileExists) {
-              filePath = pathWithExt;
-            }
+          const pathWithExt = filePath + path.extname(editorFilePath);
+          fileExists = await doesFileExist(pathWithExt);
+          if (fileExists) {
+            filePath = pathWithExt;
           }
         }
 

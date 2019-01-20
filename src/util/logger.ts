@@ -9,19 +9,36 @@ import { configuration } from '../configuration/configuration';
  * Displays VS Code message to user
  */
 class VsCodeMessage extends TransportStream {
-  public log(info: { level: string; message: string }, callback: Function) {
+  actionMessages = ['Dismiss', 'Suppress Errors'];
+
+  public async log(info: { level: string; message: string }, callback: Function) {
+    if (configuration.debug.silent) {
+      return;
+    }
+
+    let showMessage: (message: string, ...items: string[]) => Thenable<string | undefined>;
     switch (info.level) {
       case 'error':
-        vscode.window.showErrorMessage(info.message, 'Dismiss');
+        showMessage = vscode.window.showErrorMessage;
         break;
       case 'warn':
-        vscode.window.showWarningMessage(info.message, 'Dismiss');
+        showMessage = vscode.window.showWarningMessage;
         break;
       case 'info':
       case 'verbose':
       case 'debug':
-        vscode.window.showInformationMessage(info.message, 'Dismiss');
+        showMessage = vscode.window.showInformationMessage;
         break;
+      default:
+        throw 'Unsupported ' + info.level;
+    }
+
+    let selectedAction = await showMessage(info.message, ...this.actionMessages);
+    if (selectedAction === 'Suppress Errors') {
+      vscode.window.showInformationMessage(
+        'Ignorance is bliss; temporarily suppressing log messages. For more permanence, please configure `vim.debug.suppress`.'
+      );
+      configuration.debug.silent = true;
     }
 
     if (callback) {
@@ -39,7 +56,6 @@ export const logger = winston.createLogger({
     }),
     new VsCodeMessage({
       level: configuration.debug.loggingLevelForAlert,
-      silent: configuration.debug.silent,
     }),
   ],
 });
