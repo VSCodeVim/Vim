@@ -1,5 +1,40 @@
 # Change Log
 
+## [v1.0.3](https://github.com/vscodevim/vim/tree/v1.0.3) (2019-01-20)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.2...v1.0.3)
+
+**Fixed Bugs:**
+
+- \<C-o\> causes popup err=RangeError message after pressing 'gd' [\#3378](https://github.com/VSCodeVim/Vim/issues/3378)
+- \<C-d\> is getting stuck when starting from a column that doesn't exist in destination line [\#3376](https://github.com/VSCodeVim/Vim/issues/3376)
+- status bar color unexpectedly changes to red [\#3374](https://github.com/VSCodeVim/Vim/issues/3374)
+- Slack invite link doesn't resolve [\#3370](https://github.com/VSCodeVim/Vim/issues/3370)
+- Control status bar color in other modes [\#3350](https://github.com/VSCodeVim/Vim/issues/3350)
+
+**Closed issues:**
+
+- 'gf' on file fails, says file does not exist, but it does. [\#3233](https://github.com/VSCodeVim/Vim/issues/3233)
+- yank partial always paster underline [\#3231](https://github.com/VSCodeVim/Vim/issues/3231)
+- \(insert\) VISUAL mode is not supported [\#3202](https://github.com/VSCodeVim/Vim/issues/3202)
+
+**Merged pull requests:**
+
+- Logger [\#3398](https://github.com/VSCodeVim/Vim/pull/3398) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency prettier to v1.16.0 [\#3397](https://github.com/VSCodeVim/Vim/pull/3397) ([renovate-bot](https://github.com/renovate-bot))
+- fix: gf over a 'file://...' path and \#3310 issue \(v2\) [\#3396](https://github.com/VSCodeVim/Vim/pull/3396) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency sinon to v7.2.3 [\#3394](https://github.com/VSCodeVim/Vim/pull/3394) ([renovate-bot](https://github.com/renovate-bot))
+- fix: 3350 [\#3393](https://github.com/VSCodeVim/Vim/pull/3393) ([jpoon](https://github.com/jpoon))
+- docs: change slackin host [\#3392](https://github.com/VSCodeVim/Vim/pull/3392) ([jpoon](https://github.com/jpoon))
+- Update dependency @types/lodash to v4.14.120 [\#3385](https://github.com/VSCodeVim/Vim/pull/3385) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency typescript to v3.2.4 [\#3384](https://github.com/VSCodeVim/Vim/pull/3384) ([renovate-bot](https://github.com/renovate-bot))
+- Update dependency @types/sinon to v7.0.4 [\#3383](https://github.com/VSCodeVim/Vim/pull/3383) ([renovate-bot](https://github.com/renovate-bot))
+- Fixes \#3378 [\#3381](https://github.com/VSCodeVim/Vim/pull/3381) ([xconverge](https://github.com/xconverge))
+- fixes \#3374 [\#3380](https://github.com/VSCodeVim/Vim/pull/3380) ([xconverge](https://github.com/xconverge))
+- Fix \<C-d\> getting stuck when current column doesn't exist in destination [\#3377](https://github.com/VSCodeVim/Vim/pull/3377) ([shawnaxsom](https://github.com/shawnaxsom))
+- Fix: visual block yank, delete and put behavior for single line selections [\#3375](https://github.com/VSCodeVim/Vim/pull/3375) ([faddi](https://github.com/faddi))
+- fix: gf over a 'file://...' path and \#3310 issue [\#3311](https://github.com/VSCodeVim/Vim/pull/3311) ([pikulev](https://github.com/pikulev))
+
 ## [v1.0.2](https://github.com/vscodevim/vim/tree/v1.0.2) (2019-01-16)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.1...v1.0.2)
