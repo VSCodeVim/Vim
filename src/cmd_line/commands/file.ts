@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import { logger } from '../../util/logger';
 
 const untildify = require('untildify');
+const doesFileExist = util.promisify(fs.exists);
 
 export enum FilePosition {
   NewWindowVerticalSplit,
@@ -27,11 +28,16 @@ export class FileCommand extends node.CommandBase {
     super();
     this._name = 'file';
     this._arguments = args;
+
+    if (this.arguments.name) {
+      this._arguments.name = <string>untildify(this.arguments.name);
+    }
   }
 
   get arguments(): IFileCommandArguments {
     return this._arguments;
   }
+
   async execute(): Promise<void> {
     if (this._arguments.bang) {
       await vscode.commands.executeCommand('workbench.action.files.revert');
@@ -83,31 +89,38 @@ export class FileCommand extends node.CommandBase {
       }
     } else {
       // Using a filename, open or create the file
-      this._arguments.name = <string>untildify(this._arguments.name);
+      this._arguments.name = this._arguments.name.replace('^file://', '');
+
       filePath = path.isAbsolute(this._arguments.name)
-        ? this._arguments.name
+        ? path.normalize(this._arguments.name)
         : path.join(path.dirname(editorFilePath), this._arguments.name);
 
-      if (filePath !== editorFilePath && !(await util.promisify(fs.exists)(filePath))) {
-        // if file does not exist and does not have an extension
-        // try to find it with the same extension
-        if (path.extname(filePath) === '') {
-          const pathWithExt = filePath + path.extname(editorFilePath);
-          if (await util.promisify(fs.exists)(pathWithExt)) {
-            filePath = pathWithExt;
+      if (filePath !== editorFilePath) {
+        let fileExists = await doesFileExist(filePath);
+        if (!fileExists) {
+          // if file does not exist and does not have a file extension
+          // try to find it with the same extension as the current file
+          if (path.extname(filePath) === '') {
+            const pathWithExt = filePath + path.extname(editorFilePath);
+            fileExists = await doesFileExist(pathWithExt);
+            if (fileExists) {
+              filePath = pathWithExt;
+            }
           }
         }
-        if (this._arguments.createFileIfNotExists) {
-          await util.promisify(fs.close)(await util.promisify(fs.open)(filePath, 'w'));
-        } else {
-          logger.error(`file: ${filePath} does not exist.`);
-          return;
+
+        if (!fileExists) {
+          if (this._arguments.createFileIfNotExists) {
+            await util.promisify(fs.close)(await util.promisify(fs.open)(filePath, 'w'));
+          } else {
+            logger.error(`file: ${filePath} does not exist.`);
+            return;
+          }
         }
       }
     }
 
     const doc = await vscode.workspace.openTextDocument(filePath);
-
     vscode.window.showTextDocument(doc);
 
     if (this.arguments.lineNumber) {
