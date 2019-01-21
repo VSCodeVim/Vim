@@ -89,7 +89,7 @@ export class FileCommand extends node.CommandBase {
       }
     } else {
       // Using a filename, open or create the file
-      this._arguments.name = this._arguments.name.replace('^file://', '');
+      this._arguments.name = this._arguments.name.replace(/^file:\/\//, '');
 
       filePath = path.isAbsolute(this._arguments.name)
         ? path.normalize(this._arguments.name)
@@ -98,7 +98,7 @@ export class FileCommand extends node.CommandBase {
       if (filePath !== editorFilePath) {
         let fileExists = await doesFileExist(filePath);
         if (!fileExists) {
-          // if file does not exist 
+          // if file does not exist
           // try to find it with the same extension as the current file
           const pathWithExt = filePath + path.extname(editorFilePath);
           fileExists = await doesFileExist(pathWithExt);
