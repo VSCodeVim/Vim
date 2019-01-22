@@ -19,6 +19,7 @@ import {
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
 } from './actions';
+import { AllDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
 
 @RegisterAction
@@ -298,6 +299,49 @@ export class CommandInsertInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertDigraph extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ['<C-k>', '<any>', '<any>'];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const digraph = this.keysPressed.slice(1, 3).join('');
+    const charCode = AllDigraphs[digraph][1];
+    const char = String.fromCharCode(charCode);
+    await TextEditor.insertAt(char, position);
+    await vimState.setCurrentMode(ModeName.Insert);
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!super.doesActionApply(vimState, keysPressed)) {
+      return false;
+    }
+    const chars = keysPressed.slice(1, 3).join('');
+    if (chars.length !== 2) {
+      return false;
+    }
+    return chars in AllDigraphs;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!super.couldActionApply(vimState, keysPressed)) {
+      return false;
+    }
+    const chars = keysPressed.slice(1, 3).join('');
+    if (chars.length === 1) {
+      let match = Object.keys(AllDigraphs).find(digraph => chars[0] === digraph[0]);
+      return match !== undefined;
+    } else {
+      return true;
+    }
+  }
+}
+
+@RegisterAction
 class CommandInsertRegisterContent extends BaseCommand {
   modes = [ModeName.Insert];
   keys = ['<C-r>', '<character>'];
@@ -491,7 +535,7 @@ class CommandNavigateAutocompleteDown extends BaseCommand {
 @RegisterAction
 class CommandNavigateAutocompleteUp extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = [['<C-p>'], ['<C-k>']];
+  keys = ['<C-p>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     await vscode.commands.executeCommand('selectPrevSuggestion');

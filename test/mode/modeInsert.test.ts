@@ -325,4 +325,22 @@ suite('Mode Insert', () => {
     keysPressed: '5Ofun<Esc>',
     end: ['fun', 'fun', 'fun', 'fun', 'fu|n', 'foobar'],
   });
+
+  test('Can handle digraph insert', async () => {
+    await modeHandler.handleMultipleKeyEvents([
+      'i',
+      't',
+      'e',
+      'x',
+      't',
+      '<C-k>',
+      '-',
+      '>',
+      't',
+      'e',
+      'x',
+      't',
+    ]);
+    assertEqualLines(['text→text']);
+  });
 });
