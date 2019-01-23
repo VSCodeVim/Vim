@@ -215,7 +215,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     vscode.window.onDidChangeTextEditorSelection,
     async (e: vscode.TextEditorSelectionChangeEvent) => {
-      const mh = await getAndUpdateModeHandler(true);
+      const mh = await getAndUpdateModeHandler();
 
       if (mh.vimState.focusChanged) {
         mh.vimState.focusChanged = false;
