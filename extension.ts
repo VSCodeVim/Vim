@@ -83,20 +83,23 @@ export async function activate(context: vscode.ExtensionContext) {
     configuration.reload();
   });
 
-  const textWasDeleted = event =>
-    event.contentChanges.length === 1 &&
-    event.contentChanges[0].text === '' &&
-    event.contentChanges[0].range.start.line !== event.contentChanges[0].range.end.line;
-
-  const textWasAdded = event =>
-    event.contentChanges.length === 1 &&
-    (event.contentChanges[0].text === '\n' || event.contentChanges[0].text === '\r\n') &&
-    event.contentChanges[0].range.start.line === event.contentChanges[0].range.end.line;
-
   vscode.workspace.onDidChangeTextDocument(async event => {
     if (configuration.disableExtension) {
       return;
     }
+
+    const textWasDeleted = changeEvent =>
+      changeEvent.contentChanges.length === 1 &&
+      changeEvent.contentChanges[0].text === '' &&
+      changeEvent.contentChanges[0].range.start.line !==
+        changeEvent.contentChanges[0].range.end.line;
+
+    const textWasAdded = changeEvent =>
+      changeEvent.contentChanges.length === 1 &&
+      (changeEvent.contentChanges[0].text === '\n' ||
+        changeEvent.contentChanges[0].text === '\r\n') &&
+      changeEvent.contentChanges[0].range.start.line ===
+        changeEvent.contentChanges[0].range.end.line;
 
     if (textWasDeleted(event)) {
       globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
@@ -111,13 +114,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Change from vscode editor should set document.isDirty to true but they initially don't!
     // There is a timing issue in vscode codebase between when the isDirty flag is set and
     // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
-    let contentChangeHandler = (modeHandler: ModeHandler) => {
-      if (!modeHandler) {
-        // This can happen in tests if you don't set Globals.mockModeHandler;
-        console.warn('No mode handler found');
-        return;
-      }
-
+    const contentChangeHandler = (modeHandler: ModeHandler) => {
       if (modeHandler.vimState.currentMode === ModeName.Insert) {
         if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
           modeHandler.vimState.historyTracker.currentContentChanges = [];
@@ -130,7 +127,11 @@ export async function activate(context: vscode.ExtensionContext) {
     };
 
     if (Globals.isTesting) {
-      contentChangeHandler(Globals.mockModeHandler as ModeHandler);
+      if (Globals.mockModeHandler) {
+        contentChangeHandler(Globals.mockModeHandler as ModeHandler);
+      } else {
+        logger.warn('onDidChangeTextDocument: No mock mode handler set');
+      }
     } else {
       _.filter(
         ModeHandlerMap.getAll(),
@@ -139,6 +140,7 @@ export async function activate(context: vscode.ExtensionContext) {
         contentChangeHandler(modeHandler);
       });
     }
+
     setTimeout(() => {
       if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
         handleContentChangedFromDisk(event.document);
@@ -205,7 +207,38 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  let compositionState = new CompositionState();
+  vscode.window.onDidChangeTextEditorSelection(async (e: vscode.TextEditorSelectionChangeEvent) => {
+    if (configuration.disableExtension) {
+      return;
+    }
+
+    if (Globals.isTesting) {
+      return;
+    }
+
+    const mh = await getAndUpdateModeHandler(true);
+
+    if (mh.vimState.focusChanged) {
+      mh.vimState.focusChanged = false;
+      return;
+    }
+
+    if (mh.currentMode.name === ModeName.EasyMotionMode) {
+      return;
+    }
+
+    taskQueue.enqueueTask(
+      () => mh.handleSelectionChange(e),
+      undefined,
+      /**
+       * We don't want these to become backlogged! If they do, we'll update
+       * the selection to an incorrect value and see a jittering cursor.
+       */
+      true
+    );
+  });
+
+  const compositionState = new CompositionState();
 
   // override vscode commands
   overrideCommand(context, 'type', async args => {
@@ -267,9 +300,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // register extension commands
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
-    const modeHandler = await getAndUpdateModeHandler();
-    await commandLine.PromptAndRun('', modeHandler.vimState);
-    modeHandler.updateView(modeHandler.vimState);
+    const mh = await getAndUpdateModeHandler();
+    await commandLine.PromptAndRun('', mh.vimState);
+    mh.updateView(mh.vimState);
   });
 
   registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
@@ -374,7 +407,7 @@ function registerCommand(
   command: string,
   callback: (...args: any[]) => any
 ) {
-  let disposable = vscode.commands.registerCommand(command, async args => {
+  const disposable = vscode.commands.registerCommand(command, async args => {
     if (!vscode.window.activeTextEditor) {
       return;
     }

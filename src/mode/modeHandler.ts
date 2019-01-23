@@ -77,44 +77,6 @@ export class ModeHandler implements vscode.Disposable {
         // For whatever reason, the editor positions aren't updated until after the
         // stack clears, which is why this setTimeout is necessary
         this.syncCursors();
-
-        // Handle scenarios where mouse used to change current position.
-        const onChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(
-          (e: vscode.TextEditorSelectionChangeEvent) => {
-            if (configuration.disableExtension) {
-              return;
-            }
-
-            if (Globals.isTesting) {
-              return;
-            }
-
-            if (e.textEditor !== this.vimState.editor) {
-              return;
-            }
-
-            if (this.vimState.focusChanged) {
-              this.vimState.focusChanged = false;
-              return;
-            }
-
-            if (this.currentMode.name === ModeName.EasyMotionMode) {
-              return;
-            }
-
-            taskQueue.enqueueTask(
-              () => this.handleSelectionChange(e),
-              undefined,
-              /**
-               * We don't want these to become backlogged! If they do, we'll update
-               * the selection to an incorrect value and see a jittering cursor.
-               */
-              true
-            );
-          }
-        );
-
-        this._disposables.push(onChangeTextEditorSelection);
         this._disposables.push(this.vimState);
 
         cb();
@@ -137,7 +99,7 @@ export class ModeHandler implements vscode.Disposable {
    * https://gist.github.com/rebornix/d21d1cc060c009d4430d3904030bd4c1 to
    * perform the manual testing.
    */
-  private async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
+  public async handleSelectionChange(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
     let selection = e.selections[0];
     if (
       (e.selections.length !== this.vimState.allCursors.length || this.vimState.isMultiCursor) &&
