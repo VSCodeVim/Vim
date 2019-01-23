@@ -720,7 +720,7 @@
     "minimist": "1.2.0",
     "mocha": "5.2.0",
     "plugin-error": "1.0.1",
-    "prettier": "1.16.0",
+    "prettier": "1.16.1",
     "sinon": "7.2.3",
     "tslint": "5.12.1",
     "typescript": "3.2.4",
