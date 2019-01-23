@@ -2,9 +2,10 @@ import * as assert from 'assert';
 
 import * as srcConfiguration from '../../src/configuration/configuration';
 import * as testConfiguration from '../testConfiguration';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
 import { getTestingFunctions } from '../testSimplifier';
 import { ModeName } from '../../src/mode/mode';
+import { getAndUpdateModeHandler } from '../../extension';
 
 suite('Configuration', () => {
   const { newTest } = getTestingFunctions();
@@ -53,5 +54,11 @@ suite('Configuration', () => {
 
     assert.equal(wrapKeys[h], true);
     assert.equal(wrapKeys[j], undefined);
+  });
+
+  test('Can handle custom digraph insert', async () => {
+    let modeHandler = await getAndUpdateModeHandler();
+    await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!']);
+    assertEqualLines(['🚀']);
   });
 });

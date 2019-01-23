@@ -19,7 +19,7 @@ import {
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
 } from './actions';
-import { AllDigraphs } from './digraphs';
+import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
 
 @RegisterAction
@@ -306,8 +306,11 @@ class CommandInsertDigraph extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const digraph = this.keysPressed.slice(1, 3).join('');
-    const charCode = AllDigraphs[digraph][1];
-    const char = String.fromCharCode(charCode);
+    let charCodes = (DefaultDigraphs[digraph] || configuration.customDigraphs[digraph])[1];
+    if (!(charCodes instanceof Array)) {
+      charCodes = [charCodes];
+    }
+    const char = String.fromCharCode(...charCodes);
     await TextEditor.insertAt(char, position);
     await vimState.setCurrentMode(ModeName.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
@@ -320,24 +323,26 @@ class CommandInsertDigraph extends BaseCommand {
     if (!super.doesActionApply(vimState, keysPressed)) {
       return false;
     }
-    const chars = keysPressed.slice(1, 3).join('');
-    if (chars.length !== 2) {
+    const chars = keysPressed.slice(1, keysPressed.length).join('');
+    if (chars.length < 2) {
       return false;
     }
-    return chars in AllDigraphs;
+    return chars in configuration.customDigraphs || chars in DefaultDigraphs;
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
     if (!super.couldActionApply(vimState, keysPressed)) {
       return false;
     }
-    const chars = keysPressed.slice(1, 3).join('');
-    if (chars.length === 1) {
-      let match = Object.keys(AllDigraphs).find(digraph => chars[0] === digraph[0]);
+    const chars = keysPressed.slice(1, keysPressed.length).join('');
+    if (chars.length > 0) {
+      const predicate = (digraph: string) => chars === digraph.substring(0, chars.length);
+      const match =
+        Object.keys(configuration.customDigraphs).find(predicate) ||
+        Object.keys(DefaultDigraphs).find(predicate);
       return match !== undefined;
-    } else {
-      return true;
     }
+    return true;
   }
 }
 

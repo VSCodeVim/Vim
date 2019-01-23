@@ -9,6 +9,7 @@ import {
   IModeSpecificStrings,
   IAutoSwitchInputMethod,
   IDebugConfiguration,
+  Digraph,
 } from './iconfiguration';
 import { VsCodeContext } from '../util/vscode-context';
 
@@ -302,6 +303,8 @@ class Configuration implements IConfiguration {
 
   enableNeovim = false;
   neovimPath = 'nvim';
+
+  customDigraphs = {};
 
   substituteGlobalFlag = false;
   whichwrap = '';

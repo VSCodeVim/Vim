@@ -88,4 +88,7 @@ export class Configuration implements IConfiguration {
   whichwrap = '';
   wrapKeys = {};
   report = 2;
+  customDigraphs: {
+    'R!': ['🚀', 128640];
+  };
 }

@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 
+export type Digraph = [string, number | number[]];
+
 export interface IModeSpecificStrings<T> {
   normal: T | undefined;
   insert: T | undefined;
@@ -263,4 +265,9 @@ export interface IConfiguration {
    * Threshold to report changed lines to status bar
    */
   report: number;
+
+  /**
+   * User-defined digraphs
+   */
+  customDigraphs: { [shortcut: string]: Digraph };
 }

@@ -1,5 +1,5 @@
 // prettier-ignore
-export const AllDigraphs = {
+export const DefaultDigraphs = {
   "NU": ["^@", 10],
   "SH": ["^A", 1],
   "SX": ["^B", 2],

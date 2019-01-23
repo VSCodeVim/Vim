@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 
+import { configuration } from './../../configuration/configuration';
 import { VimState } from '../../state/vimState';
-import { AllDigraphs } from '../../actions/commands/digraphs';
+import { DefaultDigraphs } from '../../actions/commands/digraphs';
 import * as node from '../node';
 
 export interface IDigraphsCommandArguments extends node.ICommandArgs {
@@ -27,11 +28,19 @@ export class DigraphsCommand extends node.CommandBase {
     }
     const digraphKeyAndContent = new Array<any>();
 
-    for (let digraphKey of Object.keys(AllDigraphs)) {
-      let [char, charCode] = AllDigraphs[digraphKey];
+    for (let digraphKey of Object.keys(configuration.customDigraphs)) {
+      let charDesc = configuration.customDigraphs[digraphKey][0];
       digraphKeyAndContent.push({
         label: digraphKey,
-        description: `${char} [${charCode}]`,
+        description: `${charDesc} (user)`,
+      });
+    }
+
+    for (let digraphKey of Object.keys(DefaultDigraphs)) {
+      let charDesc = DefaultDigraphs[digraphKey][0];
+      digraphKeyAndContent.push({
+        label: digraphKey,
+        description: charDesc,
       });
     }
 
