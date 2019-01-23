@@ -1478,9 +1478,7 @@ export class PutCommand extends BaseCommand {
     } else {
       if (text.indexOf('\n') === -1) {
         if (!position.isLineEnd()) {
-          if (
-            register.registerMode === RegisterMode.BlockWise
-          ) {
+          if (register.registerMode === RegisterMode.BlockWise) {
             if (after) {
               diff = new PositionDiff(0, -1 * text.length);
             } else {

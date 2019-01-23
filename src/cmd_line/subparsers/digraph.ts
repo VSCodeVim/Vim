@@ -9,7 +9,7 @@ export function parseDigraphCommandArgs(args: string): node.DigraphsCommand {
   let scanner = new Scanner(args);
   let name = scanner.nextWord();
 
-  return new node.DigraphsCommand ({
+  return new node.DigraphsCommand({
     arg: name,
   });
 }
