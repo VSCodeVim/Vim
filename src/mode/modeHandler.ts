@@ -5,7 +5,6 @@ import { Actions, BaseAction, KeypressState } from './../actions/base';
 import { BaseMovement, isIMovement } from './../actions/motion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Decoration } from '../configuration/decoration';
-import { Globals } from '../globals';
 import { Jump } from '../jumps/jump';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
@@ -22,7 +21,6 @@ import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { getCursorsAfterSync } from '../util/util';
 import { logger } from '../util/logger';
-import { taskQueue } from './../taskQueue';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -45,10 +43,16 @@ export class ModeHandler implements vscode.Disposable {
     return this._modes.find(mode => mode.isActive)!;
   }
 
-  /**
-   * Called back when initialization completes
-   */
-  constructor(cb: (err?: Error) => void) {
+  public static async Create(textEditor = vscode.window.activeTextEditor!): Promise<ModeHandler> {
+    const modeHandler = new ModeHandler(textEditor);
+    await modeHandler.setCurrentMode(
+      configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal
+    );
+    await modeHandler.syncCursors();
+    return modeHandler;
+  }
+
+  private constructor(textEditor: vscode.TextEditor) {
     this._remappers = new Remappers();
     this._modes = [
       new modes.NormalMode(),
@@ -65,23 +69,26 @@ export class ModeHandler implements vscode.Disposable {
       new modes.DisabledMode(),
     ];
 
-    this.vimState = new VimState(vscode.window.activeTextEditor!, configuration.enableNeovim);
-    this.setCurrentMode(configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal)
-      .then(() => {
-        // Sometimes, Visual Studio Code will start the cursor in a position which
-        // is not (0, 0) - e.g., if you previously edited the file and left the
-        // cursor somewhere else when you closed it. This will set our cursor's
-        // position to the position that VSC set it to.
+    this.vimState = new VimState(textEditor, configuration.enableNeovim);
+    this._disposables.push(this.vimState);
+  }
 
-        // This also makes things like gd work.
-        // For whatever reason, the editor positions aren't updated until after the
-        // stack clears, which is why this setTimeout is necessary
-        this.syncCursors();
-        this._disposables.push(this.vimState);
-
-        cb();
-      })
-      .catch(cb);
+  /**
+   * Syncs cursors between vscode representation and vim representation
+   */
+  public async syncCursors() {
+    return require('util').promisify(setTimeout)(() => {
+      if (this.vimState.editor) {
+        this.vimState.cursorStartPosition = Position.FromVSCodePosition(
+          this.vimState.editor.selection.start
+        );
+        this.vimState.cursorPosition = Position.FromVSCodePosition(
+          this.vimState.editor.selection.start
+        );
+        this.vimState.desiredColumn = this.vimState.cursorPosition.character;
+        this.vimState.prevSelection = this.vimState.editor.selection;
+      }
+    }, 0);
   }
 
   /**
@@ -233,14 +240,7 @@ export class ModeHandler implements vscode.Disposable {
     }
   }
 
-  private async setCurrentMode(modeName: ModeName): Promise<void> {
-    await this.vimState.setCurrentMode(modeName);
-    for (let mode of this._modes) {
-      mode.isActive = mode.name === modeName;
-    }
-  }
-
-  async handleKeyEvent(key: string): Promise<Boolean> {
+  public async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
     logger.debug(`ModeHandler: handling key=${key}.`);
@@ -1391,6 +1391,13 @@ export class ModeHandler implements vscode.Disposable {
     await VsCodeContext.Set('vim.mode', ModeName[this.vimState.currentMode]);
   }
 
+  private async setCurrentMode(modeName: ModeName): Promise<void> {
+    await this.vimState.setCurrentMode(modeName);
+    for (let mode of this._modes) {
+      mode.isActive = mode.name === modeName;
+    }
+  }
+
   private _renderStatusBar(): void {
     let text: string[] = [];
 
@@ -1450,23 +1457,6 @@ export class ModeHandler implements vscode.Disposable {
 
   dispose() {
     this._disposables.map(d => d.dispose());
-  }
-
-  // Syncs cursors between vscode representation and vim representation
-  syncCursors() {
-    setTimeout(() => {
-      if (this.vimState.editor) {
-        this.vimState.cursorStartPosition = Position.FromVSCodePosition(
-          this.vimState.editor.selection.start
-        );
-        this.vimState.cursorPosition = Position.FromVSCodePosition(
-          this.vimState.editor.selection.start
-        );
-        this.vimState.desiredColumn = this.vimState.cursorPosition.character;
-
-        this.vimState.prevSelection = this.vimState.editor.selection;
-      }
-    }, 0);
   }
 
   private IsModeWhereCmdVIsOverriden(mode: ModeName): boolean {
