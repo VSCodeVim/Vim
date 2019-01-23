@@ -86,7 +86,6 @@ export class ModeHandler implements vscode.Disposable {
           this.vimState.editor.selection.start
         );
         this.vimState.desiredColumn = this.vimState.cursorPosition.character;
-        this.vimState.prevSelection = this.vimState.editor.selection;
       }
     }, 0);
   }
@@ -123,19 +122,18 @@ export class ModeHandler implements vscode.Disposable {
             Position.FromVSCodePosition(sel.active)
           )
       );
-      await this.updateView(this.vimState);
-      return;
+      return this.updateView(this.vimState);
     }
 
     /**
      * We only trigger our view updating process if it's a mouse selection.
-     * Otherwise we only update our internal cursor postions accordingly.
+     * Otherwise we only update our internal cursor positions accordingly.
      */
     if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
       if (selection) {
         if (this.currentMode.isVisualMode) {
           /**
-           * In Visual Mode, our `cursorPosition` and `cursorStartPosition` can not refect `active`,
+           * In Visual Mode, our `cursorPosition` and `cursorStartPosition` can not reflect `active`,
            * `start`, `end` and `anchor` information in a selection.
            * See `Fake block cursor with text decoration` section of `updateView` method.
            */
@@ -152,15 +150,10 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.isMultiCursor = false;
     }
 
-    if (this.vimState.prevSelection && this.vimState.prevSelection.isEqual(selection)) {
-      return;
-    }
-
-    if (this.vimState.currentMode === ModeName.SearchInProgressMode) {
-      return;
-    }
-
-    if (this.vimState.currentMode === ModeName.CommandlineInProgress) {
+    if (
+      this.vimState.currentMode === ModeName.SearchInProgressMode ||
+      this.vimState.currentMode === ModeName.CommandlineInProgress
+    ) {
       return;
     }
 
@@ -230,13 +223,11 @@ export class ModeHandler implements vscode.Disposable {
 
           // double click mouse selection causes an extra character to be selected so take one less character
         }
-      } else {
-        if (this.vimState.currentMode !== ModeName.Insert) {
-          await this.setCurrentMode(ModeName.Normal);
-        }
+      } else if (this.vimState.currentMode !== ModeName.Insert) {
+        await this.setCurrentMode(ModeName.Normal);
       }
 
-      await this.updateView(this.vimState, { drawSelection: toDraw, revealRange: true });
+      return this.updateView(this.vimState, { drawSelection: toDraw, revealRange: true });
     }
   }
 
@@ -1273,7 +1264,6 @@ export class ModeHandler implements vscode.Disposable {
         }
       }
 
-      this.vimState.prevSelection = selections[0];
       if (
         vimState.recordedState.actionsRun.filter(x => x instanceof DocumentContentChangeAction)
           .length === 0
