@@ -82,9 +82,9 @@ export class GlobalState {
     }
   }
 
-  public addNewSearchHistoryItem(searchString: string) {
+  public async addNewSearchHistoryItem(searchString: string) {
     if (GlobalState._searchHistory !== undefined) {
-      GlobalState._searchHistory.add(searchString);
+      await GlobalState._searchHistory.add(searchString);
     }
   }
 

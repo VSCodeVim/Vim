@@ -243,9 +243,9 @@ export abstract class CommandBase {
   }
   protected _arguments: ICommandArgs;
 
-  abstract execute(vimState: VimState): void;
+  abstract execute(vimState: VimState): Promise<void>;
 
-  executeWithRange(vimState: VimState, range: LineRange): void {
+  executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     throw new Error('Not implemented!');
   }
 }

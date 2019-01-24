@@ -157,7 +157,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       // Delete modehandler once all tabs of this document have been closed
       for (let editorIdentity of ModeHandlerMap.getKeys()) {
-        let modeHandler = await ModeHandlerMap.get(editorIdentity);
+        const modeHandler = ModeHandlerMap.get(editorIdentity);
 
         if (
           modeHandler == null ||
