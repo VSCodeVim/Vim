@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 
-import { ModeName } from '../mode/mode';
-import { BaseMovement } from './../actions/motion';
+import { BaseMovement } from '../actions/motion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
-import { Position } from './../common/motion/position';
-import { Range } from './../common/motion/range';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
-import { RegisterMode } from './../register/register';
-import { GlobalState } from './../state/globalState';
-import { ReplaceState } from './../state/replaceState';
-import { RecordedState } from './recordedState';
-import { NeovimWrapper } from '../neovim/neovim';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
+import { ModeName } from '../mode/mode';
+import { NeovimWrapper } from '../neovim/neovim';
+import { Position } from './../common/motion/position';
+import { Range } from './../common/motion/range';
+import { RecordedState } from './recordedState';
+import { RegisterMode } from './../register/register';
+import { ReplaceState } from './../state/replaceState';
+import { globalState } from './../state/globalState';
 import { logger } from '../util/logger';
 
 /**
@@ -62,12 +62,12 @@ export class VimState implements vscode.Disposable {
   /**
    * Tracks movements that can be repeated with ; (e.g. t, T, f, and F).
    */
-  public static lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
+  public lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
 
   /**
    * Tracks movements that can be repeated with , (e.g. t, T, f, and F).
    */
-  public static lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
+  public lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
 
   public lastMovementFailed: boolean = false;
 
@@ -115,7 +115,7 @@ export class VimState implements vscode.Disposable {
    */
   public keyHistory: string[] = [];
 
-  public globalState: GlobalState = new GlobalState();
+  public globalState = globalState;
 
   /**
    * The position the cursor will be when this action finishes.
