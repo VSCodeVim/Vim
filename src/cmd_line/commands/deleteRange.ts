@@ -66,7 +66,7 @@ export class DeleteRangeCommand extends node.CommandBase {
     Register.putByKey(text, this._arguments.register, RegisterMode.LineWise);
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange) {
+  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     let start: vscode.Position;
     let end: vscode.Position;
 

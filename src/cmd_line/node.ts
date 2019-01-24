@@ -215,9 +215,9 @@ export class CommandLine {
     }
 
     if (this.range.isEmpty) {
-      this.command.execute(vimState);
+      await this.command.execute(vimState);
     } else {
-      this.command.executeWithRange(vimState, this.range);
+      await this.command.executeWithRange(vimState, this.range);
     }
   }
 }
@@ -243,9 +243,9 @@ export abstract class CommandBase {
   }
   protected _arguments: ICommandArgs;
 
-  abstract execute(vimState: VimState): void;
+  abstract execute(vimState: VimState): Promise<void>;
 
-  executeWithRange(vimState: VimState, range: LineRange): void {
+  executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     throw new Error('Not implemented!');
   }
 }
