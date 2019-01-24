@@ -113,7 +113,7 @@ export abstract class BaseMovement extends BaseAction {
     position: Position,
     vimState: VimState
   ): Promise<Position | IMovement> {
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 
   /**
@@ -783,7 +783,7 @@ class MoveRepeat extends BaseMovement {
   ): Promise<Position | IMovement> {
     const movement = VimState.lastSemicolonRepeatableMovement;
     if (movement) {
-      return await movement.execActionWithCount(position, vimState, count);
+      return movement.execActionWithCount(position, vimState, count);
     }
     return position;
   }
@@ -800,7 +800,7 @@ class MoveRepeatReversed extends BaseMovement {
   ): Promise<Position | IMovement> {
     const movement = VimState.lastCommaRepeatableMovement;
     if (movement) {
-      return await movement.execActionWithCount(position, vimState, count);
+      return movement.execActionWithCount(position, vimState, count);
     }
     return position;
   }
@@ -1038,7 +1038,7 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
     count: number
   ): Promise<Position | IMovement> {
     this.value = count < 1 ? 1 : count;
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 }
 
@@ -1056,7 +1056,7 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
     count: number
   ): Promise<Position | IMovement> {
     this.value = count < 1 ? 1 : count;
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 }
 

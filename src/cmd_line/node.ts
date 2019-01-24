@@ -215,9 +215,9 @@ export class CommandLine {
     }
 
     if (this.range.isEmpty) {
-      await this.command.execute(vimState);
+      this.command.execute(vimState);
     } else {
-      await this.command.executeWithRange(vimState, this.range);
+      this.command.executeWithRange(vimState, this.range);
     }
   }
 }
