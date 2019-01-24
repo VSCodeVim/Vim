@@ -1,9 +1,6 @@
 import * as assert from 'assert';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { ModeName } from '../../src/mode/mode';
 import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Handler Map', () => {
   setup(() => {

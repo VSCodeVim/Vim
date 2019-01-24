@@ -177,6 +177,7 @@ export class VimState implements vscode.Disposable {
    */
   public lastVisualSelectionStart: Position;
   public lastVisualSelectionEnd: Position;
+
   /**
    * Was the previous mouse click past EOL
    */
@@ -220,13 +221,6 @@ export class VimState implements vscode.Disposable {
   public recordedState = new RecordedState();
 
   public recordedMacro = new RecordedState();
-
-  /**
-   * Programmatically triggering an edit will unfortunately ALSO trigger our mouse update
-   * function. We use this variable to determine if the update function was triggered
-   * by us or by a mouse action.
-   */
-  public prevSelection: vscode.Selection;
 
   public nvim: NeovimWrapper;
 
