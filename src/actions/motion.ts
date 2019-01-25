@@ -1,20 +1,20 @@
 import * as vscode from 'vscode';
 
-import { PairMatcher } from './../common/matching/matcher';
-import { QuoteMatcher } from './../common/matching/quoteMatcher';
-import { TagMatcher } from './../common/matching/tagMatcher';
-import { Position, PositionDiff } from './../common/motion/position';
-import { configuration } from './../configuration/configuration';
+import { BaseAction } from './base';
+import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
+import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { ModeName } from './../mode/mode';
+import { PairMatcher } from './../common/matching/matcher';
+import { Position, PositionDiff } from './../common/motion/position';
+import { QuoteMatcher } from './../common/matching/quoteMatcher';
+import { RecordedState } from '../state/recordedState';
+import { RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
+import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
-import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
-import { BaseAction } from './base';
-import { RegisterAction } from './base';
-import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
+import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
-import { RecordedState } from '../state/recordedState';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -113,7 +113,7 @@ export abstract class BaseMovement extends BaseAction {
     position: Position,
     vimState: VimState
   ): Promise<Position | IMovement> {
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 
   /**
@@ -663,8 +663,14 @@ class MoveFindForward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
-      VimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+      vimState.lastSemicolonRepeatableMovement = new MoveFindForward(
+        this.keysPressed,
+        true
+      );
+      vimState.lastCommaRepeatableMovement = new MoveFindBackward(
+        this.keysPressed,
+        true
+      );
     }
 
     return result;
@@ -692,8 +698,14 @@ class MoveFindBackward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
-      VimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+      vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(
+        this.keysPressed,
+        true
+      );
+      vimState.lastCommaRepeatableMovement = new MoveFindForward(
+        this.keysPressed,
+        true
+      );
     }
 
     return result;
@@ -730,8 +742,14 @@ class MoveTilForward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
-      VimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
+      vimState.lastSemicolonRepeatableMovement = new MoveTilForward(
+        this.keysPressed,
+        true
+      );
+      vimState.lastCommaRepeatableMovement = new MoveTilBackward(
+        this.keysPressed,
+        true
+      );
     }
 
     return result;
@@ -764,8 +782,11 @@ class MoveTilBackward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      VimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
-      VimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+      vimState.lastSemicolonRepeatableMovement = new MoveTilBackward(
+        this.keysPressed,
+        true
+      );
+      vimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
     }
 
     return result;
@@ -781,9 +802,9 @@ class MoveRepeat extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const movement = VimState.lastSemicolonRepeatableMovement;
+    const movement = vimState.lastSemicolonRepeatableMovement;
     if (movement) {
-      return await movement.execActionWithCount(position, vimState, count);
+      return movement.execActionWithCount(position, vimState, count);
     }
     return position;
   }
@@ -798,9 +819,9 @@ class MoveRepeatReversed extends BaseMovement {
     vimState: VimState,
     count: number
   ): Promise<Position | IMovement> {
-    const movement = VimState.lastCommaRepeatableMovement;
+    const movement = vimState.lastCommaRepeatableMovement;
     if (movement) {
-      return await movement.execActionWithCount(position, vimState, count);
+      return movement.execActionWithCount(position, vimState, count);
     }
     return position;
   }
@@ -1038,7 +1059,7 @@ class MoveToLineFromViewPortTop extends MoveByScreenLine {
     count: number
   ): Promise<Position | IMovement> {
     this.value = count < 1 ? 1 : count;
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 }
 
@@ -1056,7 +1077,7 @@ class MoveToLineFromViewPortBottom extends MoveByScreenLine {
     count: number
   ): Promise<Position | IMovement> {
     this.value = count < 1 ? 1 : count;
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 }
 

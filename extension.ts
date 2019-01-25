@@ -10,7 +10,6 @@ import * as vscode from 'vscode';
 
 import { CompositionState } from './src/state/compositionState';
 import { EditorIdentity } from './src/editorIdentity';
-import { GlobalState } from './src/state/globalState';
 import { Globals } from './src/globals';
 import { Jump } from './src/jumps/jump';
 import { ModeHandler } from './src/mode/modeHandler';
@@ -23,10 +22,10 @@ import { VsCodeContext } from './src/util/vscode-context';
 import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
 import { configurationValidator } from './src/configuration/configurationValidator';
+import { globalState } from './src/state/globalState';
 import { logger } from './src/util/logger';
 import { taskQueue } from './src/taskQueue';
 
-const globalState = new GlobalState();
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
 let lastClosedModeHandler: ModeHandler | null = null;
@@ -127,12 +126,8 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     };
 
-    if (Globals.isTesting) {
-      if (Globals.mockModeHandler) {
-        contentChangeHandler(Globals.mockModeHandler as ModeHandler);
-      } else {
-        logger.warn('onDidChangeTextDocument: No mock mode handler set');
-      }
+    if (Globals.isTesting && Globals.mockModeHandler) {
+      contentChangeHandler(Globals.mockModeHandler as ModeHandler);
     } else {
       _.filter(
         ModeHandlerMap.getAll(),
@@ -157,7 +152,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       // Delete modehandler once all tabs of this document have been closed
       for (let editorIdentity of ModeHandlerMap.getKeys()) {
-        let modeHandler = await ModeHandlerMap.get(editorIdentity);
+        const modeHandler = ModeHandlerMap.get(editorIdentity);
 
         if (
           modeHandler == null ||
