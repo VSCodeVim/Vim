@@ -519,6 +519,8 @@ class CommandEsc extends BaseCommand {
       // of vscode's default "close notification" actions. I think we should
       // just add to this list as needed.
       await vscode.commands.executeCommand('closeReferenceSearchEditor');
+      await vscode.commands.executeCommand('closeMarkersNavigation');
+
       return vimState;
     }
 
