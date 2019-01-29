@@ -5,7 +5,7 @@ import { ConsoleForElectron } from 'winston-console-for-electron';
 import { configuration } from '../configuration/configuration';
 
 interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
-  section?: string;
+  prefix?: string;
 }
 
 /**
@@ -13,13 +13,13 @@ interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
  * Displays VS Code message to user
  */
 class VsCodeMessage extends TransportStream {
-  section?: string;
+  prefix?: string;
   actionMessages = ['Dismiss', 'Suppress Errors'];
 
   constructor(options: VsCodeMessageOptions) {
     super(options);
 
-    this.section = options.section;
+    this.prefix = options.prefix;
   }
 
   public async log(info: { level: string; message: string }, callback: Function) {
@@ -44,8 +44,8 @@ class VsCodeMessage extends TransportStream {
     }
 
     let message = info.message;
-    if (this.section) {
-      message = this.section + ': ' + message;
+    if (this.prefix) {
+      message = this.prefix + ': ' + message;
     }
 
     let selectedAction = await showMessage(message, ...this.actionMessages);
@@ -63,17 +63,18 @@ class VsCodeMessage extends TransportStream {
 }
 
 export class Logger {
-  static get(section?: string): winston.Logger {
+  static get(prefix?: string): winston.Logger {
     return winston.createLogger({
       format: winston.format.simple(),
       transports: [
         new ConsoleForElectron({
           level: configuration.debug.loggingLevelForConsole,
           silent: configuration.debug.silent,
+          prefix: prefix,
         }),
         new VsCodeMessage({
           level: configuration.debug.loggingLevelForAlert,
-          section: section,
+          prefix: prefix,
         }),
       ],
     });
