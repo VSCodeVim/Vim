@@ -79,7 +79,7 @@ export class Remapper implements IRemapper {
       return false;
     }
 
-    const userDefinedRemappings = configuration[this._configKey];
+    const userDefinedRemappings = configuration[this._configKey] as Map<string, IKeyRemapping>;
 
     this._logger.debug(
       `find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}.`
@@ -180,13 +180,15 @@ export class Remapper implements IRemapper {
   }
 
   protected static findMatchingRemap(
-    userDefinedRemappings: { [key: string]: IKeyRemapping },
+    userDefinedRemappings: Map<string, IKeyRemapping>,
     inputtedKeys: string[],
     currentMode: ModeName
-  ) {
-    let remapping: IKeyRemapping | undefined;
+  ): IKeyRemapping | undefined {
+    if (userDefinedRemappings.size === 0) {
+      return;
+    }
 
-    let range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
+    const range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
     const startingSliceLength = Math.max(range[1], inputtedKeys.length);
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
@@ -205,26 +207,24 @@ export class Remapper implements IRemapper {
           }
         }
 
-        remapping = userDefinedRemappings[keySlice];
-        break;
+        return userDefinedRemappings[keySlice];
       }
     }
 
-    return remapping;
+    return;
   }
 
   /**
    * Given list of remappings, returns the length of the shortest and longest remapped keys
    * @param remappings
    */
-  protected static getRemappedKeysLengthRange(remappings: {
-    [key: string]: IKeyRemapping;
-  }): [number, number] {
-    const keys = Object.keys(remappings);
-    if (keys.length === 0) {
-      return [0, 0];
-    }
-    return [_.minBy(keys, m => m.length)!.length, _.maxBy(keys, m => m.length)!.length];
+  protected static getRemappedKeysLengthRange(
+    remappings: Map<string, IKeyRemapping>
+  ): [number, number] {
+    return [
+      _.minBy(Array.from(remappings.keys()), m => m.length)!.length,
+      _.maxBy(Array.from(remappings.keys()), m => m.length)!.length,
+    ];
   }
 }
 

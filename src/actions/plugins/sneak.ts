@@ -21,10 +21,7 @@ class SneakForward extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (!this.isRepeat) {
-      vimState.lastSemicolonRepeatableMovement = new SneakForward(
-        this.keysPressed,
-        true
-      );
+      vimState.lastSemicolonRepeatableMovement = new SneakForward(this.keysPressed, true);
       vimState.lastCommaRepeatableMovement = new SneakBackward(this.keysPressed, true);
     }
 
@@ -79,10 +76,7 @@ class SneakBackward extends BaseMovement {
 
   public async execAction(position: Position, vimState: VimState): Promise<Position | IMovement> {
     if (!this.isRepeat) {
-      vimState.lastSemicolonRepeatableMovement = new SneakBackward(
-        this.keysPressed,
-        true
-      );
+      vimState.lastSemicolonRepeatableMovement = new SneakBackward(this.keysPressed, true);
       vimState.lastCommaRepeatableMovement = new SneakForward(this.keysPressed, true);
     }
 

@@ -73,16 +73,16 @@ suite('Remapper', () => {
     }
 
     public findMatchingRemap(
-      userDefinedRemappings: { [key: string]: IKeyRemapping },
+      userDefinedRemappings: Map<string, IKeyRemapping>,
       inputtedKeys: string[],
       currentMode: ModeName
     ) {
       return TestRemapper.findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
     }
 
-    public getRemappedKeySequenceLengthRange(remappings: {
-      [key: string]: IKeyRemapping;
-    }): [number, number] {
+    public getRemappedKeySequenceLengthRange(
+      remappings: Map<string, IKeyRemapping>
+    ): [number, number] {
       return TestRemapper.getRemappedKeysLengthRange(remappings);
     }
   }
@@ -117,11 +117,11 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    let remappings: { [key: string]: IKeyRemapping } = {
-      abc: { before: ['a', 'b', 'c'] },
-      de: { before: ['d', 'e'] },
-      f: { before: ['f'] },
-    };
+    let remappings: Map<string, IKeyRemapping> = new Map([
+      ['abc', { before: ['a', 'b', 'c'] }],
+      ['de', { before: ['d', 'e'] }],
+      ['f', { before: ['f'] }],
+    ]);
 
     // act
     const testRemapper = new TestRemapper();
@@ -202,7 +202,7 @@ suite('Remapper', () => {
 
     for (const testCase of testCases) {
       // setup
-      let remappings: { [key: string]: IKeyRemapping } = {};
+      let remappings: Map<string, IKeyRemapping> = new Map();
       remappings[testCase.before] = {
         before: testCase.before.split(''),
         after: testCase.after.split(''),
