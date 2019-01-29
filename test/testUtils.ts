@@ -135,7 +135,7 @@ export async function cleanUpWorkspace(): Promise<any> {
 }
 
 export function reloadConfiguration() {
-  require('../src/configuration/configuration').configuration.reload();
+  require('../src/configuration/configuration').configuration.load();
 }
 
 /**

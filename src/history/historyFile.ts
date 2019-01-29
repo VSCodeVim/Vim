@@ -1,13 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { promisify } from 'util';
+import { Logger } from '../util/logger';
 import { configuration } from '../configuration/configuration';
-import { logger } from '../util/logger';
 import { getExtensionDirPath } from '../util/util';
+import { promisify } from 'util';
 
 const mkdirp = require('mkdirp');
 
 export class HistoryFile {
+  private readonly _logger = Logger.get('HistoryFile');
   private _historyFileName: string;
   private _historyDir: string;
   private _history: string[] = [];
@@ -57,7 +58,7 @@ export class HistoryFile {
       this._history = [];
       fs.unlinkSync(this.historyFilePath);
     } catch (err) {
-      logger.warn(`historyFile: Unable to delete ${this.historyFilePath}. err=${err}.`);
+      this._logger.warn(`Unable to delete ${this.historyFilePath}. err=${err}.`);
     }
   }
 
@@ -68,9 +69,9 @@ export class HistoryFile {
       data = await promisify(fs.readFile)(this.historyFilePath, 'utf-8');
     } catch (err) {
       if (err.code === 'ENOENT') {
-        logger.debug(`historyFile: History does not exist. path=${this._historyDir}`);
+        this._logger.debug(`History does not exist. path=${this._historyDir}`);
       } else {
-        logger.warn(`historyFile: Failed to load history. path=${this._historyDir} err=${err}.`);
+        this._logger.warn(`Failed to load history. path=${this._historyDir} err=${err}.`);
       }
       return;
     }
@@ -86,9 +87,7 @@ export class HistoryFile {
       }
       this._history = parsedData;
     } catch (e) {
-      logger.warn(
-        `historyFile: Deleting corrupted history file. path=${this._historyDir} err=${e}.`
-      );
+      this._logger.warn(`Deleting corrupted history file. path=${this._historyDir} err=${e}.`);
       this.clear();
     }
   }
@@ -100,9 +99,7 @@ export class HistoryFile {
       // create file
       await promisify(fs.writeFile)(this.historyFilePath, JSON.stringify(this._history), 'utf-8');
     } catch (err) {
-      logger.error(
-        `historyFile: Failed to save history. filepath=${this.historyFilePath}. err=${err}.`
-      );
+      this._logger.error(`Failed to save history. filepath=${this.historyFilePath}. err=${err}.`);
       throw err;
     }
   }

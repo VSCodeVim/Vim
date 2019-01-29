@@ -1,9 +1,9 @@
-import { Position } from './../common/motion/position';
+import { Logger } from '../util/logger';
 import { Mode, ModeName } from './mode';
+import { Position } from './../common/motion/position';
+import { SearchDirection } from '../state/searchState';
 import { VSCodeVimCursorType } from './mode';
 import { VimState } from '../state/vimState';
-import { SearchDirection } from '../state/searchState';
-import { logger } from '../util/logger';
 
 export enum VisualBlockInsertionType {
   /**
@@ -60,13 +60,15 @@ export class VisualLineMode extends Mode {
 }
 
 export class SearchInProgressMode extends Mode {
+  private readonly _logger = Logger.get('SearchInProgressMode');
+
   constructor() {
     super(ModeName.SearchInProgressMode, '', VSCodeVimCursorType.Block);
   }
 
   getStatusBarText(vimState: VimState): string {
     if (vimState.globalState.searchState === undefined) {
-      logger.warn(`SearchInProgressMode: vimState.globalState.searchState is undefined.`);
+      this._logger.warn(`vimState.globalState.searchState is undefined.`);
       return '';
     }
     const leadingChar =

@@ -1,14 +1,12 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
-
 import { IKeyRemapping } from './iconfiguration';
+import { Logger } from '../util/logger';
 import { ModeHandler } from '../mode/modeHandler';
 import { ModeName } from '../mode/mode';
 import { VimState } from './../state/vimState';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
-import { configurationValidator } from './configurationValidator';
-import { logger } from '../util/logger';
 
 interface IRemapper {
   /**
@@ -57,6 +55,7 @@ export class Remapper implements IRemapper {
   private readonly _configKey: string;
   private readonly _remappedModes: ModeName[];
   private readonly _recursive: boolean;
+  private readonly _logger = Logger.get('Remapper');
 
   private _isPotentialRemap = false;
   get isPotentialRemap(): boolean {
@@ -82,8 +81,8 @@ export class Remapper implements IRemapper {
 
     const userDefinedRemappings = this._getRemappings();
 
-    logger.debug(
-      `Remapper: find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}.`
+    this._logger.debug(
+      `find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}.`
     );
     let remapping: IKeyRemapping | undefined = Remapper.findMatchingRemap(
       userDefinedRemappings,
@@ -92,8 +91,8 @@ export class Remapper implements IRemapper {
     );
 
     if (remapping) {
-      logger.debug(
-        `Remapper: ${this._configKey}. match found. before=${remapping.before}. after=${
+      this._logger.debug(
+        `${this._configKey}. match found. before=${remapping.before}. after=${
           remapping.after
         }. command=${remapping.commands}.`
       );
@@ -191,7 +190,6 @@ export class Remapper implements IRemapper {
         debugMsg += `after=${remapping.after}. `;
       }
 
-      let isCommandValid = true;
       if (remapping.commands) {
         for (const command of remapping.commands) {
           let cmd: string;
@@ -206,31 +204,11 @@ export class Remapper implements IRemapper {
           }
 
           debugMsg += `command=${cmd}. args=${args}.`;
-
-          if (!configurationValidator.isCommandValid(cmd)) {
-            debugMsg += ` Command does not exist.`;
-            isCommandValid = false;
-          }
         }
       }
 
-      if (!remapping.after && !remapping.commands) {
-        logger.error(
-          `Remapper: ${this._configKey}.
-          Invalid configuration. Missing 'after' key or 'command'. ${debugMsg}`
-        );
-        continue;
-      }
-
-      const keys = remapping.before.join('');
-      if (keys in remappings) {
-        logger.error(`Remapper: ${this._configKey}. Duplicate configuration. ${debugMsg}`);
-        continue;
-      }
-
-      let log = (msg: string) => (isCommandValid ? logger.debug(msg) : logger.warn(msg));
-      log(`Remapper: ${this._configKey}. ${debugMsg}`);
-      remappings[keys] = remapping;
+      this._logger.debug(`${this._configKey}. ${debugMsg}`);
+      remappings[remapping.before.join('')] = remapping;
     }
 
     return remappings;
