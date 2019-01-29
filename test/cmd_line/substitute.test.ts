@@ -220,9 +220,9 @@ suite('Basic substitute', () => {
   });
 
   suite('Effects of substituteGlobalFlag=true', () => {
-    setup(() => {
+    setup(async () => {
       Globals.mockConfiguration.substituteGlobalFlag = true;
-      reloadConfiguration();
+      await reloadConfiguration();
     });
 
     test('Replace all matches in the line', async () => {

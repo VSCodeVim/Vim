@@ -82,9 +82,9 @@ export class Remapper implements IRemapper {
     const userDefinedRemappings = configuration[this._configKey] as Map<string, IKeyRemapping>;
 
     this._logger.debug(
-      `find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}. keybindings=${
-        this._configKey
-      }.`
+      `trying to find matching remap. keys=${keys}. mode=${
+        ModeName[vimState.currentMode]
+      }. keybindings=${this._configKey}.`
     );
     let remapping: IKeyRemapping | undefined = Remapper.findMatchingRemap(
       userDefinedRemappings,
@@ -113,7 +113,7 @@ export class Remapper implements IRemapper {
     }
 
     // Check to see if a remapping could potentially be applied when more keys are received
-    for (let remap of Object.keys(userDefinedRemappings)) {
+    for (let remap of userDefinedRemappings.keys()) {
       if (keys.join('') === remap.slice(0, keys.length)) {
         this._isPotentialRemap = true;
         break;

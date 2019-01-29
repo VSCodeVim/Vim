@@ -313,19 +313,18 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
-    // Just nope right out of here.
     if (vscode.window.activeTextEditor !== this.vimState.editor) {
+      this._logger.warn('Current window is not active');
       return this.vimState;
     }
 
     // Catch any text change not triggered by us (example: tab completion).
     vimState.historyTracker.addChange(this.vimState.cursorPositionJustBeforeAnythingHappened);
 
-    let recordedState = vimState.recordedState;
-
-    recordedState.actionKeys.push(key);
-
     vimState.keyHistory.push(key);
+
+    let recordedState = vimState.recordedState;
+    recordedState.actionKeys.push(key);
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
     switch (result) {
