@@ -87,21 +87,23 @@ class Configuration implements IConfiguration {
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
-    // normalize remapped keys
-    const keybindingList: IKeyRemapping[][] = [
-      this.insertModeKeyBindings,
-      this.insertModeKeyBindingsNonRecursive,
-      this.normalModeKeyBindings,
-      this.normalModeKeyBindingsNonRecursive,
-      this.visualModeKeyBindings,
-      this.visualModeKeyBindingsNonRecursive,
+    // remapped keys
+    const modeKeyBindingsKeys = [
+      'insertModeKeyBindings',
+      'insertModeKeyBindingsNonRecursive',
+      'normalModeKeyBindings',
+      'normalModeKeyBindingsNonRecursive',
+      'visualModeKeyBindings',
+      'visualModeKeyBindingsNonRecursive',
     ];
-    for (const keybindings of keybindingList) {
-      const keybindingMap: { [key: string]: {} } = Object.create(null);
+    for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
+      let keybindings = configuration[modeKeyBindingsKey];
 
+      const modeKeyBindingsMap = new Map<string, IKeyRemapping>();
       for (let i = keybindings.length - 1; i >= 0; i--) {
         let remapping = keybindings[i];
 
+        // validate
         let remappingErrors = await configurationValidator.isRemappingValid(remapping);
         configurationErrors = configurationErrors.concat(remappingErrors);
 
@@ -111,6 +113,7 @@ class Configuration implements IConfiguration {
           continue;
         }
 
+        // normalize
         if (remapping.before) {
           remapping.before.forEach(
             (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, this.leader))
@@ -124,16 +127,19 @@ class Configuration implements IConfiguration {
         }
 
         const keys = remapping.before.join('');
-        if (keys in keybindingMap) {
+        if (keys in modeKeyBindingsMap) {
           configurationErrors.push({
             level: 'error',
             message: `${remapping.before}. Duplicate remapped key for ${keys}.`,
           });
           continue;
-        } else {
-          keybindingMap[keys] = {};
         }
+
+        // add to map
+        modeKeyBindingsMap[keys] = remapping;
       }
+
+      configuration[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
     }
 
     // wrap keys
@@ -358,6 +364,13 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+
+  insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
 
   private static unproxify(obj: Object): Object {
     let result = {};

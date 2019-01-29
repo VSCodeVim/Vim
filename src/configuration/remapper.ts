@@ -79,7 +79,7 @@ export class Remapper implements IRemapper {
       return false;
     }
 
-    const userDefinedRemappings = this._getRemappings();
+    const userDefinedRemappings = configuration[this._configKey];
 
     this._logger.debug(
       `find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}.`
@@ -179,41 +179,6 @@ export class Remapper implements IRemapper {
     }
   }
 
-  private _getRemappings(): { [key: string]: IKeyRemapping } {
-    // Create a null object so that there is no __proto__
-    let remappings: { [key: string]: IKeyRemapping } = Object.create(null);
-
-    for (let remapping of configuration[this._configKey] as IKeyRemapping[]) {
-      let debugMsg = `before=${remapping.before}. `;
-
-      if (remapping.after) {
-        debugMsg += `after=${remapping.after}. `;
-      }
-
-      if (remapping.commands) {
-        for (const command of remapping.commands) {
-          let cmd: string;
-          let args: any[];
-
-          if (typeof command === 'string') {
-            cmd = command;
-            args = [];
-          } else {
-            cmd = command.command;
-            args = command.args;
-          }
-
-          debugMsg += `command=${cmd}. args=${args}.`;
-        }
-      }
-
-      this._logger.debug(`${this._configKey}. ${debugMsg}`);
-      remappings[remapping.before.join('')] = remapping;
-    }
-
-    return remappings;
-  }
-
   protected static findMatchingRemap(
     userDefinedRemappings: { [key: string]: IKeyRemapping },
     inputtedKeys: string[],
@@ -266,7 +231,7 @@ export class Remapper implements IRemapper {
 class InsertModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
+      'insertModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
       [ModeName.Insert, ModeName.Replace],
       recursive
     );
@@ -276,7 +241,7 @@ class InsertModeRemapper extends Remapper {
 class NormalModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      'normalModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
+      'normalModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
       [ModeName.Normal],
       recursive
     );
@@ -286,7 +251,7 @@ class NormalModeRemapper extends Remapper {
 class VisualModeRemapper extends Remapper {
   constructor(recursive: boolean) {
     super(
-      'visualModeKeyBindings' + (recursive ? '' : 'NonRecursive'),
+      'visualModeKeyBindings' + (recursive ? '' : 'NonRecursive') + 'Map',
       [ModeName.Visual, ModeName.VisualLine, ModeName.VisualBlock],
       recursive
     );
