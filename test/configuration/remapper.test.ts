@@ -203,10 +203,10 @@ suite('Remapper', () => {
     for (const testCase of testCases) {
       // setup
       let remappings: Map<string, IKeyRemapping> = new Map();
-      remappings[testCase.before] = {
+      remappings.set(testCase.before, {
         before: testCase.before.split(''),
         after: testCase.after.split(''),
-      };
+      });
 
       // act
       const testRemapper = new TestRemapper();
@@ -221,7 +221,7 @@ suite('Remapper', () => {
         assert(
           actual,
           `Expected remap for before=${testCase.before}. input=${testCase.input}. mode=${
-            testCase.mode
+            ModeName[testCase.mode]
           }.`
         );
         assert.deepEqual(actual!.after, testCase.expectedAfter.split(''));

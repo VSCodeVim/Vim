@@ -82,7 +82,9 @@ export class Remapper implements IRemapper {
     const userDefinedRemappings = configuration[this._configKey] as Map<string, IKeyRemapping>;
 
     this._logger.debug(
-      `find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}.`
+      `find matching remap. keys=${keys}. mode=${ModeName[vimState.currentMode]}. keybindings=${
+        this._configKey
+      }.`
     );
     let remapping: IKeyRemapping | undefined = Remapper.findMatchingRemap(
       userDefinedRemappings,
@@ -184,8 +186,10 @@ export class Remapper implements IRemapper {
     inputtedKeys: string[],
     currentMode: ModeName
   ): IKeyRemapping | undefined {
+    let remapping: IKeyRemapping | undefined;
+
     if (userDefinedRemappings.size === 0) {
-      return;
+      return remapping;
     }
 
     const range = Remapper.getRemappedKeysLengthRange(userDefinedRemappings);
@@ -193,7 +197,7 @@ export class Remapper implements IRemapper {
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
-      if (keySlice in userDefinedRemappings) {
+      if (userDefinedRemappings.has(keySlice)) {
         // In Insert mode, we allow users to precede remapped commands
         // with extraneous keystrokes (eg. "hello world jj")
         // In other modes, we have to precisely match the keysequence
@@ -207,11 +211,12 @@ export class Remapper implements IRemapper {
           }
         }
 
-        return userDefinedRemappings[keySlice];
+        remapping = userDefinedRemappings.get(keySlice);
+        break;
       }
     }
 
-    return;
+    return remapping;
   }
 
   /**
@@ -221,6 +226,9 @@ export class Remapper implements IRemapper {
   protected static getRemappedKeysLengthRange(
     remappings: Map<string, IKeyRemapping>
   ): [number, number] {
+    if (remappings.size === 0) {
+      return [0, 0];
+    }
     return [
       _.minBy(Array.from(remappings.keys()), m => m.length)!.length,
       _.maxBy(Array.from(remappings.keys()), m => m.length)!.length,

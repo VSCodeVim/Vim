@@ -127,7 +127,7 @@ class Configuration implements IConfiguration {
         }
 
         const keys = remapping.before.join('');
-        if (keys in modeKeyBindingsMap) {
+        if (modeKeyBindingsMap.has(keys)) {
           configurationErrors.push({
             level: 'error',
             message: `${remapping.before}. Duplicate remapped key for ${keys}.`,
@@ -136,7 +136,7 @@ class Configuration implements IConfiguration {
         }
 
         // add to map
-        modeKeyBindingsMap[keys] = remapping;
+        modeKeyBindingsMap.set(keys, remapping);
       }
 
       configuration[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;

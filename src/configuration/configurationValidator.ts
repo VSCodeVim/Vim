@@ -10,7 +10,7 @@ class ConfigurationValidator {
       return true;
     }
 
-    return (await this.getCommandMap()).get(command) || false;
+    return (await this.getCommandMap()).has(command);
   }
 
   public async isRemappingValid(remapping: IKeyRemapping): Promise<ConfigurationError[]> {
