@@ -22,6 +22,10 @@ suite('Remapper', () => {
       before: ['j', 'j'],
       after: ['<Esc>'],
     },
+    {
+      before: ['<c-e>'],
+      after: ['<Esc>'],
+    },
   ];
   const defaultNormalModeKeyBindings: IKeyRemapping[] = [
     {
@@ -77,7 +81,7 @@ suite('Remapper', () => {
       inputtedKeys: string[],
       currentMode: ModeName
     ) {
-      return TestRemapper.findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
+      return super.findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
     }
 
     public getRemappedKeySequenceLengthRange(
@@ -295,6 +299,43 @@ suite('Remapper', () => {
     // assert
     assert.equal(actual, true);
     assert.equal(vscode.window.visibleTextEditors.length, 0);
+  });
+
+  test('<c-e> -> <esc> in insert mode should go to normal mode', async () => {
+    const expectedDocumentContent = 'lorem ipsum';
+
+    // setup
+    await setupWithBindings({
+      insertModeKeyBindings: defaultInsertModeKeyBindings,
+      normalModeKeyBindings: defaultNormalModeKeyBindings,
+      visualModeKeyBindings: defaultVisualModeKeyBindings,
+    });
+
+    let remapper = new Remappers();
+
+    const edit = new vscode.WorkspaceEdit();
+    edit.insert(
+      vscode.window.activeTextEditor!.document.uri,
+      new vscode.Position(0, 0),
+      expectedDocumentContent
+    );
+    vscode.workspace.applyEdit(edit);
+
+    await modeHandler.handleKeyEvent('i');
+    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+
+    // act
+    let actual = false;
+    try {
+      actual = await remapper.sendKey(['<C-e>'], modeHandler, modeHandler.vimState);
+    } catch (e) {
+      assert.fail(e);
+    }
+
+    // assert
+    assert.equal(actual, true);
+    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.equal(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
   test('leader, w -> closeActiveEditor in normal mode through modehandler', async () => {
