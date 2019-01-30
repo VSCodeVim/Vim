@@ -72,7 +72,7 @@ async function loadConfiguration() {
   const logger = Logger.get('Configuration');
 
   const numErrors = configurationErrors.filter(e => e.level === 'error').length;
-  logger.debug(`${numErrors} found with vim configuration`);
+  logger.debug(`${numErrors} errors found with vim configuration`);
 
   if (numErrors > 0) {
     for (let configurationError of configurationErrors) {

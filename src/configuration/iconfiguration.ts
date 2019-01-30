@@ -30,13 +30,11 @@ export interface IDebugConfiguration {
 
   /**
    * Maximum level of messages to show as VS Code information message
-   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
   loggingLevelForAlert: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 
   /**
    * Maximum level of messages to log to console.
-   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
   loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 }

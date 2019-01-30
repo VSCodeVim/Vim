@@ -126,17 +126,18 @@ class Configuration implements IConfiguration {
           );
         }
 
-        const keys = remapping.before.join('');
-        if (modeKeyBindingsMap.has(keys)) {
+        // check for duplicates
+        const beforeKeys = remapping.before.join('');
+        if (modeKeyBindingsMap.has(beforeKeys)) {
           configurationErrors.push({
             level: 'error',
-            message: `${remapping.before}. Duplicate remapped key for ${keys}.`,
+            message: `${remapping.before}. Duplicate remapped key for ${beforeKeys}.`,
           });
           continue;
         }
 
         // add to map
-        modeKeyBindingsMap.set(keys, remapping);
+        modeKeyBindingsMap.set(beforeKeys, remapping);
       }
 
       configuration[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
@@ -149,6 +150,7 @@ class Configuration implements IConfiguration {
     }
 
     // read package.json for bound keys
+    // enable/disable certain key combinations
     this.boundKeyCombinations = [];
     for (let keybinding of packagejson.contributes.keybindings) {
       if (keybinding.when.indexOf('listFocus') !== -1) {
@@ -168,7 +170,6 @@ class Configuration implements IConfiguration {
       });
     }
 
-    // enable/disable certain key combinations
     for (const boundKey of this.boundKeyCombinations) {
       // By default, all key combinations are used
       let useKey = true;
