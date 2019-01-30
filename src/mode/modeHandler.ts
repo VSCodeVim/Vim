@@ -6,6 +6,7 @@ import { BaseMovement, isIMovement } from './../actions/motion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Decoration } from '../configuration/decoration';
 import { Jump } from '../jumps/jump';
+import { Logger } from '../util/logger';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { Position, PositionDiff } from './../common/motion/position';
@@ -20,7 +21,6 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { getCursorsAfterSync } from '../util/util';
-import { logger } from '../util/logger';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -36,6 +36,7 @@ export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _remappers: Remappers;
+  private readonly _logger = Logger.get('ModeHandler');
 
   public vimState: VimState;
 
@@ -234,7 +235,7 @@ export class ModeHandler implements vscode.Disposable {
   public async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
-    logger.debug(`ModeHandler: handling key=${key}.`);
+    this._logger.debug(`handling key=${key}.`);
 
     // rewrite copy
     if (configuration.overrideCopy) {
@@ -301,7 +302,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      logger.error(`ModeHandler: error handling key=${key}. err=${e}.`);
+      this._logger.error(`error handling key=${key}. err=${e}.`);
       throw e;
     }
 
@@ -312,19 +313,18 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
-    // Just nope right out of here.
     if (vscode.window.activeTextEditor !== this.vimState.editor) {
+      this._logger.warn('Current window is not active');
       return this.vimState;
     }
 
     // Catch any text change not triggered by us (example: tab completion).
     vimState.historyTracker.addChange(this.vimState.cursorPositionJustBeforeAnythingHappened);
 
-    let recordedState = vimState.recordedState;
-
-    recordedState.actionKeys.push(key);
-
     vimState.keyHistory.push(key);
+
+    let recordedState = vimState.recordedState;
+    recordedState.actionKeys.push(key);
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
     switch (result) {
@@ -735,7 +735,7 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     if (!recordedState.operator) {
-      logger.warn('recordedState.operator: ' + recordedState.operator);
+      this._logger.warn('recordedState.operator: ' + recordedState.operator);
       throw new Error("what in god's name. recordedState.operator is falsy.");
     }
 
@@ -849,7 +849,7 @@ export class ModeHandler implements vscode.Disposable {
         case 'moveCursor':
           break;
         default:
-          logger.warn(`modeHandler: Unhandled text transformation type: ${command.type}.`);
+          this._logger.warn(`Unhandled text transformation type: ${command.type}.`);
           break;
       }
 
@@ -868,7 +868,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
-        logger.debug(
+        this._logger.debug(
           `Text transformations are overlapping. Falling back to serial
            transformations. This is generally a very bad sign. Try to make
            your text transformations operate on non-overlapping ranges.`
@@ -991,7 +991,7 @@ export class ModeHandler implements vscode.Disposable {
           }
           break;
         default:
-          logger.warn(`modeHandler: Unhandled text transformation type: ${command.type}.`);
+          this._logger.warn(`Unhandled text transformation type: ${command.type}.`);
           break;
       }
     }
@@ -1258,7 +1258,7 @@ export class ModeHandler implements vscode.Disposable {
             break;
           }
           default: {
-            logger.error(`ModeHandler: unexpected selection mode. selectionMode=${selectionMode}`);
+            this._logger.error(`unexpected selection mode. selectionMode=${selectionMode}`);
             break;
           }
         }

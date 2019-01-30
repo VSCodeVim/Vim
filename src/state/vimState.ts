@@ -5,6 +5,7 @@ import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
+import { Logger } from '../util/logger';
 import { ModeName } from '../mode/mode';
 import { NeovimWrapper } from '../neovim/neovim';
 import { Position } from './../common/motion/position';
@@ -13,7 +14,6 @@ import { RecordedState } from './recordedState';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
 import { globalState } from './../state/globalState';
-import { logger } from '../util/logger';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -23,6 +23,8 @@ import { logger } from '../util/logger';
  * indicate what they want to do.
  */
 export class VimState implements vscode.Disposable {
+  private readonly logger = Logger.get('VimState');
+
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
    * be the rightmost column.
@@ -151,7 +153,7 @@ export class VimState implements vscode.Disposable {
   public set allCursors(value: Range[]) {
     for (const cursor of value) {
       if (!cursor.start.isValid(this.editor) || !cursor.stop.isValid(this.editor)) {
-        logger.debug('VimState: invalid value for set cursor position. This is probably bad?');
+        this.logger.debug('invalid value for set cursor position.');
       }
     }
 

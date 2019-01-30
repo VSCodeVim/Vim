@@ -16,14 +16,13 @@ import { ModeHandler } from './src/mode/modeHandler';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { ModeName } from './src/mode/mode';
 import { Notation } from './src/configuration/notation';
+import { Logger } from './src/util/logger';
 import { Position } from './src/common/motion/position';
 import { StatusBar } from './src/statusBar';
 import { VsCodeContext } from './src/util/vscode-context';
 import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
-import { configurationValidator } from './src/configuration/configurationValidator';
 import { globalState } from './src/state/globalState';
-import { logger } from './src/util/logger';
 import { taskQueue } from './src/taskQueue';
 
 let extensionContext: vscode.ExtensionContext;
@@ -68,21 +67,40 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
   return curHandler;
 }
 
+async function loadConfiguration() {
+  const configurationErrors = await configuration.load();
+  const logger = Logger.get('Configuration');
+
+  const numErrors = configurationErrors.filter(e => e.level === 'error').length;
+  logger.debug(`${numErrors} errors found with vim configuration`);
+
+  if (numErrors > 0) {
+    for (let configurationError of configurationErrors) {
+      switch (configurationError.level) {
+        case 'error':
+          logger.error(configurationError.message);
+          break;
+        case 'warning':
+          logger.warn(configurationError.message);
+          break;
+      }
+    }
+  }
+}
 export async function activate(context: vscode.ExtensionContext) {
-  logger.debug('Extension: activating vscodevim.');
+  // before we do anything else,
+  // we need to load the configuration first
+  await loadConfiguration();
 
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
-
-  logger.debug('Extension: registering event handlers.');
 
   // workspace events
   registerEventListener(
     context,
     vscode.workspace.onDidChangeConfiguration,
-    () => {
-      logger.debug('onDidChangeConfiguration: reloading configuration');
-      configuration.reload();
+    async () => {
+      await loadConfiguration();
     },
     false
   );
@@ -344,7 +362,6 @@ export async function activate(context: vscode.ExtensionContext) {
   await Promise.all([
     commandLine.load(),
     globalState.load(),
-    configurationValidator.initialize(),
     // This is called last because getAndUpdateModeHandler() will change cursor
     toggleExtension(configuration.disableExtension, compositionState),
   ]);

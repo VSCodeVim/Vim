@@ -663,14 +663,8 @@ class MoveFindForward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      vimState.lastSemicolonRepeatableMovement = new MoveFindForward(
-        this.keysPressed,
-        true
-      );
-      vimState.lastCommaRepeatableMovement = new MoveFindBackward(
-        this.keysPressed,
-        true
-      );
+      vimState.lastSemicolonRepeatableMovement = new MoveFindForward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
     }
 
     return result;
@@ -698,14 +692,8 @@ class MoveFindBackward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(
-        this.keysPressed,
-        true
-      );
-      vimState.lastCommaRepeatableMovement = new MoveFindForward(
-        this.keysPressed,
-        true
-      );
+      vimState.lastSemicolonRepeatableMovement = new MoveFindBackward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new MoveFindForward(this.keysPressed, true);
     }
 
     return result;
@@ -742,14 +730,8 @@ class MoveTilForward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      vimState.lastSemicolonRepeatableMovement = new MoveTilForward(
-        this.keysPressed,
-        true
-      );
-      vimState.lastCommaRepeatableMovement = new MoveTilBackward(
-        this.keysPressed,
-        true
-      );
+      vimState.lastSemicolonRepeatableMovement = new MoveTilForward(this.keysPressed, true);
+      vimState.lastCommaRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
     }
 
     return result;
@@ -782,10 +764,7 @@ class MoveTilBackward extends BaseMovement {
       !this.isRepeat &&
       (!vimState.recordedState.operator || !(isIMovement(result) && result.failed))
     ) {
-      vimState.lastSemicolonRepeatableMovement = new MoveTilBackward(
-        this.keysPressed,
-        true
-      );
+      vimState.lastSemicolonRepeatableMovement = new MoveTilBackward(this.keysPressed, true);
       vimState.lastCommaRepeatableMovement = new MoveTilForward(this.keysPressed, true);
     }
 

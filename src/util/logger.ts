@@ -4,18 +4,28 @@ import * as winston from 'winston';
 import { ConsoleForElectron } from 'winston-console-for-electron';
 import { configuration } from '../configuration/configuration';
 
+interface VsCodeMessageOptions extends TransportStream.TransportStreamOptions {
+  prefix?: string;
+}
+
 /**
  * Implementation of Winston transport
  * Displays VS Code message to user
  */
 class VsCodeMessage extends TransportStream {
+  prefix?: string;
   actionMessages = ['Dismiss', 'Suppress Errors'];
+
+  constructor(options: VsCodeMessageOptions) {
+    super(options);
+
+    this.prefix = options.prefix;
+  }
 
   public async log(info: { level: string; message: string }, callback: Function) {
     if (configuration.debug.silent) {
       return;
     }
-
     let showMessage: (message: string, ...items: string[]) => Thenable<string | undefined>;
     switch (info.level) {
       case 'error':
@@ -33,7 +43,12 @@ class VsCodeMessage extends TransportStream {
         throw 'Unsupported ' + info.level;
     }
 
-    let selectedAction = await showMessage(info.message, ...this.actionMessages);
+    let message = info.message;
+    if (this.prefix) {
+      message = this.prefix + ': ' + message;
+    }
+
+    let selectedAction = await showMessage(message, ...this.actionMessages);
     if (selectedAction === 'Suppress Errors') {
       vscode.window.showInformationMessage(
         'Ignorance is bliss; temporarily suppressing log messages. For more permanence, please configure `vim.debug.suppress`.'
@@ -47,15 +62,21 @@ class VsCodeMessage extends TransportStream {
   }
 }
 
-export const logger = winston.createLogger({
-  format: winston.format.simple(),
-  transports: [
-    new ConsoleForElectron({
-      level: configuration.debug.loggingLevelForConsole,
-      silent: configuration.debug.silent,
-    }),
-    new VsCodeMessage({
-      level: configuration.debug.loggingLevelForAlert,
-    }),
-  ],
-});
+export class Logger {
+  static get(prefix?: string): winston.Logger {
+    return winston.createLogger({
+      format: winston.format.simple(),
+      transports: [
+        new ConsoleForElectron({
+          level: configuration.debug.loggingLevelForConsole,
+          silent: configuration.debug.silent,
+          prefix: prefix,
+        }),
+        new VsCodeMessage({
+          level: configuration.debug.loggingLevelForAlert,
+          prefix: prefix,
+        }),
+      ],
+    });
+  }
+}

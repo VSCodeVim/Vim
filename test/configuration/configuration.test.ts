@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-
 import * as srcConfiguration from '../../src/configuration/configuration';
 import * as testConfiguration from '../testConfiguration';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
@@ -20,6 +19,23 @@ suite('Configuration', () => {
       after: ['v'],
     },
   ];
+  (configuration.visualModeKeyBindingsNonRecursive = [
+    // duplicate keybindings
+    {
+      before: ['c', 'o', 'p', 'y'],
+      after: ['c', 'o', 'p', 'y'],
+    },
+    {
+      before: ['c', 'o', 'p', 'y'],
+      after: ['c', 'o', 'p', 'y'],
+    },
+  ]),
+    (configuration.insertModeKeyBindingsNonRecursive = [
+      {
+        // missing after and command
+        before: ['a'],
+      },
+    ]);
   configuration.whichwrap = 'h,l';
 
   setup(async () => {
@@ -30,19 +46,24 @@ suite('Configuration', () => {
 
   test('remappings are normalized', async () => {
     const normalizedKeybinds = srcConfiguration.configuration.normalModeKeyBindingsNonRecursive;
+    const normalizedKeybindsMap =
+      srcConfiguration.configuration.normalModeKeyBindingsNonRecursiveMap;
     const testingKeybinds = configuration.normalModeKeyBindingsNonRecursive;
 
     assert.equal(normalizedKeybinds.length, testingKeybinds.length);
+    assert.equal(normalizedKeybinds.length, normalizedKeybindsMap.size);
     assert.deepEqual(normalizedKeybinds[0].before, [' ', 'o']);
     assert.deepEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
 
-  newTest({
-    title: 'Can handle long key chords',
-    start: ['|'],
-    keysPressed: ' fes',
-    end: ['|'],
-    endMode: ModeName.Visual,
+  test('remappings are de-duped', async () => {
+    const keybindings = srcConfiguration.configuration.visualModeKeyBindingsNonRecursiveMap;
+    assert.equal(keybindings.size, 1);
+  });
+
+  test('invalid remappings are ignored', async () => {
+    const keybindings = srcConfiguration.configuration.insertModeKeyBindingsNonRecursiveMap;
+    assert.equal(keybindings.size, 0);
   });
 
   test('whichwrap is parsed into wrapKeys', async () => {
@@ -53,5 +74,14 @@ suite('Configuration', () => {
 
     assert.equal(wrapKeys[h], true);
     assert.equal(wrapKeys[j], undefined);
+  });
+
+  newTest({
+    title: 'Can handle long key chords',
+    start: ['|'],
+    // <leader>fes
+    keysPressed: ' fes',
+    end: ['|'],
+    endMode: ModeName.Visual,
   });
 });

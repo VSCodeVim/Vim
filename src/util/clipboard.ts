@@ -1,12 +1,14 @@
-import { logger } from './logger';
 import * as vscode from 'vscode';
+import { Logger } from './logger';
 
 export class Clipboard {
+  private static readonly logger = Logger.get('Clipboard');
+
   public static async Copy(text: string): Promise<void> {
     try {
       await vscode.env.clipboard.writeText(text);
     } catch (e) {
-      logger.error(e, `Clipboard: Error copying to clipboard. err=${e}`);
+      this.logger.error(e, `Error copying to clipboard. err=${e}`);
     }
   }
 
