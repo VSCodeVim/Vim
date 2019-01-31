@@ -49,7 +49,7 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     !previousActiveEditorId ||
     !previousActiveEditorId.isEqual(activeEditorId)
   ) {
-    await curHandler.syncCursors();
+    curHandler.syncCursors();
     await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
 
@@ -92,8 +92,14 @@ export async function activate(context: vscode.ExtensionContext) {
   // we need to load the configuration first
   await loadConfiguration();
 
+  const logger = Logger.get('Extension Startup');
+  logger.debug('Start');
+
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
+
+  // load state
+  await Promise.all([commandLine.load(), globalState.load()]);
 
   // workspace events
   registerEventListener(
@@ -356,15 +362,13 @@ export async function activate(context: vscode.ExtensionContext) {
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
+    // This is called last because getAndUpdateModeHandler() will change cursor
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
-  await Promise.all([
-    commandLine.load(),
-    globalState.load(),
-    // This is called last because getAndUpdateModeHandler() will change cursor
-    toggleExtension(configuration.disableExtension, compositionState),
-  ]);
+  await toggleExtension(configuration.disableExtension, compositionState);
+
+  logger.debug('Finish.');
 }
 
 /**
