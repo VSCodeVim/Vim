@@ -4,9 +4,14 @@ import { configuration } from './../../configuration/configuration';
 import { VimState } from '../../state/vimState';
 import { DefaultDigraphs } from '../../actions/commands/digraphs';
 import * as node from '../node';
+import { TextEditor } from '../../textEditor';
 
 export interface IDigraphsCommandArguments extends node.ICommandArgs {
   arg?: string;
+}
+
+interface DigraphQuickPickItem extends vscode.QuickPickItem {
+  charCodes: number[];
 }
 
 export class DigraphsCommand extends node.CommandBase {
@@ -22,32 +27,31 @@ export class DigraphsCommand extends node.CommandBase {
     return this._arguments;
   }
 
+  private makeQuickPicks(digraphs): Array<DigraphQuickPickItem> {
+    const quickPicks = new Array<DigraphQuickPickItem>();
+    for (let digraphKey of Object.keys(digraphs)) {
+      let [charDesc, charCodes] = digraphs[digraphKey];
+      quickPicks.push({
+        label: digraphKey,
+        description: `${charDesc} (user)`,
+        charCodes,
+      });
+    }
+    return quickPicks;
+  }
+
   async execute(vimState: VimState): Promise<void> {
     if (this.arguments.arg !== undefined && this.arguments.arg.length > 2) {
       // TODO: Register digraphs in args in state
     }
-    const digraphKeyAndContent = new Array<any>();
-
-    for (let digraphKey of Object.keys(configuration.customDigraphs)) {
-      let charDesc = configuration.customDigraphs[digraphKey][0];
-      digraphKeyAndContent.push({
-        label: digraphKey,
-        description: `${charDesc} (user)`,
-      });
-    }
-
-    for (let digraphKey of Object.keys(DefaultDigraphs)) {
-      let charDesc = DefaultDigraphs[digraphKey][0];
-      digraphKeyAndContent.push({
-        label: digraphKey,
-        description: charDesc,
-      });
-    }
+    const digraphKeyAndContent = this.makeQuickPicks(configuration.customDigraphs).concat(
+      this.makeQuickPicks(DefaultDigraphs)
+    );
 
     vscode.window.showQuickPick(digraphKeyAndContent).then(async val => {
       if (val) {
-        // TODO: Can we insert the selected digraph at cursor position?
-        vscode.window.showInformationMessage(`${val.label} ${val.description}`);
+        const char = String.fromCharCode(...val.charCodes);
+        await TextEditor.insert(char);
       }
     });
   }
