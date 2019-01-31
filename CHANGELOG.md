@@ -1,5 +1,14 @@
 # Change Log
 
+## [v1.0.5](https://github.com/vscodevim/vim/tree/v1.0.5) (2019-01-31)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.4...v1.0.5)
+
+**Merged pull requests:**
+
+- chore\(deps\): update dependency prettier to v1.16.3 [\#3428](https://github.com/VSCodeVim/Vim/pull/3428) ([renovate[bot]](https://github.com/apps/renovate))
+- v1.0.4 [\#3427](https://github.com/VSCodeVim/Vim/pull/3427) ([jpoon](https://github.com/jpoon))
+
 ## [v1.0.4](https://github.com/vscodevim/vim/tree/v1.0.4) (2019-01-31)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.3...v1.0.4)
@@ -25,7 +34,7 @@
 
 - fix ds" with nested quotes and add some tests - fixes \#3415 [\#3426](https://github.com/VSCodeVim/Vim/pull/3426) ([esetnik](https://github.com/esetnik))
 - chore\(deps\): update dependency @types/diff to v4 [\#3425](https://github.com/VSCodeVim/Vim/pull/3425) ([renovate[bot]](https://github.com/apps/renovate))
-- fix: single-key remappings in insert mode were being ignored [\#3424](https://github.com/VSCodeVim/Vim/pull/3424) ([jpoon](https://github.com/jpoon))
+- fix: single-key remappings were being ignored [\#3424](https://github.com/VSCodeVim/Vim/pull/3424) ([jpoon](https://github.com/jpoon))
 - fix\(deps\): update dependency winston to v3.2.1 [\#3423](https://github.com/VSCodeVim/Vim/pull/3423) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency prettier to v1.16.2 [\#3422](https://github.com/VSCodeVim/Vim/pull/3422) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency @types/sinon to v7.0.5 [\#3421](https://github.com/VSCodeVim/Vim/pull/3421) ([renovate[bot]](https://github.com/apps/renovate))
