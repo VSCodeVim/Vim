@@ -1685,8 +1685,15 @@ export abstract class MoveQuoteMatch extends BaseMovement {
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
     const text = TextEditor.getLineAt(position).text;
     const quoteMatcher = new QuoteMatcher(this.charToMatch, text);
-    const start = quoteMatcher.findOpening(position.character);
-    const end = quoteMatcher.findClosing(start + 1);
+    let start = quoteMatcher.findOpening(position.character);
+    let end = quoteMatcher.findClosing(start + 1);
+
+    if (end < start && start === position.character) {
+      // start character is a match and no forward match found
+      // search backwards instead
+      end = start;
+      start = quoteMatcher.findOpening(end - 1);
+    }
 
     if (start === -1 || end === -1 || end === start || end < position.character) {
       return {
