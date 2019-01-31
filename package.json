@@ -697,7 +697,7 @@
     "winston-console-for-electron": "0.0.6"
   },
   "devDependencies": {
-    "@types/diff": "3.5.2",
+    "@types/diff": "3.5.3",
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.120",
     "@types/mocha": "5.2.5",
