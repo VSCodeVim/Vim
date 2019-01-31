@@ -323,7 +323,7 @@ class CommandInsertDigraph extends BaseCommand {
     if (!super.doesActionApply(vimState, keysPressed)) {
       return false;
     }
-    const chars = keysPressed.slice(1, keysPressed.length).join('');
+    const chars = keysPressed.slice(1, 3).join('');
     if (chars.length < 2) {
       return false;
     }
