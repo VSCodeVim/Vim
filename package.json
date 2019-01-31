@@ -138,6 +138,11 @@
         "when": "listFocus && !inputFocus"
       },
       {
+        "key": "/",
+        "command": "list.toggleKeyboardNavigation",
+        "when": "listFocus && !inputFocus && listSupportsKeyboardNavigation"
+      },
+      {
         "key": "ctrl+a",
         "command": "extension.vim_ctrl+a",
         "when": "editorTextFocus && vim.active && vim.use<C-a> && !inDebugRepl"
@@ -718,5 +723,10 @@
     "tslint": "5.12.1",
     "typescript": "3.2.4",
     "vscode": "1.1.28"
+  },
+  "__metadata": {
+    "id": "d96e79c6-8b25-4be3-8545-0e0ecefcae03",
+    "publisherDisplayName": "vscodevim",
+    "publisherId": "5d63889b-1b67-4b1f-8350-4f1dce041a26"
   }
 }

@@ -360,6 +360,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   await Promise.all([
+    // This is in order to disable automatic keyboard navigation in lists
+    vscode.commands.executeCommand('setContext', 'listAutomaticKeyboardNavigation', false),
     commandLine.load(),
     globalState.load(),
     // This is called last because getAndUpdateModeHandler() will change cursor
