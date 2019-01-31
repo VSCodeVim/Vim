@@ -86,7 +86,7 @@ export class Remapper implements IRemapper {
         ModeName[vimState.currentMode]
       }. keybindings=${this._configKey}.`
     );
-    let remapping: IKeyRemapping | undefined = Remapper.findMatchingRemap(
+    let remapping: IKeyRemapping | undefined = this.findMatchingRemap(
       userDefinedRemappings,
       keys,
       vimState.currentMode
@@ -181,7 +181,7 @@ export class Remapper implements IRemapper {
     }
   }
 
-  protected static findMatchingRemap(
+  protected findMatchingRemap(
     userDefinedRemappings: Map<string, IKeyRemapping>,
     inputtedKeys: string[],
     currentMode: ModeName
@@ -197,6 +197,7 @@ export class Remapper implements IRemapper {
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
+      this._logger.verbose(`trying to find matching remap for keySlice=${keySlice}.`);
       if (userDefinedRemappings.has(keySlice)) {
         // In Insert mode, we allow users to precede remapped commands
         // with extraneous keystrokes (eg. "hello world jj")

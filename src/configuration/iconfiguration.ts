@@ -21,6 +21,7 @@ export interface IAutoSwitchInputMethod {
   switchIMCmd: string;
   obtainIMCmd: string;
 }
+
 export interface IDebugConfiguration {
   /**
    * Boolean indicating whether all logs should be suppressed

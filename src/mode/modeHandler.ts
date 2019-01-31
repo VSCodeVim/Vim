@@ -269,25 +269,28 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.recordedState.commandList.push(key);
 
     try {
-      // Take the count prefix out to perform the correct remapping.
-      const withinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
-      const isOperatorCombination = this.vimState.recordedState.operator;
+      const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
+      if (!isWithinTimeout) {
+        // sufficient time has elapsed since the prior keypress,
+        // only consider the last keypress for remapping
+        this.vimState.recordedState.commandList = [
+          this.vimState.recordedState.commandList[
+            this.vimState.recordedState.commandList.length - 1
+          ],
+        ];
+      }
 
       let handled = false;
+      const isOperatorCombination = this.vimState.recordedState.operator;
 
-      /**
-       * Check that
-       *
-       * 1) We are not already performing a nonrecursive remapping.
-       * 2) We aren't in normal mode performing on an operator
-       *    Note: ciwjj should be remapped if jj -> <Esc> in insert mode
-       *          dd should not remap the second "d", if d -> "_d in normal mode
-       * 3) We haven't timed out of our previous remapping.
-       */
+      // Check for remapped keys if:
+      // 1. We are not currently performing a non-recursive remapping
+      // 2. We are not in normal mode performing on an operator
+      //    Example: ciwjj should be remapped if jj -> <Esc> in insert mode
+      //             dd should not remap the second "d", if d -> "_d in normal mode
       if (
         !this.vimState.isCurrentlyPerformingRemapping &&
-        (!isOperatorCombination || this.vimState.currentMode !== ModeName.Normal) &&
-        (withinTimeout || this.vimState.recordedState.commandList.length === 1)
+        (!isOperatorCombination || this.vimState.currentMode !== ModeName.Normal)
       ) {
         handled = await this._remappers.sendKey(
           this.vimState.recordedState.commandList,
