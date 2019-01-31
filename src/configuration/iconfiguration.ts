@@ -23,6 +23,7 @@ export interface IAutoSwitchInputMethod {
   switchIMCmd: string;
   obtainIMCmd: string;
 }
+
 export interface IDebugConfiguration {
   /**
    * Boolean indicating whether all logs should be suppressed
@@ -32,15 +33,13 @@ export interface IDebugConfiguration {
 
   /**
    * Maximum level of messages to show as VS Code information message
-   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
-  loggingLevelForAlert: string;
+  loggingLevelForAlert: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 
   /**
    * Maximum level of messages to log to console.
-   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
    */
-  loggingLevelForConsole: string;
+  loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 }
 
 export interface IConfiguration {
@@ -199,6 +198,10 @@ export interface IConfiguration {
    */
   relativenumber: boolean;
 
+  /**
+   * keywords contain alphanumeric characters and '_'.
+   * If not configured `editor.wordSeparators` is used
+   */
   iskeyword: string;
 
   /**
@@ -255,7 +258,7 @@ export interface IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
 
   /**
-   *  emulate whichwrap
+   * Comma-separated list of motion keys that should wrap to next/previous line.
    */
   whichwrap: string;
 

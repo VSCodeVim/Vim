@@ -10,23 +10,21 @@ import * as vscode from 'vscode';
 
 import { CompositionState } from './src/state/compositionState';
 import { EditorIdentity } from './src/editorIdentity';
-import { GlobalState } from './src/state/globalState';
 import { Globals } from './src/globals';
 import { Jump } from './src/jumps/jump';
 import { ModeHandler } from './src/mode/modeHandler';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
 import { ModeName } from './src/mode/mode';
 import { Notation } from './src/configuration/notation';
+import { Logger } from './src/util/logger';
 import { Position } from './src/common/motion/position';
 import { StatusBar } from './src/statusBar';
 import { VsCodeContext } from './src/util/vscode-context';
 import { commandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
-import { configurationValidator } from './src/configuration/configurationValidator';
-import { logger } from './src/util/logger';
+import { globalState } from './src/state/globalState';
 import { taskQueue } from './src/taskQueue';
 
-const globalState = new GlobalState();
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorId: EditorIdentity | null = null;
 let lastClosedModeHandler: ModeHandler | null = null;
@@ -51,7 +49,7 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     !previousActiveEditorId ||
     !previousActiveEditorId.isEqual(activeEditorId)
   ) {
-    await curHandler.syncCursors();
+    curHandler.syncCursors();
     await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
 
@@ -69,21 +67,46 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
   return curHandler;
 }
 
+async function loadConfiguration() {
+  const configurationErrors = await configuration.load();
+  const logger = Logger.get('Configuration');
+
+  const numErrors = configurationErrors.filter(e => e.level === 'error').length;
+  logger.debug(`${numErrors} errors found with vim configuration`);
+
+  if (numErrors > 0) {
+    for (let configurationError of configurationErrors) {
+      switch (configurationError.level) {
+        case 'error':
+          logger.error(configurationError.message);
+          break;
+        case 'warning':
+          logger.warn(configurationError.message);
+          break;
+      }
+    }
+  }
+}
 export async function activate(context: vscode.ExtensionContext) {
-  logger.debug('Extension: activating vscodevim.');
+  // before we do anything else,
+  // we need to load the configuration first
+  await loadConfiguration();
+
+  const logger = Logger.get('Extension Startup');
+  logger.debug('Start');
 
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
-  logger.debug('Extension: registering event handlers.');
+  // load state
+  await Promise.all([commandLine.load(), globalState.load()]);
 
   // workspace events
   registerEventListener(
     context,
     vscode.workspace.onDidChangeConfiguration,
-    () => {
-      logger.debug('onDidChangeConfiguration: reloading configuration');
-      configuration.reload();
+    async () => {
+      await loadConfiguration();
     },
     false
   );
@@ -127,12 +150,8 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     };
 
-    if (Globals.isTesting) {
-      if (Globals.mockModeHandler) {
-        contentChangeHandler(Globals.mockModeHandler as ModeHandler);
-      } else {
-        logger.warn('onDidChangeTextDocument: No mock mode handler set');
-      }
+    if (Globals.isTesting && Globals.mockModeHandler) {
+      contentChangeHandler(Globals.mockModeHandler as ModeHandler);
     } else {
       _.filter(
         ModeHandlerMap.getAll(),
@@ -157,7 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       // Delete modehandler once all tabs of this document have been closed
       for (let editorIdentity of ModeHandlerMap.getKeys()) {
-        let modeHandler = await ModeHandlerMap.get(editorIdentity);
+        const modeHandler = ModeHandlerMap.get(editorIdentity);
 
         if (
           modeHandler == null ||
@@ -343,16 +362,13 @@ export async function activate(context: vscode.ExtensionContext) {
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
+    // This is called last because getAndUpdateModeHandler() will change cursor
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
-  await Promise.all([
-    commandLine.load(),
-    globalState.load(),
-    configurationValidator.initialize(),
-    // This is called last because getAndUpdateModeHandler() will change cursor
-    toggleExtension(configuration.disableExtension, compositionState),
-  ]);
+  await toggleExtension(configuration.disableExtension, compositionState);
+
+  logger.debug('Finish.');
 }
 
 /**

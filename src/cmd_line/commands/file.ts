@@ -3,9 +3,9 @@ import * as node from '../node';
 import * as path from 'path';
 import * as util from 'util';
 import * as vscode from 'vscode';
-import { logger } from '../../util/logger';
+import untildify = require('untildify');
+import { Logger } from '../../util/logger';
 
-const untildify = require('untildify');
 const doesFileExist = util.promisify(fs.exists);
 
 export enum FilePosition {
@@ -23,6 +23,7 @@ export interface IFileCommandArguments extends node.ICommandArgs {
 
 export class FileCommand extends node.CommandBase {
   protected _arguments: IFileCommandArguments;
+  private readonly _logger = Logger.get('File');
 
   constructor(args: IFileCommandArguments) {
     super();
@@ -111,7 +112,7 @@ export class FileCommand extends node.CommandBase {
           if (this._arguments.createFileIfNotExists) {
             await util.promisify(fs.close)(await util.promisify(fs.open)(filePath, 'w'));
           } else {
-            logger.error(`file: ${filePath} does not exist.`);
+            this._logger.error(`${filePath} does not exist.`);
             return;
           }
         }

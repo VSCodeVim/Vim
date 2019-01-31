@@ -1,9 +1,9 @@
 import * as lexer from './lexer';
 import * as node from './node';
 import * as token from './token';
+import { Logger } from '../util/logger';
 import { VimError, ErrorCode } from '../error';
 import { commandParsers } from './subparser';
-import { logger } from '../util/logger';
 
 interface IParseFunction {
   (state: ParserState, command: node.CommandLine): IParseFunction | null;
@@ -20,6 +20,8 @@ export function parse(input: string): node.CommandLine {
 }
 
 function parseLineRange(state: ParserState, commandLine: node.CommandLine): IParseFunction | null {
+  const logger = Logger.get('Parser');
+
   while (true) {
     let tok = state.next();
     switch (tok.type) {

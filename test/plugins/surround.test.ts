@@ -94,6 +94,20 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: 'change surround with two pairs of quotes',
+    start: ["first ''li|ne'' test"],
+    keysPressed: "cs')",
+    end: ["first '(li|ne)' test"],
+  });
+
+  newTest({
+    title: 'change surround with two pairs of parens',
+    start: ['first ((li|ne)) test'],
+    keysPressed: "cs)'",
+    end: ["first ('li|ne') test"],
+  });
+
+  newTest({
     title: 'change surround with alias',
     start: ['first (li|ne) test'],
     keysPressed: 'csb]',
@@ -112,6 +126,69 @@ suite('surround plugin', () => {
     start: ["first 'li|ne' test"],
     keysPressed: "ds'",
     end: ['first li|ne test'],
+  });
+
+  newTest({
+    title: 'delete surround with quotes',
+    start: ['first "li|ne" test'],
+    keysPressed: 'ds"',
+    end: ['first li|ne test'],
+  });
+
+  newTest({
+    title: 'delete surround with nested of quotes',
+    start: ['first ""li|ne"" test'],
+    keysPressed: 'ds"',
+    end: ['first "li|ne" test'],
+  });
+
+  newTest({
+    title: 'delete surround with inconsistent quotes',
+    start: ['first ""li|ne" test'],
+    keysPressed: 'ds"',
+    end: ['first "li|ne test'],
+  });
+
+  newTest({
+    title: 'delete surround with mixed quotes',
+    start: ['first "\'li|ne"\' test'],
+    keysPressed: 'ds"',
+    end: ["first 'li|ne' test"],
+  });
+
+  newTest({
+    title: 'delete surround with empty quotes cursor at start',
+    start: ['first |"" test'],
+    keysPressed: 'ds"',
+    end: ['first | test'],
+  });
+
+  newTest({
+    title: 'delete surround with empty quotes cursor at end',
+    start: ['first "|" test'],
+    keysPressed: 'ds"',
+    end: ['first | test'],
+  });
+
+  newTest({
+    title: "don't delete surround if cursor is after closing match",
+    start: ['first "line"| test'],
+    keysPressed: 'ds"',
+    end: ['first "line"| test'],
+  });
+
+  newTest({
+    title: 'delete surround if cursor is before opening match',
+    start: ['first | "line" test'],
+    keysPressed: 'ds"',
+    end: ['first  |line test'],
+  });
+
+  newTest({
+    title: 'delete surround with two pairs of parens',
+    start: ['first ((li|ne)) test'],
+    keysPressed: 'ds)',
+    end: ['first (li|ne) test'],
   });
 
   newTest({

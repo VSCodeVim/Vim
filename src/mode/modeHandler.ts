@@ -6,6 +6,7 @@ import { BaseMovement, isIMovement } from './../actions/motion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { Decoration } from '../configuration/decoration';
 import { Jump } from '../jumps/jump';
+import { Logger } from '../util/logger';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { Position, PositionDiff } from './../common/motion/position';
@@ -20,7 +21,6 @@ import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
 import { getCursorsAfterSync } from '../util/util';
-import { logger } from '../util/logger';
 import {
   BaseCommand,
   CommandQuitRecordMacro,
@@ -36,6 +36,7 @@ export class ModeHandler implements vscode.Disposable {
   private _disposables: vscode.Disposable[] = [];
   private _modes: Mode[];
   private _remappers: Remappers;
+  private readonly _logger = Logger.get('ModeHandler');
 
   public vimState: VimState;
 
@@ -48,7 +49,7 @@ export class ModeHandler implements vscode.Disposable {
     await modeHandler.setCurrentMode(
       configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal
     );
-    await modeHandler.syncCursors();
+    modeHandler.syncCursors();
     return modeHandler;
   }
 
@@ -76,8 +77,8 @@ export class ModeHandler implements vscode.Disposable {
   /**
    * Syncs cursors between vscode representation and vim representation
    */
-  public async syncCursors() {
-    return require('util').promisify(setTimeout)(() => {
+  public syncCursors() {
+    setImmediate(() => {
       if (this.vimState.editor) {
         this.vimState.cursorStartPosition = Position.FromVSCodePosition(
           this.vimState.editor.selection.start
@@ -234,7 +235,7 @@ export class ModeHandler implements vscode.Disposable {
   public async handleKeyEvent(key: string): Promise<Boolean> {
     const now = Number(new Date());
 
-    logger.debug(`ModeHandler: handling key=${key}.`);
+    this._logger.debug(`handling key=${key}.`);
 
     // rewrite copy
     if (configuration.overrideCopy) {
@@ -268,25 +269,28 @@ export class ModeHandler implements vscode.Disposable {
     this.vimState.recordedState.commandList.push(key);
 
     try {
-      // Take the count prefix out to perform the correct remapping.
-      const withinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
-      const isOperatorCombination = this.vimState.recordedState.operator;
+      const isWithinTimeout = now - this.vimState.lastKeyPressedTimestamp < configuration.timeout;
+      if (!isWithinTimeout) {
+        // sufficient time has elapsed since the prior keypress,
+        // only consider the last keypress for remapping
+        this.vimState.recordedState.commandList = [
+          this.vimState.recordedState.commandList[
+            this.vimState.recordedState.commandList.length - 1
+          ],
+        ];
+      }
 
       let handled = false;
+      const isOperatorCombination = this.vimState.recordedState.operator;
 
-      /**
-       * Check that
-       *
-       * 1) We are not already performing a nonrecursive remapping.
-       * 2) We aren't in normal mode performing on an operator
-       *    Note: ciwjj should be remapped if jj -> <Esc> in insert mode
-       *          dd should not remap the second "d", if d -> "_d in normal mode
-       * 3) We haven't timed out of our previous remapping.
-       */
+      // Check for remapped keys if:
+      // 1. We are not currently performing a non-recursive remapping
+      // 2. We are not in normal mode performing on an operator
+      //    Example: ciwjj should be remapped if jj -> <Esc> in insert mode
+      //             dd should not remap the second "d", if d -> "_d in normal mode
       if (
         !this.vimState.isCurrentlyPerformingRemapping &&
-        (!isOperatorCombination || this.vimState.currentMode !== ModeName.Normal) &&
-        (withinTimeout || this.vimState.recordedState.commandList.length === 1)
+        (!isOperatorCombination || this.vimState.currentMode !== ModeName.Normal)
       ) {
         handled = await this._remappers.sendKey(
           this.vimState.recordedState.commandList,
@@ -301,7 +305,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      logger.error(`ModeHandler: error handling key=${key}. err=${e}.`);
+      this._logger.error(`error handling key=${key}. err=${e}.`);
       throw e;
     }
 
@@ -312,19 +316,18 @@ export class ModeHandler implements vscode.Disposable {
   }
 
   private async handleKeyEventHelper(key: string, vimState: VimState): Promise<VimState> {
-    // Just nope right out of here.
     if (vscode.window.activeTextEditor !== this.vimState.editor) {
+      this._logger.warn('Current window is not active');
       return this.vimState;
     }
 
     // Catch any text change not triggered by us (example: tab completion).
     vimState.historyTracker.addChange(this.vimState.cursorPositionJustBeforeAnythingHappened);
 
-    let recordedState = vimState.recordedState;
-
-    recordedState.actionKeys.push(key);
-
     vimState.keyHistory.push(key);
+
+    let recordedState = vimState.recordedState;
+    recordedState.actionKeys.push(key);
 
     let result = Actions.getRelevantAction(recordedState.actionKeys, vimState);
     switch (result) {
@@ -735,7 +738,7 @@ export class ModeHandler implements vscode.Disposable {
     let recordedState = vimState.recordedState;
 
     if (!recordedState.operator) {
-      logger.warn('recordedState.operator: ' + recordedState.operator);
+      this._logger.warn('recordedState.operator: ' + recordedState.operator);
       throw new Error("what in god's name. recordedState.operator is falsy.");
     }
 
@@ -849,7 +852,7 @@ export class ModeHandler implements vscode.Disposable {
         case 'moveCursor':
           break;
         default:
-          logger.warn(`modeHandler: Unhandled text transformation type: ${command.type}.`);
+          this._logger.warn(`Unhandled text transformation type: ${command.type}.`);
           break;
       }
 
@@ -868,7 +871,7 @@ export class ModeHandler implements vscode.Disposable {
 
     if (textTransformations.length > 0) {
       if (areAnyTransformationsOverlapping(textTransformations)) {
-        logger.debug(
+        this._logger.debug(
           `Text transformations are overlapping. Falling back to serial
            transformations. This is generally a very bad sign. Try to make
            your text transformations operate on non-overlapping ranges.`
@@ -991,7 +994,7 @@ export class ModeHandler implements vscode.Disposable {
           }
           break;
         default:
-          logger.warn(`modeHandler: Unhandled text transformation type: ${command.type}.`);
+          this._logger.warn(`Unhandled text transformation type: ${command.type}.`);
           break;
       }
     }
@@ -1258,7 +1261,7 @@ export class ModeHandler implements vscode.Disposable {
             break;
           }
           default: {
-            logger.error(`ModeHandler: unexpected selection mode. selectionMode=${selectionMode}`);
+            this._logger.error(`unexpected selection mode. selectionMode=${selectionMode}`);
             break;
           }
         }

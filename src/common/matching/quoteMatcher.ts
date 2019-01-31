@@ -30,7 +30,7 @@ export class QuoteMatcher {
   findOpening(start: number): number {
     // First, search backwards to see if we could be inside a quote
     for (let i = start; i >= 0; i--) {
-      if (this.quoteMap[i] === QuoteMatch.Opening) {
+      if (this.quoteMap[i]) {
         return i;
       }
     }
