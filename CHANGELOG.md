@@ -1,5 +1,47 @@
 # Change Log
 
+## [v1.0.4](https://github.com/vscodevim/vim/tree/v1.0.4) (2019-01-31)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.3...v1.0.4)
+
+**Fixed Bugs:**
+
+- "Delete surrounding quotes" doesn't work in certain cases [\#3415](https://github.com/VSCodeVim/Vim/issues/3415)
+- 'gd' is working correctly, but an error occurs. [\#3387](https://github.com/VSCodeVim/Vim/issues/3387)
+- Close error window \<F8\> [\#3367](https://github.com/VSCodeVim/Vim/issues/3367)
+- Pressing `i` followed by another command yields the incorrect `this.vimState.recordedState.commandList` [\#3252](https://github.com/VSCodeVim/Vim/issues/3252)
+- Cursor in different spot than where cursor appears and text gets deleted in different location [\#3157](https://github.com/VSCodeVim/Vim/issues/3157)
+- InsertMode binds with\<C-Key\> in settings.json doesn't work. [\#3126](https://github.com/VSCodeVim/Vim/issues/3126)
+- Mapping "\<C-j\>" to "\<Esc\>" in insert mode doesn't work [\#2965](https://github.com/VSCodeVim/Vim/issues/2965)
+- "," cannot be remapped when {"vim.leader": ","} [\#2932](https://github.com/VSCodeVim/Vim/issues/2932)
+
+**Closed issues:**
+
+- Extension causes high cpu load [\#3400](https://github.com/VSCodeVim/Vim/issues/3400)
+- vw selects more then word. [\#3368](https://github.com/VSCodeVim/Vim/issues/3368)
+- Mouse double click fails to select the word [\#3360](https://github.com/VSCodeVim/Vim/issues/3360)
+
+**Merged pull requests:**
+
+- fix ds" with nested quotes and add some tests - fixes \#3415 [\#3426](https://github.com/VSCodeVim/Vim/pull/3426) ([esetnik](https://github.com/esetnik))
+- chore\(deps\): update dependency @types/diff to v4 [\#3425](https://github.com/VSCodeVim/Vim/pull/3425) ([renovate[bot]](https://github.com/apps/renovate))
+- fix: single-key remappings in insert mode were being ignored [\#3424](https://github.com/VSCodeVim/Vim/pull/3424) ([jpoon](https://github.com/jpoon))
+- fix\(deps\): update dependency winston to v3.2.1 [\#3423](https://github.com/VSCodeVim/Vim/pull/3423) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency prettier to v1.16.2 [\#3422](https://github.com/VSCodeVim/Vim/pull/3422) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/sinon to v7.0.5 [\#3421](https://github.com/VSCodeVim/Vim/pull/3421) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/diff to v3.5.3 [\#3420](https://github.com/VSCodeVim/Vim/pull/3420) ([renovate[bot]](https://github.com/apps/renovate))
+- fix: validate configurations once, instead of every key press [\#3418](https://github.com/VSCodeVim/Vim/pull/3418) ([jpoon](https://github.com/jpoon))
+- Run `closeMarkersNavigation` on ESC. Fix \#3367 [\#3416](https://github.com/VSCodeVim/Vim/pull/3416) ([octref](https://github.com/octref))
+- chore\(deps\): update dependency vscode to v1.1.28 [\#3412](https://github.com/VSCodeVim/Vim/pull/3412) ([renovate-bot](https://github.com/renovate-bot))
+- refactor: make globalstate singleton class [\#3411](https://github.com/VSCodeVim/Vim/pull/3411) ([jpoon](https://github.com/jpoon))
+- Misc async fixes - new revision [\#3410](https://github.com/VSCodeVim/Vim/pull/3410) ([xconverge](https://github.com/xconverge))
+- fix: closes \#3157 [\#3409](https://github.com/VSCodeVim/Vim/pull/3409) ([jpoon](https://github.com/jpoon))
+- fix \#3157: register single onDidChangeTextDocument handler and delegate to appropriate mode handler [\#3408](https://github.com/VSCodeVim/Vim/pull/3408) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency prettier to v1.16.1 [\#3405](https://github.com/VSCodeVim/Vim/pull/3405) ([renovate-bot](https://github.com/renovate-bot))
+- chore\(deps\): update dependency vscode to v1.1.27 [\#3403](https://github.com/VSCodeVim/Vim/pull/3403) ([renovate-bot](https://github.com/renovate-bot))
+- fix address 'gf' bug. `replace file://` method [\#3402](https://github.com/VSCodeVim/Vim/pull/3402) ([pikulev](https://github.com/pikulev))
+- bump version [\#3399](https://github.com/VSCodeVim/Vim/pull/3399) ([jpoon](https://github.com/jpoon))
+
 ## [v1.0.3](https://github.com/vscodevim/vim/tree/v1.0.3) (2019-01-20)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.2...v1.0.3)
@@ -8,19 +50,18 @@
 
 - \<C-o\> causes popup err=RangeError message after pressing 'gd' [\#3378](https://github.com/VSCodeVim/Vim/issues/3378)
 - \<C-d\> is getting stuck when starting from a column that doesn't exist in destination line [\#3376](https://github.com/VSCodeVim/Vim/issues/3376)
-- status bar color unexpectedly changes to red [\#3374](https://github.com/VSCodeVim/Vim/issues/3374)
 - Slack invite link doesn't resolve [\#3370](https://github.com/VSCodeVim/Vim/issues/3370)
 - Control status bar color in other modes [\#3350](https://github.com/VSCodeVim/Vim/issues/3350)
+- 'gf' on file fails, says file does not exist, but it does. [\#3233](https://github.com/VSCodeVim/Vim/issues/3233)
+- yank partial always paster underline [\#3231](https://github.com/VSCodeVim/Vim/issues/3231)
 
 **Closed issues:**
 
-- 'gf' on file fails, says file does not exist, but it does. [\#3233](https://github.com/VSCodeVim/Vim/issues/3233)
-- yank partial always paster underline [\#3231](https://github.com/VSCodeVim/Vim/issues/3231)
 - \(insert\) VISUAL mode is not supported [\#3202](https://github.com/VSCodeVim/Vim/issues/3202)
 
 **Merged pull requests:**
 
-- Logger [\#3398](https://github.com/VSCodeVim/Vim/pull/3398) ([jpoon](https://github.com/jpoon))
+- fix rangeerror. action buttons on log messages. [\#3398](https://github.com/VSCodeVim/Vim/pull/3398) ([jpoon](https://github.com/jpoon))
 - chore\(deps\): update dependency prettier to v1.16.0 [\#3397](https://github.com/VSCodeVim/Vim/pull/3397) ([renovate-bot](https://github.com/renovate-bot))
 - fix: gf over a 'file://...' path and \#3310 issue \(v2\) [\#3396](https://github.com/VSCodeVim/Vim/pull/3396) ([jpoon](https://github.com/jpoon))
 - chore\(deps\): update dependency sinon to v7.2.3 [\#3394](https://github.com/VSCodeVim/Vim/pull/3394) ([renovate-bot](https://github.com/renovate-bot))
