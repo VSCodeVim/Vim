@@ -44,7 +44,7 @@ export class DigraphsCommand extends node.CommandBase {
     if (this.arguments.arg !== undefined && this.arguments.arg.length > 2) {
       // TODO: Register digraphs in args in state
     }
-    const digraphKeyAndContent = this.makeQuickPicks(configuration.customDigraphs).concat(
+    const digraphKeyAndContent = this.makeQuickPicks(configuration.digraphs).concat(
       this.makeQuickPicks(DefaultDigraphs)
     );
 

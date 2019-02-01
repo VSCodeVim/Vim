@@ -272,5 +272,5 @@ export interface IConfiguration {
   /**
    * User-defined digraphs
    */
-  customDigraphs: { [shortcut: string]: Digraph };
+  digraphs: { [shortcut: string]: Digraph };
 }

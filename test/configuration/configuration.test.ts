@@ -85,10 +85,4 @@ suite('Configuration', () => {
     end: ['|'],
     endMode: ModeName.Visual,
   });
-  
-  test('Can handle custom digraph insert', async () => {
-    let modeHandler = await getAndUpdateModeHandler();
-    await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!']);
-    assertEqualLines(['🚀']);
-  });
 });

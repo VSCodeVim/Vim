@@ -335,7 +335,7 @@ class Configuration implements IConfiguration {
   enableNeovim = false;
   neovimPath = 'nvim';
 
-  customDigraphs = {};
+  digraphs = {};
 
   substituteGlobalFlag = false;
   whichwrap = '';

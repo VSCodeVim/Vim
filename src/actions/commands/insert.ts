@@ -306,7 +306,7 @@ class CommandInsertDigraph extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const digraph = this.keysPressed.slice(1, 3).join('');
-    let charCodes = (DefaultDigraphs[digraph] || configuration.customDigraphs[digraph])[1];
+    let charCodes = (DefaultDigraphs[digraph] || configuration.digraphs[digraph])[1];
     if (!(charCodes instanceof Array)) {
       charCodes = [charCodes];
     }
@@ -324,10 +324,7 @@ class CommandInsertDigraph extends BaseCommand {
       return false;
     }
     const chars = keysPressed.slice(1, 3).join('');
-    if (chars.length < 2) {
-      return false;
-    }
-    return chars in configuration.customDigraphs || chars in DefaultDigraphs;
+    return chars in configuration.digraphs || chars in DefaultDigraphs;
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -338,7 +335,7 @@ class CommandInsertDigraph extends BaseCommand {
     if (chars.length > 0) {
       const predicate = (digraph: string) => chars === digraph.substring(0, chars.length);
       const match =
-        Object.keys(configuration.customDigraphs).find(predicate) ||
+        Object.keys(configuration.digraphs).find(predicate) ||
         Object.keys(DefaultDigraphs).find(predicate);
       return match !== undefined;
     }
