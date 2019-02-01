@@ -78,7 +78,7 @@ suite('Configuration', () => {
   });
 
   test('neovim disabled on missing path', async () => {
-    assert.equal(false, srcConfiguration.configuration.enableNeovim)
+    assert.equal(false, srcConfiguration.configuration.enableNeovim);
   });
 
   newTest({
