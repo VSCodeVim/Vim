@@ -49,7 +49,7 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
     !previousActiveEditorId ||
     !previousActiveEditorId.isEqual(activeEditorId)
   ) {
-    await curHandler.syncCursors();
+    curHandler.syncCursors();
     await curHandler.updateView(curHandler.vimState, { drawSelection: false, revealRange: false });
   }
 
@@ -92,8 +92,14 @@ export async function activate(context: vscode.ExtensionContext) {
   // we need to load the configuration first
   await loadConfiguration();
 
+  const logger = Logger.get('Extension Startup');
+  logger.debug('Start');
+
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
+
+  // load state
+  await Promise.all([commandLine.load(), globalState.load()]);
 
   // workspace events
   registerEventListener(
@@ -110,14 +116,14 @@ export async function activate(context: vscode.ExtensionContext) {
       changeEvent.contentChanges.length === 1 &&
       changeEvent.contentChanges[0].text === '' &&
       changeEvent.contentChanges[0].range.start.line !==
-        changeEvent.contentChanges[0].range.end.line;
+      changeEvent.contentChanges[0].range.end.line;
 
     const textWasAdded = changeEvent =>
       changeEvent.contentChanges.length === 1 &&
       (changeEvent.contentChanges[0].text === '\n' ||
         changeEvent.contentChanges[0].text === '\r\n') &&
       changeEvent.contentChanges[0].range.start.line ===
-        changeEvent.contentChanges[0].range.end.line;
+      changeEvent.contentChanges[0].range.end.line;
 
     if (textWasDeleted(event)) {
       globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
@@ -356,17 +362,17 @@ export async function activate(context: vscode.ExtensionContext) {
   // Initialize mode handler for current active Text Editor at startup.
   if (vscode.window.activeTextEditor) {
     let mh = await getAndUpdateModeHandler();
+    // This is called last because getAndUpdateModeHandler() will change cursor
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
-  await Promise.all([
-    // This is in order to disable automatic keyboard navigation in lists
-    vscode.commands.executeCommand('setContext', 'listAutomaticKeyboardNavigation', false),
-    commandLine.load(),
-    globalState.load(),
-    // This is called last because getAndUpdateModeHandler() will change cursor
-    toggleExtension(configuration.disableExtension, compositionState),
-  ]);
+  // Disable automatic keyboard navigation in lists, so it doesn't interfere
+  // with our list navigation keybindings
+  await VsCodeContext.Set('listAutomaticKeyboardNavigation', false);
+
+  await toggleExtension(configuration.disableExtension, compositionState);
+
+  logger.debug('Finish.');
 }
 
 /**

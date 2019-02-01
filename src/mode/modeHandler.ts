@@ -49,7 +49,7 @@ export class ModeHandler implements vscode.Disposable {
     await modeHandler.setCurrentMode(
       configuration.startInInsertMode ? ModeName.Insert : ModeName.Normal
     );
-    await modeHandler.syncCursors();
+    modeHandler.syncCursors();
     return modeHandler;
   }
 
@@ -77,8 +77,8 @@ export class ModeHandler implements vscode.Disposable {
   /**
    * Syncs cursors between vscode representation and vim representation
    */
-  public async syncCursors() {
-    return require('util').promisify(setTimeout)(() => {
+  public syncCursors() {
+    setImmediate(() => {
       if (this.vimState.editor) {
         this.vimState.cursorStartPosition = Position.FromVSCodePosition(
           this.vimState.editor.selection.start
@@ -305,8 +305,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      this._logger.error(`error handling key=${key}. err=${e}.`);
-      throw e;
+      throw new Error(`Failed to handle key=${key}. ${e.message}`);
     }
 
     this.vimState.lastKeyPressedTimestamp = now;

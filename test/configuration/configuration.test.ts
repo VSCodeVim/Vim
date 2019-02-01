@@ -37,6 +37,7 @@ suite('Configuration', () => {
       },
     ]);
   configuration.whichwrap = 'h,l';
+  configuration.enableNeovim = true;
 
   setup(async () => {
     await setupWorkspace(configuration);
@@ -74,6 +75,10 @@ suite('Configuration', () => {
 
     assert.equal(wrapKeys[h], true);
     assert.equal(wrapKeys[j], undefined);
+  });
+
+  test('neovim disabled on missing path', async () => {
+    assert.equal(false, srcConfiguration.configuration.enableNeovim)
   });
 
   newTest({

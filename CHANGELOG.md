@@ -1,5 +1,20 @@
 # Change Log
 
+## [v1.0.6](https://github.com/vscodevim/vim/tree/v1.0.6) (2019-02-01)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.5...v1.0.6)
+
+**Fixed Bugs:**
+
+- Bad interaction between 1.0.5 and jscode-java-pack [\#3431](https://github.com/VSCodeVim/Vim/issues/3431)
+- Release 1.0.4 doesn't contain listed changes [\#3429](https://github.com/VSCodeVim/Vim/issues/3429)
+
+**Merged pull requests:**
+
+- fix: check neovim configurations and timeout on nvim attach [\#3437](https://github.com/VSCodeVim/Vim/pull/3437) ([jpoon](https://github.com/jpoon))
+- fix: revert back to previous non-async code when syncing cursor [\#3435](https://github.com/VSCodeVim/Vim/pull/3435) ([jpoon](https://github.com/jpoon))
+- feat: output commit hash. closes \#3429 [\#3430](https://github.com/VSCodeVim/Vim/pull/3430) ([jpoon](https://github.com/jpoon))
+
 ## [v1.0.5](https://github.com/vscodevim/vim/tree/v1.0.5) (2019-01-31)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.4...v1.0.5)

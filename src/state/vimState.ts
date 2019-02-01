@@ -233,11 +233,7 @@ export class VimState implements vscode.Disposable {
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-
-    if (enableNeovim) {
-      this.nvim = new NeovimWrapper();
-    }
-
+    this.nvim = new NeovimWrapper();
     this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 
