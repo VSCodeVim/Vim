@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { IKeyRemapping } from './iconfiguration';
 import { ConfigurationError } from './configurationError';
+import { promisify } from 'util';
 
 class ConfigurationValidator {
   private _commandMap: Map<string, boolean>;
@@ -11,6 +13,28 @@ class ConfigurationValidator {
     }
 
     return (await this.getCommandMap()).has(command);
+  }
+
+  public async isNeovimValid(
+    isNeovimEnabled: boolean,
+    neovimPath: string
+  ): Promise<ConfigurationError[]> {
+    if (isNeovimEnabled) {
+      try {
+        const stat = await promisify(fs.stat)(neovimPath);
+        if (!stat.isFile()) {
+          return [
+            {
+              level: 'error',
+              message: `Invalid neovimPath. Please configure full path to nvim binary.`,
+            },
+          ];
+        }
+      } catch (e) {
+        return [{ level: 'error', message: `Invalid neovimPath. ${e.message}.` }];
+      }
+    }
+    return [];
   }
 
   public async isRemappingValid(remapping: IKeyRemapping): Promise<ConfigurationError[]> {

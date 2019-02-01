@@ -305,8 +305,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      this._logger.error(`error handling key=${key}. err=${e}.`);
-      throw e;
+      throw new Error(`Failed to handle key=${key}. ${e.message}`);
     }
 
     this.vimState.lastKeyPressedTimestamp = now;
