@@ -39,7 +39,7 @@ class TaskQueue {
         await task.promise();
         task.isRunning = false;
       } catch (e) {
-        this._logger.error(`Error running task. err=${e}.`);
+        this._logger.error(`Error running task. ${e.message}.`);
       } finally {
         this.dequeueTask(task);
       }

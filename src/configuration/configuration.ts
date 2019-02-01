@@ -143,6 +143,17 @@ class Configuration implements IConfiguration {
       configuration[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
     }
 
+    // neovim
+    let neovimErrors = await configurationValidator.isNeovimValid(
+      configuration.enableNeovim,
+      configuration.neovimPath
+    );
+    configurationErrors = configurationErrors.concat(neovimErrors);
+    if (neovimErrors.filter(e => e.level === 'error').length > 0) {
+      // if error encountered with configuration, disable neovim
+      configuration.enableNeovim = false;
+    }
+
     // wrap keys
     this.wrapKeys = {};
     for (const wrapKey of this.whichwrap.split(',')) {
