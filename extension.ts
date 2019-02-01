@@ -116,14 +116,14 @@ export async function activate(context: vscode.ExtensionContext) {
       changeEvent.contentChanges.length === 1 &&
       changeEvent.contentChanges[0].text === '' &&
       changeEvent.contentChanges[0].range.start.line !==
-      changeEvent.contentChanges[0].range.end.line;
+        changeEvent.contentChanges[0].range.end.line;
 
     const textWasAdded = changeEvent =>
       changeEvent.contentChanges.length === 1 &&
       (changeEvent.contentChanges[0].text === '\n' ||
         changeEvent.contentChanges[0].text === '\r\n') &&
       changeEvent.contentChanges[0].range.start.line ===
-      changeEvent.contentChanges[0].range.end.line;
+        changeEvent.contentChanges[0].range.end.line;
 
     if (textWasDeleted(event)) {
       globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
