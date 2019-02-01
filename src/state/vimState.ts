@@ -1,19 +1,19 @@
 import * as vscode from 'vscode';
 
-import { ModeName } from '../mode/mode';
-import { BaseMovement } from './../actions/motion';
+import { BaseMovement } from '../actions/motion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
-import { Position } from './../common/motion/position';
-import { Range } from './../common/motion/range';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
-import { RegisterMode } from './../register/register';
-import { GlobalState } from './../state/globalState';
-import { ReplaceState } from './../state/replaceState';
-import { RecordedState } from './recordedState';
-import { Neovim } from '../neovim/neovim';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
-import { logger } from '../util/logger';
+import { Logger } from '../util/logger';
+import { ModeName } from '../mode/mode';
+import { NeovimWrapper } from '../neovim/neovim';
+import { Position } from './../common/motion/position';
+import { Range } from './../common/motion/range';
+import { RecordedState } from './recordedState';
+import { RegisterMode } from './../register/register';
+import { ReplaceState } from './../state/replaceState';
+import { globalState } from './../state/globalState';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -23,6 +23,8 @@ import { logger } from '../util/logger';
  * indicate what they want to do.
  */
 export class VimState implements vscode.Disposable {
+  private readonly logger = Logger.get('VimState');
+
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
    * be the rightmost column.
@@ -62,12 +64,12 @@ export class VimState implements vscode.Disposable {
   /**
    * Tracks movements that can be repeated with ; (e.g. t, T, f, and F).
    */
-  public static lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
+  public lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
 
   /**
    * Tracks movements that can be repeated with , (e.g. t, T, f, and F).
    */
-  public static lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
+  public lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
 
   public lastMovementFailed: boolean = false;
 
@@ -115,7 +117,7 @@ export class VimState implements vscode.Disposable {
    */
   public keyHistory: string[] = [];
 
-  public globalState: GlobalState = new GlobalState();
+  public globalState = globalState;
 
   /**
    * The position the cursor will be when this action finishes.
@@ -150,8 +152,8 @@ export class VimState implements vscode.Disposable {
 
   public set allCursors(value: Range[]) {
     for (const cursor of value) {
-      if (!cursor.start.isValid() || !cursor.stop.isValid()) {
-        logger.debug('VimState: invalid value for set cursor position. This is probably bad?');
+      if (!cursor.start.isValid(this.editor) || !cursor.stop.isValid(this.editor)) {
+        this.logger.debug('invalid value for set cursor position.');
       }
     }
 
@@ -177,6 +179,7 @@ export class VimState implements vscode.Disposable {
    */
   public lastVisualSelectionStart: Position;
   public lastVisualSelectionEnd: Position;
+
   /**
    * Was the previous mouse click past EOL
    */
@@ -221,14 +224,7 @@ export class VimState implements vscode.Disposable {
 
   public recordedMacro = new RecordedState();
 
-  /**
-   * Programmatically triggering an edit will unfortunately ALSO trigger our mouse update
-   * function. We use this variable to determine if the update function was triggered
-   * by us or by a mouse action.
-   */
-  public prevSelection: vscode.Selection;
-
-  public nvim: Neovim;
+  public nvim: NeovimWrapper;
 
   private _inputMethodSwitcher: InputMethodSwitcher;
 
@@ -237,11 +233,7 @@ export class VimState implements vscode.Disposable {
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-
-    if (enableNeovim) {
-      this.nvim = new Neovim();
-    }
-
+    this.nvim = new NeovimWrapper();
     this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 

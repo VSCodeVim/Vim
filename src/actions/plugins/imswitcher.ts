@@ -1,20 +1,22 @@
-import { ModeName } from '../../mode/mode';
-import { exists } from 'fs';
-import { promisify } from 'util';
-import { configuration } from '../../configuration/configuration';
 import * as util from '../../util/util';
-import { logger } from '../../util/logger';
-import { Message } from '../../util/message';
 import { Globals } from '../../globals';
+import { ModeName } from '../../mode/mode';
+import { configuration } from '../../configuration/configuration';
+import { exists } from 'fs';
+import { Logger } from '../../util/logger';
+import { promisify } from 'util';
 
-// InputMethodSwitcher change input method automatically when mode changed
+/**
+ * InputMethodSwitcher changes input method when mode changed
+ */
 export class InputMethodSwitcher {
   constructor(execute: (cmd: string) => Promise<string> = util.executeShell) {
     this.execute = execute;
   }
 
-  private savedIMKey = '';
   private execute: (cmd: string) => Promise<string>;
+  private readonly logger = Logger.get('IMSwitcher');
+  private savedIMKey = '';
 
   public async switchInputMethod(prevMode: ModeName, newMode: ModeName) {
     if (configuration.autoSwitchInputMethod.enable !== true) {
@@ -47,10 +49,13 @@ export class InputMethodSwitcher {
           this.savedIMKey = insertIMKey.trim();
         }
       } catch (e) {
-        logger.error(`IMSwitcher: promise is rejected. err=${e}`);
+        this.logger.error(`Error switching to default IM. err=${e}`);
       }
     } else {
-      this.showCmdNotFoundErrorMessage(rawObtainIMCmd, 'vim.autoSwitchInputMethod.obtainIMCmd');
+      this.logger.error(
+        `Unable to find ${rawObtainIMCmd}. Check your 'vim.autoSwitchInputMethod.obtainIMCmd' in VSCode setting.`
+      );
+      this.disableIMSwitch();
     }
 
     const defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
@@ -75,11 +80,14 @@ export class InputMethodSwitcher {
         try {
           await this.execute(switchIMCmd);
         } catch (e) {
-          logger.error(`IMSwitcher: promise is rejected. err=${e}`);
+          this.logger.error(`Error switching to IM. err=${e}`);
         }
       }
     } else {
-      this.showCmdNotFoundErrorMessage(rawSwitchIMCmd, 'vim.autoSwitchInputMethod.switchIMCmd');
+      this.logger.error(
+        `Unable to find ${rawSwitchIMCmd}. Check your 'vim.autoSwitchInputMethod.switchIMCmd' in VSCode setting.`
+      );
+      this.disableIMSwitch();
     }
   }
 
@@ -96,19 +104,15 @@ export class InputMethodSwitcher {
     return cmd.split(' ')[0];
   }
 
-  private showCmdNotFoundErrorMessage(cmd: string, config: string) {
-    Message.ShowError(`Unable to find ${cmd}. check your ${config} in VSCode setting.`);
-    this.disableIMSwitch();
-  }
-
   private disableIMSwitch() {
+    this.logger.warn('disabling IMSwitch');
     configuration.autoSwitchInputMethod.enable = false;
   }
 
   private isConfigurationValid(): boolean {
     let switchIMCmd = configuration.autoSwitchInputMethod.switchIMCmd;
     if (!switchIMCmd.includes('{im}')) {
-      Message.ShowError(
+      this.logger.error(
         'vim.autoSwitchInputMethod.switchIMCmd is incorrect, \
         it should contain the placeholder {im}'
       );
@@ -116,12 +120,12 @@ export class InputMethodSwitcher {
     }
     let obtainIMCmd = configuration.autoSwitchInputMethod.obtainIMCmd;
     if (obtainIMCmd === undefined || obtainIMCmd === '') {
-      Message.ShowError('vim.autoSwitchInputMethod.obtainIMCmd is empty, please set it correctly!');
+      this.logger.error('vim.autoSwitchInputMethod.obtainIMCmd is empty');
       return false;
     }
     let defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
     if (defaultIMKey === undefined || defaultIMKey === '') {
-      Message.ShowError('vim.autoSwitchInputMethod.defaultIM is empty, please set it correctly!');
+      this.logger.error('vim.autoSwitchInputMethod.defaultIM is empty');
       return false;
     }
     return true;

@@ -22,6 +22,10 @@ suite('Remapper', () => {
       before: ['j', 'j'],
       after: ['<Esc>'],
     },
+    {
+      before: ['<c-e>'],
+      after: ['<Esc>'],
+    },
   ];
   const defaultNormalModeKeyBindings: IKeyRemapping[] = [
     {
@@ -73,17 +77,17 @@ suite('Remapper', () => {
     }
 
     public findMatchingRemap(
-      userDefinedRemappings: { [key: string]: IKeyRemapping },
+      userDefinedRemappings: Map<string, IKeyRemapping>,
       inputtedKeys: string[],
       currentMode: ModeName
     ) {
-      return TestRemapper._findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
+      return super.findMatchingRemap(userDefinedRemappings, inputtedKeys, currentMode);
     }
 
-    public getRemappedKeySequenceLengthRange(remappings: {
-      [key: string]: IKeyRemapping;
-    }): [number, number] {
-      return TestRemapper._getRemappedKeysLengthRange(remappings);
+    public getRemappedKeySequenceLengthRange(
+      remappings: Map<string, IKeyRemapping>
+    ): [number, number] {
+      return TestRemapper.getRemappedKeysLengthRange(remappings);
     }
   }
 
@@ -117,11 +121,11 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    let remappings: { [key: string]: IKeyRemapping } = {
-      abc: { before: ['a', 'b', 'c'] },
-      de: { before: ['d', 'e'] },
-      f: { before: ['f'] },
-    };
+    let remappings: Map<string, IKeyRemapping> = new Map([
+      ['abc', { before: ['a', 'b', 'c'] }],
+      ['de', { before: ['d', 'e'] }],
+      ['f', { before: ['f'] }],
+    ]);
 
     // act
     const testRemapper = new TestRemapper();
@@ -202,11 +206,11 @@ suite('Remapper', () => {
 
     for (const testCase of testCases) {
       // setup
-      let remappings: { [key: string]: IKeyRemapping } = {};
-      remappings[testCase.before] = {
+      let remappings: Map<string, IKeyRemapping> = new Map();
+      remappings.set(testCase.before, {
         before: testCase.before.split(''),
         after: testCase.after.split(''),
-      };
+      });
 
       // act
       const testRemapper = new TestRemapper();
@@ -221,7 +225,7 @@ suite('Remapper', () => {
         assert(
           actual,
           `Expected remap for before=${testCase.before}. input=${testCase.input}. mode=${
-            testCase.mode
+            ModeName[testCase.mode]
           }.`
         );
         assert.deepEqual(actual!.after, testCase.expectedAfter.split(''));
@@ -295,6 +299,43 @@ suite('Remapper', () => {
     // assert
     assert.equal(actual, true);
     assert.equal(vscode.window.visibleTextEditors.length, 0);
+  });
+
+  test('<c-e> -> <esc> in insert mode should go to normal mode', async () => {
+    const expectedDocumentContent = 'lorem ipsum';
+
+    // setup
+    await setupWithBindings({
+      insertModeKeyBindings: defaultInsertModeKeyBindings,
+      normalModeKeyBindings: defaultNormalModeKeyBindings,
+      visualModeKeyBindings: defaultVisualModeKeyBindings,
+    });
+
+    let remapper = new Remappers();
+
+    const edit = new vscode.WorkspaceEdit();
+    edit.insert(
+      vscode.window.activeTextEditor!.document.uri,
+      new vscode.Position(0, 0),
+      expectedDocumentContent
+    );
+    vscode.workspace.applyEdit(edit);
+
+    await modeHandler.handleKeyEvent('i');
+    assertEqual(modeHandler.currentMode.name, ModeName.Insert);
+
+    // act
+    let actual = false;
+    try {
+      actual = await remapper.sendKey(['<C-e>'], modeHandler, modeHandler.vimState);
+    } catch (e) {
+      assert.fail(e);
+    }
+
+    // assert
+    assert.equal(actual, true);
+    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+    assert.equal(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
   test('leader, w -> closeActiveEditor in normal mode through modehandler', async () => {

@@ -1,26 +1,20 @@
-import { CommandLineHistory } from '../../src/util/historyFile';
-import { assertEqual, setupWorkspace, cleanUpWorkspace } from '../testUtils';
-import { configuration } from '../../src/configuration/configuration';
-import * as path from 'path';
-import * as os from 'os';
 import * as assert from 'assert';
+import * as fs from 'fs';
+import * as os from 'os';
+import { HistoryFile } from '../../src/history/historyFile';
+import { assertEqual, setupWorkspace, cleanUpWorkspace, rndName } from '../testUtils';
+import { configuration } from '../../src/configuration/configuration';
 
-suite('command-line history', () => {
-  let history: CommandLineHistory;
+suite('HistoryFile', () => {
+  let history: HistoryFile;
   let run_cmds: string[];
+  const tmpDir = os.tmpdir();
 
   const assertArrayEquals = (expected: any, actual: any) => {
     assertEqual(expected.length, actual.length);
     for (let i: number = 0; i < expected.length; i++) {
       assertEqual(expected[i], actual[i]);
     }
-  };
-
-  const rndName = () => {
-    return Math.random()
-      .toString(36)
-      .replace(/[^a-z]+/g, '')
-      .substr(0, 10);
   };
 
   setup(async () => {
@@ -31,7 +25,7 @@ suite('command-line history', () => {
       run_cmds.push(i.toString());
     }
 
-    history = new CommandLineHistory();
+    history = new HistoryFile(rndName(), tmpDir);
     await history.load();
   });
 
@@ -80,14 +74,21 @@ suite('command-line history', () => {
     assertArrayEquals(expected_raw_history, history.get());
   });
 
-  test('load and save history', async () => {
+  test('file system', async () => {
+    // history file is lazily created, should not exist
+    assert.equal(fs.existsSync(history.historyFilePath), false);
+
     for (let cmd of run_cmds) {
       await history.add(cmd);
     }
 
-    let history2 = new CommandLineHistory();
-    await history2.load();
-    assertArrayEquals(run_cmds.slice(), history2.get());
+    // history file should exist after an `add` operation
+    assert.equal(fs.existsSync(history.historyFilePath), true);
+
+    history.clear();
+
+    // expect history file to be deleted from file system and empty
+    assert.equal(fs.existsSync(history.historyFilePath), false);
   });
 
   test('change configuration.history', async () => {

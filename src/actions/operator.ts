@@ -10,6 +10,7 @@ import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
+import { ReportLinesChanged, ReportLinesYanked } from '../util/statusBarTextUtils';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -215,6 +216,10 @@ export class DeleteOperator extends BaseOperator {
     if (vimState.currentMode === ModeName.Visual) {
       vimState.desiredColumn = newPos.character;
     }
+
+    const numLinesDeleted = Math.abs(start.line - end.line) + 1;
+    ReportLinesChanged(-numLinesDeleted, vimState);
+
     return vimState;
   }
 }
@@ -229,7 +234,7 @@ export class DeleteOperatorVisual extends BaseOperator {
     // see special case in DeleteOperator.delete()
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+    return new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -294,6 +299,9 @@ export class YankOperator extends BaseOperator {
       vimState.cursorPosition = start;
     }
 
+    const numLinesYanked = text.split('\n').length;
+    ReportLinesYanked(numLinesYanked, vimState);
+
     return vimState;
   }
 }
@@ -306,7 +314,7 @@ export class ShiftYankOperatorVisual extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return await new YankOperator().run(vimState, start, end);
+    return new YankOperator().run(vimState, start, end);
   }
 }
 
@@ -316,7 +324,7 @@ export class DeleteOperatorXVisual extends BaseOperator {
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    return await new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
+    return new DeleteOperator(this.multicursorIndex).run(vimState, start, end);
   }
 }
 
@@ -331,7 +339,7 @@ export class ChangeOperatorSVisual extends BaseOperator {
   }
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
-    return await new ChangeOperator().run(vimState, start, end);
+    return new ChangeOperator().run(vimState, start, end);
   }
 }
 
@@ -640,11 +648,22 @@ export class YankVisualBlockMode extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
     let toCopy: string = '';
 
+    const isMultiline = start.line !== end.line;
+
     for (const { line } of Position.IterateLine(vimState)) {
-      toCopy += line + '\n';
+      if (isMultiline) {
+        toCopy += line + '\n';
+      } else {
+        toCopy = line;
+      }
     }
 
+    vimState.currentRegisterMode = RegisterMode.BlockWise;
+
     Register.put(toCopy, vimState, this.multicursorIndex);
+
+    const numLinesYanked = toCopy.split('\n').length;
+    ReportLinesYanked(numLinesYanked, vimState);
 
     await vimState.setCurrentMode(ModeName.Normal);
     vimState.cursorPosition = start;

@@ -4,16 +4,13 @@ import { configuration } from './configuration/configuration';
 
 class StatusBarImpl implements vscode.Disposable {
   private _statusBarItem: vscode.StatusBarItem;
-  private _previousModeName: ModeName | undefined;
-  private _wasRecordingMacro: boolean;
-  private _wasHighPriority: boolean;
+  private _previousModeName: ModeName | undefined = undefined;
+  private _wasRecordingMacro = false;
+  private _wasHighPriority = false;
 
   constructor() {
     this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     this._statusBarItem.show();
-    this._previousModeName = undefined;
-    this._wasRecordingMacro = false;
-    this._wasHighPriority = false;
   }
 
   public Set(
@@ -22,22 +19,24 @@ class StatusBarImpl implements vscode.Disposable {
     isRecordingMacro: boolean,
     isHighPriority: boolean = false
   ) {
-    let hasModeChanged = mode !== this._previousModeName;
+    const hasModeChanged = mode !== this._previousModeName;
 
     // text
-    let shouldUpdateText =
+    const shouldUpdateText =
       hasModeChanged ||
       mode === ModeName.SearchInProgressMode ||
       mode === ModeName.CommandlineInProgress ||
       isRecordingMacro !== this._wasRecordingMacro ||
       configuration.showcmd;
 
+    // errors and other high-priorty messages remain displayed on the status bar
+    // until specific conditions are met (such as the mode has changed)
     if ((shouldUpdateText && !this._wasHighPriority) || isHighPriority) {
       this.UpdateText(text);
     }
 
     // color
-    let shouldUpdateColor = configuration.statusBarColorControl && hasModeChanged;
+    const shouldUpdateColor = configuration.statusBarColorControl && hasModeChanged;
     if (shouldUpdateColor) {
       this.UpdateColor(mode);
     }
@@ -61,10 +60,11 @@ class StatusBarImpl implements vscode.Disposable {
   }
 
   private UpdateColor(mode: ModeName) {
-    let foreground;
-    let background;
+    let foreground: string | undefined = undefined;
+    let background: string | undefined = undefined;
 
-    const colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+    let colorToSet = configuration.statusBarColors[ModeName[mode].toLowerCase()];
+
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {
         background = colorToSet;
@@ -73,24 +73,30 @@ class StatusBarImpl implements vscode.Disposable {
       }
     }
 
-    const currentColorCustomizations = vscode.workspace
-      .getConfiguration('workbench')
-      .get('colorCustomizations');
+    const workbenchConfiguration = vscode.workspace.getConfiguration('workbench');
+    const currentColorCustomizations = workbenchConfiguration.get('colorCustomizations');
 
-    const colorCustomizations = Object.assign(currentColorCustomizations || {}, {
+    const colorCustomizations = Object.assign({}, currentColorCustomizations || {}, {
       'statusBar.background': `${background}`,
       'statusBar.noFolderBackground': `${background}`,
       'statusBar.debuggingBackground': `${background}`,
       'statusBar.foreground': `${foreground}`,
     });
 
+    // if colors are undefined, return to vscode defaults
+    if (background === undefined) {
+      delete colorCustomizations['statusBar.background'];
+      delete colorCustomizations['statusBar.noFolderBackground'];
+      delete colorCustomizations['statusBar.debuggingBackground'];
+    }
+
     if (foreground === undefined) {
       delete colorCustomizations['statusBar.foreground'];
     }
 
-    vscode.workspace
-      .getConfiguration('workbench')
-      .update('colorCustomizations', colorCustomizations, true);
+    if (currentColorCustomizations !== colorCustomizations) {
+      workbenchConfiguration.update('colorCustomizations', colorCustomizations, true);
+    }
   }
 }
 

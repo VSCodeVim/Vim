@@ -1,17 +1,16 @@
-import * as vscode from 'vscode';
-
-import { configuration } from '../configuration/configuration';
-import { logger } from '../util/logger';
-import { Message } from '../util/message';
-import { VimState } from '../state/vimState';
-import { StatusBar } from '../statusBar';
 import * as parser from './parser';
-import { VimError, ErrorCode } from '../error';
-import { CommandLineHistory } from '../../src/util/historyFile';
+import * as vscode from 'vscode';
+import { CommandLineHistory } from '../history/historyFile';
 import { ModeName } from './../mode/mode';
+import { Logger } from '../util/logger';
+import { StatusBar } from '../statusBar';
+import { VimError, ErrorCode } from '../error';
+import { VimState } from '../state/vimState';
+import { configuration } from '../configuration/configuration';
 
 class CommandLine {
   private _history: CommandLineHistory;
+  private readonly _logger = Logger.get('CommandLine');
 
   /**
    *  Index used for navigating commandline history with <up> and <down>
@@ -36,7 +35,7 @@ class CommandLine {
     this._history = new CommandLineHistory();
   }
 
-  public load(): Promise<void> {
+  public async load(): Promise<void> {
     return this._history.load();
   }
 
@@ -49,6 +48,11 @@ class CommandLine {
       command = command.slice(1);
     }
 
+    if (command === 'help') {
+      StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
+      return;
+    }
+
     this._history.add(command);
     this._commandLineHistoryIndex = this._history.get().length;
 
@@ -57,7 +61,7 @@ class CommandLine {
       const useNeovim = configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
 
       if (useNeovim) {
-        var statusBarText = await vimState.nvim.run(vimState, command);
+        const statusBarText = await vimState.nvim.run(vimState, command);
         StatusBar.Set(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true);
       } else {
         await cmd.execute(vimState.editor, vimState);
@@ -75,15 +79,14 @@ class CommandLine {
           );
         }
       } else {
-        logger.error(`commandLine : error executing cmd=${command}. err=${e}.`);
-        Message.ShowError(e.toString());
+        this._logger.error(`Error executing cmd=${command}. err=${e}.`);
       }
     }
   }
 
   public async PromptAndRun(initialText: string, vimState: VimState): Promise<void> {
     if (!vscode.window.activeTextEditor) {
-      logger.debug('commandLine : No active document');
+      this._logger.debug('No active document');
       return;
     }
     let cmd = await vscode.window.showInputBox(this.getInputBoxOptions(initialText));
@@ -101,7 +104,7 @@ class CommandLine {
 
   public async ShowHistory(initialText: string, vimState: VimState): Promise<string | undefined> {
     if (!vscode.window.activeTextEditor) {
-      logger.debug('commandLine : No active document.');
+      this._logger.debug('No active document.');
       return '';
     }
 

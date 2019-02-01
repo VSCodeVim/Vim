@@ -827,9 +827,9 @@ suite('Mode Visual', () => {
   });
 
   suite('visualstar', () => {
-    setup(() => {
+    setup(async () => {
       Globals.mockConfiguration.visualstar = true;
-      reloadConfiguration();
+      await reloadConfiguration();
     });
 
     newTest({

@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-
+import { ConfigurationError } from './configurationError';
 import { Globals } from '../globals';
-import { taskQueue } from '../taskQueue';
 import { Notation } from './notation';
+import { VsCodeContext } from '../util/vscode-context';
+import { configurationValidator } from './configurationValidator';
 import {
   IConfiguration,
   IKeyRemapping,
@@ -49,10 +50,9 @@ interface IKeyBinding {
  *
  * Vim option override sequence.
  * 1. `:set {option}` on the fly
- * 2. TODO .vimrc.
- * 3. `vim.{option}`
- * 4. VS Code configuration
- * 5. VSCodeVim flavored Vim option default values
+ * 2. `vim.{option}`
+ * 3. VS Code configuration
+ * 4. VSCodeVim configuration default values
  *
  */
 class Configuration implements IConfiguration {
@@ -66,14 +66,12 @@ class Configuration implements IConfiguration {
     'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
   };
 
-  constructor() {
-    this.reload();
-  }
-
-  reload() {
+  public async load(): Promise<ConfigurationError[]> {
     let vimConfigs: any = Globals.isTesting
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
+
+    let configurationErrors = new Array<ConfigurationError>();
 
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
@@ -81,7 +79,7 @@ class Configuration implements IConfiguration {
       let val = vimConfigs[option] as any;
       if (val !== null && val !== undefined) {
         if (val.constructor.name === Object.name) {
-          val = this.unproxify(val);
+          val = Configuration.unproxify(val);
         }
         this[option] = val;
       }
@@ -89,17 +87,33 @@ class Configuration implements IConfiguration {
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
-    // normalize remapped keys
-    const keybindingList: IKeyRemapping[][] = [
-      this.insertModeKeyBindings,
-      this.insertModeKeyBindingsNonRecursive,
-      this.normalModeKeyBindings,
-      this.normalModeKeyBindingsNonRecursive,
-      this.visualModeKeyBindings,
-      this.visualModeKeyBindingsNonRecursive,
+    // remapped keys
+    const modeKeyBindingsKeys = [
+      'insertModeKeyBindings',
+      'insertModeKeyBindingsNonRecursive',
+      'normalModeKeyBindings',
+      'normalModeKeyBindingsNonRecursive',
+      'visualModeKeyBindings',
+      'visualModeKeyBindingsNonRecursive',
     ];
-    for (const keybindings of keybindingList) {
-      for (let remapping of keybindings) {
+    for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
+      let keybindings = configuration[modeKeyBindingsKey];
+
+      const modeKeyBindingsMap = new Map<string, IKeyRemapping>();
+      for (let i = keybindings.length - 1; i >= 0; i--) {
+        let remapping = keybindings[i] as IKeyRemapping;
+
+        // validate
+        let remappingErrors = await configurationValidator.isRemappingValid(remapping);
+        configurationErrors = configurationErrors.concat(remappingErrors);
+
+        if (remappingErrors.filter(e => e.level === 'error').length > 0) {
+          // errors with remapping, skip
+          keybindings.splice(i, 1);
+          continue;
+        }
+
+        // normalize
         if (remapping.before) {
           remapping.before.forEach(
             (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, this.leader))
@@ -111,16 +125,43 @@ class Configuration implements IConfiguration {
             (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, this.leader))
           );
         }
+
+        // check for duplicates
+        const beforeKeys = remapping.before.join('');
+        if (modeKeyBindingsMap.has(beforeKeys)) {
+          configurationErrors.push({
+            level: 'error',
+            message: `${remapping.before}. Duplicate remapped key for ${beforeKeys}.`,
+          });
+          continue;
+        }
+
+        // add to map
+        modeKeyBindingsMap.set(beforeKeys, remapping);
       }
+
+      configuration[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
     }
 
-    this.wrapKeys = {};
+    // neovim
+    let neovimErrors = await configurationValidator.isNeovimValid(
+      configuration.enableNeovim,
+      configuration.neovimPath
+    );
+    configurationErrors = configurationErrors.concat(neovimErrors);
+    if (neovimErrors.filter(e => e.level === 'error').length > 0) {
+      // if error encountered with configuration, disable neovim
+      configuration.enableNeovim = false;
+    }
 
+    // wrap keys
+    this.wrapKeys = {};
     for (const wrapKey of this.whichwrap.split(',')) {
       this.wrapKeys[wrapKey] = true;
     }
 
     // read package.json for bound keys
+    // enable/disable certain key combinations
     this.boundKeyCombinations = [];
     for (let keybinding of packagejson.contributes.keybindings) {
       if (keybinding.when.indexOf('listFocus') !== -1) {
@@ -140,7 +181,6 @@ class Configuration implements IConfiguration {
       });
     }
 
-    // enable/disable certain key combinations
     for (const boundKey of this.boundKeyCombinations) {
       // By default, all key combinations are used
       let useKey = true;
@@ -159,34 +199,18 @@ class Configuration implements IConfiguration {
         }
       }
 
-      vscode.commands.executeCommand('setContext', `vim.use${boundKey.key}`, useKey);
+      VsCodeContext.Set(`vim.use${boundKey.key}`, useKey);
     }
 
-    vscode.commands.executeCommand('setContext', 'vim.overrideCopy', this.overrideCopy);
-    vscode.commands.executeCommand(
-      'setContext',
-      'vim.overrideCtrlC',
-      this.overrideCopy || this.useCtrlKeys
-    );
-  }
+    VsCodeContext.Set('vim.overrideCopy', this.overrideCopy);
+    VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
 
-  unproxify(obj: Object): Object {
-    let result = {};
-    for (const key in obj) {
-      let val = obj[key] as any;
-      if (val !== null && val !== undefined) {
-        result[key] = val;
-      }
-    }
-    return result;
+    return configurationErrors;
   }
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {
-    let resource: vscode.Uri | undefined = undefined;
-    let activeTextEditor = vscode.window.activeTextEditor;
-    if (activeTextEditor) {
-      resource = activeTextEditor.document.uri;
-    }
+    const activeTextEditor = vscode.window.activeTextEditor;
+    const resource = activeTextEditor ? activeTextEditor.document.uri : undefined;
     return vscode.workspace.getConfiguration(section, resource);
   }
 
@@ -263,7 +287,9 @@ class Configuration implements IConfiguration {
   };
 
   debug: IDebugConfiguration = {
-    loggingLevel: 'error',
+    silent: false,
+    loggingLevelForAlert: 'error',
+    loggingLevelForConsole: 'error',
   };
 
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
@@ -298,7 +324,11 @@ class Configuration implements IConfiguration {
   })
   relativenumber: boolean;
 
-  iskeyword: string = '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-';
+  @overlapSetting({
+    settingName: 'wordSeparators',
+    defaultValue: '/\\()"\':,.;<>~!@#$%^&*|+=[]{}`?-',
+  })
+  iskeyword: string;
 
   boundKeyCombinations: IKeyBinding[] = [];
 
@@ -310,19 +340,7 @@ class Configuration implements IConfiguration {
 
   foldfix = false;
 
-  private disableExtension: boolean = false;
-
-  get disableExt(): boolean {
-    return this.disableExtension;
-  }
-  set disableExt(isDisabled: boolean) {
-    this.disableExtension = isDisabled;
-    this.getConfiguration('vim').update(
-      'disableExtension',
-      isDisabled,
-      vscode.ConfigurationTarget.Global
-    );
-  }
+  disableExtension: boolean = false;
 
   enableNeovim = false;
   neovimPath = 'nvim';
@@ -330,6 +348,8 @@ class Configuration implements IConfiguration {
   substituteGlobalFlag = false;
   whichwrap = '';
   wrapKeys = {};
+
+  report = 2;
 
   cursorStylePerMode: IModeSpecificStrings<string> = {
     normal: undefined,
@@ -356,6 +376,24 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+
+  insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+
+  private static unproxify(obj: Object): Object {
+    let result = {};
+    for (const key in obj) {
+      let val = obj[key] as any;
+      if (val !== null && val !== undefined) {
+        result[key] = val;
+      }
+    }
+    return result;
+  }
 }
 
 // handle mapped settings between vscode to vim
@@ -367,11 +405,16 @@ function overlapSetting(args: {
   return function(target: any, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
       get: function() {
-        if (this['_' + propertyKey] !== undefined) {
-          return this['_' + propertyKey];
+        // retrieve value from vim configuration
+        // if the value is not defined or empty
+        // look at the equivalent `editor` setting
+        // if that is not defined then defer to the default value
+        let val = this['_' + propertyKey];
+        if (val !== undefined && val !== '') {
+          return val;
         }
 
-        let val = this.getConfiguration('editor').get(args.settingName, args.defaultValue);
+        val = this.getConfiguration('editor').get(args.settingName, args.defaultValue);
         if (args.map && val !== undefined) {
           val = args.map.get(val);
         }
@@ -379,28 +422,28 @@ function overlapSetting(args: {
         return val;
       },
       set: function(value) {
+        // synchronize the vim setting with the `editor` equivalent
         this['_' + propertyKey] = value;
 
-        if (value === undefined || Globals.isTesting) {
+        if (value === undefined || value === '' || Globals.isTesting) {
           return;
         }
 
-        taskQueue.enqueueTask(async () => {
-          if (args.map) {
-            for (let [vscodeSetting, vimSetting] of args.map.entries()) {
-              if (value === vimSetting) {
-                value = vscodeSetting;
-                break;
-              }
+        if (args.map) {
+          for (let [vscodeSetting, vimSetting] of args.map.entries()) {
+            if (value === vimSetting) {
+              value = vscodeSetting;
+              break;
             }
           }
+        }
 
-          await this.getConfiguration('editor').update(
-            args.settingName,
-            value,
-            vscode.ConfigurationTarget.Global
-          );
-        }, 'config');
+        // update configuration asynchronously
+        this.getConfiguration('editor').update(
+          args.settingName,
+          value,
+          vscode.ConfigurationTarget.Global
+        );
       },
       enumerable: true,
       configurable: true,

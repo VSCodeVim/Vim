@@ -1,19 +1,14 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { Globals } from '../src/globals';
 import { Jump } from './../src/jumps/jump';
 import { JumpTracker } from '../src/jumps/jumpTracker';
-import { ModeHandler } from '../src/mode/modeHandler';
 import { Position } from '../src/common/motion/position';
-import { TextEditor } from '../src/textEditor';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
-import { getAndUpdateModeHandler } from '../extension';
 import { getTestingFunctions } from './testSimplifier';
-import { waitForCursorSync } from '../src/util/util';
 
 suite('Record and navigate jumps', () => {
-  let { newTest, newTestOnly } = getTestingFunctions();
+  let { newTest } = getTestingFunctions();
 
   setup(async () => {
     await setupWorkspace();

@@ -67,7 +67,7 @@ export class SortCommand extends node.CommandBase {
     );
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange) {
+  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
     let startLine: vscode.Position;
     let endLine: vscode.Position;
 

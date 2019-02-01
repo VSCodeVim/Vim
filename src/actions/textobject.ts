@@ -574,7 +574,7 @@ abstract class IndentObjectMatch extends TextObjectMovement {
   }
 
   public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
-    return await this.execAction(position, vimState);
+    return this.execAction(position, vimState);
   }
 
   /**

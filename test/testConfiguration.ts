@@ -52,7 +52,9 @@ export class Configuration implements IConfiguration {
     replace: '#D08770',
   };
   debug: {
-    loggingLevel: 'warn';
+    silent: false;
+    loggingLevelForAlert: 'error';
+    loggingLevelForConsole: 'debug';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   tabstop = 2;
@@ -65,7 +67,7 @@ export class Configuration implements IConfiguration {
   mouseSelectionGoesIntoVisualMode = true;
   changeWordIncludesWhitespace = false;
   foldfix = false;
-  disableExt = false;
+  disableExtension = false;
   enableNeovim = false;
   neovimPath = 'nvim';
   substituteGlobalFlag = false;
@@ -85,4 +87,5 @@ export class Configuration implements IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   whichwrap = '';
   wrapKeys = {};
+  report = 2;
 }

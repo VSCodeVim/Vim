@@ -1,6 +1,8 @@
-import { configuration } from '../../configuration/configuration';
-import { Message } from '../../util/message';
 import * as node from '../node';
+import { configuration } from '../../configuration/configuration';
+import { VimError, ErrorCode } from '../../error';
+import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
 
 export enum SetOptionOperator {
   /*
@@ -60,13 +62,19 @@ export class SetOptionsCommand extends node.CommandBase {
     return this._arguments;
   }
 
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     if (!this._arguments.name) {
       throw new Error('Missing argument.');
     }
 
     if (configuration[this._arguments.name] == null) {
-      throw new Error('Unsupported option. ' + this._arguments.name);
+      StatusBar.Set(
+        `${VimError.fromCode(ErrorCode.E518).toString()}. ${this._arguments.name}`,
+        vimState.currentMode,
+        vimState.isRecordingMacro,
+        true
+      );
+      return;
     }
 
     switch (this._arguments.operator) {
@@ -98,9 +106,19 @@ export class SetOptionsCommand extends node.CommandBase {
       case SetOptionOperator.Info:
         let value = configuration[this._arguments.name];
         if (value === undefined) {
-          await Message.ShowError(`E518 Unknown option: ${this._arguments.name}`);
+          StatusBar.Set(
+            `${VimError.fromCode(ErrorCode.E518).toString()}. ${value}`,
+            vimState.currentMode,
+            vimState.isRecordingMacro,
+            true
+          );
         } else {
-          await Message.ShowInfo(`${this._arguments.name}=${value}`);
+          StatusBar.Set(
+            `${this._arguments.name}=${value}`,
+            vimState.currentMode,
+            vimState.isRecordingMacro,
+            true
+          );
         }
         break;
       default:

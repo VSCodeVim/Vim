@@ -21,12 +21,23 @@ export interface IAutoSwitchInputMethod {
   switchIMCmd: string;
   obtainIMCmd: string;
 }
+
 export interface IDebugConfiguration {
   /**
-   * Maximum level of messages to log.
-   * Supported values: ['error', 'warn', 'info', 'verbose', 'debug']
+   * Boolean indicating whether all logs should be suppressed
+   * This value overrides both `loggingLevelForAlert` and `loggingLevelForConsole`
    */
-  loggingLevel: string;
+  silent: boolean;
+
+  /**
+   * Maximum level of messages to show as VS Code information message
+   */
+  loggingLevelForAlert: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
+
+  /**
+   * Maximum level of messages to log to console.
+   */
+  loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 }
 
 export interface IConfiguration {
@@ -185,6 +196,10 @@ export interface IConfiguration {
    */
   relativenumber: boolean;
 
+  /**
+   * keywords contain alphanumeric characters and '_'.
+   * If not configured `editor.wordSeparators` is used
+   */
   iskeyword: string;
 
   /**
@@ -207,7 +222,12 @@ export interface IConfiguration {
    */
   foldfix: boolean;
 
-  disableExt: boolean;
+  /**
+   * "Soft"-disabling of extension.
+   * Differs from VS Code's disablng of the extension as the extension
+   * will still be loaded and activated, but all functionality will be disabled.
+   */
+  disableExtension: boolean;
 
   /**
    * Neovim
@@ -236,9 +256,14 @@ export interface IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
 
   /**
-   *  emulate whichwrap
+   * Comma-separated list of motion keys that should wrap to next/previous line.
    */
   whichwrap: string;
 
   cursorStylePerMode: IModeSpecificStrings<string>;
+
+  /**
+   * Threshold to report changed lines to status bar
+   */
+  report: number;
 }
