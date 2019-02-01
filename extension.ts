@@ -366,6 +366,10 @@ export async function activate(context: vscode.ExtensionContext) {
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
 
+  // Disable automatic keyboard navigation in lists, so it doesn't interfere
+  // with our list navigation keybindings
+  await VsCodeContext.Set('listAutomaticKeyboardNavigation', false);
+
   await toggleExtension(configuration.disableExtension, compositionState);
 
   logger.debug('Finish.');
