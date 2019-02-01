@@ -101,7 +101,7 @@ class Configuration implements IConfiguration {
 
       const modeKeyBindingsMap = new Map<string, IKeyRemapping>();
       for (let i = keybindings.length - 1; i >= 0; i--) {
-        let remapping = keybindings[i];
+        let remapping = keybindings[i] as IKeyRemapping;
 
         // validate
         let remappingErrors = await configurationValidator.isRemappingValid(remapping);

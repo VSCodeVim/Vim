@@ -197,7 +197,7 @@ export class Remapper implements IRemapper {
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
-      this._logger.verbose(`trying to find matching remap for keySlice=${keySlice}.`);
+      this._logger.verbose(`key=${inputtedKeys}. keySlice=${keySlice}.`);
       if (userDefinedRemappings.has(keySlice)) {
         // In Insert mode, we allow users to precede remapped commands
         // with extraneous keystrokes (eg. "hello world jj")
@@ -208,6 +208,7 @@ export class Remapper implements IRemapper {
             .slice(0, inputtedKeys.length - keySlice.length)
             .join('');
           if (precedingKeys.length > 0 && !/^[0-9]+$/.test(precedingKeys)) {
+            this._logger.verbose(`key sequences need to match precisely. precedingKeys=${precedingKeys}.`);
             break;
           }
         }

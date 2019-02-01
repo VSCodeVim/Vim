@@ -42,6 +42,18 @@ class ConfigurationValidator {
       return [{ level: 'error', message: `${remapping.before} missing 'after' key or 'command'.` }];
     }
 
+    if (!(remapping.before instanceof Array)) {
+      return [
+        { level: 'error', message: `Remapping of '${remapping.before}' should be a string array.` },
+      ];
+    }
+
+    if (remapping.after && !(remapping.after instanceof Array)) {
+      return [
+        { level: 'error', message: `Remapping of '${remapping.after}' should be a string array.` },
+      ];
+    }
+
     if (remapping.commands) {
       for (const command of remapping.commands) {
         let cmd: string;
