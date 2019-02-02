@@ -112,12 +112,12 @@ export class NeovimWrapper implements vscode.Disposable {
     });
 
     const [rangeStart, rangeEnd] = [
-      Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
-      Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition),
+      Position.EarlierOf(vimState.cursorStopPosition, vimState.cursorStartPosition),
+      Position.LaterOf(vimState.cursorStopPosition, vimState.cursorStartPosition),
     ];
     await this.nvim.callFunction('setpos', [
       '.',
-      [0, vimState.cursorPosition.line + 1, vimState.cursorPosition.character, false],
+      [0, vimState.cursorStopPosition.line + 1, vimState.cursorStopPosition.character, false],
     ]);
     await this.nvim.callFunction('setpos', [
       "'<",

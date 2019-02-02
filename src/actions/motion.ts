@@ -1493,7 +1493,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
         cursorStartPos = adjacentPosLeft;
         vimState.cursorStartPosition = adjacentPosLeft;
         position = adjacentPosRight;
-        vimState.cursorPosition = adjacentPosRight;
+        vimState.cursorStopPosition = adjacentPosRight;
       }
     }
     // First, search backwards for the opening character of the sequence

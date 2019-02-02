@@ -122,11 +122,11 @@ export class VimState implements vscode.Disposable {
   /**
    * The position the cursor will be when this action finishes.
    */
-  public get cursorPosition(): Position {
-    return this.allCursors[0].stop;
+  public get cursorStopPosition(): Position {
+    return this.cursors[0].stop;
   }
-  public set cursorPosition(value: Position) {
-    this.allCursors[0] = this.allCursors[0].withNewStop(value);
+  public set cursorStopPosition(value: Position) {
+    this.cursors[0] = this.cursors[0].withNewStop(value);
   }
 
   /**
@@ -135,30 +135,29 @@ export class VimState implements vscode.Disposable {
    * actually starts e.g. if you use the "aw" text motion in the middle of a word.
    */
   public get cursorStartPosition(): Position {
-    return this.allCursors[0].start;
+    return this.cursors[0].start;
   }
   public set cursorStartPosition(value: Position) {
-    this.allCursors[0] = this.allCursors[0].withNewStart(value);
+    this.cursors[0] = this.cursors[0].withNewStart(value);
   }
 
   /**
-   * In Multi Cursor Mode, the position of every cursor.
+   * The position of every cursor.
    */
-  private _allCursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
+  private _cursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
 
-  public get allCursors(): Range[] {
-    return this._allCursors;
+  public get cursors(): Range[] {
+    return this._cursors;
   }
-
-  public set allCursors(cursors: Range[]) {
+  public set cursors(cursors: Range[]) {
     for (const cursor of cursors) {
       if (!cursor.isValid(this.editor)) {
         this.logger.warn(`invalid cursor position. ${cursor.toString()}.`);
       }
     }
 
-    this._allCursors = cursors;
-    this.isMultiCursor = this._allCursors.length > 1;
+    this._cursors = cursors;
+    this.isMultiCursor = this._cursors.length > 1;
   }
 
   public cursorPositionJustBeforeAnythingHappened = [new Position(0, 0)];

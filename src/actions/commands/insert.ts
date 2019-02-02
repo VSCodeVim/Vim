@@ -31,30 +31,30 @@ class CommandEscInsertMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getLeft()));
+    vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {
-      vimState.allCursors = vimState.allCursors.map(x => x.withNewStop(x.stop.getRight()));
+      vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getRight()));
     }
 
     // only remove leading spaces inserted by vscode.
     // vscode only inserts them when user enter a new line,
     // ie, o/O in Normal mode or \n in Insert mode.
-    for (let i = 0; i < vimState.allCursors.length; i++) {
+    for (let i = 0; i < vimState.cursors.length; i++) {
       const lastActionBeforeEsc = vimState.keyHistory[vimState.keyHistory.length - 2];
       if (
         ['o', 'O', '\n'].indexOf(lastActionBeforeEsc) > -1 &&
         vimState.editor.document.languageId !== 'plaintext' &&
-        /^\s+$/.test(TextEditor.getLineAt(vimState.allCursors[i].stop).text)
+        /^\s+$/.test(TextEditor.getLineAt(vimState.cursors[i].stop).text)
       ) {
         vimState.recordedState.transformations.push({
           type: 'deleteRange',
           range: new Range(
-            vimState.allCursors[i].stop.getLineBegin(),
-            vimState.allCursors[i].stop.getLineEnd()
+            vimState.cursors[i].stop.getLineBegin(),
+            vimState.cursors[i].stop.getLineEnd()
           ),
         });
-        vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-          vimState.allCursors[i].stop.getLineBegin()
+        vimState.cursors[i] = vimState.cursors[i].withNewStop(
+          vimState.cursors[i].stop.getLineBegin()
         );
       }
     }
@@ -105,7 +105,7 @@ class CommandEscInsertMode extends BaseCommand {
     }
 
     if (vimState.isFakeMultiCursor) {
-      vimState.allCursors = [vimState.allCursors[0]];
+      vimState.cursors = [vimState.cursors[0]];
       vimState.isMultiCursor = false;
       vimState.isFakeMultiCursor = false;
     }
@@ -133,15 +133,15 @@ export class CommandInsertPreviousText extends BaseCommand {
 
     for (let action of actions) {
       if (action instanceof BaseCommand) {
-        vimState = await action.execCount(vimState.cursorPosition, vimState);
+        vimState = await action.execCount(vimState.cursorStopPosition, vimState);
       }
 
       if (action instanceof DocumentContentChangeAction) {
-        vimState = await action.exec(vimState.cursorPosition, vimState);
+        vimState = await action.exec(vimState.cursorStopPosition, vimState);
       }
     }
 
-    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.end);
+    vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.end);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     await vimState.setCurrentMode(ModeName.Insert);
     return vimState;
@@ -182,7 +182,7 @@ class CommandInsertBelowChar extends BaseCommand {
     await TextEditor.insert(char, position);
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
     return vimState;
   }
@@ -272,14 +272,14 @@ export class CommandInsertInInsertMode extends BaseCommand {
         }
       }
 
-      vimState.cursorPosition = vimState.cursorPosition.getLeft();
+      vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
       vimState.cursorStartPosition = vimState.cursorStartPosition.getLeft();
     } else {
       if (vimState.isMultiCursor) {
         vimState.recordedState.transformations.push({
           type: 'insertText',
           text: char,
-          position: vimState.cursorPosition,
+          position: vimState.cursorStopPosition,
         });
       } else {
         vimState.recordedState.transformations.push({
@@ -329,7 +329,7 @@ class CommandInsertRegisterContent extends BaseCommand {
     await TextEditor.insertAt(text, position);
     await vimState.setCurrentMode(ModeName.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
     return vimState;
   }
@@ -374,7 +374,7 @@ class CommandCtrlW extends BaseCommand {
 
     await TextEditor.delete(new vscode.Range(wordBegin, position));
 
-    vimState.cursorPosition = wordBegin;
+    vimState.cursorStopPosition = wordBegin;
 
     return vimState;
   }
@@ -410,7 +410,7 @@ class CommandDeleteIndentInCurrentLine extends BaseCommand {
         position.character + (newIndentationWidth - indentationWidth) / tabSize
       )
     );
-    vimState.cursorPosition = cursorPosition;
+    vimState.cursorStopPosition = cursorPosition;
     vimState.cursorStartPosition = cursorPosition;
     await vimState.setCurrentMode(ModeName.Insert);
     return vimState;
@@ -439,7 +439,7 @@ class CommandInsertAboveChar extends BaseCommand {
     await TextEditor.insert(char, position);
 
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
     return vimState;
   }
@@ -470,7 +470,7 @@ class CommandCtrlUInInsertMode extends BaseCommand {
       ? position.getLineBegin()
       : position.getLineBeginRespectingIndent();
     await TextEditor.delete(new vscode.Range(start, position));
-    vimState.cursorPosition = start;
+    vimState.cursorStopPosition = start;
     vimState.cursorStartPosition = start;
     return vimState;
   }
@@ -544,7 +544,7 @@ class CommandCtrlVInInsertMode extends BaseCommand {
       vimState.recordedState.transformations.push({
         type: 'insertText',
         text: textFromClipboard,
-        position: vimState.cursorPosition,
+        position: vimState.cursorStopPosition,
       });
     } else {
       vimState.recordedState.transformations.push({
