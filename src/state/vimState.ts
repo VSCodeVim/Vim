@@ -120,26 +120,29 @@ export class VimState implements vscode.Disposable {
   public globalState = globalState;
 
   /**
-   * The position the cursor will be when this action finishes.
-   */
-  public get cursorStopPosition(): Position {
-    return this.cursors[0].stop;
-  }
-  public set cursorStopPosition(value: Position) {
-    this.cursors[0] = this.cursors[0].withNewStop(value);
-  }
-
-  /**
-   * The effective starting position of the movement, used along with cursorPosition to determine
-   * the range over which to run an Operator. May rarely be different than where the cursor
-   * actually starts e.g. if you use the "aw" text motion in the middle of a word.
+   * The cursor position (start, stop) when this action finishes.
    */
   public get cursorStartPosition(): Position {
     return this.cursors[0].start;
   }
   public set cursorStartPosition(value: Position) {
+    if (!value.isValid(this.editor)) {
+      this.logger.warn(`invalid cursor start position. ${value.toString()}.`);
+    }
     this.cursors[0] = this.cursors[0].withNewStart(value);
   }
+
+  public get cursorStopPosition(): Position {
+    return this.cursors[0].stop;
+  }
+  public set cursorStopPosition(value: Position) {
+    if (!value.isValid(this.editor)) {
+      this.logger.warn(`invalid cursor stop position. ${value.toString()}.`);
+    }
+    this.cursors[0] = this.cursors[0].withNewStop(value);
+  }
+
+
 
   /**
    * The position of every cursor.
@@ -149,14 +152,14 @@ export class VimState implements vscode.Disposable {
   public get cursors(): Range[] {
     return this._cursors;
   }
-  public set cursors(cursors: Range[]) {
-    for (const cursor of cursors) {
+  public set cursors(value: Range[]) {
+    for (const cursor of value) {
       if (!cursor.isValid(this.editor)) {
         this.logger.warn(`invalid cursor position. ${cursor.toString()}.`);
       }
     }
 
-    this._cursors = cursors;
+    this._cursors = value;
     this.isMultiCursor = this._cursors.length > 1;
   }
 
