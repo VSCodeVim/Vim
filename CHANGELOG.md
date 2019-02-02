@@ -1,5 +1,26 @@
 # Change Log
 
+## [v1.0.7](https://github.com/vscodevim/vim/tree/v1.0.7) (2019-02-02)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.6...v1.0.7)
+
+**Fixed Bugs:**
+
+- Illegal value for line error using command-mode range deletion [\#3441](https://github.com/VSCodeVim/Vim/issues/3441)
+- Extension crash or hangs when failing to call nvim [\#3433](https://github.com/VSCodeVim/Vim/issues/3433)
+- Complex mappings of scrolling keys can break all key bindings [\#2925](https://github.com/VSCodeVim/Vim/issues/2925)
+
+**Merged pull requests:**
+
+- \[Bugfix\] - sentences backward [\#3445](https://github.com/VSCodeVim/Vim/pull/3445) ([esetnik](https://github.com/esetnik))
+- refactor: rename cursorPositionJustBeforeAnythingHappened to cursorsInitialState [\#3443](https://github.com/VSCodeVim/Vim/pull/3443) ([jpoon](https://github.com/jpoon))
+- fix: ensure cursor is in bounds. closes \#3441 [\#3442](https://github.com/VSCodeVim/Vim/pull/3442) ([jpoon](https://github.com/jpoon))
+- fix: validate that remappings are string arrays [\#3440](https://github.com/VSCodeVim/Vim/pull/3440) ([jpoon](https://github.com/jpoon))
+- v1.0.6 [\#3438](https://github.com/VSCodeVim/Vim/pull/3438) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency typescript to v3.3.1 [\#3436](https://github.com/VSCodeVim/Vim/pull/3436) ([renovate[bot]](https://github.com/apps/renovate))
+- Adopt latest list navigation support [\#3432](https://github.com/VSCodeVim/Vim/pull/3432) ([joaomoreno](https://github.com/joaomoreno))
+- Fix `C-n` and `C-p` in autocomplete for multi cursor [\#3283](https://github.com/VSCodeVim/Vim/pull/3283) ([jackfranklin](https://github.com/jackfranklin))
+
 ## [v1.0.6](https://github.com/vscodevim/vim/tree/v1.0.6) (2019-02-01)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.5...v1.0.6)
