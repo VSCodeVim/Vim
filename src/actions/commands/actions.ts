@@ -2838,8 +2838,8 @@ class CommandInsertNewLineBefore extends BaseCommand {
     vimState.cursors = await getCursorsAfterSync();
     for (let i = 1; i < count; i++) {
       const newPos = new Position(
-        vimState.cursors[0].start.line - i,
-        vimState.cursors[0].start.character
+        vimState.cursorStartPosition.line - i,
+        vimState.cursorStartPosition.character
       );
       vimState.cursors.push(new Range(newPos, newPos));
 
@@ -3295,11 +3295,9 @@ class ActionJoin extends BaseCommand {
           manuallySetCursorPositions: true,
         });
 
-        vimState.cursorStopPosition = new Position(
-          startPosition.line,
+        vimState.cursorStartPosition = vimState.cursorStopPosition = startPosition.withColumn(
           trimmedLinesContent.length - columnDeltaOffset
         );
-        vimState.cursorStartPosition = vimState.cursorStopPosition;
         await vimState.setCurrentMode(ModeName.Normal);
       }
     }

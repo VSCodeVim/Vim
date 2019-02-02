@@ -169,10 +169,7 @@ export class ModeHandler implements vscode.Disposable {
           this.vimState.lastClickWasPastEol = true;
 
           // This prevents you from mouse clicking past the EOL
-          newPosition = new Position(
-            newPosition.line,
-            Math.max(newPosition.getLineEnd().character - 1, 0)
-          );
+          newPosition = newPosition.withColumn(Math.max(newPosition.getLineEnd().character - 1, 0));
 
           // Switch back to normal mode since it was a click not a selection
           await this.setCurrentMode(ModeName.Normal);
