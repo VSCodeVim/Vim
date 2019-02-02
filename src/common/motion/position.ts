@@ -642,7 +642,7 @@ export class Position extends vscode.Position {
     if (args.forward) {
       return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
     } else {
-      return this.getPreviousSentenceBeginWithRegex(this._sentenceEndRegex, false);
+      return this.getPreviousSentenceBeginWithRegex(this._sentenceEndRegex);
     }
   }
 
@@ -975,22 +975,20 @@ export class Position extends vscode.Position {
     return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
   }
 
-  private getPreviousSentenceBeginWithRegex(regex: RegExp, inclusive: boolean): Position {
+  private getPreviousSentenceBeginWithRegex(regex: RegExp): Position {
     let paragraphBegin = this.getCurrentParagraphBeginning();
     for (let currentLine = this.line; currentLine >= paragraphBegin.line; currentLine--) {
       let endPositions = this.getAllEndPositions(
         TextEditor.getLineAt(new vscode.Position(currentLine, 0)).text,
         regex
       );
-      let newCharacter = _.find(
-        endPositions.reverse(),
-        index =>
-          (index < this.character &&
-            !inclusive &&
-            new Position(currentLine, index).getRightThroughLineBreaks().compareTo(this)) ||
-          (index <= this.character && inclusive) ||
-          currentLine !== this.line
-      );
+      let newCharacter = _.find(endPositions.reverse(), index => {
+        const newPositionBeforeThis = new Position(currentLine, index)
+          .getRightThroughLineBreaks()
+          .compareTo(this);
+
+        return (newPositionBeforeThis && (index < this.character || currentLine < this.line));
+      });
 
       if (newCharacter !== undefined) {
         return new Position(currentLine, <number>newCharacter).getRightThroughLineBreaks();
