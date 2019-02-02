@@ -254,7 +254,7 @@ export class Position extends vscode.Position {
   ): Iterable<{ line: string; start: Position; end: Position }> {
     const { reverse } = options;
     const start = vimState.cursorStartPosition;
-    const stop = vimState.cursorPosition;
+    const stop = vimState.cursorStopPosition;
 
     const topLeft = VisualBlockMode.getTopLeftPosition(start, stop);
     const bottomRight = VisualBlockMode.getBottomRightPosition(start, stop);

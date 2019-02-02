@@ -289,7 +289,7 @@ export async function activate(context: vscode.ExtensionContext) {
           text: args.text,
           replaceCharCnt: args.replaceCharCnt,
         });
-        mh.vimState.cursorPosition = Position.FromVSCodePosition(
+        mh.vimState.cursorStopPosition = Position.FromVSCodePosition(
           mh.vimState.editor.selection.start
         );
         mh.vimState.cursorStartPosition = Position.FromVSCodePosition(

@@ -20,6 +20,10 @@ export class Range {
     this._stop = stop;
   }
 
+  public isValid(textEditor: vscode.TextEditor) {
+    return this._start.isValid(textEditor) && this._stop.isValid(textEditor);
+  }
+
   /**
    * Create a range from a VSCode selection.
    */

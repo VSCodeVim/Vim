@@ -135,9 +135,9 @@ export class Remapper implements IRemapper {
       // Revert every single inserted character.
       // We subtract 1 because we haven't actually applied the last key.
       await vimState.historyTracker.undoAndRemoveChanges(
-        Math.max(0, numCharsToRemove * vimState.allCursors.length)
+        Math.max(0, numCharsToRemove * vimState.cursors.length)
       );
-      vimState.allCursors = vimState.allCursors.map(x =>
+      vimState.cursors = vimState.cursors.map(x =>
         x.withNewStop(x.stop.getLeft(numCharsToRemove))
       );
     }

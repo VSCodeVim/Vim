@@ -235,22 +235,22 @@ class CommandSurroundModeStartVisual extends BaseCommand {
     vimState.recordedState.surroundKeyIndexStart = vimState.keyHistory.length;
 
     // Make sure cursor positions are ordered correctly for top->down or down->top selection
-    if (vimState.cursorStartPosition.line > vimState.cursorPosition.line) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] = [
+    if (vimState.cursorStartPosition.line > vimState.cursorStopPosition.line) {
+      [vimState.cursorStopPosition, vimState.cursorStartPosition] = [
         vimState.cursorStartPosition,
-        vimState.cursorPosition,
+        vimState.cursorStopPosition,
       ];
     }
 
     // Make sure start/end cursor positions are in order
     if (
-      vimState.cursorPosition.line < vimState.cursorPosition.line ||
-      (vimState.cursorPosition.line === vimState.cursorStartPosition.line &&
-        vimState.cursorPosition.character < vimState.cursorStartPosition.character)
+      vimState.cursorStopPosition.line < vimState.cursorStopPosition.line ||
+      (vimState.cursorStopPosition.line === vimState.cursorStartPosition.line &&
+        vimState.cursorStopPosition.character < vimState.cursorStartPosition.character)
     ) {
-      [vimState.cursorPosition, vimState.cursorStartPosition] = [
+      [vimState.cursorStopPosition, vimState.cursorStartPosition] = [
         vimState.cursorStartPosition,
-        vimState.cursorPosition,
+        vimState.cursorStopPosition,
       ];
     }
 
@@ -259,7 +259,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
       target: undefined,
       operator: 'yank',
       replacement: undefined,
-      range: new Range(vimState.cursorStartPosition, vimState.cursorPosition),
+      range: new Range(vimState.cursorStartPosition, vimState.cursorStopPosition),
       isVisualLine: false,
     };
 
@@ -268,7 +268,7 @@ class CommandSurroundModeStartVisual extends BaseCommand {
     }
 
     await vimState.setCurrentMode(ModeName.SurroundInputMode);
-    vimState.cursorPosition = vimState.cursorStartPosition;
+    vimState.cursorStopPosition = vimState.cursorStartPosition;
 
     return vimState;
   }

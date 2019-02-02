@@ -141,7 +141,7 @@ export class SubstituteCommand extends node.CommandBase {
       vimState.globalState.substituteState = new SubstituteState(args.pattern, args.replace);
       vimState.globalState.searchState = new SearchState(
         SearchDirection.Forward,
-        vimState.cursorPosition,
+        vimState.cursorStopPosition,
         args.pattern,
         { isRegex: true },
         vimState.currentMode

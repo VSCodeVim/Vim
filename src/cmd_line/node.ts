@@ -62,8 +62,8 @@ export class LineRange {
     }
     var lineRef = this.right.length === 0 ? this.left : this.right;
     var pos = this.lineRefToPosition(document, lineRef, vimState);
-    vimState.cursorPosition = vimState.cursorPosition.setLocation(pos.line, pos.character);
-    vimState.cursorStartPosition = vimState.cursorPosition;
+    vimState.cursorStopPosition = vimState.cursorStopPosition.setLocation(pos.line, pos.character);
+    vimState.cursorStartPosition = vimState.cursorStopPosition;
   }
 
   lineRefToPosition(
