@@ -193,7 +193,10 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
     let smallestRange: Range | undefined = undefined;
 
     for (const iMotion of ranges) {
-      const currentSelectedRange = new Range(vimState.cursorStartPosition, vimState.cursorStopPosition);
+      const currentSelectedRange = new Range(
+        vimState.cursorStartPosition,
+        vimState.cursorStopPosition
+      );
       if (iMotion.failed) {
         continue;
       }
@@ -237,7 +240,10 @@ export class SelectAnExpandingBlock extends ExpandingSelection {
         smallestRange.start.line,
         smallestRange.start.character
       );
-      vimState.cursorStopPosition = new Position(smallestRange.stop.line, smallestRange.stop.character);
+      vimState.cursorStopPosition = new Position(
+        smallestRange.stop.line,
+        smallestRange.stop.character
+      );
       vimState.recordedState.operatorPositionDiff = undefined;
       return {
         start: smallestRange.start,

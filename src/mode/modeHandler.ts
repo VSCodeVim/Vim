@@ -263,9 +263,7 @@ export class ModeHandler implements vscode.Disposable {
       key = '<D-d>';
     }
 
-    this.vimState.cursorPositionJustBeforeAnythingHappened = this.vimState.cursors.map(
-      x => x.stop
-    );
+    this.vimState.cursorsInitialState = this.vimState.cursors;
     this.vimState.recordedState.commandList.push(key);
 
     try {
@@ -321,7 +319,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     // Catch any text change not triggered by us (example: tab completion).
-    vimState.historyTracker.addChange(this.vimState.cursorPositionJustBeforeAnythingHappened);
+    vimState.historyTracker.addChange(this.vimState.cursorsInitialState.map(c => c.stop));
 
     vimState.keyHistory.push(key);
 
@@ -588,7 +586,7 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState.alteredHistory = false;
         vimState.historyTracker.ignoreChange();
       } else {
-        vimState.historyTracker.addChange(this.vimState.cursorPositionJustBeforeAnythingHappened);
+        vimState.historyTracker.addChange(this.vimState.cursorsInitialState.map(c => c.stop));
       }
     }
 
@@ -915,7 +913,9 @@ export class ModeHandler implements vscode.Disposable {
           vimState.cursorStartPosition = Position.FromVSCodePosition(
             this.vimState.editor.selection.start
           );
-          vimState.cursorStopPosition = Position.FromVSCodePosition(this.vimState.editor.selection.end);
+          vimState.cursorStopPosition = Position.FromVSCodePosition(
+            this.vimState.editor.selection.end
+          );
           break;
 
         case 'showCommandHistory':
@@ -1168,7 +1168,7 @@ export class ModeHandler implements vscode.Disposable {
     }
 
     vimState.isRunningDotCommand = false;
-    vimState.cursorPositionJustBeforeAnythingHappened = vimState.cursors.map(x => x.stop);
+    vimState.cursorsInitialState = vimState.cursors;
     return vimState;
   }
 
@@ -1360,7 +1360,9 @@ export class ModeHandler implements vscode.Disposable {
 
       searchRanges.push.apply(searchRanges, searchState.matchRanges);
 
-      const { start, end, match } = searchState.getNextSearchMatchRange(vimState.cursorStopPosition);
+      const { start, end, match } = searchState.getNextSearchMatchRange(
+        vimState.cursorStopPosition
+      );
 
       if (match) {
         searchRanges.push(new vscode.Range(start, end));

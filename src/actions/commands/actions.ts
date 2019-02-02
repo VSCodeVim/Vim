@@ -909,7 +909,9 @@ class CommandInsertInSearchMode extends BaseCommand {
       vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length - 1;
 
       // Move cursor to next match
-      vimState.cursorStopPosition = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition).pos;
+      vimState.cursorStopPosition = searchState.getNextSearchMatchPosition(
+        vimState.cursorStopPosition
+      ).pos;
 
       return vimState;
     } else if (key === '<up>') {
@@ -1067,7 +1069,10 @@ class CommandCmdA extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.cursorStartPosition = new Position(0, vimState.desiredColumn);
-    vimState.cursorStopPosition = new Position(TextEditor.getLineCount() - 1, vimState.desiredColumn);
+    vimState.cursorStopPosition = new Position(
+      TextEditor.getLineCount() - 1,
+      vimState.desiredColumn
+    );
     await vimState.setCurrentMode(ModeName.VisualLine);
 
     return vimState;
@@ -4039,7 +4044,9 @@ abstract class IncrementDecrementNumberAction extends BaseCommand {
             start,
             end
           );
-          vimState.cursorStopPosition = vimState.cursorStopPosition.getLeftByCount(num.suffix.length);
+          vimState.cursorStopPosition = vimState.cursorStopPosition.getLeftByCount(
+            num.suffix.length
+          );
           return vimState;
         } else if (num !== null) {
           word = word.slice(num.prefix.length + num.value.toString().length);
