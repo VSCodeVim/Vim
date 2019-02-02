@@ -76,6 +76,7 @@ export class VimState implements vscode.Disposable {
   public alteredHistory = false;
 
   public isRunningDotCommand = false;
+
   /**
    * The last visual selection before running the dot command
    */
@@ -142,8 +143,6 @@ export class VimState implements vscode.Disposable {
     this.cursors[0] = this.cursors[0].withNewStop(value);
   }
 
-
-
   /**
    * The position of every cursor.
    */
@@ -163,7 +162,16 @@ export class VimState implements vscode.Disposable {
     this.isMultiCursor = this._cursors.length > 1;
   }
 
-  public cursorPositionJustBeforeAnythingHappened = [new Position(0, 0)];
+  /**
+   * Initial state of cursors prior to any action being performed
+   */
+  private _cursorsInitialState: Range[];
+  public get cursorsInitialState(): Range[] {
+    return this._cursorsInitialState;
+  }
+  public set cursorsInitialState(value: Range[]) {
+    this._cursorsInitialState = Object.assign([], value);
+  }
 
   public isRecordingMacro: boolean = false;
   public isReplayingMacro: boolean = false;
