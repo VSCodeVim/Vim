@@ -606,25 +606,35 @@ export class ModeHandler implements vscode.Disposable {
 
     // Ensure cursor is within bounds
     if (!vimState.editor.document.isClosed && vimState.editor === vscode.window.activeTextEditor) {
-      for (const { stop, i } of Range.IterateRanges(vimState.allCursors)) {
-        if (stop.line >= TextEditor.getLineCount()) {
-          vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-            vimState.cursorPosition.getDocumentEnd(vimState.editor)
-          );
+      const cursors = new Array<Range>();
+      for (let { range } of Range.IterateRanges(vimState.allCursors)) {
+        // adjust start/stop
+        const documentEndPosition = vimState.cursorPosition.getDocumentEnd(vimState.editor);
+        const documentLineCount = TextEditor.getLineCount(vimState.editor);
+        if (range.start.line >= documentLineCount) {
+          range = range.withNewStart(documentEndPosition);
+        }
+        if (range.stop.line >= documentLineCount) {
+          range = range.withNewStop(documentEndPosition);
         }
 
-        const currentLineLength = TextEditor.getLineAt(stop).text.length;
+        // adjust column
+        if (vimState.currentMode === ModeName.Normal) {
+          const currentLineLength = TextEditor.getLineAt(range.stop).text.length;
+          if (currentLineLength > 0) {
+            const lineEndPosition = range.start.getLineEnd().getLeftThroughLineBreaks(true);
+            if (range.start.character >= currentLineLength) {
+              range = range.withNewStart(lineEndPosition);
+            }
 
-        if (
-          vimState.currentMode === ModeName.Normal &&
-          stop.character >= currentLineLength &&
-          currentLineLength > 0
-        ) {
-          vimState.allCursors[i] = vimState.allCursors[i].withNewStop(
-            stop.getLineEnd().getLeftThroughLineBreaks(true)
-          );
+            if (range.stop.character >= currentLineLength) {
+              range = range.withNewStop(lineEndPosition);
+            }
+          }
         }
+        cursors.push(range);
       }
+      vimState.allCursors = cursors;
     }
 
     // Update the current history step to have the latest cursor position

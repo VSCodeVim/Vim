@@ -150,15 +150,14 @@ export class VimState implements vscode.Disposable {
     return this._allCursors;
   }
 
-  public set allCursors(value: Range[]) {
-    for (const cursor of value) {
-      if (!cursor.start.isValid(this.editor) || !cursor.stop.isValid(this.editor)) {
-        this.logger.debug('invalid value for set cursor position.');
+  public set allCursors(cursors: Range[]) {
+    for (const cursor of cursors) {
+      if (!cursor.isValid(this.editor)) {
+        this.logger.warn(`invalid cursor position. ${cursor.toString()}.`);
       }
     }
 
-    this._allCursors = value;
-
+    this._allCursors = cursors;
     this.isMultiCursor = this._allCursors.length > 1;
   }
 
