@@ -82,7 +82,9 @@ export class VimState implements vscode.Disposable {
    */
   public dotCommandPreviousVisualSelection: vscode.Selection | undefined = undefined;
 
-  public focusChanged = false;
+  public get isActiveEditor(): boolean {
+    return this.editor === vscode.window.activeTextEditor;
+  }
 
   public surround:
     | undefined

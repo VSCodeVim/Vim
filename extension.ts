@@ -55,15 +55,6 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
 
   previousActiveEditorId = activeEditorId;
 
-  if (curHandler.vimState.focusChanged) {
-    curHandler.vimState.focusChanged = false;
-
-    if (previousActiveEditorId) {
-      const prevHandler = ModeHandlerMap.get(previousActiveEditorId.toString());
-      prevHandler!.vimState.focusChanged = true;
-    }
-  }
-
   return curHandler;
 }
 
@@ -235,11 +226,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeTextEditorSelection,
     async (e: vscode.TextEditorSelectionChangeEvent) => {
       const mh = await getAndUpdateModeHandler();
-
-      if (mh.vimState.focusChanged) {
-        mh.vimState.focusChanged = false;
-        return;
-      }
 
       if (mh.currentMode.name === ModeName.EasyMotionMode) {
         return;
