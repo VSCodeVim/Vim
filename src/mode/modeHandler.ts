@@ -642,30 +642,6 @@ export class ModeHandler implements vscode.Disposable {
       this.vimState.lastVisualSelectionEnd = this.vimState.cursorStopPosition;
     }
 
-    // Make sure no two cursors are at the same location.
-    // This is a consequence of the fact that allCursors is not a Set.
-
-    // TODO: It should be a set.
-
-    const resultingList: Range[] = [];
-
-    for (const cursor of vimState.cursors) {
-      let shouldAddToList = true;
-
-      for (const alreadyAddedCursor of resultingList) {
-        if (cursor.equals(alreadyAddedCursor)) {
-          shouldAddToList = false;
-          break;
-        }
-      }
-
-      if (shouldAddToList) {
-        resultingList.push(cursor);
-      }
-    }
-
-    vimState.cursors = resultingList;
-
     return vimState;
   }
 
