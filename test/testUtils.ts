@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 
 import { Configuration } from './testConfiguration';
 import { Globals } from '../src/globals';
+import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
 import { IConfiguration } from '../src/configuration/iconfiguration';
 import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
@@ -135,7 +136,10 @@ export async function cleanUpWorkspace(): Promise<any> {
 }
 
 export async function reloadConfiguration() {
-  await require('../src/configuration/configuration').configuration.load();
+  let validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
+  for (let validatorResult of validatorResults.get()) {
+    console.log(validatorResult);
+  }
 }
 
 /**

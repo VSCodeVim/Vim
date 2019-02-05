@@ -70,7 +70,7 @@ export class ModeHandler implements vscode.Disposable {
       new modes.DisabledMode(),
     ];
 
-    this.vimState = new VimState(textEditor, configuration.enableNeovim);
+    this.vimState = new VimState(textEditor);
     this._disposables.push(this.vimState);
   }
 

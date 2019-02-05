@@ -207,6 +207,7 @@ export class VimState implements vscode.Disposable {
     return this._currentMode;
   }
 
+  private _inputMethodSwitcher: InputMethodSwitcher;
   public async setCurrentMode(value: number): Promise<void> {
     await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
     this._currentMode = value;
@@ -239,9 +240,7 @@ export class VimState implements vscode.Disposable {
 
   public nvim: NeovimWrapper;
 
-  private _inputMethodSwitcher: InputMethodSwitcher;
-
-  public constructor(editor: vscode.TextEditor, enableNeovim: boolean = false) {
+  public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
@@ -251,9 +250,7 @@ export class VimState implements vscode.Disposable {
   }
 
   dispose() {
-    if (this.nvim) {
-      this.nvim.dispose();
-    }
+    this.nvim.dispose();
   }
 }
 
