@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { IConfiguration, IKeyRemapping } from '../iconfiguration';
 import { Notation } from '../notation';
-import { configuration } from '../configuration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 
 export class RemappingValidator implements IConfigurationValidator {
@@ -27,7 +26,7 @@ export class RemappingValidator implements IConfigurationValidator {
         // validate
         let remappingError = await this.isRemappingValid(remapping);
         result.concat(remappingError);
-        if (remappingError.hasError()) {
+        if (remappingError.hasError) {
           // errors with remapping, skip
           keybindings.splice(i, 1);
           continue;
@@ -50,7 +49,7 @@ export class RemappingValidator implements IConfigurationValidator {
         const beforeKeys = remapping.before.join('');
         if (modeKeyBindingsMap.has(beforeKeys)) {
           result.append({
-            level: 'error',
+            level: 'warning',
             message: `${remapping.before}. Duplicate remapped key for ${beforeKeys}.`,
           });
           continue;
@@ -60,7 +59,7 @@ export class RemappingValidator implements IConfigurationValidator {
         modeKeyBindingsMap.set(beforeKeys, remapping);
       }
 
-      configuration[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
+      config[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
     }
 
     return result;

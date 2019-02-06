@@ -20,12 +20,20 @@ export class ValidatorResults {
     return this.errors;
   }
 
-  public numErrors(): number {
+  public get numErrors(): number {
     return this.errors.filter(e => e.level === 'error').length;
   }
 
-  public hasError(): boolean {
-    return this.numErrors() > 0;
+  public get hasError(): boolean {
+    return this.numErrors > 0;
+  }
+
+  public get numWarnings(): number {
+    return this.errors.filter(e => e.level === 'warning').length;
+  }
+
+  public get hasWarning(): boolean {
+    return this.numWarnings > 0;
   }
 }
 

@@ -71,9 +71,9 @@ async function loadConfiguration() {
   const logger = Logger.get('Configuration');
 
   const validatorResults = await configuration.load();
-  logger.debug(`${validatorResults.numErrors()} errors found with vim configuration`);
+  logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
-  if (validatorResults.numErrors() > 0) {
+  if (validatorResults.numErrors > 0) {
     for (let validatorResult of validatorResults.get()) {
       switch (validatorResult.level) {
         case 'error':
