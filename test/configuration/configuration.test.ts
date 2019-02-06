@@ -19,25 +19,7 @@ suite('Configuration', () => {
       after: ['v'],
     },
   ];
-  (configuration.visualModeKeyBindingsNonRecursive = [
-    // duplicate keybindings
-    {
-      before: ['c', 'o', 'p', 'y'],
-      after: ['c', 'o', 'p', 'y'],
-    },
-    {
-      before: ['c', 'o', 'p', 'y'],
-      after: ['c', 'o', 'p', 'y'],
-    },
-  ]),
-    (configuration.insertModeKeyBindingsNonRecursive = [
-      {
-        // missing after and command
-        before: ['a'],
-      },
-    ]);
   configuration.whichwrap = 'h,l';
-  configuration.enableNeovim = true;
 
   setup(async () => {
     await setupWorkspace(configuration);
@@ -57,16 +39,6 @@ suite('Configuration', () => {
     assert.deepEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
 
-  test('remappings are de-duped', async () => {
-    const keybindings = srcConfiguration.configuration.visualModeKeyBindingsNonRecursiveMap;
-    assert.equal(keybindings.size, 1);
-  });
-
-  test('invalid remappings are ignored', async () => {
-    const keybindings = srcConfiguration.configuration.insertModeKeyBindingsNonRecursiveMap;
-    assert.equal(keybindings.size, 0);
-  });
-
   test('whichwrap is parsed into wrapKeys', async () => {
     let wrapKeys = srcConfiguration.configuration.wrapKeys;
 
@@ -75,10 +47,6 @@ suite('Configuration', () => {
 
     assert.equal(wrapKeys[h], true);
     assert.equal(wrapKeys[j], undefined);
-  });
-
-  test('neovim disabled on missing path', async () => {
-    assert.equal(false, srcConfiguration.configuration.enableNeovim);
   });
 
   newTest({

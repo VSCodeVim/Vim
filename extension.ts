@@ -68,20 +68,19 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
 }
 
 async function loadConfiguration() {
-  const configurationErrors = await configuration.load();
   const logger = Logger.get('Configuration');
 
-  const numErrors = configurationErrors.filter(e => e.level === 'error').length;
-  logger.debug(`${numErrors} errors found with vim configuration`);
+  const validatorResults = await configuration.load();
+  logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
-  if (numErrors > 0) {
-    for (let configurationError of configurationErrors) {
-      switch (configurationError.level) {
+  if (validatorResults.numErrors > 0) {
+    for (let validatorResult of validatorResults.get()) {
+      switch (validatorResult.level) {
         case 'error':
-          logger.error(configurationError.message);
+          logger.error(validatorResult.message);
           break;
         case 'warning':
-          logger.warn(configurationError.message);
+          logger.warn(validatorResult.message);
           break;
       }
     }
