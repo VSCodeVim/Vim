@@ -280,6 +280,12 @@ export class YankOperator extends BaseOperator {
 
     Register.put(text, vimState, this.multicursorIndex);
 
+    if (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) {
+      end = new Position(end.line, end.character - 1);
+      vimState.historyTracker.addMark(start, '<');
+      vimState.historyTracker.addMark(end, '>');
+    }
+
     await vimState.setCurrentMode(ModeName.Normal);
     vimState.cursorStartPosition = start;
 
@@ -659,6 +665,9 @@ export class YankVisualBlockMode extends BaseOperator {
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
     Register.put(toCopy, vimState, this.multicursorIndex);
+
+    vimState.historyTracker.addMark(start, '<');
+    vimState.historyTracker.addMark(end, '>');
 
     const numLinesYanked = toCopy.split('\n').length;
     ReportLinesYanked(numLinesYanked, vimState);
