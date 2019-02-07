@@ -2620,6 +2620,8 @@ class CommandGoToDefinition extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const oldActiveEditor = vimState.editor;
 
+    const jumpFrom = Jump.fromStateNow(vimState);
+
     await vscode.commands.executeCommand('editor.action.goToDeclaration');
     // `executeCommand` returns immediately before cursor is updated
     // wait for the editor to update before updating the vim state
@@ -2628,6 +2630,8 @@ class CommandGoToDefinition extends BaseCommand {
     if (oldActiveEditor === vimState.editor) {
       vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
     }
+
+    vimState.globalState.jumpTracker.recordJump(jumpFrom, Jump.fromStateNow(vimState));
 
     return vimState;
   }
