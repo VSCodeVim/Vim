@@ -512,7 +512,11 @@ export class MarkMovementBOL extends BaseMovement {
 
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
-    return mark.position.getFirstLineNonBlankChar();
+    if (mark == null) {
+      return position;
+    } else {
+      return mark.position.getFirstLineNonBlankChar();
+    }
   }
 }
 
@@ -525,7 +529,11 @@ export class MarkMovement extends BaseMovement {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
-    return mark.position;
+    if (mark == null) {
+      return position;
+    } else {
+      return mark.position;
+    }
   }
 }
 @RegisterAction
