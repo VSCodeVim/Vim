@@ -38,7 +38,8 @@ suite('Remapping Validator', () => {
       {
         before: ['j', 'j'],
         after: ['<Esc>'],
-      }];
+      },
+    ];
     configuration.insertModeKeyBindingsNonRecursive = [];
     configuration.normalModeKeyBindings = [];
     configuration.normalModeKeyBindingsNonRecursive = [];
@@ -62,7 +63,10 @@ suite('Remapping Validator', () => {
     assert.equal(configuration.visualModeKeyBindingsMap.size, 0);
     assert.equal(configuration.visualModeKeyBindingsNonRecursiveMap.size, 0);
 
-    assert.equal(configuration.insertModeKeyBindingsMap.get("jj"), configuration.insertModeKeyBindings[0]);
+    assert.equal(
+      configuration.insertModeKeyBindingsMap.get('jj'),
+      configuration.insertModeKeyBindings[0]
+    );
   });
 
   test('remapping missing after and command', async () => {
@@ -70,8 +74,9 @@ suite('Remapping Validator', () => {
     let configuration = new Configuration();
     configuration.insertModeKeyBindings = [
       {
-        before: ['j', 'j']
-      }];
+        before: ['j', 'j'],
+      },
+    ];
     configuration.insertModeKeyBindingsNonRecursive = [];
     configuration.normalModeKeyBindings = [];
     configuration.normalModeKeyBindingsNonRecursive = [];
@@ -109,8 +114,8 @@ suite('Remapping Validator', () => {
       {
         before: ['c', 'o', 'p', 'y'],
         after: ['c', 'o', 'p', 'y'],
-      }
-    ]
+      },
+    ];
     configuration.normalModeKeyBindingsNonRecursive = [];
     configuration.visualModeKeyBindings = [];
     configuration.visualModeKeyBindingsNonRecursive = [];

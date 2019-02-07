@@ -233,6 +233,15 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     vscode.window.onDidChangeTextEditorSelection,
     async (e: vscode.TextEditorSelectionChangeEvent) => {
+      if (
+        vscode.window.activeTextEditor === undefined ||
+        e.textEditor.document !== vscode.window.activeTextEditor.document
+      ) {
+        // we don't care if there is no active editor
+        // or user selection changed in a paneled window (e.g debug console/terminal)
+        return;
+      }
+
       const mh = await getAndUpdateModeHandler();
 
       if (mh.vimState.focusChanged) {
