@@ -15,6 +15,7 @@ import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
+import { VimError, ErrorCode } from '../error';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;
@@ -513,7 +514,7 @@ export class MarkMovementBOL extends BaseMovement {
     vimState.currentRegisterMode = RegisterMode.LineWise;
 
     if (mark == null) {
-      return position;
+      throw VimError.fromCode(ErrorCode.E20);
     } else {
       return mark.position.getFirstLineNonBlankChar();
     }
@@ -530,7 +531,7 @@ export class MarkMovement extends BaseMovement {
     const mark = vimState.historyTracker.getMark(markName);
 
     if (mark == null) {
-      return position;
+      throw VimError.fromCode(ErrorCode.E20);
     } else {
       return mark.position;
     }

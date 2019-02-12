@@ -16,6 +16,7 @@ import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
 import { TextEditor } from './../textEditor';
+import { VimError } from './../error';
 import { VimState } from './../state/vimState';
 import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
@@ -300,7 +301,16 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      throw new Error(`Failed to handle key=${key}. ${e.message}`);
+      if (e instanceof VimError) {
+        StatusBar.Set(
+          e.toString(),
+          this.vimState.currentMode,
+          this.vimState.isRecordingMacro,
+          true
+        );
+      } else {
+        throw new Error(`Failed to handle key=${key}. ${e.message}`);
+      }
     }
 
     this.vimState.lastKeyPressedTimestamp = now;
