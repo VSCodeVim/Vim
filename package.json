@@ -449,6 +449,11 @@
           "description": "Override the 'ignorecase' option if the search pattern contains upper case characters.",
           "default": true
         },
+        "vim.camelCaseMotion": {
+          "type": "boolean",
+          "description": "Enable the CamelCaseMotion plugin for Vim.",
+          "default": false
+        },
         "vim.easymotion": {
           "type": "boolean",
           "description": "Enable the EasyMotion plugin for Vim.",

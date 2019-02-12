@@ -34,6 +34,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [vim-commentary](#vim-commentary)
   - [vim-indent-object](#vim-indent-object)
   - [vim-sneak](#vim-sneak)
+  - [CamelCaseMotion](#camelcasemotion)
   - [Input Method](#input-method)
 - [VSCodeVim tricks](#-vscodevim-tricks)
 - [F.A.Q / Troubleshooting](#-faq)
@@ -503,6 +504,25 @@ Once sneak is active, initiate motions using the following commands. For operato
 | `S<char><char>`           | Move backward to the first occurence of `<char><char>`                 |
 | `<operator>z<char><char>` | Perform `<operator>` forward to the first occurence of `<char><char>`  |
 | `<operator>Z<char><char>` | Perform `<operator>` backward to the first occurence of `<char><char>` |
+
+### CamelCaseMotion
+
+Based on [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion), though not an exact emulation. This plugin provides an easier way to move through camelCase and snake_case words.
+
+| Setting             | Description                    | Type    | Default Value |
+| ------------------- | ------------------------------ | ------- | ------------- |
+| vim.camelCaseMotion | Enable/disable CamelCaseMotion | Boolean | false         |
+
+Once CamelCaseMotion is enabled, the following motions are available:
+
+| Motion Command         | Description                                                                |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `<leader>w`            | Move forward to the start of the next camelCase or snake_case word segment |
+| `<leader>e`            | Move forward to the next end of a camelCase or snake_case word segment     |
+| `<leader>b`            | Move back to the prior beginning of a camelCase or snake_case word segment |
+| `<operator>i<leader>w` | Select/change/delete/etc. the current camelCase or snake_case word segment |
+
+By default, `<leader>` is mapped to `\`, so for example, `d2i\w` would delete the current and next camelCase word segment.
 
 ### Input Method
 

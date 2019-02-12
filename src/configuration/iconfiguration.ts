@@ -83,6 +83,11 @@ export interface IConfiguration {
   autoindent: boolean;
 
   /**
+   * Use CamelCaseMotion plugin?
+   */
+  camelCaseMotion: boolean;
+
+  /**
    * Use EasyMotion plugin?
    */
   easymotion: boolean;
