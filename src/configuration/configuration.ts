@@ -10,6 +10,7 @@ import {
   IModeSpecificStrings,
   IAutoSwitchInputMethod,
   IDebugConfiguration,
+  Digraph,
 } from './iconfiguration';
 
 const packagejson: {
@@ -277,6 +278,8 @@ class Configuration implements IConfiguration {
 
   enableNeovim = false;
   neovimPath = 'nvim';
+
+  digraphs = {};
 
   substituteGlobalFlag = false;
   whichwrap = '';

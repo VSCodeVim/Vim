@@ -680,6 +680,11 @@
           "type": "number",
           "description": "Threshold for reporting number of lines changed.",
           "default": 2
+        },
+        "vim.digraphs": {
+          "type": "object",
+          "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points",
+          "default": {}
         }
       }
     }

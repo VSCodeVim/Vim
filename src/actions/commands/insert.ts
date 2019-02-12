@@ -19,6 +19,7 @@ import {
   CommandInsertAtLineEnd,
   DocumentContentChangeAction,
 } from './actions';
+import { DefaultDigraphs } from './digraphs';
 import { Clipboard } from '../../util/clipboard';
 
 @RegisterAction
@@ -298,6 +299,51 @@ export class CommandInsertInInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+class CommandInsertDigraph extends BaseCommand {
+  modes = [ModeName.Insert];
+  keys = ['<C-k>', '<any>', '<any>'];
+  isCompleteAction = false;
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const digraph = this.keysPressed.slice(1, 3).join('');
+    let charCodes = (DefaultDigraphs[digraph] || configuration.digraphs[digraph])[1];
+    if (!(charCodes instanceof Array)) {
+      charCodes = [charCodes];
+    }
+    const char = String.fromCharCode(...charCodes);
+    await TextEditor.insertAt(char, position);
+    await vimState.setCurrentMode(ModeName.Insert);
+    vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+
+    return vimState;
+  }
+
+  public doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!super.doesActionApply(vimState, keysPressed)) {
+      return false;
+    }
+    const chars = keysPressed.slice(1, 3).join('');
+    return chars in configuration.digraphs || chars in DefaultDigraphs;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!super.couldActionApply(vimState, keysPressed)) {
+      return false;
+    }
+    const chars = keysPressed.slice(1, keysPressed.length).join('');
+    if (chars.length > 0) {
+      const predicate = (digraph: string) => chars === digraph.substring(0, chars.length);
+      const match =
+        Object.keys(configuration.digraphs).find(predicate) ||
+        Object.keys(DefaultDigraphs).find(predicate);
+      return match !== undefined;
+    }
+    return true;
+  }
+}
+
+@RegisterAction
 class CommandInsertRegisterContent extends BaseCommand {
   modes = [ModeName.Insert];
   keys = ['<C-r>', '<character>'];
@@ -507,7 +553,7 @@ class CommandNavigateAutocompleteDown extends BaseCommand {
 @RegisterAction
 class CommandNavigateAutocompleteUp extends BaseCommand {
   modes = [ModeName.Insert];
-  keys = [['<C-p>'], ['<C-k>']];
+  keys = ['<C-p>'];
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     /* if we're in a multi cursor state, we check to see if the current active text selection
