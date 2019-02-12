@@ -261,19 +261,19 @@ export class YankOperator extends BaseOperator {
     if (end.isEarlierThan(start)) {
       [start, end] = [end, start];
     }
-    end = new Position(end.line, end.character + 1);
+    let extendedEnd = new Position(end.line, end.character + 1);
 
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
-      end = end.getLineEnd();
+      extendedEnd = extendedEnd.getLineEnd();
     }
 
-    let text = TextEditor.getText(new vscode.Range(start, end));
+    let text = TextEditor.getText(new vscode.Range(start, extendedEnd));
 
     // If we selected the newline character, add it as well.
     if (
       vimState.currentMode === ModeName.Visual &&
-      end.character === TextEditor.getLineAt(end).text.length + 1
+      extendedEnd.character === TextEditor.getLineAt(extendedEnd).text.length + 1
     ) {
       text = text + '\n';
     }
@@ -281,7 +281,6 @@ export class YankOperator extends BaseOperator {
     Register.put(text, vimState, this.multicursorIndex);
 
     if (vimState.currentMode === ModeName.Visual || vimState.currentMode === ModeName.VisualLine) {
-      end = new Position(end.line, end.character - 1);
       vimState.historyTracker.addMark(start, '<');
       vimState.historyTracker.addMark(end, '>');
     }
