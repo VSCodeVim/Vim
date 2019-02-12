@@ -1,49 +1,34 @@
-import * as vscode from 'vscode';
-import { IKeyRemapping } from './iconfiguration';
-import { ConfigurationError } from './configurationError';
+import { IConfiguration } from './iconfiguration';
+import { IConfigurationValidator, ValidatorResults } from './iconfigurationValidator';
+import { InputMethodSwitcherConfigurationValidator } from './validators/inputMethodSwitcherValidator';
+import { NeovimValidator } from './validators/neovimValidator';
+import { RemappingValidator } from './validators/remappingValidator';
 
 class ConfigurationValidator {
-  private _commandMap: Map<string, boolean>;
+  private _validators: IConfigurationValidator[];
 
-  public async isCommandValid(command: string): Promise<boolean> {
-    if (command.startsWith(':')) {
-      return true;
-    }
-
-    return (await this.getCommandMap()).has(command);
+  constructor() {
+    this._validators = [
+      new InputMethodSwitcherConfigurationValidator(),
+      new NeovimValidator(),
+      new RemappingValidator(),
+    ];
   }
 
-  public async isRemappingValid(remapping: IKeyRemapping): Promise<ConfigurationError[]> {
-    if (!remapping.after && !remapping.commands) {
-      return [{ level: 'error', message: `${remapping.before} missing 'after' key or 'command'.` }];
-    }
+  public async validate(config: IConfiguration): Promise<ValidatorResults> {
+    const results = new ValidatorResults();
 
-    if (remapping.commands) {
-      for (const command of remapping.commands) {
-        let cmd: string;
-
-        if (typeof command === 'string') {
-          cmd = command;
-        } else {
-          cmd = command.command;
-        }
-
-        if (!(await configurationValidator.isCommandValid(cmd))) {
-          return [{ level: 'warning', message: `${cmd} does not exist.` }];
-        }
+    for (const validator of this._validators) {
+      let validatorResults = await validator.validate(config);
+      if (validatorResults.hasError) {
+        // errors found in configuration, disable feature
+        validator.disable(config);
       }
+
+      results.concat(validatorResults);
     }
 
-    return [];
-  }
-
-  async getCommandMap(): Promise<Map<string, boolean>> {
-    if (this._commandMap == null) {
-      this._commandMap = new Map(
-        (await vscode.commands.getCommands(true)).map(x => [x, true] as [string, boolean])
-      );
-    }
-    return this._commandMap;
+    return results;
   }
 }
 

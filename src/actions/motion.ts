@@ -265,7 +265,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
     if (vimState.currentMode === ModeName.Normal) {
       let returnedPos = Position.FromVSCodePosition(vimState.editor.selection.active);
       if (prevLine !== returnedPos.line) {
-        returnedPos = returnedPos.setLocation(returnedPos.line, prevDesiredColumn);
+        returnedPos = returnedPos.withColumn(prevDesiredColumn);
       }
       return returnedPos;
     } else {
@@ -1493,7 +1493,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
         cursorStartPos = adjacentPosLeft;
         vimState.cursorStartPosition = adjacentPosLeft;
         position = adjacentPosRight;
-        vimState.cursorPosition = adjacentPosRight;
+        vimState.cursorStopPosition = adjacentPosRight;
       }
     }
     // First, search backwards for the opening character of the sequence

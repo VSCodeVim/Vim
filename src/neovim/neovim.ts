@@ -15,18 +15,30 @@ export class NeovimWrapper implements vscode.Disposable {
   private process: ChildProcess;
   private nvim: Neovim;
   private readonly logger = Logger.get('Neovim');
+  private readonly processTimeoutInSeconds = 3;
 
   async run(vimState: VimState, command: string) {
     if (!this.nvim) {
       this.nvim = await this.startNeovim();
 
-      await this.nvim.uiAttach(80, 20, {
-        ext_cmdline: false,
-        ext_popupmenu: false,
-        ext_tabline: false,
-        ext_wildmenu: false,
-        rgb: false,
-      });
+      try {
+        const nvimAttach = this.nvim.uiAttach(80, 20, {
+          ext_cmdline: false,
+          ext_popupmenu: false,
+          ext_tabline: false,
+          ext_wildmenu: false,
+          rgb: false,
+        });
+
+        const timeout = new Promise((resolve, reject) => {
+          setTimeout(() => reject(new Error('Timeout')), this.processTimeoutInSeconds * 1000);
+        });
+
+        await Promise.race([nvimAttach, timeout]);
+      } catch (e) {
+        configuration.enableNeovim = false;
+        throw new Error(`Failed to attach to neovim process. ${e.message}`);
+      }
 
       const apiInfo = await this.nvim.apiInfo;
       const version = apiInfo[1].version;
@@ -78,9 +90,10 @@ export class NeovimWrapper implements vscode.Disposable {
     });
 
     this.process.on('error', err => {
-      this.logger.error(`Error spawning neovim. Error=${err.message}.`);
+      this.logger.error(`Error spawning neovim. ${err.message}.`);
       configuration.enableNeovim = false;
     });
+
     return attach({ proc: this.process });
   }
 
@@ -99,12 +112,12 @@ export class NeovimWrapper implements vscode.Disposable {
     });
 
     const [rangeStart, rangeEnd] = [
-      Position.EarlierOf(vimState.cursorPosition, vimState.cursorStartPosition),
-      Position.LaterOf(vimState.cursorPosition, vimState.cursorStartPosition),
+      Position.EarlierOf(vimState.cursorStopPosition, vimState.cursorStartPosition),
+      Position.LaterOf(vimState.cursorStopPosition, vimState.cursorStartPosition),
     ];
     await this.nvim.callFunction('setpos', [
       '.',
-      [0, vimState.cursorPosition.line + 1, vimState.cursorPosition.character, false],
+      [0, vimState.cursorStopPosition.line + 1, vimState.cursorStopPosition.character, false],
     ]);
     await this.nvim.callFunction('setpos', [
       "'<",

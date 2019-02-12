@@ -20,23 +20,6 @@ suite('Configuration', () => {
       after: ['v'],
     },
   ];
-  (configuration.visualModeKeyBindingsNonRecursive = [
-    // duplicate keybindings
-    {
-      before: ['c', 'o', 'p', 'y'],
-      after: ['c', 'o', 'p', 'y'],
-    },
-    {
-      before: ['c', 'o', 'p', 'y'],
-      after: ['c', 'o', 'p', 'y'],
-    },
-  ]),
-    (configuration.insertModeKeyBindingsNonRecursive = [
-      {
-        // missing after and command
-        before: ['a'],
-      },
-    ]);
   configuration.whichwrap = 'h,l';
 
   setup(async () => {
@@ -55,16 +38,6 @@ suite('Configuration', () => {
     assert.equal(normalizedKeybinds.length, normalizedKeybindsMap.size);
     assert.deepEqual(normalizedKeybinds[0].before, [' ', 'o']);
     assert.deepEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
-  });
-
-  test('remappings are de-duped', async () => {
-    const keybindings = srcConfiguration.configuration.visualModeKeyBindingsNonRecursiveMap;
-    assert.equal(keybindings.size, 1);
-  });
-
-  test('invalid remappings are ignored', async () => {
-    const keybindings = srcConfiguration.configuration.insertModeKeyBindingsNonRecursiveMap;
-    assert.equal(keybindings.size, 0);
   });
 
   test('whichwrap is parsed into wrapKeys', async () => {

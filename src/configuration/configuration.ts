@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { ConfigurationError } from './configurationError';
 import { Globals } from '../globals';
 import { Notation } from './notation';
+import { ValidatorResults } from './iconfigurationValidator';
 import { VsCodeContext } from '../util/vscode-context';
 import { configurationValidator } from './configurationValidator';
 import {
@@ -67,12 +67,10 @@ class Configuration implements IConfiguration {
     'underline-thin': vscode.TextEditorCursorStyle.UnderlineThin,
   };
 
-  public async load(): Promise<ConfigurationError[]> {
+  public async load(): Promise<ValidatorResults> {
     let vimConfigs: any = Globals.isTesting
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
-
-    let configurationErrors = new Array<ConfigurationError>();
 
     /* tslint:disable:forin */
     // Disable forin rule here as we make accessors enumerable.`
@@ -88,61 +86,7 @@ class Configuration implements IConfiguration {
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
 
-    // remapped keys
-    const modeKeyBindingsKeys = [
-      'insertModeKeyBindings',
-      'insertModeKeyBindingsNonRecursive',
-      'normalModeKeyBindings',
-      'normalModeKeyBindingsNonRecursive',
-      'visualModeKeyBindings',
-      'visualModeKeyBindingsNonRecursive',
-    ];
-    for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
-      let keybindings = configuration[modeKeyBindingsKey];
-
-      const modeKeyBindingsMap = new Map<string, IKeyRemapping>();
-      for (let i = keybindings.length - 1; i >= 0; i--) {
-        let remapping = keybindings[i];
-
-        // validate
-        let remappingErrors = await configurationValidator.isRemappingValid(remapping);
-        configurationErrors = configurationErrors.concat(remappingErrors);
-
-        if (remappingErrors.filter(e => e.level === 'error').length > 0) {
-          // errors with remapping, skip
-          keybindings.splice(i, 1);
-          continue;
-        }
-
-        // normalize
-        if (remapping.before) {
-          remapping.before.forEach(
-            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, this.leader))
-          );
-        }
-
-        if (remapping.after) {
-          remapping.after.forEach(
-            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, this.leader))
-          );
-        }
-
-        // check for duplicates
-        const beforeKeys = remapping.before.join('');
-        if (modeKeyBindingsMap.has(beforeKeys)) {
-          configurationErrors.push({
-            level: 'error',
-            message: `${remapping.before}. Duplicate remapped key for ${beforeKeys}.`,
-          });
-          continue;
-        }
-
-        // add to map
-        modeKeyBindingsMap.set(beforeKeys, remapping);
-      }
-
-      configuration[modeKeyBindingsKey + 'Map'] = modeKeyBindingsMap;
-    }
+    const validatorResults = await configurationValidator.validate(configuration);
 
     // wrap keys
     this.wrapKeys = {};
@@ -195,7 +139,7 @@ class Configuration implements IConfiguration {
     VsCodeContext.Set('vim.overrideCopy', this.overrideCopy);
     VsCodeContext.Set('vim.overrideCtrlC', this.overrideCopy || this.useCtrlKeys);
 
-    return configurationErrors;
+    return validatorResults;
   }
 
   getConfiguration(section: string = ''): vscode.WorkspaceConfiguration {

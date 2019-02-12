@@ -1,5 +1,60 @@
 # Change Log
 
+## [v1.0.8](https://github.com/vscodevim/vim/tree/v1.0.8) (2019-02-07)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.7...v1.0.8)
+
+**Fixed Bugs:**
+
+- Cursor jumps after building with CMake [\#3462](https://github.com/VSCodeVim/Vim/issues/3462)
+- Illegal Value for Line using any input mode while WallabyJs || Quokka is running [\#3459](https://github.com/VSCodeVim/Vim/issues/3459)
+- Cursor jumps up to the beginning of a file after saving. [\#3444](https://github.com/VSCodeVim/Vim/issues/3444)
+
+**Merged pull requests:**
+
+- fix: cursor jumps when selection changes to output window [\#3463](https://github.com/VSCodeVim/Vim/pull/3463) ([jpoon](https://github.com/jpoon))
+- feat: configuration validators [\#3451](https://github.com/VSCodeVim/Vim/pull/3451) ([jpoon](https://github.com/jpoon))
+- fix: de-dupe cursors [\#3449](https://github.com/VSCodeVim/Vim/pull/3449) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency @types/diff to v4.0.1 [\#3448](https://github.com/VSCodeVim/Vim/pull/3448) ([renovate[bot]](https://github.com/apps/renovate))
+- v1.0.7 [\#3447](https://github.com/VSCodeVim/Vim/pull/3447) ([jpoon](https://github.com/jpoon))
+- refactor: no need for so many different ways to create a position object [\#3446](https://github.com/VSCodeVim/Vim/pull/3446) ([jpoon](https://github.com/jpoon))
+
+## [v1.0.7](https://github.com/vscodevim/vim/tree/v1.0.7) (2019-02-02)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.6...v1.0.7)
+
+**Fixed Bugs:**
+
+- Illegal value for line error using command-mode range deletion [\#3441](https://github.com/VSCodeVim/Vim/issues/3441)
+- Extension crash or hangs when failing to call nvim [\#3433](https://github.com/VSCodeVim/Vim/issues/3433)
+- Complex mappings of scrolling keys can break all key bindings [\#2925](https://github.com/VSCodeVim/Vim/issues/2925)
+
+**Merged pull requests:**
+
+- \[Bugfix\] - sentences backward [\#3445](https://github.com/VSCodeVim/Vim/pull/3445) ([esetnik](https://github.com/esetnik))
+- refactor: rename cursorPositionJustBeforeAnythingHappened to cursorsInitialState [\#3443](https://github.com/VSCodeVim/Vim/pull/3443) ([jpoon](https://github.com/jpoon))
+- fix: ensure cursor is in bounds. closes \#3441 [\#3442](https://github.com/VSCodeVim/Vim/pull/3442) ([jpoon](https://github.com/jpoon))
+- fix: validate that remappings are string arrays [\#3440](https://github.com/VSCodeVim/Vim/pull/3440) ([jpoon](https://github.com/jpoon))
+- v1.0.6 [\#3438](https://github.com/VSCodeVim/Vim/pull/3438) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency typescript to v3.3.1 [\#3436](https://github.com/VSCodeVim/Vim/pull/3436) ([renovate[bot]](https://github.com/apps/renovate))
+- Adopt latest list navigation support [\#3432](https://github.com/VSCodeVim/Vim/pull/3432) ([joaomoreno](https://github.com/joaomoreno))
+- Fix `C-n` and `C-p` in autocomplete for multi cursor [\#3283](https://github.com/VSCodeVim/Vim/pull/3283) ([jackfranklin](https://github.com/jackfranklin))
+
+## [v1.0.6](https://github.com/vscodevim/vim/tree/v1.0.6) (2019-02-01)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.5...v1.0.6)
+
+**Fixed Bugs:**
+
+- Bad interaction between 1.0.5 and jscode-java-pack [\#3431](https://github.com/VSCodeVim/Vim/issues/3431)
+- Release 1.0.4 doesn't contain listed changes [\#3429](https://github.com/VSCodeVim/Vim/issues/3429)
+
+**Merged pull requests:**
+
+- fix: check neovim configurations and timeout on nvim attach [\#3437](https://github.com/VSCodeVim/Vim/pull/3437) ([jpoon](https://github.com/jpoon))
+- fix: revert back to previous non-async code when syncing cursor [\#3435](https://github.com/VSCodeVim/Vim/pull/3435) ([jpoon](https://github.com/jpoon))
+- feat: output commit hash. closes \#3429 [\#3430](https://github.com/VSCodeVim/Vim/pull/3430) ([jpoon](https://github.com/jpoon))
+
 ## [v1.0.5](https://github.com/vscodevim/vim/tree/v1.0.5) (2019-01-31)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.4...v1.0.5)

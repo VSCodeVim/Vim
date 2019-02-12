@@ -68,20 +68,19 @@ export async function getAndUpdateModeHandler(forceSyncAndUpdate = false): Promi
 }
 
 async function loadConfiguration() {
-  const configurationErrors = await configuration.load();
   const logger = Logger.get('Configuration');
 
-  const numErrors = configurationErrors.filter(e => e.level === 'error').length;
-  logger.debug(`${numErrors} errors found with vim configuration`);
+  const validatorResults = await configuration.load();
+  logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
-  if (numErrors > 0) {
-    for (let configurationError of configurationErrors) {
-      switch (configurationError.level) {
+  if (validatorResults.numErrors > 0) {
+    for (let validatorResult of validatorResults.get()) {
+      switch (validatorResult.level) {
         case 'error':
-          logger.error(configurationError.message);
+          logger.error(validatorResult.message);
           break;
         case 'warning':
-          logger.warn(configurationError.message);
+          logger.warn(validatorResult.message);
           break;
       }
     }
@@ -234,6 +233,15 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     vscode.window.onDidChangeTextEditorSelection,
     async (e: vscode.TextEditorSelectionChangeEvent) => {
+      if (
+        vscode.window.activeTextEditor === undefined ||
+        e.textEditor.document !== vscode.window.activeTextEditor.document
+      ) {
+        // we don't care if there is no active editor
+        // or user selection changed in a paneled window (e.g debug console/terminal)
+        return;
+      }
+
       const mh = await getAndUpdateModeHandler();
 
       if (mh.vimState.focusChanged) {
@@ -289,7 +297,7 @@ export async function activate(context: vscode.ExtensionContext) {
           text: args.text,
           replaceCharCnt: args.replaceCharCnt,
         });
-        mh.vimState.cursorPosition = Position.FromVSCodePosition(
+        mh.vimState.cursorStopPosition = Position.FromVSCodePosition(
           mh.vimState.editor.selection.start
         );
         mh.vimState.cursorStartPosition = Position.FromVSCodePosition(
@@ -365,6 +373,10 @@ export async function activate(context: vscode.ExtensionContext) {
     // This is called last because getAndUpdateModeHandler() will change cursor
     mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
   }
+
+  // Disable automatic keyboard navigation in lists, so it doesn't interfere
+  // with our list navigation keybindings
+  await VsCodeContext.Set('listAutomaticKeyboardNavigation', false);
 
   await toggleExtension(configuration.disableExtension, compositionState);
 

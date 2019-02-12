@@ -76,6 +76,7 @@ export class VimState implements vscode.Disposable {
   public alteredHistory = false;
 
   public isRunningDotCommand = false;
+
   /**
    * The last visual selection before running the dot command
    */
@@ -120,49 +121,61 @@ export class VimState implements vscode.Disposable {
   public globalState = globalState;
 
   /**
-   * The position the cursor will be when this action finishes.
-   */
-  public get cursorPosition(): Position {
-    return this.allCursors[0].stop;
-  }
-  public set cursorPosition(value: Position) {
-    this.allCursors[0] = this.allCursors[0].withNewStop(value);
-  }
-
-  /**
-   * The effective starting position of the movement, used along with cursorPosition to determine
-   * the range over which to run an Operator. May rarely be different than where the cursor
-   * actually starts e.g. if you use the "aw" text motion in the middle of a word.
+   * The cursor position (start, stop) when this action finishes.
    */
   public get cursorStartPosition(): Position {
-    return this.allCursors[0].start;
+    return this.cursors[0].start;
   }
   public set cursorStartPosition(value: Position) {
-    this.allCursors[0] = this.allCursors[0].withNewStart(value);
+    if (!value.isValid(this.editor)) {
+      this.logger.warn(`invalid cursor start position. ${value.toString()}.`);
+    }
+    this.cursors[0] = this.cursors[0].withNewStart(value);
+  }
+
+  public get cursorStopPosition(): Position {
+    return this.cursors[0].stop;
+  }
+  public set cursorStopPosition(value: Position) {
+    if (!value.isValid(this.editor)) {
+      this.logger.warn(`invalid cursor stop position. ${value.toString()}.`);
+    }
+    this.cursors[0] = this.cursors[0].withNewStop(value);
   }
 
   /**
-   * In Multi Cursor Mode, the position of every cursor.
+   * The position of every cursor.
    */
-  private _allCursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
+  private _cursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
 
-  public get allCursors(): Range[] {
-    return this._allCursors;
+  public get cursors(): Range[] {
+    return this._cursors;
   }
-
-  public set allCursors(value: Range[]) {
+  public set cursors(value: Range[]) {
+    const map = new Map<string, Range>();
     for (const cursor of value) {
-      if (!cursor.start.isValid(this.editor) || !cursor.stop.isValid(this.editor)) {
-        this.logger.debug('invalid value for set cursor position.');
+      if (!cursor.isValid(this.editor)) {
+        this.logger.warn(`invalid cursor position. ${cursor.toString()}.`);
       }
+
+      // use a map to ensure no two cursors are at the same location.
+      map.set(cursor.toString(), cursor);
     }
 
-    this._allCursors = value;
-
-    this.isMultiCursor = this._allCursors.length > 1;
+    this._cursors = Array.from(map.values());
+    this.isMultiCursor = this._cursors.length > 1;
   }
 
-  public cursorPositionJustBeforeAnythingHappened = [new Position(0, 0)];
+  /**
+   * Initial state of cursors prior to any action being performed
+   */
+  private _cursorsInitialState: Range[];
+  public get cursorsInitialState(): Range[] {
+    return this._cursorsInitialState;
+  }
+  public set cursorsInitialState(value: Range[]) {
+    this._cursorsInitialState = Object.assign([], value);
+  }
 
   public isRecordingMacro: boolean = false;
   public isReplayingMacro: boolean = false;
@@ -194,6 +207,7 @@ export class VimState implements vscode.Disposable {
     return this._currentMode;
   }
 
+  private _inputMethodSwitcher: InputMethodSwitcher;
   public async setCurrentMode(value: number): Promise<void> {
     await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
     this._currentMode = value;
@@ -226,25 +240,17 @@ export class VimState implements vscode.Disposable {
 
   public nvim: NeovimWrapper;
 
-  private _inputMethodSwitcher: InputMethodSwitcher;
-
-  public constructor(editor: vscode.TextEditor, enableNeovim: boolean = false) {
+  public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-
-    if (enableNeovim) {
-      this.nvim = new NeovimWrapper();
-    }
-
+    this.nvim = new NeovimWrapper();
     this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 
   dispose() {
-    if (this.nvim) {
-      this.nvim.dispose();
-    }
+    this.nvim.dispose();
   }
 }
 

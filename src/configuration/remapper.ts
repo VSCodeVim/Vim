@@ -135,11 +135,9 @@ export class Remapper implements IRemapper {
       // Revert every single inserted character.
       // We subtract 1 because we haven't actually applied the last key.
       await vimState.historyTracker.undoAndRemoveChanges(
-        Math.max(0, numCharsToRemove * vimState.allCursors.length)
+        Math.max(0, numCharsToRemove * vimState.cursors.length)
       );
-      vimState.allCursors = vimState.allCursors.map(x =>
-        x.withNewStop(x.stop.getLeft(numCharsToRemove))
-      );
+      vimState.cursors = vimState.cursors.map(c => c.withNewStop(c.stop.getLeft(numCharsToRemove)));
     }
     // We need to remove the keys that were remapped into different keys from the state.
     vimState.recordedState.actionKeys = vimState.recordedState.actionKeys.slice(
@@ -197,7 +195,7 @@ export class Remapper implements IRemapper {
     for (let sliceLength = startingSliceLength; sliceLength >= range[0]; sliceLength--) {
       const keySlice = inputtedKeys.slice(-sliceLength).join('');
 
-      this._logger.verbose(`trying to find matching remap for keySlice=${keySlice}.`);
+      this._logger.verbose(`key=${inputtedKeys}. keySlice=${keySlice}.`);
       if (userDefinedRemappings.has(keySlice)) {
         // In Insert mode, we allow users to precede remapped commands
         // with extraneous keystrokes (eg. "hello world jj")
@@ -208,6 +206,9 @@ export class Remapper implements IRemapper {
             .slice(0, inputtedKeys.length - keySlice.length)
             .join('');
           if (precedingKeys.length > 0 && !/^[0-9]+$/.test(precedingKeys)) {
+            this._logger.verbose(
+              `key sequences need to match precisely. precedingKeys=${precedingKeys}.`
+            );
             break;
           }
         }
