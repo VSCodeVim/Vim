@@ -1,33 +1,34 @@
-import { Globals } from '../../src/globals';
 import { getTestingFunctions } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
+import { Configuration } from '../testConfiguration';
 
-suite('camelCaseMotion plugin', () => {
-  const { newTest } = getTestingFunctions();
+const { newTest } = getTestingFunctions();
 
+suite('camelCaseMotion plugin if not enabled', () => {
   setup(async () => {
-    await setupWorkspace();
-    Globals.mockConfiguration.camelCaseMotion = true;
-    await reloadConfiguration();
+    const configuration = new Configuration();
+    configuration.camelCaseMotion = false;
+    await setupWorkspace(configuration);
   });
 
   teardown(cleanUpWorkspace);
 
-  suite('if not enabled', () => {
-    setup(async () => {
-      Globals.mockConfiguration.camelCaseMotion = false;
-      await reloadConfiguration();
-    });
-
-    teardown(cleanUpWorkspace);
-
-    newTest({
-      title: "basic motion doesn't work",
-      start: ['|camelWord'],
-      keysPressed: '<leader>w',
-      end: ['|camelWord'],
-    });
+  newTest({
+    title: "basic motion doesn't work",
+    start: ['|camelWord'],
+    keysPressed: '<leader>w',
+    end: ['|camelWord'],
   });
+});
+
+suite('camelCaseMotion plugin', () => {
+  setup(async () => {
+    const configuration = new Configuration();
+    configuration.camelCaseMotion = true;
+    await setupWorkspace(configuration);
+  });
+
+  teardown(cleanUpWorkspace);
 
   suite('handles <leader>w for camelCaseText', () => {
     newTest({
