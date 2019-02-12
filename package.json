@@ -685,6 +685,11 @@
           "type": "number",
           "description": "Threshold for reporting number of lines changed.",
           "default": 2
+        },
+        "vim.digraphs": {
+          "type": "object",
+          "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points",
+          "default": {}
         }
       }
     }
@@ -727,6 +732,6 @@
     "sinon": "7.2.3",
     "tslint": "5.12.1",
     "typescript": "3.3.3",
-    "vscode": "1.1.28"
+    "vscode": "1.1.29"
   }
 }

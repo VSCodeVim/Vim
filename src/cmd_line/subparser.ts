@@ -1,5 +1,6 @@
 import { parseCloseCommandArgs } from './subparsers/close';
 import { parseDeleteRangeLinesCommandArgs } from './subparsers/deleteRange';
+import { parseDigraphCommandArgs } from './subparsers/digraph';
 import * as fileCmd from './subparsers/file';
 import { parseNohlCommandArgs } from './subparsers/nohl';
 import { parseOnlyCommandArgs } from './subparsers/only';
@@ -98,6 +99,11 @@ export const commandParsers = {
   r: parseReadCommandArgs,
 
   reg: parseRegisterCommandArgs,
+
+  dig: parseDigraphCommandArgs,
+  digr: parseDigraphCommandArgs,
+  digraph: parseDigraphCommandArgs,
+  digraphs: parseDigraphCommandArgs,
 
   d: parseDeleteRangeLinesCommandArgs,
 
