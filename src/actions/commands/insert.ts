@@ -314,7 +314,7 @@ class CommandInsertDigraph extends BaseCommand {
     await TextEditor.insertAt(char, position);
     await vimState.setCurrentMode(ModeName.Insert);
     vimState.cursorStartPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
-    vimState.cursorPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
+    vimState.cursorStopPosition = Position.FromVSCodePosition(vimState.editor.selection.start);
 
     return vimState;
   }
