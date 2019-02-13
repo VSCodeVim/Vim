@@ -680,6 +680,11 @@
           "type": "number",
           "description": "Threshold for reporting number of lines changed.",
           "default": 2
+        },
+        "vim.digraphs": {
+          "type": "object",
+          "description": "Custom digraph shortcuts for inserting special characters, expressed as UTF16 code points",
+          "default": {}
         }
       }
     }
@@ -706,7 +711,7 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.120",
     "@types/mocha": "5.2.5",
-    "@types/node": "9.6.41",
+    "@types/node": "9.6.42",
     "@types/sinon": "7.0.5",
     "gulp": "4.0.0",
     "gulp-bump": "3.1.3",
@@ -718,10 +723,10 @@
     "minimist": "1.2.0",
     "mocha": "5.2.0",
     "plugin-error": "1.0.1",
-    "prettier": "1.16.3",
+    "prettier": "1.16.4",
     "sinon": "7.2.3",
     "tslint": "5.12.1",
-    "typescript": "3.3.1",
-    "vscode": "1.1.28"
+    "typescript": "3.3.3",
+    "vscode": "1.1.29"
   }
 }
