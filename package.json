@@ -709,7 +709,7 @@
   "devDependencies": {
     "@types/diff": "4.0.1",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.120",
+    "@types/lodash": "4.14.121",
     "@types/mocha": "5.2.5",
     "@types/node": "9.6.42",
     "@types/sinon": "7.0.5",
