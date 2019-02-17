@@ -7,7 +7,7 @@ const { newTest } = getTestingFunctions();
 suite('camelCaseMotion plugin if not enabled', () => {
   setup(async () => {
     const configuration = new Configuration();
-    configuration.camelCaseMotion = false;
+    configuration.camelCaseMotion.enable = false;
     await setupWorkspace(configuration);
   });
 
@@ -24,7 +24,7 @@ suite('camelCaseMotion plugin if not enabled', () => {
 suite('camelCaseMotion plugin', () => {
   setup(async () => {
     const configuration = new Configuration();
-    configuration.camelCaseMotion = true;
+    configuration.camelCaseMotion.enable = true;
     await setupWorkspace(configuration);
   });
 

@@ -449,7 +449,7 @@
           "description": "Override the 'ignorecase' option if the search pattern contains upper case characters.",
           "default": true
         },
-        "vim.camelCaseMotion": {
+        "vim.camelCaseMotion.enable": {
           "type": "boolean",
           "description": "Enable the CamelCaseMotion plugin for Vim.",
           "default": false
@@ -714,7 +714,7 @@
   "devDependencies": {
     "@types/diff": "4.0.1",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.121",
+    "@types/lodash": "4.14.120",
     "@types/mocha": "5.2.5",
     "@types/node": "10.12.25",
     "@types/sinon": "7.0.5",

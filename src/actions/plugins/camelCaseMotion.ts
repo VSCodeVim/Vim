@@ -10,21 +10,21 @@ import { ChangeOperator } from '../operator';
 
 class CamelCaseBaseMovement extends BaseMovement {
   public doesActionApply(vimState: VimState, keysPressed: string[]) {
-    return configuration.camelCaseMotion && super.doesActionApply(vimState, keysPressed);
+    return configuration.camelCaseMotion.enable && super.doesActionApply(vimState, keysPressed);
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]) {
-    return configuration.camelCaseMotion && super.couldActionApply(vimState, keysPressed);
+    return configuration.camelCaseMotion.enable && super.couldActionApply(vimState, keysPressed);
   }
 }
 
 class CamelCaseTextObjectMovement extends TextObjectMovement {
   public doesActionApply(vimState: VimState, keysPressed: string[]) {
-    return configuration.camelCaseMotion && super.doesActionApply(vimState, keysPressed);
+    return configuration.camelCaseMotion.enable && super.doesActionApply(vimState, keysPressed);
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]) {
-    return configuration.camelCaseMotion && super.couldActionApply(vimState, keysPressed);
+    return configuration.camelCaseMotion.enable && super.couldActionApply(vimState, keysPressed);
   }
 }
 

@@ -510,9 +510,9 @@ Once sneak is active, initiate motions using the following commands. For operato
 
 Based on [CamelCaseMotion](https://github.com/bkad/CamelCaseMotion), though not an exact emulation. This plugin provides an easier way to move through camelCase and snake_case words.
 
-| Setting             | Description                    | Type    | Default Value |
-| ------------------- | ------------------------------ | ------- | ------------- |
-| vim.camelCaseMotion | Enable/disable CamelCaseMotion | Boolean | false         |
+| Setting                    | Description                    | Type    | Default Value |
+| -------------------------- | ------------------------------ | ------- | ------------- |
+| vim.camelCaseMotion.enable | Enable/disable CamelCaseMotion | Boolean | false         |
 
 Once CamelCaseMotion is enabled, the following motions are available:
 

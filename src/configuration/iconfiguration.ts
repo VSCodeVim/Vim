@@ -42,6 +42,13 @@ export interface IDebugConfiguration {
   loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 }
 
+export interface ICamelCaseMotionConfiguration {
+  /**
+   * Enable CamelCaseMotion plugin or not
+   */
+  enable: boolean;
+}
+
 export interface IConfiguration {
   /**
    * Use the system's clipboard when copying.
@@ -85,9 +92,9 @@ export interface IConfiguration {
   autoindent: boolean;
 
   /**
-   * Use CamelCaseMotion plugin?
+   * CamelCaseMotion plugin options
    */
-  camelCaseMotion: boolean;
+  camelCaseMotion: ICamelCaseMotionConfiguration;
 
   /**
    * Use EasyMotion plugin?

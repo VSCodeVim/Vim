@@ -11,6 +11,7 @@ import {
   IAutoSwitchInputMethod,
   IDebugConfiguration,
   Digraph,
+  ICamelCaseMotionConfiguration,
 } from './iconfiguration';
 
 const packagejson: {
@@ -170,7 +171,9 @@ class Configuration implements IConfiguration {
 
   autoindent = true;
 
-  camelCaseMotion = true;
+  camelCaseMotion: ICamelCaseMotionConfiguration = {
+    enable: true,
+  };
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
