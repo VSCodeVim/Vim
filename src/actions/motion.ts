@@ -515,9 +515,8 @@ export class MarkMovementBOL extends BaseMovement {
 
     if (mark == null) {
       throw VimError.fromCode(ErrorCode.E20);
-    } else {
-      return mark.position.getFirstLineNonBlankChar();
     }
+    return mark.position.getFirstLineNonBlankChar();
   }
 }
 
@@ -532,9 +531,8 @@ export class MarkMovement extends BaseMovement {
 
     if (mark == null) {
       throw VimError.fromCode(ErrorCode.E20);
-    } else {
-      return mark.position;
     }
+    return mark.position;
   }
 }
 @RegisterAction
