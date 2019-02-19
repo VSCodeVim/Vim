@@ -3,6 +3,7 @@ interface IErrorMessage {
 }
 
 export enum ErrorCode {
+  E20 = 20,
   E32 = 32,
   E35 = 35,
   E37 = 37,
@@ -16,6 +17,7 @@ export enum ErrorCode {
 }
 
 export const ErrorMessage: IErrorMessage = {
+  20: 'Mark not set',
   32: 'No file name',
   35: 'No previous regular expression',
   37: 'No write since last change (add ! to override)',
