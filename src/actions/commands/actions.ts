@@ -25,6 +25,7 @@ import { commandLine } from './../../cmd_line/commandLine';
 import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
 import { ReportLinesChanged, ReportClear } from '../../util/statusBarTextUtils';
+import { commandParsers } from '../../cmd_line/subparser';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -1902,13 +1903,57 @@ class CommandInsertInCommandline extends BaseCommand {
       );
     } else if (key === '<left>') {
       vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
-    } else {
+    } else if (key === '<tab>') {
+      console.log('Number 1');
+      console.log(commandLine.autoCompleteText);
+      console.log(vimState.currentCommandlineText);
+      var commands = Object.keys(commandParsers).sort();
+      if (
+        commandLine.lastKeyPressed === '<tab>' &&
+        commandLine.autoCompleteIndex < commands.length
+      ) {
+        commandLine.autoCompleteIndex += 1;
+      } else if (commandLine.lastKeyPressed !== '<tab>') {
+        commandLine.autoCompleteText = vimState.currentCommandlineText;
+        commandLine.autoCompleteIndex = 0;
+      }
+      commands = commands.filter(cmd => cmd.startsWith(commandLine.autoCompleteText));
+      if (commandLine.autoCompleteIndex >= commands.length) {
+        commandLine.autoCompleteIndex = 0;
+      }
+      var command = commands[commandLine.autoCompleteIndex];
+      if (command === vimState.currentCommandlineText && commands.length > 1) {
+        commandLine.autoCompleteIndex += 1;
+        command = commands[commandLine.autoCompleteIndex];
+      }
+      if (command !== undefined) {
+        vimState.currentCommandlineText = command;
+        vimState.statusBarCursorCharacterPos = command.length;
+      }
+      console.log('Number 2');
+      console.log(commandLine.autoCompleteText);
+      console.log(vimState.currentCommandlineText);
+    } else if (key !== '<tab>') {
       let modifiedString = vimState.currentCommandlineText.split('');
-      modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, this.keysPressed[0]);
+      modifiedString.splice(vimState.statusBarCursorCharacterPos, 0, key);
       vimState.currentCommandlineText = modifiedString.join('');
-      vimState.statusBarCursorCharacterPos += 1;
+      vimState.statusBarCursorCharacterPos += key.length;
     }
 
+    commandLine.lastKeyPressed = key;
+    return vimState;
+  }
+}
+
+@RegisterAction
+class CommandTabInCommandline extends BaseCommand {
+  modes = [ModeName.CommandlineInProgress];
+  keys = [['<tab>']];
+  runsOnceForEveryCursor() {
+    return this.keysPressed[0] === '\n';
+  }
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
     return vimState;
   }
 }
