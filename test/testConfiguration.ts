@@ -15,6 +15,9 @@ export class Configuration implements IConfiguration {
   ignorecase = true;
   smartcase = true;
   autoindent = true;
+  camelCaseMotion = {
+    enable: false,
+  };
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
   surround = true;
@@ -52,7 +55,9 @@ export class Configuration implements IConfiguration {
     replace: '#D08770',
   };
   debug: {
-    loggingLevel: 'warn';
+    silent: false;
+    loggingLevelForAlert: 'error';
+    loggingLevelForConsole: 'debug';
   };
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   tabstop = 2;
@@ -65,7 +70,7 @@ export class Configuration implements IConfiguration {
   mouseSelectionGoesIntoVisualMode = true;
   changeWordIncludesWhitespace = false;
   foldfix = false;
-  disableExt = false;
+  disableExtension = false;
   enableNeovim = false;
   neovimPath = 'nvim';
   substituteGlobalFlag = false;
@@ -83,6 +88,14 @@ export class Configuration implements IConfiguration {
   normalModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
+  insertModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  insertModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  normalModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
+  visualModeKeyBindingsNonRecursiveMap: Map<string, IKeyRemapping>;
   whichwrap = '';
   wrapKeys = {};
+  report = 2;
+  digraphs: {};
 }

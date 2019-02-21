@@ -1,19 +1,19 @@
 import * as vscode from 'vscode';
 
-import { ModeName } from '../mode/mode';
-import { BaseMovement } from './../actions/motion';
+import { BaseMovement } from '../actions/motion';
 import { EasyMotion } from './../actions/plugins/easymotion/easymotion';
-import { Position } from './../common/motion/position';
-import { Range } from './../common/motion/range';
 import { EditorIdentity } from './../editorIdentity';
 import { HistoryTracker } from './../history/historyTracker';
-import { RegisterMode } from './../register/register';
-import { GlobalState } from './../state/globalState';
-import { ReplaceState } from './../state/replaceState';
-import { RecordedState } from './recordedState';
-import { Neovim } from '../neovim/neovim';
 import { InputMethodSwitcher } from '../actions/plugins/imswitcher';
-import { logger } from '../util/logger';
+import { Logger } from '../util/logger';
+import { ModeName } from '../mode/mode';
+import { NeovimWrapper } from '../neovim/neovim';
+import { Position } from './../common/motion/position';
+import { Range } from './../common/motion/range';
+import { RecordedState } from './recordedState';
+import { RegisterMode } from './../register/register';
+import { ReplaceState } from './../state/replaceState';
+import { globalState } from './../state/globalState';
 
 /**
  * The VimState class holds permanent state that carries over from action
@@ -23,6 +23,8 @@ import { logger } from '../util/logger';
  * indicate what they want to do.
  */
 export class VimState implements vscode.Disposable {
+  private readonly logger = Logger.get('VimState');
+
   /**
    * The column the cursor wants to be at, or Number.POSITIVE_INFINITY if it should always
    * be the rightmost column.
@@ -62,18 +64,19 @@ export class VimState implements vscode.Disposable {
   /**
    * Tracks movements that can be repeated with ; (e.g. t, T, f, and F).
    */
-  public static lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
+  public lastSemicolonRepeatableMovement: BaseMovement | undefined = undefined;
 
   /**
    * Tracks movements that can be repeated with , (e.g. t, T, f, and F).
    */
-  public static lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
+  public lastCommaRepeatableMovement: BaseMovement | undefined = undefined;
 
   public lastMovementFailed: boolean = false;
 
   public alteredHistory = false;
 
   public isRunningDotCommand = false;
+
   /**
    * The last visual selection before running the dot command
    */
@@ -115,52 +118,64 @@ export class VimState implements vscode.Disposable {
    */
   public keyHistory: string[] = [];
 
-  public globalState: GlobalState = new GlobalState();
+  public globalState = globalState;
 
   /**
-   * The position the cursor will be when this action finishes.
-   */
-  public get cursorPosition(): Position {
-    return this.allCursors[0].stop;
-  }
-  public set cursorPosition(value: Position) {
-    this.allCursors[0] = this.allCursors[0].withNewStop(value);
-  }
-
-  /**
-   * The effective starting position of the movement, used along with cursorPosition to determine
-   * the range over which to run an Operator. May rarely be different than where the cursor
-   * actually starts e.g. if you use the "aw" text motion in the middle of a word.
+   * The cursor position (start, stop) when this action finishes.
    */
   public get cursorStartPosition(): Position {
-    return this.allCursors[0].start;
+    return this.cursors[0].start;
   }
   public set cursorStartPosition(value: Position) {
-    this.allCursors[0] = this.allCursors[0].withNewStart(value);
+    if (!value.isValid(this.editor)) {
+      this.logger.warn(`invalid cursor start position. ${value.toString()}.`);
+    }
+    this.cursors[0] = this.cursors[0].withNewStart(value);
+  }
+
+  public get cursorStopPosition(): Position {
+    return this.cursors[0].stop;
+  }
+  public set cursorStopPosition(value: Position) {
+    if (!value.isValid(this.editor)) {
+      this.logger.warn(`invalid cursor stop position. ${value.toString()}.`);
+    }
+    this.cursors[0] = this.cursors[0].withNewStop(value);
   }
 
   /**
-   * In Multi Cursor Mode, the position of every cursor.
+   * The position of every cursor.
    */
-  private _allCursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
+  private _cursors: Range[] = [new Range(new Position(0, 0), new Position(0, 0))];
 
-  public get allCursors(): Range[] {
-    return this._allCursors;
+  public get cursors(): Range[] {
+    return this._cursors;
   }
-
-  public set allCursors(value: Range[]) {
+  public set cursors(value: Range[]) {
+    const map = new Map<string, Range>();
     for (const cursor of value) {
-      if (!cursor.start.isValid() || !cursor.stop.isValid()) {
-        logger.debug('VimState: invalid value for set cursor position. This is probably bad?');
+      if (!cursor.isValid(this.editor)) {
+        this.logger.warn(`invalid cursor position. ${cursor.toString()}.`);
       }
+
+      // use a map to ensure no two cursors are at the same location.
+      map.set(cursor.toString(), cursor);
     }
 
-    this._allCursors = value;
-
-    this.isMultiCursor = this._allCursors.length > 1;
+    this._cursors = Array.from(map.values());
+    this.isMultiCursor = this._cursors.length > 1;
   }
 
-  public cursorPositionJustBeforeAnythingHappened = [new Position(0, 0)];
+  /**
+   * Initial state of cursors prior to any action being performed
+   */
+  private _cursorsInitialState: Range[];
+  public get cursorsInitialState(): Range[] {
+    return this._cursorsInitialState;
+  }
+  public set cursorsInitialState(value: Range[]) {
+    this._cursorsInitialState = Object.assign([], value);
+  }
 
   public isRecordingMacro: boolean = false;
   public isReplayingMacro: boolean = false;
@@ -177,6 +192,7 @@ export class VimState implements vscode.Disposable {
    */
   public lastVisualSelectionStart: Position;
   public lastVisualSelectionEnd: Position;
+
   /**
    * Was the previous mouse click past EOL
    */
@@ -191,6 +207,7 @@ export class VimState implements vscode.Disposable {
     return this._currentMode;
   }
 
+  private _inputMethodSwitcher: InputMethodSwitcher;
   public async setCurrentMode(value: number): Promise<void> {
     await this._inputMethodSwitcher.switchInputMethod(this._currentMode, value);
     this._currentMode = value;
@@ -221,34 +238,19 @@ export class VimState implements vscode.Disposable {
 
   public recordedMacro = new RecordedState();
 
-  /**
-   * Programmatically triggering an edit will unfortunately ALSO trigger our mouse update
-   * function. We use this variable to determine if the update function was triggered
-   * by us or by a mouse action.
-   */
-  public prevSelection: vscode.Selection;
+  public nvim: NeovimWrapper;
 
-  public nvim: Neovim;
-
-  private _inputMethodSwitcher: InputMethodSwitcher;
-
-  public constructor(editor: vscode.TextEditor, enableNeovim: boolean = false) {
+  public constructor(editor: vscode.TextEditor) {
     this.editor = editor;
     this.identity = new EditorIdentity(editor);
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = new EasyMotion();
-
-    if (enableNeovim) {
-      this.nvim = new Neovim();
-    }
-
+    this.nvim = new NeovimWrapper();
     this._inputMethodSwitcher = new InputMethodSwitcher();
   }
 
   dispose() {
-    if (this.nvim) {
-      this.nvim.dispose();
-    }
+    this.nvim.dispose();
   }
 }
 

@@ -104,8 +104,9 @@ export class TextEditor {
     return vscode.window.activeTextEditor!.document.lineAt(lineNo).text;
   }
 
-  static getLineCount(): number {
-    return vscode.window.activeTextEditor!.document.lineCount;
+  static getLineCount(textEditor?: vscode.TextEditor): number {
+    textEditor = textEditor || vscode.window.activeTextEditor;
+    return textEditor ? textEditor.document.lineCount : -1;
   }
 
   static getLineAt(position: vscode.Position): vscode.TextLine {
@@ -229,8 +230,7 @@ export class TextEditor {
 
   static getPositionAt(offset: number): Position {
     const pos = vscode.window.activeTextEditor!.document.positionAt(offset);
-
-    return new Position(pos.line, pos.character);
+    return Position.FromVSCodePosition(pos);
   }
 
   static getOffsetAt(position: Position): number {

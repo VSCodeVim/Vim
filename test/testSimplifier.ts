@@ -105,7 +105,7 @@ class TestObjectHelper {
     for (let i = 0; i < lines.length; i++) {
       let columnIdx = lines[i].indexOf('|');
       if (columnIdx >= 0) {
-        ret.position = ret.position.setLocation(i, columnIdx);
+        ret.position = ret.position.withLine(i).withColumn(columnIdx);
         ret.success = true;
       }
     }

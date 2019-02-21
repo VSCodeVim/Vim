@@ -144,7 +144,7 @@ export class Register {
 
     (registerContent.text as string[]).push(content as string);
 
-    if (multicursorIndex === vimState.allCursors.length - 1) {
+    if (multicursorIndex === vimState.cursors.length - 1) {
       if (registerContent.isClipboardRegister) {
         let clipboardText: string = '';
 
@@ -181,14 +181,14 @@ export class Register {
       if (typeof appendToRegister.text === 'string') {
         createEmptyRegister = true;
       } else {
-        if ((appendToRegister.text as string[]).length !== vimState.allCursors.length) {
+        if ((appendToRegister.text as string[]).length !== vimState.cursors.length) {
           createEmptyRegister = true;
         }
       }
 
       if (createEmptyRegister) {
         Register.registers[register.toLowerCase()] = {
-          text: Array<string>(vimState.allCursors.length).fill(''),
+          text: Array<string>(vimState.cursors.length).fill(''),
           registerMode: vimState.effectiveRegisterMode,
           isClipboardRegister: Register.isClipboardRegister(register),
         };
@@ -337,7 +337,7 @@ export class Register {
    */
   public static async get(vimState: VimState): Promise<IRegisterContent> {
     const register = vimState.recordedState.registerName;
-    return await Register.getByKey(register, vimState);
+    return Register.getByKey(register, vimState);
   }
 
   public static async getByKey(register: string, vimState?: VimState): Promise<IRegisterContent> {
@@ -367,7 +367,7 @@ export class Register {
       let registerText: string | string[];
       if (vimState && vimState.isMultiCursor) {
         registerText = text.split('\n');
-        if (registerText.length !== vimState.allCursors.length) {
+        if (registerText.length !== vimState.cursors.length) {
           registerText = text;
         }
       } else {
@@ -384,7 +384,7 @@ export class Register {
         registerText = text;
       } else {
         if (vimState && vimState.isMultiCursor && typeof text === 'object') {
-          if ((text as string[]).length === vimState.allCursors.length) {
+          if ((text as string[]).length === vimState.cursors.length) {
             registerText = text;
           } else {
             registerText = (text as string[]).join('\n');

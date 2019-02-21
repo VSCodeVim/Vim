@@ -6,12 +6,13 @@ import * as vscode from 'vscode';
 
 import { Configuration } from './testConfiguration';
 import { Globals } from '../src/globals';
+import { ValidatorResults } from '../src/configuration/iconfigurationValidator';
 import { IConfiguration } from '../src/configuration/iconfiguration';
 import { TextEditor } from '../src/textEditor';
 import { getAndUpdateModeHandler } from '../extension';
 import { commandLine } from '../src/cmd_line/commandLine';
 
-function rndName() {
+export function rndName(): string {
   return Math.random()
     .toString(36)
     .replace(/[^a-z]+/g, '')
@@ -85,7 +86,7 @@ export async function setupWorkspace(
   await vscode.window.showTextDocument(doc);
 
   Globals.mockConfiguration = config;
-  reloadConfiguration();
+  await reloadConfiguration();
 
   let activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
@@ -134,8 +135,11 @@ export async function cleanUpWorkspace(): Promise<any> {
   });
 }
 
-export function reloadConfiguration() {
-  require('../src/configuration/configuration').configuration.reload();
+export async function reloadConfiguration() {
+  let validatorResults = (await require('../src/configuration/configuration').configuration.load()) as ValidatorResults;
+  for (let validatorResult of validatorResults.get()) {
+    console.log(validatorResult);
+  }
 }
 
 /**

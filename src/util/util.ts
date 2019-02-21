@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
+import AppDirectory = require('appdirectory');
+import { Logger } from './logger';
 import { Position } from '../common/motion/position';
 import { Range } from '../common/motion/range';
-import { logger } from './logger';
 import { exec } from 'child_process';
-
-const AppDirectory = require('appdirectory');
 
 /**
  * This is certainly quite janky! The problem we're trying to solve
@@ -27,10 +26,11 @@ export async function waitForCursorSync(
 }
 
 export async function getCursorsAfterSync(timeoutInMilliseconds: number = 0): Promise<Range[]> {
+  const logger = Logger.get('getCursorsAfterSync');
   try {
     await waitForCursorSync(timeoutInMilliseconds, true);
   } catch (e) {
-    logger.warn(`getCursorsAfterSync: selection not updated within ${timeoutInMilliseconds}ms. error=${e}.`);
+    logger.warn(`getCursorsAfterSync: selection not updated within ${timeoutInMilliseconds}ms.`);
   }
 
   return vscode.window.activeTextEditor!.selections.map(
@@ -39,7 +39,9 @@ export async function getCursorsAfterSync(timeoutInMilliseconds: number = 0): Pr
 }
 
 export function getExtensionDirPath(): string {
+  const logger = Logger.get('getExtensionDirPath');
   const dirs = new AppDirectory('VSCodeVim');
+
   logger.debug('VSCodeVim Cache Directory: ' + dirs.userCache());
 
   return dirs.userCache();

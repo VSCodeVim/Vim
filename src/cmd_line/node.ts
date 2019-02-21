@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-
-import { VimState } from '../state/vimState';
 import * as token from './token';
+import * as vscode from 'vscode';
+import { Position } from '../common/motion/position';
+import { VimState } from '../state/vimState';
 
 type LineRefOperation = token.TokenType.Plus | token.TokenType.Minus | undefined;
 
@@ -62,8 +62,7 @@ export class LineRange {
     }
     var lineRef = this.right.length === 0 ? this.left : this.right;
     var pos = this.lineRefToPosition(document, lineRef, vimState);
-    vimState.cursorPosition = vimState.cursorPosition.setLocation(pos.line, pos.character);
-    vimState.cursorStartPosition = vimState.cursorPosition;
+    vimState.cursorStartPosition = vimState.cursorStopPosition = Position.FromVSCodePosition(pos);
   }
 
   lineRefToPosition(
@@ -243,9 +242,9 @@ export abstract class CommandBase {
   }
   protected _arguments: ICommandArgs;
 
-  abstract execute(vimState: VimState): void;
+  abstract execute(vimState: VimState): Promise<void>;
 
-  executeWithRange(vimState: VimState, range: LineRange): void {
+  executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     throw new Error('Not implemented!');
   }
 }

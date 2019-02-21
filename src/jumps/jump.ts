@@ -42,7 +42,7 @@ export class Jump {
     return new Jump({
       editor: vimState.editor,
       fileName: vimState.editor.document.fileName,
-      position: vimState.cursorPosition,
+      position: vimState.cursorStopPosition,
     });
   }
 
@@ -55,7 +55,7 @@ export class Jump {
     return new Jump({
       editor: vimState.editor,
       fileName: vimState.editor.document.fileName,
-      position: vimState.cursorPositionJustBeforeAnythingHappened[0],
+      position: vimState.cursorsInitialState[0].stop,
     });
   }
 

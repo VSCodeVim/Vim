@@ -8,7 +8,7 @@ suite('sneak plugin', () => {
   setup(async () => {
     await setupWorkspace();
     Globals.mockConfiguration.sneak = true;
-    reloadConfiguration();
+    await reloadConfiguration();
   });
 
   teardown(cleanUpWorkspace);
