@@ -651,6 +651,6 @@ suite('Motions in Normal Mode', () => {
     title: 'Can handle <C-d> key',
     start: ['bla|h', 'duh', 'dur', 'hur'],
     keysPressed: '<C-d>',
-    end: ['blah', 'duh', 'dur', '|hur'],
+    end: ['blah', 'duh', 'dur', 'hu|r'],
   });
 });
