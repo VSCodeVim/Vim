@@ -669,12 +669,11 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
     let editor = vscode.window.activeTextEditor!;
     let startColumn = vimState.cursorStartPosition.character;
 
-    let firstLine = editor.visibleRanges[0].start.line;
-    let lastLine = editor.visibleRanges[0].end.line;
     let currentLine = vimState.cursorStopPosition.line;
 
+    let firstLine = editor.visibleRanges[0].start.line;
     let timesToRepeat = vimState.recordedState.count || 1;
-    let offset = timesToRepeat * Math.floor((firstLine + lastLine) / 2)
+    let lineOffset = (currentLine - firstLine) * timesToRepeat;
     await vscode.commands.executeCommand('editorScroll', {
       to: this.to,
       by: this.by,
@@ -686,17 +685,12 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
         ) >= 0,
     });
 
-    let newLine = currentLine + offset
-    const maxLineValue = TextEditor.getLineCount() - 1;
-    let newPosition;
-    if (newLine > maxLineValue) {
-      newPosition = new Position(0, 0).getDocumentEnd();
+    let newPosition = editor.visibleRanges[0].start.line + lineOffset;
+    const endLine = TextEditor.getLineCount() - 1;
+    if (newPosition <= endLine) {
+      vimState.cursorStopPosition = new Position(newPosition, startColumn);
     } else {
-      const newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newLine));
-      newPosition = new Position(newLine, newPositionColumn);
-    }
-    if (newPosition.isValid()) {
-      vimState.cursorStopPosition = newPosition;
+      vimState.cursorStopPosition = new Position(endLine, 0);
     }
     return vimState;
   }
@@ -712,12 +706,11 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
     let editor = vscode.window.activeTextEditor!;
     let startColumn = vimState.cursorStartPosition.character;
 
-    let firstLine = editor.visibleRanges[0].start.line;
-    let lastLine = editor.visibleRanges[0].end.line;
     let currentLine = vimState.cursorStopPosition.line;
 
+    let firstLine = editor.visibleRanges[0].start.line;
+    let lastLine = editor.visibleRanges[0].end.line;
     let timesToRepeat = vimState.recordedState.count || 1;
-    let offset = timesToRepeat * Math.floor((firstLine + lastLine) / 2)
     await vscode.commands.executeCommand('editorScroll', {
       to: this.to,
       by: this.by,
@@ -729,9 +722,17 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
         ) >= 0,
     });
 
-    let newLine = Math.max(currentLine - offset, 0)
-    let newPosition = new Position(newLine, startColumn);
-    vimState.cursorStopPosition = newPosition;
+    if (firstLine === 0) {
+      let newPosition = currentLine - timesToRepeat * Math.floor((lastLine - firstLine) / 2);
+      if (newPosition >= 0) {
+        vimState.cursorStopPosition = new Position(newPosition, startColumn);
+      } else {
+        vimState.cursorStopPosition = new Position(0, 0);
+      }
+    } else {
+      let newPosition = editor.visibleRanges[0].start.line + currentLine - firstLine;
+      vimState.cursorStopPosition = new Position(newPosition, startColumn);
+    }
     return vimState;
   }
 }
