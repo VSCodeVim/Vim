@@ -644,7 +644,7 @@ suite('Motions in Normal Mode', () => {
     title: 'Can handle <C-u> key',
     start: ['blah', 'duh', 'dur', 'hu|r'],
     keysPressed: '<C-u>',
-    end: ['|blah', 'duh', 'dur', 'hur'],
+    end: ['blah', 'duh', 'du|r', 'hur'],
   });
 
   newTest({
