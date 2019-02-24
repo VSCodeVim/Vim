@@ -381,8 +381,7 @@
         },
         "vim.searchHighlightColor": {
           "type": "string",
-          "description": "Color of the search highlight.",
-          "default": "rgba(150, 150, 255, 0.3)"
+          "description": "Color of the search highlight."
         },
         "vim.useSystemClipboard": {
           "type": "boolean",
