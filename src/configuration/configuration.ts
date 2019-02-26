@@ -4,13 +4,13 @@ import { Notation } from './notation';
 import { ValidatorResults } from './iconfigurationValidator';
 import { VsCodeContext } from '../util/vscode-context';
 import { configurationValidator } from './configurationValidator';
+import { decoration } from './decoration';
 import {
   IConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
   IAutoSwitchInputMethod,
   IDebugConfiguration,
-  Digraph,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
 
@@ -115,6 +115,9 @@ class Configuration implements IConfiguration {
         command: keybinding.command,
       });
     }
+
+    // decorations
+    decoration.load(this);
 
     for (const boundKey of this.boundKeyCombinations) {
       // By default, all key combinations are used
@@ -231,7 +234,11 @@ class Configuration implements IConfiguration {
     loggingLevelForConsole: 'error',
   };
 
-  searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
+  @overlapSetting({
+    settingName: 'findMatchHighlightBackground',
+    defaultValue: 'rgba(150, 150, 255, 0.3)',
+  })
+  searchHighlightColor: string;
 
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
   tabstop: number;

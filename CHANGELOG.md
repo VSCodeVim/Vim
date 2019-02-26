@@ -1,5 +1,50 @@
 # Change Log
 
+## [v1.1.0](https://github.com/vscodevim/vim/tree/v1.1.0) (2019-02-24)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.8...v1.1.0)
+
+**Enhancements:**
+
+- Support digraphs [\#3267](https://github.com/VSCodeVim/Vim/issues/3267)
+
+**Fixed Bugs:**
+
+- vim.searchHighlightColor does not work [\#3489](https://github.com/VSCodeVim/Vim/issues/3489)
+- Error when jumping to undefined mark [\#3468](https://github.com/VSCodeVim/Vim/issues/3468)
+
+**Closed issues:**
+
+- \[Feature request\]: Add the ability to copy the current query into clipboard. [\#3493](https://github.com/VSCodeVim/Vim/issues/3493)
+- Not working on vscode 1.31.0 [\#3473](https://github.com/VSCodeVim/Vim/issues/3473)
+- Extension causes high cpu load [\#3471](https://github.com/VSCodeVim/Vim/issues/3471)
+- Error when using the `\> motion [\#3452](https://github.com/VSCodeVim/Vim/issues/3452)
+- Show mark label like VIM in visual studio [\#3406](https://github.com/VSCodeVim/Vim/issues/3406)
+- :help inserts content into current file [\#3179](https://github.com/VSCodeVim/Vim/issues/3179)
+- FEATURE REQUEST: Add operator support for VSCodes new subword navigation [\#2808](https://github.com/VSCodeVim/Vim/issues/2808)
+
+**Merged pull requests:**
+
+- Fixes vim.searchHighlightColor [\#3517](https://github.com/VSCodeVim/Vim/pull/3517) ([jpoon](https://github.com/jpoon))
+- chore\(deps\): update dependency tslint to v5.13.0 [\#3516](https://github.com/VSCodeVim/Vim/pull/3516) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency vscode to v1.1.30 [\#3513](https://github.com/VSCodeVim/Vim/pull/3513) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency typescript to v3.3.3333 [\#3512](https://github.com/VSCodeVim/Vim/pull/3512) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency mocha to v6.0.1 [\#3511](https://github.com/VSCodeVim/Vim/pull/3511) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency gulp-tslint to v8.1.4 [\#3510](https://github.com/VSCodeVim/Vim/pull/3510) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency mocha to v6 [\#3499](https://github.com/VSCodeVim/Vim/pull/3499) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency gulp-sourcemaps to v2.6.5 [\#3498](https://github.com/VSCodeVim/Vim/pull/3498) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/node to v10.12.27 [\#3496](https://github.com/VSCodeVim/Vim/pull/3496) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/lodash to v4.14.121 [\#3487](https://github.com/VSCodeVim/Vim/pull/3487) ([renovate[bot]](https://github.com/apps/renovate))
+- Add CamelCaseMotion plugin [\#3483](https://github.com/VSCodeVim/Vim/pull/3483) ([JKillian](https://github.com/JKillian))
+- chore\(deps\): update dependency @types/node to v9.6.42 [\#3478](https://github.com/VSCodeVim/Vim/pull/3478) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency vscode to v1.1.29 [\#3476](https://github.com/VSCodeVim/Vim/pull/3476) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency typescript to v3.3.3 [\#3475](https://github.com/VSCodeVim/Vim/pull/3475) ([renovate[bot]](https://github.com/apps/renovate))
+- Set \< and \> marks when yanking in visual mode. [\#3472](https://github.com/VSCodeVim/Vim/pull/3472) ([rickythefox](https://github.com/rickythefox))
+- Fixes \#3468 [\#3469](https://github.com/VSCodeVim/Vim/pull/3469) ([hnefatl](https://github.com/hnefatl))
+- chore\(deps\): update dependency prettier to v1.16.4 [\#3465](https://github.com/VSCodeVim/Vim/pull/3465) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency gulp-git to v2.9.0 [\#3464](https://github.com/VSCodeVim/Vim/pull/3464) ([renovate[bot]](https://github.com/apps/renovate))
+- Digraph support [\#3407](https://github.com/VSCodeVim/Vim/pull/3407) ([jbaiter](https://github.com/jbaiter))
+
 ## [v1.0.8](https://github.com/vscodevim/vim/tree/v1.0.8) (2019-02-07)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.7...v1.0.8)
