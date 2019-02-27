@@ -18,8 +18,8 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 
 - [Installation](#-installation)
   - [Vim Compatibility](#vim-compatibility)
-  - [Mac setup](#mac-setup)
-  - [Windows setup](#windows-setup)
+  - [Mac setup](#mac)
+  - [Windows setup](#windows)
   - [Linux setup](#linux-setup)
 - [Settings](#%EF%B8%8F-settings)
   - [VSCodeVim settings](#vscodevim-settings)
@@ -607,7 +607,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 - Key repeat doesn't work
 
-  Are you on a Mac? Did you go through our [mac-setup](#mac-setup) instructions?
+  Are you on a Mac? Did you go through our [mac-setup](#mac) instructions?
 
 - There are annoying intellisense/notifications/popups that I can't close with `<esc>`! Or I'm in a snippet and I want to close intellisense
 
