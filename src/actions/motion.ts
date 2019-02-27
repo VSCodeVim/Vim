@@ -214,7 +214,18 @@ abstract class MoveByScreenLine extends BaseMovement {
     });
 
     if (vimState.currentMode === ModeName.Normal) {
-      return Position.FromVSCodePosition(vimState.editor.selection.active);
+      let resultPos = Position.FromVSCodePosition(vimState.editor.selection.active);
+
+      // If the movement is to the end of the wrapped line, resultPos will be one past
+      // the end, i.e.the beginning of the next line visually. To get the correct position,
+      // we move back one character to the left. Note that we only want to do this at the
+      // end of a wrapped line, since doing this at the end of a non-wrapped line would
+      // result in the cursor not being set at the end of the line correctly.
+      if (this.movementType === 'wrappedLineEnd') {
+        return resultPos.getLeft();
+      }
+
+      return resultPos;
     } else {
       /**
        * cursorMove command is handling the selection for us.
