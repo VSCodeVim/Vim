@@ -254,9 +254,11 @@ export async function activate(context: vscode.ExtensionContext) {
     context,
     vscode.window.onDidChangeTextEditorSelection,
     async (e: vscode.TextEditorSelectionChangeEvent) => {
+      const eventEditorIdentity = new EditorIdentity(e.textEditor);
+      const activeEditorId = new EditorIdentity(vscode.window.activeTextEditor);
       if (
         vscode.window.activeTextEditor === undefined ||
-        e.textEditor.document !== vscode.window.activeTextEditor.document
+        !eventEditorIdentity.isEqual(activeEditorId)
       ) {
         // we don't care if there is no active editor
         // or user selection changed in a paneled window (e.g debug console/terminal)
