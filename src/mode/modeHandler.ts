@@ -4,7 +4,6 @@ import * as modes from './modes';
 import { Actions, BaseAction, KeypressState } from './../actions/base';
 import { BaseMovement, isIMovement } from './../actions/motion';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
-import { Decoration } from '../configuration/decoration';
 import { Jump } from '../jumps/jump';
 import { Logger } from '../util/logger';
 import { Mode, ModeName, VSCodeVimCursorType } from './mode';
@@ -16,10 +15,12 @@ import { Register, RegisterMode } from './../register/register';
 import { Remappers } from '../configuration/remapper';
 import { StatusBar } from '../statusBar';
 import { TextEditor } from './../textEditor';
+import { VimError } from './../error';
 import { VimState } from './../state/vimState';
 import { VsCodeContext } from '../util/vscode-context';
 import { commandLine } from '../cmd_line/commandLine';
 import { configuration } from '../configuration/configuration';
+import { decoration } from '../configuration/decoration';
 import { getCursorsAfterSync } from '../util/util';
 import {
   BaseCommand,
@@ -300,7 +301,16 @@ export class ModeHandler implements vscode.Disposable {
         this.vimState = await this.handleKeyEventHelper(key, this.vimState);
       }
     } catch (e) {
-      throw new Error(`Failed to handle key=${key}. ${e.message}`);
+      if (e instanceof VimError) {
+        StatusBar.Set(
+          e.toString(),
+          this.vimState.currentMode,
+          this.vimState.isRecordingMacro,
+          true
+        );
+      } else {
+        throw new Error(`Failed to handle key=${key}. ${e.message}`);
+      }
     }
 
     this.vimState.lastKeyPressedTimestamp = now;
@@ -1310,7 +1320,7 @@ export class ModeHandler implements vscode.Disposable {
       }
     }
 
-    this.vimState.editor.setDecorations(Decoration.Default, cursorRange);
+    this.vimState.editor.setDecorations(decoration.Default, cursorRange);
 
     // Draw marks
     // I should re-enable this with a config setting at some point
@@ -1341,7 +1351,7 @@ export class ModeHandler implements vscode.Disposable {
         searchRanges.push(new vscode.Range(start, end));
       }
     }
-    this.vimState.editor.setDecorations(Decoration.SearchHighlight, searchRanges);
+    this.vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
 
     const easyMotionHighlightRanges =
       this.currentMode.name === ModeName.EasyMotionInputMode
@@ -1349,7 +1359,7 @@ export class ModeHandler implements vscode.Disposable {
             .getMatches(vimState.cursorStopPosition, vimState)
             .map(x => x.toRange())
         : [];
-    this.vimState.editor.setDecorations(Decoration.EasyMotion, easyMotionHighlightRanges);
+    this.vimState.editor.setDecorations(decoration.EasyMotion, easyMotionHighlightRanges);
 
     for (let i = 0; i < this.vimState.postponedCodeViewChanges.length; i++) {
       let viewChange = this.vimState.postponedCodeViewChanges[i];
