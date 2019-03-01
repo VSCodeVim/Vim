@@ -729,7 +729,7 @@
     "plugin-error": "1.0.1",
     "prettier": "1.16.4",
     "sinon": "7.2.5",
-    "tslint": "5.13.0",
+    "tslint": "5.13.1",
     "typescript": "3.3.3333",
     "vscode": "1.1.30"
   }
