@@ -3106,7 +3106,7 @@ class CommandTabPrevious extends BaseTabCommand {
 }
 
 @RegisterAction
-class ActionDeleteChar extends BaseCommand {
+export class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['x'];
   canBeRepeatedWithDot = true;
