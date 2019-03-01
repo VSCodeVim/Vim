@@ -101,6 +101,7 @@ export class Position extends vscode.Position {
 
   private _nonWordCharRegex: RegExp;
   private _nonBigWordCharRegex: RegExp;
+  private _nonCamelCaseWordCharRegex: RegExp;
   private _sentenceEndRegex: RegExp;
   private _nonFileNameRegex: RegExp;
 
@@ -109,6 +110,7 @@ export class Position extends vscode.Position {
 
     this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
     this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
+    this._nonCamelCaseWordCharRegex = this.makeCamelCaseWordRegex(Position.NonWordCharacters);
     this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
     this._nonFileNameRegex = this.makeWordRegex(Position.NonFileCharacters);
   }
@@ -516,6 +518,10 @@ export class Position extends vscode.Position {
     return this.getWordLeftWithRegex(this._nonBigWordCharRegex, inclusive);
   }
 
+  public getCamelCaseWordLeft(inclusive: boolean = false): Position {
+    return this.getWordLeftWithRegex(this._nonCamelCaseWordCharRegex, inclusive);
+  }
+
   public getFilePathLeft(inclusive: boolean = false): Position {
     return this.getWordLeftWithRegex(this._nonFileNameRegex, inclusive);
   }
@@ -531,6 +537,10 @@ export class Position extends vscode.Position {
     return this.getWordRightWithRegex(this._nonBigWordCharRegex);
   }
 
+  public getCamelCaseWordRight(inclusive: boolean = false): Position {
+    return this.getWordRightWithRegex(this._nonCamelCaseWordCharRegex);
+  }
+
   public getFilePathRight(inclusive: boolean = false): Position {
     return this.getWordRightWithRegex(this._nonFileNameRegex, inclusive);
   }
@@ -541,6 +551,10 @@ export class Position extends vscode.Position {
 
   public getLastBigWordEnd(): Position {
     return this.getLastWordEndWithRegex(this._nonBigWordCharRegex);
+  }
+
+  public getLastCamelCaseWordEnd(): Position {
+    return this.getLastWordEndWithRegex(this._nonCamelCaseWordCharRegex);
   }
 
   /**
@@ -555,6 +569,13 @@ export class Position extends vscode.Position {
    */
   public getCurrentBigWordEnd(inclusive: boolean = false): Position {
     return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex, inclusive);
+  }
+
+  /**
+   * Inclusive is true if we consider the current position a valid result, false otherwise.
+   */
+  public getCurrentCamelCaseWordEnd(inclusive: boolean = false): Position {
+    return this.getCurrentWordEndWithRegex(this._nonCamelCaseWordCharRegex, inclusive);
   }
 
   /**
@@ -831,6 +852,39 @@ export class Position extends vscode.Position {
     return result;
   }
 
+  private makeCamelCaseWordRegex(characterSet: string): RegExp {
+    const escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
+    const segments: string[] = [];
+
+    // prettier-ignore
+    const firstSegment =
+      '(' +                                                // OPEN: group for matching camel case words
+      `[^\\s${escaped}]` +                                 //   words can start with any word character
+      '(?:' +                                              //   OPEN: group for characters after initial char
+      `(?:(?<=[A-Z_])[A-Z](?=[\\sA-Z0-9${escaped}_]))+` +  //     If first char was a capital
+                                                           //       the word can continue with all caps
+      '|' +                                                //     OR
+      `(?:(?<=[0-9_])[0-9](?=[\\sA-Z0-9${escaped}_]))+` +  //     If first char was a digit
+                                                           //       the word can continue with all digits
+      '|' +                                                //     OR
+      `(?:(?<=[_])[_](?=[\\s${escaped}_]))+` +             //     Continue with all underscores
+      '|' +                                                //     OR
+      `[^\\sA-Z0-9${escaped}_]*` +                         //     Continue with regular characters
+      ')' +                                                //   END: group for characters after initial char
+      ')' +                                                // END: group for matching camel case words
+      '';
+
+    segments.push(firstSegment);
+    segments.push(`[${escaped}]+`);
+    segments.push(`$^`);
+
+    // it can be difficult to grok the behavior of the above regex
+    // feel free to check out https://regex101.com/r/mkVeiH/1 as a live example
+    const result = new RegExp(segments.join('|'), 'g');
+
+    return result;
+  }
+
   private getAllPositions(line: string, regex: RegExp): number[] {
     let positions: number[] = [];
     let result = regex.exec(line);
@@ -987,7 +1041,7 @@ export class Position extends vscode.Position {
           .getRightThroughLineBreaks()
           .compareTo(this);
 
-        return (newPositionBeforeThis && (index < this.character || currentLine < this.line));
+        return newPositionBeforeThis && (index < this.character || currentLine < this.line);
       });
 
       if (newCharacter !== undefined) {

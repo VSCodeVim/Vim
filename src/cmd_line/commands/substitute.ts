@@ -3,15 +3,15 @@
 import * as vscode from 'vscode';
 import * as node from '../node';
 import * as token from '../token';
-import { VimState } from '../../state/vimState';
-import { VimError, ErrorCode } from '../../error';
-import { TextEditor } from '../../textEditor';
-import { configuration } from '../../configuration/configuration';
-import { Decoration } from '../../configuration/decoration';
 import { Jump } from '../../jumps/jump';
 import { Position } from '../../common/motion/position';
-import { SubstituteState } from '../../state/substituteState';
 import { SearchState, SearchDirection } from '../../state/searchState';
+import { SubstituteState } from '../../state/substituteState';
+import { TextEditor } from '../../textEditor';
+import { VimError, ErrorCode } from '../../error';
+import { VimState } from '../../state/vimState';
+import { configuration } from '../../configuration/configuration';
+import { decoration } from '../../configuration/decoration';
 
 /**
  * NOTE: for "pattern", undefined is different from an empty string.
@@ -226,7 +226,7 @@ export class SubstituteCommand extends node.CommandBase {
     ];
 
     vimState.editor.revealRange(new vscode.Range(line, 0, line, 0));
-    vimState.editor.setDecorations(Decoration.SearchHighlight, searchRanges);
+    vimState.editor.setDecorations(decoration.SearchHighlight, searchRanges);
 
     const prompt = `Replace with ${replacement} (${validSelections.join('/')})?`;
     await vscode.window.showInputBox(

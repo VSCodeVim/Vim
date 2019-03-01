@@ -4,13 +4,14 @@ import { Notation } from './notation';
 import { ValidatorResults } from './iconfigurationValidator';
 import { VsCodeContext } from '../util/vscode-context';
 import { configurationValidator } from './configurationValidator';
+import { decoration } from './decoration';
 import {
   IConfiguration,
   IKeyRemapping,
   IModeSpecificStrings,
   IAutoSwitchInputMethod,
   IDebugConfiguration,
-  Digraph,
+  ICamelCaseMotionConfiguration,
 } from './iconfiguration';
 
 const packagejson: {
@@ -115,6 +116,9 @@ class Configuration implements IConfiguration {
       });
     }
 
+    // decorations
+    decoration.load(this);
+
     for (const boundKey of this.boundKeyCombinations) {
       // By default, all key combinations are used
       let useKey = true;
@@ -169,6 +173,10 @@ class Configuration implements IConfiguration {
   smartcase = true;
 
   autoindent = true;
+
+  camelCaseMotion: ICamelCaseMotionConfiguration = {
+    enable: true,
+  };
 
   sneak = false;
   sneakUseIgnorecaseAndSmartcase = false;
@@ -226,7 +234,11 @@ class Configuration implements IConfiguration {
     loggingLevelForConsole: 'error',
   };
 
-  searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
+  @overlapSetting({
+    settingName: 'findMatchHighlightBackground',
+    defaultValue: 'rgba(150, 150, 255, 0.3)',
+  })
+  searchHighlightColor: string;
 
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
   tabstop: number;
