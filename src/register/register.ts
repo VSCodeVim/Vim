@@ -2,7 +2,7 @@ import { Clipboard } from './../util/clipboard';
 import {
   ActionDeleteChar,
   CommandRegister,
-  CommandYankFullLine
+  CommandYankFullLine,
 } from './../actions/commands/actions';
 import { DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
@@ -323,7 +323,10 @@ export class Register {
       (baseOperator instanceof DeleteOperator || baseOperator instanceof ActionDeleteChar) &&
       !(vimState.isRecordingMacro || vimState.isReplayingMacro)
     ) {
-      if (!content.toString().match(/\n/g)) {
+      if (
+        !content.toString().match(/\n/g) &&
+        vimState.currentRegisterMode !== RegisterMode.LineWise
+      ) {
         Register.registers['-'].text = content;
         Register.registers['-'].registerMode = RegisterMode.CharacterWise;
       } else {
