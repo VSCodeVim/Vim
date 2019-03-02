@@ -255,4 +255,14 @@ suite('register', () => {
       assert.fail(err);
     }
   });
+
+  test('Small deleteion is stored in small delete register', async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
+    await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '2', 'x', 'j', '"', '-', 'p']);
+
+    assertEqualLines(['st1', 'tteest2', 'test3']);
+  });
 });
