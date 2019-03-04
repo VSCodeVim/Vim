@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -381,8 +381,7 @@
         },
         "vim.searchHighlightColor": {
           "type": "string",
-          "description": "Color of the search highlight.",
-          "default": "rgba(150, 150, 255, 0.3)"
+          "description": "Color of the search highlight."
         },
         "vim.useSystemClipboard": {
           "type": "boolean",
@@ -716,22 +715,22 @@
     "@types/diff-match-patch": "1.0.32",
     "@types/lodash": "4.14.121",
     "@types/mocha": "5.2.5",
-    "@types/node": "10.12.25",
-    "@types/sinon": "7.0.5",
+    "@types/node": "10.12.27",
+    "@types/sinon": "7.0.8",
     "gulp": "4.0.0",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",
-    "gulp-sourcemaps": "2.6.4",
+    "gulp-sourcemaps": "2.6.5",
     "gulp-tag-version": "1.3.1",
-    "gulp-tslint": "8.1.3",
+    "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.0",
     "minimist": "1.2.0",
-    "mocha": "5.2.0",
+    "mocha": "6.0.2",
     "plugin-error": "1.0.1",
     "prettier": "1.16.4",
-    "sinon": "7.2.3",
-    "tslint": "5.12.1",
-    "typescript": "3.3.3",
-    "vscode": "1.1.29"
+    "sinon": "7.2.5",
+    "tslint": "5.13.1",
+    "typescript": "3.3.3333",
+    "vscode": "1.1.30"
   }
 }
