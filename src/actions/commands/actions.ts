@@ -671,7 +671,6 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
 
     let currentLine = vimState.cursorStopPosition.line;
 
-    const endLine = TextEditor.getLineCount() - 1;
     let firstLine = editor.visibleRanges[0].start.line;
     let timesToRepeat = vimState.recordedState.count || 1;
     let lineOffset = (currentLine - firstLine) * timesToRepeat;
@@ -720,6 +719,12 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
 
     if (firstLine === 0) {
       let newPosition = currentLine - timesToRepeat * Math.floor((lastLine - firstLine) / 2);
+      // If the file has 20 lines and the editor window has 30 lines or more, then
+      // scrolling to beginning is the best option. Workaround since getting amount
+      // of lines visible if the file has less lines than the editor has is not possible.
+      if (currentLine - firstLine <= 20) {
+        newPosition = -1;
+      }
       if (newPosition >= 0) {
         vimState.cursorStopPosition = new Position(newPosition, startColumn);
       } else {
