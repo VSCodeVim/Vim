@@ -263,7 +263,6 @@ suite('register', () => {
     Register.put('', modeHandler.vimState);
 
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
-
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '2', 'x', 'j', '"', '-', 'p']);
 
     assertEqualLines(['st1', 'tteest2', 'test3']);
@@ -276,7 +275,6 @@ suite('register', () => {
     Register.put('', modeHandler.vimState);
 
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
-
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', '<Del>', 'j', '"', '-', 'p']);
 
     assertEqualLines(['est1', 'ttest2', 'test3']);
@@ -289,7 +287,6 @@ suite('register', () => {
     Register.put('', modeHandler.vimState);
 
     await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
-
     await modeHandler.handleMultipleKeyEvents([
       '<Esc>',
       'g',
