@@ -256,7 +256,7 @@ suite('register', () => {
     }
   });
 
-  test('Small deleteion using x is stored in small delete register', async () => {
+  test('Small deletion using x is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
     modeHandler.vimState.registerName = '-';
@@ -268,7 +268,7 @@ suite('register', () => {
     assertEqualLines(['st1', 'tteest2', 'test3']);
   });
 
-  test('Small deleteion using x is stored in small delete register', async () => {
+  test('Small deletion using Del is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
     modeHandler.vimState.registerName = '-';
@@ -280,7 +280,7 @@ suite('register', () => {
     assertEqualLines(['est1', 'ttest2', 'test3']);
   });
 
-  test('Small deleteion using X is stored in small delete register', async () => {
+  test('Small deletion using X is stored in small delete register', async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 
     modeHandler.vimState.registerName = '-';
