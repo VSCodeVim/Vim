@@ -1,6 +1,8 @@
 import { Clipboard } from './../util/clipboard';
 import {
   ActionDeleteChar,
+  ActionDeleteCharWithDeleteKey,
+  ActionDeleteLastChar,
   CommandRegister,
   CommandYankFullLine,
 } from './../actions/commands/actions';
@@ -320,7 +322,10 @@ export class Register {
         Register.registers['0'].registerMode = vimState.effectiveRegisterMode;
       }
     } else if (
-      (baseOperator instanceof DeleteOperator || baseOperator instanceof ActionDeleteChar) &&
+      (baseOperator instanceof DeleteOperator ||
+        baseOperator instanceof ActionDeleteChar ||
+        baseOperator instanceof ActionDeleteLastChar ||
+        baseOperator instanceof ActionDeleteCharWithDeleteKey) &&
       !(vimState.isRecordingMacro || vimState.isReplayingMacro)
     ) {
       if (
