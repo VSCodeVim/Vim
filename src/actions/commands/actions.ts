@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import { RecordedState } from '../../state/recordedState';
 import { ReplaceState } from '../../state/replaceState';
@@ -1887,52 +1889,58 @@ class CommandTabInCommandline extends BaseCommand {
     return this.keysPressed[0] === '\n';
   }
 
+  private autoComplete(completionItems: any, vimState: VimState) {
+    if (
+      commandLine.lastKeyPressed === '<tab>' &&
+      commandLine.autoCompleteIndex < completionItems.length
+    ) {
+      commandLine.autoCompleteIndex += 1;
+    } else if (/ /g.test(vimState.currentCommandlineText)) {
+      var search = <RegExpExecArray>/(?:.* .*\/|.* )(.*)/g.exec(vimState.currentCommandlineText);
+      commandLine.autoCompleteText = search[1];
+      commandLine.autoCompleteIndex = 0;
+    } else if (commandLine.lastKeyPressed !== '<tab>') {
+      commandLine.autoCompleteText = vimState.currentCommandlineText;
+      commandLine.autoCompleteIndex = 0;
+    }
+
+    completionItems = completionItems.filter(completionItem =>
+      completionItem.startsWith(commandLine.autoCompleteText)
+    );
+    if (commandLine.autoCompleteIndex >= completionItems.length) {
+      commandLine.autoCompleteIndex = 0;
+    }
+    var result = completionItems[commandLine.autoCompleteIndex];
+    if (result === vimState.currentCommandlineText && completionItems.length > 1) {
+      commandLine.autoCompleteIndex += 1;
+      result = completionItems[commandLine.autoCompleteIndex];
+    }
+    if (result !== undefined && !/ /g.test(vimState.currentCommandlineText)) {
+      vimState.currentCommandlineText = result;
+      vimState.statusBarCursorCharacterPos = result.length;
+    } else if (result !== undefined) {
+      var searchArray = <RegExpExecArray>/(.* .*\/|.* )/g.exec(vimState.currentCommandlineText);
+      vimState.currentCommandlineText = searchArray[0] + result;
+      vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
+    }
+    return vimState;
+  }
+
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
-    if (commandLine.lastKeyPressed !== ' ') {
+
+    if (!/ /g.test(vimState.currentCommandlineText)) {
       // Command completion
       var commands = Object.keys(commandParsers).sort();
-      if (
-        commandLine.lastKeyPressed === '<tab>' &&
-        commandLine.autoCompleteIndex < commands.length
-      ) {
-        commandLine.autoCompleteIndex += 1;
-      } else if (commandLine.lastKeyPressed !== '<tab>') {
-        commandLine.autoCompleteText = vimState.currentCommandlineText;
-        commandLine.autoCompleteIndex = 0;
-      }
-      commands = commands.filter(cmd => cmd.startsWith(commandLine.autoCompleteText));
-      if (commandLine.autoCompleteIndex >= commands.length) {
-        commandLine.autoCompleteIndex = 0;
-      }
-      var command = commands[commandLine.autoCompleteIndex];
-      if (command === vimState.currentCommandlineText && commands.length > 1) {
-        commandLine.autoCompleteIndex += 1;
-        command = commands[commandLine.autoCompleteIndex];
-      }
-      if (command !== undefined && !/ /g.test(vimState.currentCommandlineText)) {
-        vimState.currentCommandlineText = command;
-        vimState.statusBarCursorCharacterPos = command.length;
-      }
+      vimState = this.autoComplete(commands, vimState);
     } else {
-      // File Completion need to add a plugin for getting/searching the files
-      var path = vscode.window.activeTextEditor
-        ? vscode.window.activeTextEditor.document.uri
-        : vscode.Uri.parse('/');
-      var file =
-        vscode.workspace.getWorkspaceFolder(path) !== undefined
-          ? vscode.workspace.getWorkspaceFolder(path)!.uri
-          : vscode.env.appRoot;
-      if (file !== undefined) {
-        var patt = new vscode.RelativePattern(
-          <string>file,
-          commandLine.autoCompleteText.replace(/^.* /, '') + '*'
-        );
-        console.log(patt);
-        vscode.workspace.findFiles(patt).then(function(value) {
-          console.log(value);
-        });
-      }
+      // File Completion
+      let completeFiles: fs.Dirent[];
+      var search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
+      var pathrel = search ? './' + search[1] : './';
+      completeFiles = fs.readdirSync(pathrel, { withFileTypes: true });
+
+      vimState = this.autoComplete(completeFiles, vimState);
     }
 
     commandLine.lastKeyPressed = key;
