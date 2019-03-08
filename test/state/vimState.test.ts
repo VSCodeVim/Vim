@@ -17,10 +17,7 @@ suite('VimState', () => {
     const vimState = new VimState(vscode.window.activeTextEditor!);
     const cursorStart = new Position(0, 0);
     const cursorStop = new Position(0, 1);
-    const initialCursors = [
-      new Range(cursorStart, cursorStop),
-      new Range(cursorStart, cursorStop)
-    ];
+    const initialCursors = [new Range(cursorStart, cursorStop), new Range(cursorStart, cursorStop)];
 
     // test
     vimState.cursors = initialCursors;
@@ -36,7 +33,7 @@ suite('VimState', () => {
     const cursorStop = new Position(0, 1);
     const initialCursors = [
       new Range(cursorStart, cursorStop),
-      new Range(new Position(1, 0), new Position(1, 1))
+      new Range(new Position(1, 0), new Position(1, 1)),
     ];
 
     // test
