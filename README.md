@@ -17,7 +17,6 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
 - [Installation](#-installation)
-  - [Vim Compatibility](#vim-compatibility)
   - [Mac setup](#mac)
   - [Windows setup](#windows)
   - [Linux setup](#linux-setup)
