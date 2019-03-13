@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 import untildify = require('untildify');
 import { Logger } from '../../util/logger';
 
-const doesFileExist = async (path) => fs.existsSync(path);
+const doesFileExist = async p => fs.existsSync(p);
 
 export enum FilePosition {
   NewWindowVerticalSplit,
