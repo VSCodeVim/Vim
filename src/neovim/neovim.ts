@@ -7,7 +7,7 @@ import { TextEditor } from '../textEditor';
 import { VimState } from './../state/vimState';
 import { configuration } from '../configuration/configuration';
 import { dirname } from 'path';
-import { exists } from 'fs';
+import { exists, existsSync } from 'fs';
 import { spawn, ChildProcess } from 'child_process';
 import { attach, Neovim } from 'neovim';
 
@@ -82,7 +82,7 @@ export class NeovimWrapper implements vscode.Disposable {
   private async startNeovim() {
     this.logger.debug('Spawning Neovim process...');
     let dir = dirname(vscode.window.activeTextEditor!.document.uri.fsPath);
-    if (!(await util.promisify(exists)(dir))) {
+    if (!existsSync(dir)) {
       dir = __dirname;
     }
     this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-i', 'NONE', '-n', '--embed'], {

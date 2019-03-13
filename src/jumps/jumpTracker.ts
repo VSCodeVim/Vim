@@ -1,4 +1,4 @@
-import { exists } from 'fs';
+import { exists, existsSync } from 'fs';
 import * as util from 'util';
 import * as vscode from 'vscode';
 
@@ -120,7 +120,7 @@ export class JumpTracker {
     if (jump.editor) {
       // Open jump file from stored editor
       await vscode.window.showTextDocument(jump.editor.document);
-    } else if (await util.promisify(exists)(jump.fileName)) {
+    } else if (existsSync(jump.fileName)) {
       // Open jump file from disk
       await new FileCommand({
         name: jump.fileName,
