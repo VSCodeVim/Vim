@@ -524,10 +524,10 @@ Since the list is too long, now we just put those already supported options here
 | ------------------------- | ----------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | :white_check_mark: :star: | :e[dit] {file}    | Edit {file}.                                                            | We will open file in a new Tab of current Grouped Editor instead of opening in current tab.                            |
 | :white_check_mark: :star: | &lt;ctrl-w&gt; hl | Switching between windows.                                              | As we don't have the concept of Window in VS Code, we are mapping these commands to switching between Grouped Editors. |
-| :white_check_mark:        | :sp {file}        | Split current window in two.                                            | VS Code doesn't support split Window horizontally.                                                                     |
-| :white_check_mark: :star: | :vsp {file}       | Split vertically current window in two.                                 | VS Code only supports three vertical window at most and that's the limitation of this command.                         |
-| :white_check_mark:        | :new              | Create a new window horizontally and start editing an empty file in it. | VS Code doesn't support split Window horizontally.                                                                     |
-| :white_check_mark: :star: | :vne[w]           | Create a new window vertically and start editing an empty file in it.   | VS Code only supports three vertical window at most and that's the limitation of this command.                         |
+| :white_check_mark:        | :sp {file}        | Split current window in two.                                            |                                                                                                                        |
+| :white_check_mark: :star: | :vsp {file}       | Split vertically current window in two.                                 |                                                                                                                        |
+| :white_check_mark:        | :new              | Create a new window horizontally and start editing an empty file in it. |                                                                                                                        |
+| :white_check_mark: :star: | :vne[w]           | Create a new window vertically and start editing an empty file in it.   |                                                                                                                        |
 
 ## Tabs
 

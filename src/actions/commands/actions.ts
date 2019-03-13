@@ -3211,7 +3211,7 @@ class CommandTabPrevious extends BaseTabCommand {
 }
 
 @RegisterAction
-class ActionDeleteChar extends BaseCommand {
+export class ActionDeleteChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['x'];
   canBeRepeatedWithDot = true;
@@ -3237,7 +3237,7 @@ class ActionDeleteChar extends BaseCommand {
 }
 
 @RegisterAction
-class ActionDeleteCharWithDeleteKey extends BaseCommand {
+export class ActionDeleteCharWithDeleteKey extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['<Del>'];
   runsOnceForEachCountPrefix = true;
@@ -3259,7 +3259,7 @@ class ActionDeleteCharWithDeleteKey extends BaseCommand {
 }
 
 @RegisterAction
-class ActionDeleteLastChar extends BaseCommand {
+export class ActionDeleteLastChar extends BaseCommand {
   modes = [ModeName.Normal];
   keys = ['X'];
   canBeRepeatedWithDot = true;

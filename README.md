@@ -17,7 +17,6 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
 - [Installation](#-installation)
-  - [Vim Compatibility](#vim-compatibility)
   - [Mac setup](#mac)
   - [Windows setup](#windows)
   - [Linux setup](#linux-setup)
@@ -495,7 +494,7 @@ Based on [vim-sneak](https://github.com/justinmk/vim-sneak), it allows for jumpi
 | Setting                            | Description                                                 | Type    | Default Value |
 | ---------------------------------- | ----------------------------------------------------------- | ------- | ------------- |
 | vim.sneak                          | Enable/disable vim-sneak                                    | Boolean | false         |
-| vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking | Boolean | true          |
+| vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking | Boolean | false         |
 
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
