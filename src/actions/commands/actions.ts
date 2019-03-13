@@ -1937,7 +1937,13 @@ class CommandTabInCommandline extends BaseCommand {
       // File Completion
       let completeFiles: fs.Dirent[];
       var search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
-      var pathrel = search ? './' + search[1] : './';
+
+      let editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
+
+      var basePath = path.dirname(editorFilePath);
+
+      var pathrel = search ? basePath + search[1] : basePath;
+
       completeFiles = fs.readdirSync(pathrel, { withFileTypes: true });
 
       vimState = this.autoComplete(completeFiles, vimState);
