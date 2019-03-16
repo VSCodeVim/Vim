@@ -17,9 +17,8 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
 - [Installation](#-installation)
-  - [Vim Compatibility](#vim-compatibility)
-  - [Mac setup](#mac-setup)
-  - [Windows setup](#windows-setup)
+  - [Mac setup](#mac)
+  - [Windows setup](#windows)
   - [Linux setup](#linux-setup)
 - [Settings](#%EF%B8%8F-settings)
   - [VSCodeVim settings](#vscodevim-settings)
@@ -495,7 +494,7 @@ Based on [vim-sneak](https://github.com/justinmk/vim-sneak), it allows for jumpi
 | Setting                            | Description                                                 | Type    | Default Value |
 | ---------------------------------- | ----------------------------------------------------------- | ------- | ------------- |
 | vim.sneak                          | Enable/disable vim-sneak                                    | Boolean | false         |
-| vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking | Boolean | true          |
+| vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking | Boolean | false         |
 
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
@@ -607,7 +606,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 - Key repeat doesn't work
 
-  Are you on a Mac? Did you go through our [mac-setup](#mac-setup) instructions?
+  Are you on a Mac? Did you go through our [mac-setup](#mac) instructions?
 
 - There are annoying intellisense/notifications/popups that I can't close with `<esc>`! Or I'm in a snippet and I want to close intellisense
 
