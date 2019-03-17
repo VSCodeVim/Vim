@@ -713,7 +713,7 @@
   "devDependencies": {
     "@types/diff": "4.0.1",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.122",
+    "@types/lodash": "4.14.123",
     "@types/mocha": "5.2.5",
     "@types/node": "10.12.27",
     "@types/sinon": "7.0.10",
