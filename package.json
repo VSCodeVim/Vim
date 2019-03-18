@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -383,6 +383,21 @@
           "type": "string",
           "description": "Color of the search highlight."
         },
+        "vim.highlightedyank.enable": {
+          "type": "boolean",
+          "description": "Enable highlighting when yanking.",
+          "default": false
+        },
+        "vim.highlightedyank.color": {
+          "type": "string",
+          "description": "Color of the yank highlight.",
+          "default": "rgba(250, 240, 170, 0.5)"
+        },
+        "vim.highlightedyank.duration": {
+          "type": "number",
+          "description": "Duration in milliseconds of the yank highlight.",
+          "default": 200
+        },
         "vim.useSystemClipboard": {
           "type": "boolean",
           "description": "Use system clipboard for unnamed register.",
@@ -713,23 +728,23 @@
   "devDependencies": {
     "@types/diff": "4.0.1",
     "@types/diff-match-patch": "1.0.32",
-    "@types/lodash": "4.14.122",
+    "@types/lodash": "4.14.123",
     "@types/mocha": "5.2.5",
     "@types/node": "10.12.27",
-    "@types/sinon": "7.0.9",
+    "@types/sinon": "7.0.10",
     "gulp": "4.0.0",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",
     "gulp-sourcemaps": "2.6.5",
     "gulp-tag-version": "1.3.1",
     "gulp-tslint": "8.1.4",
-    "gulp-typescript": "5.0.0",
+    "gulp-typescript": "5.0.1",
     "minimist": "1.2.0",
     "mocha": "6.0.2",
     "plugin-error": "1.0.1",
     "prettier": "1.16.4",
     "sinon": "7.2.7",
-    "tslint": "5.13.1",
+    "tslint": "5.14.0",
     "typescript": "3.3.3333",
     "vscode": "1.1.30"
   }

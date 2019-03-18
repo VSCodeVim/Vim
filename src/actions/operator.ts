@@ -11,6 +11,7 @@ import { BaseAction, RegisterAction } from './base';
 import { CommandNumber } from './commands/actions';
 import { TextObjectMovement } from './textobject';
 import { ReportLinesChanged, ReportLinesYanked } from '../util/statusBarTextUtils';
+import { IHighlightedYankConfiguration } from '../configuration/iconfiguration';
 
 export class BaseOperator extends BaseAction {
   constructor(multicursorIndex?: number) {
@@ -100,6 +101,19 @@ export class BaseOperator extends BaseAction {
       position.getLineBegin(),
       position.getDownByCount(Math.max(0, count - 1)).getLineEnd()
     );
+  }
+
+  public highlightYankedRanges(vimState: VimState, ranges: vscode.Range[]) {
+    if (!configuration.highlightedyank.enable) {
+      return;
+    }
+
+    const yankDecoration = vscode.window.createTextEditorDecorationType({
+      backgroundColor: configuration.highlightedyank.color,
+    });
+
+    vimState.editor.setDecorations(yankDecoration, ranges);
+    setTimeout(() => yankDecoration.dispose(), configuration.highlightedyank.duration);
   }
 }
 
@@ -268,7 +282,8 @@ export class YankOperator extends BaseOperator {
       extendedEnd = extendedEnd.getLineEnd();
     }
 
-    let text = TextEditor.getText(new vscode.Range(start, extendedEnd));
+    const range = new vscode.Range(start, extendedEnd);
+    let text = TextEditor.getText(range);
 
     // If we selected the newline character, add it as well.
     if (
@@ -277,6 +292,8 @@ export class YankOperator extends BaseOperator {
     ) {
       text = text + '\n';
     }
+
+    this.highlightYankedRanges(vimState, [range]);
 
     Register.put(text, vimState, this.multicursorIndex);
 
@@ -648,12 +665,14 @@ export class YankVisualBlockMode extends BaseOperator {
     return false;
   }
 
-  public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
+  public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
     let toCopy: string = '';
+    const ranges: vscode.Range[] = [];
 
-    const isMultiline = start.line !== end.line;
+    const isMultiline = startPos.line !== endPos.line;
 
-    for (const { line } of Position.IterateLine(vimState)) {
+    for (const { line, start, end } of Position.IterateLine(vimState)) {
+      ranges.push(new vscode.Range(start, end));
       if (isMultiline) {
         toCopy += line + '\n';
       } else {
@@ -663,16 +682,18 @@ export class YankVisualBlockMode extends BaseOperator {
 
     vimState.currentRegisterMode = RegisterMode.BlockWise;
 
+    this.highlightYankedRanges(vimState, ranges);
+
     Register.put(toCopy, vimState, this.multicursorIndex);
 
-    vimState.historyTracker.addMark(start, '<');
-    vimState.historyTracker.addMark(end, '>');
+    vimState.historyTracker.addMark(startPos, '<');
+    vimState.historyTracker.addMark(endPos, '>');
 
     const numLinesYanked = toCopy.split('\n').length;
     ReportLinesYanked(numLinesYanked, vimState);
 
     await vimState.setCurrentMode(ModeName.Normal);
-    vimState.cursorStopPosition = start;
+    vimState.cursorStopPosition = startPos;
     return vimState;
   }
 }
