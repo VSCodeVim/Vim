@@ -48,6 +48,7 @@ export class Register {
     '-': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '/': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '%': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
+    ':': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     _: { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '0': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '1': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },

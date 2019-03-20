@@ -7,6 +7,7 @@ import { StatusBar } from '../statusBar';
 import { VimError, ErrorCode } from '../error';
 import { VimState } from '../state/vimState';
 import { configuration } from '../configuration/configuration';
+import { Register } from '../register/register';
 
 class CommandLine {
   private _history: CommandLineHistory;
@@ -55,6 +56,10 @@ class CommandLine {
 
     this._history.add(command);
     this._commandLineHistoryIndex = this._history.get().length;
+
+    if (!command.startsWith('reg')) {
+      Register.putByKey(command, ':', undefined, true);
+    }
 
     try {
       const cmd = parser.parse(command);

@@ -358,19 +358,32 @@ suite('register', () => {
     assert.equal((await Register.getByKey('/')).text, 'Wake');
   });
 
+  test('Command register (:) is set by command line', async () => {
+    const command = '%s/old/new/g';
+    await modeHandler.handleMultipleKeyEvents((':' + command + '\n').split(''));
+
+    // :reg should not update the command register
+    await modeHandler.handleMultipleKeyEvents(':reg\n'.split(''));
+
+    assert.equal((await Register.getByKey(':')).text, command);
+  });
+
   test('Read-only registers cannot be written to', async () => {
     await modeHandler.handleMultipleKeyEvents('iShould not be copied'.split('').concat(['<Esc>']));
 
     Register.putByKey('Expected for /', '/', undefined, true);
     Register.putByKey('Expected for .', '.', undefined, true);
     Register.putByKey('Expected for %', '%', undefined, true);
+    Register.putByKey('Expected for :', ':', undefined, true);
 
     await modeHandler.handleMultipleKeyEvents('"/yy'.split(''));
     await modeHandler.handleMultipleKeyEvents('".yy'.split(''));
     await modeHandler.handleMultipleKeyEvents('"%yy'.split(''));
+    await modeHandler.handleMultipleKeyEvents('":yy'.split(''));
 
     assert.equal((await Register.getByKey('/')).text, 'Expected for /');
     assert.equal((await Register.getByKey('.')).text, 'Expected for .');
     assert.equal((await Register.getByKey('%')).text, 'Expected for %');
+    assert.equal((await Register.getByKey(':')).text, 'Expected for :');
   });
 });
