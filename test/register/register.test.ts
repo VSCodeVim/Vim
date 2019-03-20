@@ -303,4 +303,58 @@ suite('register', () => {
 
     assertEqualLines(['st1', 'tteest2', 'test3']);
   });
+
+  test('Search register (/) is set by forward search', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0'])
+    );
+
+    // Register changed by forward search
+    await modeHandler.handleMultipleKeyEvents('/katu\n'.split(''));
+    assert.equal((await Register.getByKey('/')).text, 'katu');
+
+    // Register changed even if search doesn't exist
+    await modeHandler.handleMultipleKeyEvents('0/notthere\n'.split(''));
+    assert.equal((await Register.getByKey('/')).text, 'notthere');
+
+    // Not changed if search is canceled
+    await modeHandler.handleMultipleKeyEvents('0/Alaska'.split('').concat(['<Esc>']));
+    assert.equal((await Register.getByKey('/')).text, 'notthere');
+  });
+
+  test('Search register (/) is set by backward search', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '$'])
+    );
+
+    // Register changed by forward search
+    await modeHandler.handleMultipleKeyEvents('?katu\n'.split(''));
+    assert.equal((await Register.getByKey('/')).text, 'katu');
+
+    // Register changed even if search doesn't exist
+    await modeHandler.handleMultipleKeyEvents('$?notthere\n'.split(''));
+    assert.equal((await Register.getByKey('/')).text, 'notthere');
+
+    // Not changed if search is canceled
+    await modeHandler.handleMultipleKeyEvents('$?Alaska'.split('').concat(['<Esc>']));
+    assert.equal((await Register.getByKey('/')).text, 'notthere');
+  });
+
+  test('Search register (/) is set by star search', async () => {
+    await modeHandler.handleMultipleKeyEvents(
+      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0'])
+    );
+
+    await modeHandler.handleKeyEvent('*');
+    assert.equal((await Register.getByKey('/')).text, '\\bWake\\b');
+
+    await modeHandler.handleMultipleKeyEvents(['g', '*']);
+    assert.equal((await Register.getByKey('/')).text, 'Wake');
+
+    await modeHandler.handleKeyEvent('#');
+    assert.equal((await Register.getByKey('/')).text, '\\bWake\\b');
+
+    await modeHandler.handleMultipleKeyEvents(['g', '#']);
+    assert.equal((await Register.getByKey('/')).text, 'Wake');
+  });
 });
