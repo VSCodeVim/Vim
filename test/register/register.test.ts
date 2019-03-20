@@ -363,11 +363,14 @@ suite('register', () => {
 
     Register.putByKey('Expected for /', '/', undefined, true);
     Register.putByKey('Expected for .', '.', undefined, true);
+    Register.putByKey('Expected for %', '%', undefined, true);
 
     await modeHandler.handleMultipleKeyEvents('"/yy'.split(''));
     await modeHandler.handleMultipleKeyEvents('".yy'.split(''));
+    await modeHandler.handleMultipleKeyEvents('"%yy'.split(''));
 
     assert.equal((await Register.getByKey('/')).text, 'Expected for /');
     assert.equal((await Register.getByKey('.')).text, 'Expected for .');
+    assert.equal((await Register.getByKey('%')).text, 'Expected for %');
   });
 });
