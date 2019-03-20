@@ -35,11 +35,10 @@ export class Register {
   /**
    * The '"' is the unnamed register.
    * The '*' and '+' are special registers for accessing the system clipboard.
-   * TODO: Read-Only registers
-   *  '.' register has the last inserted text.
-   *  '%' register has the current file path.
-   *  ':' is the most recently executed command.
-   *  '#' is the name of last edited file. (low priority)
+   * The '.' register has the last inserted text.
+   * The '%' register has the current file path.
+   * The ':' is the most recently executed command.
+   * The '#' is the name of last edited file. (low priority)
    */
   private static registers: { [key: string]: IRegisterContent } = {
     '"': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
@@ -89,7 +88,7 @@ export class Register {
       throw new Error(`Invalid register ${register}`);
     }
 
-    if (Register.isBlackHoleRegister(register)) {
+    if (Register.isBlackHoleRegister(register) || Register.isReadOnlyRegister(register)) {
       return;
     }
 
@@ -115,6 +114,10 @@ export class Register {
   private static isClipboardRegister(registerName: string): boolean {
     const register = Register.registers[registerName];
     return register && register.isClipboardRegister;
+  }
+
+  private static isReadOnlyRegister(registerName: string): boolean {
+    return ['.', '%', ':', '#', '/'].includes(registerName);
   }
 
   private static isValidLowercaseRegister(register: string): boolean {
@@ -284,7 +287,8 @@ export class Register {
   public static putByKey(
     content: RegisterContent,
     register = '"',
-    registerMode = RegisterMode.AscertainFromCurrentMode
+    registerMode = RegisterMode.AscertainFromCurrentMode,
+    force = false
   ): void {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
@@ -295,6 +299,10 @@ export class Register {
     }
 
     if (Register.isBlackHoleRegister(register)) {
+      return;
+    }
+
+    if (Register.isReadOnlyRegister(register) && !force) {
       return;
     }
 

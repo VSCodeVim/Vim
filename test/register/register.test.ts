@@ -357,4 +357,17 @@ suite('register', () => {
     await modeHandler.handleMultipleKeyEvents(['g', '#']);
     assert.equal((await Register.getByKey('/')).text, 'Wake');
   });
+
+  test('Read-only registers cannot be written to', async () => {
+    await modeHandler.handleMultipleKeyEvents('iShould not be copied'.split('').concat(['<Esc>']));
+
+    Register.putByKey('Expected for /', '/', undefined, true);
+    Register.putByKey('Expected for .', '.', undefined, true);
+
+    await modeHandler.handleMultipleKeyEvents('"/yy'.split(''));
+    await modeHandler.handleMultipleKeyEvents('".yy'.split(''));
+
+    assert.equal((await Register.getByKey('/')).text, 'Expected for /');
+    assert.equal((await Register.getByKey('.')).text, 'Expected for .');
+  });
 });

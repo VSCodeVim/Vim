@@ -308,13 +308,9 @@ moving around:
 
 ## Copying and moving text
 
-Miscellanea:
-
-- We don't support read only registers.
-
-| Status             | Command          | Description                                            | Note                                  |
-| ------------------ | ---------------- | ------------------------------------------------------ | ------------------------------------- |
-| :warning:          | "{char}          | use register {char} for the next delete, yank, or put  | read only registers are not supported |
+| Status             | Command          | Description                                            |
+| ------------------ | ---------------- | ------------------------------------------------------ |
+| :white_check_mark: | "{char}          | use register {char} for the next delete, yank, or put  |
 | :white_check_mark: | "\*              | use register `*` to access system clipboard            |
 | :white_check_mark: | :reg             | show the contents of all registers                     |
 | :white_check_mark: | :reg {arg}       | show the contents of registers mentioned in {arg}      |
