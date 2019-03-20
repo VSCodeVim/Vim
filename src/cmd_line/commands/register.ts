@@ -42,7 +42,7 @@ export class RegisterCommand extends node.CommandBase {
     if (this.arguments.arg !== undefined && this.arguments.arg.length > 0) {
       await this.displayRegisterValue(this.arguments.arg);
     } else {
-      const currentRegisterKeys = Register.getKeys();
+      const currentRegisterKeys = Register.getKeys().filter(reg => reg !== '_');
       const registerKeyAndContent = new Array<any>();
 
       for (let registerKey of currentRegisterKeys) {
