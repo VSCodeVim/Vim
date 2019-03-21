@@ -390,7 +390,7 @@ export class FormatOperator extends BaseOperator {
 
 @RegisterAction
 export class UpperCaseOperator extends BaseOperator {
-  public keys = ['U'];
+  public keys = [['g', 'U'], ['U']];
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -408,13 +408,13 @@ export class UpperCaseOperator extends BaseOperator {
 
 @RegisterAction
 export class UpperCaseWithMotion extends UpperCaseOperator {
-  public keys = ['g', 'U'];
+  public keys = [['g', 'U']];
   public modes = [ModeName.Normal];
 }
 
 @RegisterAction
 class UpperCaseVisualBlockOperator extends BaseOperator {
-  public keys = ['U'];
+  public keys = [['g', 'U'], ['U']];
   public modes = [ModeName.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
@@ -435,7 +435,7 @@ class UpperCaseVisualBlockOperator extends BaseOperator {
 
 @RegisterAction
 export class LowerCaseOperator extends BaseOperator {
-  public keys = ['u'];
+  public keys = [['g', 'u'], ['u']];
   public modes = [ModeName.Visual, ModeName.VisualLine];
 
   public async run(vimState: VimState, start: Position, end: Position): Promise<VimState> {
@@ -453,13 +453,13 @@ export class LowerCaseOperator extends BaseOperator {
 
 @RegisterAction
 export class LowerCaseWithMotion extends LowerCaseOperator {
-  public keys = ['g', 'u'];
+  public keys = [['g', 'u']];
   public modes = [ModeName.Normal];
 }
 
 @RegisterAction
 class LowerCaseVisualBlockOperator extends BaseOperator {
-  public keys = ['u'];
+  public keys = [['g', 'u'], ['u']];
   public modes = [ModeName.VisualBlock];
 
   public async run(vimState: VimState, startPos: Position, endPos: Position): Promise<VimState> {
