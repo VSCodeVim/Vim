@@ -57,10 +57,10 @@ export class DocumentContentChangeAction extends BaseAction {
 
       if (contentChange.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
-        let linesEffected = contentChange.range.end.line - contentChange.range.start.line + 1;
+        let linesAffected = contentChange.range.end.line - contentChange.range.start.line + 1;
         let resultLines = contentChange.text.split('\n').length;
         originalLeftBoundary = originalLeftBoundary.with(
-          originalLeftBoundary.line + resultLines - linesEffected
+          originalLeftBoundary.line + resultLines - linesAffected
         );
         continue;
       }
