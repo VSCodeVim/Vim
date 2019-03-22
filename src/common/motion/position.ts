@@ -108,7 +108,7 @@ export class Position extends vscode.Position {
   constructor(line: number, character: number) {
     super(line, character);
 
-    this._nonWordCharRegex = this.makeWordRegex2(Position.NonWordCharacters);
+    this._nonWordCharRegex = this.makeUnicodeWordRegex(Position.NonWordCharacters);
     this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
     this._nonCamelCaseWordCharRegex = this.makeCamelCaseWordRegex(Position.NonWordCharacters);
     this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
@@ -885,8 +885,7 @@ export class Position extends vscode.Position {
     return result;
   }
 
-  // TODO(ajalab): rename
-  private makeWordRegex2(characterSet: string): RegExp {
+  private makeUnicodeWordRegex(characterSet: string): RegExp {
     const segments = [
       // ASCII word characters (in many cases 0-9A-Za-z_)
       // and non-word characters
