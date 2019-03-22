@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 import { RecordedState } from '../../state/recordedState';
@@ -1937,12 +1938,26 @@ class CommandTabInCommandline extends BaseCommand {
       // File Completion
       let completeFiles: fs.Dirent[];
       var search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
+      var searchString = search !== null ? search[1] : '';
 
       let editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
 
-      var basePath = path.dirname(editorFilePath);
+      let basePath = path.dirname(editorFilePath);
+      if (searchString.startsWith('/')) {
+        basePath = '/';
+      } else if (searchString.startsWith('~/')) {
+        basePath = os.homedir();
+        searchString = searchString.replace('~/', '');
+      } else if (searchString.startsWith('./')) {
+        basePath = path.dirname(editorFilePath);
+        searchString = searchString.replace('./', '');
+      } else if (searchString.startsWith('../')) {
+        basePath = path.dirname(editorFilePath) + '/';
+      } else {
+        basePath = path.dirname(editorFilePath);
+      }
 
-      var pathrel = search ? basePath + search[1] : basePath;
+      var pathrel = search ? basePath + searchString : basePath;
 
       completeFiles = fs.readdirSync(pathrel, { withFileTypes: true });
 
