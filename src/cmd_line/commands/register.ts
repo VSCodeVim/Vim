@@ -6,7 +6,7 @@ import { RecordedState } from '../../state/recordedState';
 import * as node from '../node';
 
 export interface IRegisterCommandArguments extends node.ICommandArgs {
-  arg?: string;
+  registers: string[];
 }
 export class RegisterCommand extends node.CommandBase {
   protected _arguments: IRegisterCommandArguments;
@@ -39,10 +39,14 @@ export class RegisterCommand extends node.CommandBase {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (this.arguments.arg !== undefined && this.arguments.arg.length > 0) {
-      await this.displayRegisterValue(this.arguments.arg);
+    if (this.arguments.registers.length === 1) {
+      await this.displayRegisterValue(this.arguments.registers[0]);
     } else {
-      const currentRegisterKeys = Register.getKeys().filter(reg => reg !== '_');
+      const currentRegisterKeys = Register.getKeys().filter(
+        reg =>
+          reg !== '_' &&
+          (this.arguments.registers.length === 0 || this.arguments.registers.includes(reg))
+      );
       const registerKeyAndContent = new Array<any>();
 
       for (let registerKey of currentRegisterKeys) {
