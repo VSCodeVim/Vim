@@ -15,6 +15,7 @@ import { parseWallCommandArgs } from './subparsers/wall';
 import { parseWriteCommandArgs } from './subparsers/write';
 import { parseWriteQuitCommandArgs } from './subparsers/writequit';
 import { parseWriteQuitAllCommandArgs } from './subparsers/writequitall';
+import { parseMarksCommandArgs } from './subparsers/marks';
 
 // maps command names to parsers for said commands.
 export const commandParsers = {
@@ -108,4 +109,6 @@ export const commandParsers = {
   d: parseDeleteRangeLinesCommandArgs,
 
   sort: parseSortCommandArgs,
+
+  marks: parseMarksCommandArgs,
 };
