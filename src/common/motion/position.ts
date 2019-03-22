@@ -888,8 +888,14 @@ export class Position extends vscode.Position {
   // TODO(ajalab): rename
   private makeWordRegex2(characterSet: string): RegExp {
     const segments = [
+      // ASCII word characters (in many cases 0-9A-Za-z_)
+      // and non-word characters
       ...this.makeAsciiWordSegments(characterSet),
+
+      // Unicode characters (punctuations, ideographs, ...)
       ...this.makeUnicodeWordSegments(),
+
+      // Other spelling characters (Greek, ...)
       '\\S+',
 
       '$^',
@@ -919,6 +925,7 @@ export class Position extends vscode.Position {
   }
 
   private makeUnicodeWordSegments(): string[] {
+    // Distinct categories of characters
     enum CharKind {
       Punctuation,
       Superscript,
@@ -931,7 +938,7 @@ export class Position extends vscode.Position {
     }
 
     // Imported from utf_class_buf in src/mbyte.c of Vim.
-    // Space characters are not listed here because they are covered by regex pattern '\s'.
+    // Spelling alphabets are not listed here since they are covered as non-white letters.
     // TODO(ajalab): add Emoji
     const codePointRanges: [[number, number], CharKind][] = [
       [[0x037e, 0x037e], CharKind.Punctuation], // Greek question mark
@@ -1015,7 +1022,6 @@ export class Position extends vscode.Position {
     }
     return fragments.map(patterns => `([${patterns.join('')}]+)`);
   }
-
 
   private getAllPositions(line: string, regex: RegExp): number[] {
     let positions: number[] = [];
