@@ -59,7 +59,7 @@ class DocumentChange {
   }
 }
 
-interface IMark {
+export interface IMark {
   name: string;
   position: Position;
   isUppercaseMark: boolean;
