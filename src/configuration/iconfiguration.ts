@@ -42,6 +42,23 @@ export interface IDebugConfiguration {
   loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 }
 
+export interface IHighlightedYankConfiguration {
+  /**
+   * Boolean indicating whether yank highlighting should be enabled.
+   */
+  enable: boolean;
+
+  /**
+   * Color of the yank highlight.
+   */
+  color: string;
+
+  /**
+   * Duration in milliseconds of the yank highlight.
+   */
+  duration: number;
+}
+
 export interface ICamelCaseMotionConfiguration {
   /**
    * Enable CamelCaseMotion plugin or not
@@ -184,6 +201,11 @@ export interface IConfiguration {
    * Color of search highlights.
    */
   searchHighlightColor: string;
+
+  /**
+   * Yank highlight settings.
+   */
+  highlightedyank: IHighlightedYankConfiguration;
 
   /**
    * Size of a tab character.
