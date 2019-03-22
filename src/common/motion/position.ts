@@ -890,6 +890,8 @@ export class Position extends vscode.Position {
     const segments = [
       ...this.makeAsciiWordSegments(characterSet),
       ...this.makeUnicodeWordSegments(),
+      '\\S+',
+
       '$^',
     ];
     const result = new RegExp(segments.join('|'), 'ug');
