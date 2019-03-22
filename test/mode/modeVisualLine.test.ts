@@ -58,15 +58,6 @@ suite('Mode Visual Line', () => {
     assertEqual(modeHandler.currentMode.name, ModeName.Normal);
   });
 
-  test('Can handle U', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'U']);
-
-    assertEqualLines(['One two three']);
-
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
-  });
-
   test('Can handle x across a selection', async () => {
     await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'x']);
@@ -107,24 +98,6 @@ suite('Mode Visual Line', () => {
     ]);
 
     assertEqualLines(['our']);
-  });
-
-  test('Can handle U across a selection', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'l', 'l', 'l', 'l', 'U']);
-
-    assertEqualLines(['ONE Two three']);
-
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
-  });
-
-  test('Can handle U across a selection in reverse order', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'w', 'v', 'h', 'h', 'U']);
-
-    assertEqualLines(['onE Two three']);
-
-    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
   });
 
   test('handles case where we go from selecting on right side to selecting on left side', async () => {

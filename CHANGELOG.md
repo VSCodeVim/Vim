@@ -1,5 +1,48 @@
 # Change Log
 
+## [v1.2.0](https://github.com/vscodevim/vim/tree/v1.2.0) (2019-03-17)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.1.0...v1.2.0)
+
+**Enhancements:**
+
+- The small delete register "- doesn't work [\#3492](https://github.com/VSCodeVim/Vim/issues/3492)
+- word/line highlight when yy or shift + \* is pressed [\#2991](https://github.com/VSCodeVim/Vim/issues/2991)
+
+**Closed issues:**
+
+- Extension causes high cpu load [\#3587](https://github.com/VSCodeVim/Vim/issues/3587)
+- Custom keybind breaks search [\#3558](https://github.com/VSCodeVim/Vim/issues/3558)
+- vim-auto-save [\#3550](https://github.com/VSCodeVim/Vim/issues/3550)
+- Extension causes high cpu load [\#3546](https://github.com/VSCodeVim/Vim/issues/3546)
+- Extension causes high cpu load [\#3533](https://github.com/VSCodeVim/Vim/issues/3533)
+- The extension don't work with Java Extension Pack [\#3526](https://github.com/VSCodeVim/Vim/issues/3526)
+- command 'toggleVim' not found. [\#3524](https://github.com/VSCodeVim/Vim/issues/3524)
+- Error when upgraded to 1.1.0 [\#3521](https://github.com/VSCodeVim/Vim/issues/3521)
+- TaskQueue: Error running task. Invalid regular expression: [\#3519](https://github.com/VSCodeVim/Vim/issues/3519)
+- Chinese i18n support? [\#3497](https://github.com/VSCodeVim/Vim/issues/3497)
+
+**Merged pull requests:**
+
+- Add yank highlighting \(REBASED\) [\#3593](https://github.com/VSCodeVim/Vim/pull/3593) ([epeli](https://github.com/epeli))
+- chore\(deps\): update dependency tslint to v5.14.0 [\#3586](https://github.com/VSCodeVim/Vim/pull/3586) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency gulp-typescript to v5.0.1 [\#3585](https://github.com/VSCodeVim/Vim/pull/3585) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/sinon to v7.0.10 [\#3583](https://github.com/VSCodeVim/Vim/pull/3583) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/lodash to v4.14.123 [\#3582](https://github.com/VSCodeVim/Vim/pull/3582) ([renovate[bot]](https://github.com/apps/renovate))
+- Fix TOC [\#3574](https://github.com/VSCodeVim/Vim/pull/3574) ([mtsmfm](https://github.com/mtsmfm))
+- chore\(deps\): update dependency @types/sinon to v7.0.9 [\#3568](https://github.com/VSCodeVim/Vim/pull/3568) ([renovate[bot]](https://github.com/apps/renovate))
+- Bump minimum VSCode version to 1.31.0 [\#3567](https://github.com/VSCodeVim/Vim/pull/3567) ([JKillian](https://github.com/JKillian))
+- docs: remove outdated notes on splits from roadmap [\#3564](https://github.com/VSCodeVim/Vim/pull/3564) ([JKillian](https://github.com/JKillian))
+- chore\(deps\): update dependency @types/lodash to v4.14.122 [\#3557](https://github.com/VSCodeVim/Vim/pull/3557) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency sinon to v7.2.7 [\#3554](https://github.com/VSCodeVim/Vim/pull/3554) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency sinon to v7.2.6 [\#3552](https://github.com/VSCodeVim/Vim/pull/3552) ([renovate[bot]](https://github.com/apps/renovate))
+- Add small deletions to small delete register [\#3544](https://github.com/VSCodeVim/Vim/pull/3544) ([rickythefox](https://github.com/rickythefox))
+- chore\(deps\): update dependency tslint to v5.13.1 [\#3541](https://github.com/VSCodeVim/Vim/pull/3541) ([renovate[bot]](https://github.com/apps/renovate))
+- Mod:change sneak sneakUseIgnorecaseAndSmartcase default value explana… [\#3540](https://github.com/VSCodeVim/Vim/pull/3540) ([duguanyue](https://github.com/duguanyue))
+- Fix links in README [\#3534](https://github.com/VSCodeVim/Vim/pull/3534) ([yorinasub17](https://github.com/yorinasub17))
+- chore\(deps\): update dependency mocha to v6.0.2 [\#3529](https://github.com/VSCodeVim/Vim/pull/3529) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/sinon to v7.0.8 [\#3528](https://github.com/VSCodeVim/Vim/pull/3528) ([renovate[bot]](https://github.com/apps/renovate))
+
 ## [v1.1.0](https://github.com/vscodevim/vim/tree/v1.1.0) (2019-02-24)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.0.8...v1.1.0)
@@ -21,7 +64,6 @@
 - Error when using the `\> motion [\#3452](https://github.com/VSCodeVim/Vim/issues/3452)
 - Show mark label like VIM in visual studio [\#3406](https://github.com/VSCodeVim/Vim/issues/3406)
 - :help inserts content into current file [\#3179](https://github.com/VSCodeVim/Vim/issues/3179)
-- FEATURE REQUEST: Add operator support for VSCodes new subword navigation [\#2808](https://github.com/VSCodeVim/Vim/issues/2808)
 
 **Merged pull requests:**
 

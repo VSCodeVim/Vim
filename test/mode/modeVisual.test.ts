@@ -1342,4 +1342,54 @@ suite('Mode Visual', () => {
       end: ['111', '222_|', ' ', '44_4', '555'],
     });
   });
+
+  suite('Can handle u/gu, U/gU', () => {
+    newTest({
+      title: 'U/gU on single character',
+      start: ['|one two three'],
+      keysPressed: 'vUwwvgU',
+      end: ['One two |Three'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'U/gU across a selection',
+      start: ['|one two three'],
+      keysPressed: 'vllllUwwvlgU',
+      end: ['ONE Two |THree'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'U/gU across a selection (reverse)',
+      start: ['|one two three'],
+      keysPressed: 'wvhhUwwvhhgU',
+      end: ['onE Tw|O Three'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'u/gu on single character',
+      start: ['|ONE TWO THREE'],
+      keysPressed: 'vuwwvgu',
+      end: ['oNE TWO |tHREE'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'u/gu across a selection',
+      start: ['|ONE TWO THREE'],
+      keysPressed: 'vlllluwwvlgu',
+      end: ['one tWO |thREE'],
+      endMode: ModeName.Normal,
+    });
+
+    newTest({
+      title: 'u/gu across a selection (reverse)',
+      start: ['|ONE TWO THREE'],
+      keysPressed: 'wvhhuwwvhhgu',
+      end: ['ONe tW|o tHREE'],
+      endMode: ModeName.Normal,
+    });
+  });
 });

@@ -1,5 +1,11 @@
 import { Clipboard } from './../util/clipboard';
-import { CommandRegister, CommandYankFullLine } from './../actions/commands/actions';
+import {
+  ActionDeleteChar,
+  ActionDeleteCharWithDeleteKey,
+  ActionDeleteLastChar,
+  CommandRegister,
+  CommandYankFullLine,
+} from './../actions/commands/actions';
 import { DeleteOperator, YankOperator } from './../actions/operator';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
@@ -40,6 +46,7 @@ export class Register {
     '.': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '*': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
     '+': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: true },
+    '-': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     _: { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '0': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
     '1': { text: '', registerMode: RegisterMode.CharacterWise, isClipboardRegister: false },
@@ -315,19 +322,30 @@ export class Register {
         Register.registers['0'].registerMode = vimState.effectiveRegisterMode;
       }
     } else if (
-      baseOperator instanceof DeleteOperator &&
+      (baseOperator instanceof DeleteOperator ||
+        baseOperator instanceof ActionDeleteChar ||
+        baseOperator instanceof ActionDeleteLastChar ||
+        baseOperator instanceof ActionDeleteCharWithDeleteKey) &&
       !(vimState.isRecordingMacro || vimState.isReplayingMacro)
     ) {
-      // shift 'delete-history' register
-      for (let index = 9; index > 1; index--) {
-        Register.registers[String(index)].text = Register.registers[String(index - 1)].text;
-        Register.registers[String(index)].registerMode =
-          Register.registers[String(index - 1)].registerMode;
-      }
+      if (
+        !content.toString().match(/\n/g) &&
+        vimState.currentRegisterMode !== RegisterMode.LineWise
+      ) {
+        Register.registers['-'].text = content;
+        Register.registers['-'].registerMode = RegisterMode.CharacterWise;
+      } else {
+        // shift 'delete-history' register
+        for (let index = 9; index > 1; index--) {
+          Register.registers[String(index)].text = Register.registers[String(index - 1)].text;
+          Register.registers[String(index)].registerMode =
+            Register.registers[String(index - 1)].registerMode;
+        }
 
-      // Paste last delete into register '1'
-      Register.registers['1'].text = content;
-      Register.registers['1'].registerMode = vimState.effectiveRegisterMode;
+        // Paste last delete into register '1'
+        Register.registers['1'].text = content;
+        Register.registers['1'].registerMode = vimState.effectiveRegisterMode;
+      }
     }
   }
 
