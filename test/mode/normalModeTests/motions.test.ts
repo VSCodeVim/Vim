@@ -381,6 +381,13 @@ suite('Motions in Normal Mode', () => {
   // });
 
   newTest({
+    title: 'cancelled search reverts to previous search state',
+    start: ['|one', 'two two', 'three three three'],
+    keysPressed: '/two\n/three<Esc>n',
+    end: ['one', 'two |two', 'three three three'],
+  });
+
+  newTest({
     title: 'maintains column position correctly',
     start: ['|one one one', 'two', 'three'],
     keysPressed: 'lllljj',

@@ -502,7 +502,6 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualLine,
     ModeName.VisualBlock,
     ModeName.Normal,
-    ModeName.SearchInProgressMode,
     ModeName.SurroundInputMode,
     ModeName.EasyMotionMode,
     ModeName.EasyMotionInputMode,
@@ -534,12 +533,6 @@ class CommandEsc extends BaseCommand {
       // a special case since runsOnceForEveryCursor is false.
 
       vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getLeft()));
-    }
-
-    if (vimState.currentMode === ModeName.SearchInProgressMode) {
-      if (vimState.globalState.searchState) {
-        vimState.cursorStopPosition = vimState.globalState.searchState.searchCursorStartPosition;
-      }
     }
 
     if (vimState.currentMode === ModeName.Normal && vimState.isMultiCursor) {
@@ -958,8 +951,18 @@ class CommandEscInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vimState.setCurrentMode(ModeName.Normal);
-    vimState.globalState.searchState = undefined;
+    const searchState = vimState.globalState.searchState!;
+
+    vimState.cursorStopPosition = searchState.searchCursorStartPosition;
+
+    const prevSearchList = vimState.globalState.searchStatePrevious;
+    if (prevSearchList) {
+      vimState.globalState.searchState = prevSearchList[prevSearchList.length - 1];
+    } else {
+      vimState.globalState.searchState = undefined;
+    }
+
+    await vimState.setCurrentMode(searchState.previousMode);
 
     return vimState;
   }
