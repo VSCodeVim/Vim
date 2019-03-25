@@ -664,7 +664,6 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
   }
   ```
 
-
 ## ❤️ Contributing
 
 This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
