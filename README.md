@@ -617,7 +617,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 - How can I use the commandline when in Zen mode or when the status bar is disabled?
 
-  This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in visual studio keybindings.json settings file.
+  This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in VS Code's keybindings.json settings file.
 
   ```json
   {
@@ -636,6 +636,34 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
     "when": "inZenMode && vim.mode != 'Insert'"
   }
   ```
+
+- How can I move the cursor by each display line with word wrapping?
+
+  If you have word wrap on and would like the cursor to enter each wrapped line when using <kbd>j</kbd>, <kbd>k</kbd>, <kbd>↓</kbd> or <kbd>↑</kbd>, set the following in VS Code's keybindings.json settings file ([other options exist](https://github.com/VSCodeVim/Vim/issues/2924#issuecomment-476121848) but they are slow):
+
+  ```json
+  {
+    "key": "up",
+    "command": "cursorUp",
+    "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+  },
+  {
+    "key": "down",
+    "command": "cursorDown",
+    "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+  },
+  {
+    "key": "k",
+    "command": "cursorUp",
+    "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode == 'Normal' && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+  },
+  {
+    "key": "j",
+    "command": "cursorDown",
+    "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode == 'Normal' && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+  }
+  ```
+
 
 ## ❤️ Contributing
 
