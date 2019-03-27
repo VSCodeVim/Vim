@@ -170,18 +170,28 @@ export async function activate(context: vscode.ExtensionContext) {
   registerEventListener(
     context,
     vscode.workspace.onDidCloseTextDocument,
-    async () => {
+    async closedDocument => {
       const documents = vscode.workspace.textDocuments;
 
       // Delete modehandler once all tabs of this document have been closed
       for (let editorIdentity of ModeHandlerMap.getKeys()) {
         const modeHandler = ModeHandlerMap.get(editorIdentity);
 
-        if (
-          modeHandler == null ||
-          modeHandler.vimState.editor === undefined ||
-          documents.indexOf(modeHandler.vimState.editor.document) === -1
-        ) {
+        let shouldDelete = false;
+
+        if (modeHandler == null || modeHandler.vimState.editor === undefined) {
+          shouldDelete = true;
+        } else {
+          const document = modeHandler.vimState.editor.document;
+          if (documents.indexOf(document) === -1) {
+            shouldDelete = true;
+            if (closedDocument === document) {
+              lastClosedModeHandler = modeHandler;
+            }
+          }
+        }
+
+        if (shouldDelete) {
           ModeHandlerMap.delete(editorIdentity);
         }
       }
