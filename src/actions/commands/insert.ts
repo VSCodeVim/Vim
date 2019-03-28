@@ -306,7 +306,14 @@ class CommandInsertDigraph extends BaseCommand {
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const digraph = this.keysPressed.slice(1, 3).join('');
-    let charCodes = (DefaultDigraphs[digraph] || configuration.digraphs[digraph])[1];
+    const reverseDigraph = digraph
+      .split('')
+      .reverse()
+      .join('');
+    let charCodes = (DefaultDigraphs[digraph] ||
+      DefaultDigraphs[reverseDigraph] ||
+      configuration.digraphs[digraph] ||
+      configuration.digraphs[reverseDigraph])[1];
     if (!(charCodes instanceof Array)) {
       charCodes = [charCodes];
     }
@@ -324,7 +331,16 @@ class CommandInsertDigraph extends BaseCommand {
       return false;
     }
     const chars = keysPressed.slice(1, 3).join('');
-    return chars in configuration.digraphs || chars in DefaultDigraphs;
+    const reverseChars = chars
+      .split('')
+      .reverse()
+      .join('');
+    return (
+      chars in configuration.digraphs ||
+      reverseChars in configuration.digraphs ||
+      chars in DefaultDigraphs ||
+      reverseChars in DefaultDigraphs
+    );
   }
 
   public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
@@ -332,8 +348,15 @@ class CommandInsertDigraph extends BaseCommand {
       return false;
     }
     const chars = keysPressed.slice(1, keysPressed.length).join('');
+    const reverseChars = chars
+      .split('')
+      .reverse()
+      .join('');
     if (chars.length > 0) {
-      const predicate = (digraph: string) => chars === digraph.substring(0, chars.length);
+      const predicate = (digraph: string) => {
+        const digraphChars = digraph.substring(0, chars.length);
+        return chars === digraphChars || reverseChars === digraphChars;
+      };
       const match =
         Object.keys(configuration.digraphs).find(predicate) ||
         Object.keys(DefaultDigraphs).find(predicate);
