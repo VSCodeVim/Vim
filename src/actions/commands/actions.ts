@@ -879,6 +879,11 @@ class CommandInsertInSearchMode extends BaseCommand {
 
     // handle special keys first
     if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
+      if (searchState.searchString.length === 0) {
+        return new CommandEscInSearchMode().exec(position, vimState);
+      }
+      searchState.searchString = searchState.searchString.slice(0, -1);
+
       if (vimState.statusBarCursorCharacterPos === 0) {
         return vimState;
       }
