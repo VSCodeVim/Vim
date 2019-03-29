@@ -11,6 +11,7 @@ import {
   IModeSpecificStrings,
   IAutoSwitchInputMethod,
   IDebugConfiguration,
+  IHighlightedYankConfiguration,
   ICamelCaseMotionConfiguration,
 } from './iconfiguration';
 
@@ -239,6 +240,12 @@ class Configuration implements IConfiguration {
     defaultValue: 'rgba(150, 150, 255, 0.3)',
   })
   searchHighlightColor: string;
+
+  highlightedyank: IHighlightedYankConfiguration = {
+    enable: false,
+    color: 'rgba(250, 240, 170, 0.5)',
+    duration: 200,
+  };
 
   @overlapSetting({ settingName: 'tabSize', defaultValue: 8 })
   tabstop: number;
