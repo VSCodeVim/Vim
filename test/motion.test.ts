@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-
 import { Position } from './../src/common/motion/position';
 import { TextEditor } from './../src/textEditor';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
@@ -350,6 +349,70 @@ suite('word motion', () => {
     let motion = new Position(6, 0).getFirstLineNonBlankChar();
     assert.equal(motion.line, 6);
     assert.equal(motion.character, 0);
+  });
+});
+
+suite('unicode word motion', () => {
+  let text: Array<string> = ['漢字ひらがなカタカナalphabets、いろいろな文字。', 'Καλημέρα κόσμε'];
+
+  suiteSetup(() => {
+    return setupWorkspace().then(() => {
+      return TextEditor.insert(text.join('\n'));
+    });
+  });
+
+  suiteTeardown(cleanUpWorkspace);
+
+  suite('word right', () => {
+    test('move cursor word right stops at different kind of character (ideograph -> hiragana)', () => {
+      let motion = new Position(0, 0).getWordRight();
+      assert.equal(motion.line, 0);
+      assert.equal(motion.character, 2);
+    });
+
+    test('move cursor word right stops at different kind of character (katakana -> ascii)', () => {
+      let motion = new Position(0, 7).getWordRight();
+      assert.equal(motion.line, 0);
+      assert.equal(motion.character, 10);
+    });
+
+    test('move cursor word right stops at different kind of chararacter (ascii -> punctuation)', () => {
+      let motion = new Position(0, 10).getWordRight();
+      assert.equal(motion.line, 0);
+      assert.equal(motion.character, 19);
+    });
+
+    test('move cursor word right on non-ascii text', () => {
+      let motion = new Position(1, 0).getWordRight();
+      assert.equal(motion.line, 1);
+      assert.equal(motion.character, 9);
+    });
+  });
+
+  suite('word left', () => {
+    test('move cursor word left across the different char kind', () => {
+      let motion = new Position(0, 2).getWordLeft();
+      assert.equal(motion.line, 0);
+      assert.equal(motion.character, 0);
+    });
+
+    test('move cursor word left within the same char kind', () => {
+      let motion = new Position(0, 5).getWordLeft();
+      assert.equal(motion.line, 0);
+      assert.equal(motion.character, 2);
+    });
+
+    test('move cursor word left across spaces on non-ascii text', () => {
+      let motion = new Position(1, 9).getWordLeft();
+      assert.equal(motion.line, 1);
+      assert.equal(motion.character, 0);
+    });
+
+    test('move cursor word left within word on non-ascii text', () => {
+      let motion = new Position(1, 11).getWordLeft();
+      assert.equal(motion.line, 1);
+      assert.equal(motion.character, 9);
+    });
   });
 });
 
