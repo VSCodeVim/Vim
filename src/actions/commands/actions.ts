@@ -1902,7 +1902,7 @@ class CommandTabInCommandline extends BaseCommand {
     ) {
       commandLine.autoCompleteIndex += 1;
     } else if (/ /g.test(vimState.currentCommandlineText)) {
-      var search = <RegExpExecArray>/(?:.* .*\/|.* )(.*)/g.exec(vimState.currentCommandlineText);
+      const search = <RegExpExecArray>/(?:.* .*\/|.* )(.*)/g.exec(vimState.currentCommandlineText);
       commandLine.autoCompleteText = search[1];
       commandLine.autoCompleteIndex = 0;
     } else if (commandLine.lastKeyPressed !== '<tab>') {
@@ -1916,7 +1916,7 @@ class CommandTabInCommandline extends BaseCommand {
     if (commandLine.autoCompleteIndex >= completionItems.length) {
       commandLine.autoCompleteIndex = 0;
     }
-    var result = completionItems[commandLine.autoCompleteIndex];
+    let result = completionItems[commandLine.autoCompleteIndex];
     if (result === vimState.currentCommandlineText && completionItems.length > 1) {
       commandLine.autoCompleteIndex += 1;
       result = completionItems[commandLine.autoCompleteIndex];
@@ -1925,7 +1925,7 @@ class CommandTabInCommandline extends BaseCommand {
       vimState.currentCommandlineText = result;
       vimState.statusBarCursorCharacterPos = result.length;
     } else if (result !== undefined) {
-      var searchArray = <RegExpExecArray>/(.* .*\/|.* )/g.exec(vimState.currentCommandlineText);
+      const searchArray = <RegExpExecArray>/(.* .*\/|.* )/g.exec(vimState.currentCommandlineText);
       vimState.currentCommandlineText = searchArray[0] + result;
       vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
     }
@@ -1937,15 +1937,15 @@ class CommandTabInCommandline extends BaseCommand {
 
     if (!/ /g.test(vimState.currentCommandlineText)) {
       // Command completion
-      var commands = Object.keys(commandParsers).sort();
+      const commands = Object.keys(commandParsers).sort();
       vimState = this.autoComplete(commands, vimState);
     } else {
       // File Completion
       let completeFiles: fs.Dirent[];
-      var search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
-      var searchString = search !== null ? search[1] : '';
+      const search = <RegExpExecArray>/.* (.*\/)/g.exec(vimState.currentCommandlineText);
+      let searchString = search !== null ? search[1] : '';
 
-      let editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
+      const editorFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
 
       let basePath = path.dirname(editorFilePath);
       if (searchString.startsWith('/')) {
@@ -1962,7 +1962,7 @@ class CommandTabInCommandline extends BaseCommand {
         basePath = path.dirname(editorFilePath);
       }
 
-      var pathrel = search ? basePath + searchString : basePath;
+      const pathrel = search ? basePath + searchString : basePath;
 
       completeFiles = fs.readdirSync(pathrel, { withFileTypes: true });
 
