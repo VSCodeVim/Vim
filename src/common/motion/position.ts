@@ -108,7 +108,7 @@ export class Position extends vscode.Position {
   constructor(line: number, character: number) {
     super(line, character);
 
-    this._nonWordCharRegex = this.makeWordRegex(Position.NonWordCharacters);
+    this._nonWordCharRegex = this.makeUnicodeWordRegex(Position.NonWordCharacters);
     this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
     this._nonCamelCaseWordCharRegex = this.makeCamelCaseWordRegex(Position.NonWordCharacters);
     this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
@@ -883,6 +883,143 @@ export class Position extends vscode.Position {
     const result = new RegExp(segments.join('|'), 'g');
 
     return result;
+  }
+
+  private makeUnicodeWordRegex(characterSet: string): RegExp {
+    const segments = [
+      // ASCII word characters (in many cases 0-9A-Za-z_)
+      // and non-word characters
+      ...this.makeAsciiWordSegments(characterSet),
+
+      // Unicode characters (punctuations, ideographs, ...)
+      ...this.makeUnicodeWordSegments(),
+
+      // Other spelling characters (Greek, ...)
+      '\\S+',
+
+      '$^',
+    ];
+    const result = new RegExp(segments.join('|'), 'ug');
+    return result;
+  }
+
+  private makeAsciiWordSegments(nonWordChars: string): string[] {
+    const nonWordCodes = nonWordChars
+      .split('')
+      .sort()
+      .map(c => c.codePointAt(0)!);
+    nonWordCodes.push(0x7f); // guard
+    const wordChars: string[] = [];
+    let wordCode = 0x21;
+    for (let nonWordCode of nonWordCodes) {
+      for (; wordCode < nonWordCode; wordCode++) {
+        wordChars.push(String.fromCharCode(wordCode));
+      }
+      wordCode = nonWordCode + 1;
+    }
+
+    const wordSegment = `([${wordChars.join('')}]+)`;
+    const nonWordSegment = `[${_.escapeRegExp(nonWordChars).replace(/-/g, '\\-')}]+`;
+    return [wordSegment, nonWordSegment];
+  }
+
+  private makeUnicodeWordSegments(): string[] {
+    // Distinct categories of characters
+    enum CharKind {
+      Punctuation,
+      Superscript,
+      Subscript,
+      Braille,
+      Ideograph,
+      Hiragana,
+      Katakana,
+      Hangul,
+    }
+
+    // Imported from utf_class_buf in src/mbyte.c of Vim.
+    // Spelling alphabets are not listed here since they are covered as non-white letters.
+    // TODO(ajalab): add Emoji
+    const codePointRanges: [[number, number], CharKind][] = [
+      [[0x037e, 0x037e], CharKind.Punctuation], // Greek question mark
+      [[0x0387, 0x0387], CharKind.Punctuation], // Greek ano teleia
+      [[0x055a, 0x055f], CharKind.Punctuation], // Armenian punctuation
+      [[0x0589, 0x0589], CharKind.Punctuation], // Armenian full stop
+      [[0x05be, 0x05be], CharKind.Punctuation],
+      [[0x05c0, 0x05c0], CharKind.Punctuation],
+      [[0x05c3, 0x05c3], CharKind.Punctuation],
+      [[0x05f3, 0x05f4], CharKind.Punctuation],
+      [[0x060c, 0x060c], CharKind.Punctuation],
+      [[0x061b, 0x061b], CharKind.Punctuation],
+      [[0x061f, 0x061f], CharKind.Punctuation],
+      [[0x066a, 0x066d], CharKind.Punctuation],
+      [[0x06d4, 0x06d4], CharKind.Punctuation],
+      [[0x0700, 0x070d], CharKind.Punctuation], // Syriac punctuation
+      [[0x0964, 0x0965], CharKind.Punctuation],
+      [[0x0970, 0x0970], CharKind.Punctuation],
+      [[0x0df4, 0x0df4], CharKind.Punctuation],
+      [[0x0e4f, 0x0e4f], CharKind.Punctuation],
+      [[0x0e5a, 0x0e5b], CharKind.Punctuation],
+      [[0x0f04, 0x0f12], CharKind.Punctuation],
+      [[0x0f3a, 0x0f3d], CharKind.Punctuation],
+      [[0x0f85, 0x0f85], CharKind.Punctuation],
+      [[0x104a, 0x104f], CharKind.Punctuation], // Myanmar punctuation
+      [[0x10fb, 0x10fb], CharKind.Punctuation], // Georgian punctuation
+      [[0x1361, 0x1368], CharKind.Punctuation], // Ethiopic punctuation
+      [[0x166d, 0x166e], CharKind.Punctuation], // Canadian Syl. punctuation
+      [[0x169b, 0x169c], CharKind.Punctuation],
+      [[0x16eb, 0x16ed], CharKind.Punctuation],
+      [[0x1735, 0x1736], CharKind.Punctuation],
+      [[0x17d4, 0x17dc], CharKind.Punctuation], // Khmer punctuation
+      [[0x1800, 0x180a], CharKind.Punctuation], // Mongolian punctuation
+      [[0x200c, 0x2027], CharKind.Punctuation], // punctuation and symbols
+      [[0x202a, 0x202e], CharKind.Punctuation], // punctuation and symbols
+      [[0x2030, 0x205e], CharKind.Punctuation], // punctuation and symbols
+      [[0x2060, 0x27ff], CharKind.Punctuation], // punctuation and symbols
+      [[0x2070, 0x207f], CharKind.Superscript], // superscript
+      [[0x2080, 0x2094], CharKind.Subscript], // subscript
+      [[0x20a0, 0x27ff], CharKind.Punctuation], // all kinds of symbols
+      [[0x2800, 0x28ff], CharKind.Braille], // braille
+      [[0x2900, 0x2998], CharKind.Punctuation], // arrows, brackets, etc.
+      [[0x29d8, 0x29db], CharKind.Punctuation],
+      [[0x29fc, 0x29fd], CharKind.Punctuation],
+      [[0x2e00, 0x2e7f], CharKind.Punctuation], // supplemental punctuation
+      [[0x3001, 0x3020], CharKind.Punctuation], // ideographic punctuation
+      [[0x3030, 0x3030], CharKind.Punctuation],
+      [[0x303d, 0x303d], CharKind.Punctuation],
+      [[0x3040, 0x309f], CharKind.Hiragana], // Hiragana
+      [[0x30a0, 0x30ff], CharKind.Katakana], // Katakana
+      [[0x3300, 0x9fff], CharKind.Ideograph], // CJK Ideographs
+      [[0xac00, 0xd7a3], CharKind.Hangul], // Hangul Syllables
+      [[0xf900, 0xfaff], CharKind.Ideograph], // CJK Ideographs
+      [[0xfd3e, 0xfd3f], CharKind.Punctuation],
+      [[0xfe30, 0xfe6b], CharKind.Punctuation], // punctuation forms
+      [[0xff00, 0xff0f], CharKind.Punctuation], // half/fullwidth ASCII
+      [[0xff1a, 0xff20], CharKind.Punctuation], // half/fullwidth ASCII
+      [[0xff3b, 0xff40], CharKind.Punctuation], // half/fullwidth ASCII
+      [[0xff5b, 0xff65], CharKind.Punctuation], // half/fullwidth ASCII
+      [[0x20000, 0x2a6df], CharKind.Ideograph], // CJK Ideographs
+      [[0x2a700, 0x2b73f], CharKind.Ideograph], // CJK Ideographs
+      [[0x2b740, 0x2b81f], CharKind.Ideograph], // CJK Ideographs
+      [[0x2f800, 0x2fa1f], CharKind.Ideograph], // CJK Ideographs
+    ];
+
+    const fragments: string[][] = [];
+    for (let kind in CharKind) {
+      if (!isNaN(Number(kind))) {
+        fragments[kind] = [];
+      }
+    }
+
+    for (let [[first, last], kind] of codePointRanges) {
+      if (first === last) {
+        // '\u{hhhh}'
+        fragments[kind].push(`\\u{${first.toString(16)}}`);
+      } else {
+        // '\u{hhhh}-\u{hhhh}'
+        fragments[kind].push(`\\u{${first.toString(16)}}-\\u{${last.toString(16)}}`);
+      }
+    }
+    return fragments.map(patterns => `([${patterns.join('')}]+)`);
   }
 
   private getAllPositions(line: string, regex: RegExp): number[] {

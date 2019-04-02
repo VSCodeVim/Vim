@@ -506,7 +506,6 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualLine,
     ModeName.VisualBlock,
     ModeName.Normal,
-    ModeName.SearchInProgressMode,
     ModeName.SurroundInputMode,
     ModeName.EasyMotionMode,
     ModeName.EasyMotionInputMode,
@@ -981,9 +980,18 @@ class CommandEscInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vimState.setCurrentMode(ModeName.Normal);
     vimState.globalState.searchState = undefined;
     vimState.statusBarCursorCharacterPos = 0;
+    const searchState = vimState.globalState.searchState!;
+
+    vimState.cursorStopPosition = searchState.searchCursorStartPosition;
+
+    const prevSearchList = vimState.globalState.searchStatePrevious;
+    vimState.globalState.searchState = prevSearchList
+      ? prevSearchList[prevSearchList.length - 1]
+      : undefined;
+
+    await vimState.setCurrentMode(searchState.previousMode);
 
     return vimState;
   }

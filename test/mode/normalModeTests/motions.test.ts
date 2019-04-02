@@ -382,6 +382,13 @@ suite('Motions in Normal Mode', () => {
   // });
 
   newTest({
+    title: 'cancelled search reverts to previous search state',
+    start: ['|one', 'two two', 'three three three'],
+    keysPressed: '/two\n/three<Esc>n',
+    end: ['one', 'two |two', 'three three three'],
+  });
+  
+  newTest({
     title: 'Backspace on empty search cancels',
     start: ['|one two three'],
     keysPressed: '/tw<BS><BS><BS>',
