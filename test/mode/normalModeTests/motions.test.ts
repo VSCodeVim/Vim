@@ -1,5 +1,6 @@
 import { getTestingFunctions } from '../../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
+import { ModeName } from '../../../src/mode/mode';
 
 suite('Motions in Normal Mode', () => {
   let { newTest, newTestOnly } = getTestingFunctions();
@@ -379,6 +380,14 @@ suite('Motions in Normal Mode', () => {
   //     end: ['three four |two one'],
   //   });
   // });
+
+  newTest({
+    title: 'Backspace on empty search cancels',
+    start: ['|one two three'],
+    keysPressed: '/tw<BS><BS><BS>',
+    end: ['|one two three'],
+    endMode: ModeName.Normal,
+  });
 
   newTest({
     title: 'maintains column position correctly',
