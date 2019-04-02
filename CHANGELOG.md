@@ -1,5 +1,48 @@
 # Change Log
 
+## [v1.3.0](https://github.com/vscodevim/vim/tree/v1.3.0) (2019-04-02)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.2.0...v1.3.0)
+
+**Enhancements:**
+
+- Better non-ASCII character support in word motions [\#3612](https://github.com/VSCodeVim/Vim/issues/3612)
+
+**Fixed Bugs:**
+
+- Preview file from explorer is not tracked as jump [\#3507](https://github.com/VSCodeVim/Vim/issues/3507)
+- ‘W’ and 'w' shortcut keys do not support Chinese characters！ [\#3439](https://github.com/VSCodeVim/Vim/issues/3439)
+
+**Closed issues:**
+
+- emmet with vscode vim [\#3644](https://github.com/VSCodeVim/Vim/issues/3644)
+- How do I insert a linebreak where the cursor is without entering into insert mode in VSCodeVim? [\#3636](https://github.com/VSCodeVim/Vim/issues/3636)
+- Hitting backspace with an empty search should return to normal mode [\#3619](https://github.com/VSCodeVim/Vim/issues/3619)
+- Search state should not change until a new search command is completed [\#3616](https://github.com/VSCodeVim/Vim/issues/3616)
+- Jumping to a mark that is off-screen should center the view around the mark [\#3609](https://github.com/VSCodeVim/Vim/issues/3609)
+- The original vim's redo command \(Ctrl+Shift+R\) doesn't work [\#3608](https://github.com/VSCodeVim/Vim/issues/3608)
+- vim-surround does not work with multiple cursors [\#3600](https://github.com/VSCodeVim/Vim/issues/3600)
+- digraphs cannot be inputted in different order [\#3599](https://github.com/VSCodeVim/Vim/issues/3599)
+- gU/gu does not work in visual mode [\#3491](https://github.com/VSCodeVim/Vim/issues/3491)
+- Error when executing 'View Latex PDF'-command from latex-workshop-plugin [\#3484](https://github.com/VSCodeVim/Vim/issues/3484)
+- Arrow key bindings not working with insertModeKeyBindings [\#2924](https://github.com/VSCodeVim/Vim/issues/2924)
+
+**Merged pull requests:**
+
+- chore\(deps\): update dependency vscode to v1.1.33 [\#3643](https://github.com/VSCodeVim/Vim/pull/3643) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency typescript to v3.4.1 [\#3642](https://github.com/VSCodeVim/Vim/pull/3642) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/sinon to v7.0.11 [\#3641](https://github.com/VSCodeVim/Vim/pull/3641) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency @types/diff to v4.0.2 [\#3640](https://github.com/VSCodeVim/Vim/pull/3640) ([renovate[bot]](https://github.com/apps/renovate))
+- Digraphs: Allow input in reverse order \(fixes \#3599\) [\#3635](https://github.com/VSCodeVim/Vim/pull/3635) ([jbaiter](https://github.com/jbaiter))
+- Assign lastClosedModeHandler when onDidCloseTextDocument. [\#3630](https://github.com/VSCodeVim/Vim/pull/3630) ([yaegaki](https://github.com/yaegaki))
+- When backspace is hit on an empty search, cancel the search [\#3626](https://github.com/VSCodeVim/Vim/pull/3626) ([J-Fields](https://github.com/J-Fields))
+- Mark several features that have been implemented as complete in ROADMAP.md [\#3620](https://github.com/VSCodeVim/Vim/pull/3620) ([J-Fields](https://github.com/J-Fields))
+- When a search is cancelled, revert to previous search state [\#3617](https://github.com/VSCodeVim/Vim/pull/3617) ([J-Fields](https://github.com/J-Fields))
+- Support word motions for non-ASCII characters [\#3614](https://github.com/VSCodeVim/Vim/pull/3614) ([ajalab](https://github.com/ajalab))
+- Support for gU and gu in visual mode [\#3603](https://github.com/VSCodeVim/Vim/pull/3603) ([J-Fields](https://github.com/J-Fields))
+- Chinese translation of ROADMAP.MD [\#3597](https://github.com/VSCodeVim/Vim/pull/3597) ([sxlwar](https://github.com/sxlwar))
+- fix\(deps\): update dependency neovim to v4.5.0 [\#3555](https://github.com/VSCodeVim/Vim/pull/3555) ([renovate[bot]](https://github.com/apps/renovate))
+
 ## [v1.2.0](https://github.com/vscodevim/vim/tree/v1.2.0) (2019-03-17)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.1.0...v1.2.0)
