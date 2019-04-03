@@ -29,6 +29,7 @@ import * as operator from './../operator';
 import { Jump } from '../../jumps/jump';
 import { ReportLinesChanged, ReportClear } from '../../util/statusBarTextUtils';
 import { commandParsers } from '../../cmd_line/subparser';
+import { StatusBar } from '../../statusBar';
 
 export class DocumentContentChangeAction extends BaseAction {
   contentChanges: {
@@ -881,8 +882,6 @@ class CommandInsertInSearchMode extends BaseCommand {
       if (searchState.searchString.length === 0) {
         return new CommandEscInSearchMode().exec(position, vimState);
       }
-      searchState.searchString = searchState.searchString.slice(0, -1);
-
       if (vimState.statusBarCursorCharacterPos === 0) {
         return vimState;
       }
@@ -980,8 +979,6 @@ class CommandEscInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    vimState.globalState.searchState = undefined;
-    vimState.statusBarCursorCharacterPos = 0;
     const searchState = vimState.globalState.searchState!;
 
     vimState.cursorStopPosition = searchState.searchCursorStartPosition;
@@ -992,6 +989,8 @@ class CommandEscInSearchMode extends BaseCommand {
       : undefined;
 
     await vimState.setCurrentMode(searchState.previousMode);
+    vimState.globalState.searchState = undefined;
+    vimState.statusBarCursorCharacterPos = 0;
 
     return vimState;
   }
@@ -1880,10 +1879,7 @@ class CommandNavigateInCommandlineOrSearchMode extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     const key = this.keysPressed[0];
     const searchState = vimState.globalState.searchState!;
-    const statusbartext =
-      searchState !== undefined && searchState!.searchString
-        ? searchState!.searchString
-        : vimState.currentCommandlineText;
+    const statusbartext = StatusBar.Get();
     if (key === '<right>') {
       vimState.statusBarCursorCharacterPos = Math.min(
         vimState.statusBarCursorCharacterPos + 1,
@@ -1904,31 +1900,43 @@ class CommandTabInCommandline extends BaseCommand {
   }
 
   private autoComplete(completionItems: any, vimState: VimState) {
-    if (
-      commandLine.lastKeyPressed === '<tab>' &&
-      commandLine.autoCompleteIndex < completionItems.length
-    ) {
-      commandLine.autoCompleteIndex += 1;
-    } else if (/ /g.test(vimState.currentCommandlineText)) {
-      const search = <RegExpExecArray>/(?:.* .*\/|.* )(.*)/g.exec(vimState.currentCommandlineText);
-      commandLine.autoCompleteText = search[1];
-      commandLine.autoCompleteIndex = 0;
-    } else if (commandLine.lastKeyPressed !== '<tab>') {
-      commandLine.autoCompleteText = vimState.currentCommandlineText;
-      commandLine.autoCompleteIndex = 0;
+    if (commandLine.lastKeyPressed !== '<tab>') {
+      if (/ /g.test(vimState.currentCommandlineText)) {
+        // The regex here will match any text after the space or any text after the last / if it is present
+        const search = <RegExpExecArray>(
+          /(?:.* .*\/|.* )(.*)/g.exec(vimState.currentCommandlineText)
+        );
+        commandLine.autoCompleteText = search[1];
+        commandLine.autoCompleteIndex = 0;
+      } else {
+        commandLine.autoCompleteText = vimState.currentCommandlineText;
+        commandLine.autoCompleteIndex = 0;
+      }
     }
 
     completionItems = completionItems.filter(completionItem =>
       completionItem.startsWith(commandLine.autoCompleteText)
     );
+
+    if (
+      commandLine.lastKeyPressed === '<tab>' &&
+      commandLine.autoCompleteIndex < completionItems.length
+    ) {
+      commandLine.autoCompleteIndex += 1;
+    }
     if (commandLine.autoCompleteIndex >= completionItems.length) {
       commandLine.autoCompleteIndex = 0;
     }
+
     let result = completionItems[commandLine.autoCompleteIndex];
-    if (result === vimState.currentCommandlineText && completionItems.length > 1) {
-      commandLine.autoCompleteIndex += 1;
-      result = completionItems[commandLine.autoCompleteIndex];
+    if (result === vimState.currentCommandlineText) {
+      result = completionItems[++commandLine.autoCompleteIndex % completionItems.length];
     }
+
+    if (result === vimState.currentCommandlineText) {
+      result = completionItems[++commandLine.autoCompleteIndex];
+    }
+
     if (result !== undefined && !/ /g.test(vimState.currentCommandlineText)) {
       vimState.currentCommandlineText = result;
       vimState.statusBarCursorCharacterPos = result.length;

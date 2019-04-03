@@ -55,6 +55,17 @@ class StatusBarImpl implements vscode.Disposable {
     this._statusBarItem.dispose();
   }
 
+  public Get() {
+    let text = this._statusBarItem.text;
+    // This regex will remove the : / and | from the string
+    text = text.replace(/^(?:\/|\:)(.*)(?:\|)(.*)/, '$1$2');
+
+    // This regex will remove the space at the end of the sting
+    text.replace(/\s$/, '');
+
+    return text;
+  }
+
   private UpdateText(text: string) {
     this._statusBarItem.text = text || '';
   }
