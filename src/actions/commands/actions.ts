@@ -989,7 +989,6 @@ class CommandEscInSearchMode extends BaseCommand {
       : undefined;
 
     await vimState.setCurrentMode(searchState.previousMode);
-    vimState.globalState.searchState = undefined;
     vimState.statusBarCursorCharacterPos = 0;
 
     return vimState;
