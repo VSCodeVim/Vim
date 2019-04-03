@@ -17,9 +17,8 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
 - [Installation](#-installation)
-  - [Vim Compatibility](#vim-compatibility)
-  - [Mac setup](#mac-setup)
-  - [Windows setup](#windows-setup)
+  - [Mac setup](#mac)
+  - [Windows setup](#windows)
   - [Linux setup](#linux-setup)
 - [Settings](#%EF%B8%8F-settings)
   - [VSCodeVim settings](#vscodevim-settings)
@@ -124,6 +123,9 @@ These settings are specific to VSCodeVim.
 | vim.substituteGlobalFlag         | Similar to Vim's `gdefault` setting. `/g` flag in a substitute command replaces all occurrences in the line. Without this flag, replacement occurs only for the first occurrence in each line. With this setting enabled, the `g` is on by default.                                                                                                                                                                              | Boolean | false                                 |
 | vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                        | Boolean | true                                  |
 | vim.visualstar                   | In visual mode, start a search with `*` or `#` using the current selection                                                                                                                                                                                                                                                                                                                                                       | Boolean | false                                 |
+| vim.highlightedyank.enable       | Enable highlighting when yanking                                                                                                                                                                                                                                                                                                                                                                                                 | Boolean | false                                 |
+| vim.highlightedyank.color        | Set the color of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                 | String  | rgba(250, 240, 170, 0.5)              |
+| vim.highlightedyank.duration     | Set the duration of yank highlights                                                                                                                                                                                                                                                                                                                                                                                              | Number  | 200                                   |
 
 ### Neovim Integration
 
@@ -495,7 +497,7 @@ Based on [vim-sneak](https://github.com/justinmk/vim-sneak), it allows for jumpi
 | Setting                            | Description                                                 | Type    | Default Value |
 | ---------------------------------- | ----------------------------------------------------------- | ------- | ------------- |
 | vim.sneak                          | Enable/disable vim-sneak                                    | Boolean | false         |
-| vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking | Boolean | true          |
+| vim.sneakUseIgnorecaseAndSmartcase | Respect `vim.ignorecase` and `vim.smartcase` while sneaking | Boolean | false         |
 
 Once sneak is active, initiate motions using the following commands. For operators sneak uses `z` instead of `s` because `s` is already taken by the surround plugin.
 
@@ -607,7 +609,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 - Key repeat doesn't work
 
-  Are you on a Mac? Did you go through our [mac-setup](#mac-setup) instructions?
+  Are you on a Mac? Did you go through our [mac-setup](#mac) instructions?
 
 - There are annoying intellisense/notifications/popups that I can't close with `<esc>`! Or I'm in a snippet and I want to close intellisense
 
@@ -615,7 +617,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 - How can I use the commandline when in Zen mode or when the status bar is disabled?
 
-  This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in visual studio keybindings.json settings file.
+  This extension exposes a remappable command to show a vscode style quick-pick, limited functionality, version of the commandline. This can be remapped as follows in VS Code's keybindings.json settings file.
 
   ```json
   {
@@ -632,6 +634,34 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
     "key": "shift+;",
     "command": "vim.showQuickpickCmdLine",
     "when": "inZenMode && vim.mode != 'Insert'"
+  }
+  ```
+
+- How can I move the cursor by each display line with word wrapping?
+
+  If you have word wrap on and would like the cursor to enter each wrapped line when using <kbd>j</kbd>, <kbd>k</kbd>, <kbd>↓</kbd> or <kbd>↑</kbd>, set the following in VS Code's keybindings.json settings file ([other options exist](https://github.com/VSCodeVim/Vim/issues/2924#issuecomment-476121848) but they are slow):
+
+  <!-- prettier-ignore -->
+  ```json
+  {
+    "key": "up",
+    "command": "cursorUp",
+    "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+  },
+  {
+    "key": "down",
+    "command": "cursorDown",
+    "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+  },
+  {
+    "key": "k",
+    "command": "cursorUp",
+    "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode == 'Normal' && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+  },
+  {
+    "key": "j",
+    "command": "cursorDown",
+    "when": "editorTextFocus && vim.active && !inDebugRepl && vim.mode == 'Normal' && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
   }
   ```
 
