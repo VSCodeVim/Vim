@@ -99,20 +99,20 @@ export class Position extends vscode.Position {
   private static NonBigWordCharacters = '';
   private static NonFileCharacters = '"\'`;<>{}[]()';
 
-  private _nonWordCharRegex: RegExp;
-  private _nonBigWordCharRegex: RegExp;
-  private _nonCamelCaseWordCharRegex: RegExp;
-  private _sentenceEndRegex: RegExp;
-  private _nonFileNameRegex: RegExp;
+  private static _nonWordCharRegex: RegExp = Position.makeUnicodeWordRegex(
+    Position.NonWordCharacters
+  );
+  private static _nonBigWordCharRegex: RegExp = Position.makeWordRegex(
+    Position.NonBigWordCharacters
+  );
+  private static _nonCamelCaseWordCharRegex: RegExp = Position.makeCamelCaseWordRegex(
+    Position.NonWordCharacters
+  );
+  private static _sentenceEndRegex: RegExp = /[\.!\?]{1}([ \n\t]+|$)/g;
+  private static _nonFileNameRegex: RegExp = Position.makeWordRegex(Position.NonFileCharacters);
 
   constructor(line: number, character: number) {
     super(line, character);
-
-    this._nonWordCharRegex = this.makeUnicodeWordRegex(Position.NonWordCharacters);
-    this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
-    this._nonCamelCaseWordCharRegex = this.makeCamelCaseWordRegex(Position.NonWordCharacters);
-    this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
-    this._nonFileNameRegex = this.makeWordRegex(Position.NonFileCharacters);
   }
 
   public toString(): string {
@@ -511,71 +511,71 @@ export class Position extends vscode.Position {
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getWordLeft(inclusive: boolean = false): Position {
-    return this.getWordLeftWithRegex(this._nonWordCharRegex, inclusive);
+    return this.getWordLeftWithRegex(Position._nonWordCharRegex, inclusive);
   }
 
   public getBigWordLeft(inclusive: boolean = false): Position {
-    return this.getWordLeftWithRegex(this._nonBigWordCharRegex, inclusive);
+    return this.getWordLeftWithRegex(Position._nonBigWordCharRegex, inclusive);
   }
 
   public getCamelCaseWordLeft(inclusive: boolean = false): Position {
-    return this.getWordLeftWithRegex(this._nonCamelCaseWordCharRegex, inclusive);
+    return this.getWordLeftWithRegex(Position._nonCamelCaseWordCharRegex, inclusive);
   }
 
   public getFilePathLeft(inclusive: boolean = false): Position {
-    return this.getWordLeftWithRegex(this._nonFileNameRegex, inclusive);
+    return this.getWordLeftWithRegex(Position._nonFileNameRegex, inclusive);
   }
 
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getWordRight(inclusive: boolean = false): Position {
-    return this.getWordRightWithRegex(this._nonWordCharRegex, inclusive);
+    return this.getWordRightWithRegex(Position._nonWordCharRegex, inclusive);
   }
 
   public getBigWordRight(inclusive: boolean = false): Position {
-    return this.getWordRightWithRegex(this._nonBigWordCharRegex);
+    return this.getWordRightWithRegex(Position._nonBigWordCharRegex);
   }
 
   public getCamelCaseWordRight(inclusive: boolean = false): Position {
-    return this.getWordRightWithRegex(this._nonCamelCaseWordCharRegex);
+    return this.getWordRightWithRegex(Position._nonCamelCaseWordCharRegex);
   }
 
   public getFilePathRight(inclusive: boolean = false): Position {
-    return this.getWordRightWithRegex(this._nonFileNameRegex, inclusive);
+    return this.getWordRightWithRegex(Position._nonFileNameRegex, inclusive);
   }
 
   public getLastWordEnd(): Position {
-    return this.getLastWordEndWithRegex(this._nonWordCharRegex);
+    return this.getLastWordEndWithRegex(Position._nonWordCharRegex);
   }
 
   public getLastBigWordEnd(): Position {
-    return this.getLastWordEndWithRegex(this._nonBigWordCharRegex);
+    return this.getLastWordEndWithRegex(Position._nonBigWordCharRegex);
   }
 
   public getLastCamelCaseWordEnd(): Position {
-    return this.getLastWordEndWithRegex(this._nonCamelCaseWordCharRegex);
+    return this.getLastWordEndWithRegex(Position._nonCamelCaseWordCharRegex);
   }
 
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getCurrentWordEnd(inclusive: boolean = false): Position {
-    return this.getCurrentWordEndWithRegex(this._nonWordCharRegex, inclusive);
+    return this.getCurrentWordEndWithRegex(Position._nonWordCharRegex, inclusive);
   }
 
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getCurrentBigWordEnd(inclusive: boolean = false): Position {
-    return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex, inclusive);
+    return this.getCurrentWordEndWithRegex(Position._nonBigWordCharRegex, inclusive);
   }
 
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getCurrentCamelCaseWordEnd(inclusive: boolean = false): Position {
-    return this.getCurrentWordEndWithRegex(this._nonCamelCaseWordCharRegex, inclusive);
+    return this.getCurrentWordEndWithRegex(Position._nonCamelCaseWordCharRegex, inclusive);
   }
 
   /**
@@ -661,14 +661,14 @@ export class Position extends vscode.Position {
 
   public getSentenceBegin(args: { forward: boolean }): Position {
     if (args.forward) {
-      return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
+      return this.getNextSentenceBeginWithRegex(Position._sentenceEndRegex, false);
     } else {
-      return this.getPreviousSentenceBeginWithRegex(this._sentenceEndRegex);
+      return this.getPreviousSentenceBeginWithRegex(Position._sentenceEndRegex);
     }
   }
 
   public getCurrentSentenceEnd(): Position {
-    return this.getCurrentSentenceEndWithRegex(this._sentenceEndRegex, false);
+    return this.getCurrentSentenceEndWithRegex(Position._sentenceEndRegex, false);
   }
 
   /**
@@ -840,7 +840,7 @@ export class Position extends vscode.Position {
     return true;
   }
 
-  private makeWordRegex(characterSet: string): RegExp {
+  private static makeWordRegex(characterSet: string): RegExp {
     let escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     let segments: string[] = [];
 
@@ -852,7 +852,7 @@ export class Position extends vscode.Position {
     return result;
   }
 
-  private makeCamelCaseWordRegex(characterSet: string): RegExp {
+  private static makeCamelCaseWordRegex(characterSet: string): RegExp {
     const escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     const segments: string[] = [];
 
@@ -895,14 +895,14 @@ export class Position extends vscode.Position {
     return result;
   }
 
-  private makeUnicodeWordRegex(characterSet: string): RegExp {
+  private static makeUnicodeWordRegex(characterSet: string): RegExp {
     const segments = [
       // ASCII word characters (in many cases 0-9A-Za-z_)
       // and non-word characters
-      ...this.makeAsciiWordSegments(characterSet),
+      ...Position.makeAsciiWordSegments(characterSet),
 
       // Unicode characters (punctuations, ideographs, ...)
-      ...this.makeUnicodeWordSegments(),
+      ...Position.makeUnicodeWordSegments(),
 
       // Other spelling characters (Greek, ...)
       '\\S+',
@@ -913,7 +913,7 @@ export class Position extends vscode.Position {
     return result;
   }
 
-  private makeAsciiWordSegments(nonWordChars: string): string[] {
+  private static makeAsciiWordSegments(nonWordChars: string): string[] {
     const nonWordCodes = nonWordChars
       .split('')
       .sort()
@@ -933,7 +933,7 @@ export class Position extends vscode.Position {
     return [wordSegment, nonWordSegment];
   }
 
-  private makeUnicodeWordSegments(): string[] {
+  private static makeUnicodeWordSegments(): string[] {
     // Distinct categories of characters
     enum CharKind {
       Punctuation,
