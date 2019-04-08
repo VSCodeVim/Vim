@@ -856,18 +856,28 @@ export class Position extends vscode.Position {
     const escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     const segments: string[] = [];
 
+    // old versions of VSCode before 1.31 will crash when trying to parse a regex with a lookbehind
+    let supportsLookbehind = true;
+    try {
+      // tslint:disable-next-line
+      new RegExp('(<=x)');
+    } catch {
+      supportsLookbehind = false;
+    }
+
     // prettier-ignore
     const firstSegment =
       '(' +                                                // OPEN: group for matching camel case words
       `[^\\s${escaped}]` +                                 //   words can start with any word character
       '(?:' +                                              //   OPEN: group for characters after initial char
-      `(?:(?<=[A-Z_])[A-Z](?=[\\sA-Z0-9${escaped}_]))+` +  //     If first char was a capital
-                                                           //       the word can continue with all caps
+      `(?:${supportsLookbehind ? '(?<=[A-Z_])' : ''}` +    //     If first char was a capital
+      `[A-Z](?=[\\sA-Z0-9${escaped}_]))+` +                //       the word can continue with all caps
       '|' +                                                //     OR
-      `(?:(?<=[0-9_])[0-9](?=[\\sA-Z0-9${escaped}_]))+` +  //     If first char was a digit
-                                                           //       the word can continue with all digits
+      `(?:${supportsLookbehind ? '(?<=[0-9_])' : ''}`   +  //     If first char was a digit
+      `[0-9](?=[\\sA-Z0-9${escaped}_]))+` +                //       the word can continue with all digits
       '|' +                                                //     OR
-      `(?:(?<=[_])[_](?=[\\s${escaped}_]))+` +             //     Continue with all underscores
+      `(?:${supportsLookbehind ? '(?<=[_])' : ''}` +       //     If first char was an underscore
+      `[_](?=[\\s${escaped}_]))+`  +                       //       the word can continue with all underscores
       '|' +                                                //     OR
       `[^\\sA-Z0-9${escaped}_]*` +                         //     Continue with regular characters
       ')' +                                                //   END: group for characters after initial char
