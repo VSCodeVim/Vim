@@ -387,7 +387,7 @@ suite('Motions in Normal Mode', () => {
     keysPressed: '/two\n/three<Esc>n',
     end: ['one', 'two |two', 'three three three'],
   });
-  
+
   newTest({
     title: 'Backspace on empty search cancels',
     start: ['|one two three'],
