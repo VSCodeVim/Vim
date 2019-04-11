@@ -140,8 +140,10 @@ Now follows an exhaustive list of every known Vim command that we could find.
 | :white_check_mark: | `{0-9} | go to the position where Vim was previously exited |
 | :white_check_mark: | `` | go to the position before the last jump                |
 | :arrow_down:       | `" | go to the position when last editing this file         |
-| :arrow_down:       | `[ | go to the start of the previously operated or put text |
-| :arrow_down:       | `] | go to the end of the previously operated or put text   |
+| :white_check_mark: | `[ | go to the start of the previously operated or put text |
+| :white_check_mark: | '[ | go to the start of the previously operated or put text |
+| :white_check_mark: | `] | go to the end of the previously operated or put text   |
+| :white_check_mark: | '] | go to the end of the previously operated or put text   |
 | :arrow_down:       | `< | go to the start of the (previous) Visual area          |
 | :arrow_down:       | `> | go to the end of the (previous) Visual area            |
 | :white_check_mark: | `. | go to the position of the last change in this file     |
