@@ -347,8 +347,11 @@ suite('Mode Insert', () => {
       'e',
       'x',
       't',
+      '<C-k>',
+      '>',
+      '-',
     ]);
-    assertEqualLines(['text→text']);
+    assertEqualLines(['text→text→']);
   });
 
   test('Can handle custom digraph insert', async () => {
@@ -356,7 +359,7 @@ suite('Mode Insert', () => {
       'R!': ['🚀', [55357, 56960]],
     };
     await reloadConfiguration();
-    await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!']);
-    assertEqualLines(['🚀']);
+    await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!', '<C-k>', '!', 'R']);
+    assertEqualLines(['🚀🚀']);
   });
 });
