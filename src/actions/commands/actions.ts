@@ -3088,6 +3088,21 @@ class VerticalSplit extends BaseCommand {
 }
 
 @RegisterAction
+class OrthogonalSplit extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [['<C-w>', 's'], ['<C-w>', '<C-s>']];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.splitEditorOrthogonal',
+      args: {},
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
 class EvenPaneWidths extends BaseCommand {
   modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
   keys = ['<C-w>', '='];
