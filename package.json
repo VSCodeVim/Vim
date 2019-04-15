@@ -34,7 +34,7 @@
     "*",
     "onCommand:type"
   ],
-  "qna": "https://vscodevim-slackin.azurewebsites.net/",
+  "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
   "contributes": {
     "commands": [
