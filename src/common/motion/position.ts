@@ -992,22 +992,24 @@ export class Position extends vscode.Position {
         codePointRangePatterns[kind].push(`\\u{${first.toString(16)}}-\\u{${last.toString(16)}}`);
       }
     }
+
+    // Symbols in vim.iskeyword or editor.wordSeparators
+    // are treated as CharKind.Punctuation
+    const escapedKeywordChars = _.escapeRegExp(keywordChars).replace(/-/g, '\\-');
+    codePointRangePatterns[Number(CharKind.Punctuation)].push(escapedKeywordChars);
+
     const codePointRanges = codePointRangePatterns.map(patterns => patterns.join(''));
     const symbolSegments = codePointRanges.map(range => `([${range}]+)`);
-
-    // keywordSegment matches characters defined in vim.iskeyword or editor.wordSeparators
-    const escapedKeywordChars = _.escapeRegExp(keywordChars).replace(/-/g, '\\-');
-    const keywordSegment = `[${escapedKeywordChars}]+`;
 
     // wordSegment matches word characters.
     // A word character is a symbol which is neither
     // - space
     // - a symbol listed in the table
     // - a keyword (vim.iskeyword)
-    const wordSegment = `([^\\s${codePointRanges.join('')}${escapedKeywordChars}]+)`;
+    const wordSegment = `([^\\s${codePointRanges.join('')}]+)`;
 
-    // https://regex101.com/r/X1agK6/1
-    const segments = symbolSegments.concat(wordSegment, keywordSegment, '$^');
+    // https://regex101.com/r/X1agK6/2
+    const segments = symbolSegments.concat(wordSegment, '$^');
     const regexp = new RegExp(segments.join('|'), 'ug');
     return regexp;
   }
