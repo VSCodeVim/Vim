@@ -995,17 +995,19 @@ export class Position extends vscode.Position {
     const codePointRanges = codePointRangePatterns.map(patterns => patterns.join(''));
     const symbolSegments = codePointRanges.map(range => `([${range}]+)`);
 
+    // keywordSegment matches characters defined in vim.iskeyword or editor.wordSeparators
     const escapedKeywordChars = _.escapeRegExp(keywordChars).replace(/-/g, '\\-');
     const keywordSegment = `[${escapedKeywordChars}]+`;
 
-    // A Latin character is a symbol which is neither
+    // wordSegment matches word characters.
+    // A word character is a symbol which is neither
     // - space
     // - a symbol listed in the table
     // - a keyword (vim.iskeyword)
-    const latinSegment = `([^\\s${codePointRanges.join('')}${escapedKeywordChars}]+)`;
+    const wordSegment = `([^\\s${codePointRanges.join('')}${escapedKeywordChars}]+)`;
 
     // https://regex101.com/r/X1agK6/1
-    const segments = symbolSegments.concat(latinSegment, keywordSegment, '$^');
+    const segments = symbolSegments.concat(wordSegment, keywordSegment, '$^');
     const regexp = new RegExp(segments.join('|'), 'ug');
     return regexp;
   }
