@@ -358,7 +358,7 @@ suite('unicode word motion', () => {
     'Καλημέρα κόσμε',
     'Die früh sich einst dem trüben Blick gezeigt.',
     'Được tiếp đãi ân cần',
-    "100£and100$and100¥",
+    '100£and100$and100¥#♯x',
   ];
 
   suiteSetup(() => {
@@ -408,6 +408,12 @@ suite('unicode word motion', () => {
       motion = motion.getWordRight(); // issue #3680
       assert.equal(motion.line, 4);
       assert.equal(motion.character, 10);
+    });
+
+    test('move cursor word right recognizes a sequence of latin-1 symbols and other symbols as a word', () => {
+      let motion = new Position(4, 17).getWordRight();
+      assert.equal(motion.line, 4);
+      assert.equal(motion.character, 20);
     });
   });
 
