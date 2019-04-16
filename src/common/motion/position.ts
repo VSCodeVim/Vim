@@ -912,6 +912,7 @@ export class Position extends vscode.Position {
     // Latin alphabets (e.g., ASCII alphabets and numbers,  Latin-1 Supplement, European Latin) are excluded.
     // Imported from utf_class_buf in src/mbyte.c of Vim.
     const table: [[number, number], CharKind][] = [
+      [[0x00a1, 0x00bf], CharKind.Punctuation], // Latin-1 punctuation
       [[0x037e, 0x037e], CharKind.Punctuation], // Greek question mark
       [[0x0387, 0x0387], CharKind.Punctuation], // Greek ano teleia
       [[0x055a, 0x055f], CharKind.Punctuation], // Armenian punctuation
