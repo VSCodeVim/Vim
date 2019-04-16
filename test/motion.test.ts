@@ -358,6 +358,7 @@ suite('unicode word motion', () => {
     'Καλημέρα κόσμε',
     'Die früh sich einst dem trüben Blick gezeigt.',
     'Được tiếp đãi ân cần',
+    "100£and100$and100¥",
   ];
 
   suiteSetup(() => {
@@ -397,6 +398,16 @@ suite('unicode word motion', () => {
       let motion = new Position(2, 4).getWordRight();
       assert.equal(motion.line, 2);
       assert.equal(motion.character, 9);
+    });
+
+    test('move cursor word right recognizes a latin-1 symbol as punctuation', () => {
+      let motion = new Position(4, 3).getWordRight();
+      assert.equal(motion.line, 4);
+      assert.equal(motion.character, 4);
+
+      motion = motion.getWordRight(); // issue #3680
+      assert.equal(motion.line, 4);
+      assert.equal(motion.character, 10);
     });
   });
 
