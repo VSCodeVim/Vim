@@ -911,7 +911,7 @@ export class Position extends vscode.Position {
     // List of printable characters (code point intervals) and their character kinds.
     // Latin alphabets (e.g., ASCII alphabets and numbers,  Latin-1 Supplement, European Latin) are excluded.
     // Imported from utf_class_buf in src/mbyte.c of Vim.
-    const table: [[number, number], CharKind][] = [
+    const symbolTable: [[number, number], CharKind][] = [
       [[0x00a1, 0x00bf], CharKind.Punctuation], // Latin-1 punctuation
       [[0x037e, 0x037e], CharKind.Punctuation], // Greek question mark
       [[0x0387, 0x0387], CharKind.Punctuation], // Greek ano teleia
@@ -983,7 +983,7 @@ export class Position extends vscode.Position {
       }
     }
 
-    for (let [[first, last], kind] of table) {
+    for (let [[first, last], kind] of symbolTable) {
       if (first === last) {
         // '\u{hhhh}'
         codePointRangePatterns[kind].push(`\\u{${first.toString(16)}}`);
