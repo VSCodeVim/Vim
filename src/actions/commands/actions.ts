@@ -57,10 +57,10 @@ export class DocumentContentChangeAction extends BaseAction {
 
       if (contentChange.range.start.line < originalLeftBoundary.line) {
         // This change should be ignored
-        let linesEffected = contentChange.range.end.line - contentChange.range.start.line + 1;
+        let linesAffected = contentChange.range.end.line - contentChange.range.start.line + 1;
         let resultLines = contentChange.text.split('\n').length;
         originalLeftBoundary = originalLeftBoundary.with(
-          originalLeftBoundary.line + resultLines - linesEffected
+          originalLeftBoundary.line + resultLines - linesAffected
         );
         continue;
       }
@@ -502,7 +502,6 @@ class CommandEsc extends BaseCommand {
     ModeName.VisualLine,
     ModeName.VisualBlock,
     ModeName.Normal,
-    ModeName.SearchInProgressMode,
     ModeName.SurroundInputMode,
     ModeName.EasyMotionMode,
     ModeName.EasyMotionInputMode,
@@ -534,12 +533,6 @@ class CommandEsc extends BaseCommand {
       // a special case since runsOnceForEveryCursor is false.
 
       vimState.cursors = vimState.cursors.map(x => x.withNewStop(x.stop.getLeft()));
-    }
-
-    if (vimState.currentMode === ModeName.SearchInProgressMode) {
-      if (vimState.globalState.searchState) {
-        vimState.cursorStopPosition = vimState.globalState.searchState.searchCursorStartPosition;
-      }
     }
 
     if (vimState.currentMode === ModeName.Normal && vimState.isMultiCursor) {
@@ -874,6 +867,9 @@ class CommandInsertInSearchMode extends BaseCommand {
 
     // handle special keys first
     if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
+      if (searchState.searchString.length === 0) {
+        return new CommandEscInSearchMode().exec(position, vimState);
+      }
       searchState.searchString = searchState.searchString.slice(0, -1);
     } else if (key === '\n') {
       await vimState.setCurrentMode(vimState.globalState.searchState!.previousMode);
@@ -958,8 +954,16 @@ class CommandEscInSearchMode extends BaseCommand {
   }
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
-    await vimState.setCurrentMode(ModeName.Normal);
-    vimState.globalState.searchState = undefined;
+    const searchState = vimState.globalState.searchState!;
+
+    vimState.cursorStopPosition = searchState.searchCursorStartPosition;
+
+    const prevSearchList = vimState.globalState.searchStatePrevious;
+    vimState.globalState.searchState = prevSearchList
+      ? prevSearchList[prevSearchList.length - 1]
+      : undefined;
+
+    await vimState.setCurrentMode(searchState.previousMode);
 
     return vimState;
   }
@@ -3044,6 +3048,21 @@ class VerticalSplit extends BaseCommand {
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
     vimState.postponedCodeViewChanges.push({
       command: 'workbench.action.splitEditor',
+      args: {},
+    });
+
+    return vimState;
+  }
+}
+
+@RegisterAction
+class OrthogonalSplit extends BaseCommand {
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualLine];
+  keys = [['<C-w>', 's'], ['<C-w>', '<C-s>']];
+
+  public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.splitEditorOrthogonal',
       args: {},
     });
 
