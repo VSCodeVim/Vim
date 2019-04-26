@@ -18,7 +18,7 @@ suite('cmd_line tabComplete', () => {
   suiteTeardown(cleanUpWorkspace);
 
   test('command line command tab completion', async () => {
-    await modeHandler.handleMultipleKeyEvents([':', 'e','d','i']);
+    await modeHandler.handleMultipleKeyEvents([':', 'e', 'd', 'i']);
     await modeHandler.handleKeyEvent('<tab>');
     const statusBarAfterTab = StatusBar.GetTrimmed();
 
