@@ -99,20 +99,20 @@ export class Position extends vscode.Position {
   private static NonBigWordCharacters = '';
   private static NonFileCharacters = '"\'`;<>{}[]()';
 
-  private _nonWordCharRegex: RegExp;
-  private _nonBigWordCharRegex: RegExp;
-  private _nonCamelCaseWordCharRegex: RegExp;
-  private _sentenceEndRegex: RegExp;
-  private _nonFileNameRegex: RegExp;
+  private static _nonWordCharRegex: RegExp = Position.makeUnicodeWordRegex(
+    Position.NonWordCharacters
+  );
+  private static _nonBigWordCharRegex: RegExp = Position.makeWordRegex(
+    Position.NonBigWordCharacters
+  );
+  private static _nonCamelCaseWordCharRegex: RegExp = Position.makeCamelCaseWordRegex(
+    Position.NonWordCharacters
+  );
+  private static _sentenceEndRegex: RegExp = /[\.!\?]{1}([ \n\t]+|$)/g;
+  private static _nonFileNameRegex: RegExp = Position.makeWordRegex(Position.NonFileCharacters);
 
   constructor(line: number, character: number) {
     super(line, character);
-
-    this._nonWordCharRegex = this.makeUnicodeWordRegex(Position.NonWordCharacters);
-    this._nonBigWordCharRegex = this.makeWordRegex(Position.NonBigWordCharacters);
-    this._nonCamelCaseWordCharRegex = this.makeCamelCaseWordRegex(Position.NonWordCharacters);
-    this._sentenceEndRegex = /[\.!\?]{1}([ \n\t]+|$)/g;
-    this._nonFileNameRegex = this.makeWordRegex(Position.NonFileCharacters);
   }
 
   public toString(): string {
@@ -511,71 +511,71 @@ export class Position extends vscode.Position {
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getWordLeft(inclusive: boolean = false): Position {
-    return this.getWordLeftWithRegex(this._nonWordCharRegex, inclusive);
+    return this.getWordLeftWithRegex(Position._nonWordCharRegex, inclusive);
   }
 
   public getBigWordLeft(inclusive: boolean = false): Position {
-    return this.getWordLeftWithRegex(this._nonBigWordCharRegex, inclusive);
+    return this.getWordLeftWithRegex(Position._nonBigWordCharRegex, inclusive);
   }
 
   public getCamelCaseWordLeft(inclusive: boolean = false): Position {
-    return this.getWordLeftWithRegex(this._nonCamelCaseWordCharRegex, inclusive);
+    return this.getWordLeftWithRegex(Position._nonCamelCaseWordCharRegex, inclusive);
   }
 
   public getFilePathLeft(inclusive: boolean = false): Position {
-    return this.getWordLeftWithRegex(this._nonFileNameRegex, inclusive);
+    return this.getWordLeftWithRegex(Position._nonFileNameRegex, inclusive);
   }
 
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getWordRight(inclusive: boolean = false): Position {
-    return this.getWordRightWithRegex(this._nonWordCharRegex, inclusive);
+    return this.getWordRightWithRegex(Position._nonWordCharRegex, inclusive);
   }
 
   public getBigWordRight(inclusive: boolean = false): Position {
-    return this.getWordRightWithRegex(this._nonBigWordCharRegex);
+    return this.getWordRightWithRegex(Position._nonBigWordCharRegex);
   }
 
   public getCamelCaseWordRight(inclusive: boolean = false): Position {
-    return this.getWordRightWithRegex(this._nonCamelCaseWordCharRegex);
+    return this.getWordRightWithRegex(Position._nonCamelCaseWordCharRegex);
   }
 
   public getFilePathRight(inclusive: boolean = false): Position {
-    return this.getWordRightWithRegex(this._nonFileNameRegex, inclusive);
+    return this.getWordRightWithRegex(Position._nonFileNameRegex, inclusive);
   }
 
   public getLastWordEnd(): Position {
-    return this.getLastWordEndWithRegex(this._nonWordCharRegex);
+    return this.getLastWordEndWithRegex(Position._nonWordCharRegex);
   }
 
   public getLastBigWordEnd(): Position {
-    return this.getLastWordEndWithRegex(this._nonBigWordCharRegex);
+    return this.getLastWordEndWithRegex(Position._nonBigWordCharRegex);
   }
 
   public getLastCamelCaseWordEnd(): Position {
-    return this.getLastWordEndWithRegex(this._nonCamelCaseWordCharRegex);
+    return this.getLastWordEndWithRegex(Position._nonCamelCaseWordCharRegex);
   }
 
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getCurrentWordEnd(inclusive: boolean = false): Position {
-    return this.getCurrentWordEndWithRegex(this._nonWordCharRegex, inclusive);
+    return this.getCurrentWordEndWithRegex(Position._nonWordCharRegex, inclusive);
   }
 
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getCurrentBigWordEnd(inclusive: boolean = false): Position {
-    return this.getCurrentWordEndWithRegex(this._nonBigWordCharRegex, inclusive);
+    return this.getCurrentWordEndWithRegex(Position._nonBigWordCharRegex, inclusive);
   }
 
   /**
    * Inclusive is true if we consider the current position a valid result, false otherwise.
    */
   public getCurrentCamelCaseWordEnd(inclusive: boolean = false): Position {
-    return this.getCurrentWordEndWithRegex(this._nonCamelCaseWordCharRegex, inclusive);
+    return this.getCurrentWordEndWithRegex(Position._nonCamelCaseWordCharRegex, inclusive);
   }
 
   /**
@@ -661,14 +661,14 @@ export class Position extends vscode.Position {
 
   public getSentenceBegin(args: { forward: boolean }): Position {
     if (args.forward) {
-      return this.getNextSentenceBeginWithRegex(this._sentenceEndRegex, false);
+      return this.getNextSentenceBeginWithRegex(Position._sentenceEndRegex, false);
     } else {
-      return this.getPreviousSentenceBeginWithRegex(this._sentenceEndRegex);
+      return this.getPreviousSentenceBeginWithRegex(Position._sentenceEndRegex);
     }
   }
 
   public getCurrentSentenceEnd(): Position {
-    return this.getCurrentSentenceEndWithRegex(this._sentenceEndRegex, false);
+    return this.getCurrentSentenceEndWithRegex(Position._sentenceEndRegex, false);
   }
 
   /**
@@ -840,7 +840,7 @@ export class Position extends vscode.Position {
     return true;
   }
 
-  private makeWordRegex(characterSet: string): RegExp {
+  private static makeWordRegex(characterSet: string): RegExp {
     let escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     let segments: string[] = [];
 
@@ -852,22 +852,32 @@ export class Position extends vscode.Position {
     return result;
   }
 
-  private makeCamelCaseWordRegex(characterSet: string): RegExp {
+  private static makeCamelCaseWordRegex(characterSet: string): RegExp {
     const escaped = characterSet && _.escapeRegExp(characterSet).replace(/-/g, '\\-');
     const segments: string[] = [];
+
+    // old versions of VSCode before 1.31 will crash when trying to parse a regex with a lookbehind
+    let supportsLookbehind = true;
+    try {
+      // tslint:disable-next-line
+      new RegExp('(<=x)');
+    } catch {
+      supportsLookbehind = false;
+    }
 
     // prettier-ignore
     const firstSegment =
       '(' +                                                // OPEN: group for matching camel case words
       `[^\\s${escaped}]` +                                 //   words can start with any word character
       '(?:' +                                              //   OPEN: group for characters after initial char
-      `(?:(?<=[A-Z_])[A-Z](?=[\\sA-Z0-9${escaped}_]))+` +  //     If first char was a capital
-                                                           //       the word can continue with all caps
+      `(?:${supportsLookbehind ? '(?<=[A-Z_])' : ''}` +    //     If first char was a capital
+      `[A-Z](?=[\\sA-Z0-9${escaped}_]))+` +                //       the word can continue with all caps
       '|' +                                                //     OR
-      `(?:(?<=[0-9_])[0-9](?=[\\sA-Z0-9${escaped}_]))+` +  //     If first char was a digit
-                                                           //       the word can continue with all digits
+      `(?:${supportsLookbehind ? '(?<=[0-9_])' : ''}`   +  //     If first char was a digit
+      `[0-9](?=[\\sA-Z0-9${escaped}_]))+` +                //       the word can continue with all digits
       '|' +                                                //     OR
-      `(?:(?<=[_])[_](?=[\\s${escaped}_]))+` +             //     Continue with all underscores
+      `(?:${supportsLookbehind ? '(?<=[_])' : ''}` +       //     If first char was an underscore
+      `[_](?=[\\s${escaped}_]))+`  +                       //       the word can continue with all underscores
       '|' +                                                //     OR
       `[^\\sA-Z0-9${escaped}_]*` +                         //     Continue with regular characters
       ')' +                                                //   END: group for characters after initial char
@@ -885,45 +895,7 @@ export class Position extends vscode.Position {
     return result;
   }
 
-  private makeUnicodeWordRegex(characterSet: string): RegExp {
-    const segments = [
-      // ASCII word characters (in many cases 0-9A-Za-z_)
-      // and non-word characters
-      ...this.makeAsciiWordSegments(characterSet),
-
-      // Unicode characters (punctuations, ideographs, ...)
-      ...this.makeUnicodeWordSegments(),
-
-      // Other spelling characters (Greek, ...)
-      '\\S+',
-
-      '$^',
-    ];
-    const result = new RegExp(segments.join('|'), 'ug');
-    return result;
-  }
-
-  private makeAsciiWordSegments(nonWordChars: string): string[] {
-    const nonWordCodes = nonWordChars
-      .split('')
-      .sort()
-      .map(c => c.codePointAt(0)!);
-    nonWordCodes.push(0x7f); // guard
-    const wordChars: string[] = [];
-    let wordCode = 0x21;
-    for (let nonWordCode of nonWordCodes) {
-      for (; wordCode < nonWordCode; wordCode++) {
-        wordChars.push(String.fromCharCode(wordCode));
-      }
-      wordCode = nonWordCode + 1;
-    }
-
-    const wordSegment = `([${wordChars.join('')}]+)`;
-    const nonWordSegment = `[${_.escapeRegExp(nonWordChars).replace(/-/g, '\\-')}]+`;
-    return [wordSegment, nonWordSegment];
-  }
-
-  private makeUnicodeWordSegments(): string[] {
+  private static makeUnicodeWordRegex(keywordChars: string): RegExp {
     // Distinct categories of characters
     enum CharKind {
       Punctuation,
@@ -936,10 +908,11 @@ export class Position extends vscode.Position {
       Hangul,
     }
 
+    // List of printable characters (code point intervals) and their character kinds.
+    // Latin alphabets (e.g., ASCII alphabets and numbers,  Latin-1 Supplement, European Latin) are excluded.
     // Imported from utf_class_buf in src/mbyte.c of Vim.
-    // Spelling alphabets are not listed here since they are covered as non-white letters.
-    // TODO(ajalab): add Emoji
-    const codePointRanges: [[number, number], CharKind][] = [
+    const symbolTable: [[number, number], CharKind][] = [
+      [[0x00a1, 0x00bf], CharKind.Punctuation], // Latin-1 punctuation
       [[0x037e, 0x037e], CharKind.Punctuation], // Greek question mark
       [[0x0387, 0x0387], CharKind.Punctuation], // Greek ano teleia
       [[0x055a, 0x055f], CharKind.Punctuation], // Armenian punctuation
@@ -1003,23 +976,42 @@ export class Position extends vscode.Position {
       [[0x2f800, 0x2fa1f], CharKind.Ideograph], // CJK Ideographs
     ];
 
-    const fragments: string[][] = [];
+    const codePointRangePatterns: string[][] = [];
     for (let kind in CharKind) {
       if (!isNaN(Number(kind))) {
-        fragments[kind] = [];
+        codePointRangePatterns[kind] = [];
       }
     }
 
-    for (let [[first, last], kind] of codePointRanges) {
+    for (let [[first, last], kind] of symbolTable) {
       if (first === last) {
         // '\u{hhhh}'
-        fragments[kind].push(`\\u{${first.toString(16)}}`);
+        codePointRangePatterns[kind].push(`\\u{${first.toString(16)}}`);
       } else {
         // '\u{hhhh}-\u{hhhh}'
-        fragments[kind].push(`\\u{${first.toString(16)}}-\\u{${last.toString(16)}}`);
+        codePointRangePatterns[kind].push(`\\u{${first.toString(16)}}-\\u{${last.toString(16)}}`);
       }
     }
-    return fragments.map(patterns => `([${patterns.join('')}]+)`);
+
+    // Symbols in vim.iskeyword or editor.wordSeparators
+    // are treated as CharKind.Punctuation
+    const escapedKeywordChars = _.escapeRegExp(keywordChars).replace(/-/g, '\\-');
+    codePointRangePatterns[Number(CharKind.Punctuation)].push(escapedKeywordChars);
+
+    const codePointRanges = codePointRangePatterns.map(patterns => patterns.join(''));
+    const symbolSegments = codePointRanges.map(range => `([${range}]+)`);
+
+    // wordSegment matches word characters.
+    // A word character is a symbol which is neither
+    // - space
+    // - a symbol listed in the table
+    // - a keyword (vim.iskeyword)
+    const wordSegment = `([^\\s${codePointRanges.join('')}]+)`;
+
+    // https://regex101.com/r/X1agK6/2
+    const segments = symbolSegments.concat(wordSegment, '$^');
+    const regexp = new RegExp(segments.join('|'), 'ug');
+    return regexp;
   }
 
   private getAllPositions(line: string, regex: RegExp): number[] {

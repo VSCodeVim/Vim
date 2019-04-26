@@ -95,7 +95,6 @@ export class FileCommand extends node.CommandBase {
       filePath = path.isAbsolute(this._arguments.name)
         ? path.normalize(this._arguments.name)
         : path.join(path.dirname(editorFilePath), this._arguments.name);
-      console.log(filePath);
 
       if (filePath !== editorFilePath) {
         let fileExists = await doesFileExist(filePath);

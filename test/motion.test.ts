@@ -353,7 +353,13 @@ suite('word motion', () => {
 });
 
 suite('unicode word motion', () => {
-  let text: Array<string> = ['漢字ひらがなカタカナalphabets、いろいろな文字。', 'Καλημέρα κόσμε'];
+  let text: Array<string> = [
+    '漢字ひらがなカタカナalphabets、いろいろな文字。',
+    'Καλημέρα κόσμε',
+    'Die früh sich einst dem trüben Blick gezeigt.',
+    'Được tiếp đãi ân cần',
+    '100£and100$and100¥#♯x',
+  ];
 
   suiteSetup(() => {
     return setupWorkspace().then(() => {
@@ -387,6 +393,28 @@ suite('unicode word motion', () => {
       assert.equal(motion.line, 1);
       assert.equal(motion.character, 9);
     });
+
+    test('move cursor word right recognizes a latin string which has diacritics as a single word', () => {
+      let motion = new Position(2, 4).getWordRight();
+      assert.equal(motion.line, 2);
+      assert.equal(motion.character, 9);
+    });
+
+    test('move cursor word right recognizes a latin-1 symbol as punctuation', () => {
+      let motion = new Position(4, 3).getWordRight();
+      assert.equal(motion.line, 4);
+      assert.equal(motion.character, 4);
+
+      motion = motion.getWordRight(); // issue #3680
+      assert.equal(motion.line, 4);
+      assert.equal(motion.character, 10);
+    });
+
+    test('move cursor word right recognizes a sequence of latin-1 symbols and other symbols as a word', () => {
+      let motion = new Position(4, 17).getWordRight();
+      assert.equal(motion.line, 4);
+      assert.equal(motion.character, 20);
+    });
   });
 
   suite('word left', () => {
@@ -412,6 +440,12 @@ suite('unicode word motion', () => {
       let motion = new Position(1, 11).getWordLeft();
       assert.equal(motion.line, 1);
       assert.equal(motion.character, 9);
+    });
+
+    test('move cursor word left recognizes a latin string which has diacritics as a single word', () => {
+      let motion = new Position(3, 10).getWordLeft();
+      assert.equal(motion.line, 3);
+      assert.equal(motion.character, 5);
     });
   });
 });

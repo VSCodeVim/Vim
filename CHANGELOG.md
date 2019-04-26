@@ -1,5 +1,25 @@
 # Change Log
 
+## [v1.4.0](https://github.com/vscodevim/vim/tree/v1.4.0) (2019-04-08)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.3.0...v1.4.0)
+
+**Fixed Bugs:**
+
+- Performance degradation of word motions in v1.3.0 [\#3660](https://github.com/VSCodeVim/Vim/issues/3660)
+
+**Closed issues:**
+
+- Adding vim style 'Go to Symbol in Workspace' shortcut [\#3624](https://github.com/VSCodeVim/Vim/issues/3624)
+
+**Merged pull requests:**
+
+- Improve performance of word motions [\#3662](https://github.com/VSCodeVim/Vim/pull/3662) ([ajalab](https://github.com/ajalab))
+- Update dependency tslint to v5.15.0 [\#3647](https://github.com/VSCodeVim/Vim/pull/3647) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency @types/mocha to v5.2.6 [\#3646](https://github.com/VSCodeVim/Vim/pull/3646) ([renovate[bot]](https://github.com/apps/renovate))
+- Document display line movement best practices [\#3623](https://github.com/VSCodeVim/Vim/pull/3623) ([karlhorky](https://github.com/karlhorky))
+- Only use regex lookbehind where supported [\#3525](https://github.com/VSCodeVim/Vim/pull/3525) ([JKillian](https://github.com/JKillian))
+
 ## [v1.3.0](https://github.com/vscodevim/vim/tree/v1.3.0) (2019-04-02)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.2.0...v1.3.0)

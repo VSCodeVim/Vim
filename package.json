@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -34,7 +34,7 @@
     "*",
     "onCommand:type"
   ],
-  "qna": "https://vscodevim-slackin.azurewebsites.net/",
+  "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
   "contributes": {
     "commands": [
@@ -732,7 +732,7 @@
     "@types/mocha": "5.2.6",
     "@types/node": "10.12.27",
     "@types/sinon": "7.0.11",
-    "gulp": "4.0.0",
+    "gulp": "4.0.1",
     "gulp-bump": "3.1.3",
     "gulp-git": "2.9.0",
     "gulp-sourcemaps": "2.6.5",
@@ -740,12 +740,12 @@
     "gulp-tslint": "8.1.4",
     "gulp-typescript": "5.0.1",
     "minimist": "1.2.0",
-    "mocha": "6.0.2",
+    "mocha": "6.1.4",
     "plugin-error": "1.0.1",
-    "prettier": "1.16.4",
-    "sinon": "7.3.1",
-    "tslint": "5.15.0",
-    "typescript": "3.4.1",
+    "prettier": "1.17.0",
+    "sinon": "7.3.2",
+    "tslint": "5.16.0",
+    "typescript": "3.4.5",
     "vscode": "1.1.33"
   }
 }
