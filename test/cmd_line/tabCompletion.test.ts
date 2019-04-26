@@ -21,7 +21,6 @@ suite('cmd_line tabComplete', () => {
     await modeHandler.handleMultipleKeyEvents([':', 'e', 'd', 'i']);
     await modeHandler.handleKeyEvent('<tab>');
     const statusBarAfterTab = StatusBar.GetTrimmed();
-    console.log('edit' === statusBarAfterTab);
 
     assert.equal(statusBarAfterTab, 'edit', 'Command Tab Completion Failed');
   });
