@@ -82,6 +82,7 @@ export interface IMark {
   name: string;
   position: Position;
   isUppercaseMark: boolean;
+  editor?: vscode.TextEditor; // only required when using global marks (isUppercaseMark is true)
 }
 
 class HistoryStep {
@@ -115,6 +116,11 @@ class HistoryStep {
    * The position of every mark at the start of this history step.
    */
   marks: IMark[] = [];
+
+  /**
+   * "global" file marks. (when IMark.name is uppercase)
+   */
+  static fileMarks: IMark[] = [];
 
   constructor(init: {
     changes?: DocumentChange[];
@@ -303,16 +309,12 @@ export class HistoryTracker {
    * text that was marked.
    */
   private updateAndReturnMarks(): IMark[] {
-    const previousMarks = this.currentHistoryStep.marks;
+    const previousMarks = this.getAllCurrentDocumentMarks();
     let newMarks: IMark[] = [];
 
     // clone old marks into new marks
     for (const mark of previousMarks) {
-      newMarks.push({
-        name: mark.name,
-        position: mark.position,
-        isUppercaseMark: mark.isUppercaseMark,
-      });
+      newMarks.push({ ...mark });
     }
 
     for (const change of this.currentHistoryStep.changes) {
@@ -396,28 +398,71 @@ export class HistoryTracker {
   }
 
   /**
+   * Updates all marks affecting the active text editor.
+   * Since all currentHistoryStep's marks are affected, just update the
+   * array.  File marks might not be from the active editor, so the
+   * filemark collection is mutated with the new element in place.
+   */
+  private updateMarks(): void {
+    const newMarks = this.updateAndReturnMarks();
+    this.currentHistoryStep.marks = newMarks.filter(mark => !mark.isUppercaseMark);
+
+    newMarks.filter(mark => mark.isUppercaseMark).forEach(this.putMarkInList.bind);
+  }
+
+  /**
+   * Returns the most a shared static list if isFileMark is true,
+   * otherwise returns the currentHistoryStep.marks.
+   */
+  private getMarkList(isFileMark: boolean): IMark[] {
+    return isFileMark ? HistoryStep.fileMarks : this.currentHistoryStep.marks;
+  }
+
+  /**
+   * Gets all local marks, and file marks targeting the current editor.
+   */
+  private getAllCurrentDocumentMarks(): IMark[] {
+    const fileMarks = HistoryStep.fileMarks.filter(
+      mark => mark.editor === vscode.window.activeTextEditor
+    );
+    return [...this.currentHistoryStep.marks, ...fileMarks];
+  }
+
+  /**
    * Adds a mark.
    */
   public addMark(position: Position, markName: string): void {
+    const isUppercaseMark = markName.toUpperCase() === markName;
     const newMark: IMark = {
       position,
       name: markName,
-      isUppercaseMark: markName === markName.toUpperCase(),
+      isUppercaseMark: isUppercaseMark,
+      editor: isUppercaseMark ? vscode.window.activeTextEditor : undefined,
     };
-    const previousIndex = this.currentHistoryStep.marks.findIndex(mark => mark.name === markName);
+    this.putMarkInList(newMark);
+  }
 
+  /**
+   * Puts the mark either the static or local marks array depending on
+   * mark.isUppercaseMark.
+   */
+  private putMarkInList(mark: IMark): void {
+    const marks = this.getMarkList(mark.isUppercaseMark);
+    const previousIndex = marks.findIndex(existingMark => existingMark.name === mark.name);
     if (previousIndex !== -1) {
-      this.currentHistoryStep.marks[previousIndex] = newMark;
+      marks[previousIndex] = mark;
     } else {
-      this.currentHistoryStep.marks.push(newMark);
+      marks.push(mark);
     }
   }
 
   /**
-   * Retrieves a mark.
+   * Retrieves a mark from either the static or local array depending on
+   * mark.isUppercaseMark.
    */
   public getMark(markName: string): IMark {
-    return <IMark>this.currentHistoryStep.marks.find(mark => mark.name === markName);
+    const marks = this.getMarkList(markName.toUpperCase() === markName);
+    return <IMark>marks.find(mark => mark.name === markName);
   }
 
   public getMarks(): IMark[] {
