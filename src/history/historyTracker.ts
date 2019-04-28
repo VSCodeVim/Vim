@@ -411,7 +411,7 @@ export class HistoryTracker {
   }
 
   /**
-   * Returns the most a shared static list if isFileMark is true,
+   * Returns the shared static list if isFileMark is true,
    * otherwise returns the currentHistoryStep.marks.
    */
   private getMarkList(isFileMark: boolean): IMark[] {
@@ -419,7 +419,7 @@ export class HistoryTracker {
   }
 
   /**
-   * Gets all local marks, and file marks targeting the current editor.
+   * Gets all local and file marks targeting the current editor.
    */
   private getAllCurrentDocumentMarks(): IMark[] {
     const fileMarks = HistoryStep.fileMarks.filter(
