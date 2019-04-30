@@ -1,5 +1,48 @@
 # Change Log
 
+## [v1.7.0](https://github.com/vscodevim/vim/tree/v1.7.0) (2019-04-30)
+
+[Full Changelog](https://github.com/vscodevim/vim/compare/v1.4.0...v1.7.0)
+
+**Fixed Bugs:**
+
+- cw, dw, vw doesn't work with non-ascii char earlier in line [\#3680](https://github.com/VSCodeVim/Vim/issues/3680)
+- Word seperate doesn't works well [\#3665](https://github.com/VSCodeVim/Vim/issues/3665)
+- catastrophic performance [\#3654](https://github.com/VSCodeVim/Vim/issues/3654)
+
+**Closed issues:**
+
+- 中文输入模式下，在 integrated terminal 里面，用 Caps Lock 键切换到英文，无法输入小写字母 [\#3705](https://github.com/VSCodeVim/Vim/issues/3705)
+- vim.debug.suppress invalid [\#3703](https://github.com/VSCodeVim/Vim/issues/3703)
+- Ctrl keys can not be remapped in insert mode [\#3697](https://github.com/VSCodeVim/Vim/issues/3697)
+- Surround: Implement whitespace configuration [\#3681](https://github.com/VSCodeVim/Vim/issues/3681)
+- :\[line number\]d causes type error [\#3678](https://github.com/VSCodeVim/Vim/issues/3678)
+- How to fit VIM search on IDE footer with long git branch name? [\#3652](https://github.com/VSCodeVim/Vim/issues/3652)
+- cannot open or close directories with L key in file navigation [\#3576](https://github.com/VSCodeVim/Vim/issues/3576)
+- VsCodeVim makes workbench.tree.indent not effective [\#3561](https://github.com/VSCodeVim/Vim/issues/3561)
+- Ex command 'copy' throws "failed to handle key=.undefined" error [\#3505](https://github.com/VSCodeVim/Vim/issues/3505)
+- All mappings in Visual mode do not work when you just enter Visual mod by pressing v [\#3503](https://github.com/VSCodeVim/Vim/issues/3503)
+
+**Merged pull requests:**
+
+- Fix reverse selecting in normal mode. [\#3712](https://github.com/VSCodeVim/Vim/pull/3712) ([kroton](https://github.com/kroton))
+- chore\(deps\): update dependency typescript to v3.4.5 [\#3701](https://github.com/VSCodeVim/Vim/pull/3701) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency gulp to v4.0.1 [\#3698](https://github.com/VSCodeVim/Vim/pull/3698) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency typescript to v3.4.4 [\#3690](https://github.com/VSCodeVim/Vim/pull/3690) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency mocha to v6.1.4 [\#3689](https://github.com/VSCodeVim/Vim/pull/3689) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency sinon to v7.3.2 [\#3686](https://github.com/VSCodeVim/Vim/pull/3686) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency tslint to v5.16.0 [\#3683](https://github.com/VSCodeVim/Vim/pull/3683) ([renovate[bot]](https://github.com/apps/renovate))
+- docs: update slackin link [\#3679](https://github.com/VSCodeVim/Vim/pull/3679) ([khoitd1997](https://github.com/khoitd1997))
+- Update dependency typescript to v3.4.3 [\#3677](https://github.com/VSCodeVim/Vim/pull/3677) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency prettier to v1.17.0 [\#3676](https://github.com/VSCodeVim/Vim/pull/3676) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency mocha to v6.1.3 [\#3675](https://github.com/VSCodeVim/Vim/pull/3675) ([renovate[bot]](https://github.com/apps/renovate))
+- Add note about unsupported motions [\#3670](https://github.com/VSCodeVim/Vim/pull/3670) ([karlhorky](https://github.com/karlhorky))
+- Fix word separation [\#3667](https://github.com/VSCodeVim/Vim/pull/3667) ([ajalab](https://github.com/ajalab))
+- Update dependency typescript to v3.4.2 [\#3664](https://github.com/VSCodeVim/Vim/pull/3664) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency mocha to v6.1.2 [\#3663](https://github.com/VSCodeVim/Vim/pull/3663) ([renovate[bot]](https://github.com/apps/renovate))
+- Fixes \#2754. Ctrl+d/u pull cursor along when screen moves past cursor [\#3658](https://github.com/VSCodeVim/Vim/pull/3658) ([mayhewluke](https://github.com/mayhewluke))
+- Implement \<C-w\> s [\#3563](https://github.com/VSCodeVim/Vim/pull/3563) ([aminroosta](https://github.com/aminroosta))
+
 ## [v1.4.0](https://github.com/vscodevim/vim/tree/v1.4.0) (2019-04-08)
 
 [Full Changelog](https://github.com/vscodevim/vim/compare/v1.3.0...v1.4.0)
@@ -45,7 +88,6 @@
 - digraphs cannot be inputted in different order [\#3599](https://github.com/VSCodeVim/Vim/issues/3599)
 - gU/gu does not work in visual mode [\#3491](https://github.com/VSCodeVim/Vim/issues/3491)
 - Error when executing 'View Latex PDF'-command from latex-workshop-plugin [\#3484](https://github.com/VSCodeVim/Vim/issues/3484)
-- Arrow key bindings not working with insertModeKeyBindings [\#2924](https://github.com/VSCodeVim/Vim/issues/2924)
 
 **Merged pull requests:**
 
@@ -177,7 +219,6 @@
 
 - Illegal value for line error using command-mode range deletion [\#3441](https://github.com/VSCodeVim/Vim/issues/3441)
 - Extension crash or hangs when failing to call nvim [\#3433](https://github.com/VSCodeVim/Vim/issues/3433)
-- Complex mappings of scrolling keys can break all key bindings [\#2925](https://github.com/VSCodeVim/Vim/issues/2925)
 
 **Merged pull requests:**
 
@@ -226,8 +267,6 @@
 - Pressing `i` followed by another command yields the incorrect `this.vimState.recordedState.commandList` [\#3252](https://github.com/VSCodeVim/Vim/issues/3252)
 - Cursor in different spot than where cursor appears and text gets deleted in different location [\#3157](https://github.com/VSCodeVim/Vim/issues/3157)
 - InsertMode binds with\<C-Key\> in settings.json doesn't work. [\#3126](https://github.com/VSCodeVim/Vim/issues/3126)
-- Mapping "\<C-j\>" to "\<Esc\>" in insert mode doesn't work [\#2965](https://github.com/VSCodeVim/Vim/issues/2965)
-- "," cannot be remapped when {"vim.leader": ","} [\#2932](https://github.com/VSCodeVim/Vim/issues/2932)
 
 **Closed issues:**
 
