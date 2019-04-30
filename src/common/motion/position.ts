@@ -895,45 +895,7 @@ export class Position extends vscode.Position {
     return result;
   }
 
-  private static makeUnicodeWordRegex(characterSet: string): RegExp {
-    const segments = [
-      // ASCII word characters (in many cases 0-9A-Za-z_)
-      // and non-word characters
-      ...Position.makeAsciiWordSegments(characterSet),
-
-      // Unicode characters (punctuations, ideographs, ...)
-      ...Position.makeUnicodeWordSegments(),
-
-      // Other spelling characters (Greek, ...)
-      '\\S+',
-
-      '$^',
-    ];
-    const result = new RegExp(segments.join('|'), 'ug');
-    return result;
-  }
-
-  private static makeAsciiWordSegments(nonWordChars: string): string[] {
-    const nonWordCodes = nonWordChars
-      .split('')
-      .sort()
-      .map(c => c.codePointAt(0)!);
-    nonWordCodes.push(0x7f); // guard
-    const wordChars: string[] = [];
-    let wordCode = 0x21;
-    for (let nonWordCode of nonWordCodes) {
-      for (; wordCode < nonWordCode; wordCode++) {
-        wordChars.push(String.fromCharCode(wordCode));
-      }
-      wordCode = nonWordCode + 1;
-    }
-
-    const wordSegment = `([${wordChars.join('')}]+)`;
-    const nonWordSegment = `[${_.escapeRegExp(nonWordChars).replace(/-/g, '\\-')}]+`;
-    return [wordSegment, nonWordSegment];
-  }
-
-  private static makeUnicodeWordSegments(): string[] {
+  private static makeUnicodeWordRegex(keywordChars: string): RegExp {
     // Distinct categories of characters
     enum CharKind {
       Punctuation,
@@ -946,10 +908,11 @@ export class Position extends vscode.Position {
       Hangul,
     }
 
+    // List of printable characters (code point intervals) and their character kinds.
+    // Latin alphabets (e.g., ASCII alphabets and numbers,  Latin-1 Supplement, European Latin) are excluded.
     // Imported from utf_class_buf in src/mbyte.c of Vim.
-    // Spelling alphabets are not listed here since they are covered as non-white letters.
-    // TODO(ajalab): add Emoji
-    const codePointRanges: [[number, number], CharKind][] = [
+    const symbolTable: [[number, number], CharKind][] = [
+      [[0x00a1, 0x00bf], CharKind.Punctuation], // Latin-1 punctuation
       [[0x037e, 0x037e], CharKind.Punctuation], // Greek question mark
       [[0x0387, 0x0387], CharKind.Punctuation], // Greek ano teleia
       [[0x055a, 0x055f], CharKind.Punctuation], // Armenian punctuation
@@ -1013,23 +976,42 @@ export class Position extends vscode.Position {
       [[0x2f800, 0x2fa1f], CharKind.Ideograph], // CJK Ideographs
     ];
 
-    const fragments: string[][] = [];
+    const codePointRangePatterns: string[][] = [];
     for (let kind in CharKind) {
       if (!isNaN(Number(kind))) {
-        fragments[kind] = [];
+        codePointRangePatterns[kind] = [];
       }
     }
 
-    for (let [[first, last], kind] of codePointRanges) {
+    for (let [[first, last], kind] of symbolTable) {
       if (first === last) {
         // '\u{hhhh}'
-        fragments[kind].push(`\\u{${first.toString(16)}}`);
+        codePointRangePatterns[kind].push(`\\u{${first.toString(16)}}`);
       } else {
         // '\u{hhhh}-\u{hhhh}'
-        fragments[kind].push(`\\u{${first.toString(16)}}-\\u{${last.toString(16)}}`);
+        codePointRangePatterns[kind].push(`\\u{${first.toString(16)}}-\\u{${last.toString(16)}}`);
       }
     }
-    return fragments.map(patterns => `([${patterns.join('')}]+)`);
+
+    // Symbols in vim.iskeyword or editor.wordSeparators
+    // are treated as CharKind.Punctuation
+    const escapedKeywordChars = _.escapeRegExp(keywordChars).replace(/-/g, '\\-');
+    codePointRangePatterns[Number(CharKind.Punctuation)].push(escapedKeywordChars);
+
+    const codePointRanges = codePointRangePatterns.map(patterns => patterns.join(''));
+    const symbolSegments = codePointRanges.map(range => `([${range}]+)`);
+
+    // wordSegment matches word characters.
+    // A word character is a symbol which is neither
+    // - space
+    // - a symbol listed in the table
+    // - a keyword (vim.iskeyword)
+    const wordSegment = `([^\\s${codePointRanges.join('')}]+)`;
+
+    // https://regex101.com/r/X1agK6/2
+    const segments = symbolSegments.concat(wordSegment, '$^');
+    const regexp = new RegExp(segments.join('|'), 'ug');
+    return regexp;
   }
 
   private getAllPositions(line: string, regex: RegExp): number[] {
