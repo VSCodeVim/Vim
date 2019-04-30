@@ -659,6 +659,7 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
   by: EditorScrollByUnit = 'halfPage';
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
     let lineOffset = 0;
     let editor = vscode.window.activeTextEditor!;
     let startColumn = vimState.cursorStartPosition.character;
@@ -671,23 +672,27 @@ class CommandMoveHalfPageDown extends CommandEditorScroll {
       to: this.to,
       by: this.by,
       value: timesToRepeat,
-      revealCursor: false,
+      revealCursor: smoothScrolling,
       select:
         [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
           vimState.currentMode
         ) >= 0,
     });
 
-    const newFirstLine = editor.visibleRanges[0].start.line;
-    const newPositionLine = newFirstLine + lineOffset;
-    let newPosition;
-
-    const maxLineValue = TextEditor.getLineCount() - 1;
-    if (newPositionLine > maxLineValue) {
-      newPosition = new Position(0, 0).getDocumentEnd();
+    let newPosition: Position;
+    if (smoothScrolling) {
+      newPosition = new Position(editor.selection.active.line, editor.selection.active.character);
     } else {
-      const newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newPositionLine));
-      newPosition = new Position(newPositionLine, newPositionColumn);
+      const newFirstLine = editor.visibleRanges[0].start.line;
+      const newPositionLine = newFirstLine + lineOffset;
+
+      const maxLineValue = TextEditor.getLineCount() - 1;
+      if (newPositionLine > maxLineValue) {
+        newPosition = new Position(0, 0).getDocumentEnd();
+      } else {
+        const newPositionColumn = Math.min(startColumn, TextEditor.getLineMaxColumn(newPositionLine));
+        newPosition = new Position(newPositionLine, newPositionColumn);
+      }
     }
 
     if (newPosition.isValid()) {
@@ -705,6 +710,7 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
   by: EditorScrollByUnit = 'halfPage';
 
   public async exec(position: Position, vimState: VimState): Promise<VimState> {
+    const smoothScrolling = vscode.workspace.getConfiguration('editor').smoothScrolling;
     let lineOffset = 0;
     let editor = vscode.window.activeTextEditor!;
     let startColumn = vimState.cursorStartPosition.character;
@@ -718,15 +724,20 @@ class CommandMoveHalfPageUp extends CommandEditorScroll {
       to: this.to,
       by: this.by,
       value: timesToRepeat,
-      revealCursor: false,
+      revealCursor: smoothScrolling,
       select:
         [ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine].indexOf(
           vimState.currentMode
         ) >= 0,
     });
 
-    let newFirstLine = editor.visibleRanges[0].start.line;
-    let newPosition = new Position(newFirstLine + lineOffset, startColumn);
+    let newPosition: Position;
+    if (smoothScrolling) {
+      newPosition = new Position(editor.selection.active.line, editor.selection.active.character);
+    } else {
+      let newFirstLine = editor.visibleRanges[0].start.line;
+      newPosition = new Position(newFirstLine + lineOffset, startColumn);
+    }
     vimState.cursorStopPosition = newPosition;
     return vimState;
   }
